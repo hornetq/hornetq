@@ -19,25 +19,12 @@ import org.jboss.jms.destination.JBossTemporaryDestination;
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface ConnectionDelegate 
+public interface ConnectionDelegate
+   extends Lifecycle
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   /**
-    * Notify about closing
-    * 
-    * @throws JMSException for any error
-    */
-   void closing() throws JMSException;
-
-   /**
-    * Close the delegate
-    * 
-    * @throws JMSException for any error
-    */
-   void close() throws JMSException;
 
    /**
     * Create a session

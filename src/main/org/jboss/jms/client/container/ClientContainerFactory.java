@@ -38,7 +38,8 @@ public class ClientContainerFactory
 
    // Static --------------------------------------------------------
 
-   public static ConnectionDelegate getConnectionContainer(
+   public static ConnectionDelegate getConnectionContainer
+   (
       ImplementationDelegate delegate,
       ConnectionDelegate server,
       Interceptor[] interceptors,
@@ -49,14 +50,16 @@ public class ClientContainerFactory
       return (ConnectionDelegate) getContainer
       (
          ConnectionDelegate.class,
+         null,
          server,
          interceptors,
          metadata
       );
    }
 
-   public static SessionDelegate getSessionContainer(
-      ConnectionDelegate delegate,
+   public static SessionDelegate getSessionContainer
+   (
+      Container parent,
       SessionDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
@@ -66,14 +69,16 @@ public class ClientContainerFactory
       return (SessionDelegate) getContainer
       (
          SessionDelegate.class,
+         parent,
          server,
          interceptors,
          metadata
       );
    }
 
-   public static BrowserDelegate getBrowserContainer(
-      SessionDelegate delegate,
+   public static BrowserDelegate getBrowserContainer
+   (
+      Container parent,
       BrowserDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
@@ -83,14 +88,16 @@ public class ClientContainerFactory
       return (BrowserDelegate) getContainer
       (
          BrowserDelegate.class,
+         parent,
          server,
          interceptors,
          metadata
       );
    }
 
-   public static ConsumerDelegate getConsumerContainer(
-      SessionDelegate delegate,
+   public static ConsumerDelegate getConsumerContainer
+   (
+      Container parent,
       ConsumerDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
@@ -100,14 +107,16 @@ public class ClientContainerFactory
       return (ConsumerDelegate) getContainer
       (
          ConsumerDelegate.class,
+         parent,
          server,
          interceptors,
          metadata
       );
    }
 
-   public static ProducerDelegate getProducerContainer(
-      SessionDelegate delegate,
+   public static ProducerDelegate getProducerContainer
+   (
+      Container parent,
       ProducerDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
@@ -117,6 +126,7 @@ public class ClientContainerFactory
       return (ProducerDelegate) getContainer
       (
          ProducerDelegate.class,
+         parent,
          server,
          interceptors,
          metadata
@@ -125,6 +135,7 @@ public class ClientContainerFactory
    
    public static Object getContainer(
       Class clazz,
+      Container parent,
       Object delegate,
       Interceptor[] interceptors, 
       SimpleMetaData metadata
@@ -151,7 +162,7 @@ public class ClientContainerFactory
       if (stack[stackSize-1] == null)
          stack[stackSize-1] = new DispatchInterceptor(delegate);
 
-	   Container container = new Container(stack, metadata);
+	   Container container = new Container(parent, stack, metadata);
 	   Object result = Proxy.newProxyInstance
       (
 			Thread.currentThread().getContextClassLoader(),

@@ -6,9 +6,15 @@
  */
 package org.jboss.jms.client.container;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.jboss.aop.Interceptor;
 import org.jboss.aop.Invocation;
 import org.jboss.aop.MethodInvocation;
+import org.jboss.jms.client.Lifecycle;
+import org.jboss.jms.container.Container;
 
 /**
  * An interceptor for checking closed state. It waits for
@@ -71,11 +77,14 @@ public class ClosedInterceptor
       }
       else if (isClose)
       {
-         if (checkCloseAlreadyDone())
+         if(checkCloseAlreadyDone())
             return null;
       }
       else
          inuse();
+
+      if (isClosing)
+         maintainRelatives(invocation);
 
       try
       {
@@ -162,6 +171,46 @@ public class ClosedInterceptor
    {
       if (--inuseCount == 0)
          notifyAll();
+   }
+
+   /**
+    * Close children and remove from parent
+    * 
+    * @param invocation the invocation
+    */
+   protected void maintainRelatives(Invocation invocation)
+   {
+      // We use a clone to avoid a deadlock where requests
+      // are made to close parent and child concurrently
+      Container container = Container.getContainer(invocation);
+      Set clone = null;
+      Set children = container.getChildren();
+      synchronized (children)
+      {
+         clone = new HashSet(children);
+      }
+      
+      // Cycle through the children this will do a depth
+      // first close
+      for (Iterator i = clone.iterator(); i.hasNext();)
+      {
+         Container childContainer = (Container) i.next();
+         Lifecycle child = (Lifecycle) childContainer.getProxy();
+         try
+         {
+            child.closing();
+            child.close();
+         }
+         catch (Throwable ignored)
+         {
+            // Add a log interceptor to the child if you want the error
+         }
+      }
+      
+      // Remove from the parent
+      Container parent = container.getParent();
+      if (parent != null)
+         parent.removeChild(container);
    }
 
    // Package Private ------------------------------------------------

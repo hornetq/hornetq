@@ -7,38 +7,32 @@
 package org.jboss.jms.client;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
 
 /**
- * The implementation of a consumer
+ * The lifecycle
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface ConsumerDelegate
-   extends Lifecycle 
+public interface Lifecycle 
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
 
    /**
-    * Receive a message
+    * Notify about to close
     * 
-    * @param timeout the timeout
-    * @return the message
     * @throws JMSException for any error
     */
-   Message receive(long timeout) throws JMSException;
+   void closing() throws JMSException;
 
    /**
-    *
-    * Set the message listener
-    * @param the new message listener
-    * @throws JMSException for any error 
+    * Close the delegate
+    * 
+    * @throws JMSException for any error
     */
-   void setMessageListener(MessageListener listener) throws JMSException;
+   void close() throws JMSException;
 
    // Inner Classes --------------------------------------------------
 }

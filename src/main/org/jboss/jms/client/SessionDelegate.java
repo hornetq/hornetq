@@ -26,7 +26,8 @@ import javax.transaction.xa.XAResource;
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface SessionDelegate 
+public interface SessionDelegate
+   extends Lifecycle 
 {
    // Constants -----------------------------------------------------
 
@@ -40,20 +41,6 @@ public interface SessionDelegate
     * @param acknowledge true for acknowledge, false for a Nack
     */
    void acknowledge(Message message, boolean acknowledge);
-
-   /**
-    * Notify about to close
-    * 
-    * @throws JMSException for any error
-    */
-   void closing() throws JMSException;
-
-   /**
-    * Close the delegate
-    * 
-    * @throws JMSException for any error
-    */
-   void close() throws JMSException;
 
    /**
     * Commit a session

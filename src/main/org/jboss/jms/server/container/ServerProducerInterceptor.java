@@ -57,6 +57,8 @@ public class ServerProducerInterceptor
          endpoint.deliver(reference);
          return null;
       }
+      else if (methodName.equals("closing") || methodName.equals("close"))
+         return null;
       throw new UnsupportedOperationException(mi.method.toString()); 
    }
 

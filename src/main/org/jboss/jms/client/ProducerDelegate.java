@@ -18,24 +18,11 @@ import org.jboss.jms.message.JBossMessage;
  * @version $Revision$
  */
 public interface ProducerDelegate
+   extends Lifecycle
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   /**
-    * Notify about to close
-    * 
-    * @throws JMSException for any error
-    */
-   void closing() throws JMSException;
-
-   /**
-    * Close the delegate
-    * 
-    * @throws JMSException for any error
-    */
-   void close() throws JMSException;
 
    /**
     * Send a message

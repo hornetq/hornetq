@@ -11,7 +11,6 @@ import org.jboss.aop.Invocation;
 import org.jboss.aop.MethodInvocation;
 import org.jboss.aop.SimpleMetaData;
 import org.jboss.jms.client.BrowserDelegate;
-import org.jboss.jms.client.ConnectionDelegate;
 import org.jboss.jms.client.ConsumerDelegate;
 import org.jboss.jms.client.ProducerDelegate;
 import org.jboss.jms.client.SessionDelegate;
@@ -75,7 +74,7 @@ public class ServerFactoryInterceptor
          singleton,
          ServerSessionInterceptor.singleton 
       };
-      ConnectionDelegate connection = (ConnectionDelegate) Container.getProxy(invocation); 
+      Container connection = Container.getContainer(invocation); 
       return ServerContainerFactory.getSessionContainer(connection, interceptors, metaData);
    }
    
@@ -88,7 +87,7 @@ public class ServerFactoryInterceptor
       {
          ServerBrowserInterceptor.singleton 
       };
-      SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
+      Container session = Container.getContainer(invocation); 
       return ServerContainerFactory.getBrowserContainer(session, interceptors, metaData);
    }
    
@@ -101,7 +100,7 @@ public class ServerFactoryInterceptor
       {
          ServerConsumerInterceptor.singleton 
       };
-      SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
+      Container session = Container.getContainer(invocation); 
       return ServerContainerFactory.getConsumerContainer(session, interceptors, metaData);
    }
    
@@ -114,7 +113,7 @@ public class ServerFactoryInterceptor
       {
          ServerProducerInterceptor.singleton 
       };
-      SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
+      Container session = Container.getContainer(invocation); 
       return ServerContainerFactory.getProducerContainer(session, interceptors, metaData);
    }
 

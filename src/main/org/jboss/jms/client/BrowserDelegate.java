@@ -16,25 +16,12 @@ import javax.jms.JMSException;
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface BrowserDelegate 
+public interface BrowserDelegate
+   extends Lifecycle 
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   /**
-    * Notify about to close
-    * 
-    * @throws JMSException for any error
-    */
-   void closing() throws JMSException;
-
-   /**
-    * Close the delegate
-    * 
-    * @throws JMSException for any error
-    */
-   void close() throws JMSException;
 
    /**
     * Browse the messages

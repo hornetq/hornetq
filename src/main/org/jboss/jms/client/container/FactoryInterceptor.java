@@ -10,7 +10,6 @@ import org.jboss.aop.Interceptor;
 import org.jboss.aop.Invocation;
 import org.jboss.aop.MethodInvocation;
 import org.jboss.jms.client.BrowserDelegate;
-import org.jboss.jms.client.ConnectionDelegate;
 import org.jboss.jms.client.ConsumerDelegate;
 import org.jboss.jms.client.ProducerDelegate;
 import org.jboss.jms.client.SessionDelegate;
@@ -71,7 +70,7 @@ public class FactoryInterceptor
          MessageFactoryInterceptor.singleton,
          FactoryInterceptor.singleton
       };
-      ConnectionDelegate connection = (ConnectionDelegate) Container.getProxy(invocation); 
+      Container connection = Container.getContainer(invocation); 
       return ClientContainerFactory.getSessionContainer(connection, server, interceptors, null);
    }
 
@@ -79,7 +78,7 @@ public class FactoryInterceptor
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[0];
-      SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
+      Container session = Container.getContainer(invocation); 
       return ClientContainerFactory.getBrowserContainer(session, server, interceptors, null);
    }
 
@@ -87,7 +86,7 @@ public class FactoryInterceptor
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[0];
-      SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
+      Container session = Container.getContainer(invocation); 
       return ClientContainerFactory.getConsumerContainer(session, server, interceptors, null);
    }
 
@@ -95,7 +94,7 @@ public class FactoryInterceptor
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[0];
-      SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
+      Container session = Container.getContainer(invocation); 
       return ClientContainerFactory.getProducerContainer(session, server, interceptors, null);
    }
 

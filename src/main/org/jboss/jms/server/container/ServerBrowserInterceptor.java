@@ -50,6 +50,8 @@ public class ServerBrowserInterceptor
          BrowserEndpoint endpoint = factory.getBrowserEndpoint();
          return endpoint.browse();
       }
+      else if (methodName.equals("closing") || methodName.equals("close"))
+         return null;
       throw new UnsupportedOperationException(mi.method.toString()); 
    }
 

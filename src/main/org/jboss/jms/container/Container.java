@@ -7,6 +7,9 @@
 package org.jboss.jms.container;
 
 import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.JMSException;
 
@@ -33,6 +36,16 @@ public class Container
     * The frontend proxy
     */
    private Object proxy;
+
+   /**
+    * The parent
+    */
+   private Container parent;
+   
+   /**
+    * The children
+    */
+   private Set children = Collections.synchronizedSet(new HashSet());
 
    // Static --------------------------------------------------------
 
@@ -81,13 +94,17 @@ public class Container
     * @param metadata the meta data
     * @throws JMSException for any error
     */
-   public Container(Interceptor[] interceptors, SimpleMetaData metadata)
+   public Container(Container parent, Interceptor[] interceptors, SimpleMetaData metadata)
       throws JMSException
    {
       super(interceptors);
+      this.parent = parent;
       if (metadata != null)
          this.metadata = metadata;
       this.metadata.addMetaData("JMS", "Container", this);
+
+      if (parent != null)
+         parent.children.add(this);
    }
 
    // Public --------------------------------------------------------
@@ -100,6 +117,26 @@ public class Container
    public void setProxy(Object proxy)
    {
       this.proxy = proxy;
+   }
+   
+   public Container getParent()
+   {
+      return parent;
+   }
+   
+   public Set getChildren()
+   {
+      return children;
+   }
+   
+   public void addChild(Container child)
+   {
+      children.add(child);
+   }
+   
+   public void removeChild(Container child)
+   {
+      children.remove(child);
    }
 
    public Object invoke (Invocation invocation)

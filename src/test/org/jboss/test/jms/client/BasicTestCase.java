@@ -69,7 +69,7 @@ public class BasicTestCase extends BaseJMSTest
       }
       finally
       {
-         //c.close();
+         c.close();
       }
    }
 
