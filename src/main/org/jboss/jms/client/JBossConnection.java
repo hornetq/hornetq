@@ -108,7 +108,7 @@ public class JBossConnection
 	public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException
 	{
       if (transacted)
-         acknowledgeMode = Session.DUPS_OK_ACKNOWLEDGE;
+         acknowledgeMode = Session.SESSION_TRANSACTED;
       return new JBossSession(delegate.createSession(false, transacted, acknowledgeMode), false, transacted, acknowledgeMode);
 	}
 
