@@ -6,9 +6,12 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.core.PointToMultipointRouter;
-import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.PointToMultipointRouter;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.local.PointToMultipointRouter;
 
 import java.util.Iterator;
 

@@ -6,8 +6,10 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.LocalPipe;
-import org.jboss.messaging.core.RoutableSupport;
+import org.jboss.messaging.core.local.LocalPipe;
+import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.local.LocalPipe;
+import org.jboss.messaging.core.message.RoutableSupport;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -7,9 +7,12 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.interfaces.Receiver;
-import org.jboss.messaging.interfaces.Distributor;
-import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.message.MessageSupport;
 
 import java.util.Iterator;
 

@@ -18,9 +18,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.p2p.P2PImplementation;
-import org.jboss.jms.destination.JBossTopic;
+import org.jboss.messaging.jms.destination.JBossTopic;
+import org.jboss.messaging.jms.client.facade.JBossConnectionFactory;
 import org.jboss.test.jms.BaseJMSTest;
 
 /**

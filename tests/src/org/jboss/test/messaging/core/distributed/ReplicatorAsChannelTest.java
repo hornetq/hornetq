@@ -8,7 +8,7 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jboss.test.messaging.core.ChannelSupportTest;
-import org.jboss.messaging.util.RpcServer;
+import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.Replicator;
 import org.jgroups.blocks.RpcDispatcher;

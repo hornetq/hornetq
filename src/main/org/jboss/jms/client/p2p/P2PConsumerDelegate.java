@@ -11,8 +11,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.jboss.jms.MessageImpl;
-import org.jboss.jms.client.ConsumerDelegate;
+import org.jboss.messaging.jms.message.MessageImpl;
+import org.jboss.messaging.jms.client.ConsumerDelegate;
 
 /**
  * The p2p consumer

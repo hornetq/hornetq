@@ -6,14 +6,19 @@
  */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.distributed.Pipe;
 import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jboss.test.messaging.core.ChannelSupportTest;
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.message.MessageSupport;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 import org.jgroups.Address;

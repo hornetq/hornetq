@@ -21,9 +21,9 @@ import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 
 import org.jgroups.blocks.DistributedTree;
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.p2p.P2PImplementation;
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.jms.destination.JBossDestination;
+import org.jboss.messaging.jms.client.facade.JBossConnectionFactory;
 
 /**
  * Simple {@link Context} implementation to enable using Pure P2P JMS/JBoss in a vendor neutral

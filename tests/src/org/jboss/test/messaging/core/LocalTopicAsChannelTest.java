@@ -6,9 +6,12 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.core.LocalTopic;
-import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.LocalTopic;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.LocalTopic;
+import org.jboss.messaging.core.message.MessageSupport;
 
 import java.util.Iterator;
 

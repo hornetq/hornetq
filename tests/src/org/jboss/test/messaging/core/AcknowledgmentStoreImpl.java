@@ -6,7 +6,8 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.interfaces.AcknowledgmentStore;
+import org.jboss.messaging.core.AcknowledgmentStore;
+import org.jboss.messaging.core.AcknowledgmentStore;
 
 import java.io.Serializable;
 

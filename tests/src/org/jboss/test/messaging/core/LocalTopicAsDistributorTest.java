@@ -6,7 +6,7 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.LocalTopic;
+import org.jboss.messaging.core.local.LocalTopic;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -24,11 +24,12 @@ import org.jgroups.ChannelListener;
 import org.jgroups.JChannelFactory;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.PullPushAdapter;
-import org.jboss.jms.MessageImpl;
-import org.jboss.jms.client.ConnectionDelegate;
-import org.jboss.jms.client.SessionDelegate;
-import org.jboss.jms.destination.JBossTemporaryDestination;
+import org.jboss.messaging.jms.message.MessageImpl;
+import org.jboss.messaging.jms.destination.JBossTemporaryDestination;
+import org.jboss.messaging.jms.client.ConnectionDelegate;
+import org.jboss.messaging.jms.client.SessionDelegate;
 import org.jboss.util.id.GUID;
 
 /**
@@ -69,7 +70,7 @@ public class P2PConnectionDelegate
       try
       {
           URL url = Thread.currentThread().getContextClassLoader().getResource("org/jboss/jms/p2p/jgroups-config.xml");
-          this.channel = new JChannelFactory().createChannel(url);
+          this.channel = new JChannel(url);
           this.channel.setChannelListener(this);
           this.channel.connect("org.jboss.jms.p2p");
           this.connection = new PullPushAdapter(this.channel, this);
@@ -125,7 +126,7 @@ public class P2PConnectionDelegate
 		// TODO getJMSXPropertyNames
 		return null;
 	}
-   
+
    public void deleteTempDestination(JBossTemporaryDestination destination)
    {
       // TODO deleteTempDestination

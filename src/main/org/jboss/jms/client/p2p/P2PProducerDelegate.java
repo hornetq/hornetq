@@ -10,9 +10,11 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.jms.MessageImpl;
-import org.jboss.jms.client.ProducerDelegate;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.jms.message.MessageImpl;
+import org.jboss.messaging.jms.message.JBossMessage;
+import org.jboss.messaging.jms.client.ProducerDelegate;
+import org.jboss.messaging.jms.message.MessageImpl;
+import org.jboss.messaging.jms.message.JBossMessage;
 
 /**
  * The p2p producer

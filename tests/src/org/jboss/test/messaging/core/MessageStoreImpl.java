@@ -6,10 +6,13 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.interfaces.MessageStore;
-import org.jboss.messaging.interfaces.MessageReference;
-import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.core.MessageReferenceSupport;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.MessageReferenceSupport;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 import java.io.Serializable;

@@ -6,9 +6,11 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.core.ChannelSupport;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.ChannelSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.ChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.ChannelListener;

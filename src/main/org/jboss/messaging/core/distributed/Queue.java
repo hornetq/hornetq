@@ -6,12 +6,16 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.LocalQueue;
-import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.util.ServerResponse;
+import org.jboss.messaging.core.local.LocalQueue;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.ServerResponse;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.interfaces.Channel;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.ServerResponse;
+import org.jboss.messaging.core.Channel;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;

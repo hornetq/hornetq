@@ -16,12 +16,12 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
-import org.jboss.jms.client.ImplementationDelegate;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.jvm.JVMImplementation;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.server.MessageBroker;
-import org.jboss.jms.server.standard.StandardMessageBroker;
+import org.jboss.messaging.jms.destination.JBossQueue;
+import org.jboss.messaging.jms.server.standard.StandardMessageBroker;
+import org.jboss.messaging.jms.server.MessageBroker;
+import org.jboss.messaging.jms.client.facade.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.ConnectionDelegateFactory;
+import org.jboss.messaging.jms.client.colocated.ColocatedConnectionDelegateFactory;
 import org.jboss.test.jms.BaseJMSTest;
 
 /**
@@ -52,7 +52,7 @@ public class BasicTestCase extends BaseJMSTest
    {
       Queue queue = new JBossQueue("queue");
       MessageBroker broker = new StandardMessageBroker();
-      ImplementationDelegate impl = new JVMImplementation(broker);
+      ConnectionDelegateFactory impl = new ColocatedConnectionDelegateFactory(broker);
       ConnectionFactory cf = new JBossConnectionFactory(impl);
       Connection c = cf.createConnection();
       try

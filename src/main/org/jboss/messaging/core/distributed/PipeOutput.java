@@ -6,9 +6,11 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.interfaces.Receiver;
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.util.RpcServer;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;

@@ -7,7 +7,8 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.RoutableSupport;
+import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.message.RoutableSupport;
 
 
 /**

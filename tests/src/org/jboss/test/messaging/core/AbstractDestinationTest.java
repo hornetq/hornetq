@@ -7,13 +7,16 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.interfaces.Channel;
-import org.jboss.messaging.interfaces.Receiver;
-import org.jboss.messaging.core.RoutableSupport;
-import org.jboss.messaging.core.MessageSupport;
-import org.jboss.messaging.core.MessageReferenceSupport;
-import org.jboss.messaging.core.LocalPipe;
-import org.jboss.messaging.core.AbstractDestination;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.message.MessageReferenceSupport;
+import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.local.LocalPipe;
+import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.message.RoutableSupport;
 
 import java.util.List;
 import java.util.Set;

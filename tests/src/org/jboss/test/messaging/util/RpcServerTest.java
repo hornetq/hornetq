@@ -7,11 +7,16 @@
 package org.jboss.test.messaging.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.util.ServerDelegate;
-import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.util.ServerResponse;
-import org.jboss.messaging.util.ServerDelegateResponse;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.ServerDelegate;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.ServerResponse;
+import org.jboss.messaging.core.util.ServerDelegateResponse;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.ServerDelegate;
+import org.jboss.messaging.core.util.ServerDelegateResponse;
+import org.jboss.messaging.core.util.ServerResponse;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 

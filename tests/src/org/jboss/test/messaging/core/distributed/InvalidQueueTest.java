@@ -7,7 +7,7 @@
 package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.util.RpcServer;
+import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.distributed.Queue;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jgroups.blocks.RpcDispatcher;

@@ -6,9 +6,12 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.core.SingleOutputChannelSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.local.SingleOutputChannelSupport;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.local.SingleOutputChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
@@ -31,7 +34,7 @@ import java.util.ArrayList;
  * Multiple distributed pipes can share the same PipeOutput instance (and implicitly the
  * pipeID), as long the DistributedPipeIntput instances are different.
  *
- * @see org.jboss.messaging.interfaces.Receiver
+ * @see org.jboss.messaging.core.Receiver
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -170,7 +173,7 @@ public class Pipe extends SingleOutputChannelSupport
             new RpcServerCall(pipeID,
                               methodName,
                               new Object[] {r},
-                              new String[] {"org.jboss.messaging.interfaces.Routable"});
+                              new String[] {"org.jboss.messaging.core.Routable"});
 
       try
       {

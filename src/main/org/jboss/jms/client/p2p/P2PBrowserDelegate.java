@@ -11,7 +11,7 @@ import java.util.List;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.BrowserDelegate;
+import org.jboss.messaging.jms.client.BrowserDelegate;
 
 /**
  * The p2p browser

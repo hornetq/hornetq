@@ -10,8 +10,8 @@ import javax.jms.JMSException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
-import org.jboss.jms.client.ConnectionDelegate;
-import org.jboss.jms.client.ImplementationDelegate;
+import org.jboss.messaging.jms.client.ConnectionDelegateFactory;
+import org.jboss.messaging.jms.client.ConnectionDelegate;
 
 /**
  * The p2p implementation
@@ -21,7 +21,7 @@ import org.jboss.jms.client.ImplementationDelegate;
  * @version $Revision$
  */
 public class P2PImplementation
-   implements ImplementationDelegate
+   implements ConnectionDelegateFactory
 {
    // Constants -----------------------------------------------------
 
@@ -35,7 +35,7 @@ public class P2PImplementation
 
    // ImplementationDelegate implementation -------------------------
 
-   public ConnectionDelegate createConnection(String userName, String password) throws JMSException
+   public ConnectionDelegate createConnectionDelegate(String userName, String password) throws JMSException
    {
       return new P2PConnectionDelegate(userName, password);
    }

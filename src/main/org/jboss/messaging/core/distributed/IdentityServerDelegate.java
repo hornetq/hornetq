@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.util.ServerDelegate;
+import org.jboss.messaging.core.util.ServerDelegate;
 
 
 /**

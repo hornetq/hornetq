@@ -27,16 +27,19 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.BytesMessageImpl;
-import org.jboss.jms.MapMessageImpl;
-import org.jboss.jms.MessageImpl;
-import org.jboss.jms.ObjectMessageImpl;
-import org.jboss.jms.StreamMessageImpl;
-import org.jboss.jms.TextMessageImpl;
-import org.jboss.jms.client.BrowserDelegate;
-import org.jboss.jms.client.ConsumerDelegate;
-import org.jboss.jms.client.ProducerDelegate;
-import org.jboss.jms.client.SessionDelegate;
+import org.jboss.messaging.jms.message.BytesMessageImpl;
+import org.jboss.messaging.jms.message.MapMessageImpl;
+import org.jboss.messaging.jms.message.MessageImpl;
+import org.jboss.messaging.jms.message.ObjectMessageImpl;
+import org.jboss.messaging.jms.message.StreamMessageImpl;
+import org.jboss.messaging.jms.message.TextMessageImpl;
+import org.jboss.messaging.jms.client.SessionDelegate;
+import org.jboss.messaging.jms.client.ConsumerDelegate;
+import org.jboss.messaging.jms.client.ProducerDelegate;
+import org.jboss.messaging.jms.client.BrowserDelegate;
+import org.jboss.messaging.jms.message.BytesMessageImpl;
+import org.jboss.messaging.jms.message.MessageImpl;
+import org.jboss.messaging.jms.message.ObjectMessageImpl;
 
 /**
  * The p2p session

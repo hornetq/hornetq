@@ -6,12 +6,16 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.util.ServerResponse;
-import org.jboss.messaging.util.Lockable;
-import org.jboss.messaging.interfaces.Receiver;
-import org.jboss.messaging.interfaces.Routable;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.ServerResponse;
+import org.jboss.messaging.core.util.Lockable;
+import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.ServerResponse;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.MessageListener;

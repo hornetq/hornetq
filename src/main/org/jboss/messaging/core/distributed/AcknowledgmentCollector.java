@@ -7,9 +7,11 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.util.Lockable;
-import org.jboss.messaging.interfaces.Routable;
+import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.Lockable;
+import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -313,7 +315,7 @@ public class AcknowledgmentCollector
                         new RpcServerCall(peerID,
                                           methodName,
                                           new Object[] {r},
-                                          new String[] {"org.jboss.messaging.interfaces.Routable"});
+                                          new String[] {"org.jboss.messaging.core.Routable"});
 
                   try
                   {
