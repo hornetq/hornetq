@@ -21,6 +21,7 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.util.Lockable;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerCallbackHandler;
 
@@ -37,7 +38,7 @@ import java.lang.reflect.Proxy;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ServerSessionDelegate implements SessionDelegate
+public class ServerSessionDelegate extends Lockable implements SessionDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -75,7 +76,8 @@ public class ServerSessionDelegate implements SessionDelegate
 
    // SessionDelegate implementation --------------------------------
 
-   public ProducerDelegate createProducerDelegate(Destination d) throws JBossJMSException
+   public ProducerDelegate createProducerDelegate(Destination jmsDestination)
+         throws JBossJMSException
    {
 
       // look-up destination
@@ -83,11 +85,11 @@ public class ServerSessionDelegate implements SessionDelegate
       AbstractDestination destination = null;
       try
       {
-         destination = dm.getDestination(d);
+         destination = dm.getDestination(jmsDestination);
       }
       catch(Exception e)
       {
-         throw new JBossJMSException("Cannot map destination " + d, e);
+         throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
       }
 
       log.debug("got producer's destination: " + destination);
@@ -132,7 +134,8 @@ public class ServerSessionDelegate implements SessionDelegate
 
       // create the corresponding "server-side" ProducerDelegate and register it with this
       // SessionDelegate instance
-      ServerProducerDelegate spd = new ServerProducerDelegate(producerID, destination, this);
+      ServerProducerDelegate spd =
+            new ServerProducerDelegate(producerID, destination, jmsDestination, this);
       putProducerDelegate(producerID, spd);
 
       log.debug("created producer delegate (producerID=" + producerID + ")");
@@ -141,18 +144,18 @@ public class ServerSessionDelegate implements SessionDelegate
    }
 
 
-   public MessageConsumer createConsumer(Destination d) throws JBossJMSException
+   public MessageConsumer createConsumer(Destination jmsDestination) throws JBossJMSException
    {
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination destination = null;
       try
       {
-         destination = dm.getDestination(d);
+         destination = dm.getDestination(jmsDestination);
       }
       catch(Exception e)
       {
-         throw new JBossJMSException("Cannot map destination " + d, e);
+         throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
       }
 
       // create the MessageConsumer dynamic proxy
@@ -165,7 +168,18 @@ public class ServerSessionDelegate implements SessionDelegate
       JMSConsumerInvocationHandler h = new JMSConsumerInvocationHandler(interceptors);
       String consumerID = generateConsumerID();
       SimpleMetaData metadata = new SimpleMetaData();
-      // TODO: Hmmm, is this really necessary? Can't I just use the consumerID?
+
+      // the remote calls for Consumer do not need a target, will be handled by interceptors
+      metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, "GenericTarget", PayloadKey.AS_IS);
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
+                           InvokerInterceptor.INVOKER_LOCATOR,
+                           serverPeer.getLocator(),
+                           PayloadKey.AS_IS);
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
+                           InvokerInterceptor.SUBSYSTEM,
+                           "JMS",
+                           PayloadKey.AS_IS);
+      // TODO: Is this really necessary? Can't I just use the consumerID?
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
@@ -185,7 +199,7 @@ public class ServerSessionDelegate implements SessionDelegate
       Consumer c =  new Consumer(consumerID, destination, callbackHandler, this);
       putConsumerDelegate(consumerID, c);
 
-      log.debug("creating consumer endpoint (destination=" + d + ")");
+      log.debug("creating consumer endpoint (destination=" + jmsDestination + ")");
 
       return proxy;
    }
@@ -243,18 +257,6 @@ public class ServerSessionDelegate implements SessionDelegate
    {
       this.callbackHandler = callbackHandler;
    }
-
-   public void lock()
-   {
-      // TODO implement it!
-   }
-
-   public void unlock()
-   {
-      // TODO implement it!
-   }
-
-
 
    // Package protected ---------------------------------------------
 

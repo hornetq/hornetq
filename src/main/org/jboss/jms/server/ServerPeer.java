@@ -30,6 +30,8 @@ import java.lang.reflect.Proxy;
 import java.util.Hashtable;
 import java.util.Set;
 
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+
 /**
  * A JMS server peer.
  *
@@ -60,6 +62,9 @@ public class ServerPeer
    protected ClassAdvisor connAdvisor;
    protected ClassAdvisor sessionAdvisor;
    protected ClassAdvisor producerAdvisor;
+   protected ClassAdvisor genericAdvisor;
+
+   protected PooledExecutor threadPool;
 
 
    // Constructors --------------------------------------------------
@@ -74,6 +79,7 @@ public class ServerPeer
       connFactoryDelegate = new ServerConnectionFactoryDelegate(this);
       started = false;
       initialContext = new InitialContext(jndiEnvironment);
+      threadPool = new PooledExecutor();
    }
 
    // Public --------------------------------------------------------
@@ -168,6 +174,11 @@ public class ServerPeer
       return clientManager.getConnections();
    }
 
+   public PooledExecutor getThreadPool()
+   {
+      return threadPool;
+   }
+
 
    // Package protected ---------------------------------------------
    
@@ -178,12 +189,13 @@ public class ServerPeer
    private static String[] domainNames = { "ServerConnectionFactoryDelegate",
                                            "ServerConnectionDelegate",
                                            "ServerSessionDelegate",
-                                           "ServerProducerDelegate"};
+                                           "ServerProducerDelegate",
+                                           "GenericTarget"};
 
    private void initializeAdvisors() throws Exception
    {
 
-      ClassAdvisor[] advisors = new ClassAdvisor[4];
+      ClassAdvisor[] advisors = new ClassAdvisor[5];
 
       for(int i = 0; i < domainNames.length; i++)
       {
@@ -203,6 +215,7 @@ public class ServerPeer
       connAdvisor = advisors[1];
       sessionAdvisor = advisors[2];
       producerAdvisor = advisors[3];
+      genericAdvisor = advisors[4];
    }
 
    private void tearDownAdvisors() throws Exception

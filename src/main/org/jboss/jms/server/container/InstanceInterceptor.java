@@ -13,7 +13,6 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ServerConnectionDelegate;
 import org.jboss.jms.delegate.ServerSessionDelegate;
 import org.jboss.jms.delegate.ServerProducerDelegate;
-import org.jboss.jms.server.endpoint.Consumer;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerCallbackHandler;
 
@@ -158,41 +157,6 @@ public class InstanceInterceptor implements Interceptor
                // TODO log error
             }
             invocation.setTargetObject(spd);
-         }
-         else if ("receive".equals(methodName))
-         {
-            // lookup the corresponding ServerProducerDelegate and use it as target for the invocation
-            String clientID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
-            ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
-            if (scd == null)
-            {
-               throw new Exception("The server doesn't know of any connection with clientID=" +
-                                   clientID);
-               // TODO log error
-            }
-            String sessionID = (String)invocation.getMetaData().
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID);
-
-            ServerSessionDelegate ssd = scd.getSessionDelegate(sessionID);
-            if (scd == null)
-            {
-               throw new Exception("The connection " + clientID + "  doesn't know of any session " +
-                                   "with sessionID=" + sessionID);
-               // TODO log error
-            }
-            String consumerID = (String)invocation.getMetaData().
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID);
-
-            Consumer sconsd = ssd.getConsumerDelegate(consumerID);
-            if (sconsd == null)
-            {
-               throw new Exception("The session " + sessionID + "  doesn't know of any consumer " +
-                                   "with consumerID=" + consumerID);
-               // TODO log error
-            }
-            invocation.setTargetObject(sconsd);
          }
       }
       return invocation.invokeNext();

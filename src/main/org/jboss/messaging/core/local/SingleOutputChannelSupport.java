@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.ChannelSupport;
 import org.jboss.messaging.core.Routable;
 
 import java.io.Serializable;
@@ -104,7 +103,10 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
 
    protected void storeNACKedMessageLocally(Routable r, Serializable recID)
    {
-      if (log.isTraceEnabled()) {log.trace("store NACK locally: "+r.getMessageID()+" from "+recID);}
+      if (log.isTraceEnabled()) {log.trace("store NACK locally: "+ r.getMessageID() + " from " + recID);}
+
+      // the channel's lock is already acquired when invoking this method
+
       // I don't care about recID, since it's my only receiver
       unacked.add(r);
    }

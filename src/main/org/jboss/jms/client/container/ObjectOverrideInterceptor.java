@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LocalInterceptor implements Interceptor, Serializable
+public class ObjectOverrideInterceptor implements Interceptor, Serializable
 {
    // Constants -----------------------------------------------------
 
@@ -37,7 +37,7 @@ public class LocalInterceptor implements Interceptor, Serializable
 
    public String getName()
    {
-      return "LocalInterceptor";
+      return "ObjectOverrideInterceptor";
    }
 
    public Object invoke(Invocation invocation) throws Throwable

@@ -7,16 +7,19 @@
 package org.jboss.jms.server.endpoint;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.jms.delegate.ServerSessionDelegate;
 import org.jboss.jms.client.remoting.NACKCallbackException;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.remoting.InvokerCallbackHandler;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.HandleCallbackException;
 
 import java.io.Serializable;
+
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 
 
@@ -37,13 +40,13 @@ public class Consumer implements Receiver
    // Attributes ----------------------------------------------------
 
    protected String id;
-   protected Distributor destination;
+   protected AbstractDestination destination;
    protected ServerSessionDelegate sessionEndpoint;
    protected InvokerCallbackHandler callbackHandler;
 
    // Constructors --------------------------------------------------
 
-   public Consumer(String id, Distributor destination,
+   public Consumer(String id, AbstractDestination destination,
                    InvokerCallbackHandler callbackHandler,
                    ServerSessionDelegate sessionEndpoint)
    {
@@ -97,6 +100,38 @@ public class Consumer implements Receiver
    }
 
    // Public --------------------------------------------------------
+
+   /**
+    * The facade initiated a blocking wait, so this method makes sure that any messages hold by
+    * the destination are delivered.
+    *
+    * @throws JBossJMSException - wraps an InterruptedException
+    */
+   public void initiateAsynchDelivery() throws JBossJMSException
+   {
+      // the delivery must be always initiate from another thread than the caller's. This is to
+      // avoid the situation when the caller thread re-acquires reentrant locks in an in-VM
+      // situation
+
+      PooledExecutor threadPool =
+            sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
+
+      try
+      {
+         threadPool.execute(new Runnable()
+         {
+            public void run()
+            {
+               destination.deliver();
+            }
+         });
+      }
+      catch(InterruptedException e)
+      {
+         throw new JBossJMSException("interrupted asynchonous delivery", e);
+      }
+
+   }
 
    // Package protected ---------------------------------------------
 

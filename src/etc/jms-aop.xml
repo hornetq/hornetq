@@ -9,7 +9,7 @@
 
    <interceptor class="org.jboss.jms.client.container.JMSExceptionInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.LogInterceptor" scope="PER_CLASS"/>
-   <interceptor class="org.jboss.jms.client.container.LocalInterceptor" scope="PER_CLASS"/>
+   <interceptor class="org.jboss.jms.client.container.ObjectOverrideInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.FactoryInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ConsumerInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.InvokerInterceptor" scope="PER_VM"/>
@@ -20,14 +20,14 @@
    <stack name="ConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
    <stack name="ConnectionStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ConnectionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
@@ -35,7 +35,7 @@
    <stack name="SessionStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
@@ -44,15 +44,16 @@
    <stack name="ProducerStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
    <stack name="ConsumerStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ReceiverInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
 
@@ -61,6 +62,7 @@
 
    <interceptor class="org.jboss.jms.server.container.InstanceInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.server.container.LogInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.server.container.AsynchronousDeliveryInterceptor" scope="PER_VM"/>
 
    <stack name="ServerConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
@@ -86,6 +88,12 @@
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
    </stack>
+
+   <stack name="GenericServerStack">
+      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.AsynchronousDeliveryInterceptor"/>
+   </stack>
+
 
    <domain name="ServerConnectionFactoryDelegate">
       <bind pointcut="execution(* *->*(..))">
@@ -114,6 +122,12 @@
    <domain name="ServerConsumerDelegate">
       <bind pointcut="execution(* *->*(..))">
          <stack-ref name="ServerConsumerStack"/>
+      </bind>
+   </domain>
+
+   <domain name="GenericTarget">
+      <bind pointcut="execution(* *->*(..))">
+         <stack-ref name="GenericServerStack"/>
       </bind>
    </domain>
 

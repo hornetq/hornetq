@@ -13,6 +13,7 @@ import javax.jms.MessageProducer;
 import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.Message;
+import javax.jms.DeliveryMode;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -27,6 +28,8 @@ public class JBossMessageProducer implements MessageProducer
    // Attributes ----------------------------------------------------
 
    protected ProducerDelegate delegate;
+
+   protected int deliveryMode = DeliveryMode.PERSISTENT;
 
    // Constructors --------------------------------------------------
 
@@ -59,12 +62,12 @@ public class JBossMessageProducer implements MessageProducer
 
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.deliveryMode = deliveryMode;
    }
 
    public int getDeliveryMode() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return deliveryMode;
    }
 
    public void setPriority(int defaultPriority) throws JMSException
@@ -99,6 +102,7 @@ public class JBossMessageProducer implements MessageProducer
 
    public void send(Message message) throws JMSException
    {
+      configure(message);
       delegate.send(message);
    }
 
@@ -127,6 +131,14 @@ public class JBossMessageProducer implements MessageProducer
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   /**
+    * Set the headers.
+    */
+   protected void configure(Message m) throws JMSException
+   {
+      m.setJMSDeliveryMode(deliveryMode);
+   }
 
    // Private -------------------------------------------------------
 

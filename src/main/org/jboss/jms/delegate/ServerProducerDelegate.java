@@ -11,6 +11,7 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
 
 import javax.jms.Message;
+import javax.jms.Destination;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -28,15 +29,19 @@ public class ServerProducerDelegate implements ProducerDelegate
 
    protected String id;
    protected Receiver destination;
-   protected ServerSessionDelegate parent;
+   /** I need this to set up the JMSDestination header on outgoing messages */
+   protected Destination jmsDestination;
+   protected ServerSessionDelegate sessionEndpoint;
 
    // Constructors --------------------------------------------------
 
-   public ServerProducerDelegate(String id, Receiver destination, ServerSessionDelegate parent)
+   public ServerProducerDelegate(String id, Receiver destination,
+                                 Destination jmsDestination, ServerSessionDelegate parent)
    {
       this.id = id;
       this.destination = destination;
-      this.parent = parent;
+      this.jmsDestination = jmsDestination;
+      sessionEndpoint = parent;
    }
 
    // ProducerDelegate implementation ------------------------
@@ -47,6 +52,8 @@ public class ServerProducerDelegate implements ProducerDelegate
 
       try
       {
+         m.setJMSDestination(jmsDestination);
+
          boolean acked = destination.handle((Routable)m);
 
          if (!acked)

@@ -13,7 +13,6 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 import java.util.Iterator;
 import java.util.Set;

@@ -42,6 +42,33 @@ public abstract class JBossDestination implements Destination, Serializable
    public abstract boolean isTopic();
    public abstract boolean isQueue();
 
+   public boolean equals(Object o)
+   {
+      if(this == o)
+      {
+         return true;
+      }
+      if (!(o instanceof JBossDestination))
+      {
+         return false;
+      }
+      JBossDestination that = (JBossDestination)o;
+      if (name == null)
+      {
+         return that.name == null && isTopic() == that.isTopic();
+      }
+      return this.name.equals(that.name) && isTopic() == that.isTopic();
+   }
+
+   public int hashCode()
+   {
+      int code = 0;
+      if (name != null)
+      {
+         code = name.hashCode();
+      }
+      return code + (isTopic() ? 10 : 20);
+   }
 
    // Package protected ---------------------------------------------
    

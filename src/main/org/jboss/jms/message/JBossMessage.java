@@ -7,9 +7,12 @@
 package org.jboss.jms.message;
 
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.core.Routable;
+import org.jboss.jms.util.JBossJMSException;
 
 import javax.jms.JMSException;
 import javax.jms.Destination;
+import javax.jms.DeliveryMode;
 import java.util.Enumeration;
 import java.util.Set;
 import java.io.Serializable;
@@ -19,8 +22,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossMessage implements javax.jms.Message,
-                                     org.jboss.messaging.core.Routable
+public class JBossMessage implements javax.jms.Message, Routable
 {
    // Constants -----------------------------------------------------
 
@@ -30,6 +32,7 @@ public class JBossMessage implements javax.jms.Message,
 
    protected String id;
    protected boolean reliable;
+   protected Destination destination;
 
    // Constructors --------------------------------------------------
 
@@ -94,22 +97,34 @@ public class JBossMessage implements javax.jms.Message,
 
    public Destination getJMSDestination() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return destination;
    }
 
    public void setJMSDestination(Destination destination) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.destination = destination;
    }
  
    public int getJMSDeliveryMode() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return reliable ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
    }
  
    public void setJMSDeliveryMode(int deliveryMode) throws JMSException
    {
-      throw new NotYetImplementedException();
+      if (deliveryMode == DeliveryMode.PERSISTENT)
+      {
+         reliable = true;
+      }
+      else if (deliveryMode == DeliveryMode.NON_PERSISTENT)
+      {
+         reliable = false;
+      }
+      else
+      {
+         throw new JBossJMSException("Delivery mode must be either DeliveryMode.PERSISTENT " +
+                                     "or DeliveryMode.NON_PERSISTENT");
+      }
    }
    
    public boolean getJMSRedelivered() throws JMSException

@@ -12,7 +12,6 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.util.Lockable;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;

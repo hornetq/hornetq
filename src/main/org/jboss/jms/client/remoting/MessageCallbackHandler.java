@@ -12,6 +12,7 @@ import org.jboss.remoting.HandleCallbackException;
 import org.jboss.remoting.Client;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.RendezVous;
+import org.jboss.messaging.core.util.Lockable;
 
 import javax.jms.MessageListener;
 import javax.jms.Message;
@@ -21,7 +22,7 @@ import javax.jms.Message;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class MessageCallbackHandler implements InvokerCallbackHandler
+public class MessageCallbackHandler extends Lockable implements InvokerCallbackHandler
 {
    // Constants -----------------------------------------------------
 
@@ -46,10 +47,16 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
 
    // InvokerCallbackHandler implementation -------------------------
 
+   /**
+    * The method first tries to aquire the handler's lock, so in order to accept asynchronous
+    * deliveries, the handler must be unlocked.
+    */
    public void handleCallback(InvocationRequest invocation) throws HandleCallbackException
    {
       try
       {
+         lock();
+
          Message m = (Message)invocation.getParameter();
 
          if (rv.put(m))
@@ -73,6 +80,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       catch(Throwable t)
       {
          throw new HandleCallbackException("Failed to handle the message", t);
+      }
+      finally
+      {
+         unlock();
       }
    }
 

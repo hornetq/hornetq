@@ -15,5 +15,12 @@ import javax.jms.JMSException;
  */
 public interface ProducerDelegate
 {
-    public void send(Message m) throws JMSException;
+
+
+   /**
+    * The mehtod's implementation expects to find all JMS headers (JMSDeliveryMode, etc.) correctly
+    * set on the message.
+    */
+   public void send(Message m) throws JMSException;
+
 }
