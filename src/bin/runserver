@@ -43,6 +43,7 @@ $reldir/../../../aspects/output/lib/jboss-aspect-library.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
+$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
 $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\

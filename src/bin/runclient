@@ -33,6 +33,7 @@ $reldir/../../output/etc${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../src/resources/clester.jar${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
+$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
