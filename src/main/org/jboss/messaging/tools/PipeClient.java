@@ -7,6 +7,7 @@
 package org.jboss.messaging.tools;
 
 import org.jboss.messaging.core.Pipe;
+import org.jboss.messaging.core.CoreMessage;
 import org.jboss.messaging.interfaces.Message;
 
 /**
@@ -36,7 +37,7 @@ public class PipeClient
 
    public void send()
    {
-       Message m = new MessageImpl(new Integer(counter++));
+       Message m = new CoreMessage(new Integer(counter++));
        System.out.println("Sending "+m+" to the pipe: "+pipe.handle(m));
 
    }

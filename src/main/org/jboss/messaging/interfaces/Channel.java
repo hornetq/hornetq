@@ -25,7 +25,7 @@ public interface Channel extends Receiver
     * Attempt asynchronous delivery of messages being held by the Channel.
     *
     * @return false if there are still messages to be delivered after the call completes, true
-    *         otherwise.
+    *         otherwise. A deliver() invocation on an empty channel must return.
     */
    public boolean deliver();
 

@@ -20,7 +20,7 @@ import java.util.Set;
  */
 public interface Message extends Serializable
 {
-   public Object getMessageID();
+   public Serializable getMessageID();
 
    public void putHeader(String name, Serializable value);
 

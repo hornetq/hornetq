@@ -10,9 +10,9 @@ import org.jboss.messaging.interfaces.Router;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Receiver;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Does Receiver management but it stop short of enforcing any routing policy, leaving its
@@ -23,43 +23,92 @@ import java.util.Iterator;
  */
 public abstract class AbstractRouter implements Router
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-   
    // Attributes ----------------------------------------------------
 
-   protected Set receivers;
+   /**
+    * <Receiver - Boolean> map, where the boolean instance contains the result of the latest
+    * handle() invocation on that Receiver.
+    */
+   protected Map receivers;
+
+   protected boolean passByReference;
 
    // Constructors --------------------------------------------------
 
-   protected AbstractRouter() {
+   protected AbstractRouter()
+   {
+      receivers = new HashMap();
 
-      receivers = new HashSet();
+      // by default a router passes by reference
+      passByReference = true;
    }
 
    // Public --------------------------------------------------------
 
+   // Router implementation -----------------------------------------
+
+   public boolean isPassByReference()
+   {
+      return passByReference;
+   }
+
    // Distributor implementation ------------------------------------
 
-   public synchronized boolean add(Receiver r) {
-
-       return receivers.add(r);
+   public boolean add(Receiver r)
+   {
+      synchronized(receivers) {
+         if (receivers.containsKey(r)) {
+            return false;
+         }
+         receivers.put(r, new Boolean(false));
+         return true;
+      }
    }
 
-   public synchronized boolean remove(Receiver r) {
-
-       return receivers.remove(r);
+   public boolean remove(Receiver r)
+   {
+       synchronized(receivers)
+       {
+          return receivers.remove(r) != null;
+       }
    }
 
-   public synchronized boolean contains(Receiver r) {
-
-       return receivers.contains(r);
+   public boolean contains(Receiver r)
+   {
+      synchronized(receivers)
+      {
+         return receivers.containsKey(r);
+      }
    }
 
-   public Iterator iterator() {
+   public Iterator iterator()
+   {
+      synchronized(receivers)
+      {
+         return receivers.keySet().iterator();
+      }
+   }
 
-       return receivers.iterator();
+   public void clear()
+   {
+      synchronized(receivers)
+      {
+         receivers.clear();
+      }
+   }
+
+   public boolean acknowledged(Receiver r)
+   {
+      Boolean successful;
+      synchronized(receivers)
+      {
+         successful = (Boolean)receivers.get(r);
+      }
+      if (successful == null)
+      {
+         return false;
+      }
+      return successful.booleanValue();
    }
 
    // Receiver implementation ---------------------------------------
@@ -68,10 +117,10 @@ public abstract class AbstractRouter implements Router
 
    // DEBUG ---------------------------------------------------------
 
-   public String dump() {
-
+   public String dump()
+   {
       StringBuffer sb = new StringBuffer("Receivers: ");
-      for(Iterator i = receivers.iterator(); i.hasNext();)
+      for(Iterator i = iterator(); i.hasNext();)
       {
          sb.append(i.next());
          if (i.hasNext())

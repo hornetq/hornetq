@@ -21,7 +21,9 @@ public interface Receiver
     * <p>
     * When invoking this method, be prepared to deal with unchecked exceptions the Receiver may
     * throw. This is equivalent with a negative acknowledgement, but the sender may also decide
-    * to remove this Receiver from its list and not attempt delivery to it anymore. 
+    * to remove this Receiver from its list and not attempt delivery to it anymore.
+    *
+    * TODO: specify the behavior when receiving a null message.
     *
     * @param message the message to be handled by the Receiver.
     *
@@ -29,4 +31,9 @@ public interface Receiver
     *         responsibity of dealing with the Message.
     */
    public boolean handle(Message message);
+
+
+   //
+   // public boolean handle(Message message, Set receivers);
+   //
 }

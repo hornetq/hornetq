@@ -63,8 +63,17 @@ public class Pipe implements Channel
    }
 
    /**
+    * @param synchronous - message handling mode. Use true for synchronous handling,
+    *        false for asynchronous.
+    */
+   public Pipe(boolean mode)
+   {
+      this(mode, null);
+   }
+
+   /**
     *
-    * @param synchronous - message handling mode. For synchronous handling the flag must be true,
+    * @param synchronous - message handling mode. Use true for synchronous handling,
     *        false for asynchronous.
     * @param receiver - the pipe's output receiver.
     */
