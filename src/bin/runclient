@@ -31,7 +31,7 @@ reldir=`dirname $0`
 java $JAVA_OPTS -cp \
 $reldir/../../output/etc${SEP}\
 $reldir/../../output/classes${SEP}\
-$reldir/../../src/resources/clester.jar \
+$reldir/../../src/resources/clester.jar${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
