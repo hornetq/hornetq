@@ -4,9 +4,9 @@
 	<comment></comment>
 	<projects>
 		<project>aop</project>
-		<project>aspects</project>
 		<project>common</project>
 		<project>j2ee</project>
+		<project>jmx</project>
 		<project>remoting</project>
 		<project>system</project>
 	</projects>
