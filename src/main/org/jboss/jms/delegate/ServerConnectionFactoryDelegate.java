@@ -17,7 +17,6 @@ import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;

@@ -11,6 +11,7 @@ import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.jms.delegate.ServerSessionDelegate;
+import org.jboss.jms.client.remoting.NACKCallbackException;
 import org.jboss.remoting.InvokerCallbackHandler;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.HandleCallbackException;
@@ -37,18 +38,18 @@ public class Consumer implements Receiver
 
    protected String id;
    protected Distributor destination;
-   protected ServerSessionDelegate parent;
+   protected ServerSessionDelegate sessionEndpoint;
    protected InvokerCallbackHandler callbackHandler;
 
    // Constructors --------------------------------------------------
 
    public Consumer(String id, Distributor destination,
                    InvokerCallbackHandler callbackHandler,
-                   ServerSessionDelegate parent)
+                   ServerSessionDelegate sessionEndpoint)
    {
       this.id = id;
       this.destination = destination;
-      this.parent = parent;
+      this.sessionEndpoint = sessionEndpoint;
       this.callbackHandler = callbackHandler;
 
       // register myself with the destination
@@ -64,6 +65,13 @@ public class Consumer implements Receiver
 
    public boolean handle(Routable r)
    {
+      // I only accept messages if my connection is started
+      if (!sessionEndpoint.getConnectionEndpoint().isStarted())
+      {
+         // nack
+         return false;
+      }
+
       if (log.isTraceEnabled()) { log.trace("receiving routable " + r + " from the core"); }
 
       // push the message to the client
@@ -74,8 +82,14 @@ public class Consumer implements Receiver
          // TODO what happens if handling takes a long time?
          callbackHandler.handleCallback(req);
       }
+      catch(NACKCallbackException e)
+      {
+         return false;
+      }
       catch(HandleCallbackException e)
       {
+         Throwable cause = e.getCause();
+         log.error("The client failed to acknowledge the message", cause);
          return false;
       }
 

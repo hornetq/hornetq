@@ -14,6 +14,8 @@
    <interceptor class="org.jboss.jms.client.container.ConsumerInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.InvokerInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ReceiverInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ConnectionInterceptor" scope="PER_VM"/>
+
 
    <stack name="ConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
@@ -26,6 +28,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ConnectionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 

@@ -57,11 +57,22 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
             // TODO: supposedly my receiver thread got it. However I dont' have a hard guarantee
             return;
          }
+
+         if (listener == null)
+         {
+            // no one to handle message here, nack it
+            throw new NACKCallbackException();
+         }
+
          listener.onMessage(m);
+      }
+      catch(NACKCallbackException e)
+      {
+         throw e;
       }
       catch(Throwable t)
       {
-         throw new HandleCallbackException("Message not acknowledged");
+         throw new HandleCallbackException("Failed to handle the message", t);
       }
    }
 
@@ -84,6 +95,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
 
    /**
     * Method used by the client thread to get a Message, if available.
+    *
+    * @param timeout - the timeout value in milliseconds. A zero timeount never expires, and the
+    *        call blocks indefinitely.
     */
    public Message pullMessage(long timeout)
    {

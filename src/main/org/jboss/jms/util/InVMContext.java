@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.tools;
+package org.jboss.jms.util;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
@@ -16,10 +16,14 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
+import javax.naming.Binding;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -98,12 +102,26 @@ public class InVMContext implements Context
       throw new NotYetImplementedException();
    }
 
-
    public void unbind(String name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      name = trimSlashes(name);
+      int i = name.indexOf("/");
+      boolean terminal = i == -1;
+      if (terminal)
+      {
+         map.remove(name);
+      }
+      else
+      {
+         String tok = name.substring(0, i);
+         InVMContext c = (InVMContext)map.get(tok);
+         if (c == null)
+         {
+            throw new NameNotFoundException("Context not found: " + tok);
+         }
+         c.unbind(name.substring(i));
+      }
    }
-
 
    public void rename(Name oldName, Name newName) throws NamingException
    {
@@ -135,9 +153,29 @@ public class InVMContext implements Context
    }
 
 
-   public NamingEnumeration listBindings(String name) throws NamingException
+   public NamingEnumeration listBindings(String contextName) throws NamingException
    {
-      throw new NotYetImplementedException();
+      contextName = trimSlashes(contextName);
+      if (!"".equals(contextName) && !".".equals(contextName))
+      {
+         try
+         {
+            return ((InVMContext)lookup(contextName)).listBindings("");
+         }
+         catch(Throwable t)
+         {
+            throw new NamingException(t.getMessage());
+         }
+      }
+
+      List l = new ArrayList();
+      for(Iterator i = map.keySet().iterator(); i.hasNext(); )
+      {
+         String name = (String)i.next();
+         Object object = map.get(name);
+         l.add(new Binding(name, object));
+      }
+      return new NamingEnumerationImpl(l.iterator());
    }
 
 
@@ -289,5 +327,40 @@ public class InVMContext implements Context
 
 
    // Inner classes -------------------------------------------------
+
+   private class NamingEnumerationImpl implements NamingEnumeration
+   {
+      private Iterator iterator;
+
+      NamingEnumerationImpl(Iterator bindingIterator)
+      {
+         this.iterator = bindingIterator;
+      }
+
+      public void close() throws NamingException
+      {
+         throw new NotYetImplementedException();
+      }
+
+      public boolean hasMore() throws NamingException
+      {
+         return iterator.hasNext();
+      }
+
+      public Object next() throws NamingException
+      {
+         return iterator.next();
+      }
+
+      public boolean hasMoreElements()
+      {
+         return iterator.hasNext();
+      }
+
+      public Object nextElement()
+      {
+         return iterator.next();
+      }
+   }
 }
 

@@ -4,45 +4,40 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.tools;
+package org.jboss.jms.client.remoting;
 
-import org.jboss.logging.Logger;
-
-import javax.naming.spi.InitialContextFactory;
-import javax.naming.NamingException;
-import javax.naming.Context;
-import java.util.Hashtable;
+import org.jboss.remoting.HandleCallbackException;
 
 /**
- * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
-
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class InVMInitialContextFactory implements InitialContextFactory
+public class NACKCallbackException extends HandleCallbackException
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(InVMInitialContextFactory.class);
-
-   private static InVMContext initialContext;
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
 
-   public Context getInitialContext(Hashtable environment) throws NamingException
+   public NACKCallbackException()
    {
-      if (initialContext == null)
-      {
-         initialContext = new InVMContext();
-      }
-      return initialContext;
+      this(null);
    }
+
+   public NACKCallbackException(String message)
+   {
+       super(message);
+   }
+
+   public NACKCallbackException(String message, Throwable cause)
+   {
+       super(message, cause);
+   }
+
+   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    

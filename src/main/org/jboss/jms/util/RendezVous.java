@@ -31,6 +31,9 @@ public class RendezVous
     * until an object becomes available. Only one thread can be waiting, if the method is called
     * by other threads while one is waiting, will throw unchecked exception.
     *
+    * @param timeout - the timeout value in milliseconds. A zero timeout never expires, and the
+    *        call blocks indefinitely.
+    *
     * @return the object or null if the timeout expires and no Object was put.
     */
    public Object get(long timeout)
@@ -39,7 +42,7 @@ public class RendezVous
       {
          if (waiting)
          {
-            throw new RuntimeException("Thread already waiting!");
+            throw new RuntimeException("Another thread waiting!");
          }
 
          waiting = true;

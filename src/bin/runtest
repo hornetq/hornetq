@@ -6,6 +6,7 @@
 
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 
 cygwin=false;
 case "`uname`" in
@@ -44,6 +45,7 @@ $reldir/../../src/etc${SEP}\
 $reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
+$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\

@@ -48,7 +48,7 @@ public class ServerSessionDelegate implements SessionDelegate
    // Attributes ----------------------------------------------------
 
    protected String sessionID;
-   protected ServerConnectionDelegate parent;
+   protected ServerConnectionDelegate connectionEndpoint;
 
    protected int producerIDCounter;
    protected int consumerIDCounter;
@@ -62,15 +62,15 @@ public class ServerSessionDelegate implements SessionDelegate
 
    // Constructors --------------------------------------------------
 
-   public ServerSessionDelegate(String sessionID, ServerConnectionDelegate parent)
+   public ServerSessionDelegate(String sessionID, ServerConnectionDelegate connectionEndpoint)
    {
       this.sessionID = sessionID;
-      this.parent = parent;
+      this.connectionEndpoint = connectionEndpoint;
       producers = new HashMap();
       consumers = new HashMap();
       producerIDCounter = 0;
       consumerIDCounter = 0;
-      serverPeer = parent.getServerPeer();
+      serverPeer = connectionEndpoint.getServerPeer();
    }
 
    // SessionDelegate implementation --------------------------------
@@ -119,7 +119,7 @@ public class ServerSessionDelegate implements SessionDelegate
                            "JMS",
                            PayloadKey.AS_IS);
       // TODO: Is this really necessary? Can't I just use the producerID?
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, parent.getClientID(), PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.PRODUCER_ID, producerID, PayloadKey.AS_IS);
 
@@ -166,7 +166,7 @@ public class ServerSessionDelegate implements SessionDelegate
       String consumerID = generateConsumerID();
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: Hmmm, is this really necessary? Can't I just use the consumerID?
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, parent.getClientID(), PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
       h.getMetaData().mergeIn(metadata);
@@ -228,6 +228,11 @@ public class ServerSessionDelegate implements SessionDelegate
       {
          return (Consumer)consumers.get(consumerID);
       }
+   }
+
+   public ServerConnectionDelegate getConnectionEndpoint()
+   {
+      return connectionEndpoint;
    }
 
 

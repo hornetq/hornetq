@@ -18,10 +18,10 @@ public interface ConnectionDelegate
           throws JMSException;
 
    public String getClientID() throws JMSException;
-   public void setClientID(String clientID) throws JMSException;
+   public void setClientID(String id) throws JMSException;
 
-   public void start();
-   public void stop();
-   public void close();
+   public void start() throws JMSException;
+   public void stop() throws JMSException;
+   public void close() throws JMSException;
 
 }

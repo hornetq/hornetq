@@ -20,8 +20,10 @@ import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 
+import javax.jms.JMSException;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
@@ -45,6 +47,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    protected ServerPeer serverPeer;
 
    protected Map sessions;
+   protected boolean started;
 
    // Constructors --------------------------------------------------
 
@@ -54,6 +57,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       this.serverPeer = serverPeer;
       sessionIDCounter = 0;
       sessions = new HashMap();
+      started = false;
 
    }
 
@@ -113,24 +117,30 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public void setClientID(String clientID)
    {
-      throw new NotYetImplementedException();
+      this.clientID = clientID;
    }
 
-   public void start()
+   public synchronized void start()
    {
-
+      started = true;
    }
 
-   public void stop()
+   public synchronized boolean isStarted()
    {
-      throw new NotYetImplementedException();
+      return started;
+   }
+
+   public synchronized void stop()
+   {
+      // TODO what about the inflight messages?
+      // TODO This call must blocksuntil receives and/or message listeners in progress have completed
+      started = false;
    }
 
    public void close()
    {
       throw new NotYetImplementedException();
    }
-
 
    // Public --------------------------------------------------------
 

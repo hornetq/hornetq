@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ServerConnectionFactoryDelegate;
@@ -29,6 +28,7 @@ import javax.naming.Context;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
+import java.util.Set;
 
 /**
  * A JMS server peer.
@@ -41,7 +41,9 @@ public class ServerPeer
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
+   private final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
+
    // Attributes ----------------------------------------------------
 
    protected String id;
@@ -76,7 +78,7 @@ public class ServerPeer
 
    // Public --------------------------------------------------------
 
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
       if (started)
       {
@@ -85,13 +87,24 @@ public class ServerPeer
 
       initializeAdvisors();
       ConnectionFactory connectionFactory = createConnectionFactory();
-      bindConnectionFactory(connectionFactory);
+      bindConnectionFactory("messaging", connectionFactory);
       started = true;
    }
 
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
-      throw new NotYetImplementedException();
+      if (!started)
+      {
+         return;
+      }
+      unbindConnectionFactory("messaging");
+      tearDownAdvisors();
+      started = false;
+   }
+
+   public synchronized boolean isStarted()
+   {
+      return started;
    }
 
    public String getID()
@@ -147,18 +160,28 @@ public class ServerPeer
       return jndiEnvironment;
    }
 
+   /**
+    * @return the active connections clientIDs (as Strings)
+    */
+   public Set getConnections()
+   {
+      return clientManager.getConnections();
+   }
+
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
 
+   private static String[] domainNames = { "ServerConnectionFactoryDelegate",
+                                           "ServerConnectionDelegate",
+                                           "ServerSessionDelegate",
+                                           "ServerProducerDelegate"};
+
    private void initializeAdvisors() throws Exception
    {
-      String[] domainNames = { "ServerConnectionFactoryDelegate",
-                               "ServerConnectionDelegate",
-                               "ServerSessionDelegate",
-                               "ServerProducerDelegate"};
 
       ClassAdvisor[] advisors = new ClassAdvisor[4];
 
@@ -180,6 +203,18 @@ public class ServerPeer
       connAdvisor = advisors[1];
       sessionAdvisor = advisors[2];
       producerAdvisor = advisors[3];
+   }
+
+   private void tearDownAdvisors() throws Exception
+   {
+      for(int i = 0; i < domainNames.length; i++)
+      {
+         Dispatcher.singleton.unregisterTarget(domainNames[i]);
+      }
+      connFactoryAdvisor = null;
+      connAdvisor = null;
+      sessionAdvisor = null;
+      producerAdvisor = null;
    }
 
    private ConnectionFactory createConnectionFactory() throws Exception
@@ -216,12 +251,19 @@ public class ServerPeer
       return Proxy.newProxyInstance(loader, interfaces, h);
    }
 
-   private void bindConnectionFactory(ConnectionFactory factory) throws Exception
+   private void bindConnectionFactory(String contextName, ConnectionFactory factory)
+         throws Exception
    {
-      String cn = "messaging";
-      Context c = (Context)initialContext.lookup(cn);
-      c.rebind("ConnectionFactory", factory);
+      Context c = (Context)initialContext.lookup(contextName);
+      c.rebind(CONNECTION_FACTORY_JNDI_NAME, factory);
    }
+
+   private void unbindConnectionFactory(String contextName) throws Exception
+   {
+      Context c = (Context)initialContext.lookup(contextName);
+      c.unbind(CONNECTION_FACTORY_JNDI_NAME);
+   }
+
 
 
 

@@ -10,6 +10,7 @@ import org.jboss.jms.delegate.ServerConnectionDelegate;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Manages client connections. There is a single ClientManager instance for each server peer.
@@ -57,6 +58,18 @@ public class ClientManager
          return (ServerConnectionDelegate)connections.get(clientID);
       }
    }
+
+   /**
+    * @return the active connections clientIDs (as Strings)
+    */
+   public Set getConnections()
+   {
+      synchronized(connections)
+      {
+         return connections.keySet();
+      }
+   }
+
 
    /**
     * Generates a clientID that is unique per this ClientManager instance

@@ -53,6 +53,10 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
          // TODO get rid of this
          throw e;
       }
+      catch(WrapperException e)
+      {
+         throw e.getPayload();
+      }
       catch(JMSException e)
       {
          Exception cause = e.getLinkedException();

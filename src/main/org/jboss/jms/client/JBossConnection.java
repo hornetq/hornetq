@@ -81,12 +81,12 @@ public class JBossConnection implements Connection
 
    public void start() throws JMSException
    {
-      throw new NotYetImplementedException();
+      delegate.start();
    }
 
    public void stop() throws JMSException
    {
-      throw new NotYetImplementedException();
+      delegate.stop();
    }
 
    public void close() throws JMSException

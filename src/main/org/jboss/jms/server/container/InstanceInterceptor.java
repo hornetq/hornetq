@@ -67,7 +67,9 @@ public class InstanceInterceptor implements Interceptor
             ConnectionFactoryDelegate d = jmsAdvisor.getServerPeer().getConnectionFactoryDelegate();
             invocation.setTargetObject(d);
          }
-         else if ("createSessionDelegate".equals(methodName))
+         else if ("createSessionDelegate".equals(methodName) ||
+                  "start".equals(methodName) ||
+                  "stop".equals(methodName))
          {
             // look up the corresponding ServerConnectionDelegate and use that instance
             String clientID = (String)invocation.getMetaData().

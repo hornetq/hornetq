@@ -7,8 +7,9 @@
 package org.jboss.test.messaging.tools;
 
 import org.jboss.jms.tools.ServerWrapper;
+import org.jboss.jms.util.InVMInitialContextFactory;
 
-import java.util.Hashtable;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -20,22 +21,7 @@ public class ServerManagement
 
    // Static --------------------------------------------------------
 
-   private static Hashtable jndiEnvironment;
    private static ServerWrapper serverWrapper;
-
-
-   public static Hashtable getJNDIEnvironment()
-   {
-      if (jndiEnvironment == null)
-      {
-         jndiEnvironment = new Hashtable();
-         jndiEnvironment.put("java.naming.factory.initial",
-                             "org.jboss.test.messaging.tools.InVMInitialContextFactory");
-         jndiEnvironment.put("java.naming.provider.url", "irrelevant");
-         jndiEnvironment.put("java.naming.factory.url.pkgs", "irrelevant");
-      }
-      return jndiEnvironment;
-   }
 
    public synchronized static void startInVMServer() throws Exception
    {
@@ -43,7 +29,8 @@ public class ServerManagement
       {
          throw new Exception("server already started!");
       }
-      serverWrapper = new ServerWrapper(getJNDIEnvironment());
+      serverWrapper = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment());
+      serverWrapper.start();
    }
 
    public synchronized static void stopInVMServer() throws Exception
@@ -58,20 +45,35 @@ public class ServerManagement
 
    public static void deployTopic(String name) throws Exception
    {
-      if (serverWrapper == null)
-      {
-         throw new Exception("The server has not been started!");
-      }
+      insureStarted();
       serverWrapper.deployTopic(name);
    }
 
    public static void undeployTopic(String name) throws Exception
    {
-      if (serverWrapper == null)
-      {
-         throw new Exception("The server has not been started!");
-      }
+      insureStarted();
+      serverWrapper.undeployTopic(name);
+   }
+
+   public static void deployQueue(String name) throws Exception
+   {
+      insureStarted();
       serverWrapper.deployQueue(name);
+   }
+
+   public static void undeployQueue(String name) throws Exception
+   {
+      insureStarted();
+      serverWrapper.undeployQueue(name);
+   }
+
+   /**
+    * @return the active connections clientIDs (as Strings)
+    */
+   public static Set getConnections() throws Exception
+   {
+      insureStarted();
+      return serverWrapper.getConnections();
    }
 
    // Attributes ----------------------------------------------------
@@ -85,6 +87,14 @@ public class ServerManagement
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   private static void insureStarted() throws Exception
+   {
+      if (serverWrapper == null)
+      {
+         throw new Exception("The server has not been started!");
+      }
+   }
+
+   // Inner classes -------------------------------------------------
 }
