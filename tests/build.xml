@@ -60,6 +60,7 @@
    <property name="build.tests.lib" value="${module.output}/lib"/>
    <property name="build.tests.output" value="${module.output}/reports"/>
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
+   <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -95,7 +96,7 @@
       <mkdir dir="${build.tests.lib}"/>
 
       <!-- Build the tests jar -->
-      <jar jarfile="${build.tests.lib}/jboss-messaging-tests.jar">
+      <jar jarfile="${build.tests.lib}/${build.tests.archive}">
          <fileset dir="${build.tests.classes}">
             <include name="org/jboss/test/messaging/**"/>
          </fileset>
@@ -116,14 +117,21 @@
    <property name="junit.batchtest.haltonfailure" value="true"/>
    <property name="junit.batchtest.fork" value="true"/>
 
-   <target name="tests" depends="tests-jar">
+   <target name="prepare-testdirs"
+           description="Prepares the directory structure required by a test run">
       <mkdir dir="${build.tests.output}"/>
+   </target>
+
+   <target name="tests"
+           depends="tests-jar, prepare-testdirs"
+           description="Runs all available tests">
+
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
              includeantruntime="${junit.includeantruntime}">
          <classpath>
             <path refid="test.classpath"/>
-            <pathelement location="${build.tests.lib}/jboss-messaging-tests.jar"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/etc"/>
          </classpath>
          <formatter type="plain"/>
@@ -139,6 +147,31 @@
       </junit>
    </target>
 
+   <target name="test"
+           depends="tests-jar, prepare-testdirs"
+           description="Runs a single test, specified by its FQ class name via 'test.classname'">
+
+      <fail unless="test.classname"
+            message="To run a single test, use the following syntax:
+./build.sh test -Dtest.clasname=org.package.MyTest"/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}">
+         <classpath>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+            <pathelement location="${module.root}/etc"/>
+         </classpath>
+         <formatter type="plain"/>
+         <test name="${test.classname}"
+               fork="${junit.batchtest.fork}"
+               todir="${junit.batchtest.todir}"
+               haltonfailure="${junit.batchtest.haltonfailure}">
+         </test>
+      </junit>
+   </target>
+
    <target name="performance-tests"/>
 
    <target name="functional-tests" depends="tests"/>
@@ -150,7 +183,6 @@
    </target>
 
    <target name="clobber" depends="clean"/>
-  
 
 </project>
 
