@@ -99,7 +99,7 @@ public class ReplicatorTest extends MessagingTestCase
 //      PipeInput inputPipe =
 //            new PipeInput(true, inputDispatcher, null, "testPipe");
 //      Message m = new CoreMessage("");
-//      m.putHeader(Message.REMOTE_MESSAGE_HEADER, "");
+//      m.putHeader(Message.REMOTE_MESSAGE, "");
 //
 //      assertFalse(inputPipe.handle(m));
 //   }
@@ -133,9 +133,9 @@ public class ReplicatorTest extends MessagingTestCase
 //
 //      Iterator i = r.iterator();
 //      Message received = (Message)i.next();
-//      assertEquals("", received.getMessageID());
+//      assertEquals("", received.getID());
 //      // make sure the message was marked as "remote"
-//      assertTrue(received.getHeader(Message.REMOTE_MESSAGE_HEADER) != null);
+//      assertTrue(received.getHeader(Message.REMOTE_MESSAGE) != null);
 //      assertFalse(i.hasNext());
 //   }
 //

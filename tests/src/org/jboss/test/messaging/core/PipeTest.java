@@ -58,7 +58,7 @@ public class PipeTest extends MessagingTestCase
       Iterator i = r.iterator();
       m = (Message)i.next();
       assertFalse(i.hasNext());
-      assertEquals(m.getMessageID(), new Integer(0));
+      assertEquals(m.getID(), new Integer(0));
    }
 
 
@@ -86,6 +86,6 @@ public class PipeTest extends MessagingTestCase
       Iterator i = r.iterator();
       m = (Message)i.next();
       assertFalse(i.hasNext());
-      assertEquals(m.getMessageID(), new Integer(1));
+      assertEquals(m.getID(), new Integer(1));
    }
 }

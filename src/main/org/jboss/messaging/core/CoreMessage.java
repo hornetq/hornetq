@@ -39,7 +39,7 @@ public class CoreMessage implements Message
 
    // Message implementation ----------------------------------------
 
-   public Serializable getMessageID()
+   public Serializable getID()
    {
       return id;
    }

@@ -20,10 +20,15 @@ import java.util.Set;
  */
 public interface Message extends Serializable, Cloneable
 {
-   public static final String REMOTE_MESSAGE_HEADER = "REMOTE_MESSAGE_HEADER";
-   public static final String REPLICATOR_ID_HEADER = "REPLICATOR_ID_HEADER";
+   public static final String REMOTE_MESSAGE = "REMOTE_MESSAGE";
+   // the value is a Serializable
+   public static final String REPLICATOR_ID = "REPLICATOR_ID";
+   // the value is a Serializable
+   public static final String ACKNOWLEDGED_MESSAGE_ID = "ACKNOWLEDGED_MESSAGE_ID";
+   // the value is a Boolean
+   public static final String ACKNOWLEGMENT_TYPE = "ACKNOWLEGMENT_TYPE";
 
-   public Serializable getMessageID();
+   public Serializable getID();
 
    public void putHeader(String name, Serializable value);
 

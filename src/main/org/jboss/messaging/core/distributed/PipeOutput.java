@@ -67,7 +67,7 @@ public class PipeOutput implements PipeOutputSubServer
       try
       {
          // Mark the message as being received from a remote endpoint
-         m.putHeader(Message.REMOTE_MESSAGE_HEADER, Message.REMOTE_MESSAGE_HEADER); 
+         m.putHeader(Message.REMOTE_MESSAGE, Message.REMOTE_MESSAGE);
          return receiver.handle(m);
       }
       catch(Exception e)

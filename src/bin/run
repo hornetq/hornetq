@@ -11,6 +11,7 @@ TARGET_CLASS=org.jboss.messaging.tools.RpcDispatcherClient
 TARGET_CLASS=org.jboss.messaging.tools.DistributedPipeClient
 #TARGET_CLASS=org.jboss.messaging.tools.ToErase
 TARGET_CLASS=org.jboss.messaging.tools.DistributedQueueClient
+TARGET_CLASS=org.jboss.messaging.tools.ReplicatorClient
 
 cygwin=false;
 case "`uname`" in
@@ -49,6 +50,7 @@ $reldir/../../output/etc${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
+$reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../resources/jgroups-core.jar${SEP}\
 ${CLESTER_HOME}/clester.jar \

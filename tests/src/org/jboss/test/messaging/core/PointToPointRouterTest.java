@@ -50,7 +50,7 @@ public class PointToPointRouterTest extends MessagingTestCase
       Iterator i = rOne.iterator();
       m = (Message)i.next();
       assertFalse(i.hasNext());
-      assertEquals(new Integer(1), m.getMessageID());
+      assertEquals(new Integer(1), m.getID());
 
       rOne.clear();
 
@@ -68,7 +68,7 @@ public class PointToPointRouterTest extends MessagingTestCase
          // then rOne got the message
          m = (Message)iOne.next();
          assertFalse(iOne.hasNext());
-         assertEquals(new Integer(2), m.getMessageID());
+         assertEquals(new Integer(2), m.getID());
          assertFalse(iOne.hasNext());
       }
       else
@@ -76,7 +76,7 @@ public class PointToPointRouterTest extends MessagingTestCase
          // otherwise rTwo got the message
          m = (Message)iTwo.next();
          assertFalse(iTwo.hasNext());
-         assertEquals(new Integer(2), m.getMessageID());
+         assertEquals(new Integer(2), m.getID());
          assertFalse(iOne.hasNext());
       }
    }
@@ -105,7 +105,7 @@ public class PointToPointRouterTest extends MessagingTestCase
       i = handling.iterator();
       m = (Message)i.next();
       assertFalse(i.hasNext());
-      assertEquals("", m.getMessageID());
+      assertEquals("", m.getID());
    }
 
    public void testBrokenReceiver() throws Exception
@@ -131,6 +131,6 @@ public class PointToPointRouterTest extends MessagingTestCase
       i = handling.iterator();
       m = (Message)i.next();
       assertFalse(i.hasNext());
-      assertEquals("", m.getMessageID());
+      assertEquals("", m.getID());
    }
 }

@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface QueuePeerSubServer extends SubServer
+interface QueuePeerSubServer extends SubServer
 {
 
    /**

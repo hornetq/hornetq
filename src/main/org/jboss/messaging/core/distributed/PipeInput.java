@@ -139,7 +139,7 @@ public class PipeInput implements Receiver
       // endless loops among peers or worse, deadlock on distributed RPC if deadlock detection
       // was not enabled.
 
-      if (m.getHeader(Message.REMOTE_MESSAGE_HEADER) != null)
+      if (m.getHeader(Message.REMOTE_MESSAGE) != null)
       {
          // don't send
          return false;
