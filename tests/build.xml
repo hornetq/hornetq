@@ -103,19 +103,26 @@
       </jar>
    </target>
 
+   <!--
+      The values from imported files or set by the calling ant tasks will take precedence over
+      the values specified below.
+   -->
    <property name="junit.printsummary" value="true"/>
    <property name="junit.haltonerror" value="true"/>
    <property name="junit.haltonfailure" value="true"/>
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value=""/>
+   <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
    <property name="junit.jvm.options" value=""/>
-   <property name="junit.formatter.usefile" value=""/>
+   <property name="junit.formatter.usefile" value="false"/>
    <property name="junit.batchtest.todir" value="${build.tests.output}"/>
    <property name="junit.batchtest.haltonerror" value="true"/>
    <property name="junit.batchtest.haltonfailure" value="true"/>
    <property name="junit.batchtest.fork" value="true"/>
+   <property name="junit.test.haltonfailure" value="true"/>
+   <property name="junit.test.haltonerror" value="true"/>
 
    <target name="prepare-testdirs"
            description="Prepares the directory structure required by a test run">
@@ -128,16 +135,20 @@
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
-             includeantruntime="${junit.includeantruntime}">
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}">
          <classpath>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/etc"/>
          </classpath>
-         <formatter type="plain"/>
+         <formatter type="plain" usefile="${junit.formatter.usefile}"/>
          <batchtest fork="${junit.batchtest.fork}"
                     todir="${junit.batchtest.todir}"
-                    haltonfailure="${junit.batchtest.haltonfailure}">
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
@@ -152,22 +163,25 @@
            description="Runs a single test, specified by its FQ class name via 'test.classname'">
 
       <fail unless="test.classname"
-            message="To run a single test, use the following syntax:
-./build.sh test -Dtest.clasname=org.package.MyTest"/>
+            message="To run a single test, use: ./build.sh test -Dtest.clasname=org.package.MyTest"/>
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
-             includeantruntime="${junit.includeantruntime}">
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}">
          <classpath>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/etc"/>
          </classpath>
-         <formatter type="plain"/>
+         <formatter type="plain" usefile="${junit.formatter.usefile}"/>
          <test name="${test.classname}"
                fork="${junit.batchtest.fork}"
                todir="${junit.batchtest.todir}"
-               haltonfailure="${junit.batchtest.haltonfailure}">
+               haltonfailure="${junit.test.haltonfailure}"
+               haltonerror="${junit.test.haltonerror}">
          </test>
       </junit>
    </target>
