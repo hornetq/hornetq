@@ -185,7 +185,7 @@ public class JMSMap implements java.io.Serializable
         }
         else
         {
-            throw new MessageFormatException(""); //TODO: Implement message
+            throw new MessageFormatException(""); //TOD: Implement message
         }
     }
 

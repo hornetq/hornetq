@@ -292,8 +292,8 @@ public class ContextImpl implements Context
             while (tokenizer.hasMoreTokens())
             {
                 String currentToken = tokenizer.nextToken();
-                // TODO: Need to validate that the name includes no illegal characters
-                // TODO: Should I be doing a rebind for destinations?
+                // TOD: Need to validate that the name includes no illegal characters
+                // TOD: Should I be doing a rebind for destinations?
                 this.rebind(currentToken, new DestinationImpl(currentToken));
             }
         }

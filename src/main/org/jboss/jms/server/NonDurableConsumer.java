@@ -91,7 +91,7 @@ public class NonDurableConsumer implements Consumer
             iterator.remove();
 
             /*
-             * TODO: Add the messageReference to the unacknowledgedMessages, and
+             * TOD: Add the messageReference to the unacknowledgedMessages, and
              * handle acknowledgement.  For now, just remove our reference to
              * the message so it can be removed from its store.
              */
@@ -99,7 +99,7 @@ public class NonDurableConsumer implements Consumer
         }
 
         /*
-         * TODO: Actually deliver the collection of messages
+         * TOD: Actually deliver the collection of messages
          * We will have a reference to our session's CallBackHandler which will
          * handle remoting.  For now, just print a statement to standard out.
          * Additionally, we need to provide a mechanism to control the size of

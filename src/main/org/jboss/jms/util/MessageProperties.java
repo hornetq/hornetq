@@ -48,27 +48,27 @@ public final class MessageProperties extends JMSMap
     {
         if (name == null)
         {
-            throw new JMSException(""); //TODO: Write exception method
+            throw new JMSException(""); //TOD: Write exception method
         }
         if (name.startsWith("JMSX") || name.startsWith("JMS_"))
         {
-            throw new JMSException(""); //TODO: Write exception method.
+            throw new JMSException(""); //TOD: Write exception method.
         }
         char[] identifierCharArray = name.toCharArray();
         if (identifierCharArray.length < 1)
         {
-            throw new JMSException(""); //TODO: Write exception method
+            throw new JMSException(""); //TOD: Write exception method
         }
         if (!Character.isJavaIdentifierStart(identifierCharArray[0]))
         {
-            throw new JMSException(""); //TODO: Write exception method
+            throw new JMSException(""); //TOD: Write exception method
         }
         for (int i = 1; i < identifierCharArray.length; i++)
         {
             if (!Character.isJavaIdentifierPart(identifierCharArray[i]))
             {
                 throw new JMSException("");
-                //TODO: Write exception method
+                //TOD: Write exception method
             }
         }
         for (int i = 0; i < illegalIdentifiers.length; i++)
@@ -76,7 +76,7 @@ public final class MessageProperties extends JMSMap
             if (name.equalsIgnoreCase(illegalIdentifiers[i]))
             {
                 throw new JMSException("");
-                //TODO: Write exception method
+                //TOD: Write exception method
             }
         }
     }
@@ -160,7 +160,7 @@ public final class MessageProperties extends JMSMap
         }
         else
         {
-            throw new MessageFormatException(""); //TODO: Implement message
+            throw new MessageFormatException(""); //TOD: Implement message
         }
     }
 
