@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core;
+package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.interfaces.Message;

@@ -4,13 +4,15 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.util;
+package org.jboss.test.messaging.util;
 
-import org.jboss.messaging.MessagingTestCase;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Pipe;
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.ReceiverImpl;
+import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.util.RpcServer;
+import org.jboss.messaging.util.NoSuchServerException;
 
 
 import java.util.Iterator;

@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging;
+package org.jboss.test.messaging;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.XLevel;

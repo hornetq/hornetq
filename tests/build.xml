@@ -97,7 +97,7 @@
       <!-- Build the tests jar -->
       <jar jarfile="${build.tests.lib}/jboss-messaging-tests.jar">
          <fileset dir="${build.tests.classes}">
-            <include name="org/jboss/messaging/**"/>
+            <include name="org/jboss/test/messaging/**"/>
          </fileset>
       </jar>
    </target>

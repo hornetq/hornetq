@@ -4,15 +4,19 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.messaging.MessagingTestCase;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.Pipe;
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.ReceiverImpl;
+import org.jboss.messaging.core.distributed.DistributedPipeInput;
+import org.jboss.messaging.core.distributed.DistributedPipeOutput;
+import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Receiver;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Channel;
 import org.jgroups.MessageListener;

@@ -4,10 +4,12 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core;
+package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.MessagingTestCase;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.CoreMessage;
 
 
 import java.util.Iterator;
