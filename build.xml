@@ -159,6 +159,15 @@
       </fileset>
     </jar>
 
+    <!-- Build jboss-jms-client.jar -->
+    <jar jarfile="${build.lib}/jboss-jms-client.jar"
+         manifest="${build.etc}/default.mf">
+      <fileset dir="${build.classes}"
+               excludes="**/server/**">
+        <include name="**"/>
+      </fileset>
+    </jar>
+
 
     <!-- Generate checksums -->
     <call target="_default:compile-checksums"/>
