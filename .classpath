@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="src" path="src/main"/>
+    <classpathentry kind="src" path="output/gen/classes"/>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="lib" path="/thirdparty/javagroups-javagroups/lib/javagroups-2.0.jar"/>
+    <classpathentry kind="src" path="/j2ee"/>
+    <classpathentry kind="src" path="/common"/>
+    <classpathentry kind="src" path="/system"/>
+    <classpathentry kind="src" path="/remoting"/>
+    <classpathentry kind="output" path="output/eclipse-classes"/>
+</classpath>
