@@ -78,8 +78,6 @@ public class ServerSessionDelegate implements SessionDelegate
    public ProducerDelegate createProducerDelegate(Destination d) throws JBossJMSException
    {
 
-      log.debug("Creating a producer delegate, destination = " + d);
-
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination destination = null;
@@ -92,7 +90,7 @@ public class ServerSessionDelegate implements SessionDelegate
          throw new JBossJMSException("Cannot map destination " + d, e);
       }
 
-      log.debug("got destination: " + destination);
+      log.debug("got producer's destination: " + destination);
 
       // create the dynamic proxy that implements ProducerDelegate
 
@@ -136,14 +134,15 @@ public class ServerSessionDelegate implements SessionDelegate
       // SessionDelegate instance
       ServerProducerDelegate spd = new ServerProducerDelegate(producerID, destination, this);
       putProducerDelegate(producerID, spd);
+
+      log.debug("created producer delegate (producerID=" + producerID + ")");
+
       return pd;
    }
 
 
    public MessageConsumer createConsumer(Destination d) throws JBossJMSException
    {
-      log.debug("creating a consumer endpoint, destination = " + d);
-
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination destination = null;
@@ -155,8 +154,6 @@ public class ServerSessionDelegate implements SessionDelegate
       {
          throw new JBossJMSException("Cannot map destination " + d, e);
       }
-
-      log.debug("got destination: " + destination);
 
       // create the MessageConsumer dynamic proxy
 
@@ -187,6 +184,9 @@ public class ServerSessionDelegate implements SessionDelegate
       // create the Consumer endpoint and register it with this SessionDelegate instance
       Consumer c =  new Consumer(consumerID, destination, callbackHandler, this);
       putConsumerDelegate(consumerID, c);
+
+      log.debug("creating consumer endpoint (destination=" + d + ")");
+
       return proxy;
    }
 

@@ -43,7 +43,7 @@ public class ServerProducerDelegate implements ProducerDelegate
 
    public void send(Message m)
    {
-      if (log.isTraceEnabled()) { log.trace("message " + m); }
+      if (log.isTraceEnabled()) { log.trace("sending message " + m + " to the core"); }
 
       try
       {

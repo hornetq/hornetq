@@ -60,8 +60,6 @@ public class InstanceInterceptor implements Interceptor
          String methodName = m.getName();
          JMSAdvisor jmsAdvisor = (JMSAdvisor)mi.getAdvisor();
 
-         log.debug("InstanceInterceptor: method name: " + methodName);
-         
          if ("createConnectionDelegate".equals(methodName))
          {
             // I only need a ConnectionFactoryDelegate instance, since it doesn't hold state,

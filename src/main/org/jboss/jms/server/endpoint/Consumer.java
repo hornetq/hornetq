@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 
 /**
- * A Consumer endpoint. Sits on the boundary between Messaging Core and the JMS Facade.
+ * A Consumer endpoint. Lives on the boundary between Messaging Core and the JMS Facade.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -43,8 +43,8 @@ public class Consumer implements Receiver
    // Constructors --------------------------------------------------
 
    public Consumer(String id, Distributor destination,
-                                 InvokerCallbackHandler callbackHandler,
-                                 ServerSessionDelegate parent)
+                   InvokerCallbackHandler callbackHandler,
+                   ServerSessionDelegate parent)
    {
       this.id = id;
       this.destination = destination;
@@ -64,7 +64,7 @@ public class Consumer implements Receiver
 
    public boolean handle(Routable r)
    {
-      if (log.isTraceEnabled()) { log.trace("receiving routable " + r); }
+      if (log.isTraceEnabled()) { log.trace("receiving routable " + r + " from the core"); }
 
       // push the message to the client
       InvocationRequest req = new InvocationRequest(null, null, r, null, null, null);

@@ -28,7 +28,7 @@
    <!-- Module name(s) & version -->
    <property name="module.name" value="jms"/>
    <property name="module.Name" value="JBoss Messaging"/>
-   <property name="module.version" value="5.0.0"/>
+   <property name="module.version" value="1.0.0"/>
 
    <!-- ========= -->
    <!-- Libraries -->
@@ -51,6 +51,7 @@
    <path id="dependentmodule.classpath">
       <path refid="jboss.common.classpath"/>
       <path refid="jboss.jms.classpath"/>
+      <path refid="jboss.j2ee.classpath"/>
    </path>
 
    <!-- ===== -->

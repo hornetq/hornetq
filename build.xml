@@ -16,7 +16,7 @@
 
 <!-- $Id$ -->
 
-<project default="main" name="JBoss/JMS">
+<project default="main" name="JBoss/Messaging">
 
   <!-- ================================================================== -->
   <!-- Setup                                                              -->
@@ -235,7 +235,7 @@
 	 manifest="${build.etc}/default.mf">
       <fileset dir="${build.classes}">
         <!-- Include everything else -->
-        <include name="org/jboss/messaging/**"/>
+        <include name="org/jboss/**"/>
       </fileset>
     </jar>
 

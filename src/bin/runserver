@@ -34,7 +34,7 @@ done
 
 reldir=`dirname $0`
 java $JAVA_OPTS -cp \
-$reldir/../../output/etc${SEP}\
+$reldir/../../src/etc${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../src/resources/clester.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\

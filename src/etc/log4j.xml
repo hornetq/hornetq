@@ -51,7 +51,8 @@
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="Target" value="System.out"/>
       <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
-      <!-- <param name="Threshold" value="DEBUG"/> -->
+      <!-- param name="Threshold" value="DEBUG"/> -->
+      <!-- <param name="Threshold" value="INFO"/> -->
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
          <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p @%t [%c{1}] %m%n"/>
@@ -77,6 +78,11 @@
       <priority value="INFO"/>
    </category>
 
+   <!-- TODO: why do I need that when I have org.jboss on INFO? -->
+   <category name="org.jboss.remoting">
+      <priority value="INFO"/>
+   </category>
+
    <category name="org.jboss.messaging">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
@@ -88,7 +94,6 @@
    <category name="org.jboss.jms">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
-
 
    <!-- ======================= -->
    <!-- Setup the Root category -->

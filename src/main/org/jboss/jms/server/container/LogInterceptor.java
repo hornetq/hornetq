@@ -8,7 +8,7 @@ package org.jboss.jms.server.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -17,6 +17,8 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 public class LogInterceptor implements Interceptor
 {
     // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(LogInterceptor.class);
 
     // Static --------------------------------------------------------
 
@@ -35,7 +37,6 @@ public class LogInterceptor implements Interceptor
 
     public Object invoke(Invocation invocation) throws Throwable
     {
-        System.out.println(((MethodInvocation)invocation).getMethod().getName() + "() invocation");
         return invocation.invokeNext();
     }
 

@@ -4,52 +4,51 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.client.container;
+package org.jboss.test.messaging.tools;
 
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
 
-import java.io.Serializable;
+import javax.naming.spi.InitialContextFactory;
+import javax.naming.NamingException;
+import javax.naming.Context;
+import java.util.Hashtable;
 
 /**
+ * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
+
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LogInterceptor implements Interceptor, Serializable
+public class InVMInitialContextFactory implements InitialContextFactory
 {
    // Constants -----------------------------------------------------
 
-   private final static long serialVersionUID = 5639549352058264964L;
+   private static final Logger log = Logger.getLogger(InVMInitialContextFactory.class);
 
-   private static final Logger log = Logger.getLogger(LogInterceptor.class);
+   private static InVMContext initialContext;
 
    // Static --------------------------------------------------------
-
+   
    // Attributes ----------------------------------------------------
-
+   
    // Constructors --------------------------------------------------
-
+   
    // Public --------------------------------------------------------
 
-   // Interceptor implementation ------------------------------------
-
-   public String getName()
+   public Context getInitialContext(Hashtable environment) throws NamingException
    {
-      return "LogInterceptor";
-   }
-
-   public Object invoke(Invocation invocation) throws Throwable
-   {
-      return invocation.invokeNext();
+      if (initialContext == null)
+      {
+         initialContext = new InVMContext();
+      }
+      return initialContext;
    }
 
    // Package protected ---------------------------------------------
-
+   
    // Protected -----------------------------------------------------
-
+   
    // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
 }

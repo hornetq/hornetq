@@ -14,11 +14,13 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.Connector;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
 import java.net.URL;
+import java.util.Hashtable;
 
 /**
  * A place-holder for the micro-container. Used to bootstrap a server instance, until proper
@@ -43,20 +45,34 @@ public class ServerWrapper
 
    // Attributes ----------------------------------------------------
 
+   private Hashtable jndiEnvironment;
    private ServerPeer serverPeer;
    private InvokerLocator locator = new InvokerLocator("socket://localhost:9890");
    private String serverPeerID = "ServerPeer0";
 
    // Constructors --------------------------------------------------
 
+   /**
+    * Uses default jndi properties (jndi.properties file)
+    */
    public ServerWrapper() throws Exception
    {
+      this(null);
+   }
+
+   /**
+    * Uses the specified jndi properties. Null means using default properties (jndi.properties file)
+    */
+   public ServerWrapper(Hashtable jndiEnvironment) throws Exception
+   {
+      this.jndiEnvironment = jndiEnvironment;
       loadAspects();
       setupJNDI();
       initializeRemoting(locator);
-      serverPeer = new ServerPeer(serverPeerID, locator);
+      serverPeer = new ServerPeer(serverPeerID, locator, jndiEnvironment);
       start();
    }
+
 
    // Public --------------------------------------------------------
 
@@ -68,19 +84,24 @@ public class ServerWrapper
 
    public void stop() throws Exception
    {
-      serverPeer.stop();
+      throw new NotYetImplementedException();
+      // unload aspects
+      // unset JNDI
+      // deinitialize remoting
+      // stop();
+      //serverPeer.stop();
    }
 
    public void deployQueue(String name) throws Exception
    {
-      InitialContext ic = new InitialContext();
+      InitialContext ic = new InitialContext(jndiEnvironment);
       Context c = (Context)((Context)ic.lookup("messaging")).lookup("queues");
       c.rebind(name, new JBossQueue(name));
    }
 
    public void deployTopic(String name) throws Exception
    {
-      InitialContext ic = new InitialContext();
+      InitialContext ic = new InitialContext(jndiEnvironment);
       Context c = (Context)((Context)ic.lookup("messaging")).lookup("topics");
       c.rebind(name, new JBossTopic(name));
    }
@@ -100,7 +121,7 @@ public class ServerWrapper
 
    private void setupJNDI() throws Exception
    {
-      InitialContext ic = new InitialContext();
+      InitialContext ic = new InitialContext(jndiEnvironment);
       Context c = null;
       String path = "/";
       String name = "messaging";

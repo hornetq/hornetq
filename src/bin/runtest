@@ -5,6 +5,7 @@
 #
 
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
+TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 
 cygwin=false;
 case "`uname`" in
@@ -28,7 +29,7 @@ while [ "$1" != "" ]; do
         if [ $cygwin = false ]; then
             JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
         else
-            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=mess"
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"
         fi
     fi
     shift
@@ -39,13 +40,19 @@ done
 
 reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
-$reldir/../../output/etc${SEP}\
+$reldir/../../src/etc${SEP}\
 $reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
+$reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
+$reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
+$reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit-junit/lib/junit.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
+$reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
+$reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
+$reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../resources/jgroups-core.jar${SEP}\
  junit.textui.TestRunner $TARGET_CLASS

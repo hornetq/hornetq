@@ -18,6 +18,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.logging.Logger;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ import java.lang.reflect.Proxy;
 public class ServerConnectionDelegate implements ConnectionDelegate
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(ServerConnectionDelegate.class);
 
    // Static --------------------------------------------------------
 
@@ -58,14 +61,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public SessionDelegate createSessionDelegate(boolean transacted, int acknowledgmentMode)
    {
-      System.out.println("Creating a session sessionDelegate on the server-side," +
-                         " transacted = " + transacted +
-                         " acknowledgmentMode = " + acknowledgmentMode);
-
       // create the dynamic proxy that implements SessionDelegate
-
       SessionDelegate sd = null;
-
       Serializable oid = serverPeer.getSessionAdvisor().getName();
       String stackName = "SessionStack";
       AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
@@ -103,6 +100,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       // ConnectionDelegate instance
       ServerSessionDelegate ssd = new ServerSessionDelegate(sessionID, this);
       putSessionDelegate(sessionID, ssd);
+
+      log.debug("created session delegate (sessionID=" + sessionID + ")");
 
       return sd;
    }

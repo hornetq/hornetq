@@ -28,6 +28,7 @@ import javax.naming.InitialContext;
 import javax.naming.Context;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.util.Hashtable;
 
 /**
  * A JMS server peer.
@@ -48,6 +49,8 @@ public class ServerPeer
    protected ClientManager clientManager;
    protected DestinationManager destinationManager;
    protected ConnectionFactoryDelegate connFactoryDelegate;
+   protected Hashtable jndiEnvironment;
+   protected InitialContext initialContext;
 
    protected boolean started;
 
@@ -59,14 +62,16 @@ public class ServerPeer
 
    // Constructors --------------------------------------------------
 
-   public ServerPeer(String id, InvokerLocator locator) throws Exception
+   public ServerPeer(String id, InvokerLocator locator, Hashtable jndiEnvironment) throws Exception
    {
       this.id = id;
       this.locator = locator;
+      this.jndiEnvironment = jndiEnvironment;
       clientManager = new ClientManager(this);
       destinationManager = new DestinationManager(this);
       connFactoryDelegate = new ServerConnectionFactoryDelegate(this);
       started = false;
+      initialContext = new InitialContext(jndiEnvironment);
    }
 
    // Public --------------------------------------------------------
@@ -134,6 +139,12 @@ public class ServerPeer
    public ClassAdvisor getProducerAdvisor()
    {
       return producerAdvisor;
+   }
+
+
+   public Hashtable getJNDIEnvironment()
+   {
+      return jndiEnvironment;
    }
 
    // Package protected ---------------------------------------------
@@ -207,9 +218,8 @@ public class ServerPeer
 
    private void bindConnectionFactory(ConnectionFactory factory) throws Exception
    {
-      InitialContext ic = new InitialContext();
       String cn = "messaging";
-      Context c = (Context)ic.lookup(cn);
+      Context c = (Context)initialContext.lookup(cn);
       c.rebind("ConnectionFactory", factory);
    }
 

@@ -42,7 +42,7 @@ public class DestinationManager
    public DestinationManager(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
-      ic = new InitialContext();
+      ic = new InitialContext(serverPeer.getJNDIEnvironment());
       topics = new HashMap();
       queues = new HashMap();
    }
@@ -59,7 +59,6 @@ public class DestinationManager
       String name = d.getName();
       boolean isQueue = d.isQueue();
 
-      InitialContext ic = new InitialContext();
       ic.lookup("/messaging/" + (isQueue ? "queues/" : "topics/") + name);
 
       AbstractDestination ad = isQueue ?

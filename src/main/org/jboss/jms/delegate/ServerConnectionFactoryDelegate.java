@@ -18,6 +18,7 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
@@ -32,6 +33,8 @@ import java.lang.reflect.Proxy;
 public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegate
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(ServerConnectionFactoryDelegate.class);
 
    // Static --------------------------------------------------------
    
@@ -55,15 +58,9 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
 
    public ConnectionDelegate createConnectionDelegate(String username, String password)
    {
-      System.out.println("Creating a connection sessionDelegate on the server-side," +
-                         " username = " + username +
-                         " password = " + password);
-
 
       // create the ConnectionDelegate dynamic proxy
-
       ConnectionDelegate cd = null;
-
       Serializable oid = serverPeer.getConnectionAdvisor().getName();
       String stackName = "ConnectionStack";
       AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
@@ -100,6 +97,8 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       // server peer's ClientManager
       ServerConnectionDelegate scd = new ServerConnectionDelegate(clientID, serverPeer);
       clientManager.putConnectionDelegate(clientID, scd);
+
+      log.debug("created connection delegate (clientID=" + clientID + ")");
 
       return cd;
    }

@@ -41,7 +41,7 @@ done
 
 reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
-$reldir/../../output/etc${SEP}\
+$reldir/../../src/etc${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
