@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+  <!ENTITY buildmagic SYSTEM "../tools/etc/buildfragments/buildmagic.ent">
+  <!ENTITY tools      SYSTEM "../tools/etc/buildfragments/tools.ent">
+  <!ENTITY libraries  SYSTEM "../tools/etc/buildfragments/libraries.ent">
+  <!ENTITY modules    SYSTEM "../tools/etc/buildfragments/modules.ent">
+  <!ENTITY defaults   SYSTEM "../tools/etc/buildfragments/defaults.ent">
+  <!ENTITY targets    SYSTEM "../tools/etc/buildfragments/targets.ent">
+]>
+
+<!-- $Id$ -->
+
+<!--+======================================================================+-->
+<!--| JBoss (The OpenSource J2EE WebOS) Build File                         |-->
+<!--|                                                                      |-->
+<!--| Distributable under LGPL license.                                    |-->
+<!--| See terms of license at http://www.gnu.org.                          |-->
+<!--|                                                                      |-->
+<!--| This file has been designed to work with the 'tools' module and      |-->
+<!--| Buildmagic extentions.                                               |-->
+<!--+======================================================================+-->
+
+<project default="main" name="JBoss/JMS">
+
+  <!--+====================================================================+-->
+  <!--| Setup                                                              |-->
+  <!--|                                                                    |-->
+  <!--| Include the common build elements.                                 |-->
+  <!--|                                                                    |-->
+  <!--| This defines several different targets, properties and paths.      |-->
+  <!--| It also sets up the basic extention tasks amoung other things.     |-->
+  <!--+====================================================================+-->
+
+  &buildmagic;
+  &libraries;
+  &modules;
+  &defaults;
+  &tools;
+  &targets;
+
+
+  <!--+====================================================================+-->
+  <!--| Initialization                                                     |-->
+  <!--|                                                                    |-->
+  <!--| Initialize the build system.  Other targets should depend on       |-->
+  <!--| 'init'.                                                            |-->
+  <!--+====================================================================+-->
+
+  <target name="init" depends="_default:init">
+    <!-- Add module specific elements here. -->
+  </target>
+
+
+  <!--+====================================================================+-->
+  <!--| Configuration                                                      |-->
+  <!--|                                                                    |-->
+  <!--| This target is invoked by the Buildmagic initialization logic      |-->
+  <!--| and should contain module specific configuration elements.         |-->
+  <!--+====================================================================+-->
+
+  <target name="configure" unless="configure.disable">
+
+    <!-- Module name(s) & version -->
+    <property name="module.name" value="jms"/>
+    <property name="module.Name" value="JBoss JMS"/>
+
+    <!-- Configure thirdparty libraries -->
+    <call target="configure-libraries"/>
+    <path id="library.classpath">
+      <path refid="apache.log4j.classpath"/>
+    </path>
+
+    <!-- Configure modules -->
+    <call target="configure-modules"/>
+    <path id="dependentmodule.classpath">
+      <path refid="jboss.j2ee.classpath"/>
+      <path refid="jboss.common.classpath"/>
+      <path refid="jboss.system.classpath"/>
+      <path refid="jboss.jmx.classpath"/>
+      <path refid="jboss.remoting.classpath"/>
+    </path>
+
+    <!--+=======================================+-->
+    <!--| Override any default properties here. |-->
+    <!--+=======================================+-->
+
+    <!-- Configure defaults & build tools --> 
+    <call target="configure-defaults"/>
+    <call target="configure-tools"/>
+
+    <!--+=======================================+-->
+    <!--| Define module specific elements here. |-->
+    <!--+=======================================+-->
+
+  </target>
+
+
+  <!--+====================================================================+-->
+  <!--| Compile                                                            |-->
+  <!--|                                                                    |-->
+  <!--| This target should depend on other compile-* targets for each      |-->
+  <!--| different type of compile that needs to be performed, short of     |-->
+  <!--| documentation compiles.                                            |-->
+  <!--+====================================================================+-->
+
+  <target name="compile" 
+	  description="Compile all source files."
+	  depends="compile-mbean-sources, 
+                   _default:compile-classes,
+                   _default:compile-etc">
+    <!-- Add module specific elements here. -->
+  </target>
+
+  <!-- Compile mbeans with XDoclet -->
+  <target name="compile-mbean-sources" depends="init">
+
+    <mkdir dir="${build.gen-src}"/>
+    <jmxdoclet destdir="${build.gen-src}"
+	     excludedtags="@version,@author">
+      <fileset dir="${source.java}">
+
+
+        <include name="org/jboss/jms/server/management/*.java"/>
+        <include name="org/jboss/jms/server/Server.java"/>
+      </fileset>
+      <mbeaninterface mergedir="${project.tools}/etc/xdoclet/templates"/>
+    </jmxdoclet>
+  </target>
+
+
+  <!-- ================================================================== -->
+  <!-- Tests                                                              -->
+  <!-- ================================================================== -->
+
+  <target name="tests" depends="_default:tests"/>
+
+  <!--+====================================================================+-->
+  <!--| Generate Output                                                    |-->
+  <!--|                                                                    |-->
+  <!--| Generates the target output for this module. Target output is      |-->
+  <!--| the output which is ment to be released or used by external        |-->
+  <!--| modules.                                                           |-->
+  <!--+====================================================================+-->
+
+  <target name="output"
+	  description="Generate all target output."
+          depends="_buildmagic:build-bypass-check"
+	  unless="build-bypass.on">
+
+    <call target="compile"/>
+
+    <mkdir dir="${build.lib}"/>
+
+    <!-- Build jboss-jms.jar -->
+    <jar jarfile="${build.lib}/jboss-jms.jar"
+         manifest="${build.etc}/default.mf">
+      <fileset dir="${build.classes}">
+        <include name="**"/>
+      </fileset>
+    </jar>
+
+
+    <!-- Generate checksums -->
+    <call target="_default:compile-checksums"/>
+
+    <!-- Update the build marker to allow bypassing -->
+    <touch file="${build-bypass.marker}"/>
+
+  </target>
+
+
+  <!--+====================================================================+-->
+  <!--| Documents                                                          |-->
+  <!--|                                                                    |-->
+  <!--| Generate all documentation for this module.                        |-->
+  <!--+====================================================================+-->
+
+  <target name="docs" depends="_default:docs, docs-static">
+    <!-- Add module specific elements here. -->
+  </target>
+
+  <!-- Compile static documents -->
+  <target name="docs-static" depends="init">
+    <mkdir dir="${build.docs}"/>
+    <copy todir="${build.docs}" filtering="yes">
+      <fileset dir="${source.docs}">
+         <include name="**/*"/>
+      </fileset>
+    </copy>
+  </target>
+
+
+  <!--+====================================================================+-->
+  <!--| Misc.                                                              |-->
+  <!--|                                                                    |-->
+  <!--| Standard targets and psuedo-targets.                               |-->
+  <!--+====================================================================+-->
+
+  <target name="clean" depends="_default:clean">
+    <!-- Add module specific elements here. -->
+  </target>
+
+  <target name="clobber" depends="_default:clobber">
+    <!-- Add module specific elements here. -->
+  </target>
+
+  <!-- main, all, most and help are primary psuedo-targets -->
+  <target name="main" depends="most"/>
+  <target name="all" depends="_default:all"/>
+  <target name="most" depends="_default:most"/>
+  <target name="help" depends="_default:help"/>
+
+</project>
