@@ -18,7 +18,7 @@ import java.util.Set;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface Message extends Serializable
+public interface Message extends Serializable, Cloneable
 {
    public static final String REMOTE_MESSAGE_HEADER = "REMOTE_MESSAGE_HEADER";
 
@@ -32,6 +32,9 @@ public interface Message extends Serializable
 
    public Set getHeaderNames();
 
+   /**
+    * Make sure that classes implementing this interface propery override clone() method.
+    */
    public Object clone();
    
 }
