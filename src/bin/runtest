@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# bash script for running various JBoss Messaging command line tools
+# bash script for running a single unit test case
 #
 #
 

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE aop PUBLIC
+   "-//JBoss//DTD JBOSS AOP 1.0//EN"
+   "http://www.jboss.org/aop/dtd/jboss-aop_1_0.dtd">
+
+<aop>
+
+   <!-- Client side -->
+
+   <interceptor class="org.jboss.jms.client.container.JMSExceptionInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.LogInterceptor" scope="PER_CLASS"/>
+   <interceptor class="org.jboss.jms.client.container.LocalInterceptor" scope="PER_CLASS"/>
+   <interceptor class="org.jboss.jms.client.container.FactoryInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.aspects.remoting.InvokeRemoteInterceptor" scope="PER_VM"/>
+
+   <stack name="ConnectionFactoryStack">
+      <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+   </stack>
+
+   <stack name="ConnectionStack">
+      <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+   </stack>
+
+   <stack name="SessionStack">
+      <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
+      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+   </stack>
+
+   <stack name="ProducerStack">
+      <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+   </stack>
+
+   <stack name="ConsumerStack">
+      <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
+      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+   </stack>
+
+
+
+   <!-- Server side -->
+
+   <interceptor class="org.jboss.jms.server.container.InstanceInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.server.container.LogInterceptor" scope="PER_VM"/>
+
+   <stack name="ServerConnectionFactoryStack">
+      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
+   </stack>
+
+   <stack name="ServerConnectionStack">
+      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
+   </stack>
+
+   <stack name="ServerSessionStack">
+      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
+   </stack>
+
+   <stack name="ServerProducerStack">
+      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
+   </stack>
+
+   <stack name="ServerConsumerStack">
+      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
+   </stack>
+
+   <domain name="ServerConnectionFactoryDelegate">
+      <bind pointcut="execution(* *->*(..))">
+         <stack-ref name="ServerConnectionFactoryStack"/>
+      </bind>
+   </domain>
+
+   <domain name="ServerConnectionDelegate">
+      <bind pointcut="execution(* *->*(..))">
+         <stack-ref name="ServerConnectionStack"/>
+      </bind>
+   </domain>
+
+   <domain name="ServerSessionDelegate">
+      <bind pointcut="execution(* *->*(..))">
+         <stack-ref name="ServerSessionStack"/>
+      </bind>
+   </domain>
+
+   <domain name="ServerProducerDelegate">
+      <bind pointcut="execution(* *->*(..))">
+         <stack-ref name="ServerProducerStack"/>
+      </bind>
+   </domain>
+
+   <domain name="ServerConsumerDelegate">
+      <bind pointcut="execution(* *->*(..))">
+         <stack-ref name="ServerConsumerStack"/>
+      </bind>
+   </domain>
+
+</aop>

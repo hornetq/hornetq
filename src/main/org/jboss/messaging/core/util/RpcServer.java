@@ -121,11 +121,7 @@ public class RpcServer
             }
             catch(Throwable t)
             {
-               if (log.isDebugEnabled())
-               {
-                  log.debug("RpcServer invocation on category =" + category +
-                            ", delegate =" + id + "failed", t);
-               }
+               log.debug("RpcServer invocation on category =" + category + ", delegate =" + id + "failed", t);
                results.add(new ServerDelegateResponse(id, t));
             }
          }

@@ -286,11 +286,7 @@ public class ReplicatorOutput
          // TODO use the timout when I'll change the send() signature or deal with the timeout
          Collection responses = rpcServerCall.remoteInvoke(dispatcher, 30000);
 
-         if (log.isDebugEnabled())
-         {
-            log.debug(this + ".outputPeerJoins() received " + responses.size() +
-                      " responses from input peers");
-         }
+         log.debug(this + ".outputPeerJoins() received " + responses.size() + " responses from input peers");
 
          ServerResponse response = null;
          try
@@ -299,15 +295,12 @@ public class ReplicatorOutput
             for(Iterator i = responses.iterator(); i.hasNext(); )
             {
                response = (ServerResponse)i.next();
-               if (log.isDebugEnabled())
-               {
-                  log.debug(this + " received join acknowledgment: " + response);
-               }
+               log.debug(this + " received join acknowledgment: " + response);
                Object result = response.getInvocationResult();
                if (result instanceof NoSuchMethodException)
                {
                   // OK, I called an output peer
-                  if (log.isDebugEnabled()) { log.debug(response.getServerDelegateID() + " is an output peer"); }
+                  log.debug(response.getServerDelegateID() + " is an output peer");
                }
                else if (result instanceof Throwable)
                {

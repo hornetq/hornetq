@@ -189,7 +189,7 @@ public class ReplicatorTopology
          throw new DistributedException("Failed to acquire the intial topology", t);
       }
 
-      if (log.isDebugEnabled()) { log.debug("Initial topology: " + topology); }
+      log.debug("Initial topology: " + topology);
    }
 
    public void registerTopologyListener(Observer observer)

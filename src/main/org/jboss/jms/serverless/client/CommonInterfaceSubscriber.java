@@ -63,9 +63,7 @@ public class CommonInterfaceSubscriber {
                     try {
                         TextMessage tm = (TextMessage)message;
                         String text = tm.getText();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Got message: "+text);
-                        }
+                        log.debug("Got message: "+text);
 
                         if (!"".equals(text)) {
                             counter++;

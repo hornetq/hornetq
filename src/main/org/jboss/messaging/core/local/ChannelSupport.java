@@ -153,7 +153,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
    {
       lock();
 
-      if (log.isTraceEnabled()) { log.trace("store NACK: "+r.getMessageID()+" from "+receiverID); }
+      if (log.isTraceEnabled()) { log.trace("store NACK: " + r.getMessageID() + " from " + receiverID); }
 
       try
       {
