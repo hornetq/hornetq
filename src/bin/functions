@@ -1,0 +1,89 @@
+#!/bin/sh
+#
+# Collection of common functions used by JMS client scripts
+#
+
+#
+# $1 - the name of the script
+#
+display_help() {
+program_name=`basename $1`
+    cat <<EOF
+
+Usage: $program_name [-debug] [app_specific_args]
+
+EOF
+}
+
+
+#
+# $@ - command line arguments
+# 
+# Exits with 0 and writes the command line at stdout or exits with a non-zero value and
+# writes the error message at stderr
+#
+generate_command_line() {
+
+reldir=`dirname $0`
+
+if [ "$1" = "-help" -o "$1" = "--help" -o "$1" = "?" ]; then
+    exit 1;
+fi
+
+# parse command line args
+while [ "$1" != "" ]; do
+	if [ "$1" = "-debug" ]; then
+            debug=true
+	else
+            # pass it to the java runtime
+            args="$args $1"
+	fi
+	shift
+done
+
+if [ "$debug" = "true" ]; then
+    JVM_DEBUG="-Xint -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,address=12345,suspend=y"
+fi
+
+if [ -f $reldir/../local/config ]; then
+    source $reldir/../local/config
+fi
+
+COMMON_CLASSPATH=\
+$reldir/../etc:\
+$LOCAL_CLASSPATH:\
+$reldir/../lib/jboss-@module.name@.jar:\
+$reldir/../lib/jboss-j2ee.jar:\
+$reldir/../lib/jboss-common.jar:\
+$reldir/../lib/log4j.jar:\
+$reldir/../lib/commons-logging.jar:\
+$reldir/../lib/jgroups.jar:\
+$reldir/../lib/clester.jar:\
+
+echo $JAVA_HOME/bin/java $JVM_DEBUG -cp $COMMON_CLASSPATH $main_class "$args"
+
+}
+
+
+#
+# $@ - command line arguments
+#
+# generates the command line internally and runs it
+#
+run() {
+    
+comm=`generate_command_line $@`
+
+if [ $? -eq 0 ]; then
+    exec $comm
+else
+    display_help $0
+    exit 1
+fi
+    
+}
+
+
+
+
+

@@ -246,12 +246,12 @@
 
     <mkdir dir="${build.lib}"/>
     
-    <!-- Build the jnpserver.jar -->
-    <jar jarfile="${build.lib}/jboss-aop.jar"
+    <!-- Build the jboss-${module.name}.jar -->
+    <jar jarfile="${build.lib}/jboss-${module.name}.jar"
 	 manifest="${build.etc}/default.mf">
       <fileset dir="${build.classes}">
         <!-- Include everything else -->
-        <include name="org/jboss/aop/**"/>
+        <include name="org/jboss/jms/**"/>
       </fileset>
     </jar>
 
@@ -269,7 +269,34 @@
 
   <target name="install" 
 	  description="Install the structure for a release."
-	  depends="all, _buildmagic:install:default"/>
+	  depends="all, _buildmagic:install:default"> 
+
+      <mkdir dir="${module.source}/bin"/>
+
+      <filter token="module.name" value="${module.name}"/>
+      <copy todir="${install.root}/bin" filtering="yes">
+          <fileset dir="${module.source}/bin"/>
+      </copy>
+      <chmod dir="${install.root}/bin" perm="ugo+rx" includes="**/*.sh"/>
+
+      <copy todir="${install.root}/lib" filtering="no">
+            <fileset dir="${jboss.j2ee.lib}">
+                <include name="jboss-j2ee.jar"/>
+            </fileset>
+            <fileset dir="${jboss.common.lib}">
+                <include name="jboss-common.jar"/>
+            </fileset>
+            <fileset dir="${apache.log4j.lib}">
+                <include name="log4j.jar"/>
+            </fileset>
+            <fileset dir="${apache.commons.lib}">
+                <include name="commons-logging.jar"/>
+            </fileset>
+            <fileset dir="${jgroups.jgroups.lib}">
+                <include name="jgroups.jar"/>
+            </fileset>
+      </copy>
+  </target>
 
   <target name="release" depends="install"/>
 
