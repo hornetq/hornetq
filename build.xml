@@ -68,7 +68,9 @@
     <call target="configure-libraries"/>
     <path id="library.classpath">
       <path refid="apache.log4j.classpath"/>
+      <path refid="javassist.classpath"/>
       <path refid="javagroups.javagroups.classpath"/>
+      <path refid="junit.junit.classpath"/>
     </path>
 
     <!-- Configure modules -->
@@ -79,6 +81,7 @@
       <path refid="jboss.system.classpath"/>
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.remoting.classpath"/>
+      <path refid="jboss.aop.classpath"/>
     </path>
 
     <!--+=======================================+-->
@@ -108,6 +111,7 @@
 	  description="Compile all source files."
 	  depends="compile-mbean-sources, 
                    _default:compile-classes,
+                   _default:compile-test-classes,
                    _default:compile-etc,
                    _default:compile-resources">
     <!-- Add module specific elements here. -->
