@@ -24,9 +24,7 @@ public interface Message extends Serializable, Cloneable
    // the value is a Serializable
    public static final String REPLICATOR_ID = "REPLICATOR_ID";
    // the value is a Serializable
-   public static final String ACKNOWLEDGED_MESSAGE_ID = "ACKNOWLEDGED_MESSAGE_ID";
-   // the value is a Boolean
-   public static final String ACKNOWLEGMENT_TYPE = "ACKNOWLEGMENT_TYPE";
+   public static final String REPLICATOR_INPUT_ID = "REPLICATOR_INPUT_ID";
 
    public Serializable getID();
 

@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class PipeOutput implements PipeOutputSubServer
+public class PipeOutput implements PipeOutputServerDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -50,7 +50,7 @@ public class PipeOutput implements PipeOutputSubServer
       this.receiver = receiver;
    }
 
-   // PipeOutputSubServer implementation --------------
+   // PipeOutputServerDelegate implementation --------------
 
    public Serializable getID()
    {

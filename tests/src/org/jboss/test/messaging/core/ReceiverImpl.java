@@ -8,10 +8,13 @@ package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.interfaces.Message;
+import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A simple Receiver implementation that consumes messages by storing them internally. Used for
@@ -27,9 +30,13 @@ public class ReceiverImpl implements Receiver
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ReceiverImpl.class);
+
    public static final String HANDLING = "HANDLING";
    public static final String DENYING = "DENYING";
    public static final String BROKEN = "BROKEN";
+
+   private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
 
    // Static --------------------------------------------------------
    
@@ -37,6 +44,8 @@ public class ReceiverImpl implements Receiver
 
    private List messages;
    private String state;
+
+   private Map waitingArea;
 
    // Constructors --------------------------------------------------
 
@@ -53,30 +62,44 @@ public class ReceiverImpl implements Receiver
       }
       this.state = state;
       messages = new ArrayList();
+      waitingArea = new HashMap();
+      waitingArea.put(INVOCATION_COUNT, new Integer(0));
    }
 
    // Recevier implementation ---------------------------------------
 
    public boolean handle(Message m)
    {
-      if (BROKEN.equals(state))
+      try
       {
-         // rogue receiver, throws unchecked exceptions
-         throw new RuntimeException("THIS IS AN EXCEPTION THAT SIMULATES "+
-                                    "THE BEHAVIOUR OF A BROKEN RECEIVER");
+         if (BROKEN.equals(state))
+         {
+            // rogue receiver, throws unchecked exceptions
+            throw new RuntimeException("THIS IS AN EXCEPTION THAT SIMULATES "+
+                                       "THE BEHAVIOUR OF A BROKEN RECEIVER");
+         }
+         if (DENYING.equals(state))
+         {
+            // politely tells that it cannot handle the message
+            return false;
+         }
+         // Handling receiver
+         if (m == null)
+         {
+            return false;
+         }
+         messages.add(m);
+         return true;
       }
-      if (DENYING.equals(state))
+      finally
       {
-         // politely tells that it cannot handle the message
-         return false;
+         synchronized(waitingArea)
+         {
+            Integer crt = (Integer)waitingArea.get(INVOCATION_COUNT);
+            waitingArea.put(INVOCATION_COUNT, new Integer(crt.intValue() + 1));
+            waitingArea.notifyAll();
+         }
       }
-      // Handling receiver
-      if (m == null)
-      {
-         return false;
-      }
-      messages.add(m);
-      return true;
    }
 
    // Public --------------------------------------------------------
@@ -86,9 +109,50 @@ public class ReceiverImpl implements Receiver
       messages.clear();
    }
 
+   /**
+    * Blocks until handle() is called for the specified number of times.
+    * @param count
+    */
+   public void waitForHandleInvocations(int count)
+   {
+      synchronized(waitingArea)
+      {
+         while(true)
+         {
+            Integer invocations = (Integer)waitingArea.get(INVOCATION_COUNT);
+            if (invocations.intValue() == count)
+            {
+               return;
+            }
+            try
+            {
+               waitingArea.wait(1000);
+            }
+            catch(InterruptedException e)
+            {
+               // OK
+            }
+         }
+      }
+   }
+
+   public void resetInvocationCount()
+   {
+      synchronized(waitingArea)
+      {
+         waitingArea.put(INVOCATION_COUNT, new Integer(0));
+         waitingArea.notifyAll();
+      }
+   }
+
    public Iterator iterator()
    {
       return messages.iterator();
+   }
+
+   public List getMessages()
+   {
+      return messages;
    }
 
    public void setState(String state)

@@ -11,8 +11,8 @@ import org.jgroups.Address;
 import java.io.Serializable;
 
 /**
- * A wrapper around a response coming from a <i>single</i> sub-server object registered with
- * a RpcServer.
+ * A wrapper around a response coming from a <i>single</i> server delegate registered with
+ * a RpcServer. Returned by the rpcServerCalls.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -23,7 +23,7 @@ public class ServerResponse
 
    protected Address address;
    protected Serializable category;
-   protected Serializable subServerID;
+   protected Serializable serverDelegateID;
    protected Object result;
 
    // Constructors --------------------------------------------------
@@ -33,7 +33,7 @@ public class ServerResponse
    {
       this.address = address;
       this.category = category;
-      this.subServerID = subServerID;
+      this.serverDelegateID = subServerID;
       this.result = result;
    }
 
@@ -52,9 +52,9 @@ public class ServerResponse
       return category;
    }
 
-   public Serializable getSubServerID()
+   public Serializable getServerDelegateID()
    {
-      return subServerID;
+      return serverDelegateID;
    }
 
 
@@ -73,7 +73,7 @@ public class ServerResponse
    public String toString()
    {
       StringBuffer sb = new StringBuffer();
-      sb.append(RpcServer.subServerToString(address, category, subServerID));
+      sb.append(RpcServer.serverDelegateToString(address, category, serverDelegateID));
       sb.append(" result: ");
       if (result == null)
       {

@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jgroups.Address;
-import org.jboss.messaging.util.SubServer;
+import org.jboss.messaging.util.ServerDelegate;
 
 import java.io.Serializable;
 
@@ -17,9 +17,8 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-interface QueuePeerSubServer extends SubServer
+interface QueuePeerServerDelegate extends ServerDelegate
 {
-
    /**
     * Remote method invoked by a queue peer on all other queue peers when joining the distributed
     * queue.

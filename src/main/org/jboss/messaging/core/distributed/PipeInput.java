@@ -161,6 +161,7 @@ public class PipeInput implements Receiver
 
       try
       {
+         // call on the PipeOutput unique server delegate
          return ((Boolean)rpcServerCall.remoteInvoke(dispatcher, outputAddress, 30000)).
                booleanValue();
       }

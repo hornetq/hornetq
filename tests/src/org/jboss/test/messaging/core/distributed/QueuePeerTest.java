@@ -9,7 +9,7 @@ package org.jboss.test.messaging.core.distributed;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.DistributedQueuePeer;
+import org.jboss.messaging.core.distributed.QueuePeer;
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
@@ -22,7 +22,7 @@ import junit.textui.TestRunner;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedQueuePeerTest extends MessagingTestCase
+public class QueuePeerTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -44,7 +44,7 @@ public class DistributedQueuePeerTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public DistributedQueuePeerTest(String name)
+   public QueuePeerTest(String name)
    {
       super(name);
    }
@@ -78,7 +78,7 @@ public class DistributedQueuePeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      DistributedQueuePeer queue = new DistributedQueuePeer(dispatcherOne, "QueueOne");
+      QueuePeer queue = new QueuePeer(dispatcherOne, "QueueOne");
       queue.connect();
       assertTrue(queue.isConnected());
 
@@ -95,8 +95,8 @@ public class DistributedQueuePeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      DistributedQueuePeer queuePeerOne = new DistributedQueuePeer(dispatcherOne, "QueueOne");
-      DistributedQueuePeer queuePeerTwo = new DistributedQueuePeer(dispatcherOne, "QueueOne");
+      QueuePeer queuePeerOne = new QueuePeer(dispatcherOne, "QueueOne");
+      QueuePeer queuePeerTwo = new QueuePeer(dispatcherOne, "QueueOne");
       queuePeerOne.connect();
       queuePeerTwo.connect();
       assertTrue(queuePeerOne.isConnected());
@@ -117,7 +117,7 @@ public class DistributedQueuePeerTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
       jChannelTwo.connect("testGroup");
 
-      DistributedQueuePeer queue = new DistributedQueuePeer(dispatcherOne, "QueueOne");
+      QueuePeer queue = new QueuePeer(dispatcherOne, "QueueOne");
       queue.connect();
       assertTrue(queue.isConnected());
 
@@ -135,8 +135,8 @@ public class DistributedQueuePeerTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
       jChannelTwo.connect("testGroup");
 
-      DistributedQueuePeer queuePeerOne = new DistributedQueuePeer(dispatcherOne, "AQueue");
-      DistributedQueuePeer queuePeerTwo = new DistributedQueuePeer(dispatcherTwo, "AQueue");
+      QueuePeer queuePeerOne = new QueuePeer(dispatcherOne, "AQueue");
+      QueuePeer queuePeerTwo = new QueuePeer(dispatcherTwo, "AQueue");
       queuePeerOne.connect();
       queuePeerTwo.connect();
 
@@ -156,7 +156,7 @@ public class DistributedQueuePeerTest extends MessagingTestCase
 
    public static void main(String[] args) throws Exception
    {
-      TestRunner.run(DistributedQueuePeerTest.class);
+      TestRunner.run(QueuePeerTest.class);
    }
 
 }

@@ -6,22 +6,43 @@
  */
 package org.jboss.messaging.core.distributed;
 
+import org.jboss.messaging.util.RpcServerCall;
+import org.jboss.messaging.util.RpcServer;
+import org.jboss.messaging.util.ServerResponse;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.core.CoreMessage;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.MessageListener;
+import org.jgroups.ChannelListener;
+import org.jgroups.Address;
 
 import java.io.Serializable;
+import java.util.Random;
+import java.util.Collection;
+import java.util.Iterator;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 
 /**
- * The "receiving end" of a replicator. A replicator can have multiple inputs and multiple outputs.
- * Messages sent by each input are replicated to every output.
+ * A Replicator is a distributed channel that replicates a message to multiple receivers living
+ * <i>in different address spaces</i> synchronously or asynchronously. A replicator can have
+ * multiple inputs and multiple outputs. Messages sent by an input are replicated to every output.
+ * <p>
+ * The replication of messages is done efficiently by multicasting, but message acknowledment
+ * is handled by the replicator (so far) in a point-to-point manner. For that reason, each
+ * replicator peer must be able to reach <i>synchronously and efficiently</i> any other peer. In
+ * this respect the replicator peers are "tightly coupled". If you want a looser coupling, use a
+ * Destination.
+ * <p>
+ * When it is configured to be synchronous, the Replicator works pretty much like a distributed
+ * PointToMultipointRouter.
+ * <p>
+ * The Replicator's main reason to exist is to allow to sender to synchronously send a message
+ * to different address spaces and be sure that the message was received (and it is acknowledged)
+ * when the handle() method returns, all this in an efficient way.
+ * <p>
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -32,31 +53,54 @@ public class ReplicatorOutput implements MessageListener, Runnable
 
    private static final Logger log = Logger.getLogger(ReplicatorOutput.class);
 
+   // Static --------------------------------------------------------
+   
    // Attributes ----------------------------------------------------
 
-   protected Serializable replicatorID;
-   protected Receiver receiver;
+   protected boolean started;
 
-   protected MessageDispatcher dispatcher;
+   /** The ID of the replicator. A replicator usually comprises multiple input and output peers. */
+   protected Serializable replicatorID;
+
+   /** The ID of this replicator peer. Must be unique across the replicator */
+   protected Serializable peerID;
+
+   /** The dispatcher this replicator peer delegates the transport to */
+   protected RpcDispatcher dispatcher;
+   protected ChannelListener channelListener;
+
    /** the original MessageListener of the RpcDispatcher, to which I am delegating now */
    protected MessageListener delegateListener;
 
    protected LinkedQueue acknowledgmentQueue;
    protected Thread acknowledgmentThread;
+   protected volatile boolean ackThreadActive;
+
+   protected Receiver receiver;
+
+
 
    // Constructors --------------------------------------------------
 
    /**
-    * @param replicatorID - the id of the replicator. It must match the id used to instantiate the
-    *        input ends of the pipe.
+    * Creates a replicator peer that is not connected to the replicator yet.
+    *
+    * @param replicatorID
+    *
+    * @exception IllegalStateException - thrown if the RpcDispatcher does not come pre-configured
+    *            with an RpcServer.
     */
-   public ReplicatorOutput(Serializable replicatorID, Receiver receiver)
+   public ReplicatorOutput(RpcDispatcher dispatcher, Serializable replicatorID)
    {
+      Object serverObject = dispatcher.getServerObject();
+      if (!(serverObject instanceof RpcServer))
+      {
+         throw new IllegalStateException("The RpcDispatcher does not have an RpcServer installed");
+      }
+      this.dispatcher = dispatcher;
       this.replicatorID = replicatorID;
-      this.receiver = receiver;
       acknowledgmentQueue = new LinkedQueue();
-      acknowledgmentThread = new Thread(this);
-      acknowledgmentThread.start();
+      started = false;
    }
 
    // MessageListener implementation --------------------------------
@@ -69,37 +113,37 @@ public class ReplicatorOutput implements MessageListener, Runnable
          Message m = (Message)o;
          if (replicatorID.equals(m.getHeader(Message.REPLICATOR_ID)))
          {
-            // see if it's an acknowledgment for a AcknowledgmentCollector using the same
-            // MessageDispatcher
-            if (m.getHeader(Message.ACKNOWLEGMENT_TYPE) == null)
+            if (log.isTraceEnabled()) { log.trace(this + " received message, ID=" + m.getID()); }
+            m.removeHeader(Message.REPLICATOR_ID);
+            Serializable inputPeerID = m.removeHeader(Message.REPLICATOR_INPUT_ID);
+            // Mark the message as being received from a remote endpoint
+            m.putHeader(Message.REMOTE_MESSAGE, Message.REMOTE_MESSAGE);
+            boolean acked = false;
+            try
             {
-               m.removeHeader(Message.REPLICATOR_ID);
-               // Mark the message as being received from a remote endpoint
-               m.putHeader(Message.REMOTE_MESSAGE, Message.REMOTE_MESSAGE);
-               boolean acked = false;
+               acked = receiver.handle(m);
+            }
+            catch(Exception e)
+            {
+               log.warn(this + "'s receiver did not acknowledge the message", e);
+               acked = false;
+            }
+            MessageAcknowledgment ack =
+                  new MessageAcknowledgment(jgroupsMessage.getSrc(), inputPeerID, m.getID(), acked);
+            while(true)
+            {
                try
                {
-                  acked = receiver.handle(m);
+                  acknowledgmentQueue.put(ack);
+                  break;
                }
-               catch(Exception e)
+               catch(InterruptedException e)
                {
-                  log.warn(this + "'s receiver did not acknowledge the message", e);
-                  acked = false;
-               }
-               while(true)
-               {
-                  try
-                  {
-                     acknowledgmentQueue.put(new MessageAcknowledgment(jgroupsMessage.getSrc(),
-                                                                       m.getID(), acked));
-                     break;
-                  }
-                  catch(InterruptedException e)
-                  {
-                     log.warn("Thread interrupted while trying to put an acknowledgment in queue", e);
-                  }
+                  log.warn("Thread interrupted while trying to put an acknowledgment in queue", e);
                }
             }
+            // do not forward the message to the delegate listener
+            return;
          }
       }
       if (delegateListener != null)
@@ -132,7 +176,7 @@ public class ReplicatorOutput implements MessageListener, Runnable
     */
    public void run()
    {
-      while(true)
+      while(ackThreadActive)
       {
          try
          {
@@ -141,47 +185,144 @@ public class ReplicatorOutput implements MessageListener, Runnable
          }
          catch(InterruptedException e)
          {
-            log.warn("Thread interrupted while trying to take an acknowledgment from queue", e);
+            log.debug("Thread interrupted while trying to take an acknowledgment from queue");
          }
       }
    }
 
-
    // Public --------------------------------------------------------
 
-   public Serializable getID()
+   public Serializable getReplicatorID()
    {
       return replicatorID;
    }
 
-   /**
-    * Atthaches the replicator output to a dispatcher. The replicator output will asynchronously
-    * handle messages received by the jChannel the dispatcher is connected to.
-    */
-   public void attach(RpcDispatcher d)
+   public Serializable getID()
    {
-      MessageListener l = d.getMessageListener();
+      return peerID;
+   }
+
+   /**
+    * Lifecycle method. Connects the peer to the distributed replicator. The underlying JChannel
+    * must be connected when this method is invoked.
+    *
+    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer
+    *            (JGroups). The original exception, if any, is nested.
+    */
+   public synchronized void start() throws DistributedException
+   {
+      if(started)
+      {
+         return;
+      }
+
+      if (!dispatcher.getChannel().isConnected())
+      {
+         throw new DistributedException("The underlying JGroups channel not connected");
+      }
+
+      log.debug(this + " connecting");
+
+      // get an unique peer ID
+      peerID = getUniquePeerID();
+
+      // establish the topology - announce myself to the input peers, they'll use my id to collect
+      // acknowledgements
+
+      RpcServerCall rpcServerCall =
+            new RpcServerCall(replicatorID,
+                              "outputPeerJoins",
+                              new Object[] {peerID},
+                              new String[] {"java.io.Serializable"});
+
+      // TODO use the timout when I'll change the send() signature or deal with the timeout
+      Collection responses = rpcServerCall.remoteInvoke(dispatcher, 30000);
+
+      if (log.isDebugEnabled())
+      {
+         log.debug(this + ".outputPeerJoins() received " + responses.size() +
+                   " responses from input peers");
+      }
+
+      ServerResponse response = null;
+      try
+      {
+         // all input peers must acknowledge
+         for(Iterator i = responses.iterator(); i.hasNext(); )
+         {
+            response = (ServerResponse)i.next();
+            if (log.isDebugEnabled())
+            {
+               log.debug(this + " received join acknowledgment: " + response);
+            }
+            Object result = response.getInvocationResult();
+            if (result instanceof Throwable)
+            {
+               throw (Throwable)result;
+            }
+         }
+      }
+      catch(Throwable t)
+      {
+         String msg = "One of the peers (" +
+                      RpcServer.serverDelegateToString(response.getAddress(),
+                                                       response.getCategory(),
+                                                       response.getServerDelegateID()) +
+                      ") prevented this peer (" + this + ") from joining the replicator";
+         log.error(msg, t);
+         throw new DistributedException(msg, t);
+      }
+
+      // delegate also to the existing listener
+      MessageListener l = dispatcher.getMessageListener();
       if (l != null)
       {
          delegateListener = l;
       }
-      d.setMessageListener(this);
-      this.dispatcher = d;
-      log.debug(this + " attached to " + d);
+      dispatcher.setMessageListener(this);
+
+      acknowledgmentThread = new Thread(this, this + " Acknowledgment Thread");
+      ackThreadActive = true;
+      acknowledgmentThread.start();
+
+      if (channelListener == null)
+      {
+         channelListener = new ChannelListenerImpl();
+         dispatcher.addChannelListener(channelListener);
+      }
+
+      started = true;
    }
 
    /**
-    * Detaches the replicator from the dispatcher.
+    * Lifecycle method.
+    * TODO add test cases
     */
-   public void detach()
+   public synchronized void stop()
    {
-      if (delegateListener != null)
+      if (!started)
       {
-         dispatcher.setMessageListener(delegateListener);
+         return;
       }
-      log.debug(this + " detached from " + dispatcher);
+      // TODO deal more carefully with the inflight messages (the one handled by handle())
+      started = false;
+      // the channel listener stays registered with the jChannel to restart the peer in case
+      // the channel starts
+      ackThreadActive = false;
+      acknowledgmentThread.interrupt();
+      acknowledgmentThread = null;
+      // detach the listener
+      dispatcher.setMessageListener(delegateListener);
       delegateListener = null;
-      dispatcher = null;
+
+      // TODO Group RPC outputPeerLeaves()
+
+      peerID = null;
+   }
+
+   public synchronized boolean isStarted()
+   {
+      return started;
    }
 
    /**
@@ -204,11 +345,32 @@ public class ReplicatorOutput implements MessageListener, Runnable
    {
       StringBuffer sb = new StringBuffer("ReplicatorOutput[");
       sb.append(replicatorID);
+      sb.append(".");
+      sb.append(peerID);
       sb.append("]");
       return sb.toString();
    }
 
+   // Package protected ---------------------------------------------
+
    // Protected -----------------------------------------------------
+
+   protected static Random peerIDGenerator = new Random();
+
+   /**
+    * Coordinate with the existing peers and generate an unique ID per replicator.
+    */
+   protected Serializable getUniquePeerID()
+   {
+      // TODO quick and dirty implementation - implement it properly - this is not guaranteed
+      // TODO to be unique accross the distributed replicator.
+      long v = peerIDGenerator.nextLong();
+      if (v < 0)
+      {
+         v = -v;
+      }
+      return new Long(v);
+   }
 
    /**
     * TODO incomplete implementation
@@ -217,70 +379,89 @@ public class ReplicatorOutput implements MessageListener, Runnable
     */
    protected void acknowledge(MessageAcknowledgment ack)
    {
-      int RETRIES = 3;
-
-      // TODO VERY inefficient and actually not very correct implementation: even if the
-      // TODO message is correctly sent, I don't know it will reach the ReceiverInput. Better
-      // TODO use a synchronous call?
+      // TODO VERY inefficient implementation
       // TODO Sliding Window?
-      org.jgroups.Channel jChannel = dispatcher.getChannel();
-      Message m = new CoreMessage(generateMessageID());
-      m.putHeader(Message.REPLICATOR_ID, replicatorID);
-      m.putHeader(Message.ACKNOWLEDGED_MESSAGE_ID, ack.getMessageID());
-      m.putHeader(Message.ACKNOWLEGMENT_TYPE, ack.isPositive());
-      int cnt = 0;
-      Exception exception = null;
-      while(cnt++ < RETRIES)
+
+      RpcServerCall call = new RpcServerCall(ack.getInputPeerID(), "acknowledge",
+                                             new Object[] {ack.getMessageID(),
+                                                           peerID,
+                                                           ack.isPositive()},
+                                             new String[] {"java.io.Serializable",
+                                                           "java.io.Serializable",
+                                                           "java.lang.Boolean"});
+
+      // TODO deal with the timeout
+      try
       {
-         try
-         {
-            jChannel.send(ack.getSender(), null, m);
-            // TODO: turn it in a TRACE statement
-            if (log.isDebugEnabled()) { log.debug(ack + "sent"); }
-            return;
-         }
-         catch(Exception e)
-         {
-            exception = e;
-         }
+         call.remoteInvoke(dispatcher, ack.getSender(), 30000);
+         if (log.isTraceEnabled()) { log.trace("sent " + ack); }
       }
-
-      log.warn("Failed to send acknowledgment after " + cnt + " retries", exception);
-
-      // resubmit the acknowlegment to the queue
-      while(true)
+      catch(Exception e)
       {
-         try
+         log.error("Failed to send acknowledgment", e);
+         // resubmit the acknowlegment to the queue
+         // TODO: find something better than that. Deal with Time to Live.
+         while(true)
          {
-            acknowledgmentQueue.put(ack);
-         }
-         catch(InterruptedException e)
-         {
-            log.warn("Thread interrupted while trying to put an acknowledgment in queue", e);
+            try
+            {
+               acknowledgmentQueue.put(ack);
+            }
+            catch(InterruptedException ie)
+            {
+               log.warn("Thread interrupted while trying to put an acknowledgment in queue", ie);
+            }
          }
       }
    }
-
 
    protected Serializable generateMessageID()
    {
-      return null;
+      // TODO Naive implementation
+      return new Long(new Random().nextLong());
    }
 
-   // Static --------------------------------------------------------
 
-   /** access it only from getUniqueID() */
-   private static int sequence = 0;
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------
 
-   /**
-    * Returns runtime ReplicatorOutput IDs that are unique per classloading domain.
-    * @return an unique Integer.
-    */
-   synchronized static Integer getUniqueID()
+   protected class ChannelListenerImpl implements ChannelListener
    {
-      return new Integer(sequence++);
+      public void channelConnected(org.jgroups.Channel channel)
+      {
+         log.debug(ReplicatorOutput.this + " channel connected");
+         try
+         {
+            start();
+         }
+         catch(Exception e)
+         {
+            log.error("the replicator output cannot be restarted", e);
+         }
+      }
+
+      public void channelDisconnected(org.jgroups.Channel channel)
+      {
+         log.debug(ReplicatorOutput.this + " channel disconnected");
+         stop();
+      }
+
+      public void channelClosed(org.jgroups.Channel channel)
+      {
+         log.debug(ReplicatorOutput.this + " channel closed");
+         stop();
+      }
+
+      public void channelShunned()
+      {
+         log.debug(ReplicatorOutput.this + " channel shunned");
+      }
+
+      public void channelReconnected(Address address)
+      {
+         log.debug(ReplicatorOutput.this + " channel reconnected");
+      }
    }
 
 }
-
-

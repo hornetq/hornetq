@@ -20,6 +20,7 @@ class MessageAcknowledgment
 {
    // Attributes ----------------------------------------------------
    protected Address sender;
+   protected Serializable inputPeerID;
    protected Serializable acknowledgedMessageID;
    protected Boolean positive;
 
@@ -31,9 +32,13 @@ class MessageAcknowledgment
     * @param acknowledgedMessageID
     * @param mode - positive (true) or negative (false) acknowledgment.
     */
-   public MessageAcknowledgment(Address sender, Serializable acknowledgedMessageID, boolean mode)
+   public MessageAcknowledgment(Address sender,
+                                Serializable inputPeerID,
+                                Serializable acknowledgedMessageID,
+                                boolean mode)
    {
       this.sender = sender;
+      this.inputPeerID = inputPeerID;
       this.acknowledgedMessageID = acknowledgedMessageID;
       positive = mode ? Boolean.TRUE : Boolean.FALSE;
    }
@@ -44,6 +49,12 @@ class MessageAcknowledgment
    {
       return sender;
    }
+
+   public Serializable getInputPeerID()
+   {
+      return inputPeerID;
+   }
+
 
    /**
     * @return the acknowldeget message id
@@ -67,10 +78,14 @@ class MessageAcknowledgment
       }
       else
       {
-         sb.append("NEGATIVE");
+         sb.append("NEGATIVE ");
       }
-      sb.append(" ACK to ");
+      sb.append("ACK to ");
       sb.append(sender);
+      sb.append('.');
+      sb.append(inputPeerID);
+      sb.append(", messageID=");
+      sb.append(acknowledgedMessageID);
       return sb.toString();
 
    }

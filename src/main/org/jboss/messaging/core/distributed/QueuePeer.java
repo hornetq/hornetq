@@ -26,11 +26,11 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
+public class QueuePeer extends Queue implements QueuePeerServerDelegate
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DistributedQueuePeer.class);
+   private static final Logger log = Logger.getLogger(QueuePeer.class);
 
    // Attributes ----------------------------------------------------
 
@@ -50,16 +50,16 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
 
    /**
     * @param dispatcher - the dispatcher to listen on. The underlying JChannel doesn't necessarily
-    *        have to be connected at the time the DistributedQueuePeer instance is created.
+    *        have to be connected at the time the QueuePeer instance is created.
     * @param distributedQueueID - the id of the distributed queue. It must match the id used to
     *        instantiate the other peers.
     * @exception IllegalStateException - thrown if the RpcDispatcher does not come pre-configured
     *            with an RpcServer, so this instance cannot register itself to field distributed
     *            calls.
     *
-    * @see org.jboss.messaging.core.distributed.DistributedQueuePeer#connect()
+    * @see org.jboss.messaging.core.distributed.QueuePeer#connect()
     */
-   public DistributedQueuePeer(RpcDispatcher dispatcher, Serializable distributedQueueID)
+   public QueuePeer(RpcDispatcher dispatcher, Serializable distributedQueueID)
    {
       Object serverObject = dispatcher.getServerObject();
       if (!(serverObject instanceof RpcServer))
@@ -121,7 +121,7 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
          {
             response = (ServerResponse)i.next();
 
-            log.debug(distributedQueueID + "." + peerID + " received: " + response);
+            log.debug(this + " received: " + response);
 
             Object result = response.getInvocationResult();
             if (result instanceof Throwable)
@@ -134,9 +134,9 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
       catch(Throwable t)
       {
          String msg = "One of the peers (" +
-                      RpcServer.subServerToString(response.getAddress(),
+                      RpcServer.serverDelegateToString(response.getAddress(),
                                                   response.getCategory(),
-                                                  response.getSubServerID()) +
+                                                  response.getServerDelegateID()) +
                       ") prevented this peer (" + this + ") from joining the queue";
          log.error(msg, t);
          throw new DistributedException(msg, t);
@@ -144,7 +144,12 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
 
 
       // register the server ojects with the RpcServer
-      rpcServer.register(pipeID, new PipeOutput(pipeID, router));
+      if (!rpcServer.registerUnique(pipeID, new PipeOutput(pipeID, router)))
+      {
+         // the pipe output server delegate not unique under category
+         throw new IllegalStateException("The category " + pipeID +
+                                         "has already a server delegate registered");
+      }
       rpcServer.register(distributedQueueID, this);
       connected = true;
    }
@@ -165,7 +170,7 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
       throw new NotYetImplementedException();
    }
 
-   // QueuePeerSubServer implementation -----------------------------
+   // QueuePeerServerDelegate implementation -----------------------------
 
    public Serializable getID()
    {
@@ -205,7 +210,7 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
 
    public String dump()
    {
-      return "DistributedQueuePeer: " + super.dump();
+      return "QueuePeer: " + super.dump();
    }
 
    // Package protected ---------------------------------------------

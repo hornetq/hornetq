@@ -8,7 +8,7 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.core.distributed.DistributedQueuePeer;
+import org.jboss.messaging.core.distributed.QueuePeer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
@@ -17,13 +17,13 @@ import org.jgroups.JChannel;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class InvalidDistributedQueuePeerTest extends MessagingTestCase
+public class InvalidQueuePeerTest extends MessagingTestCase
 {
 
 
    // Constructors --------------------------------------------------
 
-   public InvalidDistributedQueuePeerTest(String name)
+   public InvalidQueuePeerTest(String name)
    {
       super(name);
    }
@@ -39,7 +39,7 @@ public class InvalidDistributedQueuePeerTest extends MessagingTestCase
 
       try
       {
-         new DistributedQueuePeer(dispatcher, "doesntmatter");
+         new QueuePeer(dispatcher, "doesntmatter");
          fail("Should have thrown IllegalStateException");
       }
       catch(IllegalStateException e)
@@ -53,7 +53,7 @@ public class InvalidDistributedQueuePeerTest extends MessagingTestCase
       JChannel jChannel = new JChannel();
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, new RpcServer());
       assertFalse(jChannel.isConnected());
-      DistributedQueuePeer peerOne = new DistributedQueuePeer(dispatcher, "doesntmatter");
+      QueuePeer peerOne = new QueuePeer(dispatcher, "doesntmatter");
 
       try
       {

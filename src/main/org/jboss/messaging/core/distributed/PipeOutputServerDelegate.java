@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.util.SubServer;
+import org.jboss.messaging.util.ServerDelegate;
 import org.jboss.messaging.interfaces.Receiver;
 
 
@@ -16,6 +16,6 @@ import org.jboss.messaging.interfaces.Receiver;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface PipeOutputSubServer extends Receiver, SubServer
+interface PipeOutputServerDelegate extends Receiver, ServerDelegate
 {
 }

@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface SubServer
+public interface ServerDelegate
 {
    public Serializable getID();
 }

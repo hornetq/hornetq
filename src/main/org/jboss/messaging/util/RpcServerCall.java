@@ -71,7 +71,7 @@ public class RpcServerCall extends MethodCall
    }
 
    /**
-    * Synchronously invokes the RpcServerCall on <i>all</i> sub-server objects registered under the
+    * Synchronously invokes the RpcServerCall on <i>all</i> server delegates registered under the
     * RPCServerCall's current category, across all RpcServers of the group.
     *
     * @param dispatcher - the dispatcher to use to sent the call from.
@@ -86,7 +86,7 @@ public class RpcServerCall extends MethodCall
 
 
    /**
-    * Synchronously invokes the RpcServerCall on all sub-server objects registered under the
+    * Synchronously invokes the RpcServerCall on all server delegates registered under the
     * RPCServerCall's current category, across select RpcServers.
     *
     * @param dispatcher - the dispatcher to use to sent the call from.
@@ -126,7 +126,7 @@ public class RpcServerCall extends MethodCall
             Collection subServerResponses = (Collection)result;
             for(Iterator j = subServerResponses.iterator(); j.hasNext(); )
             {
-               SubServerResponse ssr = (SubServerResponse)j.next();
+               ServerDelegateResponse ssr = (ServerDelegateResponse)j.next();
                ServerResponse r = new ServerResponse(address,
                                                      serverCategory,
                                                      ssr.getSubServerID(),
@@ -144,7 +144,7 @@ public class RpcServerCall extends MethodCall
 
    /**
     * Convenientce method for the case the remote call is invoked on a <i>single</i> rpcServer
-    * and the server category we're invoking on has a <i>single</i> sub-server.
+    * and the server category we're invoking on has a <i>unique</i> server delegate.
     *
     * @param dispatcher - the dispatcher to use to sent the call from.
     * @param destination - the Address of the group member that runs the rpcServer
@@ -157,7 +157,7 @@ public class RpcServerCall extends MethodCall
     * @throws Exception - the exception that was thrown by the remote invocation.
     * @throws ClassCastException - for unexpected result types
     * @throws IllegalStateException - when receiving 0 or more than 1 replies. This usually happens
-    *         when there is more than one sub-server listening on the category.
+    *         when there is more than one server delegate listening on the category.
     */
    public Object remoteInvoke(RpcDispatcher dispatcher, Address destination, long timeout)
          throws Exception
@@ -178,7 +178,7 @@ public class RpcServerCall extends MethodCall
          throw new IllegalStateException("Expecting exactly one remote result, got " +
                                          results.size() + " instead");
       }
-      SubServerResponse r = (SubServerResponse)results.iterator().next();
+      ServerDelegateResponse r = (ServerDelegateResponse)results.iterator().next();
       Object ir = r.getInvocationResult();
       if (ir instanceof Exception)
       {

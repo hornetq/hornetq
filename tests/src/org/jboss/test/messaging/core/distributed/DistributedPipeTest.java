@@ -20,6 +20,8 @@ import org.jgroups.Address;
 
 import java.util.Iterator;
 
+import junit.textui.TestRunner;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -181,4 +183,10 @@ public class DistributedPipeTest extends MessagingTestCase
       Iterator i = r.iterator();
       assertFalse(i.hasNext());
    }
+
+   public static void main(String[] args) throws Exception
+   {
+      TestRunner.run(ReplicatorPeerTest.class);
+   }
+
 }

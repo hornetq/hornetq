@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class SubServerResponse implements Serializable
+public class ServerDelegateResponse implements Serializable
 {
    // Attributes ----------------------------------------------------
 
@@ -26,7 +26,7 @@ public class SubServerResponse implements Serializable
 
    // Constructors --------------------------------------------------
 
-   public SubServerResponse(Serializable subServerID, Object result)
+   public ServerDelegateResponse(Serializable subServerID, Object result)
    {
       this.subServerID = subServerID;
       this.result = result;

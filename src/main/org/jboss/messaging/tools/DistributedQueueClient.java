@@ -7,7 +7,7 @@
 package org.jboss.messaging.tools;
 
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.DistributedQueuePeer;
+import org.jboss.messaging.core.distributed.QueuePeer;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.util.RpcServer;
 
@@ -22,7 +22,7 @@ public class DistributedQueueClient extends RpcDispatcherClient
 
    // Attributes ----------------------------------------------------
    
-   private DistributedQueuePeer queuePeer;
+   private QueuePeer queuePeer;
    private int counter = 0;
    private int receiverCounter = 0;
 
@@ -31,7 +31,7 @@ public class DistributedQueueClient extends RpcDispatcherClient
    public DistributedQueueClient() throws Exception
    {
       super(new RpcServer());
-      queuePeer = new DistributedQueuePeer(rpcDispatcher, "DistributedQueueID");
+      queuePeer = new QueuePeer(rpcDispatcher, "DistributedQueueID");
    }
 
    // Public --------------------------------------------------------
