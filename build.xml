@@ -94,7 +94,7 @@
       <path refid="jboss.j2ee.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.aop.classpath"/>
-      <path refid="jboss.jmx.classpath"/>
+      <path refid="jboss.j2se.classpath"/>
       <path refid="jboss.system.classpath"/>
     </path>
 

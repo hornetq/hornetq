@@ -10,9 +10,9 @@
 	<classpathentry kind="src" path="/aop"/>
 	<classpathentry kind="lib" path="/thirdparty/junit-junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/javassist/lib/javassist.jar"/>
-	<classpathentry kind="src" path="/jmx"/>
 	<classpathentry kind="lib" path="/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="src/resources/jgroups-core.jar"/>
+	<classpathentry kind="src" path="/j2se"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
