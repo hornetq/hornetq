@@ -180,23 +180,7 @@
 
   <target name="compile" 
 	  description="Compile all source files."
-	  depends="compile-mbean-sources, compile-classes, 
-                   compile-etc"/>
-
-  <!-- Compile mbeans with XDoclet -->
-  <target name="compile-mbean-sources" depends="init">
-    <taskdef name="jmxdoclet" classname="xdoclet.modules.jmx.JMXDocletTask" classpathref="xdoclet.task.classpath"/>
-
-    <mkdir dir="${build.gen-src}"/>
-    <jmxdoclet
-	     destdir="${build.gen-src}"
-	     excludedtags="@version,@author">
-      <fileset dir="${source.java}">
-        <include name="**/*.java"/>
-      </fileset>
-      <mbeaninterface mergedir="${project.tools}/etc/xdoclet/templates"/>
-    </jmxdoclet>
-  </target>
+	  depends="compile-classes, compile-etc"/>
 
   <!-- Compile all class files -->
   <target name="compile-classes" depends="init">
@@ -213,7 +197,6 @@
 	   includeJavaRuntime="${javac.include.java.runtime}"
 	   failonerror="${javac.fail.onerror}">
        <src path="${source.java}"/>
-       <src path="${build.gen-src}"/>
        <classpath refid="javac.classpath"/>
        <include name="${javac.includes}"/>
        <exclude name="${javac.excludes}"/>
