@@ -6,12 +6,17 @@
  */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.interfaces.Channel;
 import org.jboss.messaging.interfaces.Distributor;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Receiver;
+import org.jboss.messaging.interfaces.MessageStore;
+import org.jboss.messaging.interfaces.AcknowledgmentStore;
+import org.jboss.messaging.interfaces.Channel;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.io.Serializable;
 
 /**
  * A Channel with a routing policy in place. It delegates the routing policy to a Router instance.
@@ -19,27 +24,39 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class AbstractDestination implements Channel, Distributor
+public abstract class AbstractDestination extends ChannelSupport implements Distributor
 {
    // Attributes ----------------------------------------------------
 
-   protected Pipe inputPipe;
+   protected LocalPipe inputPipe;
    protected AbstractRouter router;
 
    // Constructors --------------------------------------------------
 
-   protected AbstractDestination()
+
+   /**
+    * By default, a Destination is an asynchronous channel.
+    * @param id
+    */
+   protected AbstractDestination(Serializable id)
    {
-      router = createRouter();
-      inputPipe = new Pipe(router);
+      this(id, Channel.ASYNCHRONOUS);
    }
 
-
-   // Public --------------------------------------------------------
+   protected AbstractDestination(Serializable id, boolean mode)
+   {
+      router = createRouter();
+      inputPipe = new LocalPipe(id, mode, router);
+   }
 
    // Channel implementation ----------------------------------------
 
-   public boolean handle(Message m)
+   public Serializable getReceiverID()
+   {
+      return inputPipe.getReceiverID();
+   }
+
+   public boolean handle(Routable m)
    {
       return inputPipe.handle(m);
    }
@@ -47,6 +64,11 @@ public abstract class AbstractDestination implements Channel, Distributor
    public boolean hasMessages()
    {
       return inputPipe.hasMessages();
+   }
+
+   public Set getUnacknowledged()
+   {
+      return inputPipe.getUnacknowledged();
    }
 
    public boolean setSynchronous(boolean b)
@@ -58,6 +80,31 @@ public abstract class AbstractDestination implements Channel, Distributor
    {
       return inputPipe.isSynchronous();
    }
+
+   public void setMessageStore(MessageStore store)
+   {
+      // the Queue and the LocalPipe share the message store
+      super.setMessageStore(store);
+      inputPipe.setMessageStore(store);
+   }
+
+   public MessageStore getMessageStore()
+   {
+      return super.getMessageStore();
+   }
+
+   public void setAcknowledgmentStore(AcknowledgmentStore store)
+   {
+      // the Queue and the LocalPipe share the acknowledgment store
+      super.setAcknowledgmentStore(store);
+      inputPipe.setAcknowledgmentStore(store);
+   }
+
+   public AcknowledgmentStore getAcknowledgmentStore()
+   {
+      return super.getAcknowledgmentStore();
+   }
+
 
    /**
     * Override if you want a more sophisticated delivery mechanism.
@@ -84,14 +131,19 @@ public abstract class AbstractDestination implements Channel, Distributor
       return true;
    }
 
-   public boolean remove(Receiver r)
+   public Receiver get(Serializable receiverID)
    {
-      return router.remove(r);
+      return router.get(receiverID);
    }
 
-   public boolean contains(Receiver r)
+   public Receiver remove(Serializable receiverID)
    {
-      return router.contains(r);
+      return router.remove(receiverID);
+   }
+
+   public boolean contains(Serializable receiverID)
+   {
+      return router.contains(receiverID);
    }
 
    public Iterator iterator()
@@ -104,26 +156,22 @@ public abstract class AbstractDestination implements Channel, Distributor
       router.clear();
    }
 
-   public boolean acknowledged(Receiver r)
+   public boolean acknowledged(Serializable receiverID)
    {
-      return router.acknowledged(r);
+      return router.acknowledged(receiverID);
    }
 
+   // Public --------------------------------------------------------
 
    // Protected -----------------------------------------------------
 
    protected abstract AbstractRouter createRouter();
 
-   // DEBUG ---------------------------------------------------------
-
-   public String dump()
+   protected void storeNACKedMessageLocally(Routable r, Serializable receiverID)
    {
-      StringBuffer sb = new StringBuffer();
-      sb.append(inputPipe.dump());
-      sb.append(" ");
-      sb.append(router.dump());
-      return sb.toString();
+      throw new NotYetImplementedException();
    }
+
 }
 
 

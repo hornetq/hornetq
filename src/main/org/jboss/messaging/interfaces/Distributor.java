@@ -7,6 +7,7 @@
 package org.jboss.messaging.interfaces;
 
 import java.util.Iterator;
+import java.io.Serializable;
 
 /**
  * An interface for Receiver management.
@@ -27,17 +28,21 @@ public interface Distributor
     */
    public boolean add(Receiver receiver);
 
+
+   public Receiver get(Serializable receiverID);
+
    /**
     * Remove the receiver from this distributor.
     *
-    * @param receiver - the receiver to remove.
-    *
-    * @return true if the Distributor contained the specified element.
+    * @return the removed receiver, or null if no such receiver exists.
     */
-   public boolean remove(Receiver receiver);
+   public Receiver remove(Serializable receiverID);
 
-   public boolean contains(Receiver receiver);
+   public boolean contains(Serializable receiverID);
 
+   /**
+    * Returns an iterator containing the receiver IDs.
+    */
    public Iterator iterator();
 
    /**
@@ -56,7 +61,7 @@ public interface Distributor
     *
     * @return the message acknowledgment status.
     */
-   public boolean acknowledged(Receiver receiver);
+   public boolean acknowledged(Serializable receiverID);
 
 }
 

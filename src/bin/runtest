@@ -4,9 +4,7 @@
 #
 #
 
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.DistributedPipeTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorOutputTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorPeerTest
+TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsDistributorTest
 
 cygwin=false;
 case "`uname`" in

@@ -6,33 +6,32 @@
  */
 package org.jboss.messaging.core;
 
+import java.io.Serializable;
+
 /**
- * A Queue implements a Point to Point messaging domain. It sends a message to one and only one
- * receiver.
+ * A LocalQueue implements a Point to Point messaging domain. It sends a message to one and only one
+ * receiver. All receivers are in the same address space. By default a queue is configured as an
+ * asynchronous Channel.
+ *
+ * @see org.jboss.messaging.interfaces.Channel
 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Queue extends AbstractDestination
+public class LocalQueue extends AbstractDestination
 {
    // Constructors --------------------------------------------------
 
-   public Queue()
+   public LocalQueue(Serializable id)
    {
-      super();
+      super(id);
    }
 
    // AbstractDestination implementation ----------------------------
 
    protected AbstractRouter createRouter()
    {
-       return new PointToPointRouter();
+       return new PointToPointRouter("P2PRouter");
    }
 
-   // DEBUG ---------------------------------------------------------
-
-   public String dump()
-   {
-      return "Queue: "+super.dump();
-   }
 }

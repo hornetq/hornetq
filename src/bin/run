@@ -5,12 +5,12 @@
 #
 
 CLESTER_HOME=/work/clester/dist
-TARGET_CLASS=org.jboss.messaging.tools.PipeClient
+TARGET_CLASS=org.jboss.messaging.tools.LocalPipeClient
 TARGET_CLASS=org.jboss.messaging.tools.JChannelClient
 TARGET_CLASS=org.jboss.messaging.tools.RpcDispatcherClient
-TARGET_CLASS=org.jboss.messaging.tools.DistributedPipeClient
+TARGET_CLASS=org.jboss.messaging.tools.PipeClient
 #TARGET_CLASS=org.jboss.messaging.tools.ToErase
-TARGET_CLASS=org.jboss.messaging.tools.DistributedQueueClient
+TARGET_CLASS=org.jboss.messaging.tools.QueueClient
 TARGET_CLASS=org.jboss.messaging.tools.ReplicatorClient
 
 cygwin=false;

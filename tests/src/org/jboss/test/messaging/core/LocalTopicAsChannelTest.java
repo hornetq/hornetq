@@ -6,12 +6,9 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.core.ReceiverImpl;
-import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.core.Topic;
-import org.jboss.messaging.core.CoreMessage;
-
+import org.jboss.messaging.interfaces.Routable;
+import org.jboss.messaging.core.LocalTopic;
+import org.jboss.messaging.core.MessageSupport;
 
 import java.util.Iterator;
 
@@ -19,32 +16,58 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class TopicTest extends MessagingTestCase
+public class LocalTopicAsChannelTest extends ChannelSupportTest
 {
    // Constructors --------------------------------------------------
 
-   public TopicTest(String name)
+   public LocalTopicAsChannelTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   public void setUp() throws Exception
+   {
+      super.setUp();
+
+      // Create a LocalTopic to be tested by the superclass tests
+      channel = new LocalTopic("LocalTopicID");
+      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
+      ((LocalTopic)channel).add(receiverOne);
+   }
+
+   public void tearDown()throws Exception
+   {
+      ((LocalTopic)channel).clear();
+      channel = null;
+      receiverOne = null;
+      super.tearDown();
+   }
+
+   //
+   // This test also runs all ChannelSupportTest's tests
+   //
+
+   public void testDefaultAsynchronous()
+   {
+      assertTrue(channel.isSynchronous());
+   }
+
 
    public void testTopic() throws Exception
    {
-      Topic topic = new Topic();
+      LocalTopic topic = new LocalTopic("");
 
       // send without a receiver
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertFalse(topic.handle(m));
 
       // send with one receiver
 
-      ReceiverImpl rOne = new ReceiverImpl();
+      ReceiverImpl rOne = new ReceiverImpl("ReceiverONE", ReceiverImpl.HANDLING);
       assertTrue(topic.add(rOne));
 
-      m = new CoreMessage("");
+      m = new MessageSupport("");
       assertTrue(topic.handle(m));
 
       Iterator i = rOne.iterator();
@@ -55,10 +78,10 @@ public class TopicTest extends MessagingTestCase
 
       // send with two receivers
 
-      ReceiverImpl rTwo = new ReceiverImpl();
+      ReceiverImpl rTwo = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(topic.add(rTwo));
 
-      m = new CoreMessage("");
+      m = new MessageSupport("");
       assertTrue(topic.handle(m));
 
       Iterator iOne = rOne.iterator();
@@ -73,21 +96,21 @@ public class TopicTest extends MessagingTestCase
 
    public void testDenyingReceiver() throws Exception
    {
-      Topic topic = new Topic();
+      LocalTopic topic = new LocalTopic("");
 
-      ReceiverImpl denying = new ReceiverImpl(ReceiverImpl.DENYING);
+      ReceiverImpl denying = new ReceiverImpl("ReceiverONE", ReceiverImpl.DENYING);
       assertTrue(topic.add(denying));
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertFalse(topic.handle(m));
 
       Iterator i = denying.iterator();
       assertFalse(i.hasNext());
 
       // test the acknowledgement
-      assertFalse(topic.acknowledged(denying));
+      assertFalse(topic.acknowledged(denying.getReceiverID()));
 
-      ReceiverImpl handling = new ReceiverImpl(ReceiverImpl.HANDLING);
+      ReceiverImpl handling = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(topic.add(handling));
       assertFalse(topic.handle(m));
 
@@ -99,27 +122,27 @@ public class TopicTest extends MessagingTestCase
       assertFalse(i.hasNext());
 
       // test the acknowledgement
-      assertFalse(topic.acknowledged(denying));
-      assertTrue(topic.acknowledged(handling));
+      assertFalse(topic.acknowledged(denying.getReceiverID()));
+      assertTrue(topic.acknowledged(handling.getReceiverID()));
    }
 
    public void testBrokenReceiver() throws Exception
    {
-      Topic topic = new Topic();
+      LocalTopic topic = new LocalTopic("");
 
-      ReceiverImpl broken = new ReceiverImpl(ReceiverImpl.BROKEN);
+      ReceiverImpl broken = new ReceiverImpl("ReceiverONE", ReceiverImpl.BROKEN);
       assertTrue(topic.add(broken));
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertFalse(topic.handle(m));
 
       Iterator i = broken.iterator();
       assertFalse(i.hasNext());
 
       // test the acknowledgement
-      assertFalse(topic.acknowledged(broken));
+      assertFalse(topic.acknowledged(broken.getReceiverID()));
 
-      ReceiverImpl handling = new ReceiverImpl(ReceiverImpl.HANDLING);
+      ReceiverImpl handling = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(topic.add(handling));
       assertFalse(topic.handle(m));
 
@@ -131,7 +154,7 @@ public class TopicTest extends MessagingTestCase
       assertFalse(i.hasNext());
 
       // test the acknowledgement
-      assertFalse(topic.acknowledged(broken));
-      assertTrue(topic.acknowledged(handling));
+      assertFalse(topic.acknowledged(broken.getReceiverID()));
+      assertTrue(topic.acknowledged(handling.getReceiverID()));
    }
 }

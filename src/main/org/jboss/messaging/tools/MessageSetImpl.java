@@ -7,7 +7,7 @@
 package org.jboss.messaging.tools;
 
 import org.jboss.messaging.interfaces.MessageSet;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -33,22 +33,22 @@ public class MessageSetImpl implements MessageSet
 
    // MessageSet implementation -------------------------------------
 
-   public boolean add(Message m)
+   public boolean add(Routable m)
    {
       return messages.add(m);
    }
 
-   public Message get()
+   public Routable get()
    {
 
       if (messages.isEmpty()) {
          return null;
       }
 
-      return (Message)messages.iterator().next();
+      return (Routable)messages.iterator().next();
    }
 
-   public boolean remove(Message m)
+   public boolean remove(Routable m)
    {
       return messages.remove(m);
    }
@@ -72,7 +72,7 @@ public class MessageSetImpl implements MessageSet
        StringBuffer sb = new StringBuffer("{");
        for (Iterator i = messages.iterator(); i.hasNext();)
        {
-           Message m = (Message)i.next();
+           Routable m = (Routable)i.next();
            sb.append(m);
            if (i.hasNext())
            {

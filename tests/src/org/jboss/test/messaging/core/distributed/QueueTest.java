@@ -8,8 +8,8 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.QueuePeer;
+import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.distributed.Queue;
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
@@ -22,7 +22,7 @@ import junit.textui.TestRunner;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class QueuePeerTest extends MessagingTestCase
+public class QueueTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -44,7 +44,7 @@ public class QueuePeerTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public QueuePeerTest(String name)
+   public QueueTest(String name)
    {
       super(name);
    }
@@ -78,16 +78,16 @@ public class QueuePeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      QueuePeer queue = new QueuePeer(dispatcherOne, "QueueOne");
+      Queue queue = new Queue(dispatcherOne, "QueueOne");
       queue.connect();
       assertTrue(queue.isConnected());
 
       ReceiverImpl r = new ReceiverImpl();
       queue.add(r);
 
-      assertTrue(queue.handle(new CoreMessage("someid")));
+      assertTrue(queue.handle(new MessageSupport("someid")));
       Iterator i = r.iterator();
-      assertEquals(new CoreMessage("someid"), i.next());
+      assertEquals(new MessageSupport("someid"), i.next());
       assertFalse(i.hasNext());
    }
 
@@ -95,8 +95,8 @@ public class QueuePeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      QueuePeer queuePeerOne = new QueuePeer(dispatcherOne, "QueueOne");
-      QueuePeer queuePeerTwo = new QueuePeer(dispatcherOne, "QueueOne");
+      Queue queuePeerOne = new Queue(dispatcherOne, "QueueOne");
+      Queue queuePeerTwo = new Queue(dispatcherOne, "QueueOne");
       queuePeerOne.connect();
       queuePeerTwo.connect();
       assertTrue(queuePeerOne.isConnected());
@@ -105,9 +105,9 @@ public class QueuePeerTest extends MessagingTestCase
       ReceiverImpl r = new ReceiverImpl();
       queuePeerOne.add(r);
 
-      assertTrue(queuePeerTwo.handle(new CoreMessage("someid")));
+      assertTrue(queuePeerTwo.handle(new MessageSupport("someid")));
       Iterator i = r.iterator();
-      assertEquals(new CoreMessage("someid"), i.next());
+      assertEquals(new MessageSupport("someid"), i.next());
       assertFalse(i.hasNext());
    }
 
@@ -117,16 +117,16 @@ public class QueuePeerTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
       jChannelTwo.connect("testGroup");
 
-      QueuePeer queue = new QueuePeer(dispatcherOne, "QueueOne");
+      Queue queue = new Queue(dispatcherOne, "QueueOne");
       queue.connect();
       assertTrue(queue.isConnected());
 
       ReceiverImpl r = new ReceiverImpl();
       queue.add(r);
 
-      assertTrue(queue.handle(new CoreMessage("someid")));
+      assertTrue(queue.handle(new MessageSupport("someid")));
       Iterator i = r.iterator();
-      assertEquals(new CoreMessage("someid"), i.next());
+      assertEquals(new MessageSupport("someid"), i.next());
       assertFalse(i.hasNext());
    }
 
@@ -135,8 +135,8 @@ public class QueuePeerTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
       jChannelTwo.connect("testGroup");
 
-      QueuePeer queuePeerOne = new QueuePeer(dispatcherOne, "AQueue");
-      QueuePeer queuePeerTwo = new QueuePeer(dispatcherTwo, "AQueue");
+      Queue queuePeerOne = new Queue(dispatcherOne, "AQueue");
+      Queue queuePeerTwo = new Queue(dispatcherTwo, "AQueue");
       queuePeerOne.connect();
       queuePeerTwo.connect();
 
@@ -146,9 +146,9 @@ public class QueuePeerTest extends MessagingTestCase
       ReceiverImpl r = new ReceiverImpl();
       queuePeerTwo.add(r);
 
-      assertTrue(queuePeerOne.handle(new CoreMessage("someid")));
+      assertTrue(queuePeerOne.handle(new MessageSupport("someid")));
       Iterator i = r.iterator();
-      assertEquals(new CoreMessage("someid"), i.next());
+      assertEquals(new MessageSupport("someid"), i.next());
       assertFalse(i.hasNext());
    }
 
@@ -156,7 +156,7 @@ public class QueuePeerTest extends MessagingTestCase
 
    public static void main(String[] args) throws Exception
    {
-      TestRunner.run(QueuePeerTest.class);
+      TestRunner.run(QueueTest.class);
    }
 
 }

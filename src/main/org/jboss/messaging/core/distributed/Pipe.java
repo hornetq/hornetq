@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.util.RpcServerCall;
 import org.jboss.messaging.util.NotYetImplementedException;
@@ -35,12 +35,16 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class PipeInput implements Receiver
+// TODO the Pipe must be a Channel
+public class Pipe implements Receiver
 {
+   // TODO: get rid of it when turning the pipe into a channel
+   public Serializable getReceiverID() { return null; }
+
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PipeInput.class);
+   private static final Logger log = Logger.getLogger(Pipe.class);
 
    // Attributes ----------------------------------------------------
 
@@ -54,17 +58,17 @@ public class PipeInput implements Receiver
 
 
    /**
-    * PipeInput constructor.
+    * Pipe constructor.
     *
     * @param mode - true for synchronous behaviour, false otherwise.
     * @param dispatcher - the RPCDipatcher to delegate the transport to. The underlying JChannel
-    *        doesn't necessarily have to be connected at the time the PipeInput is
+    *        doesn't necessarily have to be connected at the time the Pipe is
     *        created.
     * @param outputAddress - the address of the group member the receiving end is available on.
     * @param pipeID - the unique identifier of the distributed pipe. This pipe's output end must
     *        be initialized with the same pipeID.
     */
-   public PipeInput(boolean mode,
+   public Pipe(boolean mode,
                     RpcDispatcher dispatcher,
                     Address outputAddress,
                     Serializable pipeID)
@@ -78,7 +82,7 @@ public class PipeInput implements Receiver
 
    // Receiver implementation ----------------------------------------
 
-   public boolean handle(Message m)
+   public boolean handle(Routable m)
    {
       if (synchronous)
       {
@@ -121,7 +125,7 @@ public class PipeInput implements Receiver
 
    public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("PipeInput[");
+      sb.append("Pipe[");
       sb.append(synchronous?"SYNCH":"ASYNCH");
       sb.append("][");
       sb.append(pipeID);
@@ -133,13 +137,13 @@ public class PipeInput implements Receiver
 
    // Private -------------------------------------------------------
 
-   private boolean synchronousHandle(Message m)
+   private boolean synchronousHandle(Routable m)
    {
       // Check if the message was sent remotely; in this case, I must not resend it to avoid
       // endless loops among peers or worse, deadlock on distributed RPC if deadlock detection
       // was not enabled.
 
-      if (m.getHeader(Message.REMOTE_MESSAGE) != null)
+      if (m.getHeader(Routable.REMOTE_ROUTABLE) != null)
       {
          // don't send
          return false;
@@ -157,7 +161,7 @@ public class PipeInput implements Receiver
             new RpcServerCall(pipeID,
                               methodName,
                               new Object[] {m},
-                              new String[] {"org.jboss.messaging.interfaces.Message"});
+                              new String[] {"org.jboss.messaging.interfaces.Routable"});
 
       try
       {
@@ -173,7 +177,7 @@ public class PipeInput implements Receiver
       }
    }
 
-   private boolean asynchronousHandle(Message m)
+   private boolean asynchronousHandle(Routable m)
    {
       throw new NotYetImplementedException();
    }

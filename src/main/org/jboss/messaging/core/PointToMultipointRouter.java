@@ -6,14 +6,16 @@
  */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.logging.Logger;
 
 import java.util.Iterator;
+import java.io.Serializable;
 
 /**
- * A Router that synchronously delivers the message (or a copy of it) to all its receivers.
+ * A Router that synchronously delivers the Routable to all its receivers. What will be actually
+ * passed is the reference to the incoming Routable.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -26,24 +28,9 @@ public class PointToMultipointRouter extends AbstractRouter
 
    // Constructors --------------------------------------------------
 
-   /**
-    *
-    * @param passByReference - if true, the router sends a reference to the same message to all its
-    *        receivers, otherwise the router clones the message and sends distinct copies to the
-    *        receivers.
-    */
-   public PointToMultipointRouter(boolean passByReference)
+   public PointToMultipointRouter(Serializable id)
    {
-      super();
-      this.passByReference = passByReference;
-   }
-
-   /**
-    * By default, the router passes the message by reference.
-    */
-   public PointToMultipointRouter()
-   {
-      this(true);
+      super(id);
    }
 
    // AbstractRouter implementation ---------------------------------
@@ -57,38 +44,33 @@ public class PointToMultipointRouter extends AbstractRouter
     * The sender can obtain the acknowledgment situation on a per-receiver basis using the
     * acknowledged() method.
     *
-    * @see org.jboss.messaging.interfaces.Distributor#acknowledged(Receiver)
+    * @see org.jboss.messaging.interfaces.Distributor#acknowledged(Serializable)
     */
-   public boolean handle(Message m)
+   public boolean handle(Routable r)
    {
 
       boolean allSuccessful = true;
-      synchronized(receivers)
+      synchronized(this)
       {
          if (receivers.isEmpty())
          {
             return false;
          }
-         Message n;
          for (Iterator i = iterator(); i.hasNext(); )
          {
-            n = m;
-            Receiver r = (Receiver)i.next();
-            if (!passByReference)
-            {
-               n = (Message)m.clone();
-            }
+            Serializable receiverID = (Serializable)i.next();
+            Receiver receiver = (Receiver)receivers.get(receiverID);
             try
             {
-               boolean successful = r.handle(n);
+               boolean successful = receiver.handle(r);
                allSuccessful &= successful;
-               receivers.put(r, new Boolean(successful));
+               acknowledgments.put(receiverID, new Boolean(successful));
             }
             catch(Exception e)
             {
                // broken receiver - log the exception and ignore the receiver
                allSuccessful = false;
-               log.error("The receiver " + r + " cannot handle the message.", e);
+               log.error("The receiver " + receiverID + " cannot handle the message.", e);
             }
          }
       }

@@ -6,11 +6,12 @@
  */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.logging.Logger;
 
 import java.util.Iterator;
+import java.io.Serializable;
 
 /**
  * A Router that synchronously delivers the message to one and only one receiver.
@@ -26,9 +27,9 @@ public class PointToPointRouter extends AbstractRouter
 
    // Constructors --------------------------------------------------
 
-   public PointToPointRouter()
+   public PointToPointRouter(Serializable id)
    {
-      super();
+      super(id);
    }
 
    // AbstractRouter implementation ---------------------------------
@@ -37,29 +38,25 @@ public class PointToPointRouter extends AbstractRouter
     * @return true if the router successfully delivered the message to one and only one receiver
     *         (handle() invocation on that receiver returned true), false otherwise.
     */
-   public boolean handle(Message m)
+   public boolean handle(Routable r)
    {
-      synchronized(receivers)
+      synchronized(this)
       {
          if (receivers.isEmpty())
          {
             return false;
          }
 
-         if (!passByReference)
-         {
-            m = (Message)m.clone();
-         }
-
          // iterate over targets and try to send the message until either send succeeds or there are
          //  no targets left
          for(Iterator i = iterator(); i.hasNext(); )
          {
-            Receiver r = (Receiver)i.next();
+            Serializable receiverID = (Serializable)i.next();
+            Receiver receiver = (Receiver)receivers.get(receiverID);
             try
             {
-               boolean successful = r.handle(m);
-               receivers.put(r, new Boolean(successful));
+               boolean successful = receiver.handle(r);
+               acknowledgments.put(receiverID, new Boolean(successful));
                if (successful)
                {
                   return true;
@@ -68,7 +65,7 @@ public class PointToPointRouter extends AbstractRouter
             catch(Exception e)
             {
                // broken receiver - log the exception and ignore the receiver
-               log.error("The receiver " + r + " cannot handle the message.", e);
+               log.error("The receiver " + receiverID + " cannot handle the message.", e);
             }
          }
       }

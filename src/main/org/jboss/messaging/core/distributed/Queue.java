@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.LocalQueue;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.util.RpcServerCall;
 import org.jboss.messaging.util.ServerResponse;
@@ -26,11 +26,11 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class QueuePeer extends Queue implements QueuePeerServerDelegate
+public class Queue extends LocalQueue implements QueueServerDelegate
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(QueuePeer.class);
+   private static final Logger log = Logger.getLogger(Queue.class);
 
    // Attributes ----------------------------------------------------
 
@@ -50,17 +50,18 @@ public class QueuePeer extends Queue implements QueuePeerServerDelegate
 
    /**
     * @param dispatcher - the dispatcher to listen on. The underlying JChannel doesn't necessarily
-    *        have to be connected at the time the QueuePeer instance is created.
+    *        have to be connected at the time the Queue instance is created.
     * @param distributedQueueID - the id of the distributed queue. It must match the id used to
     *        instantiate the other peers.
     * @exception IllegalStateException - thrown if the RpcDispatcher does not come pre-configured
     *            with an RpcServer, so this instance cannot register itself to field distributed
     *            calls.
     *
-    * @see org.jboss.messaging.core.distributed.QueuePeer#connect()
+    * @see org.jboss.messaging.core.distributed.Queue#connect()
     */
-   public QueuePeer(RpcDispatcher dispatcher, Serializable distributedQueueID)
+   public Queue(RpcDispatcher dispatcher, Serializable distributedQueueID)
    {
+      super(distributedQueueID);
       Object serverObject = dispatcher.getServerObject();
       if (!(serverObject instanceof RpcServer))
       {
@@ -170,7 +171,7 @@ public class QueuePeer extends Queue implements QueuePeerServerDelegate
       throw new NotYetImplementedException();
    }
 
-   // QueuePeerServerDelegate implementation -----------------------------
+   // QueueServerDelegate implementation -----------------------------
 
    public Serializable getID()
    {
@@ -187,8 +188,8 @@ public class QueuePeer extends Queue implements QueuePeerServerDelegate
 
       // create a distributed pipe to the new peer; don't use this pipe yet, as its output is
       // not registered with the joining peer's RpcServer.
-      PipeInput pipeToPeer =
-            new PipeInput(Channel.SYNCHRONOUS, dispatcher, joiningPeerAddress, joiningPeerPipeID);
+      Pipe pipeToPeer =
+            new Pipe(Channel.SYNCHRONOUS, dispatcher, joiningPeerAddress, joiningPeerPipeID);
 
       // add it as a router's receiver
       // TODO what happens if this peer receives in this very moment a message to be
@@ -208,11 +209,6 @@ public class QueuePeer extends Queue implements QueuePeerServerDelegate
       return sb.toString();
    }
 
-   public String dump()
-   {
-      return "QueuePeer: " + super.dump();
-   }
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -228,8 +224,8 @@ public class QueuePeer extends Queue implements QueuePeerServerDelegate
       // I will never receive an acknowledgment from myself, since my server objects are not
       // registered yet, so I can safely link to peer.
 
-      PipeInput pipeToPeer =
-            new PipeInput(Channel.SYNCHRONOUS, dispatcher,
+      Pipe pipeToPeer =
+            new Pipe(Channel.SYNCHRONOUS, dispatcher,
                                      ack.getAddress(), ack.getPipeID());
       add(pipeToPeer);
    }

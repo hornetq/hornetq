@@ -38,13 +38,13 @@ public class ReplicatorTopology
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   protected ReplicatorPeer peer;
+   protected Replicator peer;
 
    protected Set topology;
 
    // Constructors --------------------------------------------------
 
-   ReplicatorTopology(ReplicatorPeer peer)
+   ReplicatorTopology(Replicator peer)
    {
       super();
       this.peer = peer;

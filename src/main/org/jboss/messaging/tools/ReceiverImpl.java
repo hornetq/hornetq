@@ -7,7 +7,9 @@
 package org.jboss.messaging.tools;
 
 import org.jboss.messaging.interfaces.Receiver;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
+
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -29,7 +31,12 @@ public class ReceiverImpl implements Receiver
 
    // Receiver implementation ---------------------------------------
 
-   public boolean handle(Message m)
+   public Serializable getReceiverID()
+   {
+      return name;
+   }
+
+   public boolean handle(Routable m)
    {
       if (broken)
       {

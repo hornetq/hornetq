@@ -8,10 +8,11 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.PipeInput;
+import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.distributed.Pipe;
 import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.test.messaging.core.ReceiverImpl;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Message;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
@@ -26,7 +27,7 @@ import junit.textui.TestRunner;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedPipeTest extends MessagingTestCase
+public class PipeTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -50,7 +51,7 @@ public class DistributedPipeTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public DistributedPipeTest(String name)
+   public PipeTest(String name)
    {
       super(name);
    }
@@ -88,13 +89,13 @@ public class DistributedPipeTest extends MessagingTestCase
       inputChannel.close();
       assertFalse(inputChannel.isOpen());
 
-      PipeInput inputPipe =
-            new PipeInput(true, inputDispatcher, outputAddress, "testPipe");
+      Pipe inputPipe =
+            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
       PipeOutput outputPipe =
             new PipeOutput("testPipe", new ReceiverImpl());
       outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
 
-      assertFalse(inputPipe.handle(new CoreMessage("")));
+      assertFalse(inputPipe.handle(new MessageSupport("")));
    }
 
 
@@ -102,10 +103,10 @@ public class DistributedPipeTest extends MessagingTestCase
    {
       assertTrue(inputChannel.isConnected());
 
-      PipeInput inputPipe =
-            new PipeInput(true, inputDispatcher, null, "testPipe");
-      Message m = new CoreMessage("");
-      m.putHeader(Message.REMOTE_MESSAGE, "");
+      Pipe inputPipe =
+            new Pipe(true, inputDispatcher, null, "testPipe");
+      Routable m = new MessageSupport("");
+      m.putHeader(Routable.REMOTE_ROUTABLE, "");
 
       assertFalse(inputPipe.handle(m));
    }
@@ -114,10 +115,10 @@ public class DistributedPipeTest extends MessagingTestCase
    {
       assertTrue(inputChannel.isConnected());
 
-      PipeInput inputPipe =
-            new PipeInput(true, inputDispatcher, null, "testPipe");
+      Pipe inputPipe =
+            new Pipe(true, inputDispatcher, null, "testPipe");
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));
    }
 
@@ -125,8 +126,8 @@ public class DistributedPipeTest extends MessagingTestCase
    {
       assertTrue(inputChannel.isConnected());
       assertTrue(outputChannel.isConnected());
-      PipeInput inputPipe =
-            new PipeInput(true, inputDispatcher, outputAddress, "testPipe");
+      Pipe inputPipe =
+            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
       ReceiverImpl r = new ReceiverImpl();
       PipeOutput outputPipe =
@@ -134,14 +135,15 @@ public class DistributedPipeTest extends MessagingTestCase
       outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
 
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertTrue(inputPipe.handle(m));
 
       Iterator i = r.iterator();
-      Message received = (Message)i.next();
-      assertEquals("", received.getID());
+      Routable received = (Routable)i.next();
+      // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
+      assertEquals("", ((Message)received).getMessageID());
       // make sure the message was marked as "remote"
-      assertTrue(received.getHeader(Message.REMOTE_MESSAGE) != null);
+      assertTrue(received.getHeader(Routable.REMOTE_ROUTABLE) != null);
       assertFalse(i.hasNext());
    }
 
@@ -149,15 +151,15 @@ public class DistributedPipeTest extends MessagingTestCase
    {
       assertTrue(inputChannel.isConnected());
       assertTrue(outputChannel.isConnected());
-      PipeInput inputPipe =
-            new PipeInput(true, inputDispatcher, outputAddress, "testPipe");
+      Pipe inputPipe =
+            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
       ReceiverImpl r = new ReceiverImpl(ReceiverImpl.DENYING);
       PipeOutput outputPipe =
             new PipeOutput("testPipe", r);
       outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));
 
       Iterator i = r.iterator();
@@ -168,8 +170,8 @@ public class DistributedPipeTest extends MessagingTestCase
    {
       assertTrue(inputChannel.isConnected());
       assertTrue(outputChannel.isConnected());
-      PipeInput inputPipe =
-            new PipeInput(true, inputDispatcher, outputAddress, "testPipe");
+      Pipe inputPipe =
+            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
       ReceiverImpl r = new ReceiverImpl(ReceiverImpl.BROKEN);
       PipeOutput outputPipe =
@@ -177,7 +179,7 @@ public class DistributedPipeTest extends MessagingTestCase
       outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
       
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));
 
       Iterator i = r.iterator();
@@ -186,7 +188,7 @@ public class DistributedPipeTest extends MessagingTestCase
 
    public static void main(String[] args) throws Exception
    {
-      TestRunner.run(ReplicatorPeerTest.class);
+      TestRunner.run(ReplicatorTest.class);
    }
 
 }

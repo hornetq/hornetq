@@ -6,10 +6,10 @@
  */
 package org.jboss.messaging.tools;
 
-import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.ReplicatorPeer;
+import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.distributed.Replicator;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
@@ -23,7 +23,7 @@ public class ReplicatorClient extends RpcDispatcherClient
 
    // Attributes ----------------------------------------------------
 
-   private ReplicatorPeer input;
+   private Replicator input;
    private ReplicatorOutput output;
    private int counter = 0;
 
@@ -45,7 +45,7 @@ public class ReplicatorClient extends RpcDispatcherClient
          throw new Exception("Replicator output for " + output.getID() +
                              "already instantiated, cannot use this client as replicatorPeer");
       }
-      input = new ReplicatorPeer(rpcDispatcher, replicatorID);
+      input = new Replicator(rpcDispatcher, replicatorID);
    }
 
    public void setAsOutput(String replicatorID) throws Exception
@@ -62,7 +62,7 @@ public class ReplicatorClient extends RpcDispatcherClient
 
    public void send()
    {
-       Message m = new CoreMessage(new Integer(counter++));
+       Routable m = new MessageSupport(new Integer(counter++));
        System.out.println("Sending "+m+" to the replicatorPeer: " + input.handle(m));
    }
 

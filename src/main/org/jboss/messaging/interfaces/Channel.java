@@ -6,15 +6,29 @@
  */
 package org.jboss.messaging.interfaces;
 
+import java.util.Set;
+
 /**
- * A Channel is a message delivery mechanism that synchronously/asynchronously forwards a Message
- * to the Channel's Receivers.
+ * A Channel is an abstraction that defines a message delivery mechanism that forwards a message
+ * from a sender to one or more receivers.
  *
  * <p>
- * The Channel's default behavior is synchronous. The Channel attempts synchronous delivery and if
- * this is not possible, it holds the message and attempts re-delivery when the deliver() method is
- * called. A Receiver never explicitely pulls a message, it only declares its availability, should
- * a message arrive. It's the cannel that pushes the message to the Recevier.
+ * A Channel configured to behave synchronously will always attempt synchronous delivery on the
+ * entitled Receivers. If the Channel's handle() method returns with a positive acknowledgment,
+ * this guarantees that each and every Receiver that was supposed to get the message actually got
+ * and acknowledged it.
+ * <p>
+ * A Channel that is configured to be asynchronous acts as a middle man: if synchronous
+ * (acknowledged) delivery is not immediately possible, the Channel may hold the message for a
+ * while and attempt re-delivery.  When the asynchronous channel's handle() method returns with a
+ * positive acknowledgment, this doesn't necessarily mean that all entitled Receivers got the
+ * message and acknowledged for it. It only means that the Channel assumes the responsibility for
+ * correct delivery.
+ * <p>
+ * Even in the case of an asynchronous Channel, the Channel implementors are encouraged to attempt
+ * immediate synchronous delivery, and only if that is not possible, to store the message for
+ * further re-delivery.
+ *
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -24,6 +38,24 @@ public interface Channel extends Receiver
 
    public static final boolean SYNCHRONOUS = true;
    public static final boolean ASYNCHRONOUS = false;
+
+   /**
+    * Configure the message handling mode for this channel.
+    *
+    * <p>
+    * Switching the channel from asynchronous to synchronous mode will fail if the channel contains
+    * undelivered messages and the method invocation will return false.
+    *
+    * @param b - true for synchronous delivery, false for asynchronous delivery.
+    *
+    * @return true if the configuration attempt completed successfully, false otherwise.
+    */
+   public boolean setSynchronous(boolean b);
+
+   /**
+    * @return true is the Channel was configured for synchronous handling.
+    */
+   public boolean isSynchronous();
 
    /**
     * Attempt asynchronous delivery of messages being held by the Channel.
@@ -39,23 +71,17 @@ public interface Channel extends Receiver
    public boolean hasMessages();
 
    /**
-    * Configure the message handling mode for this channel.
-    *
-    * <p>
-    * Switching the channel from asynchronous to synchronous mode will fail if the channel contains
-    * undelivered messages and the method invocation will return false. 
-    *
-    * @param b - true for synchronous delivery, false for asynchronous delivery.
-    *
-    * @return true if the configuration attempt completed successfully, false otherwise.
+    * @return a set containing unacknowledged message IDs. Could return and empty Set but never null
     */
-   public boolean setSynchronous(boolean b);
+   public Set getUnacknowledged();
 
-   /**
-    * @return true is the Channel was configured for synchronous handling.
-    */
-   public boolean isSynchronous();
+   public void setMessageStore(MessageStore store);
 
+   public MessageStore getMessageStore();
+
+   public void setAcknowledgmentStore(AcknowledgmentStore store);
+
+   public AcknowledgmentStore getAcknowledgmentStore();
 }
 
 

@@ -16,29 +16,29 @@ package org.jboss.messaging.interfaces;
 public interface MessageSet
 {
    /**
-    * Add a message to the message set.
+    * Add a routable to the routable set.
     * 
-    * @param message - the message to add.
+    * @param routable - the routable to add.
     *
-    * @return true if the message set did not already contained the specified message.
+    * @return true if the routable set did not already contained the specified routable.
     */
-   public boolean add(Message message);
+   public boolean add(Routable routable);
 
    /**
     * Returns a random message from the set, without removing it.
     *
     * @return a random message. Returns null if there are no messages in the set. 
     */
-   public Message get();
+   public Routable get();
 
    /**
-    * Remove a message from the message set.
+    * Remove a routable from the routable set.
     * 
-    * @param message - the message to be removed.
+    * @param routable - the routable to be removed.
     *
     * @return true if the set contained the specified element.
     */
-   public boolean remove(Message message);
+   public boolean remove(Routable routable);
 
    /**
     * Lock the message set

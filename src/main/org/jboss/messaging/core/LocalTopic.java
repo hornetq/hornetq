@@ -6,20 +6,23 @@
  */
 package org.jboss.messaging.core;
 
+import java.io.Serializable;
+
 /**
- * A Topic implements a Publishes/Subscriber messaging domain. It sends a message to all receivers
- * connected at the time the message is sent.
+ * A LocalTopic implements a Publishes/Subscriber messaging domain. It sends a message to all
+ * receivers connected at the time the message is sent. All receivers are in the same address space.
+ * By default a topic is configured as an asynchronous Channel.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Topic extends AbstractDestination
+public class LocalTopic extends AbstractDestination
 {
    // Constructors --------------------------------------------------
 
-   public Topic()
+   public LocalTopic(Serializable id)
    {
-       super();
+       super(id);
 
        // set the input pipe to be synchronous
        inputPipe.setSynchronous(true);
@@ -29,13 +32,7 @@ public class Topic extends AbstractDestination
 
    protected AbstractRouter createRouter()
    {
-       return new PointToMultipointRouter();
+       return new PointToMultipointRouter("P2MPRouter");
    }
 
-   // DEBUG ---------------------------------------------------------
-
-   public String dump()
-   {
-      return "Topic: "+super.dump();
-   }
 }

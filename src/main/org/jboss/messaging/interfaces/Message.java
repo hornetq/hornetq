@@ -10,35 +10,22 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- * An atomic, self containted unit of data that flows through the system.
+ * A Message is a Routable that has a payload. The payload is what the sending clients submit to the
+ * messaging system and expect to be delivered to the intended receiving clients. Each message has
+ * an ID, which is not the same as the Routable ID. There can be two different Message copies in the
+ * system carrying the same ID, while their Routable IDs are always different.
  *
- * It supports the concept of message header. Various messaging system components can attach or
- * remove headers to/from the message, primarily for message flow management purposes.
+ * When implementing this interface, make sure you override equals() and hashCode() such that two
+ * Message instances with equals IDs are equal.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface Message extends Serializable, Cloneable
+public interface Message extends Routable
 {
-   public static final String REMOTE_MESSAGE = "REMOTE_MESSAGE";
-   // the value is a Serializable
-   public static final String REPLICATOR_ID = "REPLICATOR_ID";
-   // the value is a Serializable
-   public static final String REPLICATOR_INPUT_ID = "REPLICATOR_INPUT_ID";
-
-   public Serializable getID();
-
-   public void putHeader(String name, Serializable value);
-
-   public Serializable getHeader(String name);
-
-   public Serializable removeHeader(String name);
-
-   public Set getHeaderNames();
-
    /**
-    * Make sure that classes implementing this interface propery override clone() method.
+    * Returns the message payload.
     */
-   public Object clone();
-   
+   public Serializable getPayload();
+
 }

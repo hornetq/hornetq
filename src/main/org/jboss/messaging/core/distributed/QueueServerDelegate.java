@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-interface QueuePeerServerDelegate extends ServerDelegate
+interface QueueServerDelegate extends ServerDelegate
 {
    /**
     * Remote method invoked by a queue peer on all other queue peers when joining the distributed

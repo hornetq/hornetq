@@ -6,34 +6,46 @@
  */
 package org.jboss.messaging.interfaces;
 
+import java.io.Serializable;
+
 /**
- * A component that handles Messages. Handling could mean consumption or synchronous/asynchronous
+ * A component that handles Routables. Handling means consumption or synchronous/asynchronous
  * forwarding to another Receiver(s).
+ *
+ * Note. When implementing Receiver, override Object's equals() and hashCode() so two receiver
+ * instances with equal IDs will be equal.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
 public interface Receiver
 {
+
    /**
-    * Hand over the message to the Receiver.
+    * Returns the receiver ID. The receiver ID will be used by the sender when storing a
+    * negative acknowledment for reliable messages.
+    * @return this receiver ID.
+    */
+   public Serializable getReceiverID();
+
+   /**
+    * Hand over the routable to the Receiver.
     *
     * <p>
     * When invoking this method, be prepared to deal with unchecked exceptions the Receiver may
     * throw. This is equivalent with a negative acknowledgement, but the sender may also decide
     * to remove this Receiver from its list and not attempt delivery to it anymore.
     *
-    * TODO: specify the behavior when receiving a null message.
+    * TODO: specify the behavior when receiving a null routable.
     *
-    * @param message the message to be handled by the Receiver.
+    * @param routable the routable to be handled by the Receiver.
     *
-    * @return true if the Receiver acknowledges the Message and relieves the sender of the
-    *         responsibity of dealing with the Message.
+    * @return true if the Receiver acknowledges the Routable and relieves the sender of the
+    *         responsibity of dealing with the Routable.
     */
-   public boolean handle(Message message);
+   public boolean handle(Routable routable);
 
 
-   //
-   // public boolean handle(Message message, Set receivers);
-   //
+
+
 }

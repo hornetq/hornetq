@@ -6,50 +6,19 @@
  */
 package org.jboss.messaging.interfaces;
 
+import java.io.Serializable;
+
 /**
- * A message reference provides basic information about a message.
+ * A "lightweight representative" of a Message.
  * 
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @version $Revision$
  */
-public interface MessageReference
+public interface MessageReference extends Routable
 {
-   // Constants -----------------------------------------------------
+   /**
+    * The Message ID, <i>relative to the MessageStoreImpl</i>
+    */
+   public Serializable getStorageID();
 
-   // Public --------------------------------------------------------
-
-   /**
-    * Get the message id
-    * 
-    * @return the message id
-    */
-   Comparable getMessageID();
-   
-   /**
-    * Get the message priority
-    * 
-    * @return the priority
-    */
-   int getMessagePriority();
-   
-   /**
-    * Get the message address
-    * 
-    * @return the address
-    */
-   MessageAddress getMessageAddress();
-   
-   /**
-    * Does the message require guaranteed delivery?
-    * 
-    * @return true for guaranteed delivery, false otherwise
-    */
-   boolean isGuaranteed();
-
-   /**
-    * Release a reference that is no longer used
-    */
-   void release();
-   
-   // Inner Classes --------------------------------------------------
 }

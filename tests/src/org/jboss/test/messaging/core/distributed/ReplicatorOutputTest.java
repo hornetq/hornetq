@@ -10,7 +10,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
-import org.jboss.messaging.core.distributed.ReplicatorPeer;
+import org.jboss.messaging.core.distributed.Replicator;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 
@@ -152,7 +152,7 @@ public class ReplicatorOutputTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      ReplicatorPeer input = new ReplicatorPeer(dispatcherOne, "Replicator");
+      Replicator input = new Replicator(dispatcherOne, "Replicator");
       input.start();
 
       ReplicatorOutput peer = new ReplicatorOutput(dispatcherOne, "Replicator");
@@ -164,7 +164,7 @@ public class ReplicatorOutputTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      ReplicatorPeer input = new ReplicatorPeer(dispatcherOne, "Replicator");
+      Replicator input = new Replicator(dispatcherOne, "Replicator");
       input.start();
 
       ReplicatorOutput outputOne = new ReplicatorOutput(dispatcherOne, "Replicator");

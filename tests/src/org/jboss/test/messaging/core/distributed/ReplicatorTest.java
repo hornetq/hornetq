@@ -10,9 +10,9 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
-import org.jboss.messaging.core.distributed.ReplicatorPeer;
+import org.jboss.messaging.core.distributed.Replicator;
 import org.jboss.messaging.core.distributed.DistributedException;
-import org.jboss.messaging.core.CoreMessage;
+import org.jboss.messaging.core.MessageSupport;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 
@@ -25,7 +25,7 @@ import java.util.List;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ReplicatorPeerTest extends MessagingTestCase
+public class ReplicatorTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -47,7 +47,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public ReplicatorPeerTest(String name)
+   public ReplicatorTest(String name)
    {
       super(name);
    }
@@ -84,7 +84,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
 
       try
       {
-         new ReplicatorPeer(dispatcher, "doesntmatter");
+         new Replicator(dispatcher, "doesntmatter");
          fail("Should have thrown IllegalStateException");
       }
       catch(IllegalStateException e)
@@ -100,7 +100,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
 
       try
       {
-         new ReplicatorPeer(dispatcher, "doesntmatter");
+         new Replicator(dispatcher, "doesntmatter");
          fail("Should have thrown IllegalStateException");
       }
       catch(IllegalStateException e)
@@ -115,7 +115,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
       JChannel jChannel = new JChannel();
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, new RpcServer());
       assertFalse(jChannel.isConnected());
-      ReplicatorPeer peerOne = new ReplicatorPeer(dispatcher, "doesntmatter");
+      Replicator peerOne = new Replicator(dispatcher, "doesntmatter");
 
       try
       {
@@ -130,8 +130,8 @@ public class ReplicatorPeerTest extends MessagingTestCase
 
    public void testHandleInputPeerNotConnected() throws Exception
    {
-      ReplicatorPeer input = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
-      assertFalse(input.handle(new CoreMessage("messageID")));
+      Replicator input = new Replicator(dispatcherOne, "ReplicatorID");
+      assertFalse(input.handle(new MessageSupport("messageID")));
 
    }
 
@@ -139,7 +139,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      ReplicatorPeer replicatorPeer = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
+      Replicator replicatorPeer = new Replicator(dispatcherOne, "ReplicatorID");
       replicatorPeer.start();
       assertTrue(replicatorPeer.isStarted());
 
@@ -151,12 +151,12 @@ public class ReplicatorPeerTest extends MessagingTestCase
       ReceiverImpl r = new ReceiverImpl();
       output.setReceiver(r);
 
-      assertTrue(replicatorPeer.handle(new CoreMessage("someid")));
+      assertTrue(replicatorPeer.handle(new MessageSupport("someid")));
 
       r.waitForHandleInvocations(1);
 
       Iterator i = r.iterator();
-      assertEquals(new CoreMessage("someid"), i.next());
+      assertEquals(new MessageSupport("someid"), i.next());
       assertFalse(i.hasNext());
 
       // the messages should be acknowledged in a resonable time, otherwise the test will timeout
@@ -175,7 +175,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      ReplicatorPeer peer = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
+      Replicator peer = new Replicator(dispatcherOne, "ReplicatorID");
       peer.start();
       assertTrue(peer.isStarted());
 
@@ -186,7 +186,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
       ReceiverImpl r = new ReceiverImpl();
       r.resetInvocationCount();
       output.setReceiver(r);
-      CoreMessage m1 = new CoreMessage("messageID1"), m2 = new CoreMessage("messageID2");
+      MessageSupport m1 = new MessageSupport("messageID1"), m2 = new MessageSupport("messageID2");
 
       assertTrue(peer.handle(m1));
       assertTrue(peer.handle(m2));
@@ -214,8 +214,8 @@ public class ReplicatorPeerTest extends MessagingTestCase
    {
       jChannelOne.connect("testGroup");
 
-      ReplicatorPeer inputPeerOne = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
-      ReplicatorPeer inputPeerTwo = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
+      Replicator inputPeerOne = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator inputPeerTwo = new Replicator(dispatcherOne, "ReplicatorID");
       inputPeerOne.start();
       inputPeerTwo.start();
       assertTrue(inputPeerOne.isStarted());
@@ -228,11 +228,11 @@ public class ReplicatorPeerTest extends MessagingTestCase
       ReceiverImpl r = new ReceiverImpl();
       r.resetInvocationCount();
       output.setReceiver(r);
-      CoreMessage
-            m1 = new CoreMessage("messageID1"),
-            m2 = new CoreMessage("messageID2"),
-            m3 = new CoreMessage("messageID3"),
-            m4 = new CoreMessage("messageID4");
+      MessageSupport
+            m1 = new MessageSupport("messageID1"),
+            m2 = new MessageSupport("messageID2"),
+            m3 = new MessageSupport("messageID3"),
+            m4 = new MessageSupport("messageID4");
 
       assertTrue(inputPeerOne.handle(m1));
       assertTrue(inputPeerTwo.handle(m2));
@@ -276,7 +276,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
       jChannelTwo.connect("testGroup");
 
-      ReplicatorPeer inputPeer = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
+      Replicator inputPeer = new Replicator(dispatcherOne, "ReplicatorID");
       inputPeer.start();
       assertTrue(inputPeer.isStarted());
 
@@ -287,11 +287,11 @@ public class ReplicatorPeerTest extends MessagingTestCase
       ReceiverImpl r = new ReceiverImpl();
       r.resetInvocationCount();
       output.setReceiver(r);
-      CoreMessage
-            m1 = new CoreMessage("messageID1"),
-            m2 = new CoreMessage("messageID2"),
-            m3 = new CoreMessage("messageID3"),
-            m4 = new CoreMessage("messageID4");
+      MessageSupport
+            m1 = new MessageSupport("messageID1"),
+            m2 = new MessageSupport("messageID2"),
+            m3 = new MessageSupport("messageID3"),
+            m4 = new MessageSupport("messageID4");
 
       assertTrue(inputPeer.handle(m1));
       assertTrue(inputPeer.handle(m2));
@@ -324,7 +324,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
       jChannelTwo.connect("testGroup");
 
-      ReplicatorPeer inputPeer = new ReplicatorPeer(dispatcherOne, "ReplicatorID");
+      Replicator inputPeer = new Replicator(dispatcherOne, "ReplicatorID");
       inputPeer.start();
       assertTrue(inputPeer.isStarted());
 
@@ -344,11 +344,11 @@ public class ReplicatorPeerTest extends MessagingTestCase
       rTwo.resetInvocationCount();
       outputTwo.setReceiver(rTwo);
 
-      CoreMessage
-            m1 = new CoreMessage("messageID1"),
-            m2 = new CoreMessage("messageID2"),
-            m3 = new CoreMessage("messageID3"),
-            m4 = new CoreMessage("messageID4");
+      MessageSupport
+            m1 = new MessageSupport("messageID1"),
+            m2 = new MessageSupport("messageID2"),
+            m3 = new MessageSupport("messageID3"),
+            m4 = new MessageSupport("messageID4");
 
       assertTrue(inputPeer.handle(m1));
       assertTrue(inputPeer.handle(m2));
@@ -388,7 +388,7 @@ public class ReplicatorPeerTest extends MessagingTestCase
    //       java junit.textui.TestRunner fully.qualified.test.class.name
    public static void main(String[] args) throws Exception
    {
-      TestRunner.run(ReplicatorPeerTest.class);
+      TestRunner.run(ReplicatorTest.class);
    }
 
 }

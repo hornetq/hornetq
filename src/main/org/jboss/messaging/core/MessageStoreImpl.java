@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.logging.Logger;
 
@@ -19,21 +20,21 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class MessageStore
+public class MessageStoreImpl
 {
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(MessageStore.class);
+   private static final Logger log = Logger.getLogger(MessageStoreImpl.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   /** <messageID - message> */
+   /** <messageID - routable> */
    protected Map store;
 
    // Constructors --------------------------------------------------
 
-   public MessageStore()
+   public MessageStoreImpl()
    {
       store = new HashMap();
    }
@@ -41,15 +42,16 @@ public class MessageStore
    // Public --------------------------------------------------------
 
    /**
-    * If the message already exists, it only increments the reference counter.
+    * If the routable already exists, it only increments the reference counter.
     */
-   public synchronized void add(Message message)
+   public synchronized void add(Routable routable)
    {
-      Serializable messageID = message.getID();
+
+      Serializable messageID = ((Message)routable).getMessageID(); // TODO Must change!!!! Hack to pass the tests!!!
       MessageWrapper w = (MessageWrapper)store.get(messageID);
       if (w == null)
       {
-         w = new MessageWrapper(message);
+         w = new MessageWrapper(routable);
          store.put(messageID, w);
       }
       w.increment();
@@ -57,9 +59,9 @@ public class MessageStore
    }
 
    /**
-    * Decrements the reference counter for the message and if there are no more references to the
-    * message, physically remove it from the store.
-    * @return true if the message was dereferenced/removed or false if the message cannot be found
+    * Decrements the reference counter for the routable and if there are no more references to the
+    * routable, physically remove it from the store.
+    * @return true if the routable was dereferenced/removed or false if the routable cannot be found
     */
    public synchronized boolean remove(Serializable messageID)
    {
@@ -97,23 +99,23 @@ public class MessageStore
    // Inner classes -------------------------------------------------
 
    /**
-    * A wrapper that keeps the Message and counts references to it.
+    * A wrapper that keeps the Routable and counts references to it.
     */
    private class MessageWrapper
    {
-      /** counts references to the message */
+      /** counts references to the routable */
       private int cnt;
-      private Message message;
+      private Routable routable;
 
-      MessageWrapper(Message m)
+      MessageWrapper(Routable m)
       {
-         message = m;
+         routable = m;
          cnt = 0;
       }
 
-      public Message getMessage()
+      public Routable getMessage()
       {
-         return message;
+         return routable;
       }
 
       public int getCount()
@@ -136,7 +138,8 @@ public class MessageStore
 
       public String toString()
       {
-         return message.getID() + ", references = " + cnt;
+          // TODO ((Message)routable).getMessageID() Must change!!!! Hack to pass the tests!!!
+         return ((Message)routable).getMessageID() + ", references = " + cnt;
       }
    }
 }

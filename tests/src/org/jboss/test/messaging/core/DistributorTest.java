@@ -7,9 +7,9 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.interfaces.Router;
-import org.jboss.messaging.core.PointToPointRouter;
-import org.jboss.messaging.core.CoreMessage;
+import org.jboss.messaging.interfaces.Receiver;
+import org.jboss.messaging.interfaces.Distributor;
+import org.jboss.messaging.core.MessageSupport;
 
 import java.util.Iterator;
 
@@ -20,6 +20,10 @@ import java.util.Iterator;
  */
 public class DistributorTest extends MessagingTestCase
 {
+   // Attributes ----------------------------------------------------
+
+   protected Distributor distributor;
+
    // Constructors --------------------------------------------------
 
    public DistributorTest(String name)
@@ -27,66 +31,95 @@ public class DistributorTest extends MessagingTestCase
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   //
+   // Distributor tests
+   //
 
-   public void testPointToPointRouter() throws Exception
+   public void testAddOneReceiver()
    {
-      PointToPointRouter p2pRouter = new PointToPointRouter();
-      distributorAddTests(p2pRouter);
-      distributorRemoveTests(p2pRouter);
+      if (distributor == null) { return; }
+
+      Receiver r = new ReceiverImpl("ReceiverID1", ReceiverImpl.HANDLING);
+      assertTrue(distributor.add(r));
+      assertFalse(distributor.add(r));
+      assertTrue(distributor.contains("ReceiverID1"));
+      assertTrue(r == distributor.get("ReceiverID1"));
+      Iterator i = distributor.iterator();
+      assertEquals("ReceiverID1", i.next());
+      assertFalse(i.hasNext());
+      distributor.clear();
+      i = distributor.iterator();
+      assertFalse(i.hasNext());
+
    }
 
-   public void testPointToMultipointRouter() throws Exception
+   public void testAddMultipleReceivers()
    {
-//      PointToMultipointRouter p2mRouter = new PointToMultipointRouter();
-//      distributorAddTests(p2mRouter);
-//      distributorRemoveTests(p2mRouter);
+      if (distributor == null) { return; }
+
+      Receiver r1 = new ReceiverImpl("ReceiverID1", ReceiverImpl.HANDLING);
+      Receiver r2 = new ReceiverImpl("ReceiverID2", ReceiverImpl.HANDLING);
+      assertTrue(distributor.add(r1));
+      assertTrue(distributor.add(r2));
+      assertTrue(distributor.contains("ReceiverID1"));
+      assertTrue(distributor.contains("ReceiverID2"));
+      assertTrue(r1 == distributor.get("ReceiverID1"));
+      assertTrue(r2 == distributor.get("ReceiverID2"));
+      distributor.clear();
+      Iterator i = distributor.iterator();
+      assertFalse(i.hasNext());
    }
 
-
-   /**
-    * This method assumes the router has no associates receivers.
-    */
-   private void distributorAddTests(Router router) throws Exception
+   public void testRemoveInexistentRouter()
    {
-      assertFalse(router.iterator().hasNext());
+      if (distributor == null) { return; }
+
+      assertNull(distributor.remove("NoSuchId"));
+
+   }
+
+   public void testVariousAdds()
+   {
+      if (distributor == null) { return; }
+
+      assertFalse(distributor.iterator().hasNext());
 
       ReceiverImpl r = new ReceiverImpl();
-      assertTrue(router.add(r));
-      assertFalse(router.acknowledged(r));
+      assertTrue(distributor.add(r));
+      assertFalse(distributor.acknowledged(r.getReceiverID()));
 
-      assertTrue(router.handle(new CoreMessage("")));
-      assertTrue(router.acknowledged(r));
+      assertTrue(((Receiver)distributor).handle(new MessageSupport("")));
+      assertTrue(distributor.acknowledged(r.getReceiverID()));
 
       // make sure that a spurious add attempt does not change the status of the last handle() call
-      assertFalse(router.add(r));
-      assertTrue(router.acknowledged(r));
-
-      router.clear();
+      assertFalse(distributor.add(r));
+      assertTrue(distributor.acknowledged(r.getReceiverID()));
    }
 
 
    /**
     * This method assumes the router has no associates receivers.
     */
-   private void distributorRemoveTests(Router router) throws Exception
+   public void testVariousRemoves()
    {
-      assertFalse(router.iterator().hasNext());
+      if (distributor == null) { return; }
+      
+      assertFalse(distributor.iterator().hasNext());
 
       ReceiverImpl r = new ReceiverImpl();
-      assertTrue(router.add(r));
-      Iterator i = router.iterator();
-      assertEquals(r, i.next());
+      assertTrue(distributor.add(r));
+      Iterator i = distributor.iterator();
+      assertEquals(r.getReceiverID(), i.next());
       assertFalse(i.hasNext());
 
-      assertTrue(router.remove(r));
+      assertTrue(r == distributor.remove(r.getReceiverID()));
 
       // make sure that removing an inexistent Receiver returns false
-      assertFalse(router.remove(r));
+      assertNull(distributor.remove(r.getReceiverID()));
 
-      i = router.iterator();
+      i = distributor.iterator();
       assertFalse(i.hasNext());
-
-      router.clear();
    }
 }
+
+

@@ -6,9 +6,9 @@
  */
 package org.jboss.messaging.tools;
 
-import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.QueuePeer;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.core.MessageSupport;
+import org.jboss.messaging.core.distributed.Queue;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.util.RpcServer;
 
 /**
@@ -17,21 +17,21 @@ import org.jboss.messaging.util.RpcServer;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedQueueClient extends RpcDispatcherClient
+public class QueueClient extends RpcDispatcherClient
 {
 
    // Attributes ----------------------------------------------------
    
-   private QueuePeer queuePeer;
+   private Queue queuePeer;
    private int counter = 0;
    private int receiverCounter = 0;
 
    // Constructors --------------------------------------------------
 
-   public DistributedQueueClient() throws Exception
+   public QueueClient() throws Exception
    {
       super(new RpcServer());
-      queuePeer = new QueuePeer(rpcDispatcher, "DistributedQueueID");
+      queuePeer = new Queue(rpcDispatcher, "DistributedQueueID");
    }
 
    // Public --------------------------------------------------------
@@ -44,18 +44,13 @@ public class DistributedQueueClient extends RpcDispatcherClient
 
    public void send()
    {
-       Message m = new CoreMessage(new Integer(counter++));
+       Routable m = new MessageSupport(new Integer(counter++));
        System.out.println("Sending "+m+" to the pipe input: "+queuePeer.handle(m));
    }
 
    public void addReceiver()
    {
       queuePeer.add(new ReceiverImpl("Receiver " + receiverCounter++));
-   }
-
-   public String dump()
-   {
-      return queuePeer.dump();
    }
 
    public void exit() {

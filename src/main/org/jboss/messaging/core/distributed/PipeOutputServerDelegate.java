@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.util.ServerDelegate;
-import org.jboss.messaging.interfaces.Receiver;
+import org.jboss.messaging.interfaces.Routable;
 
 
 /**
@@ -16,6 +16,14 @@ import org.jboss.messaging.interfaces.Receiver;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-interface PipeOutputServerDelegate extends Receiver, ServerDelegate
+interface PipeOutputServerDelegate extends ServerDelegate
 {
+
+   /**
+    * The metohd to be called remotely by the input end of the distributed pipe.
+    *
+    * @return the acknowledgement as returned by the associated receiver.
+    */
+   public boolean handle(Routable r);
+
 }

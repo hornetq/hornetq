@@ -6,10 +6,9 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.CoreMessage;
+import org.jboss.messaging.interfaces.Routable;
+import org.jboss.messaging.core.LocalQueue;
+import org.jboss.messaging.core.MessageSupport;
 
 
 import java.util.Iterator;
@@ -18,29 +17,55 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class QueueTest extends MessagingTestCase
+public class LocalQueueAsChannelTest extends ChannelSupportTest
 {
    // Constructors --------------------------------------------------
 
-   public QueueTest(String name)
+   public LocalQueueAsChannelTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   public void setUp() throws Exception
+   {
+      super.setUp();
+
+      // Create a LocalQueue to be tested by the superclass tests
+      channel = new LocalQueue("LocalQueueID");
+      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
+      ((LocalQueue)channel).add(receiverOne);
+
+   }
+
+   public void tearDown()throws Exception
+   {
+      ((LocalQueue)channel).clear();
+      channel = null;
+      receiverOne = null;
+      super.tearDown();
+   }
+
+   //
+   // This test also runs all ChannelSupportTest's tests
+   //
+
+   public void testDefaultAsynchronous()
+   {
+      assertFalse(channel.isSynchronous());
+   }
 
    public void testQueue() throws Exception
    {
-      Queue queue = new Queue();
+      LocalQueue queue = new LocalQueue("");
 
       // send without a receiver
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       // attach a receiver
 
-      ReceiverImpl rOne = new ReceiverImpl();
+      ReceiverImpl rOne = new ReceiverImpl("ReceiverONE", ReceiverImpl.HANDLING);
       assertTrue(queue.add(rOne));
 
       // verify if the receiver got the message; by default the queue is configured to pass by
@@ -54,7 +79,7 @@ public class QueueTest extends MessagingTestCase
 
       // send with one receiver
 
-      m = new CoreMessage("");
+      m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       i = rOne.iterator();
@@ -65,10 +90,10 @@ public class QueueTest extends MessagingTestCase
 
       // send with two receivers
 
-      ReceiverImpl rTwo = new ReceiverImpl();
+      ReceiverImpl rTwo = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(queue.add(rTwo));
 
-      m = new CoreMessage("");
+      m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       Iterator iOne = rOne.iterator(), iTwo = rTwo.iterator();
@@ -96,18 +121,18 @@ public class QueueTest extends MessagingTestCase
     */
    public void testDenyingReceiver() throws Exception
    {
-      Queue queue = new Queue();
+      LocalQueue queue = new LocalQueue("");
 
-      ReceiverImpl denying = new ReceiverImpl(ReceiverImpl.DENYING);
+      ReceiverImpl denying = new ReceiverImpl("DenyingReceiverID", ReceiverImpl.DENYING);
       assertTrue(queue.add(denying));
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       Iterator i = denying.iterator();
       assertFalse(i.hasNext());
 
-      ReceiverImpl handling = new ReceiverImpl(ReceiverImpl.HANDLING);
+      ReceiverImpl handling = new ReceiverImpl("HandlingReceiverID", ReceiverImpl.HANDLING);
       assertTrue(queue.add(handling));
 
       // the delivery should have taken place already
@@ -122,12 +147,12 @@ public class QueueTest extends MessagingTestCase
 
    public void testDenyingReceiverThatStartsAccepting() throws Exception
    {
-      Queue queue = new Queue();
+      LocalQueue queue = new LocalQueue("");
 
       ReceiverImpl denying = new ReceiverImpl(ReceiverImpl.DENYING);
       assertTrue(queue.add(denying));
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       Iterator i = denying.iterator();
@@ -151,18 +176,18 @@ public class QueueTest extends MessagingTestCase
     */
    public void testBrokenReceiver() throws Exception
    {
-      Queue queue = new Queue();
+      LocalQueue queue = new LocalQueue("");
 
-      ReceiverImpl broken = new ReceiverImpl(ReceiverImpl.BROKEN);
+      ReceiverImpl broken = new ReceiverImpl("BrokenReceiverID", ReceiverImpl.BROKEN);
       assertTrue(queue.add(broken));
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       Iterator i = broken.iterator();
       assertFalse(i.hasNext());
 
-      ReceiverImpl handling = new ReceiverImpl(ReceiverImpl.HANDLING);
+      ReceiverImpl handling = new ReceiverImpl("HandlingReceiverID", ReceiverImpl.HANDLING);
       assertTrue(queue.add(handling));
 
       // the delivery should have taken place already
@@ -177,12 +202,12 @@ public class QueueTest extends MessagingTestCase
 
    public void testBrokenReceiverThatHeals() throws Exception
    {
-      Queue queue = new Queue();
+      LocalQueue queue = new LocalQueue("");
 
       ReceiverImpl broken = new ReceiverImpl(ReceiverImpl.BROKEN);
       assertTrue(queue.add(broken));
 
-      Message m = new CoreMessage("");
+      Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
       Iterator i = broken.iterator();

@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.interfaces.Receiver;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.logging.Logger;
 
@@ -50,7 +50,9 @@ public class PipeOutput implements PipeOutputServerDelegate
       this.receiver = receiver;
    }
 
-   // PipeOutputServerDelegate implementation --------------
+
+
+   // PipeOutputServerDelegate implementation -----------------------
 
    public Serializable getID()
    {
@@ -62,12 +64,12 @@ public class PipeOutput implements PipeOutputServerDelegate
     *
     * @return the acknowledgement as returned by the associated receiver.
     */
-   public boolean handle(Message m)
+   public boolean handle(Routable m)
    {
       try
       {
          // Mark the message as being received from a remote endpoint
-         m.putHeader(Message.REMOTE_MESSAGE, Message.REMOTE_MESSAGE);
+         m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
          return receiver.handle(m);
       }
       catch(Exception e)

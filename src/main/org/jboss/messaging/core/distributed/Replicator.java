@@ -8,8 +8,8 @@ package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.interfaces.Channel;
+import org.jboss.messaging.interfaces.Routable;
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.ChannelListener;
@@ -17,6 +17,7 @@ import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
@@ -41,11 +42,11 @@ import java.util.Random;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ReplicatorPeer implements Channel
+public class Replicator extends ChannelSupport
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ReplicatorPeer.class);
+   private static final Logger log = Logger.getLogger(Replicator.class);
 
    // Static --------------------------------------------------------
    
@@ -77,7 +78,7 @@ public class ReplicatorPeer implements Channel
     * @exception IllegalStateException - thrown if the RpcDispatcher does not come pre-configured
     *            with an RpcServer.
     */
-   public ReplicatorPeer(RpcDispatcher dispatcher, Serializable replicatorID)
+   public Replicator(RpcDispatcher dispatcher, Serializable replicatorID)
    {
       Object serverObject = dispatcher.getServerObject();
       if (!(serverObject instanceof RpcServer))
@@ -92,11 +93,16 @@ public class ReplicatorPeer implements Channel
 
    // Channel implementation ----------------------------------------
 
+   public Serializable getReceiverID()
+   {
+      return replicatorID;
+   }
+
    /**
     * TODO if I don't have a reliable store, it might just not be possible to handle the
     *      message synchronously
     */
-   public boolean handle(Message m)
+   public boolean handle(Routable m)
    {
       synchronized(this)
       {
@@ -107,8 +113,8 @@ public class ReplicatorPeer implements Channel
          }
       }
 
-      m.putHeader(Message.REPLICATOR_ID, replicatorID);
-      m.putHeader(Message.REPLICATOR_INPUT_ID, peerID);
+      m.putHeader(Routable.REPLICATOR_ID, replicatorID);
+      m.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
 
       try
       {
@@ -146,6 +152,11 @@ public class ReplicatorPeer implements Channel
    public boolean hasMessages()
    {
       return !collector.isEmpty();
+   }
+
+   public Set getUnacknowledged()
+   {
+      throw new NotYetImplementedException();
    }
 
    public boolean setSynchronous(boolean b)
@@ -246,7 +257,7 @@ public class ReplicatorPeer implements Channel
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("ReplicatorPeer[");
+      StringBuffer sb = new StringBuffer("Replicator[");
       sb.append(replicatorID);
       sb.append(".");
       sb.append(peerID);
@@ -257,6 +268,11 @@ public class ReplicatorPeer implements Channel
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   protected void storeNACKedMessageLocally(Routable r, Serializable receiverID)
+   {
+      throw new NotYetImplementedException();
+   }
 
    protected ReplicatorTopology getTopology()
    {
@@ -288,7 +304,7 @@ public class ReplicatorPeer implements Channel
    {
       public void channelConnected(org.jgroups.Channel channel)
       {
-         log.debug(ReplicatorPeer.this + " channel connected");
+         log.debug(Replicator.this + " channel connected");
          try
          {
             start();
@@ -301,24 +317,24 @@ public class ReplicatorPeer implements Channel
 
       public void channelDisconnected(org.jgroups.Channel channel)
       {
-         log.debug(ReplicatorPeer.this + " channel disconnected");
+         log.debug(Replicator.this + " channel disconnected");
          stop();
       }
 
       public void channelClosed(org.jgroups.Channel channel)
       {
-         log.debug(ReplicatorPeer.this + " channel closed");
+         log.debug(Replicator.this + " channel closed");
          stop();
       }
 
       public void channelShunned()
       {
-         log.debug(ReplicatorPeer.this + " channel shunned");
+         log.debug(Replicator.this + " channel shunned");
       }
 
       public void channelReconnected(Address address)
       {
-         log.debug(ReplicatorPeer.this + " channel reconnected");
+         log.debug(Replicator.this + " channel reconnected");
       }
    }
 }

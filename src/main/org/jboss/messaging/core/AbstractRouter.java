@@ -7,12 +7,13 @@
 package org.jboss.messaging.core;
 
 import org.jboss.messaging.interfaces.Router;
-import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Receiver;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+import java.io.Serializable;
 
 /**
  * Does Receiver management but it stops short of enforcing any routing policy, leaving its
@@ -26,18 +27,27 @@ public abstract class AbstractRouter implements Router
    // Attributes ----------------------------------------------------
 
    /**
+    * <ReceiverID - Receiver> map
+    */
+   protected Map receivers;
+
+   /**
     * <Receiver - Boolean> map, where the boolean instance contains the result of the latest
     * handle() invocation on that Receiver.
     */
-   protected Map receivers;
+   protected Map acknowledgments;
+
+   protected Serializable id;
 
    protected boolean passByReference;
 
    // Constructors --------------------------------------------------
 
-   protected AbstractRouter()
+   protected AbstractRouter(Serializable id)
    {
+      this.id = id;
       receivers = new HashMap();
+      acknowledgments = new HashMap();
 
       // by default a router passes by reference
       passByReference = true;
@@ -56,34 +66,47 @@ public abstract class AbstractRouter implements Router
 
    public boolean add(Receiver r)
    {
-      synchronized(receivers) {
-         if (receivers.containsKey(r)) {
+      Serializable id = r.getReceiverID();
+      synchronized(this)
+      {
+         if (receivers.containsKey(id)) {
             return false;
          }
-         receivers.put(r, new Boolean(false));
+         receivers.put(id, r);
+         acknowledgments.put(id, new Boolean(false));
          return true;
       }
    }
 
-   public boolean remove(Receiver r)
+   public Receiver get(Serializable receiverID)
    {
-       synchronized(receivers)
+      synchronized(this)
+      {
+         return (Receiver)receivers.get(receiverID);
+      }
+   }
+
+   public Receiver remove(Serializable receiverID)
+   {
+       synchronized(this)
        {
-          return receivers.remove(r) != null;
+          Receiver removed = (Receiver)receivers.remove(receiverID);
+          acknowledgments.remove(receiverID);
+          return removed;
        }
    }
 
-   public boolean contains(Receiver r)
+   public boolean contains(Serializable receiverID)
    {
-      synchronized(receivers)
+      synchronized(this)
       {
-         return receivers.containsKey(r);
+         return receivers.containsKey(receiverID);
       }
    }
 
    public Iterator iterator()
    {
-      synchronized(receivers)
+      synchronized(this)
       {
          return receivers.keySet().iterator();
       }
@@ -91,18 +114,19 @@ public abstract class AbstractRouter implements Router
 
    public void clear()
    {
-      synchronized(receivers)
+      synchronized(this)
       {
          receivers.clear();
+         acknowledgments.clear();
       }
    }
 
-   public boolean acknowledged(Receiver r)
+   public boolean acknowledged(Serializable receiverID)
    {
       Boolean successful;
-      synchronized(receivers)
+      synchronized(this)
       {
-         successful = (Boolean)receivers.get(r);
+         successful = (Boolean)acknowledgments.get(receiverID);
       }
       if (successful == null)
       {
@@ -113,23 +137,13 @@ public abstract class AbstractRouter implements Router
 
    // Receiver implementation ---------------------------------------
 
-   public abstract boolean handle(Message m);
-
-   // DEBUG ---------------------------------------------------------
-
-   public String dump()
+   public Serializable getReceiverID()
    {
-      StringBuffer sb = new StringBuffer("Receivers: ");
-      for(Iterator i = iterator(); i.hasNext();)
-      {
-         sb.append(i.next());
-         if (i.hasNext())
-         {
-            sb.append(", ");
-         }
-      }
-      return sb.toString();
+      return id;
    }
+
+   public abstract boolean handle(Routable m);
+
 }
 
 
