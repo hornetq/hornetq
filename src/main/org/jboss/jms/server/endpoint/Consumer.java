@@ -4,31 +4,32 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.delegate.ServerSessionDelegate;
+import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.HandleCallbackException;
 
-import javax.jms.Message;
-import javax.jms.JMSException;
 import java.io.Serializable;
 
-import EDU.oswego.cs.dl.util.concurrent.BoundedChannel;
-import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
 
 
 /**
+ * A Consumer endpoint. Sits on the boundary between Messaging Core and the JMS Facade.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ServerConsumerDelegate implements ConsumerDelegate, Receiver
+public class Consumer implements Receiver
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ServerConsumerDelegate.class);
+   private static final Logger log = Logger.getLogger(Consumer.class);
 
    // Static --------------------------------------------------------
 
@@ -37,35 +38,21 @@ public class ServerConsumerDelegate implements ConsumerDelegate, Receiver
    protected String id;
    protected Distributor destination;
    protected ServerSessionDelegate parent;
-
-   protected BoundedChannel deliveryQueue;
+   protected InvokerCallbackHandler callbackHandler;
 
    // Constructors --------------------------------------------------
 
-   public ServerConsumerDelegate(String id, Distributor destination, ServerSessionDelegate parent)
+   public Consumer(String id, Distributor destination,
+                                 InvokerCallbackHandler callbackHandler,
+                                 ServerSessionDelegate parent)
    {
       this.id = id;
       this.destination = destination;
       this.parent = parent;
-
-      deliveryQueue = new BoundedLinkedQueue(10);
+      this.callbackHandler = callbackHandler;
 
       // register myself with the destination
       destination.add(this);
-   }
-
-   // ConsumerDelegate implementation -------------------------------
-
-   public Message receive(long timeout) throws JMSException
-   {
-      try
-      {
-         return (Message)deliveryQueue.poll(timeout);
-      }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Failed to read from the delivery queue", e);
-      }
    }
 
    // Receiver implementation ---------------------------------------
@@ -77,17 +64,22 @@ public class ServerConsumerDelegate implements ConsumerDelegate, Receiver
 
    public boolean handle(Routable r)
    {
-      if (log.isTraceEnabled()) { log.trace("Receiving routable " + r); }
+      if (log.isTraceEnabled()) { log.trace("receiving routable " + r); }
+
+      // push the message to the client
+      InvocationRequest req = new InvocationRequest(null, null, r, null, null, null);
 
       try
       {
-         return deliveryQueue.offer(r, 500);
+         // TODO what happens if handling takes a long time?
+         callbackHandler.handleCallback(req);
       }
-      catch(Throwable t)
+      catch(HandleCallbackException e)
       {
-         log.error("Failed to put the message in the delivery queue", t);
          return false;
       }
+
+      return true;
    }
 
    // Public --------------------------------------------------------

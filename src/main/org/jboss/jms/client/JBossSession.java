@@ -9,7 +9,6 @@ package org.jboss.jms.client;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.delegate.ConsumerDelegate;
 
 import javax.jms.Session;
 import javax.jms.BytesMessage;
@@ -147,8 +146,7 @@ public class JBossSession implements Session
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
-     ConsumerDelegate consumerDelegate = sessionDelegate.createConsumerDelegate(d);
-     return new JBossMessageConsumer(consumerDelegate);
+     return sessionDelegate.createConsumer(d);
   }
 
   public MessageConsumer createConsumer(Destination destination, String messageSelector)

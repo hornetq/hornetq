@@ -9,6 +9,7 @@ package org.jboss.jms.delegate;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -18,7 +19,7 @@ public interface SessionDelegate
 {
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
-   public ConsumerDelegate createConsumerDelegate(Destination destination) throws JMSException;
+   public MessageConsumer createConsumer(Destination destination) throws JMSException;
 
    public Message createMessage() throws JMSException;
 

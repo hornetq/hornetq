@@ -7,9 +7,12 @@
 package org.jboss.jms.delegate;
 
 import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.endpoint.Consumer;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
@@ -17,13 +20,14 @@ import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.logging.Logger;
+import org.jboss.remoting.InvokerCallbackHandler;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
@@ -53,6 +57,8 @@ public class ServerSessionDelegate implements SessionDelegate
    protected Map consumers;
 
    protected ServerPeer serverPeer;
+
+   private InvokerCallbackHandler callbackHandler;
 
    // Constructors --------------------------------------------------
 
@@ -106,13 +112,13 @@ public class ServerSessionDelegate implements SessionDelegate
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokeRemoteInterceptor.REMOTING,
-                           InvokeRemoteInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
+                           InvokerInterceptor.INVOKER_LOCATOR,
                            serverPeer.getLocator(),
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokeRemoteInterceptor.REMOTING,
-                           InvokeRemoteInterceptor.SUBSYSTEM,
-                           "AOP",
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
+                           InvokerInterceptor.SUBSYSTEM,
+                           "JMS",
                            PayloadKey.AS_IS);
       // TODO: Is this really necessary? Can't I just use the producerID?
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, parent.getClientID(), PayloadKey.AS_IS);
@@ -134,9 +140,9 @@ public class ServerSessionDelegate implements SessionDelegate
    }
 
 
-   public ConsumerDelegate createConsumerDelegate(Destination d) throws JBossJMSException
+   public MessageConsumer createConsumer(Destination d) throws JBossJMSException
    {
-      log.debug("Creating a consumer delegate, destination = " + d);
+      log.debug("creating a consumer endpoint, destination = " + d);
 
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
@@ -152,49 +158,36 @@ public class ServerSessionDelegate implements SessionDelegate
 
       log.debug("got destination: " + destination);
 
-      // create the dynamic proxy that implements ConsumerDelegate
+      // create the MessageConsumer dynamic proxy
 
-      ConsumerDelegate cd = null;
-      Serializable oid = serverPeer.getConsumerAdvisor().getName();
       String stackName = "ConsumerStack";
       AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
 
       // TODO why do I need to the advisor to create the interceptor stack?
-      Interceptor[] interceptors = stack.createInterceptors(serverPeer.getConsumerAdvisor(), null);
-
-      // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
-      JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
-
+      Interceptor[] interceptors = stack.createInterceptors(serverPeer.getSessionAdvisor(), null);
+      JMSConsumerInvocationHandler h = new JMSConsumerInvocationHandler(interceptors);
       String consumerID = generateConsumerID();
-
       SimpleMetaData metadata = new SimpleMetaData();
-      // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
-      metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokeRemoteInterceptor.REMOTING,
-                           InvokeRemoteInterceptor.INVOKER_LOCATOR,
-                           serverPeer.getLocator(),
-                           PayloadKey.AS_IS);
-      metadata.addMetaData(InvokeRemoteInterceptor.REMOTING,
-                           InvokeRemoteInterceptor.SUBSYSTEM,
-                           "AOP",
-                           PayloadKey.AS_IS);
-      // TODO: Hmmm, is this really necessary? Can't I just use the producerID?
+      // TODO: Hmmm, is this really necessary? Can't I just use the consumerID?
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, parent.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
-
       h.getMetaData().mergeIn(metadata);
 
       // TODO
       ClassLoader loader = getClass().getClassLoader();
-      Class[] interfaces = new Class[] { ConsumerDelegate.class };
-      cd = (ConsumerDelegate)Proxy.newProxyInstance(loader, interfaces, h);
+      Class[] interfaces = new Class[] { MessageConsumer.class };
+      MessageConsumer proxy = (MessageConsumer)Proxy.newProxyInstance(loader, interfaces, h);
 
-      // create the corresponding "server-side" ConsumerDelegate and register it with this
-      // SessionDelegate instance
-      ServerConsumerDelegate scd = new ServerConsumerDelegate(consumerID, destination, this);
-      putConsumerDelegate(consumerID, scd);
-      return cd;
+      if (callbackHandler == null)
+      {
+         throw new JBossJMSException("null callback handler");
+      }
+
+      // create the Consumer endpoint and register it with this SessionDelegate instance
+      Consumer c =  new Consumer(consumerID, destination, callbackHandler, this);
+      putConsumerDelegate(consumerID, c);
+      return proxy;
    }
 
 
@@ -221,20 +214,39 @@ public class ServerSessionDelegate implements SessionDelegate
       }
    }
 
-   public ServerConsumerDelegate putConsumerDelegate(String consumerID, ServerConsumerDelegate d)
+   public Consumer putConsumerDelegate(String consumerID, Consumer d)
    {
       synchronized(consumers)
       {
-         return (ServerConsumerDelegate)consumers.put(consumerID, d);
+         return (Consumer)consumers.put(consumerID, d);
       }
    }
 
-   public ServerConsumerDelegate getConsumerDelegate(String consumerID)
+   public Consumer getConsumerDelegate(String consumerID)
    {
       synchronized(consumers)
       {
-         return (ServerConsumerDelegate)consumers.get(consumerID);
+         return (Consumer)consumers.get(consumerID);
       }
+   }
+
+
+   /**
+    * IoC.
+    */
+   public void setCallbackHandler(InvokerCallbackHandler callbackHandler)
+   {
+      this.callbackHandler = callbackHandler;
+   }
+
+   public void lock()
+   {
+      // TODO implement it!
+   }
+
+   public void unlock()
+   {
+      // TODO implement it!
    }
 
 

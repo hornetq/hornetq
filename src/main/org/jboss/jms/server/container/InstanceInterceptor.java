@@ -13,8 +13,9 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ServerConnectionDelegate;
 import org.jboss.jms.delegate.ServerSessionDelegate;
 import org.jboss.jms.delegate.ServerProducerDelegate;
-import org.jboss.jms.delegate.ServerConsumerDelegate;
+import org.jboss.jms.server.endpoint.Consumer;
 import org.jboss.logging.Logger;
+import org.jboss.remoting.InvokerCallbackHandler;
 
 import java.lang.reflect.Method;
 
@@ -84,7 +85,7 @@ public class InstanceInterceptor implements Interceptor
             invocation.setTargetObject(scd);
          }
          else if ("createProducerDelegate".equals(methodName) ||
-                  "createConsumerDelegate".equals(methodName))
+                  "createConsumer".equals(methodName))
          {
             // lookup the corresponding ServerSessionDelegate and use it as target for the invocation
             String clientID =
@@ -107,7 +108,21 @@ public class InstanceInterceptor implements Interceptor
                                    "with sessionID=" + sessionID);
                // TODO log error
             }
-            invocation.setTargetObject(ssd);
+            // Inject the callback handler reference
+            InvokerCallbackHandler callbackHandler = (InvokerCallbackHandler)invocation.
+                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
+            try
+            {
+               ssd.lock();
+               ssd.setCallbackHandler(callbackHandler);
+               invocation.setTargetObject(ssd);
+               return invocation.invokeNext();
+            }
+            finally
+            {
+               ssd.setCallbackHandler(null);
+               ssd.unlock();
+            }
          }
          else if ("send".equals(methodName))
          {
@@ -170,7 +185,7 @@ public class InstanceInterceptor implements Interceptor
             String consumerID = (String)invocation.getMetaData().
                   getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID);
 
-            ServerConsumerDelegate sconsd = ssd.getConsumerDelegate(consumerID);
+            Consumer sconsd = ssd.getConsumerDelegate(consumerID);
             if (sconsd == null)
             {
                throw new Exception("The session " + sessionID + "  doesn't know of any consumer " +

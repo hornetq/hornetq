@@ -4,8 +4,6 @@
 #
 
 
-CLESTER_HOME=/work/clester/dist
-
 cygwin=false;
 case "`uname`" in
     CYGWIN*)
@@ -38,6 +36,7 @@ reldir=`dirname $0`
 java $JAVA_OPTS -cp \
 $reldir/../../output/etc${SEP}\
 $reldir/../../output/classes${SEP}\
+$reldir/../../src/resources/clester.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../aspects/output/lib/jboss-aspect-library.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
@@ -49,8 +48,7 @@ $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
-$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
-${CLESTER_HOME}/clester.jar \
+$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar \
 org.clester.Main org.jboss.jms.tools.ServerWrapper
 
 

@@ -11,20 +11,22 @@
    <interceptor class="org.jboss.jms.client.container.LogInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.LocalInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.FactoryInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.aspects.remoting.InvokeRemoteInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ConsumerInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.InvokerInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ReceiverInterceptor" scope="PER_VM"/>
 
    <stack name="ConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
-      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
    <stack name="ConnectionStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
-      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
    <stack name="SessionStack">
@@ -32,21 +34,22 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
-      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
    <stack name="ProducerStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
-      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
    <stack name="ConsumerStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LocalInterceptor"/>
-      <interceptor-ref name="org.jboss.aspects.remoting.InvokeRemoteInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ReceiverInterceptor"/>
    </stack>
 
 

@@ -13,6 +13,7 @@ import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.Destination;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.naming.InitialContext;
 
 /**
@@ -136,28 +137,44 @@ public class Client
       consumer = session.createConsumer(lookupDestination(destination));
    }
 
-
-
-   public void send() throws Exception
-   {
-      if (producer == null)
-      {
-         throw new Exception("You need to create a producer first. " +
-                             "Use createProducer(destination)");
-      }
-      Message m = session.createMessage();
-      producer.send(m);
-   }
-
-   public Object receive() throws Exception
+   public void setMessageListener() throws Exception
    {
       if (consumer == null)
       {
          throw new Exception("You need to create a consumer first. " +
                              "Use createConsumer(destination)");
       }
-      return consumer.receive(2000);
+      consumer.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            System.out.println("MessageLister got message: " + m);
+         }
+      });
    }
+
+
+
+
+   public void send() throws Exception
+   {
+      insureProducer();
+      Message m = session.createMessage();
+      producer.send(m);
+   }
+
+   public Object receive(long timeout) throws Exception
+   {
+      insureConsumer();
+      return consumer.receive(timeout);
+   }
+
+   public Object receiveNoWait() throws Exception
+   {
+      insureConsumer();
+      return consumer.receiveNoWait();
+   }
+
 
 
 
@@ -176,6 +193,25 @@ public class Client
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void insureConsumer()
+   {
+      if (consumer == null)
+      {
+         throw new RuntimeException("You need to create a consumer first. " +
+                                    "Use createConsumer(destination)");
+      }
+   }
+
+   private void insureProducer()
+   {
+      if (producer == null)
+      {
+         throw new RuntimeException("You need to create a producer first. " +
+                                    "Use createProducer(destination)");
+      }
+   }
+
 
    // Inner classes -------------------------------------------------
 }

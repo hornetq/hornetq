@@ -25,13 +25,15 @@ public class JMSAdvisor extends ClassAdvisor
    public static final String SESSION_ID = "SESSION_ID";
    public static final String PRODUCER_ID = "PRODUCER_ID";
    public static final String CONSUMER_ID = "CONSUMER_ID";
-
+   public static final String REMOTING_SESSION_ID = "REMOTING_SESSION_ID";
+   public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
    protected ServerPeer serverPeer;
+
 
    // Constructors --------------------------------------------------
 

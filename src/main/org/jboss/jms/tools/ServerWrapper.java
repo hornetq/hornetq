@@ -7,18 +7,13 @@
 package org.jboss.jms.tools;
 
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.aop.AspectXmlLoader;
-import org.jboss.aop.ClassAdvisor;
-import org.jboss.aop.DomainDefinition;
-import org.jboss.aop.AspectManager;
-import org.jboss.aop.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.Connector;
-import org.jboss.aspects.remoting.AOPRemotingInvocationHandler;
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -143,8 +138,8 @@ public class ServerWrapper
       connector.setInvokerLocator(locator.getLocatorURI());
       connector.start();
 
-      // connect Remoting to the AOP subsystem
-      connector.addInvocationHandler("AOP", new AOPRemotingInvocationHandler());
+      // also add the JMS subsystem
+      connector.addInvocationHandler("JMS", new JMSServerInvocationHandler());
    }
 
    // Inner classes -------------------------------------------------

@@ -13,6 +13,7 @@ import org.jboss.jms.delegate.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.DomainDefinition;
 import org.jboss.aop.AspectManager;
@@ -21,7 +22,6 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
-import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
@@ -55,7 +55,6 @@ public class ServerPeer
    protected ClassAdvisor connAdvisor;
    protected ClassAdvisor sessionAdvisor;
    protected ClassAdvisor producerAdvisor;
-   protected ClassAdvisor consumerAdvisor;
 
 
    // Constructors --------------------------------------------------
@@ -137,11 +136,6 @@ public class ServerPeer
       return producerAdvisor;
    }
 
-   public ClassAdvisor getConsumerAdvisor()
-   {
-      return consumerAdvisor;
-   }
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -153,10 +147,9 @@ public class ServerPeer
       String[] domainNames = { "ServerConnectionFactoryDelegate",
                                "ServerConnectionDelegate",
                                "ServerSessionDelegate",
-                               "ServerProducerDelegate",
-                               "ServerConsumerDelegate"};
+                               "ServerProducerDelegate"};
 
-      ClassAdvisor[] advisors = new ClassAdvisor[5];
+      ClassAdvisor[] advisors = new ClassAdvisor[4];
 
       for(int i = 0; i < domainNames.length; i++)
       {
@@ -176,7 +169,6 @@ public class ServerPeer
       connAdvisor = advisors[1];
       sessionAdvisor = advisors[2];
       producerAdvisor = advisors[3];
-      consumerAdvisor = advisors[4];
    }
 
    private ConnectionFactory createConnectionFactory() throws Exception
@@ -197,13 +189,13 @@ public class ServerPeer
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokeRemoteInterceptor.REMOTING,
-                           InvokeRemoteInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
+                           InvokerInterceptor.INVOKER_LOCATOR,
                            locator,
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokeRemoteInterceptor.REMOTING,
-                           InvokeRemoteInterceptor.SUBSYSTEM,
-                           "AOP",
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
+                           InvokerInterceptor.SUBSYSTEM,
+                           "JMS",
                            PayloadKey.AS_IS);
       h.getMetaData().mergeIn(metadata);
 
