@@ -98,7 +98,7 @@ public class DistributedPipeInput implements Receiver
    {
       synchronous = b;
       // TODO
-      return false;
+      return true;
    }
 
    public boolean isSynchronous()

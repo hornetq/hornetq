@@ -117,6 +117,7 @@
    <property name="junit.batchtest.fork" value="true"/>
 
    <target name="tests" depends="tests-jar">
+      <echo message="${project.root}"/>
       <mkdir dir="${build.tests.output}"/>
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -124,6 +125,7 @@
          <classpath>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/jboss-messaging-tests.jar"/>
+            <pathelement location="${module.root}/etc"/>
          </classpath>
          <formatter type="plain"/>
          <batchtest fork="${junit.batchtest.fork}"

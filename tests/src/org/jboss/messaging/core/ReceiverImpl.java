@@ -62,7 +62,8 @@ public class ReceiverImpl implements Receiver
       if (BROKEN.equals(state))
       {
          // rogue receiver, throws unchecked exceptions
-         throw new RuntimeException();
+         throw new RuntimeException("THIS IS AN EXCEPTION THAT SIMULATES "+
+                                    "THE BEHAVIOUR OF A BROKEN RECEIVER");
       }
       if (DENYING.equals(state))
       {
