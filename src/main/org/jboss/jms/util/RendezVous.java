@@ -18,7 +18,7 @@ public class RendezVous
 
    // Attributes ----------------------------------------------------
 
-   private boolean waiting;
+   private boolean threadWaiting;
    private Object object;
 
 
@@ -40,12 +40,12 @@ public class RendezVous
    {
       synchronized(this)
       {
-         if (waiting)
+         if (threadWaiting)
          {
             throw new RuntimeException("Another thread waiting!");
          }
 
-         waiting = true;
+         threadWaiting = true;
 
          try
          {
@@ -56,7 +56,7 @@ public class RendezVous
          }
          finally
          {
-            waiting = false;
+            threadWaiting = false;
             Object tmp = object;
             object = null;
             return tmp;
@@ -67,6 +67,7 @@ public class RendezVous
    /**
     * Method used by the sender thread, that only puts the object IF there is a receiver thread
     * waiting.
+    *
     * @return true if the object was transferred to the receiver thread, or false if there is
     *         no receiver thread waiting.
     */
@@ -74,7 +75,7 @@ public class RendezVous
    {
       synchronized(this)
       {
-         if (!waiting)
+         if (!threadWaiting)
          {
             return false;
          }
@@ -83,6 +84,12 @@ public class RendezVous
          notifyAll();
          return true;
       }
+   }
+
+
+   public synchronized boolean isOccupied()
+   {
+      return threadWaiting;
    }
 
    // Package protected ---------------------------------------------

@@ -65,14 +65,17 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    {
       Invocation i =(Invocation)invocation.getParameter();
       String s = (String)i.getMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_SESSION_ID);
-      Object callbackHandler = null;
-      synchronized(callbackHandlers)
+      if (s != null)
       {
-         callbackHandler = callbackHandlers.get(s);
-      }
-      if (callbackHandler != null)
-      {
-         i.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER, callbackHandler);
+         Object callbackHandler = null;
+         synchronized(callbackHandlers)
+         {
+            callbackHandler = callbackHandlers.get(s);
+         }
+         if (callbackHandler != null)
+         {
+            i.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER, callbackHandler);
+         }
       }
       return Dispatcher.singleton.invoke(i);
    }
