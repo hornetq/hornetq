@@ -48,7 +48,7 @@ public class LocalInterceptor implements Interceptor, Serializable
          Method m = mi.getMethod();
          if (m.getName().equals("toString"))
          {
-            return "ConnectionFactory JBoss Proxy";
+            return "JBoss Proxy";
          }
       }
       return invocation.invokeNext();
