@@ -19,7 +19,7 @@ import java.util.Enumeration;
 public class MapMessageImpl extends MessageImpl implements MapMessage
 {
 
-    MapMessageImpl()
+    public MapMessageImpl()
     {
         super.type = MessageImpl.MAP_MESSAGE_NAME;
         super.body = JMSMap.createInstance(MapMessage.class);

@@ -62,7 +62,7 @@ public class ConnectionMetaDataImpl implements ConnectionMetaData
 
     public Enumeration getJMSXPropertyNames() throws JMSException
     {
-        return null; //TODO: Implement
+        return null; //TOD: Implement
     }
 
     public int getProviderMajorVersion() throws JMSException

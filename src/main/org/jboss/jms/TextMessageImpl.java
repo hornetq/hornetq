@@ -21,7 +21,7 @@ public class TextMessageImpl extends MessageImpl implements TextMessage
         this.type = MessageImpl.TEXT_MESSAGE_NAME;
     }
 
-    TextMessageImpl(String text)
+    public TextMessageImpl(String text)
     {
         this.type = MessageImpl.TEXT_MESSAGE_NAME;
         this.body = text;

@@ -28,7 +28,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, Serializable
 
     public Connection createConnection() throws JMSException
     {
-        // TODO: See JMS 1.1 specification section 4.3.1 concerning default credentials
+        // TOD: See JMS 1.1 specification section 4.3.1 concerning default credentials
         return this.createConnection(null, null);
     }
 

@@ -22,7 +22,7 @@ public class ObjectMessageImpl extends MessageImpl implements ObjectMessage
         super.type = MessageImpl.OBJECT_MESSAGE_NAME;
     }
 
-    ObjectMessageImpl(Serializable object)
+    public ObjectMessageImpl(Serializable object)
     {
         super.type = MessageImpl.OBJECT_MESSAGE_NAME;
         super.body = object;

@@ -37,7 +37,7 @@ public class MessageConsumerImpl implements MessageConsumer
 
     public void close() throws JMSException
     {
-        //TODO: Implement close()
+        //TOD: Implement close()
     }
 
     public MessageListener getMessageListener() throws JMSException

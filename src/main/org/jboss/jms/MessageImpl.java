@@ -19,6 +19,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.p2p.P2PSessionDelegate;
 import org.jboss.jms.util.JMSMap;
 
 /**
@@ -50,7 +51,7 @@ public class MessageImpl implements Message, Cloneable, Serializable
     private long timestamp = 0;
     protected String type = null;
 
-    private SessionImpl session = null;
+    private P2PSessionDelegate session = null;
     private long deliveryId = -1L;
     private boolean local = false;
     private String originClientId = null;
@@ -233,7 +234,7 @@ public class MessageImpl implements Message, Cloneable, Serializable
         }
     }
 
-    public final void setSession(SessionImpl session)
+    public final void setSession(P2PSessionDelegate session)
     {
         this.session = session;
     }

@@ -43,10 +43,10 @@ public class SessionImpl implements Session
 {
     private ConnectionImpl connection = null;
     private int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-    private boolean closed = false; // TODO: make sure this is the default.
+    private boolean closed = false; // TOD: make sure this is the default.
     private MessageListener messageListener = null;
     private boolean transacted = false;
-    // TODO: Might be able to eliminate the seperate lists by implementing a
+    // TOD: Might be able to eliminate the seperate lists by implementing a
     //interface which just does a close() if that is all we're uisng this for...
     private List messageConsumers = new ArrayList();
     private List messageProducers = new ArrayList();
@@ -62,14 +62,7 @@ public class SessionImpl implements Session
     {
         this.connection = connection;
         this.transacted = transacted;
-        if (this.transacted)
-        {
-            this.acknowledgeMode = Session.SESSION_TRANSACTED;
-        }
-        else
-        {
-            this.acknowledgeMode = acknowledgeMode;
-        }
+        this.acknowledgeMode = acknowledgeMode;
     }
 
     public void close() throws JMSException
@@ -405,7 +398,7 @@ public class SessionImpl implements Session
                 }
             }
         }
-        message.setSession(this);
+        //message.setSession(this);
         message.setDeliveryId(++this.nextDeliveryId);
         Iterator iterator = this.messageConsumers.iterator();
         if (this.acknowledgeMode != Session.AUTO_ACKNOWLEDGE)

@@ -25,7 +25,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
 
     private ByteArrayOutputStream outputStream = null;
 
-    BytesMessageImpl()
+    public BytesMessageImpl()
     {
         super.type = MessageImpl.BYTES_MESSAGE_NAME;
         this.outputStream = new ByteArrayOutputStream();
@@ -65,7 +65,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -78,7 +78,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -91,7 +91,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -100,12 +100,12 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         try
         {
             return this.getReadableBody().read(value, 0, length);
-            //TODO: check this.
+            //TOD: check this.
         }
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -118,7 +118,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -131,7 +131,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -144,7 +144,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -157,7 +157,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -170,7 +170,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -183,7 +183,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -196,7 +196,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -209,7 +209,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -222,7 +222,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         catch (IOException exception)
         {
             throw new JMSException("");
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -238,7 +238,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
         finally
         {
@@ -254,7 +254,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -266,7 +266,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -278,7 +278,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -291,7 +291,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -303,7 +303,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -315,7 +315,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -327,7 +327,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -339,7 +339,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -351,7 +351,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -399,7 +399,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         else
         {
-            // TODO: throw excption here...
+            // TOD: throw excption here...
         }
     }
 
@@ -411,7 +411,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 
@@ -423,7 +423,7 @@ public class BytesMessageImpl extends MessageImpl implements BytesMessage
         }
         catch (IOException exception)
         {
-            //TODO: Decide what exception should be thrown here.
+            //TOD: Decide what exception should be thrown here.
         }
     }
 

@@ -22,7 +22,7 @@ public class StreamMessageImpl extends MessageImpl implements StreamMessage
 {
     private int index = 0;
 
-    StreamMessageImpl()
+    public StreamMessageImpl()
     {
         this.type = MessageImpl.STREAM_MESSGE_NAME;
         this.body = new ArrayList();
