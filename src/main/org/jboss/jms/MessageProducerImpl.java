@@ -19,6 +19,7 @@ import javax.jms.Session;
  */
 public class MessageProducerImpl implements MessageProducer
 {
+    private SessionImpl session = null;
     private int deliveryMode = Session.AUTO_ACKNOWLEDGE;
     private Destination destination = null;
     private boolean disableMessageID = false;
@@ -26,8 +27,9 @@ public class MessageProducerImpl implements MessageProducer
     private int priority = Message.DEFAULT_PRIORITY;
     private long timeToLive = Message.DEFAULT_TIME_TO_LIVE;
 
-    MessageProducerImpl(Destination destination)
+    MessageProducerImpl(SessionImpl session, Destination destination)
     {
+        this.session = session;
         this.destination = destination;
     }
 
@@ -65,50 +67,34 @@ public class MessageProducerImpl implements MessageProducer
         return this.timeToLive;
     }
 
-    public void send(Destination destination, Message message)
-            throws JMSException
+    public void send(Destination destination, Message message) throws JMSException
     {
-        this.send(
-                destination,
-                message,
-                this.deliveryMode,
-                this.priority,
-                this.timeToLive);
+        this.send(destination, message, this.deliveryMode, this.priority, this.timeToLive);
     }
 
-    public void send(
-            Destination destination,
-            Message message,
-            int deliveryMode,
-            int priority,
-            long timeToLive)
-            throws JMSException
+    public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
     {
+
+        MessageImpl clone = (MessageImpl) ((MessageImpl) message).clone();
+        clone.setJMSDestination(destination);
+        clone.setJMSDeliveryMode(deliveryMode);
+        clone.setJMSPriority(priority);
+        if (timeToLive != 0)
+        {
+            clone.setJMSExpiration(System.currentTimeMillis() + timeToLive);
+        }
+        clone.setReadOnly(true);
+        this.session.send(clone);
     }
 
     public void send(Message message) throws JMSException
     {
-        this.send(
-                this.destination,
-                message,
-                this.deliveryMode,
-                this.priority,
-                this.timeToLive);
+        this.send(this.destination, message, this.deliveryMode, this.priority, this.timeToLive);
     }
 
-    public void send(
-            Message message,
-            int deliveryMode,
-            int priority,
-            long timeToLive)
-            throws JMSException
+    public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
     {
-        this.send(
-                this.destination,
-                message,
-                deliveryMode,
-                priority,
-                timeToLive);
+        this.send(this.destination, message, deliveryMode, priority, timeToLive);
     }
 
     public void setDeliveryMode(int deliveryMode) throws JMSException

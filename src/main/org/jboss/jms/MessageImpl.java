@@ -6,7 +6,8 @@
  */
 package org.jboss.jms;
 
-import org.jboss.jms.util.JMSMap;
+import java.io.Serializable;
+import java.util.Enumeration;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
@@ -17,15 +18,15 @@ import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import java.io.Serializable;
-import java.util.Enumeration;
+
+import org.jboss.jms.util.JMSMap;
 
 /**
  *
  * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @version $Revision$ $Date$
  */
-public class MessageImpl implements Message, Serializable
+public class MessageImpl implements Message, Cloneable, Serializable
 {
     static final String BYTES_MESSAGE_NAME = "BytesMessage";
     static final String MAP_MESSAGE_NAME = "MapMessage";
@@ -42,12 +43,17 @@ public class MessageImpl implements Message, Serializable
     private long expiration = 0;
     private String messageID = null;
     private int priority = Message.DEFAULT_PRIORITY;
-    private final JMSMap properties = JMSMap.createInstance(Message.class);
+    private JMSMap properties = JMSMap.createInstance(Message.class);
     private boolean readOnly = false;
     private boolean redelivered = false;
     private Destination replyTo = null;
     private long timestamp = 0;
     protected String type = null;
+
+    private SessionImpl session = null;
+    private long deliveryId = -1L;
+    private boolean local = false;
+    private String originClientId = null;
 
     public static Message create(Class type) throws JMSException
     {
@@ -81,14 +87,16 @@ public class MessageImpl implements Message, Serializable
         }
         else
         {
-            throw new JMSException(
-                    "'" + type.getName() + "' is an invalid message type.");
+            throw new JMSException("'" + type.getName() + "' is an invalid message type.");
         }
     }
 
     public void acknowledge() throws JMSException
     {
-        //TODO: Implement acknowledge()
+        if (this.session != null)
+        {
+            this.session.ancknowledge(this.deliveryId);
+        }
     }
 
     public void clearBody()
@@ -225,37 +233,62 @@ public class MessageImpl implements Message, Serializable
         }
     }
 
+    public final void setSession(SessionImpl session)
+    {
+        this.session = session;
+    }
+
+    public final void setDeliveryId(long id)
+    {
+        this.deliveryId = id;
+    }
+
+    public final void setOriginClientID(String clientId)
+    {
+        this.originClientId = clientId;
+    }
+
+    public final String getOrigianClientID()
+    {
+        return this.originClientId;
+    }
+
+    public final void setIsLocal(boolean value)
+    {
+        this.local = value;
+    }
+
+    public boolean isLocal()
+    {
+        return this.local;
+    }
+
     public final boolean propertyExists(String name)
     {
         return this.properties.itemExists(name);
     }
 
-    public final void setBooleanProperty(String name, boolean value)
-            throws JMSException
+    public final void setBooleanProperty(String name, boolean value) throws JMSException
     {
         this.properties.setBoolean(name, value);
     }
 
-    public final void setByteProperty(String name, byte value)
-            throws JMSException
+    public final void setByteProperty(String name, byte value) throws JMSException
     {
         this.properties.setByte(name, value);
     }
 
-    public final void setDoubleProperty(String name, double value)
-            throws JMSException
+    public final void setDoubleProperty(String name, double value) throws JMSException
     {
         this.properties.setDouble(name, value);
     }
 
-    public final void setFloatProperty(String name, float value)
-            throws JMSException
+    public final void setFloatProperty(String name, float value) throws JMSException
     {
         this.properties.setFloat(name, value);
     }
 
-    public final void setIntProperty(String name, int value)
-            throws JMSException
+    public final void setIntProperty(String name, int value) throws JMSException
     {
         this.properties.setInt(name, value);
     }
@@ -315,14 +348,12 @@ public class MessageImpl implements Message, Serializable
         this.type = type;
     }
 
-    public final void setLongProperty(String name, long value)
-            throws JMSException
+    public final void setLongProperty(String name, long value) throws JMSException
     {
         this.properties.setLong(name, value);
     }
 
-    public final void setObjectProperty(String name, Object value)
-            throws JMSException
+    public final void setObjectProperty(String name, Object value) throws JMSException
     {
         this.properties.setObject(name, value);
     }
@@ -332,20 +363,28 @@ public class MessageImpl implements Message, Serializable
         this.readOnly = value;
     }
 
-    public final void setShortProperty(String name, short value)
-            throws JMSException
+    public final void setShortProperty(String name, short value) throws JMSException
     {
         this.properties.setShort(name, value);
     }
 
-    public final void setStringProperty(String name, String value)
-            throws JMSException
+    public final void setStringProperty(String name, String value) throws JMSException
     {
         this.properties.setString(name, value);
     }
 
-    protected void throwExceptionIfReadOnly()
-            throws MessageNotWriteableException
+    public Object clone()
+    {
+        try{
+            return super.clone();
+        }
+        catch (CloneNotSupportedException ignored)
+        {
+            return null;    // To my knowledge, we shouldn't get here...
+        }
+    }
+
+    protected void throwExceptionIfReadOnly() throws MessageNotWriteableException
     {
         if (this.readOnly)
         {

@@ -28,13 +28,13 @@ public class ConnectionFactory
 
     protected final void startService() throws Exception
     {
-        InvokerLocator invokerLocator =
-                (InvokerLocator) this.getServer().getAttribute(
-                        new ObjectName(this.connectorName),
-                        "Locator");
+        //InvokerLocator invokerLocator =
+        //        (InvokerLocator) this.getServer().getAttribute(
+        //                new ObjectName(this.connectorName),
+        //                "Locator");
         new InitialContext().rebind(
                 this.jndiName,
-                new ConnectionFactoryImpl(invokerLocator));
+                new ConnectionFactoryImpl());
     }
 
     protected final void stopService() throws Exception
@@ -61,16 +61,16 @@ public class ConnectionFactory
     /**
      * @jmx:managed-attribute
      */
-    public final void setConnectorName(String name)
-    {
-        this.connectorName = name;
-    }
+    //public final void setConnectorName(String name)
+    //{
+    //    this.connectorName = name;
+    //}
 
     /**
      * @jmx:managed-attribute
      */
-    public final String getConnectorName()
-    {
-        return this.connectorName;
-    }
+    //public final String getConnectorName()
+    //{
+    //    return this.connectorName;
+    //}
 }

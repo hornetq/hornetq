@@ -68,6 +68,7 @@
     <call target="configure-libraries"/>
     <path id="library.classpath">
       <path refid="apache.log4j.classpath"/>
+      <path refid="javagroups.javagroups.classpath"/>
     </path>
 
     <!-- Configure modules -->
@@ -107,7 +108,8 @@
 	  description="Compile all source files."
 	  depends="compile-mbean-sources, 
                    _default:compile-classes,
-                   _default:compile-etc">
+                   _default:compile-etc,
+                   _default:compile-resources">
     <!-- Add module specific elements here. -->
   </target>
 
@@ -118,8 +120,6 @@
     <jmxdoclet destdir="${build.gen-src}"
 	     excludedtags="@version,@author">
       <fileset dir="${source.java}">
-
-
         <include name="org/jboss/jms/server/management/*.java"/>
         <include name="org/jboss/jms/server/Server.java"/>
       </fileset>
@@ -152,18 +152,26 @@
     <mkdir dir="${build.lib}"/>
 
     <!-- Build jboss-jms.jar -->
+    <!-- For now, just JAR the P2P library
     <jar jarfile="${build.lib}/jboss-jms.jar"
          manifest="${build.etc}/default.mf">
       <fileset dir="${build.classes}">
         <include name="**"/>
       </fileset>
+      <fileset dir="${build.resources}">
+        <include name="**"/>
+      </fileset>
     </jar>
+    -->
 
     <!-- Build jboss-jms-client.jar -->
-    <jar jarfile="${build.lib}/jboss-jms-client.jar"
+    <jar jarfile="${build.lib}/jboss-jms-p2p-client.jar"
          manifest="${build.etc}/default.mf">
       <fileset dir="${build.classes}"
                excludes="**/server/**">
+        <include name="**"/>
+      </fileset>
+      <fileset dir="${build.resources}">
         <include name="**"/>
       </fileset>
     </jar>

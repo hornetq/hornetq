@@ -19,17 +19,17 @@ import javax.jms.MessageListener;
  */
 public class MessageConsumerImpl implements MessageConsumer
 {
-
+    private SessionImpl session = null;
     private Destination destination = null;
     private MessageListener messageListener = null;
     private String messageSelector = null;
     protected boolean noLocal = false;
+    private boolean waiting = false;
+    private Message lastReceivedMessage = null;
 
-    MessageConsumerImpl(
-            Destination destination,
-            String messageSelector,
-            boolean noLocal)
+    MessageConsumerImpl(SessionImpl session, Destination destination, String messageSelector, boolean noLocal)
     {
+        this.session = session;
         this.destination = destination;
         this.messageSelector = messageSelector;
         this.noLocal = noLocal;
@@ -52,23 +52,79 @@ public class MessageConsumerImpl implements MessageConsumer
 
     public Message receive() throws JMSException
     {
-        return null;
+        return this.receive(0L);
     }
 
     public Message receive(long timeout) throws JMSException
     {
-        return null;
+        Message message = this.lastReceivedMessage;
+        if (message == null)
+        {
+            this.waiting = true;
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(timeout);
+                }
+                catch (InterruptedException exception){}
+            }
+            message = this.lastReceivedMessage;
+            this.lastReceivedMessage = null;
+            this.waiting = false;
+        }
+        return message;
     }
 
     public Message receiveNoWait() throws JMSException
     {
-        return this.receive(0);
+        this.waiting = true;
+        Message message = this.lastReceivedMessage;
+        this.waiting = false;
+        this.lastReceivedMessage = null;
+        return message;
     }
 
-    public void setMessageListener(MessageListener messageListener)
-            throws JMSException
+    public void setMessageListener(MessageListener messageListener) throws JMSException
     {
         this.messageListener = messageListener;
+    }
+
+    boolean deliver(MessageImpl message)
+    {
+        try
+        {
+            if (this.noLocal && message.isLocal())
+            {
+                return false;
+            }
+            if (message.getJMSDestination() != null)
+            {
+                if (message.getJMSDestination().equals(this.destination))
+                {
+                    if (this.messageListener != null)
+                    {
+                        this.messageListener.onMessage((Message)message.clone());
+                        return true;
+                    }
+                    else
+                    {
+                        if (this.waiting)
+                        {
+                            this.lastReceivedMessage = (MessageImpl)message.clone();
+                            synchronized(this)
+                            {
+                                this.notify();
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        catch (Exception e){}
+        return false;
     }
 
 }

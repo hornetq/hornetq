@@ -15,15 +15,17 @@ import java.io.Serializable;
  * As the specification implies, this would be more aptly named "DestinationName"
  * because it (like {@link ObjectName}) simply serves as a value object
  * bound to JNDI, looked up and provided to the client, then passed to the
- * server to indentify the {@link Destination}.
+ * server to indentify the {@link org.jboss.jms.server.Destination}.
  *
  * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @version $Revision$ $Date$
  */
 public class DestinationImpl implements Serializable, Topic, Queue
 {
-    private String name = null;
+    protected String name = null;
 
+    public DestinationImpl(){}
+    
     public DestinationImpl(String name)
     {
         this.name = name;
