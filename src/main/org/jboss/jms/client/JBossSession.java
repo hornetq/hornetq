@@ -36,6 +36,8 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.destination.JBossTemporaryDestination;
+
 /**
  * A session
  * 
@@ -197,12 +199,12 @@ public class JBossSession
 
 	public TemporaryQueue createTemporaryQueue() throws JMSException
 	{
-      return (TemporaryQueue) delegate.createTempDestination(SessionDelegate.TEMPORARY_QUEUE);
+      return (TemporaryQueue) delegate.createTempDestination(JBossTemporaryDestination.TEMPORARY_QUEUE);
 	}
 
 	public TemporaryTopic createTemporaryTopic() throws JMSException
 	{
-      return (TemporaryTopic) delegate.createTempDestination(SessionDelegate.TEMPORARY_TOPIC);
+      return (TemporaryTopic) delegate.createTempDestination(JBossTemporaryDestination.TEMPORARY_TOPIC);
 	}
 
 	public TextMessage createTextMessage() throws JMSException

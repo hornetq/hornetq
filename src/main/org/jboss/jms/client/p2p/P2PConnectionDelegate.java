@@ -28,6 +28,7 @@ import org.javagroups.blocks.PullPushAdapter;
 import org.jboss.jms.MessageImpl;
 import org.jboss.jms.client.ConnectionDelegate;
 import org.jboss.jms.client.SessionDelegate;
+import org.jboss.jms.destination.JBossTemporaryDestination;
 import org.jboss.util.id.GUID;
 
 /**
@@ -124,6 +125,11 @@ public class P2PConnectionDelegate
 		// TODO getJMSXPropertyNames
 		return null;
 	}
+   
+   public void deleteTempDestination(JBossTemporaryDestination destination)
+   {
+      // TODO deleteTempDestination
+   }
 
 	public void setClientID(String id) throws JMSException
 	{

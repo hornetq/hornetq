@@ -37,7 +37,6 @@ import org.jboss.jms.client.BrowserDelegate;
 import org.jboss.jms.client.ConsumerDelegate;
 import org.jboss.jms.client.ProducerDelegate;
 import org.jboss.jms.client.SessionDelegate;
-import org.jboss.jms.destination.JBossDestination;
 
 /**
  * The p2p session
@@ -209,11 +208,6 @@ public class P2PSessionDelegate
    {
       this.throwExceptionIfClosed();
       return new TextMessageImpl(text);
-   }
-
-   public void deleteTempDestination(JBossDestination destination)
-   {
-      // TODO deleteTempDestination
    }
 
    public Destination getDestination(String name) throws JMSException

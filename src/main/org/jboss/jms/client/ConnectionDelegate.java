@@ -11,6 +11,8 @@ import java.util.Enumeration;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
+import org.jboss.jms.destination.JBossTemporaryDestination;
+
 /**
  * The implementation of a connection
  * 
@@ -62,6 +64,14 @@ public interface ConnectionDelegate
     * @throws JMSException for any error
     */
    String getClientID() throws JMSException;
+
+   /**
+    * Delete the temporary destination
+    * 
+    * @param the destination to delete
+    * @throws JMSException for any error
+    */
+   void deleteTempDestination(JBossTemporaryDestination destination);
 
    /**
     * Set the client id

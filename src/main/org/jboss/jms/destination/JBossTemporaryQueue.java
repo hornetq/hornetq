@@ -6,10 +6,10 @@
  */
 package org.jboss.jms.destination;
 
-import javax.jms.TemporaryQueue;
 import javax.jms.JMSException;
+import javax.jms.TemporaryQueue;
 
-import org.jboss.jms.client.SessionDelegate;
+import org.jboss.jms.client.ConnectionDelegate;
 
 /**
  * A temporary queue
@@ -19,14 +19,14 @@ import org.jboss.jms.client.SessionDelegate;
  */
 public class JBossTemporaryQueue
    extends JBossQueue
-   implements TemporaryQueue
+   implements TemporaryQueue, JBossTemporaryDestination
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   /** The session */
-   private SessionDelegate delegate;
+   /** The connection */
+   private ConnectionDelegate delegate;
 
    // Static --------------------------------------------------------
 
@@ -35,10 +35,10 @@ public class JBossTemporaryQueue
    /**
     * Construct a new temporary queue
     * 
-    * @param delegate the session
+    * @param delegate the connection
     * @param name the name
     */
-   public JBossTemporaryQueue(SessionDelegate delegate, String name)
+   public JBossTemporaryQueue(ConnectionDelegate delegate, String name)
    {
       super(name);
       this.delegate = delegate;

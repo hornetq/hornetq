@@ -139,7 +139,6 @@ public class JBossProducer
       if (disableTimestamp == false && timeToLive != 0)
          msg.setJMSExpiration(msg.getJMSTimestamp() + timeToLive);
 
-      msg.makeReadOnly();
       delegate.send(msg);
 	}
 

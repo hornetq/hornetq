@@ -6,10 +6,10 @@
  */
 package org.jboss.jms.destination;
 
-import javax.jms.TemporaryTopic;
 import javax.jms.JMSException;
+import javax.jms.TemporaryTopic;
 
-import org.jboss.jms.client.SessionDelegate;
+import org.jboss.jms.client.ConnectionDelegate;
 
 /**
  * A temporary topic
@@ -19,14 +19,14 @@ import org.jboss.jms.client.SessionDelegate;
  */
 public class JBossTemporaryTopic
    extends JBossTopic
-   implements TemporaryTopic
+   implements TemporaryTopic, JBossTemporaryDestination
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   /** The session */
-   private SessionDelegate delegate;
+   /** The connection */
+   private ConnectionDelegate delegate;
 
    // Static --------------------------------------------------------
 
@@ -35,10 +35,10 @@ public class JBossTemporaryTopic
    /**
     * Construct a new temporary topic
     * 
-    * @param delegate the session
+    * @param delegate the connection
     * @param name the name
     */
-   public JBossTemporaryTopic(SessionDelegate delegate, String name)
+   public JBossTemporaryTopic(ConnectionDelegate delegate, String name)
    {
       super(name);
       this.delegate = delegate;

@@ -20,8 +20,6 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.destination.JBossDestination;
-
 /**
  * The implementation of a session
  * 
@@ -31,12 +29,6 @@ import org.jboss.jms.destination.JBossDestination;
 public interface SessionDelegate 
 {
    // Constants -----------------------------------------------------
-
-   /** Temporary queue */
-   public int TEMPORARY_QUEUE = 1;
-
-   /** Temporary topic */
-   public int TEMPORARY_TOPIC = 2;
 
    // Public --------------------------------------------------------
 
@@ -159,14 +151,6 @@ public interface SessionDelegate
     * @throws JMSException for any error
     */
    TextMessage createTextMessage(String text) throws JMSException;
-
-   /**
-    * Delete the temporary destination
-    * 
-    * @param the destination to delete
-    * @throws JMSException for any error
-    */
-   void deleteTempDestination(JBossDestination destination);
 
    /**
     * Retrieve a destination
