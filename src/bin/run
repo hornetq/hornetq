@@ -5,6 +5,11 @@
 #
 
 CLESTER_HOME=/work/clester/dist
+TARGET_CLASS=org.jboss.messaging.tools.PipeClient
+TARGET_CLASS=org.jboss.messaging.tools.JChannelClient
+TARGET_CLASS=org.jboss.messaging.tools.RpcDispatcherClient
+TARGET_CLASS=org.jboss.messaging.tools.DistributedPipeClient
+#TARGET_CLASS=org.jboss.messaging.tools.ToErase
 
 cygwin=false;
 case "`uname`" in
@@ -28,7 +33,7 @@ while [ "$1" != "" ]; do
         if [ $cygwin = false ]; then
             JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
         else
-            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=jmsclient"
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=mess"
         fi
     fi
     shift
@@ -36,8 +41,12 @@ done
 
 reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
-$reldir/../../output/classes${SEP}\
 $reldir/../../output/etc${SEP}\
+$reldir/../../output/classes${SEP}\
+$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
+$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar${SEP}\
+$reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
+$reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 ${CLESTER_HOME}/clester.jar \
-org.clester.Main org.jboss.messaging.tools.PipeClient
+org.clester.Main $TARGET_CLASS
 
