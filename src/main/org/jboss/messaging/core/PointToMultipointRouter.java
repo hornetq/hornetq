@@ -22,11 +22,7 @@ public class PointToMultipointRouter extends AbstractRouter
 {
    // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-
-   protected Logger log = Logger.getLogger(getClass());
+   private static final Logger log = Logger.getLogger(PointToMultipointRouter.class); 
 
    // Constructors --------------------------------------------------
 

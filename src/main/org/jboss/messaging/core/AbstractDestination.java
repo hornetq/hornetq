@@ -14,17 +14,13 @@ import org.jboss.messaging.interfaces.Receiver;
 import java.util.Iterator;
 
 /**
- *  * A Channel with a routing policy in place. It delegates routing to a Router.
+ * A Channel with a routing policy in place. It delegates routing to a Router.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
 public abstract class AbstractDestination implements Channel, Distributor
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-   
    // Attributes ----------------------------------------------------
 
    protected Pipe inputPipe;
@@ -43,7 +39,7 @@ public abstract class AbstractDestination implements Channel, Distributor
 
    // Channel implementation ----------------------------------------
 
-   public boolean send(Message m)
+   public boolean handle(Message m)
    {
       return inputPipe.handle(m);
    }
@@ -53,6 +49,16 @@ public abstract class AbstractDestination implements Channel, Distributor
       return inputPipe.hasMessages();
    }
 
+   public boolean setSynchronous(boolean b)
+   {
+      return inputPipe.setSynchronous(b);
+   }
+
+   public boolean isSynchronous()
+   {
+      return inputPipe.isSynchronous();
+   }
+
    /**
     * Override if you want a more sophisticated delivery mechanism.
     */
@@ -60,7 +66,6 @@ public abstract class AbstractDestination implements Channel, Distributor
    {
       return inputPipe.deliver();
    }
-
 
    // Distributor interface -----------------------------------------
 
@@ -93,6 +98,17 @@ public abstract class AbstractDestination implements Channel, Distributor
    {
       return router.iterator();
    }
+
+   public void clear()
+   {
+      router.clear();
+   }
+
+   public boolean acknowledged(Receiver r)
+   {
+      return router.acknowledged(r);
+   }
+
 
    // Protected -----------------------------------------------------
 

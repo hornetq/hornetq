@@ -21,6 +21,10 @@ package org.jboss.messaging.interfaces;
  */
 public interface Channel extends Receiver
 {
+
+   public static final boolean SYNCHRONOUS = true;
+   public static final boolean ASYNCHRONOUS = false;
+
    /**
     * Attempt asynchronous delivery of messages being held by the Channel.
     *
@@ -43,7 +47,7 @@ public interface Channel extends Receiver
     *
     * @param b - true for synchronous delivery, false for asynchronous delivery.
     *
-    * @return true if the configuration completed successfully, false otherwise.
+    * @return true if the configuration attempt completed successfully, false otherwise.
     */
    public boolean setSynchronous(boolean b);
 

@@ -20,6 +20,8 @@ import java.util.Set;
  */
 public interface Message extends Serializable
 {
+   public static final String REMOTE_MESSAGE_HEADER = "REMOTE_MESSAGE_HEADER";
+
    public Serializable getMessageID();
 
    public void putHeader(String name, Serializable value);
