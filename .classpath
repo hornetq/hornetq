@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main"/>
-	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/j2ee"/>
 	<classpathentry kind="src" path="/common"/>
@@ -14,5 +13,6 @@
 	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="src/resources/jgroups-core.jar"/>
 	<classpathentry kind="src" path="/j2se"/>
+	<classpathentry kind="src" path="/aspects"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
