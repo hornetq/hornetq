@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Does Receiver management but it stop short of enforcing any routing policy, leaving its
+ * Does Receiver management but it stops short of enforcing any routing policy, leaving its
  * implementation to subclasses.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

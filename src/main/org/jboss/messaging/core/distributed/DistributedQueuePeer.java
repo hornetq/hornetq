@@ -10,6 +10,7 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.util.RpcServerCall;
 import org.jboss.messaging.util.ServerResponse;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.interfaces.Channel;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
@@ -161,7 +162,7 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
     */
    public synchronized void disconnect() throws DistributedException
    {
-      // TODO
+      throw new NotYetImplementedException();
    }
 
    // QueuePeerSubServer implementation -----------------------------

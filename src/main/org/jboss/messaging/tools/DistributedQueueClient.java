@@ -6,17 +6,10 @@
  */
 package org.jboss.messaging.tools;
 
-import org.jboss.messaging.core.Pipe;
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.PipeInput;
-import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.messaging.core.distributed.DistributedQueuePeer;
 import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.interfaces.Channel;
 import org.jboss.messaging.util.RpcServer;
-import org.jgroups.JChannel;
-import org.jgroups.stack.IpAddress;
-import org.jgroups.blocks.RpcDispatcher;
 
 /**
  * Class that provides a command line interface to build distributed Queues. Run it with Clester.
@@ -31,6 +24,7 @@ public class DistributedQueueClient extends RpcDispatcherClient
    
    private DistributedQueuePeer queuePeer;
    private int counter = 0;
+   private int receiverCounter = 0;
 
    // Constructors --------------------------------------------------
 
@@ -52,6 +46,11 @@ public class DistributedQueueClient extends RpcDispatcherClient
    {
        Message m = new CoreMessage(new Integer(counter++));
        System.out.println("Sending "+m+" to the pipe input: "+queuePeer.handle(m));
+   }
+
+   public void addReceiver()
+   {
+      queuePeer.add(new ReceiverImpl("Receiver " + receiverCounter++));
    }
 
    public String dump()

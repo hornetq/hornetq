@@ -17,7 +17,7 @@ import java.io.Serializable;
 /**
  * The "receiving end" of a distributed pipe.
  * <p>
- * "Listens" on a RpcDispatcher and synchronously/asynchronously handles messages sent by the input
+ * Listens on a RpcDispatcher and synchronously/asynchronously handles messages sent by the input
  * end of the distributed pipe.
  * <p>
  * Multiple distributed pipes can share the same PipeOutput instance (and implicitly the
@@ -101,12 +101,6 @@ public class PipeOutput implements PipeOutputSubServer
    {
        receiver = r;
    }
-
-   public Serializable getPipeID()
-   {
-      return pipeID;
-   }
-
 
    public String toString()
    {

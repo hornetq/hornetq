@@ -21,6 +21,7 @@ import java.util.Set;
 public interface Message extends Serializable, Cloneable
 {
    public static final String REMOTE_MESSAGE_HEADER = "REMOTE_MESSAGE_HEADER";
+   public static final String REPLICATOR_ID_HEADER = "REPLICATOR_ID_HEADER";
 
    public Serializable getMessageID();
 

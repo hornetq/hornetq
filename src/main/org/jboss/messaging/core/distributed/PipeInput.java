@@ -9,6 +9,7 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.util.RpcServerCall;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
@@ -113,7 +114,7 @@ public class PipeInput implements Receiver
       outputAddress = a;
    }
 
-   public Serializable getPipeID()
+   public Serializable getID()
    {
       return pipeID;
    }
@@ -173,9 +174,7 @@ public class PipeInput implements Receiver
 
    private boolean asynchronousHandle(Message m)
    {
-      // TODO
-      System.out.println(m);
-      return false;
+      throw new NotYetImplementedException();
    }
 
    // DEBUG ---------------------------------------------------------

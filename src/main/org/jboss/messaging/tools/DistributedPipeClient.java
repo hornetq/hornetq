@@ -42,7 +42,7 @@ public class DistributedPipeClient extends RpcDispatcherClient
    {
       if (pipeOutput != null)
       {
-         throw new Exception("Pipe output for " + pipeOutput.getPipeID() +
+         throw new Exception("Pipe output for " + pipeOutput.getID() +
                              "already instantiated, cannot use this client as pipe input");
       }
 
@@ -60,7 +60,7 @@ public class DistributedPipeClient extends RpcDispatcherClient
    {
       if (pipeInput != null)
       {
-         throw new Exception("Pipe input for " + pipeOutput.getPipeID() +
+         throw new Exception("Pipe input for " + pipeOutput.getID() +
                              "already instantiated, cannot use this client as pipe output");
       }
 
