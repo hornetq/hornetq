@@ -39,7 +39,7 @@ public class QueueClient extends RpcDispatcherClient
 
    public void connect() throws Exception
    {
-      queuePeer.connect();
+      queuePeer.start();
    }
 
    public void send()

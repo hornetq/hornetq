@@ -57,7 +57,7 @@ public class InvalidQueueTest extends MessagingTestCase
 
       try
       {
-         peerOne.connect();
+         peerOne.start();
          fail("Should have thrown DistributedException");
       }
       catch(DistributedException e)

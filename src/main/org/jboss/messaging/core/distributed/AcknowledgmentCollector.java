@@ -6,54 +6,41 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.MessageStoreImpl;
+import org.jboss.messaging.util.RpcServerCall;
+import org.jboss.messaging.util.Lockable;
+import org.jboss.messaging.interfaces.Routable;
 import org.jboss.logging.Logger;
+import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Observer;
-import java.util.Observable;
 import java.util.Set;
 import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
-
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import java.util.HashSet;
 
 /**
- * Keeps lists with messages that need to be acknowledged (one list per ReceiverOutput instance)
- * and attempts retransmission for unacknowledged messages.
- * <p>
- * To enforce exclusive access, you must explicitely aquire the collector's lock.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDelegate, Observer
+public class AcknowledgmentCollector
+      extends Lockable implements AcknowledgmentCollectorServerDelegate
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(AcknowledgmentCollector.class);
+
+   public static final int DELIVERY_RETRIES = 5;
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    protected Replicator peer;
 
-   protected Mutex mutex;
-
-   /** <output peer ID - List of unacked message IDs> */
+   /** <ticket - Set of outputPeerIDs that did NOT acknowledge yet> */
    protected Map unacked;
-
-   /** Only one instance per the message is kept in store. When the last output peer acknowledges
-    * the message, the message is removed from the store. */
-   // TODO introduce the concepet of ReliableStore - one that survives the Replicator crash
-   protected MessageStoreImpl store;
-
 
    // Constructors --------------------------------------------------
 
@@ -61,63 +48,6 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
    {
       this.peer = peer;
       unacked = new HashMap();
-      store = new MessageStoreImpl();
-      mutex = new Mutex();
-   }
-
-   // Observer implementation ---------------------------------------
-
-   /**
-    * This method is called every time the topology changes. The method is thread safe since it
-    * aquires internally the collector's lock.
-    *
-    * @param topology - the ReplicantTopology instance.
-    * @param o - ignored.
-    */
-   public void update(Observable topology, Object o)
-   {
-      try
-      {
-         while(!acquireLock())
-         {
-            log.warn("could not aquire " + this + "'s lock");
-         }
-
-         Set newView = peer.getTopology().getView();
-
-         // identify the newcomers
-         for(Iterator i = newView.iterator(); i.hasNext(); )
-         {
-            Serializable id = (Serializable)i.next();
-            if (!unacked.containsKey(id))
-            {
-               // new replicator output added, create a map entry for it
-               unacked.put(id, new ArrayList());
-               log.debug(this + " notified of topology change: added " + id);
-            }
-         }
-
-         // identify the ones who left the view
-         for(Iterator i = unacked.keySet().iterator(); i.hasNext(); )
-         {
-            Serializable id = (Serializable)i.next();
-            if (!newView.contains(id))
-            {
-               // a replicator output left the replicator
-               List unackedMessageIDs = (List)unacked.remove(id);
-               if (!unackedMessageIDs.isEmpty())
-               {
-                  // TODO what do I do with the unacknowledged messages of an output that goes away?
-                  log.debug(this + " notified of topology change: removed " + id);
-                  throw new NotYetImplementedException();
-               }
-            }
-         }
-      }
-      finally
-      {
-         releaseLock();
-      }
    }
 
    // AcknowledgmentCollectorServerDelegate implementation ----------
@@ -130,103 +60,185 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
 
    public void acknowledge(Serializable messageID, Serializable outputPeerID, Boolean positive)
    {
-      if (log.isTraceEnabled())
-      {
-         log.trace("message " + messageID +
-                   (positive.booleanValue() ? " POSITIVELY" : " NEGATIVELY" ) +
-                   " acked by "+outputPeerID);
-      }
-
-      // TODO deal with negative acknowledgments
-      if (!positive.booleanValue())
-      {
-         throw new NotYetImplementedException("Don't know to deal with negative ACK");
-      }
+      lock();
 
       try
       {
-         while(!acquireLock())
+         if (log.isTraceEnabled())
          {
-            log.warn("could not aquire " + this + "'s lock");
+            log.trace("message " + messageID +
+                      (positive.booleanValue() ? " POSITIVELY" : " NEGATIVELY" ) +
+                      " acked by " + outputPeerID);
          }
-         List l = (List)unacked.get(outputPeerID);
-         if (l != null && l.remove(messageID))
+
+         for(Iterator i = unacked.keySet().iterator(); i.hasNext(); )
          {
-            store.remove(messageID);
+            Ticket t = (Ticket)i.next();
+            if (t.getRoutable().getMessageID().equals(messageID))
+            {
+               if (positive.booleanValue())
+               {
+                  Set s = (Set)unacked.get(t);
+                  s.remove(outputPeerID);
+                  if (s.isEmpty())
+                  {
+                     t.release(true);
+                     i.remove();
+                  }
+               }
+               else
+               {
+                  // negative acknowlegment, if a sycnchronous call is waiting on this ticket, it
+                  // will be also nacked
+                  t.release(false);
+               }
+            }
          }
       }
       finally
       {
-         releaseLock();
+         unlock();
       }
    }
 
    // Public --------------------------------------------------------
 
-   /**
-    * Acquiring the lock insures exclusive access to the collector. The metod can wait forever
-    * if the lock was previously released.
-    *
-    * @return true if the lock was acquired, false if the waiting thread was interrupted.
-    */
-   public boolean acquireLock()
+   public void acknowledge(Serializable messageID, Set outputPeerIDs, Boolean positive)
    {
+      lock();
+
       try
       {
-         mutex.acquire();
-         if (log.isTraceEnabled()) { log.trace("acquired " + this + "'s lock"); }
-         return true;
-      }
-      catch(InterruptedException e)
-      {
-         log.warn("failed to acquire " + this + "'s lock");
-         return false;
-      }
-   }
-
-   /**
-    * Releases a previously acquired lock.
-    */
-   public void releaseLock()
-   {
-      mutex.release();
-      if (log.isTraceEnabled()) { log.trace("released " + this + "'s lock"); }
-   }
-
-   /**
-    * Add a message that needs to receive acknowledgment from the output peers. The acknowledgment
-    * collector will hold the message/attempt retransmission until all output peers of the
-    * view the message was originally sent in acknowledge, or the message expires.
-    *
-    * To do this operation in a concurrent-safe way, you should previously acquire the collector's
-    * lock.
-    *
-    * TODO implement Time To Live and message expiration
-    *
-    */
-   public void add(Routable r)
-   {
-      synchronized(unacked)
-      {
-         for(Iterator i = unacked.keySet().iterator(); i.hasNext(); )
+         for(Iterator i = outputPeerIDs.iterator(); i.hasNext(); )
          {
-            Serializable outputPeerID = (Serializable)i.next();
-            List l = (List)unacked.get(outputPeerID);
-            l.add(((Message)r).getMessageID()); //
-            store.add(r);
-            if (log.isTraceEnabled()) { log.trace("added " + r.getMessageID() + " to " + outputPeerID + "'s unack list"); }
+            acknowledge(messageID, (Serializable)i.next(), positive);
          }
       }
+      finally
+      {
+         unlock();
+      }
+
    }
+
+   /**
+    * TODO implement Time To Live and message expiration
+    * TODO hack for the Replicator's asynchronous handling
+    */
+   public Ticket addNACK(Routable r, Set outputPeerIDs)
+   {
+      lock();
+
+      try
+      {
+         Ticket t = new Ticket(r);
+         unacked.put(t, outputPeerIDs);
+         if (log.isTraceEnabled()) { log.trace("added " + outputPeerIDs + " to " + t); }
+         return t;
+      }
+      finally
+      {
+         unlock();
+      }
+
+   }
+
+   /**
+    * TODO hack for the Replicator's asynchronous handling
+    */
+   public void addNACK(Routable r, Serializable outputPeerID)
+   {
+      lock();
+
+      try
+      {
+         Ticket ticket = null;
+         Set s = null;
+         for(Iterator i = unacked.keySet().iterator(); i.hasNext(); )
+         {
+            Ticket t = (Ticket)i.next();
+            if (t.getRoutable().getMessageID().equals(r.getMessageID()))
+            {
+               ticket = t;
+            }
+         }
+         if (ticket == null)
+         {
+            ticket = new Ticket(r);
+            s = new HashSet();
+            unacked.put(ticket, s);
+         }
+
+
+         if (s == null)
+         {
+            s = (Set)unacked.get(ticket);
+         }
+
+         s.add(outputPeerID);
+         if (log.isTraceEnabled()) { log.trace("added " + outputPeerID + " to " + ticket); }
+      }
+      finally
+      {
+         unlock();
+      }
+
+   }
+   /**
+    * TODO hack
+    */
+   public Set getMessageIDs()
+   {
+      lock();
+
+      try
+      {
+         Set s = new HashSet();
+         for(Iterator i = unacked.keySet().iterator(); i.hasNext();)
+         {
+            s.add(((Ticket)i.next()).getRoutable().getMessageID());
+         }
+         return s;
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
 
    /**
     * Returns true if the peer doesn't currently hold messages that haven't been acknowledged.
-    * @return
     */
    public boolean isEmpty()
    {
-      return store.isEmpty();
+      lock();
+
+      try
+      {
+         return unacked.isEmpty();
+      }
+      finally
+      {
+         unlock();
+      }
    }
+
+   public void clear()
+   {
+      lock();
+
+      try
+      {
+         unacked.clear();
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+
 
    /**
     * Frees up resources.
@@ -237,7 +249,6 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
       {
          throw new NotYetImplementedException("The MessageStoreImpl contains UNACKNOWLEDGED MESSAGES!");
       }
-      store = null;
       unacked = null;
    }
 
@@ -251,9 +262,171 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
 
    // Package protected ---------------------------------------------
 
+
    // Protected -----------------------------------------------------
+
+
+   // TODO VERY inefficient implementation - for each peer that did not acknowledge, retry
+   // TODO unicast delivery;
+   protected boolean deliver(RpcDispatcher dispatcher)
+   {
+
+      // try redelivery several times
+      redelivery: for(int redeliveryCnt = 0; redeliveryCnt < DELIVERY_RETRIES; redeliveryCnt++)
+      {
+         try
+         {
+            try
+            {
+               Thread.sleep(redeliveryCnt * 200);
+            }
+            catch(InterruptedException e)
+            {
+               log.warn(e);
+            }
+
+            lock();
+
+            if (unacked.isEmpty())
+            {
+               return true;
+            }
+
+            if (log.isTraceEnabled()) { log.trace(this + " deliver(), attempt " + (redeliveryCnt + 1)); }
+
+            // TODO scan the collector the other way around and try to redeliver synchronously
+            // TODO more than one message to the current output peer
+            for(Iterator i = unacked.keySet().iterator(); i.hasNext();)
+            {
+               Ticket t = (Ticket)i.next();
+               Routable r = t.getRoutable();
+               Set outputPeerIDs = (Set)unacked.get(t);
+               for(Iterator j = outputPeerIDs.iterator(); j.hasNext(); )
+               {
+                  Serializable peerID = (Serializable)j.next();
+                  Address address = peer.getTopology().getAddress(peerID);
+
+                  // try unicast delivery
+
+                  String methodName = "handle";
+                  RpcServerCall call =
+                        new RpcServerCall(peerID,
+                                          methodName,
+                                          new Object[] {r},
+                                          new String[] {"org.jboss.messaging.interfaces.Routable"});
+
+                  try
+                  {
+                     if (log.isTraceEnabled()) { log.trace("Calling remotely " + methodName +
+                                                           "() on " + address + "." + peerID); }
+
+                     if(((Boolean)call.remoteInvoke(dispatcher, address, 3000)).booleanValue())
+                     {
+                        j.remove();
+                     }
+                     else
+                     {
+                        continue redelivery;
+                     }
+                  }
+                  catch(Throwable tr)
+                  {
+                     log.warn("Remote call " + methodName + "() on " + address +  "." + peerID +
+                              " failed", tr);
+                     continue redelivery;
+                  }
+               }
+               if (outputPeerIDs.isEmpty())
+               {
+                  i.remove();
+               }
+            }
+         }
+         finally
+         {
+            unlock();
+         }
+      }
+
+      lock();
+      
+      try
+      {
+         return unacked.isEmpty();
+      }
+      finally
+      {
+         unlock();
+      }
+
+   }
 
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+
+   /**
+    * Waiting areas for synchronous calls. This is an optimization to be used for synchronous
+    * calls only.
+    */
+   class Ticket
+   {
+      private Routable routable;
+      protected boolean ack = false;
+
+      public Ticket(Routable r)
+      {
+         routable = r;
+      }
+
+      public Routable getRoutable()
+      {
+         return routable;
+      }
+
+      /**
+       * @return true if all negative acknowlegments were cancelled in time, false if not or
+       *         if a negative acknowlegment was reinforced.
+       */
+      public boolean waitForAcknowledgments(long timeout)
+      {
+         synchronized(this)
+         {
+            try
+            {
+               if (log.isTraceEnabled()) { log.trace("waiting for acknowledgment on " + this); }
+               this.wait(timeout);
+            }
+            catch(InterruptedException e)
+            {
+               // TODO incomplete implementation, the list of outputPeerIDs and the ticket itself
+               // TODO remain hanging in unacked
+               log.warn("Interrupted", e);
+            }
+            if (log.isTraceEnabled()) { log.trace("released from waiting on " + this + ": " + ack); }
+            return ack;
+         }
+      }
+
+      /**
+       * Releases any thread that waits for all acknowledgements to come, with a positive or a
+       * negative acknowledgment.
+       * @param ack - if positive, waitForAcknowledgments() will exit with a positive acknowledgment
+       *        negative otherwise.
+       */
+      public void release(boolean ack)
+      {
+         synchronized(this)
+         {
+            this.ack = ack;
+            notify();
+         }
+      }
+
+      public String toString()
+      {
+         return "ticket[" + routable.getMessageID() + "]";
+      }
+
+   }
 }

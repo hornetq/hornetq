@@ -97,6 +97,7 @@ public class ChannelSupportTest extends MessagingTestCase
    //
 
    public void testSuccessfulSynchronousDeliverOnAsynchronousChannel_UnreliableRoutable()
+         throws Exception
    {
       if (channel == null) { return; }
 
@@ -104,7 +105,13 @@ public class ChannelSupportTest extends MessagingTestCase
       assertTrue(channel.setSynchronous(false));
 
       assertTrue(channel.handle(new RoutableSupport("routableID", false)));
-      assertFalse(channel.hasMessages());
+
+      // wait for the acknowledgment to arrive and store to clear - if it doesn't, the test will timeout
+      while(channel.hasMessages())
+      {
+         Thread.sleep(500);
+      }
+
       List l = receiverOne.getMessages();
       assertEquals(1, l.size());
       assertEquals("routableID", ((RoutableSupport)receiverOne.iterator().next()).getMessageID());
@@ -141,13 +148,23 @@ public class ChannelSupportTest extends MessagingTestCase
    //
 
    public void testSuccessfulSynchronousDeliverOnAsynchronousChannel_ReliableRoutable()
+         throws Exception
    {
       if (channel == null) { return; }
 
       receiverOne.setState(ReceiverImpl.HANDLING);
+      channel.setAcknowledgmentStore(new AcknowledgmentStoreImpl("ACKStoreID"));
+      channel.setMessageStore(new MessageStoreImpl("MessageStoreID"));
       assertTrue(channel.setSynchronous(false));
 
       assertTrue(channel.handle(new RoutableSupport("routableID", true)));
+
+      // wait for the acknowledgment to arrive and store to clear - if it doesn't, the test will timeout
+      while(channel.hasMessages())
+      {
+         Thread.sleep(500);
+      }
+
       assertFalse(channel.hasMessages());
       List l = receiverOne.getMessages();
       assertEquals(1, l.size());
@@ -320,6 +337,25 @@ public class ChannelSupportTest extends MessagingTestCase
    //
 
    public void testDeliver()
+   {
+      if (channel == null) { return; }
+
+      // deliver none
+
+      receiverOne.setState(ReceiverImpl.DENYING);
+      assertTrue(channel.setSynchronous(false));
+      assertTrue(channel.handle(new RoutableSupport("routableID1")));
+      assertTrue(channel.hasMessages());
+
+      receiverOne.setState(ReceiverImpl.HANDLING);
+      assertTrue(channel.deliver());
+
+      assertEquals(1, receiverOne.getMessages().size());
+      assertTrue(receiverOne.contains("routableID1"));
+   }
+
+
+   public void testDeliverMultiple()
    {
       if (channel == null) { return; }
 

@@ -56,15 +56,23 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
 
    public boolean hasMessages()
    {
-      synchronized(channelLock)
+      lock();
+
+      try
       {
          return !unacked.isEmpty();
+      }
+      finally
+      {
+         unlock();
       }
    }
 
    public Set getUnacknowledged()
    {
-      synchronized(channelLock)
+      lock();
+      
+      try
       {
          if (unacked.isEmpty())
          {
@@ -80,6 +88,10 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
             }
          }
          return s;
+      }
+      finally
+      {
+         unlock();
       }
    }
 

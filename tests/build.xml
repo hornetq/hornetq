@@ -140,7 +140,8 @@
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}">
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -172,7 +173,8 @@
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}">
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>

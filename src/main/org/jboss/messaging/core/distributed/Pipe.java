@@ -93,7 +93,9 @@ public class Pipe extends SingleOutputChannelSupport
 
    public boolean deliver()
    {
-      synchronized(channelLock)
+      lock();
+
+      try
       {
          // try to flush the message store
          for(Iterator i = unacked.iterator(); i.hasNext(); )
@@ -110,6 +112,10 @@ public class Pipe extends SingleOutputChannelSupport
             }
          }
          return unacked.isEmpty();
+      }
+      finally
+      {
+         unlock();
       }
    }
 

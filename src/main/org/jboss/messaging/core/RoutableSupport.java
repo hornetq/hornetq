@@ -97,4 +97,15 @@ public class RoutableSupport implements Routable
       return headers.keySet();
    }
 
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("RoutableSupport[");
+      sb.append(messageID);
+      sb.append("]");
+      return sb.toString();
+   }
+
+
 }

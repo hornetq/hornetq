@@ -110,7 +110,9 @@ public class LocalPipe extends SingleOutputChannelSupport
 
    public boolean deliver()
    {
-      synchronized(channelLock)
+      lock();
+
+      try
       {
          // try to flush the message store
          for(Iterator i = unacked.iterator(); i.hasNext(); )
@@ -126,12 +128,16 @@ public class LocalPipe extends SingleOutputChannelSupport
             catch(Throwable t)
             {
                // most likely the receiver is broken, don't insist
-               log.warn("The receiver " + receiver.getReceiverID() +
+               log.warn("The receiver " + (receiver == null ? "null" : receiver.getReceiverID()) +
                         " failed to handle the message", t);
                break;
             }
          }
          return unacked.isEmpty();
+      }
+      finally
+      {
+         unlock();
       }
    }
 
@@ -142,9 +148,15 @@ public class LocalPipe extends SingleOutputChannelSupport
     */
    public Receiver getReceiver()
    {
-      synchronized(channelLock)
+      lock();
+
+      try
       {
          return receiver;
+      }
+      finally
+      {
+         unlock();
       }
    }
 
@@ -153,7 +165,9 @@ public class LocalPipe extends SingleOutputChannelSupport
     */
    public void setReceiver(Receiver r)
    {
-      synchronized(channelLock)
+      lock();
+
+      try
       {
          receiver = r;
 
@@ -163,6 +177,10 @@ public class LocalPipe extends SingleOutputChannelSupport
          {
             deliver();
          }
+      }
+      finally
+      {
+         unlock();
       }
    }
 }

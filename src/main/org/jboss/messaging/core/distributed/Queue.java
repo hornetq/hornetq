@@ -34,7 +34,7 @@ public class Queue extends LocalQueue implements QueueServerDelegate
 
    // Attributes ----------------------------------------------------
 
-   protected boolean connected;
+   protected boolean started;
 
    protected Serializable distributedQueueID;
    protected Serializable peerID;
@@ -57,7 +57,7 @@ public class Queue extends LocalQueue implements QueueServerDelegate
     *            with an RpcServer, so this instance cannot register itself to field distributed
     *            calls.
     *
-    * @see org.jboss.messaging.core.distributed.Queue#connect()
+    * @see org.jboss.messaging.core.distributed.Queue#start()
     */
    public Queue(RpcDispatcher dispatcher, Serializable distributedQueueID)
    {
@@ -73,7 +73,7 @@ public class Queue extends LocalQueue implements QueueServerDelegate
       this.distributedQueueID = distributedQueueID;
       this.peerID = "queuePeer"+getUniqueID().toString();
       jChannel = dispatcher.getChannel();
-      connected = false;
+      started = false;
       pipeID = distributedQueueID.toString() + "." + peerID.toString() + "-pipe" +
                PipeOutput.getUniqueID().toString();
    }
@@ -83,15 +83,15 @@ public class Queue extends LocalQueue implements QueueServerDelegate
 
 
    /**
-    * Lifecycle method. Connects the peer to the distributed queue. The underlying JChannel must
-    * be connected when this method is invoked.
+    * Lifecycle method. Starts the peer by connecting it to the distributed queue. The underlying
+    * JChannel must be connected when this method is invoked.
     *
     * @exception DistributedException - a wrapper for the exception thrown by the distributed layer
     *            (JGroups). The original exception, if any, is nested.
     */
-   public synchronized void connect() throws DistributedException
+   public synchronized void start() throws DistributedException
    {
-      if(connected)
+      if(started)
       {
          return;
       }
@@ -101,7 +101,7 @@ public class Queue extends LocalQueue implements QueueServerDelegate
          throw new DistributedException("The underlying JGroups channel not connected");
       }
 
-      log.debug(this + " connecting");
+      log.debug(this + " starting");
 
       // announce myself to the other peers and wait for their acknowledgment
       RpcServerCall rpcServerCall =
@@ -153,21 +153,21 @@ public class Queue extends LocalQueue implements QueueServerDelegate
                                          "has already a server delegate registered");
       }
       rpcServer.register(distributedQueueID, this);
-      connected = true;
+      started = true;
    }
 
-   public synchronized boolean isConnected()
+   public synchronized boolean isStarted()
    {
-      return connected;
+      return started;
    }
 
    /**
-    * Lifecycle method. Disconnect the peer from the distributed queue.
+    * Lifecycle method. Stops the peer and disconnects it from the distributed queue.
     *
     * @exception DistributedException - a wrapper for the exception thrown by the distributed layer
     *            (JGroups). The original exception, if any, is nested.
     */
-   public synchronized void disconnect() throws DistributedException
+   public synchronized void stop() throws DistributedException
    {
       throw new NotYetImplementedException();
    }

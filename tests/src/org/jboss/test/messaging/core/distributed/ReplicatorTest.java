@@ -7,7 +7,7 @@
 package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.core.ReceiverImpl;
-import org.jboss.test.messaging.core.ChannelSupportTest;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.Replicator;
@@ -25,7 +25,7 @@ import java.util.List;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ReplicatorTest extends ChannelSupportTest
+public class ReplicatorTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -42,8 +42,9 @@ public class ReplicatorTest extends ChannelSupportTest
 
    // Attributes ----------------------------------------------------
 
-   private JChannel jChannelOne, jChannelTwo, inputJChannel, outputJChannel;
-   private RpcDispatcher dispatcherOne, dispatcherTwo, inputDispatcher, outputDispatcher;
+   // used by the local test cases
+   private JChannel inputJChannel, outputJChannel;
+   private RpcDispatcher inputDispatcher, outputDispatcher;
 
    // Constructors --------------------------------------------------
 
@@ -60,39 +61,20 @@ public class ReplicatorTest extends ChannelSupportTest
    {
       super.setUp();
 
-      jChannelOne = new JChannel(props);
-      dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
-
-      jChannelTwo = new JChannel(props);
-      dispatcherTwo = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
-
       inputJChannel = new JChannel(props);
-      inputDispatcher = new RpcDispatcher(inputJChannel, null, null, null);
+      inputDispatcher = new RpcDispatcher(inputJChannel, null, null, new RpcServer());
 
       outputJChannel = new JChannel(props);
       outputDispatcher = new RpcDispatcher(outputJChannel, null, null, new RpcServer());
 
-      inputJChannel.connect("ChannelSupportTestGroup");
-      outputJChannel.connect("ChannelSupportTestGroup");
-
-      // don't connect jChannelOne, jChannelTwo yet
-
-      // Create a receiver and a Pipe to be tested by the superclass tests
-      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
-      ReplicatorOutput output = new ReplicatorOutput(outputDispatcher, "ReplicatorID", receiverOne);
-      output.start();
-      channel = new Replicator(inputDispatcher, "ReplicatorID");
-
+      // do not connect yet the channels
    }
 
    protected void tearDown() throws Exception
    {
-      channel = null;
-      receiverOne = null;
+      Thread.sleep(500);
       inputJChannel.close();
       outputJChannel.close();
-      jChannelOne.close();
-      jChannelTwo.close();
       super.tearDown();
    }
 
@@ -153,20 +135,20 @@ public class ReplicatorTest extends ChannelSupportTest
 
    public void testHandleInputPeerNotConnected() throws Exception
    {
-      Replicator input = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator input = new Replicator(inputDispatcher, "ReplicatorID");
       assertFalse(input.handle(new MessageSupport("messageID")));
    }
 
    public void testOneInputPeerOneJChannel() throws Exception
    {
-      jChannelOne.connect("testGroup");
+      inputJChannel.connect("testGroup");
 
-      Replicator replicatorPeer = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator replicatorPeer = new Replicator(inputDispatcher, "ReplicatorID");
       replicatorPeer.start();
       assertTrue(replicatorPeer.isStarted());
 
 
-      ReplicatorOutput output = new ReplicatorOutput(dispatcherOne, "ReplicatorID");
+      ReplicatorOutput output = new ReplicatorOutput(inputDispatcher, "ReplicatorID");
       output.start();
       assertTrue(output.isStarted());
 
@@ -195,13 +177,13 @@ public class ReplicatorTest extends ChannelSupportTest
 
    public void testOneInputPeerOneJChannelTwoMessages() throws Exception
    {
-      jChannelOne.connect("testGroup");
+      inputJChannel.connect("testGroup");
 
-      Replicator peer = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator peer = new Replicator(inputDispatcher, "ReplicatorID");
       peer.start();
       assertTrue(peer.isStarted());
 
-      ReplicatorOutput output = new ReplicatorOutput(dispatcherOne, "ReplicatorID");
+      ReplicatorOutput output = new ReplicatorOutput(inputDispatcher, "ReplicatorID");
       output.start();
       assertTrue(output.isStarted());
 
@@ -234,16 +216,16 @@ public class ReplicatorTest extends ChannelSupportTest
 
    public void testTwoInputPeersOneJChannel() throws Exception
    {
-      jChannelOne.connect("testGroup");
+      inputJChannel.connect("testGroup");
 
-      Replicator inputPeerOne = new Replicator(dispatcherOne, "ReplicatorID");
-      Replicator inputPeerTwo = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator inputPeerOne = new Replicator(inputDispatcher, "ReplicatorID");
+      Replicator inputPeerTwo = new Replicator(inputDispatcher, "ReplicatorID");
       inputPeerOne.start();
       inputPeerTwo.start();
       assertTrue(inputPeerOne.isStarted());
       assertTrue(inputPeerTwo.isStarted());
 
-      ReplicatorOutput output = new ReplicatorOutput(dispatcherOne, "ReplicatorID");
+      ReplicatorOutput output = new ReplicatorOutput(inputDispatcher, "ReplicatorID");
       output.start();
       assertTrue(output.isStarted());
 
@@ -295,14 +277,14 @@ public class ReplicatorTest extends ChannelSupportTest
 
    public void testTwoJChannels() throws Exception
    {
-      jChannelOne.connect("testGroup");
-      jChannelTwo.connect("testGroup");
+      inputJChannel.connect("testGroup");
+      outputJChannel.connect("testGroup");
 
-      Replicator inputPeer = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator inputPeer = new Replicator(inputDispatcher, "ReplicatorID");
       inputPeer.start();
       assertTrue(inputPeer.isStarted());
 
-      ReplicatorOutput output = new ReplicatorOutput(dispatcherTwo, "ReplicatorID");
+      ReplicatorOutput output = new ReplicatorOutput(outputDispatcher, "ReplicatorID");
       output.start();
       assertTrue(output.isStarted());
 
@@ -343,14 +325,14 @@ public class ReplicatorTest extends ChannelSupportTest
 
    public void testTwoJChannelsOneInputTwoOutputs() throws Exception
    {
-      jChannelOne.connect("testGroup");
-      jChannelTwo.connect("testGroup");
+      inputJChannel.connect("testGroup");
+      outputJChannel.connect("testGroup");
 
-      Replicator inputPeer = new Replicator(dispatcherOne, "ReplicatorID");
+      Replicator inputPeer = new Replicator(inputDispatcher, "ReplicatorID");
       inputPeer.start();
       assertTrue(inputPeer.isStarted());
 
-      ReplicatorOutput outputOne = new ReplicatorOutput(dispatcherOne, "ReplicatorID");
+      ReplicatorOutput outputOne = new ReplicatorOutput(inputDispatcher, "ReplicatorID");
       outputOne.start();
       assertTrue(outputOne.isStarted());
 
@@ -358,7 +340,7 @@ public class ReplicatorTest extends ChannelSupportTest
       rOne.resetInvocationCount();
       outputOne.setReceiver(rOne);
 
-      ReplicatorOutput outputTwo = new ReplicatorOutput(dispatcherTwo, "ReplicatorID");
+      ReplicatorOutput outputTwo = new ReplicatorOutput(outputDispatcher, "ReplicatorID");
       outputTwo.start();
       assertTrue(outputTwo.isStarted());
 

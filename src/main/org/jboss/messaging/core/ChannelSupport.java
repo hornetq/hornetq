@@ -11,6 +11,7 @@ import org.jboss.messaging.interfaces.AcknowledgmentStore;
 import org.jboss.messaging.interfaces.Channel;
 import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Message;
+import org.jboss.messaging.util.Lockable;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;
@@ -22,7 +23,7 @@ import java.util.Set;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class ChannelSupport implements Channel
+public abstract class ChannelSupport extends Lockable implements Channel
 {
    // Constants -----------------------------------------------------
 
@@ -36,8 +37,6 @@ public abstract class ChannelSupport implements Channel
    private volatile boolean synchronous;
    private MessageStore messageStore;
    private AcknowledgmentStore acknowledgmentStore;
-
-   protected Object channelLock;
 
    // Constructors --------------------------------------------------
 
@@ -55,7 +54,6 @@ public abstract class ChannelSupport implements Channel
     */
    public ChannelSupport(boolean mode)
    {
-      channelLock = new Object();
       synchronous = mode;
    }
 
@@ -63,7 +61,9 @@ public abstract class ChannelSupport implements Channel
 
    public boolean setSynchronous(boolean synch)
    {
-      synchronized(channelLock)
+      lock();
+
+      try
       {
          if (synchronous == synch)
          {
@@ -76,6 +76,10 @@ public abstract class ChannelSupport implements Channel
          }
          synchronous = synch;
          return true;
+      }
+      finally
+      {
+         unlock();
       }
    }
 
@@ -146,9 +150,11 @@ public abstract class ChannelSupport implements Channel
     */
    protected boolean storeNACKedMessage(Routable r, Serializable receiverID)
    {
+      lock();
+
       if (log.isTraceEnabled()) { log.trace("store NACK: "+r.getMessageID()+" from "+receiverID); }
 
-      synchronized(channelLock)
+      try
       {
          if (synchronous)
          {
@@ -161,7 +167,7 @@ public abstract class ChannelSupport implements Channel
             {
                if (r instanceof Message)
                {
-                  // TODO if this succeeds and acknowledgmentStore fails, I add garbage in the message store
+                  // TODO if this succeeds and acknowledgmentStore fails, I add garbage to the message store
                   r = messageStore.store((Message)r);
                }
                acknowledgmentStore.storeNACK(r.getMessageID(), receiverID);
@@ -174,6 +180,10 @@ public abstract class ChannelSupport implements Channel
             log.warn("Cannot keep NACKed message " + r, t);
             return false;
          }
+      }
+      finally
+      {
+         unlock();
       }
    }
 

@@ -25,9 +25,10 @@ import java.lang.reflect.Method;
 /**
  * An RpcServer is installed as "server object" with a RpcDispatcher instance.
  * <p>
- * The RpcServer allows dynamic registration of other server objects, under "categories". For each
- * category, the RpcServer allows registration of one or more equivalent server delegate objects, on
- * which methods will be serially invoked when a remote method call is received from the group.
+ * The RpcServer allows dynamic registration of other server objects, under different "categories".
+ * For each category, the RpcServer allows registration of one or more equivalent server delegate
+ * objects, on which methods will be serially invoked when a remote method call is received from the
+ * group.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -284,16 +285,16 @@ public class RpcServer
     * Helper method that returns a human readable label for a server delegate, to be used in logs.
     */
    public static String serverDelegateToString(Address address, Serializable category,
-                                               Serializable subServerID)
+                                               Serializable serverDelegateID)
    {
       StringBuffer sb = new StringBuffer();
       sb.append(address);
       sb.append('.');
       sb.append(category);
-      if (subServerID != null)
+      if (serverDelegateID != null)
       {
          sb.append('.');
-         sb.append(subServerID);
+         sb.append(serverDelegateID);
       }
       return sb.toString();
    }

@@ -11,6 +11,7 @@ import org.jboss.messaging.util.RpcServerCall;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.util.ServerResponse;
 import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.util.Observable;
@@ -20,6 +21,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.Collection;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * The Observers interested in topology changes should register here.
@@ -40,7 +43,8 @@ public class ReplicatorTopology
    // Attributes ----------------------------------------------------
    protected Replicator peer;
 
-   protected Set topology;
+   /** <outputPeerID - output peer JGroups address> */
+   protected Map topology;
 
    // Constructors --------------------------------------------------
 
@@ -48,7 +52,7 @@ public class ReplicatorTopology
    {
       super();
       this.peer = peer;
-      topology = new HashSet();
+      topology = new HashMap();
    }
 
    // ReplicatorTopologyServerDelegate implementation ---------------
@@ -58,19 +62,19 @@ public class ReplicatorTopology
       return peer.getPeerID();
    }
 
-   public void outputPeerJoins(Serializable joiningPeerID) throws Exception
+   public void outputPeerJoins(Serializable joiningPeerID, Address address) throws Exception
    {
-      log.debug(this + ".outputPeerJoins(" + joiningPeerID + ")");
+      log.debug(this + ".outputPeerJoins(" + joiningPeerID + ", " + address + ")");
 
       synchronized(topology)
       {
-         if (topology.contains(joiningPeerID))
+         if (topology.containsKey(joiningPeerID))
          {
             String msg = "Duplicate peer ID: " + joiningPeerID + ", rejected";
             log.warn(msg);
             throw new Exception(msg);
          }
-         topology.add(joiningPeerID);
+         topology.put(joiningPeerID, address);
          setChanged();
          notifyObservers();
       }
@@ -81,6 +85,9 @@ public class ReplicatorTopology
       throw new NotYetImplementedException("Don't know to handle a leaving peer");
    }
 
+   /**
+    * @return a set of output peer IDs.
+    */
    public Set getView()
    {
       Set result;
@@ -93,7 +100,7 @@ public class ReplicatorTopology
          else
          {
             result = new HashSet();
-            for(Iterator i = topology.iterator(); i.hasNext(); )
+            for(Iterator i = topology.keySet().iterator(); i.hasNext(); )
             {
                result.add(i.next());
             }
@@ -103,18 +110,49 @@ public class ReplicatorTopology
       return result;
    }
 
+   public Map getViewMap()
+   {
+      Map result;
+      synchronized(topology)
+      {
+         if (topology.isEmpty())
+         {
+            result = Collections.EMPTY_MAP;
+         }
+         else
+         {
+            result = new HashMap();
+            for(Iterator i = topology.keySet().iterator(); i.hasNext(); )
+            {
+               Object o = i.next();
+               // TODO do I need to make a clone of the Address?
+               result.put(o, topology.get(o));
+            }
+         }
+      }
+      log.debug(this + ".getViewMap() returns " + result);
+      return result;
+   }
+
+
 
    // Public --------------------------------------------------------
 
+   public Address getAddress(Serializable outputPeerID)
+   {
+      synchronized(topology)
+      {
+         return (Address)topology.get(outputPeerID);
+      }
+   }
+
    public void aquireInitialTopology(RpcDispatcher dispatcher) throws DistributedException
    {
-      // I won't send this call on myself since at this time, my ReplicatorTopology is not
-      // registered yet.
-      RpcServerCall call =
-            new RpcServerCall(peer.getReplicatorID(),
-                              "getView",
-                              new Object[] {},
-                              new String[] {});
+      // Only output peers register IdentityDelegates
+      RpcServerCall call = new RpcServerCall(peer.getReplicatorID(),
+                                             "getIdentity",
+                                             new Object[] {},
+                                             new String[] {});
       // TODO - deal with the timeout
       Collection c = call.remoteInvoke(dispatcher, 30000);
 
@@ -127,24 +165,28 @@ public class ReplicatorTopology
             {
                throw (Throwable)o;
             }
-            Set view = (Set)((ServerResponse)o).getInvocationResult();
-            if (!view.isEmpty())
+            o = ((ServerResponse)o).getInvocationResult();
+            if (o instanceof NoSuchMethodException)
             {
-               synchronized(topology)
-               {
-                  topology.addAll(view);
-               }
-               setChanged();
-               notifyObservers();
+               // just ignore it, it means that I reached a input peer that doesn't answer
+               // identity calls
+               continue;
             }
-            // used the first answer, exit now
-            break;
+            PeerIdentity outputPeerIdentity = (PeerIdentity)o;
+            synchronized(topology)
+            {
+               topology.put(outputPeerIdentity.getPeerID(), outputPeerIdentity.getAddress());
+            }
+            setChanged();
+            notifyObservers();
          }
       }
       catch(Throwable t)
       {
          throw new DistributedException("Failed to acquire the intial topology", t);
       }
+
+      if (log.isDebugEnabled()) { log.debug("Initial topology: " + topology); }
    }
 
    public void registerTopologyListener(Observer observer)

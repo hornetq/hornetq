@@ -79,8 +79,8 @@ public class QueueTest extends MessagingTestCase
       jChannelOne.connect("testGroup");
 
       Queue queue = new Queue(dispatcherOne, "QueueOne");
-      queue.connect();
-      assertTrue(queue.isConnected());
+      queue.start();
+      assertTrue(queue.isStarted());
 
       ReceiverImpl r = new ReceiverImpl();
       queue.add(r);
@@ -97,10 +97,10 @@ public class QueueTest extends MessagingTestCase
 
       Queue queuePeerOne = new Queue(dispatcherOne, "QueueOne");
       Queue queuePeerTwo = new Queue(dispatcherOne, "QueueOne");
-      queuePeerOne.connect();
-      queuePeerTwo.connect();
-      assertTrue(queuePeerOne.isConnected());
-      assertTrue(queuePeerTwo.isConnected());
+      queuePeerOne.start();
+      queuePeerTwo.start();
+      assertTrue(queuePeerOne.isStarted());
+      assertTrue(queuePeerTwo.isStarted());
 
       ReceiverImpl r = new ReceiverImpl();
       queuePeerOne.add(r);
@@ -118,8 +118,8 @@ public class QueueTest extends MessagingTestCase
       jChannelTwo.connect("testGroup");
 
       Queue queue = new Queue(dispatcherOne, "QueueOne");
-      queue.connect();
-      assertTrue(queue.isConnected());
+      queue.start();
+      assertTrue(queue.isStarted());
 
       ReceiverImpl r = new ReceiverImpl();
       queue.add(r);
@@ -137,11 +137,11 @@ public class QueueTest extends MessagingTestCase
 
       Queue queuePeerOne = new Queue(dispatcherOne, "AQueue");
       Queue queuePeerTwo = new Queue(dispatcherTwo, "AQueue");
-      queuePeerOne.connect();
-      queuePeerTwo.connect();
+      queuePeerOne.start();
+      queuePeerTwo.start();
 
-      assertTrue(queuePeerOne.isConnected());
-      assertTrue(queuePeerTwo.isConnected());
+      assertTrue(queuePeerOne.isStarted());
+      assertTrue(queuePeerTwo.isStarted());
 
       ReceiverImpl r = new ReceiverImpl();
       queuePeerTwo.add(r);

@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.util.RpcServer;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.logging.Logger;
@@ -18,6 +17,7 @@ import org.jgroups.Address;
 import java.io.Serializable;
 import java.util.Random;
 import java.util.Set;
+import java.util.Iterator;
 
 
 /**
@@ -38,6 +38,8 @@ import java.util.Set;
  * to different address spaces and be sure that the message was received (and it is acknowledged)
  * when the handle() method returns, all this in an efficient way.
  * <p>
+ *
+ * TODO THE IMPLEMENTATION MUST BE REVIEWED
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -98,55 +100,86 @@ public class Replicator extends ChannelSupport
       return replicatorID;
    }
 
-   /**
-    * TODO if I don't have a reliable store, it might just not be possible to handle the
-    * TODO message synchronously
-    */
    public boolean handle(Routable r)
    {
-      synchronized(this)
+      lock();
+
+      try
       {
          if (!started)
          {
             log.warn("Cannot handle, replicator peer not started");
             return false;
          }
-      }
 
-      r.putHeader(Routable.REPLICATOR_ID, replicatorID);
-      r.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
+         r.putHeader(Routable.REPLICATOR_ID, replicatorID);
+         r.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
 
-      try
-      {
-         if (!collector.acquireLock())
+         Set view = topology.getView();
+         AcknowledgmentCollector.Ticket ticket = null;
+
+         collector.lock();
+         
+         try
          {
-            return false;
-         }
-         dispatcher.getChannel().send(null, null, r);
-         if (log.isTraceEnabled()) { log.trace("sent " + r); }
+            try
+            {
+               dispatcher.getChannel().send(null, null, r);
+               if (log.isTraceEnabled()) { log.trace("sent " + r); }
+            }
+            catch(Throwable t)
+            {
+               log.error("Failed to send the message to the channel", t);
+               return false;
+            }
 
-         // keep it until all output peers from the current view acknowledge
-         collector.add(r);
-      }
-      catch(Exception e)
-      {
-         log.error("Failed to send the message to the channel", e);
-         return false;
+            if (isSynchronous())
+            {
+               // optimisation for a more efficient synchronous handling
+               ticket = collector.addNACK(r, view);
+            }
+            else
+            {
+               // store the messages and the NACKs in a reliable way
+               for(Iterator i = view.iterator(); i.hasNext(); )
+               {
+                  // TODO if message storing fails for one output peer, the others remain in the
+                  // TODO store as garbage
+                  if (!storeNACKedMessage(r, (Serializable)i.next()))
+                  {
+                     return false;
+                  }
+               }
+            }
+         }
+         finally
+         {
+            collector.unlock();
+         }
+
+         if (ticket == null)
+         {
+            // asynchronous handling
+            return true;
+         }
+
+         // only for synchronous handling
+         boolean synchronouslyAcked = ticket.waitForAcknowledgments(30000);
+         if (!synchronouslyAcked)
+         {
+            collector.clear();
+         }
+         return synchronouslyAcked;
       }
       finally
       {
-         collector.releaseLock();
+         unlock();
       }
-
-      // I accepted the responsibility for this message, I must keep it until all acknowledgment
-      // for the current view are received and possibly retry delivery
-
-      return true;
    }
 
    public boolean deliver()
    {
-      throw new NotYetImplementedException();
+      return collector.deliver(dispatcher);
    }
 
    public boolean hasMessages()
@@ -156,17 +189,7 @@ public class Replicator extends ChannelSupport
 
    public Set getUnacknowledged()
    {
-      throw new NotYetImplementedException();
-   }
-
-   public boolean setSynchronous(boolean b)
-   {
-      throw new NotYetImplementedException();
-   }
-
-   public boolean isSynchronous()
-   {
-      throw new NotYetImplementedException();
+      return collector.getMessageIDs();
    }
 
    // Public --------------------------------------------------------
@@ -215,7 +238,8 @@ public class Replicator extends ChannelSupport
 
       collector = new AcknowledgmentCollector(this);
       topology = new ReplicatorTopology(this);
-      topology.addObserver(collector);
+
+      //topology.addObserver(collector);
       topology.aquireInitialTopology(dispatcher);
 
       if (!rpcServer.registerUnique(peerID, collector))
@@ -271,7 +295,10 @@ public class Replicator extends ChannelSupport
 
    protected void storeNACKedMessageLocally(Routable r, Serializable receiverID)
    {
-      throw new NotYetImplementedException();
+
+      // TODO This is a hack to have a quick implementation, so ReceiverTest would pass; review
+      collector.addNACK(r, receiverID);
+
    }
 
    protected ReplicatorTopology getTopology()
