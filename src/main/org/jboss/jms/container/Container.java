@@ -150,7 +150,7 @@ public class Container implements InvocationHandler
    public Object invoke (Invocation invocation)
       throws Throwable
    {
-      MetaDataResolver oldMetaData = invocation.instanceResolver;
+      //MetaDataResolver oldMetaData = invocation.instanceResolver;
       //invocation.instanceResolver = getMetaData();
       try
       {
@@ -158,7 +158,7 @@ public class Container implements InvocationHandler
       }
       finally
       {
-         invocation.instanceResolver = oldMetaData;
+         //invocation.instanceResolver = oldMetaData;
       }
    }
 
