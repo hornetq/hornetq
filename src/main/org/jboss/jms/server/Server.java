@@ -6,19 +6,20 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.jms.DestinationImpl;
-import org.jboss.jms.MessageImpl;
-import org.jboss.jms.TextMessageImpl;
-import org.jboss.logging.Logger;
-import org.jboss.system.ServiceMBeanSupport;
-
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.jms.JMSException;
+import javax.jms.TextMessage;
+
+import org.jboss.jms.MessageImpl;
+import org.jboss.jms.TextMessageImpl;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.logging.Logger;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @jmx:mbean extends="org.jboss.system.ServiceMBean
@@ -37,7 +38,7 @@ public class Server extends ServiceMBeanSupport implements ServerMBean
      * @jmx:managed-attribute
      */
     public synchronized void addDestination(
-            DestinationImpl name,
+            JBossDestination name,
             Destination destination)
     {
         destination.setServer(this);
@@ -47,7 +48,7 @@ public class Server extends ServiceMBeanSupport implements ServerMBean
     /**
      * @jmx:managed-attribute
      */
-    public synchronized void removeDestination(DestinationImpl name)
+    public synchronized void removeDestination(JBossDestination name)
     {
         this.destinations.remove(name);
     }
@@ -133,7 +134,7 @@ public class Server extends ServiceMBeanSupport implements ServerMBean
     {
         Destination destination =
                 (Destination) this.destinations.get(
-                        new DestinationImpl("testDestination"));
+                        new JBossDestination("testDestination"));
         List consumers = new ArrayList();
         for (int i = 0; i < number; i++)
         {
@@ -154,7 +155,7 @@ public class Server extends ServiceMBeanSupport implements ServerMBean
                         new TopicDeliveryHandler(),
                         new SimpleConsumerGroup());
         this.addDestination(
-                new DestinationImpl("testDestination"),
+                new JBossDestination("testDestination"),
                 destination);
     }
 
@@ -162,7 +163,7 @@ public class Server extends ServiceMBeanSupport implements ServerMBean
     {
         Destination destination =
                 (Destination) this.destinations.get(
-                        new DestinationImpl("testDestination"));
+                        new JBossDestination("testDestination"));
         for (int i = 0; i < number; i++)
         {
             try

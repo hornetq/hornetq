@@ -6,10 +6,11 @@
  */
 package org.jboss.jms.server.management;
 
-import org.jboss.jms.ConnectionFactoryImpl;
-import org.jboss.system.ServiceMBeanSupport;
-
 import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.p2p.P2PImplementation;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @jmx:mbean extends="org.jboss.system.ServiceMBean
@@ -32,7 +33,7 @@ public class ConnectionFactory
         //                "Locator");
         new InitialContext().rebind(
                 this.jndiName,
-                new ConnectionFactoryImpl());
+                new JBossConnectionFactory(new P2PImplementation()));
     }
 
     protected final void stopService() throws Exception

@@ -31,10 +31,8 @@ public class JBossTopic
     * Construct a new topic
     *
     * @param the name of the topic
-    * @throws JMSException for any error
     */
    public JBossTopic(String name)
-      throws JMSException
    {
       super(name);
    }

@@ -37,10 +37,8 @@ public class JBossTemporaryTopic
     * 
     * @param delegate the session
     * @param name the name
-    * @throws JMSException for any error
     */
    public JBossTemporaryTopic(SessionDelegate delegate, String name)
-      throws JMSException
    {
       super(name);
       this.delegate = delegate;

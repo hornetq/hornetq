@@ -37,10 +37,8 @@ public class JBossTemporaryQueue
     * 
     * @param delegate the session
     * @param name the name
-    * @throws JMSException for any error
     */
    public JBossTemporaryQueue(SessionDelegate delegate, String name)
-      throws JMSException
    {
       super(name);
       this.delegate = delegate;

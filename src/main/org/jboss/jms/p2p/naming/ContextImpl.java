@@ -21,9 +21,9 @@ import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 
 import org.javagroups.blocks.DistributedTree;
-
-import org.jboss.jms.ConnectionFactoryImpl;
-import org.jboss.jms.DestinationImpl;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.p2p.P2PImplementation;
+import org.jboss.jms.destination.JBossDestination;
 
 /**
  * Simple {@link Context} implementation to enable using Pure P2P JMS/JBoss in a vendor neutral
@@ -282,7 +282,7 @@ public class ContextImpl implements Context
         properties.load(propertyFileInputStream);
 
         // Since each client may declare a connection factory we'll just do a rebind.
-        this.rebind(properties.getProperty("org.jboss.jms.p2p.connectionfactory.name", "ConnectionFactory"), new ConnectionFactoryImpl());
+        this.rebind(properties.getProperty("org.jboss.jms.p2p.connectionfactory.name", "ConnectionFactory"), new JBossConnectionFactory(new P2PImplementation()));
 
         // Now load any declared destinations, right now just do topics
         String declaredTopics = properties.getProperty("org.jboss.jms.p2p.destinations.topics.names");
@@ -294,7 +294,7 @@ public class ContextImpl implements Context
                 String currentToken = tokenizer.nextToken();
                 // TOD: Need to validate that the name includes no illegal characters
                 // TOD: Should I be doing a rebind for destinations?
-                this.rebind(currentToken, new DestinationImpl(currentToken));
+                this.rebind(currentToken, new JBossDestination(currentToken));
             }
         }
     }

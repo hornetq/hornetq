@@ -31,10 +31,8 @@ public class JBossQueue
     * Construct a new queue
     * 
     * @param the name of the queue
-    * @throws JMSException for any error
     */
    public JBossQueue(String name)
-      throws JMSException
    {
       super(name);
    }

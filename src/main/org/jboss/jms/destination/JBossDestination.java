@@ -39,13 +39,11 @@ public class JBossDestination
     * Construct a new destination
     * 
     * @param name the name
-    * @throws JMSException for any error
     */
    public JBossDestination(String name)
-      throws JMSException
    {
       if (name == null)
-         throw new JMSException("Null name");
+         throw new IllegalArgumentException("Null name");
       this.name = name;
    }
 

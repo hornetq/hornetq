@@ -6,14 +6,15 @@
  */
 package org.jboss.jms.server.management;
 
-import org.jboss.jms.DestinationImpl;
+
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.DeliveryHandler;
 import org.jboss.jms.server.SimpleConsumerGroup;
 import org.jboss.jms.server.SimpleMessageStore;
 import org.jboss.system.ServiceMBeanSupport;
-
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 /**
  * @jmx:mbean extends="org.jboss.system.ServiceMBean
@@ -28,7 +29,7 @@ public class Destination
     private String jndiName = null;
     private String deliveryHandler = null;
     private String parentName = null;
-    private DestinationImpl destinationName = null;
+    private JBossDestination destinationName = null;
 
     public void startService() throws Exception
     {
@@ -44,7 +45,7 @@ public class Destination
                         deliveryHandler,
                         new SimpleConsumerGroup());
 
-        this.destinationName = new DestinationImpl(this.jndiName);
+        this.destinationName = new JBossDestination(this.jndiName);
 
         this.server.invoke(
                 new ObjectName("jboss.jms:service=Server"),
