@@ -10,45 +10,44 @@ package org.jboss.messaging.interfaces;
  * A message set.
  * 
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version $Revision$
  */
 public interface MessageSet
 {
-   // Constants -----------------------------------------------------
-
-   // Public --------------------------------------------------------
-   
    /**
     * Add a message to the message set.
     * 
-    * @param reference the message reference to add
+    * @param message - the message to add.
+    *
+    * @return true if the message set did not already contained the specified message.
     */
-   void add(MessageReference reference);
+   public boolean add(Message message);
+
+   /**
+    * Returns a random message from the set, without removing it.
+    *
+    * @return a random message. Returns null if there are no messages in the set. 
+    */
+   public Message get();
 
    /**
     * Remove a message from the message set.
     * 
-    * @param consumer the consumer used to accept the message
-    * @return a message or null if there are no messages
+    * @param message - the message to be removed.
+    *
+    * @return true if the set contained the specified element.
     */
-   MessageReference remove(Consumer consumer);
+   public boolean remove(Message message);
 
    /**
     * Lock the message set
     */
-   void lock();
+   public void lock();
    
    /**
     * Unlock the message set
     */
-   void unlock();
+   public void unlock();
    
-   /**
-    * Set the consumer for out of band notifications
-    * 
-    * @param consumer the consumer
-    */
-   void setConsumer(Consumer consumer);
-   
-   // Inner Classes --------------------------------------------------
 }
