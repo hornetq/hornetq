@@ -22,7 +22,7 @@ import javax.jms.TextMessage;
 import org.jboss.jms.client.SessionDelegate;
 import org.jboss.jms.client.p2p.P2PSessionDelegate;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.util.JMSMap;
+import org.jboss.jms.util.MessageProperties;
 import org.jboss.util.id.GUID;
 
 /**
@@ -47,7 +47,7 @@ public class MessageImpl implements JBossMessage, Cloneable, Serializable
     private long expiration = 0;
     private String messageID = null;
     private int priority = Message.DEFAULT_PRIORITY;
-    private JMSMap properties = JMSMap.createInstance(Message.class);
+    private MessageProperties properties = new MessageProperties();
     private boolean readOnly = false;
     private boolean redelivered = false;
     private Destination replyTo = null;
@@ -389,6 +389,12 @@ public class MessageImpl implements JBossMessage, Cloneable, Serializable
    public SessionDelegate getSessionDelegate() throws JMSException
    {
       return session;
+   }
+
+   public void makeReadOnly()
+   {
+      setReadOnly(true);
+      properties.setReadOnly(true);
    }
 
     public Object clone()

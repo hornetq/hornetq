@@ -65,6 +65,9 @@ public class StandardMessage
    /** Whether the message has been redelivered */
    private boolean redelivered;
 
+   /** Whether the message is read only */
+   private boolean readonly = false;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -86,7 +89,7 @@ public class StandardMessage
 
    public void clearBody() throws JMSException
    {
-      // TODO clearBody
+      readonly = false;
    }
 
    public void clearProperties() throws JMSException
@@ -232,56 +235,67 @@ public class StandardMessage
 
    public void setJMSCorrelationID(String correlationID) throws JMSException
    {
+      checkReadOnly();
       this.correlationID = correlationID;
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
    {
+      checkReadOnly();
       // TODO setJMSCorrelationIDAsBytes
    }
 
    public void setJMSDeliveryMode(int deliveryMode) throws JMSException
    {
+      checkReadOnly();
       this.deliveryMode = deliveryMode;
    }
 
    public void setJMSDestination(Destination destination) throws JMSException
    {
+      checkReadOnly();
       this.destination = destination;
    }
 
    public void setJMSExpiration(long expiration) throws JMSException
    {
+      checkReadOnly();
       this.expiration = expiration;
    }
 
    public void setJMSMessageID(String id) throws JMSException
    {
+      checkReadOnly();
       this.messageID = id;
    }
 
    public void setJMSPriority(int priority) throws JMSException
    {
+      checkReadOnly();
       this.priority = priority;
    }
 
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
+      checkReadOnly();
       this.redelivered = redelivered;
    }
 
    public void setJMSReplyTo(Destination replyTo) throws JMSException
    {
+      checkReadOnly();
       this.replyTo = replyTo;
    }
 
    public void setJMSTimestamp(long timestamp) throws JMSException
    {
+      checkReadOnly();
       this.timestamp = timestamp;
    }
 
    public void setJMSType(String type) throws JMSException
    {
+      checkReadOnly();
       this.type = type;
    }
 
@@ -314,12 +328,20 @@ public class StandardMessage
    
    public void generateMessageID() throws JMSException
    {
+      checkReadOnly();
       messageID = GUID.asString();
    }
 
    public void generateTimestamp() throws JMSException
    {
+      checkReadOnly();
       timestamp = System.currentTimeMillis();
+   }
+
+   public void makeReadOnly() throws JMSException
+   {
+      readonly = true;
+      properties.setReadOnly(true);
    }
 
    // Protected ------------------------------------------------------
@@ -327,6 +349,18 @@ public class StandardMessage
    // Package Private ------------------------------------------------
 
    // Private --------------------------------------------------------
+
+   /**
+    * Checks whether a message is read only
+    * 
+    * @throws JMSException for a read only message
+    */
+   private void checkReadOnly()
+      throws JMSException
+   {
+      if (readonly)
+         throw new JMSException("The message is read only");
+   }
 
    // Inner Classes --------------------------------------------------
 

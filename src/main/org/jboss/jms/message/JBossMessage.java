@@ -42,6 +42,11 @@ public interface JBossMessage
     */
    void generateTimestamp() throws JMSException;
 
+   /**
+    * Change the message to read only
+    */
+   void makeReadOnly() throws JMSException;
+
    // Inner Classes --------------------------------------------------
 
 }

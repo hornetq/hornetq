@@ -133,13 +133,14 @@ public class JBossProducer
       if (disableTimestamp == false)
          msg.generateTimestamp();
 
-      message.setJMSDestination(destination);
-      message.setJMSDeliveryMode(deliveryMode);
-      message.setJMSPriority(priority);
+      msg.setJMSDestination(destination);
+      msg.setJMSDeliveryMode(deliveryMode);
+      msg.setJMSPriority(priority);
       if (disableTimestamp == false && timeToLive != 0)
-      message.setJMSExpiration(msg.getJMSTimestamp() + timeToLive);
+         msg.setJMSExpiration(msg.getJMSTimestamp() + timeToLive);
 
-      delegate.send(message);
+      msg.makeReadOnly();
+      delegate.send(msg);
 	}
 
 	public void send(Destination destination, Message message) throws JMSException
