@@ -22,10 +22,6 @@ import java.io.Serializable;
  */
 public class CoreMessage implements Message
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
    // Attributes ----------------------------------------------------
 
    private Serializable id;
@@ -33,6 +29,9 @@ public class CoreMessage implements Message
 
    // Constructors --------------------------------------------------
 
+   /**
+    * @param id - must be immutable, otherwise clone() won't work correctly.
+    */
    public CoreMessage(Serializable id)
    {
       this.id = id;
@@ -46,6 +45,9 @@ public class CoreMessage implements Message
       return id;
    }
 
+   /**
+    * @param value - must be immutable, otherwise clone() won't work correctly.
+    */
    public void putHeader(String name, Serializable value)
    {
        headers.put(name, value);
@@ -66,14 +68,20 @@ public class CoreMessage implements Message
       return headers.keySet();
    }
 
+   /**
+    * The id and the header values must be immutable, otherwise clone() won't work correctly.
+    */
    public Object clone()
    {
-      // TODO: To rewrite
-      CoreMessage m = new CoreMessage(id);
-      for(Iterator i = headers.keySet().iterator(); i.hasNext();)
+      CoreMessage m = null;
+      try
       {
-         String name = (String)i.next();
-         m.putHeader(name, (Serializable)headers.get(name));
+         m = (CoreMessage)super.clone();
+         m.headers = (Map)((HashMap)headers).clone();
+      }
+      catch(CloneNotSupportedException e)
+      {
+         // Can't happend since we're implementing Message, which extends Cloneable
       }
       return m;
    }
@@ -84,12 +92,4 @@ public class CoreMessage implements Message
    {
       return "M["+id+"]";
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
