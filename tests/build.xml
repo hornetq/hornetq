@@ -38,6 +38,7 @@
       <path refid="apache.log4j.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="junit.junit.classpath"/>
+      <path refid="jgroups.jgroups.classpath"/>
       <path refid="apache.commons.classpath"/>
    </path>
 
