@@ -101,7 +101,7 @@ public class LocalPipe extends SingleOutputChannelSupport
             return true;
          }
       }
-      catch(Exception e)
+      catch(Throwable e)
       {
          log.warn("The receiver " + receiverID + " failed to handle the message", e);
       }
@@ -126,6 +126,8 @@ public class LocalPipe extends SingleOutputChannelSupport
             catch(Throwable t)
             {
                // most likely the receiver is broken, don't insist
+               log.warn("The receiver " + receiver.getReceiverID() +
+                        " failed to handle the message", t);
                break;
             }
          }

@@ -52,12 +52,11 @@ public class ReplicatorClient extends RpcDispatcherClient
    {
       if (input != null)
       {
-         throw new Exception("Replicator for " + input.getID() +
+         throw new Exception("Replicator for " + input.getPeerID() +
                              "already instantiated, cannot use this client as replicatorPeer output");
       }
-//      output = new ReplicatorOutput(replicatorID,
-//                                    new ReceiverImpl("Default Receiver"));
-
+      output =
+         new ReplicatorOutput(rpcDispatcher, replicatorID, new ReceiverImpl("Default Receiver"));
    }
 
    public void send()

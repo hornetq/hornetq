@@ -6,8 +6,8 @@
  */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.ReceiverImpl;
+import org.jboss.test.messaging.core.ChannelSupportTest;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.Replicator;
@@ -25,7 +25,7 @@ import java.util.List;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ReplicatorTest extends MessagingTestCase
+public class ReplicatorTest extends ChannelSupportTest
 {
    // Constants -----------------------------------------------------
 
@@ -42,8 +42,8 @@ public class ReplicatorTest extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
-   private JChannel jChannelOne, jChannelTwo;
-   private RpcDispatcher dispatcherOne, dispatcherTwo;
+   private JChannel jChannelOne, jChannelTwo, inputJChannel, outputJChannel;
+   private RpcDispatcher dispatcherOne, dispatcherTwo, inputDispatcher, outputDispatcher;
 
    // Constructors --------------------------------------------------
 
@@ -66,21 +66,44 @@ public class ReplicatorTest extends MessagingTestCase
       jChannelTwo = new JChannel(props);
       dispatcherTwo = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
 
-      // Don't connect the channels yet.
+      inputJChannel = new JChannel(props);
+      inputDispatcher = new RpcDispatcher(inputJChannel, null, null, null);
+
+      outputJChannel = new JChannel(props);
+      outputDispatcher = new RpcDispatcher(outputJChannel, null, null, new RpcServer());
+
+      inputJChannel.connect("ChannelSupportTestGroup");
+      outputJChannel.connect("ChannelSupportTestGroup");
+
+      // don't connect jChannelOne, jChannelTwo yet
+
+      // Create a receiver and a Pipe to be tested by the superclass tests
+      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
+      ReplicatorOutput output = new ReplicatorOutput(outputDispatcher, "ReplicatorID", receiverOne);
+      output.start();
+      channel = new Replicator(inputDispatcher, "ReplicatorID");
+
    }
 
    protected void tearDown() throws Exception
    {
+      channel = null;
+      receiverOne = null;
+      inputJChannel.close();
+      outputJChannel.close();
       jChannelOne.close();
       jChannelTwo.close();
       super.tearDown();
    }
 
+   //
+   // This test class also runs all ChannelSupportTest's tests
+   //
 
    public void testNullRpcServer() throws Exception
    {
-      JChannel channel = new JChannel();
-      RpcDispatcher dispatcher = new RpcDispatcher(channel, null, null, null);
+      JChannel jChannel = new JChannel();
+      RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, null);
 
       try
       {
@@ -95,8 +118,8 @@ public class ReplicatorTest extends MessagingTestCase
 
    public void testNoRpcServer() throws Exception
    {
-      JChannel channel = new JChannel();
-      RpcDispatcher dispatcher = new RpcDispatcher(channel, null, null, new Object());
+      JChannel jChannel = new JChannel();
+      RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, new Object());
 
       try
       {
@@ -132,7 +155,6 @@ public class ReplicatorTest extends MessagingTestCase
    {
       Replicator input = new Replicator(dispatcherOne, "ReplicatorID");
       assertFalse(input.handle(new MessageSupport("messageID")));
-
    }
 
    public void testOneInputPeerOneJChannel() throws Exception

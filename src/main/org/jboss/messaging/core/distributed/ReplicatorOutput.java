@@ -82,15 +82,20 @@ public class ReplicatorOutput implements MessageListener, Runnable
 
    // Constructors --------------------------------------------------
 
+   public ReplicatorOutput(RpcDispatcher dispatcher, Serializable replicatorID)
+   {
+      this(dispatcher, replicatorID, null);
+   }
+
    /**
     * Creates a replicator peer that is not connected to the replicator yet.
     *
-    * @param replicatorID
+    * @param replicatorID - the ID of the distributed replicator
     *
     * @exception IllegalStateException - thrown if the RpcDispatcher does not come pre-configured
     *            with an RpcServer.
     */
-   public ReplicatorOutput(RpcDispatcher dispatcher, Serializable replicatorID)
+   public ReplicatorOutput(RpcDispatcher dispatcher, Serializable replicatorID, Receiver receiver)
    {
       Object serverObject = dispatcher.getServerObject();
       if (!(serverObject instanceof RpcServer))
@@ -99,6 +104,7 @@ public class ReplicatorOutput implements MessageListener, Runnable
       }
       this.dispatcher = dispatcher;
       this.replicatorID = replicatorID;
+      this.receiver = receiver;
       acknowledgmentQueue = new LinkedQueue();
       started = false;
    }

@@ -125,7 +125,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
    public Serializable getID()
    {
       // unique collector per peer
-      return peer.getID();
+      return peer.getPeerID();
    }
 
    public void acknowledge(Serializable messageID, Serializable outputPeerID, Boolean positive)
@@ -244,7 +244,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
    public String toString()
    {
       StringBuffer sb = new StringBuffer("Collector[");
-      sb.append(peer.getID());
+      sb.append(peer.getPeerID());
       sb.append("]");
       return sb.toString();
    }

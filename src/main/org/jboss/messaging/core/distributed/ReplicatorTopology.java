@@ -55,7 +55,7 @@ public class ReplicatorTopology
 
    public Serializable getID()
    {
-      return peer.getID();
+      return peer.getPeerID();
    }
 
    public void outputPeerJoins(Serializable joiningPeerID) throws Exception
@@ -164,7 +164,7 @@ public class ReplicatorTopology
    public String toString()
    {
       StringBuffer sb = new StringBuffer("Topology[");
-      sb.append(peer.getID());
+      sb.append(peer.getPeerID());
       sb.append("]");
       return sb.toString();
    }

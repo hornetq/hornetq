@@ -82,15 +82,13 @@ public class PipeTest extends ChannelSupportTest
    {
       channel = null;
       receiverOne = null;
-      super.tearDown();
-
       inputJChannel.close();
       outputJChannel.close();
       super.tearDown();
    }
 
    //
-   // This test also runs all ChannelSupportTest's tests
+   // This test class also runs all ChannelSupportTest's tests
    //
 
    public void testChannelNotConnected() throws Exception

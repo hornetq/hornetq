@@ -100,9 +100,9 @@ public class Replicator extends ChannelSupport
 
    /**
     * TODO if I don't have a reliable store, it might just not be possible to handle the
-    *      message synchronously
+    * TODO message synchronously
     */
-   public boolean handle(Routable m)
+   public boolean handle(Routable r)
    {
       synchronized(this)
       {
@@ -113,8 +113,8 @@ public class Replicator extends ChannelSupport
          }
       }
 
-      m.putHeader(Routable.REPLICATOR_ID, replicatorID);
-      m.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
+      r.putHeader(Routable.REPLICATOR_ID, replicatorID);
+      r.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
 
       try
       {
@@ -122,11 +122,11 @@ public class Replicator extends ChannelSupport
          {
             return false;
          }
-         dispatcher.getChannel().send(null, null, m);
-         if (log.isTraceEnabled()) { log.trace("sent " + m); }
+         dispatcher.getChannel().send(null, null, r);
+         if (log.isTraceEnabled()) { log.trace("sent " + r); }
 
          // keep it until all output peers from the current view acknowledge
-         collector.add(m);
+         collector.add(r);
       }
       catch(Exception e)
       {
@@ -174,7 +174,7 @@ public class Replicator extends ChannelSupport
    /**
     * May return null if the peer is not connected.
     */
-   public Serializable getID()
+   public Serializable getPeerID()
    {
       return peerID;
    }
