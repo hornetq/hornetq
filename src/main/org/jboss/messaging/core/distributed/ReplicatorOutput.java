@@ -11,7 +11,6 @@ import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.util.ServerResponse;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.interfaces.Message;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.MessageListener;
@@ -111,27 +110,27 @@ public class ReplicatorOutput implements MessageListener, Runnable
       Object  o = jgroupsMessage.getObject();
       if (o instanceof Routable)
       {
-         Routable m = (Routable)o;
-         if (replicatorID.equals(m.getHeader(Routable.REPLICATOR_ID)))
+         Routable r = (Routable)o;
+         if (replicatorID.equals(r.getHeader(Routable.REPLICATOR_ID)))
          {
-            // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-            if (log.isTraceEnabled()) { log.trace(this + " received message, ID=" + ((Message)m).getMessageID()); }
-            m.removeHeader(Routable.REPLICATOR_ID);
-            Serializable inputPeerID = m.removeHeader(Routable.REPLICATOR_INPUT_ID);
+            if (log.isTraceEnabled()) { log.trace(this+" received message, ID="+r.getMessageID()); }
+            r.removeHeader(Routable.REPLICATOR_ID);
+            Serializable inputPeerID = r.removeHeader(Routable.REPLICATOR_INPUT_ID);
             // Mark the message as being received from a remote endpoint
-            m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+            r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
             boolean acked = false;
             try
             {
-               acked = receiver.handle(m);
+               acked = receiver.handle(r);
             }
             catch(Exception e)
             {
                log.warn(this + "'s receiver did not acknowledge the message", e);
                acked = false;
             }
-            MessageAcknowledgment ack =
-                  new MessageAcknowledgment(jgroupsMessage.getSrc(), inputPeerID, ((Message)m).getMessageID(), acked);   // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
+            MessageAcknowledgment ack = new MessageAcknowledgment(jgroupsMessage.getSrc(),
+                                                                  inputPeerID, r.getMessageID(),
+                                                                  acked);
             while(true)
             {
                try

@@ -7,7 +7,6 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.core.PointToPointRouter;
 import org.jboss.messaging.core.MessageSupport;
 
@@ -47,22 +46,21 @@ public class PointToPointRouterAsDistributorTest extends DistributorTest
 
       // send without a receiver
 
-      Routable m = new MessageSupport(new Integer(0));
-      assertFalse(router.handle(m));
+      Routable r = new MessageSupport(new Integer(0));
+      assertFalse(router.handle(r));
 
       // send with one receiver
 
       ReceiverImpl rOne = new ReceiverImpl("ONE", ReceiverImpl.HANDLING);
       assertTrue(router.add(rOne));
 
-      m = new MessageSupport(new Integer(1));
-      assertTrue(router.handle(m));
+      r = new MessageSupport(new Integer(1));
+      assertTrue(router.handle(r));
 
       Iterator i = rOne.iterator();
-      m = (Routable)i.next();
+      r = (Routable)i.next();
       assertFalse(i.hasNext());
-      // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-      assertEquals(new Integer(1), ((Message)m).getMessageID());
+      assertEquals(new Integer(1), r.getMessageID());
 
       rOne.clear();
 
@@ -71,26 +69,24 @@ public class PointToPointRouterAsDistributorTest extends DistributorTest
       ReceiverImpl rTwo = new ReceiverImpl("TWO", ReceiverImpl.HANDLING);
       assertTrue(router.add(rTwo));
 
-      m = new MessageSupport(new Integer(2));
-      assertTrue(router.handle(m));
+      r = new MessageSupport(new Integer(2));
+      assertTrue(router.handle(r));
 
       Iterator iOne = rOne.iterator(), iTwo = rTwo.iterator();
       if (iOne.hasNext())
       {
          // then rOne got the message
-         m = (Routable)iOne.next();
+         r = (Routable)iOne.next();
          assertFalse(iOne.hasNext());
-         // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-         assertEquals(new Integer(2), ((Message)m).getMessageID());
+         assertEquals(new Integer(2), r.getMessageID());
          assertFalse(iOne.hasNext());
       }
       else
       {
          // otherwise rTwo got the message
-         m = (Routable)iTwo.next();
+         r = (Routable)iTwo.next();
          assertFalse(iTwo.hasNext());
-         // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-         assertEquals(new Integer(2), ((Message)m).getMessageID());
+         assertEquals(new Integer(2), r.getMessageID());
          assertFalse(iOne.hasNext());
       }
    }
@@ -103,24 +99,23 @@ public class PointToPointRouterAsDistributorTest extends DistributorTest
       ReceiverImpl denying = new ReceiverImpl("DenyingID", ReceiverImpl.DENYING);
       assertTrue(router.add(denying));
 
-      Routable m = new MessageSupport("");
-      assertFalse(router.handle(m));
+      Routable r = new MessageSupport("");
+      assertFalse(router.handle(r));
 
       Iterator i = denying.iterator();
       assertFalse(i.hasNext());
 
       ReceiverImpl handling = new ReceiverImpl("HandlingID", ReceiverImpl.HANDLING);
       assertTrue(router.add(handling));
-      assertTrue(router.handle(m));
+      assertTrue(router.handle(r));
 
       i = denying.iterator();
       assertFalse(i.hasNext());
 
       i = handling.iterator();
-      m = (Routable)i.next();
+      r = (Routable)i.next();
       assertFalse(i.hasNext());
-      // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-      assertEquals("", ((Message)m).getMessageID());
+      assertEquals("", r.getMessageID());
    }
 
    public void testBrokenReceiver() throws Exception
@@ -130,23 +125,22 @@ public class PointToPointRouterAsDistributorTest extends DistributorTest
       ReceiverImpl broken = new ReceiverImpl("BrokenID", ReceiverImpl.BROKEN);
       assertTrue(router.add(broken));
 
-      Routable m = new MessageSupport("");
-      assertFalse(router.handle(m));
+      Routable r = new MessageSupport("");
+      assertFalse(router.handle(r));
 
       Iterator i = broken.iterator();
       assertFalse(i.hasNext());
 
       ReceiverImpl handling = new ReceiverImpl("HandlingID", ReceiverImpl.HANDLING);
       assertTrue(router.add(handling));
-      assertTrue(router.handle(m));
+      assertTrue(router.handle(r));
 
       i = broken.iterator();
       assertFalse(i.hasNext());
 
       i = handling.iterator();
-      m = (Routable)i.next();
+      r = (Routable)i.next();
       assertFalse(i.hasNext());
-      // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-      assertEquals("", ((Message)m).getMessageID());
+      assertEquals("", r.getMessageID());
    }
 }

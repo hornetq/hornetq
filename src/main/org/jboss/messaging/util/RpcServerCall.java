@@ -12,8 +12,6 @@ import org.jgroups.blocks.GroupRequest;
 import org.jgroups.util.RspList;
 import org.jgroups.util.Rsp;
 import org.jgroups.Address;
-import org.jgroups.TimeoutException;
-import org.jgroups.SuspectedException;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -112,8 +110,7 @@ public class RpcServerCall extends MethodCall
          {
             Rsp response = (Rsp)rspList.elementAt(i);
 
-            // TODO getSender() should be an Address. TO_DO_RSP
-            Address address = (Address)response.getSender();
+            Address address = response.getSender();
 
             Object result = response.getValue();
             if (result instanceof Throwable)

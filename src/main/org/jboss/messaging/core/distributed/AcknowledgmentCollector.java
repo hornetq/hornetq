@@ -204,7 +204,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
     * TODO implement Time To Live and message expiration
     *
     */
-   public void add(Routable m)
+   public void add(Routable r)
    {
       synchronized(unacked)
       {
@@ -212,14 +212,9 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorServerDel
          {
             Serializable outputPeerID = (Serializable)i.next();
             List l = (List)unacked.get(outputPeerID);
-            l.add(((Message)m).getMessageID()); // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-            store.add(m);
-            if (log.isTraceEnabled())
-            {
-               // TODO ((Message)m).getMessageID() is a hack! Added to pass the tests. Change it!
-               log.trace("added " + ((Message)m).getMessageID() + " to " +
-                         outputPeerID + "'s unack list");
-            }
+            l.add(((Message)r).getMessageID()); //
+            store.add(r);
+            if (log.isTraceEnabled()) { log.trace("added " + r.getMessageID() + " to " + outputPeerID + "'s unack list"); }
          }
       }
    }
