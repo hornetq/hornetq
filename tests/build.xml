@@ -149,7 +149,7 @@
                     todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
-            <formatter type="plain"/>
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
                <exclude name="**/messaging/**/performance/**"/>
