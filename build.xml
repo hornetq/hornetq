@@ -63,9 +63,9 @@
     <!-- =================== -->
 
     <!-- Module name(s) & version -->
-    <property name="module.name" value="JMS"/>
-    <property name="module.Name" value="JBoss JMS"/>
-    <property name="module.version" value="4.0"/>
+    <property name="module.name" value="messaging"/>
+    <property name="module.Name" value="JBoss Messaging"/>
+    <property name="module.version" value="5.0.0"/>
 
     <!-- ========= -->
     <!-- Libraries -->
@@ -249,7 +249,7 @@
 	 manifest="${build.etc}/default.mf">
       <fileset dir="${build.classes}">
         <!-- Include everything else -->
-        <include name="org/jboss/jms/**"/>
+        <include name="org/jboss/messaging/**"/>
       </fileset>
     </jar>
 
