@@ -205,6 +205,7 @@
     <javac destdir="${build.classes}"
            optimize="${javac.optimize}"
 	   target="${javac.target}"
+           source="${javac.source}"
            debug="${javac.debug}"
 	   depend="${javac.depend}"
 	   verbose="${javac.verbose}"
