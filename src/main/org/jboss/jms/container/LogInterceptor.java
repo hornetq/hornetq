@@ -67,12 +67,12 @@ public class LogInterceptor
    {
       MethodInvocation mi = (MethodInvocation) invocation;
       StringBuffer buffer = new StringBuffer(50);
-      buffer.append(" method=").append(mi.method.getName());
+      buffer.append(" method=").append(mi.getMethod().getName());
       buffer.append(" params=");
-      if (mi.arguments == null)
+      if (mi.getArguments() == null)
          buffer.append("[]");
       else
-         buffer.append(Arrays.asList(mi.arguments));
+         buffer.append(Arrays.asList(mi.getArguments()));
       buffer.append(" object=").append(Container.getProxy(invocation));
       return buffer;
    }

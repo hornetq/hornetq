@@ -44,7 +44,7 @@ public class ClientIDInterceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      String methodName = ((MethodInvocation) invocation).method.getName();
+      String methodName = ((MethodInvocation) invocation).getMethod().getName();
       if (methodName.equals("getClientID"))
          return clientID;
 
@@ -100,7 +100,7 @@ public class ClientIDInterceptor
          throw new IllegalStateException("Client id is already set");
 
       MethodInvocation mi = (MethodInvocation) invocation;
-      clientID = (String) mi.arguments[0];
+      clientID = (String) mi.getArguments()[0];
       if (clientID == null)
          throw new IllegalArgumentException("Null client id");
 

@@ -41,7 +41,7 @@ public class ServerConsumerInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation) invocation;
-      throw new UnsupportedOperationException(mi.method.toString()); 
+      throw new UnsupportedOperationException(mi.getMethod().toString()); 
    }
 
    // Protected ------------------------------------------------------

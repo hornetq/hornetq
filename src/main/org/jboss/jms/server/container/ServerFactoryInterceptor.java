@@ -49,7 +49,7 @@ public class ServerFactoryInterceptor
       Object result = invocation.invokeNext();
       
       MethodInvocation mi = (MethodInvocation) invocation;
-      String methodName = mi.method.getName();
+      String methodName = mi.getMethod().getName();
       if (methodName.equals("createSession"))
          return createSession(mi, (SessionDelegate) result);
       else if (methodName.equals("createBrowser"))

@@ -66,7 +66,7 @@ public class ClosedInterceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      String methodName = ((MethodInvocation) invocation).method.getName();
+      String methodName = ((MethodInvocation) invocation).getMethod().getName();
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
 

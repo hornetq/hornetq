@@ -44,7 +44,7 @@ public class MessageFactoryInterceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      String methodName = ((MethodInvocation) invocation).method.getName();
+      String methodName = ((MethodInvocation) invocation).getMethod().getName();
       if (methodName.equals("createMessage"))
          return createMessage(invocation);
       else

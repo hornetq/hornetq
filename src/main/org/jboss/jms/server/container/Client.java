@@ -55,8 +55,8 @@ public class Client
    {
       SimpleMetaData result = getMetaData();
       
-      JBossDestination destination = (JBossDestination) invocation.arguments[0];
-      String selector = (String) invocation.arguments[1];
+      JBossDestination destination = (JBossDestination) invocation.getArguments()[0];
+      String selector = (String) invocation.getArguments()[1];
       BrowserEndpointFactory endpointFactory = broker.getBrowserEndpointFactory(destination, selector);
       result.addMetaData("JMS", "BrowserEndpointFactory", endpointFactory);
       return result;
@@ -71,7 +71,7 @@ public class Client
    {
       SimpleMetaData result = getMetaData();
       
-      JBossDestination destination = (JBossDestination) invocation.arguments[0];
+      JBossDestination destination = (JBossDestination) invocation.getArguments()[0];
       DeliveryEndpointFactory endpointFactory = broker.getDeliveryEndpointFactory(destination);
       result.addMetaData("JMS", "DeliveryEndpointFactory", endpointFactory);
       return result;

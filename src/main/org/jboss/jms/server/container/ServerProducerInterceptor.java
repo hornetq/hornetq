@@ -45,11 +45,11 @@ public class ServerProducerInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation) invocation;
-      String methodName = mi.method.getName();
+      String methodName = mi.getMethod().getName();
       if (methodName.equals("send"))
       {
          
-         JBossMessage message = (JBossMessage) mi.arguments[0];
+         JBossMessage message = (JBossMessage) mi.getArguments()[0];
          JBossMessage clone = (JBossMessage) message.clone();
          DeliveryEndpointFactory factory = (DeliveryEndpointFactory) mi.getMetaData("JMS", "DeliveryEndpointFactory");
          MessageReference reference = factory.getMessageReference(clone);
@@ -59,7 +59,7 @@ public class ServerProducerInterceptor
       }
       else if (methodName.equals("closing") || methodName.equals("close"))
          return null;
-      throw new UnsupportedOperationException(mi.method.toString()); 
+      throw new UnsupportedOperationException(mi.getMethod().toString()); 
    }
 
    // Protected ------------------------------------------------------

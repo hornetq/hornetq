@@ -56,7 +56,7 @@ public class DispatchInterceptor
       MethodInvocation mi = (MethodInvocation) invocation;
       try
       {
-         return mi.method.invoke(target, mi.arguments);
+         return mi.getMethod().invoke(target, mi.getArguments());
       }
       catch (Throwable t)
       {

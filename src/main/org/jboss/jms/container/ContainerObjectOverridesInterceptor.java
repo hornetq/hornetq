@@ -41,7 +41,7 @@ public class ContainerObjectOverridesInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation) invocation;
-      String methodName = mi.method.getName();
+      String methodName = mi.getMethod().getName();
       if (methodName.equals("equals"))
          return equals(mi);
       else if (methodName.equals("hashCode"))
@@ -65,7 +65,7 @@ public class ContainerObjectOverridesInterceptor
 
    protected Boolean equals(MethodInvocation mi)
    {
-      return new Boolean(Container.getProxy(mi).equals(mi.arguments[0]));
+      return new Boolean(Container.getProxy(mi).equals(mi.getArguments()[0]));
    }
 
    protected Integer hashCode(MethodInvocation mi)

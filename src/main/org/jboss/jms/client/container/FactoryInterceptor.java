@@ -47,7 +47,7 @@ public class FactoryInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       Object result = invocation.invokeNext();
-      String methodName = ((MethodInvocation) invocation).method.getName();
+      String methodName = ((MethodInvocation) invocation).getMethod().getName();
       if (methodName.equals("createSession"))
          return createSession(invocation, (SessionDelegate) result);
       else if (methodName.equals("createBrowser"))

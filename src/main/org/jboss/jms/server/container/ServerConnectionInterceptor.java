@@ -41,12 +41,12 @@ public class ServerConnectionInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation) invocation;
-      String methodName = ((MethodInvocation) invocation).method.getName();
+      String methodName = ((MethodInvocation) invocation).getMethod().getName();
       if (methodName.equals("createSession"))
          return null;
       else if (methodName.equals("closing") || methodName.equals("close"))
          return null;
-      throw new UnsupportedOperationException(mi.method.toString()); 
+      throw new UnsupportedOperationException(mi.getMethod().toString()); 
    }
 
    // Protected ------------------------------------------------------

@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.container;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,11 +15,14 @@ import java.util.Set;
 
 import javax.jms.JMSException;
 
+import org.jboss.aop.Advised;
+import org.jboss.aop.InstanceAdvisor;
+import org.jboss.aop.MethodInfo;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.MetaDataResolver;
 import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aop.proxy.DynamicProxyIH;
 
 /**
  * A JMS container
@@ -25,12 +30,15 @@ import org.jboss.aop.proxy.DynamicProxyIH;
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class Container
-   extends DynamicProxyIH
+public class Container implements InvocationHandler 
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+
+   protected Interceptor[] interceptors;
+
+   protected SimpleMetaData metadata = new SimpleMetaData();
 
    /**
     * The frontend proxy
@@ -97,7 +105,7 @@ public class Container
    public Container(Container parent, Interceptor[] interceptors, SimpleMetaData metadata)
       throws JMSException
    {
-      super(interceptors);
+      this.interceptors = interceptors;
       this.parent = parent;
       if (metadata != null)
          this.metadata = metadata;
@@ -143,7 +151,7 @@ public class Container
       throws Throwable
    {
       MetaDataResolver oldMetaData = invocation.instanceResolver;
-      invocation.instanceResolver = getMetaData();
+      //invocation.instanceResolver = getMetaData();
       try
       {
          return invocation.invokeNext(interceptors);
@@ -154,6 +162,16 @@ public class Container
       }
    }
 
+   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+   {
+      MethodInfo info = new MethodInfo();
+      MethodInvocation invocation = new MethodInvocation(info, interceptors);
+      //invocation.instanceResolver = getMetaData();
+      //invocation.method = m; 
+      //invocation.arguments = args;
+      return invocation.invokeNext();
+   }
+
    // Protected ------------------------------------------------------
 
    // Package Private ------------------------------------------------
@@ -161,5 +179,4 @@ public class Container
    // Private --------------------------------------------------------
 
    // Inner Classes --------------------------------------------------
-
 }

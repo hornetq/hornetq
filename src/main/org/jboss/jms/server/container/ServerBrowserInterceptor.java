@@ -43,7 +43,7 @@ public class ServerBrowserInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation) invocation;
-      String methodName = mi.method.getName();
+      String methodName = mi.getMethod().getName();
       if (methodName.equals("browse"))
       {
          BrowserEndpointFactory factory = (BrowserEndpointFactory) mi.getMetaData("JMS", "BrowserEndpointFactory");
@@ -52,7 +52,7 @@ public class ServerBrowserInterceptor
       }
       else if (methodName.equals("closing") || methodName.equals("close"))
          return null;
-      throw new UnsupportedOperationException(mi.method.toString()); 
+      throw new UnsupportedOperationException(mi.getMethod().toString()); 
    }
 
    // Protected ------------------------------------------------------
