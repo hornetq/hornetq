@@ -4,7 +4,7 @@
     <classpathentry kind="src" path="src/test"/>
     <classpathentry kind="src" path="output/gen-src"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="lib" path="/thirdparty/javagroups-javagroups/lib/javagroups-2.0.jar"/>
+    <classpathentry kind="lib" path="/thirdparty/javagroups-javagroups/lib/jgroups.jar"/>
     <classpathentry kind="src" path="/j2ee"/>
     <classpathentry kind="src" path="/common"/>
     <classpathentry kind="src" path="/system"/>

@@ -77,7 +77,7 @@
     <!-- The combined library classpath -->
     <path id="library.classpath">
       <path refid="javassist.classpath"/>
-      <path refid="javagroups.javagroups.classpath"/>
+      <path refid="jgroups.jgroups.classpath"/>
       <path refid="junit.junit.classpath"/>
     </path>
 

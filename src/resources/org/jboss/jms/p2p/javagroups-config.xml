@@ -1,9 +1,9 @@
 <protocol-stack name="Default protocol stack" version="1.0.0">
-    <description>JavaGroups Default Protocol Stack</description>
+    <description>JGroups Default Protocol Stack</description>
     <protocol>
         <protocol-name>UDP Protocol</protocol-name>
         <description>Sends and receives messages on UDP sockets</description>
-        <class-name>org.javagroups.protocols.UDP</class-name>
+        <class-name>org.jgroups.protocols.UDP</class-name>
         <protocol-params>
             <protocol-param name="mcast_addr" value="228.8.8.8"/>
             <!-- protocol-param name="bind_addr"  	   value="192.168.10.10"/ -->
@@ -23,7 +23,7 @@
         <description>Senses the network properties and
         allows other protocols to configure themselves
         automatically</description>
-        <class-name>org.javagroups.protocols.AUTOCONF</class-name>
+        <class-name>org.jgroups.protocols.AUTOCONF</class-name>
         <protocol-params>
         </protocol-params>
     </protocol>
@@ -31,7 +31,7 @@
     <protocol>
         <protocol-name>Ping Protocol</protocol-name>
         <description>Find the initial membership</description>
-        <class-name>org.javagroups.protocols.PING</class-name>
+        <class-name>org.jgroups.protocols.PING</class-name>
         <protocol-params>
             <protocol-param name="timeout" value="2000"/>
             <protocol-param name="num_initial_members" value="3"/>
@@ -41,7 +41,7 @@
         <protocol-name>Merge Protocol</protocol-name>
         <description>Periodically tries to detect subgroups and emits MERGE events in
             that case</description>
-        <class-name>org.javagroups.protocols.MERGE2</class-name>
+        <class-name>org.jgroups.protocols.MERGE2</class-name>
         <protocol-params>
             <protocol-param name="min_interval" value="5000"/>
             <protocol-param name="max_interval" value="10000"/>
@@ -50,7 +50,7 @@
     <protocol>
         <protocol-name>Failure Detection Socket</protocol-name>
         <description>Failure detection based on sockets</description>
-        <class-name>org.javagroups.protocols.FD</class-name>
+        <class-name>org.jgroups.protocols.FD</class-name>
         <protocol-params>
             <protocol-param name="timeout" value="2000"/>
             <protocol-param name="max_tries" value="3"/>
@@ -60,7 +60,7 @@
     <protocol>
         <protocol-name>Verify Suspect</protocol-name>
         <description>Double-checks that a suspected member is really dead</description>
-        <class-name>org.javagroups.protocols.VERIFY_SUSPECT</class-name>
+        <class-name>org.jgroups.protocols.VERIFY_SUSPECT</class-name>
         <protocol-params>
             <protocol-param name="timeout" value="1500"/>
         </protocol-params>
@@ -69,7 +69,7 @@
         <protocol-name>Stable protocol</protocol-name>
         <description>Distributed message garbage collection protocol. Deletes messages
             seen by all group members</description>
-        <class-name>org.javagroups.protocols.pbcast.STABLE</class-name>
+        <class-name>org.jgroups.protocols.pbcast.STABLE</class-name>
         <protocol-params>
             <protocol-param name="desired_avg_gossip" value="20000"/>
         </protocol-params>
@@ -77,7 +77,7 @@
     <protocol>
         <protocol-name>Reliable mcast message transission</protocol-name>
         <description>Uses a negative acknowledgement protocol for retransmissions</description>
-        <class-name>org.javagroups.protocols.pbcast.NAKACK</class-name>
+        <class-name>org.jgroups.protocols.pbcast.NAKACK</class-name>
         <protocol-params>
             <protocol-param name="gc_lag" value="50"/>
             <protocol-param name="retransmit_timeout" value="600,1200,2400,4800"/>
@@ -87,7 +87,7 @@
     <protocol>
         <protocol-name>Unicast Protocol</protocol-name>
         <description>Provides lossless transmission of unicast message (similar to TCP)</description>
-        <class-name>org.javagroups.protocols.UNICAST</class-name>
+        <class-name>org.jgroups.protocols.UNICAST</class-name>
         <protocol-params>
             <protocol-param name="timeout" value="1200,2400,3600"/>
         </protocol-params>
@@ -95,7 +95,7 @@
     <protocol>
         <protocol-name>Fragmentation Protocol</protocol-name>
         <description>Divides up larger message into smaller pieces</description>
-        <class-name>org.javagroups.protocols.FRAG</class-name>
+        <class-name>org.jgroups.protocols.FRAG</class-name>
         <protocol-params>
             <protocol-param name="frag_size" value="8192"/>
             <protocol-param name="down_thread" value="false"/>
@@ -105,7 +105,7 @@
     <protocol>
         <protocol-name>PB Cast Group Membership Protocol</protocol-name>
         <description>Maintains the member ship view</description>
-        <class-name>org.javagroups.protocols.pbcast.GMS</class-name>
+        <class-name>org.jgroups.protocols.pbcast.GMS</class-name>
         <protocol-params>
             <protocol-param name="join_timeout" value="3000"/>
             <protocol-param name="join_retry_timeout" value="2000"/>

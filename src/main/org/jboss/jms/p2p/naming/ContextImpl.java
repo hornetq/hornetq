@@ -20,7 +20,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 
-import org.javagroups.blocks.DistributedTree;
+import org.jgroups.blocks.DistributedTree;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.p2p.P2PImplementation;
 import org.jboss.jms.destination.JBossDestination;
@@ -42,7 +42,7 @@ import org.jboss.jms.destination.JBossDestination;
  * Additionally, this should be refactored to use a single channel, as right now it creates its
  * own.  That means that right now for a JMS client that uses JNDI, two distinct channels will be
  * opened. This is currently required becuase of the use of the JavaGroup blocks which would step
- * one one another ({@link org.javagroups.blocks.PullPushAdapter} taking messages meeded buy the
+ * one one another ({@link org.jgroups.blocks.PullPushAdapter} taking messages meeded buy the
  * {@link DistributedTree}, etc.).
  *
  * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>

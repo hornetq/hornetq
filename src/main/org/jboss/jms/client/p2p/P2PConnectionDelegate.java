@@ -17,14 +17,14 @@ import java.util.List;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
-import org.javagroups.Address;
-import org.javagroups.Channel;
-import org.javagroups.ChannelException;
-import org.javagroups.ChannelListener;
-import org.javagroups.JChannelFactory;
-import org.javagroups.Message;
-import org.javagroups.MessageListener;
-import org.javagroups.blocks.PullPushAdapter;
+import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.jgroups.ChannelException;
+import org.jgroups.ChannelListener;
+import org.jgroups.JChannelFactory;
+import org.jgroups.Message;
+import org.jgroups.MessageListener;
+import org.jgroups.blocks.PullPushAdapter;
 import org.jboss.jms.MessageImpl;
 import org.jboss.jms.client.ConnectionDelegate;
 import org.jboss.jms.client.SessionDelegate;
@@ -68,7 +68,7 @@ public class P2PConnectionDelegate
 
       try
       {
-          URL url = Thread.currentThread().getContextClassLoader().getResource("org/jboss/jms/p2p/javagroups-config.xml");
+          URL url = Thread.currentThread().getContextClassLoader().getResource("org/jboss/jms/p2p/jgroups-config.xml");
           this.channel = new JChannelFactory().createChannel(url);
           this.channel.setChannelListener(this);
           this.channel.connect("org.jboss.jms.p2p");
