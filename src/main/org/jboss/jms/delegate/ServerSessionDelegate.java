@@ -181,7 +181,7 @@ public class ServerSessionDelegate implements SessionDelegate
       // TODO: Hmmm, is this really necessary? Can't I just use the producerID?
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, parent.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.PRODUCER_ID, consumerID, PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
 
       h.getMetaData().mergeIn(metadata);
 

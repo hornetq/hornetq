@@ -10,8 +10,14 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.jms.util.JBossJMSException;
 
+import javax.jms.Message;
+import javax.jms.JMSException;
 import java.io.Serializable;
+
+import EDU.oswego.cs.dl.util.concurrent.BoundedChannel;
+import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
 
 
 /**
@@ -32,6 +38,8 @@ public class ServerConsumerDelegate implements ConsumerDelegate, Receiver
    protected Distributor destination;
    protected ServerSessionDelegate parent;
 
+   protected BoundedChannel deliveryQueue;
+
    // Constructors --------------------------------------------------
 
    public ServerConsumerDelegate(String id, Distributor destination, ServerSessionDelegate parent)
@@ -40,11 +48,25 @@ public class ServerConsumerDelegate implements ConsumerDelegate, Receiver
       this.destination = destination;
       this.parent = parent;
 
+      deliveryQueue = new BoundedLinkedQueue(10);
+
       // register myself with the destination
       destination.add(this);
    }
 
    // ConsumerDelegate implementation -------------------------------
+
+   public Message receive(long timeout) throws JMSException
+   {
+      try
+      {
+         return (Message)deliveryQueue.poll(timeout);
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("Failed to read from the delivery queue", e);
+      }
+   }
 
    // Receiver implementation ---------------------------------------
 
@@ -56,8 +78,16 @@ public class ServerConsumerDelegate implements ConsumerDelegate, Receiver
    public boolean handle(Routable r)
    {
       if (log.isTraceEnabled()) { log.trace("Receiving routable " + r); }
-      return true;
 
+      try
+      {
+         return deliveryQueue.offer(r, 500);
+      }
+      catch(Throwable t)
+      {
+         log.error("Failed to put the message in the delivery queue", t);
+         return false;
+      }
    }
 
    // Public --------------------------------------------------------

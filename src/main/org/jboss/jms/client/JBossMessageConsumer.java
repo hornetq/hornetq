@@ -54,12 +54,12 @@ public class JBossMessageConsumer implements MessageConsumer
 
    public Message receive() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return receive(0);
    }
 
    public Message receive(long timeout) throws JMSException
    {
-      throw new NotYetImplementedException();
+      return delegate.receive(timeout);
    }
 
    public Message receiveNoWait() throws JMSException

@@ -24,6 +24,8 @@ public class JMSAdvisor extends ClassAdvisor
    public static final String CLIENT_ID = "CLIENT_ID";
    public static final String SESSION_ID = "SESSION_ID";
    public static final String PRODUCER_ID = "PRODUCER_ID";
+   public static final String CONSUMER_ID = "CONSUMER_ID";
+
 
    // Static --------------------------------------------------------
    

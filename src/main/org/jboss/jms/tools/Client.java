@@ -149,6 +149,17 @@ public class Client
       producer.send(m);
    }
 
+   public Object receive() throws Exception
+   {
+      if (consumer == null)
+      {
+         throw new Exception("You need to create a consumer first. " +
+                             "Use createConsumer(destination)");
+      }
+      return consumer.receive(2000);
+   }
+
+
 
 
    public void dump()
