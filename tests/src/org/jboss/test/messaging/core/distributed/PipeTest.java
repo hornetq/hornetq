@@ -6,12 +6,12 @@
  */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.MessageSupport;
 import org.jboss.messaging.core.distributed.Pipe;
 import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.test.messaging.core.ReceiverImpl;
+import org.jboss.test.messaging.core.ChannelSupportTest;
 import org.jboss.messaging.interfaces.Routable;
 import org.jboss.messaging.interfaces.Message;
 import org.jgroups.blocks.RpcDispatcher;
@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class PipeTest extends MessagingTestCase
+public class PipeTest extends ChannelSupportTest
 {
    // Constants -----------------------------------------------------
 
@@ -44,8 +44,9 @@ public class PipeTest extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
-   private JChannel inputChannel, outputChannel;
+   private JChannel inputJChannel, outputJChannel;
    private RpcDispatcher inputDispatcher, outputDispatcher;
+   private PipeOutput pipeOutput;
    private Address outputAddress;
 
 
@@ -56,44 +57,50 @@ public class PipeTest extends MessagingTestCase
       super(name);
    }
 
-   // Protected -----------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
 
-      inputChannel = new JChannel(props);
-      inputDispatcher = new RpcDispatcher(inputChannel, null, null, null);
+      inputJChannel = new JChannel(props);
+      inputDispatcher = new RpcDispatcher(inputJChannel, null, null, null);
 
-      outputChannel = new JChannel(props);
-      RpcServer rpcServer = new RpcServer();
-      outputDispatcher = new RpcDispatcher(outputChannel, null, null, rpcServer);
+      outputJChannel = new JChannel(props);
+      outputDispatcher = new RpcDispatcher(outputJChannel, null, null, new RpcServer());
 
-      inputChannel.connect("testGroup");
-      outputChannel.connect("testGroup");
-      outputAddress = outputChannel.getLocalAddress();
+      inputJChannel.connect("testGroup");
+      outputJChannel.connect("testGroup");
+      outputAddress = outputJChannel.getLocalAddress();
+
+      // Create a receiver and a Pipe to be tested by the superclass tests
+      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
+      pipeOutput = new PipeOutput("DistributedPipeID", receiverOne);
+      pipeOutput.register((RpcServer)outputDispatcher.getServerObject());
+      channel = new Pipe(true, inputDispatcher, outputAddress, "DistributedPipeID");
    }
 
-   protected void tearDown() throws Exception
+   public void tearDown()throws Exception
    {
-      inputChannel.close();
-      outputChannel.close();
+      channel = null;
+      receiverOne = null;
+      super.tearDown();
+
+      inputJChannel.close();
+      outputJChannel.close();
       super.tearDown();
    }
 
+   //
+   // This test also runs all ChannelSupportTest's tests
+   //
 
    public void testChannelNotConnected() throws Exception
    {
-      inputChannel.close();
-      assertFalse(inputChannel.isOpen());
+      inputJChannel.close();
+      assertFalse(inputJChannel.isOpen());
 
-      Pipe inputPipe =
-            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
-      PipeOutput outputPipe =
-            new PipeOutput("testPipe", new ReceiverImpl());
-      outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
+      Pipe inputPipe = new Pipe(true, inputDispatcher, outputAddress, "testPipe");
+      PipeOutput outputPipe = new PipeOutput("testPipe", new ReceiverImpl());
+      outputPipe.register((RpcServer)outputDispatcher.getServerObject());
 
       assertFalse(inputPipe.handle(new MessageSupport("")));
    }
@@ -101,10 +108,9 @@ public class PipeTest extends MessagingTestCase
 
    public void testDoNotHandleRemoteMessages() throws Exception
    {
-      assertTrue(inputChannel.isConnected());
+      assertTrue(inputJChannel.isConnected());
 
-      Pipe inputPipe =
-            new Pipe(true, inputDispatcher, null, "testPipe");
+      Pipe inputPipe = new Pipe(true, inputDispatcher, null, "testPipe");
       Routable m = new MessageSupport("");
       m.putHeader(Routable.REMOTE_ROUTABLE, "");
 
@@ -113,26 +119,22 @@ public class PipeTest extends MessagingTestCase
 
    public void testNullOutputAddress() throws Exception
    {
-      assertTrue(inputChannel.isConnected());
+      assertTrue(inputJChannel.isConnected());
 
-      Pipe inputPipe =
-            new Pipe(true, inputDispatcher, null, "testPipe");
-
+      Pipe inputPipe = new Pipe(true, inputDispatcher, null, "testPipe");
       Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));
    }
 
    public void testValidDistributedPipe() throws Exception
    {
-      assertTrue(inputChannel.isConnected());
-      assertTrue(outputChannel.isConnected());
-      Pipe inputPipe =
-            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
+      assertTrue(inputJChannel.isConnected());
+      assertTrue(outputJChannel.isConnected());
+      Pipe inputPipe = new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
       ReceiverImpl r = new ReceiverImpl();
-      PipeOutput outputPipe =
-            new PipeOutput("testPipe", r);
-      outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
+      PipeOutput outputPipe = new PipeOutput("testPipe", r);
+      outputPipe.register((RpcServer)outputDispatcher.getServerObject());
 
 
       Routable m = new MessageSupport("");
@@ -149,15 +151,13 @@ public class PipeTest extends MessagingTestCase
 
    public void testDenyingReceiver() throws Exception
    {
-      assertTrue(inputChannel.isConnected());
-      assertTrue(outputChannel.isConnected());
-      Pipe inputPipe =
-            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
+      assertTrue(inputJChannel.isConnected());
+      assertTrue(outputJChannel.isConnected());
+      Pipe inputPipe = new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
       ReceiverImpl r = new ReceiverImpl(ReceiverImpl.DENYING);
-      PipeOutput outputPipe =
-            new PipeOutput("testPipe", r);
-      outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
+      PipeOutput outputPipe = new PipeOutput("testPipe", r);
+      outputPipe.register((RpcServer)outputDispatcher.getServerObject());
 
       Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));
@@ -168,16 +168,14 @@ public class PipeTest extends MessagingTestCase
 
    public void testBrokenReceiver() throws Exception
    {
-      assertTrue(inputChannel.isConnected());
-      assertTrue(outputChannel.isConnected());
-      Pipe inputPipe =
-            new Pipe(true, inputDispatcher, outputAddress, "testPipe");
+      assertTrue(inputJChannel.isConnected());
+      assertTrue(outputJChannel.isConnected());
+      Pipe inputPipe = new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
       ReceiverImpl r = new ReceiverImpl(ReceiverImpl.BROKEN);
-      PipeOutput outputPipe =
-            new PipeOutput("testPipe", r);
-      outputPipe.register((RpcServer)outputDispatcher.getServerObject(), "testPipe");
-      
+      PipeOutput outputPipe = new PipeOutput("testPipe", r);
+      outputPipe.register((RpcServer)outputDispatcher.getServerObject());
+
 
       Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));

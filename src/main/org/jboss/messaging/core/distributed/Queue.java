@@ -145,7 +145,8 @@ public class Queue extends LocalQueue implements QueueServerDelegate
 
 
       // register the server ojects with the RpcServer
-      if (!rpcServer.registerUnique(pipeID, new PipeOutput(pipeID, router)))
+      PipeOutput pipeOutput = new PipeOutput(pipeID, router);
+      if (!rpcServer.registerUnique(pipeID, pipeOutput))
       {
          // the pipe output server delegate not unique under category
          throw new IllegalStateException("The category " + pipeID +
@@ -188,8 +189,8 @@ public class Queue extends LocalQueue implements QueueServerDelegate
 
       // create a distributed pipe to the new peer; don't use this pipe yet, as its output is
       // not registered with the joining peer's RpcServer.
-      Pipe pipeToPeer =
-            new Pipe(Channel.SYNCHRONOUS, dispatcher, joiningPeerAddress, joiningPeerPipeID);
+      Pipe pipeToPeer =  new Pipe(Channel.SYNCHRONOUS, dispatcher,
+                                  joiningPeerAddress, joiningPeerPipeID);
 
       // add it as a router's receiver
       // TODO what happens if this peer receives in this very moment a message to be
@@ -224,9 +225,8 @@ public class Queue extends LocalQueue implements QueueServerDelegate
       // I will never receive an acknowledgment from myself, since my server objects are not
       // registered yet, so I can safely link to peer.
 
-      Pipe pipeToPeer =
-            new Pipe(Channel.SYNCHRONOUS, dispatcher,
-                                     ack.getAddress(), ack.getPipeID());
+      Pipe pipeToPeer = new Pipe(Channel.SYNCHRONOUS, dispatcher,
+                                 ack.getAddress(), ack.getPipeID());
       add(pipeToPeer);
    }
 

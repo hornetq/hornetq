@@ -30,4 +30,6 @@ public interface MessageStore
     */
    public MessageReference store(Message m) throws Throwable;
 
+   public Message retrieve(MessageReference r);
+
 }

@@ -65,7 +65,7 @@ public class PipeClient extends RpcDispatcherClient
       }
 
       pipeOutput = new PipeOutput(pipeID, new ReceiverImpl("Default Output Receiver"));
-      pipeOutput.register((RpcServer)rpcDispatcher.getServerObject(), pipeID);
+      pipeOutput.register((RpcServer)rpcDispatcher.getServerObject());
    }
 
    public void send()
@@ -73,12 +73,6 @@ public class PipeClient extends RpcDispatcherClient
        Routable m = new MessageSupport(new Integer(counter++));
        System.out.println("Sending "+m+" to the pipe input: "+pipeInput.handle(m));
    }
-
-   public String dump()
-   {
-      return pipeInput.dump();
-   }
-
 
    public void exit() {
       System.exit(0);

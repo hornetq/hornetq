@@ -4,7 +4,7 @@
 #
 #
 
-TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsDistributorTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeTest
 
 cygwin=false;
 case "`uname`" in

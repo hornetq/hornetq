@@ -81,9 +81,9 @@ public class PipeOutput implements PipeOutputServerDelegate
 
    // Public --------------------------------------------------------
 
-   public boolean register(RpcServer rpcServer, Serializable category)
+   public boolean register(RpcServer rpcServer)
    {
-      return rpcServer.register(category, this);
+      return rpcServer.register(pipeID, this);
    }
 
    // TODO unregister myself from the rpcServer when I am decomissioned.

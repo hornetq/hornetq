@@ -26,10 +26,10 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class SharedLocalPipeOutputTest extends MessagingTestCase
+public class SharedPipeOutputTest extends MessagingTestCase
 {
 
-   private static final Logger log = Logger.getLogger(SharedLocalPipeOutputTest.class);
+   private static final Logger log = Logger.getLogger(SharedPipeOutputTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -53,7 +53,7 @@ public class SharedLocalPipeOutputTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public SharedLocalPipeOutputTest(String name)
+   public SharedPipeOutputTest(String name)
    {
       super(name);
    }
@@ -97,15 +97,13 @@ public class SharedLocalPipeOutputTest extends MessagingTestCase
       assertTrue(inputChannelTwo.isConnected());
       assertTrue(outputChannel.isConnected());
 
-      Pipe inputPipeOne =
-            new Pipe(true, inputDispatcherOne, outputAddress, "samePipeID");
-      Pipe inputPipeTwo =
-            new Pipe(true, inputDispatcherTwo, outputAddress, "samePipeID");
+      Pipe inputPipeOne = new Pipe(true, inputDispatcherOne, outputAddress, "samePipeID");
+      Pipe inputPipeTwo = new Pipe(true, inputDispatcherTwo, outputAddress, "samePipeID");
 
 
       ReceiverImpl r = new ReceiverImpl();
       PipeOutput po = new PipeOutput("samePipeID", r);
-      po.register((RpcServer)outputDispatcher.getServerObject(), "samePipeID");
+      po.register((RpcServer)outputDispatcher.getServerObject());
 
       Sender senderOne = new Sender("ONE", inputPipeOne);
       Sender senderTwo = new Sender("TWO", inputPipeTwo);

@@ -10,6 +10,7 @@ import org.jboss.messaging.interfaces.MessageStore;
 import org.jboss.messaging.interfaces.MessageReference;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.core.MessageReferenceSupport;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 import java.io.Serializable;
 
@@ -66,6 +67,11 @@ public class MessageStoreImpl implements MessageStore
                              "THE BEHAVIOUR OF A BROKEN MESSAGE STORE");
       }
       return new MessageReferenceSupport(m, id);
+   }
+
+   public Message retrieve(MessageReference r)
+   {
+      throw new NotYetImplementedException();
    }
 
 

@@ -12,12 +12,7 @@ import org.jboss.messaging.interfaces.Routable;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.Collections;
-import java.util.HashSet;
 
 /**
  * A local Channel with only one output. Both the input and the output endpoints are in the same
@@ -33,7 +28,7 @@ import java.util.HashSet;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LocalPipe extends ChannelSupport
+public class LocalPipe extends SingleOutputChannelSupport
 {
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(LocalPipe.class);
@@ -43,9 +38,6 @@ public class LocalPipe extends ChannelSupport
    // Attributes ----------------------------------------------------
 
    protected Receiver receiver = null;
-
-   /** List of unacked Routables */
-   protected List unacked = null;
 
    protected Serializable id;
 
@@ -88,7 +80,6 @@ public class LocalPipe extends ChannelSupport
       super(mode);
       this.id = id;
       this.receiver = receiver;
-      unacked = new ArrayList();
    }
 
    // Channel implementation ----------------------------------------
@@ -141,46 +132,6 @@ public class LocalPipe extends ChannelSupport
          return unacked.isEmpty();
       }
    }
-
-   public boolean hasMessages()
-   {
-      synchronized(channelLock)
-      {
-         return !unacked.isEmpty();
-      }
-   }
-
-   public Set getUnacknowledged()
-   {
-      synchronized(channelLock)
-      {
-         if (unacked.isEmpty())
-         {
-            return Collections.EMPTY_SET;
-         }
-         Set s = new HashSet();
-         for(Iterator i = unacked.iterator(); i.hasNext(); )
-         {
-            Serializable mid = ((Routable)i.next()).getMessageID();
-            if (!s.add(mid))
-            {
-               log.warn("Duplicate message ID in the unacknowledged list: " + mid);
-            }
-         }
-         return s;
-      }
-   }
-
-
-   // ChannelSupport implementation ---------------------------------
-
-   protected void storeNACKedMessageLocally(Routable r, Serializable recID)
-   {
-      if (log.isTraceEnabled()) {log.trace("store NACK locally: "+r.getMessageID()+" from "+recID);}
-      // I don't care about recID, since it's my only receiver
-      unacked.add(r);
-   }
-
 
    // Public --------------------------------------------------------
 

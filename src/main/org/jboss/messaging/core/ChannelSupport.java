@@ -85,17 +85,17 @@ public abstract class ChannelSupport implements Channel
    }
 
    /**
-    * Must acquire the reentrant lock inside it.
+    * Must acquire the channel's reentrant lock.
     */
    public abstract boolean deliver();
 
    /**
-    * Must acquire the reentrant lock inside it.
+    * Must acquire the channel's reentrant lock.
     */
    public abstract boolean hasMessages();
 
    /**
-    * Must acquire the reentrant lock inside it.
+    * Must acquire the channel's reentrant lock.
     */
    public abstract Set getUnacknowledged();
 

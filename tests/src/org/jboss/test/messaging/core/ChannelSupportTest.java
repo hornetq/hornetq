@@ -11,7 +11,6 @@ import org.jboss.messaging.interfaces.Channel;
 import org.jboss.messaging.core.RoutableSupport;
 import org.jboss.messaging.core.MessageSupport;
 import org.jboss.messaging.core.MessageReferenceSupport;
-import org.jboss.messaging.core.AbstractDestination;
 
 import java.util.List;
 import java.util.Set;

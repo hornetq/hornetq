@@ -7,7 +7,6 @@
 package org.jboss.messaging.interfaces;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * A Message is a Routable that has a payload. The payload is what the sending clients submit to the

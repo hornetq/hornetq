@@ -7,18 +7,19 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.interfaces.Routable;
-import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.core.SingleOutputChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 /**
- * The input end of a distributed pipe - a pipe that forwards messages to a remote receiver running
- * in a different address space than the sender.
+ * The input end of a distributed pipe - a channel with only one output that forwards messages to a
+ * remote receiver running in a different address space than the sender.
  * <p>
  * The output end of the distributed pipe its identified by a JGroups address. When configuring the
  * output end of the pipe, the remote end must use the same pipeID as the one used to configure the
@@ -35,27 +36,19 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-// TODO the Pipe must be a Channel
-public class Pipe implements Receiver
+public class Pipe extends SingleOutputChannelSupport
 {
-   // TODO: get rid of it when turning the pipe into a channel
-   public Serializable getReceiverID() { return null; }
-
-
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(Pipe.class);
 
    // Attributes ----------------------------------------------------
 
-   protected boolean synchronous;
    protected RpcDispatcher dispatcher;
    protected Address outputAddress;
    protected Serializable pipeID;
 
-
    // Constructors --------------------------------------------------
-
 
    /**
     * Pipe constructor.
@@ -69,44 +62,58 @@ public class Pipe implements Receiver
     *        be initialized with the same pipeID.
     */
    public Pipe(boolean mode,
-                    RpcDispatcher dispatcher,
-                    Address outputAddress,
-                    Serializable pipeID)
+               RpcDispatcher dispatcher,
+               Address outputAddress,
+               Serializable pipeID)
    {
-      synchronous = mode;
+      super(mode);
       this.dispatcher = dispatcher;
       this.outputAddress = outputAddress;
       this.pipeID = pipeID;
+      unacked = new ArrayList();
       log.debug(this + " created");
    }
 
-   // Receiver implementation ----------------------------------------
+   // ChannelSupport implementation ---------------------------------
 
-   public boolean handle(Routable m)
+   public Serializable getReceiverID()
    {
-      if (synchronous)
+      return pipeID;
+   }
+
+   public boolean handle(Routable r)
+   {
+      if (handleSynchronously(r))
       {
-         return synchronousHandle(m);
+         // successful synchronous delivery
+         return true;
       }
-      else
+      return storeNACKedMessage(r, pipeID);
+   }
+
+   public boolean deliver()
+   {
+      synchronized(channelLock)
       {
-         return asynchronousHandle(m);
+         // try to flush the message store
+         for(Iterator i = unacked.iterator(); i.hasNext(); )
+         {
+            Routable r = (Routable)i.next();
+            if (handleSynchronously(r))
+            {
+               i.remove();
+            }
+            else
+            {
+               // most likely the receiver is broken, don't insist
+               break;
+            }
+         }
+         return unacked.isEmpty();
       }
    }
 
    // Public --------------------------------------------------------
-
-   public boolean setSynchronous(boolean b)
-   {
-      synchronous = b;
-      // TODO
-      return true;
-   }
-
-   public boolean isSynchronous()
-   {
-      return synchronous;
-   }
 
    public Address getOutputAddress()
    {
@@ -118,15 +125,10 @@ public class Pipe implements Receiver
       outputAddress = a;
    }
 
-   public Serializable getID()
-   {
-      return pipeID;
-   }
-
    public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("Pipe[");
-      sb.append(synchronous?"SYNCH":"ASYNCH");
+      sb.append(isSynchronous()?"SYNCH":"ASYNCH");
       sb.append("][");
       sb.append(pipeID);
       sb.append("] -> ");
@@ -134,16 +136,17 @@ public class Pipe implements Receiver
       return sb.toString();
    }
 
+   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 
-   private boolean synchronousHandle(Routable m)
+   private boolean handleSynchronously(Routable r)
    {
       // Check if the message was sent remotely; in this case, I must not resend it to avoid
       // endless loops among peers or worse, deadlock on distributed RPC if deadlock detection
       // was not enabled.
 
-      if (m.getHeader(Routable.REMOTE_ROUTABLE) != null)
+      if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
       {
          // don't send
          return false;
@@ -160,7 +163,7 @@ public class Pipe implements Receiver
       RpcServerCall rpcServerCall =
             new RpcServerCall(pipeID,
                               methodName,
-                              new Object[] {m},
+                              new Object[] {r},
                               new String[] {"org.jboss.messaging.interfaces.Routable"});
 
       try
@@ -175,21 +178,5 @@ public class Pipe implements Receiver
                   " failed", e);
          return false;
       }
-   }
-
-   private boolean asynchronousHandle(Routable m)
-   {
-      throw new NotYetImplementedException();
-   }
-
-   // DEBUG ---------------------------------------------------------
-
-   public String dump()
-   {
-      StringBuffer sb = new StringBuffer();
-      sb.append(toString());
-      sb.append(", messages: ");
-      //sb.append(((MessageSetImpl)messages).dump());
-      return sb.toString();
    }
 }
