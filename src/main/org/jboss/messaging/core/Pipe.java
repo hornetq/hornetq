@@ -11,7 +11,6 @@ import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.interfaces.MessageSet;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.tools.MessageSetImpl;
-import org.jboss.messaging.tools.MessageSetImpl;
 
 /**
  * A Channel with only one output.

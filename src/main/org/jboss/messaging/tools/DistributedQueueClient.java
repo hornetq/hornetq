@@ -8,8 +8,8 @@ package org.jboss.messaging.tools;
 
 import org.jboss.messaging.core.Pipe;
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.DistributedPipeInput;
-import org.jboss.messaging.core.distributed.DistributedPipeOutput;
+import org.jboss.messaging.core.distributed.PipeInput;
+import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.messaging.core.distributed.DistributedQueuePeer;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Channel;

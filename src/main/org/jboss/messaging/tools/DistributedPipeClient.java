@@ -7,14 +7,14 @@
 package org.jboss.messaging.tools;
 
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.DistributedPipeInput;
-import org.jboss.messaging.core.distributed.DistributedPipeOutput;
+import org.jboss.messaging.core.distributed.PipeInput;
+import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.util.RpcServer;
 import org.jgroups.stack.IpAddress;
 
 /**
- * Class that provides a command line interface to a DistributedPipeInput or a DistributedPipeOutput
+ * Class that provides a command line interface to a PipeInput or a PipeOutput
  * but never to both, they are mutually exclusive. Run it with Clester.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -25,8 +25,8 @@ public class DistributedPipeClient extends RpcDispatcherClient
 
    // Attributes ----------------------------------------------------
    
-   private DistributedPipeInput pipeInput;
-   private DistributedPipeOutput pipeOutput;
+   private PipeInput pipeInput;
+   private PipeOutput pipeOutput;
    private int counter = 0;
 
    // Constructors --------------------------------------------------
@@ -46,7 +46,7 @@ public class DistributedPipeClient extends RpcDispatcherClient
                              "already instantiated, cannot use this client as pipe input");
       }
 
-      pipeInput = new DistributedPipeInput(true, rpcDispatcher, null, pipeID);
+      pipeInput = new PipeInput(true, rpcDispatcher, null, pipeID);
 
    }
 
@@ -64,7 +64,7 @@ public class DistributedPipeClient extends RpcDispatcherClient
                              "already instantiated, cannot use this client as pipe output");
       }
 
-      pipeOutput = new DistributedPipeOutput(pipeID, new ReceiverImpl("Default Output Receiver"));
+      pipeOutput = new PipeOutput(pipeID, new ReceiverImpl("Default Output Receiver"));
       pipeOutput.register((RpcServer)rpcDispatcher.getServerObject(), pipeID);
    }
 

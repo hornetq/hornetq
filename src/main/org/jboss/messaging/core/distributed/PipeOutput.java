@@ -20,17 +20,17 @@ import java.io.Serializable;
  * "Listens" on a RpcDispatcher and synchronously/asynchronously handles messages sent by the input
  * end of the distributed pipe.
  * <p>
- * Multiple distributed pipes can share the same DistributedPipeOutput instance (and implicitly the
+ * Multiple distributed pipes can share the same PipeOutput instance (and implicitly the
  * pipeID), as long the DistributedPipeIntput instances are different.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedPipeOutput implements DistributedPipeOutputSubServer
+public class PipeOutput implements PipeOutputSubServer
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DistributedPipeOutput.class);
+   private static final Logger log = Logger.getLogger(PipeOutput.class);
 
 
    // Attributes ----------------------------------------------------
@@ -44,13 +44,13 @@ public class DistributedPipeOutput implements DistributedPipeOutputSubServer
     * @param pipeID - the id of the distributed pipe. It must match the id used to instantiate the
     *        input end of the pipe.
     */
-   public DistributedPipeOutput(Serializable pipeID, Receiver receiver)
+   public PipeOutput(Serializable pipeID, Receiver receiver)
    {
       this.pipeID = pipeID;
       this.receiver = receiver;
    }
 
-   // DistributedPipeOutputSubServer implementation --------------
+   // PipeOutputSubServer implementation --------------
 
    public Serializable getID()
    {
@@ -66,6 +66,8 @@ public class DistributedPipeOutput implements DistributedPipeOutputSubServer
    {
       try
       {
+         // Mark the message as being received from a remote endpoint
+         m.putHeader(Message.REMOTE_MESSAGE_HEADER, Message.REMOTE_MESSAGE_HEADER); 
          return receiver.handle(m);
       }
       catch(Exception e)
@@ -108,7 +110,7 @@ public class DistributedPipeOutput implements DistributedPipeOutputSubServer
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("DistributedPipeOutput[");
+      StringBuffer sb = new StringBuffer("PipeOutput[");
       sb.append(pipeID);
       sb.append("]");
       return sb.toString();
@@ -122,7 +124,7 @@ public class DistributedPipeOutput implements DistributedPipeOutputSubServer
    private static int sequence = 0;
 
    /**
-    * Returns runtime DistributedPipeOutput IDs that are unique per classloading domain.
+    * Returns runtime PipeOutput IDs that are unique per classloading domain.
     * @return an unique Integer.
     */
    synchronized static Integer getUniqueID()

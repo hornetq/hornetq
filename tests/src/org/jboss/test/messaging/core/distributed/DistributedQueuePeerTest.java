@@ -91,25 +91,25 @@ public class DistributedQueuePeerTest extends MessagingTestCase
       assertFalse(i.hasNext());
    }
 
-//   public void testTwoQueuePeersOneJChannel() throws Exception
-//   {
-//      jChannelOne.connect("testGroup");
-//
-//      DistributedQueuePeer queuePeerOne = new DistributedQueuePeer(dispatcherOne, "QueueOne");
-//      DistributedQueuePeer queuePeerTwo = new DistributedQueuePeer(dispatcherOne, "QueueOne");
-//      queuePeerOne.connect();
-//      queuePeerTwo.connect();
-//      assertTrue(queuePeerOne.isConnected());
-//      assertTrue(queuePeerTwo.isConnected());
-//
-//      ReceiverImpl r = new ReceiverImpl();
-//      queuePeerOne.add(r);
-//
-//      assertTrue(queuePeerTwo.handle(new CoreMessage("someid")));
-//      Iterator i = r.iterator();
-//      assertEquals(new CoreMessage("someid"), i.next());
-//      assertFalse(i.hasNext());
-//   }
+   public void testTwoQueuePeersOneJChannel() throws Exception
+   {
+      jChannelOne.connect("testGroup");
+
+      DistributedQueuePeer queuePeerOne = new DistributedQueuePeer(dispatcherOne, "QueueOne");
+      DistributedQueuePeer queuePeerTwo = new DistributedQueuePeer(dispatcherOne, "QueueOne");
+      queuePeerOne.connect();
+      queuePeerTwo.connect();
+      assertTrue(queuePeerOne.isConnected());
+      assertTrue(queuePeerTwo.isConnected());
+
+      ReceiverImpl r = new ReceiverImpl();
+      queuePeerOne.add(r);
+
+      assertTrue(queuePeerTwo.handle(new CoreMessage("someid")));
+      Iterator i = r.iterator();
+      assertEquals(new CoreMessage("someid"), i.next());
+      assertFalse(i.hasNext());
+   }
 
 
    public void testOneQueuePeerTwoJChannels() throws Exception
@@ -130,27 +130,27 @@ public class DistributedQueuePeerTest extends MessagingTestCase
       assertFalse(i.hasNext());
    }
 
-//   public void testTwoQueuePeersOnSeparateChannels() throws Exception
-//   {
-//      jChannelOne.connect("testGroup");
-//      jChannelTwo.connect("testGroup");
-//
-//      DistributedQueuePeer queuePeerOne = new DistributedQueuePeer(dispatcherOne, "AQueue");
-//      DistributedQueuePeer queuePeerTwo = new DistributedQueuePeer(dispatcherTwo, "AQueue");
-//      queuePeerOne.connect();
-//      queuePeerTwo.connect();
-//
-//      assertTrue(queuePeerOne.isConnected());
-//      assertTrue(queuePeerTwo.isConnected());
-//
-//      ReceiverImpl r = new ReceiverImpl();
-//      queuePeerTwo.add(r);
-//
-//      assertTrue(queuePeerOne.handle(new CoreMessage("someid")));
-//      Iterator i = r.iterator();
-//      assertEquals(new CoreMessage("someid"), i.next());
-//      assertFalse(i.hasNext());
-//   }
+   public void testTwoQueuePeersOnSeparateChannels() throws Exception
+   {
+      jChannelOne.connect("testGroup");
+      jChannelTwo.connect("testGroup");
+
+      DistributedQueuePeer queuePeerOne = new DistributedQueuePeer(dispatcherOne, "AQueue");
+      DistributedQueuePeer queuePeerTwo = new DistributedQueuePeer(dispatcherTwo, "AQueue");
+      queuePeerOne.connect();
+      queuePeerTwo.connect();
+
+      assertTrue(queuePeerOne.isConnected());
+      assertTrue(queuePeerTwo.isConnected());
+
+      ReceiverImpl r = new ReceiverImpl();
+      queuePeerTwo.add(r);
+
+      assertTrue(queuePeerOne.handle(new CoreMessage("someid")));
+      Iterator i = r.iterator();
+      assertEquals(new CoreMessage("someid"), i.next());
+      assertFalse(i.hasNext());
+   }
 
 
 

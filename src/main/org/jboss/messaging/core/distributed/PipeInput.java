@@ -9,16 +9,11 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.util.RpcServerCall;
-import org.jboss.messaging.util.SubServerResponse;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
-import org.jgroups.TimeoutException;
-import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.GroupRequest;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 /**
  * The input end of a distributed pipe - a pipe that forwards messages to a remote receiver running
@@ -31,7 +26,7 @@ import java.util.Collection;
  * The asynchronous/synchronous behaviour of the distributed pipe can be configured using
  * setSynchronous().
  * <p>
- * Multiple distributed pipes can share the same DistributedPipeOutput instance (and implicitly the
+ * Multiple distributed pipes can share the same PipeOutput instance (and implicitly the
  * pipeID), as long the DistributedPipeIntput instances are different.
  *
  * @see org.jboss.messaging.interfaces.Receiver
@@ -39,12 +34,12 @@ import java.util.Collection;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedPipeInput implements Receiver
+public class PipeInput implements Receiver
 {
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DistributedPipeInput.class);
+   private static final Logger log = Logger.getLogger(PipeInput.class);
 
    // Attributes ----------------------------------------------------
 
@@ -58,25 +53,26 @@ public class DistributedPipeInput implements Receiver
 
 
    /**
-    * DistributedPipeInput constructor.
+    * PipeInput constructor.
     *
     * @param mode - true for synchronous behaviour, false otherwise.
     * @param dispatcher - the RPCDipatcher to delegate the transport to. The underlying JChannel
-    *        doesn't necessarily have to be connected at the time the DistributedPipeInput is
+    *        doesn't necessarily have to be connected at the time the PipeInput is
     *        created.
     * @param outputAddress - the address of the group member the receiving end is available on.
     * @param pipeID - the unique identifier of the distributed pipe. This pipe's output end must
     *        be initialized with the same pipeID.
     */
-   public DistributedPipeInput(boolean mode,
-                               RpcDispatcher dispatcher,
-                               Address outputAddress,
-                               Serializable pipeID)
+   public PipeInput(boolean mode,
+                    RpcDispatcher dispatcher,
+                    Address outputAddress,
+                    Serializable pipeID)
    {
       synchronous = mode;
       this.dispatcher = dispatcher;
       this.outputAddress = outputAddress;
       this.pipeID = pipeID;
+      log.debug(this + " created");
    }
 
    // Receiver implementation ----------------------------------------
@@ -123,7 +119,14 @@ public class DistributedPipeInput implements Receiver
    }
 
    public String toString() {
-      return "DistributedPipeInput["+pipeID+"] -> "+outputAddress;
+      StringBuffer sb = new StringBuffer();
+      sb.append("PipeInput[");
+      sb.append(synchronous?"SYNCH":"ASYNCH");
+      sb.append("][");
+      sb.append(pipeID);
+      sb.append("] -> ");
+      sb.append(outputAddress);
+      return sb.toString();
    }
 
 
@@ -131,9 +134,9 @@ public class DistributedPipeInput implements Receiver
 
    private boolean synchronousHandle(Message m)
    {
-
       // Check if the message was sent remotely; in this case, I must not resend it to avoid
-      // endless loops among peers
+      // endless loops among peers or worse, deadlock on distributed RPC if deadlock detection
+      // was not enabled.
 
       if (m.getHeader(Message.REMOTE_MESSAGE_HEADER) != null)
       {
@@ -154,73 +157,16 @@ public class DistributedPipeInput implements Receiver
                               methodName,
                               new Object[] {m},
                               new String[] {"org.jboss.messaging.interfaces.Message"});
+
       try
       {
-         // TODO use the timout when I'll change the send() signature or deal with the timeout
-         Object result = dispatcher.callRemoteMethod(outputAddress,
-                                                     rpcServerCall,
-                                                     GroupRequest.GET_ALL,
-                                                     30000);
-
-         // TODO TOO COMPLICATED result handling. Encapsulate and push away as a static method
-         // TODO in RpcServer
-
-         // TODO refine the semantics of the return
-         if (result instanceof Throwable)
-         {
-            log.error("Remote call " + methodName + "() on " + outputAddress +
-                      " had thrown an exception when executing remotely", (Throwable)result);
-            return false;
-         }
-         else if (result instanceof Collection)
-         {
-            Collection results = (Collection)result;
-            if (results.size() != 1)
-            {
-               log.error("Remote call " + methodName + "() on " + outputAddress +
-                         "got more than one results when expecting a single one");
-               return false;
-            }
-            Object r = results.iterator().next();
-            if (r instanceof SubServerResponse)
-            {
-               SubServerResponse ssr = (SubServerResponse)r;
-               Object ir = ssr.getInvocationResult();
-               if (!(ir instanceof Boolean))
-               {
-                  // unexpected result
-                  log.error("Remote call " + methodName + "() on " + outputAddress +
-                            " got server response carrying unexpected result: " + ir);
-                  return false;
-               }
-               return ((Boolean)ir).booleanValue();
-            }
-            else
-            {
-               // unexpected result
-               log.error("Remote call " + methodName + "() on " + outputAddress +
-                         " should have returned an SubServerResponse instance, not " + r);
-               return false;
-            }
-         }
-         else
-         {
-            // unexpected result
-            log.error("Remote call " + methodName + "() on " + outputAddress +
-                      " got unexpected result: " + result);
-            return false;
-         }
+         return ((Boolean)rpcServerCall.remoteInvoke(dispatcher, outputAddress, 30000)).
+               booleanValue();
       }
-      catch(TimeoutException e)
+      catch(Throwable e)
       {
-         log.warn("Remote call " + methodName + "() on " + outputAddress +
-                  " timed out: " + e);
-         return false;
-      }
-      catch(SuspectedException e)
-      {
-         log.warn("Remote call " + methodName + "() on " + outputAddress +
-                  " encountered suspected member: " + e);
+         log.error("Remote call " + methodName + "() on " + outputAddress +  "." + pipeID +
+                  " failed", e);
          return false;
       }
    }
@@ -236,10 +182,9 @@ public class DistributedPipeInput implements Receiver
 
    public String dump()
    {
-      StringBuffer sb =
-            new StringBuffer("DistributedPipeInput[").append(synchronous?"SYNCHRONOUS":"ASYNCHRONOUS").
-            append("][").append(pipeID).append("] -> ").append(getOutputAddress()).
-            append(", messages: ");
+      StringBuffer sb = new StringBuffer();
+      sb.append(toString());
+      sb.append(", messages: ");
       //sb.append(((MessageSetImpl)messages).dump());
       return sb.toString();
    }

@@ -9,8 +9,8 @@ package org.jboss.test.messaging.core.distributed;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.messaging.core.CoreMessage;
-import org.jboss.messaging.core.distributed.DistributedPipeInput;
-import org.jboss.messaging.core.distributed.DistributedPipeOutput;
+import org.jboss.messaging.core.distributed.PipeInput;
+import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.logging.Logger;
@@ -25,10 +25,10 @@ import java.util.ArrayList;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedPipeSharedOutputTest extends MessagingTestCase
+public class SharedPipeOutputTest extends MessagingTestCase
 {
 
-   private static final Logger log = Logger.getLogger(DistributedPipeSharedOutputTest.class);
+   private static final Logger log = Logger.getLogger(SharedPipeOutputTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -52,7 +52,7 @@ public class DistributedPipeSharedOutputTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public DistributedPipeSharedOutputTest(String name)
+   public SharedPipeOutputTest(String name)
    {
       super(name);
    }
@@ -96,14 +96,14 @@ public class DistributedPipeSharedOutputTest extends MessagingTestCase
       assertTrue(inputChannelTwo.isConnected());
       assertTrue(outputChannel.isConnected());
 
-      DistributedPipeInput inputPipeOne =
-            new DistributedPipeInput(true, inputDispatcherOne, outputAddress, "samePipeID");
-      DistributedPipeInput inputPipeTwo =
-            new DistributedPipeInput(true, inputDispatcherTwo, outputAddress, "samePipeID");
+      PipeInput inputPipeOne =
+            new PipeInput(true, inputDispatcherOne, outputAddress, "samePipeID");
+      PipeInput inputPipeTwo =
+            new PipeInput(true, inputDispatcherTwo, outputAddress, "samePipeID");
 
 
       ReceiverImpl r = new ReceiverImpl();
-      DistributedPipeOutput po = new DistributedPipeOutput("samePipeID", r);
+      PipeOutput po = new PipeOutput("samePipeID", r);
       po.register((RpcServer)outputDispatcher.getServerObject(), "samePipeID");
 
       Sender senderOne = new Sender("ONE", inputPipeOne);
@@ -128,11 +128,11 @@ public class DistributedPipeSharedOutputTest extends MessagingTestCase
 
    private class Sender implements Runnable
    {
-      private DistributedPipeInput pi;
+      private PipeInput pi;
       private String name;
       private boolean handleResult;
 
-      public Sender(String name, DistributedPipeInput pi)
+      public Sender(String name, PipeInput pi)
       {
          this.pi = pi;
          this.name = name;

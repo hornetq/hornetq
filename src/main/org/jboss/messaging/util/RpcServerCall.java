@@ -12,6 +12,8 @@ import org.jgroups.blocks.GroupRequest;
 import org.jgroups.util.RspList;
 import org.jgroups.util.Rsp;
 import org.jgroups.Address;
+import org.jgroups.TimeoutException;
+import org.jgroups.SuspectedException;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -69,7 +71,7 @@ public class RpcServerCall extends MethodCall
    }
 
    /**
-    * Synchronously invokes the RpcServerCall on all sub-server objects registered under the
+    * Synchronously invokes the RpcServerCall on <i>all</i> sub-server objects registered under the
     * RPCServerCall's current category, across all RpcServers of the group.
     *
     * @param dispatcher - the dispatcher to use to sent the call from.
@@ -77,8 +79,25 @@ public class RpcServerCall extends MethodCall
     *
     * @return a Collection of ServerResponses.
     */
-
    public Collection remoteInvoke(RpcDispatcher dispatcher, long timeout)
+   {
+      return remoteInvoke(dispatcher, (Vector)null, timeout);
+   }
+
+
+   /**
+    * Synchronously invokes the RpcServerCall on all sub-server objects registered under the
+    * RPCServerCall's current category, across select RpcServers.
+    *
+    * @param dispatcher - the dispatcher to use to sent the call from.
+    * @param destinations - contains the Addresses of the group members that runs the rpcServers
+    *        we want to invoke on.
+    * @param timeout
+    *
+    * @return a Collection of ServerResponses.
+    */
+
+   public Collection remoteInvoke(RpcDispatcher dispatcher, Vector destinations, long timeout)
    {
       // TODO for the time being, I am doing synchronous for all
       Vector dests = null;
@@ -121,5 +140,50 @@ public class RpcServerCall extends MethodCall
          }
       }
       return results;
+   }
+
+   /**
+    * Convenientce method for the case the remote call is invoked on a <i>single</i> rpcServer
+    * and the server category we're invoking on has a <i>single</i> sub-server.
+    *
+    * @param dispatcher - the dispatcher to use to sent the call from.
+    * @param destination - the Address of the group member that runs the rpcServer
+    * @param timeout
+    *
+    * @return the result of the invocation or null. The returned instance is never an exception
+    *         instance, unless the remote method chooses to return an exception as the result of
+    *         the invocation.
+    *
+    * @throws Exception - the exception that was thrown by the remote invocation.
+    * @throws ClassCastException - for unexpected result types
+    * @throws IllegalStateException - when receiving 0 or more than 1 replies. This usually happens
+    *         when there is more than one sub-server listening on the category.
+    */
+   public Object remoteInvoke(RpcDispatcher dispatcher, Address destination, long timeout)
+         throws Exception
+   {
+      int mode = GroupRequest.GET_ALL;
+
+      // TODO use the timout when I'll change the send() signature or deal with the timeout
+      Object result = dispatcher.callRemoteMethod(destination, this, mode, timeout);
+
+      if (result instanceof Exception)
+      {
+         throw (Exception)result;
+      }
+
+      Collection results = (Collection)result;
+      if (results.size() != 1)
+      {
+         throw new IllegalStateException("Expecting exactly one remote result, got " +
+                                         results.size() + " instead");
+      }
+      SubServerResponse r = (SubServerResponse)results.iterator().next();
+      Object ir = r.getInvocationResult();
+      if (ir instanceof Exception)
+      {
+         throw (Exception)ir;
+      }
+      return ir;
    }
 }

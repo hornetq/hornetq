@@ -73,7 +73,7 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
       jChannel = dispatcher.getChannel();
       connected = false;
       pipeID = distributedQueueID.toString() + "." + peerID.toString() + "-pipe" +
-               DistributedPipeOutput.getUniqueID().toString();
+               PipeOutput.getUniqueID().toString();
    }
 
 
@@ -143,7 +143,7 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
 
 
       // register the server ojects with the RpcServer
-      rpcServer.register(pipeID, new DistributedPipeOutput(pipeID, router));
+      rpcServer.register(pipeID, new PipeOutput(pipeID, router));
       rpcServer.register(distributedQueueID, this);
       connected = true;
    }
@@ -181,8 +181,8 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
 
       // create a distributed pipe to the new peer; don't use this pipe yet, as its output is
       // not registered with the joining peer's RpcServer.
-      DistributedPipeInput pipeToPeer =
-            new DistributedPipeInput(Channel.SYNCHRONOUS, dispatcher, joiningPeerAddress, pipeID);
+      PipeInput pipeToPeer =
+            new PipeInput(Channel.SYNCHRONOUS, dispatcher, joiningPeerAddress, joiningPeerPipeID);
 
       // add it as a router's receiver
       // TODO what happens if this peer receives in this very moment a message to be
@@ -222,8 +222,8 @@ public class DistributedQueuePeer extends Queue implements QueuePeerSubServer
       // I will never receive an acknowledgment from myself, since my server objects are not
       // registered yet, so I can safely link to peer.
 
-      DistributedPipeInput pipeToPeer =
-            new DistributedPipeInput(Channel.SYNCHRONOUS, dispatcher,
+      PipeInput pipeToPeer =
+            new PipeInput(Channel.SYNCHRONOUS, dispatcher,
                                      ack.getAddress(), ack.getPipeID());
       add(pipeToPeer);
    }
