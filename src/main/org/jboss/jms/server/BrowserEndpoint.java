@@ -6,13 +6,15 @@
  */
 package org.jboss.jms.server;
 
+import java.util.List;
+
 /**
- * Delivers the message
+ * Browses messages
  * 
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @version $Revision$
  */
-public interface DeliveryEndpoint
+public interface BrowserEndpoint
 {
-   void deliver(MessageReference message) throws Exception;
+   List browse() throws Exception;
 }

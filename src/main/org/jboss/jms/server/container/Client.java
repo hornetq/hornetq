@@ -6,9 +6,14 @@
  */
 package org.jboss.jms.server.container;
 
-import org.jboss.aop.Interceptor;
 import org.jboss.aop.Invocation;
 import org.jboss.aop.MethodInvocation;
+import org.jboss.aop.SimpleMetaData;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.server.BrowserEndpointFactory;
+import org.jboss.jms.server.DeliveryEndpointFactory;
+import org.jboss.jms.server.MessageBroker;
+import org.jboss.util.id.GUID;
 
 /**
  * The serverside representation of the client
@@ -17,29 +22,67 @@ import org.jboss.aop.MethodInvocation;
  * @version $Revision$
  */
 public class Client
-   implements Interceptor
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   /** The Message broker */
+   private MessageBroker broker;
+
    // Static --------------------------------------------------------
+
+   public static Client getClient(Invocation invocation)
+   {
+      return (Client) invocation.getMetaData("JMS", "Client");
+   }
 
    // Constructors --------------------------------------------------
 
-   // Public --------------------------------------------------------
-
-   // Interceptor implementation -----------------------------------
-
-   public String getName()
+   public Client(MessageBroker broker)
    {
-      return "Client";
+      this.broker = broker;
    }
 
-   public Object invoke(Invocation invocation) throws Throwable
+   // Public --------------------------------------------------------
+
+   public SimpleMetaData createSession(MethodInvocation invocation)
    {
-      MethodInvocation mi = (MethodInvocation) invocation;
-      throw new UnsupportedOperationException(mi.method.toString());
+      return getMetaData();
+   }
+
+   public SimpleMetaData createBrowser(MethodInvocation invocation)
+   {
+      SimpleMetaData result = getMetaData();
+      
+      JBossDestination destination = (JBossDestination) invocation.arguments[0];
+      String selector = (String) invocation.arguments[1];
+      BrowserEndpointFactory endpointFactory = broker.getBrowserEndpointFactory(destination, selector);
+      result.addMetaData("JMS", "BrowserEndpointFactory", endpointFactory);
+      return result;
+   }
+
+   public SimpleMetaData createConsumer(MethodInvocation invocation)
+   {
+      return getMetaData();
+   }
+
+   public SimpleMetaData createProducer(MethodInvocation invocation)
+   {
+      SimpleMetaData result = getMetaData();
+      
+      JBossDestination destination = (JBossDestination) invocation.arguments[0];
+      DeliveryEndpointFactory endpointFactory = broker.getDeliveryEndpointFactory(destination);
+      result.addMetaData("JMS", "DeliveryEndpointFactory", endpointFactory);
+      return result;
+   }
+
+   public SimpleMetaData getMetaData()
+   {
+      SimpleMetaData result = new SimpleMetaData();
+      result.addMetaData("JMS", "Client", this);
+      result.addMetaData("JMS", "OID", GUID.asString());
+      return result;
    }
 
    // Protected ------------------------------------------------------

@@ -47,22 +47,23 @@ public class FactoryInterceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+      Object result = invocation.invokeNext();
       String methodName = ((MethodInvocation) invocation).method.getName();
       if (methodName.equals("createSession"))
-         return createSession(invocation);
+         return createSession(invocation, (SessionDelegate) result);
       else if (methodName.equals("createBrowser"))
-         return createBrowser(invocation);
+         return createBrowser(invocation, (BrowserDelegate) result);
       else if (methodName.equals("createConsumer"))
-         return createConsumer(invocation);
+         return createConsumer(invocation, (ConsumerDelegate) result);
       else if (methodName.equals("createProducer"))
-         return createProducer(invocation);
+         return createProducer(invocation, (ProducerDelegate) result);
       else
-         return invocation.invokeNext();
+         return result;
    }
 
    // Protected ------------------------------------------------------
 
-   protected SessionDelegate createSession(Invocation invocation)
+   protected SessionDelegate createSession(Invocation invocation, SessionDelegate server)
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[]
@@ -71,31 +72,31 @@ public class FactoryInterceptor
          FactoryInterceptor.singleton
       };
       ConnectionDelegate connection = (ConnectionDelegate) Container.getProxy(invocation); 
-      return ClientContainerFactory.getSessionContainer(connection, interceptors, null);
+      return ClientContainerFactory.getSessionContainer(connection, server, interceptors, null);
    }
 
-   protected BrowserDelegate createBrowser(Invocation invocation)
+   protected BrowserDelegate createBrowser(Invocation invocation, BrowserDelegate server)
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[0];
       SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
-      return ClientContainerFactory.getBrowserContainer(session, interceptors, null);
+      return ClientContainerFactory.getBrowserContainer(session, server, interceptors, null);
    }
 
-   protected ConsumerDelegate createConsumer(Invocation invocation)
+   protected ConsumerDelegate createConsumer(Invocation invocation, ConsumerDelegate server)
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[0];
       SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
-      return ClientContainerFactory.getConsumerContainer(session, interceptors, null);
+      return ClientContainerFactory.getConsumerContainer(session, server, interceptors, null);
    }
 
-   protected ProducerDelegate createProducer(Invocation invocation)
+   protected ProducerDelegate createProducer(Invocation invocation, ProducerDelegate server)
       throws Throwable
    {
       Interceptor[] interceptors = new Interceptor[0];
       SessionDelegate session = (SessionDelegate) Container.getProxy(invocation); 
-      return ClientContainerFactory.getProducerContainer(session, interceptors, null);
+      return ClientContainerFactory.getProducerContainer(session, server, interceptors, null);
    }
 
    // Package Private ------------------------------------------------

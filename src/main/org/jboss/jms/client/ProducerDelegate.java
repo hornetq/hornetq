@@ -17,7 +17,7 @@ import org.jboss.jms.message.JBossMessage;
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface ProducerDelegate 
+public interface ProducerDelegate
 {
    // Constants -----------------------------------------------------
 

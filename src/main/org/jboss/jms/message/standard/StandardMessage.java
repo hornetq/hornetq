@@ -17,7 +17,7 @@ import org.jboss.jms.util.MessageProperties;
 import org.jboss.util.id.GUID;
 
 /**
- * An standard message
+ * A standard message
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
@@ -342,6 +342,14 @@ public class StandardMessage
    {
       readonly = true;
       properties.setReadOnly(true);
+   }
+
+   // Object implementation ------------------------------------------
+   
+   public Object clone()
+      throws CloneNotSupportedException
+   {
+      return super.clone();
    }
 
    // Protected ------------------------------------------------------

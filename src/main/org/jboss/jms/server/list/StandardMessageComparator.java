@@ -4,56 +4,50 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.client.p2p;
+package org.jboss.jms.server.list;
 
-import java.util.List;
+import java.util.Comparator;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.BrowserDelegate;
+import org.jboss.jms.server.MessageReference;
 
 /**
- * The p2p browser
+ * A comparator that implements standard message ordering
  * 
- * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class P2PBrowserDelegate
-   implements BrowserDelegate
+public class StandardMessageComparator
+   implements Comparator
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private P2PSessionDelegate session = null;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public P2PBrowserDelegate(P2PSessionDelegate session, Destination destination, String selector)
-      throws JMSException
-   {
-      this.session = session;
-   }
-
    // Public --------------------------------------------------------
 
-   // BrowserDelegate implementation --------------------------------
+   // Comparator implementation -------------------------------------
 
-	public void close() throws JMSException
-	{
-	}
-
-	public void closing() throws JMSException
-	{
-	}
-
-   public List browse() throws JMSException
+   public int compare(Object o1, Object o2)
    {
-      return null;
+      try
+      {
+         MessageReference r1 = (MessageReference) o1;
+         MessageReference r2 = (MessageReference) o2;
+         int p1 = r1.getPriority();
+         int p2 = r2.getPriority();
+         if (p1 != p2) return p2-p1;
+         String l1 = r1.getMessageID();
+         String l2 = r2.getMessageID();
+         return l1.compareTo(l2);
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Error during comparison", e);
+      }
    }
 
    // Protected ------------------------------------------------------

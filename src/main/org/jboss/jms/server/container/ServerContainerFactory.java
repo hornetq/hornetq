@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.client.container;
+package org.jboss.jms.server.container;
 
 import java.lang.reflect.Proxy;
 
@@ -21,16 +21,14 @@ import org.jboss.jms.client.SessionDelegate;
 import org.jboss.jms.container.Container;
 import org.jboss.jms.container.ContainerObjectOverridesInterceptor;
 import org.jboss.jms.container.DispatchInterceptor;
-import org.jboss.jms.container.ForwardInterceptor;
-import org.jboss.jms.container.LogInterceptor;
 
 /**
- * The in jvm implementation
+ * A factory for server containers
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class ClientContainerFactory
+public class ServerContainerFactory
 {
    // Constants -----------------------------------------------------
 
@@ -40,7 +38,6 @@ public class ClientContainerFactory
 
    public static ConnectionDelegate getConnectionContainer(
       ImplementationDelegate delegate,
-      ConnectionDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
    )
@@ -49,7 +46,6 @@ public class ClientContainerFactory
       return (ConnectionDelegate) getContainer
       (
          ConnectionDelegate.class,
-         server,
          interceptors,
          metadata
       );
@@ -57,7 +53,6 @@ public class ClientContainerFactory
 
    public static SessionDelegate getSessionContainer(
       ConnectionDelegate delegate,
-      SessionDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
    )
@@ -66,7 +61,6 @@ public class ClientContainerFactory
       return (SessionDelegate) getContainer
       (
          SessionDelegate.class,
-         server,
          interceptors,
          metadata
       );
@@ -74,7 +68,6 @@ public class ClientContainerFactory
 
    public static BrowserDelegate getBrowserContainer(
       SessionDelegate delegate,
-      BrowserDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
    )
@@ -83,7 +76,6 @@ public class ClientContainerFactory
       return (BrowserDelegate) getContainer
       (
          BrowserDelegate.class,
-         server,
          interceptors,
          metadata
       );
@@ -91,7 +83,6 @@ public class ClientContainerFactory
 
    public static ConsumerDelegate getConsumerContainer(
       SessionDelegate delegate,
-      ConsumerDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
    )
@@ -100,7 +91,6 @@ public class ClientContainerFactory
       return (ConsumerDelegate) getContainer
       (
          ConsumerDelegate.class,
-         server,
          interceptors,
          metadata
       );
@@ -108,7 +98,6 @@ public class ClientContainerFactory
 
    public static ProducerDelegate getProducerContainer(
       SessionDelegate delegate,
-      ProducerDelegate server,
       Interceptor[] interceptors,
       SimpleMetaData metadata      
    )
@@ -117,7 +106,6 @@ public class ClientContainerFactory
       return (ProducerDelegate) getContainer
       (
          ProducerDelegate.class,
-         server,
          interceptors,
          metadata
       );
@@ -125,7 +113,6 @@ public class ClientContainerFactory
    
    public static Object getContainer(
       Class clazz,
-      Object delegate,
       Interceptor[] interceptors, 
       SimpleMetaData metadata
    )
@@ -133,24 +120,14 @@ public class ClientContainerFactory
    {
 	   Interceptor[] standard = getStandard();
 	
+      Object target = metadata.getMetaData("JMS", "Target");
+   
       int stackSize = standard.length + interceptors.length + 1;
       Interceptor[] stack = new Interceptor[stackSize];
    	System.arraycopy(standard, 0, stack, 0, standard.length);
 	   System.arraycopy(interceptors, 0, stack, standard.length, interceptors.length);
-
-      if (delegate instanceof Proxy)
-      {
-         try
-         {
-            stack[stackSize-1] = new ForwardInterceptor(Container.getContainer(delegate));
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-      if (stack[stackSize-1] == null)
-         stack[stackSize-1] = new DispatchInterceptor(delegate);
-
+      stack[stackSize-1] = new DispatchInterceptor(target);    
+      
 	   Container container = new Container(stack, metadata);
 	   Object result = Proxy.newProxyInstance
       (
@@ -166,10 +143,7 @@ public class ClientContainerFactory
    {
       return new Interceptor[]
       {
-         ContainerObjectOverridesInterceptor.singleton,
-         JMSExceptionInterceptor.singleton,
-         LogInterceptor.singleton,
-         new ClosedInterceptor()
+         ContainerObjectOverridesInterceptor.singleton
       };
    }
 

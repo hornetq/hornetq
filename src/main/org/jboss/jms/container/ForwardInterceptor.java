@@ -4,60 +4,57 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.client.p2p;
+package org.jboss.jms.container;
 
-import java.util.List;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.BrowserDelegate;
+import org.jboss.aop.Interceptor;
+import org.jboss.aop.Invocation;
 
 /**
- * The p2p browser
+ * An interceptor for forwarding invocations.
  * 
- * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class P2PBrowserDelegate
-   implements BrowserDelegate
+public class ForwardInterceptor
+   implements Interceptor
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private P2PSessionDelegate session = null;
+   /** The delegate container */
+   private Container delegate;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public P2PBrowserDelegate(P2PSessionDelegate session, Destination destination, String selector)
-      throws JMSException
+   /**
+    * Create a new forwarding interceptor
+    * 
+    * @param delegate the container to forward the invocation to
+    */
+   public ForwardInterceptor(Container delegate)
    {
-      this.session = session;
+      this.delegate = delegate;
    }
 
    // Public --------------------------------------------------------
 
-   // BrowserDelegate implementation --------------------------------
+   // Interceptor implementation -----------------------------------
 
-	public void close() throws JMSException
-	{
-	}
-
-	public void closing() throws JMSException
-	{
-	}
-
-   public List browse() throws JMSException
+   public String getName()
    {
-      return null;
+      return "ForwardInterceptor";
+   }
+
+   public Object invoke(Invocation invocation) throws Throwable
+   {
+      return delegate.invoke(invocation);
    }
 
    // Protected ------------------------------------------------------
-
+   
    // Package Private ------------------------------------------------
 
    // Private --------------------------------------------------------

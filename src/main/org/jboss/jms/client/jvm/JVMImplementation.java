@@ -17,7 +17,11 @@ import org.jboss.jms.client.ImplementationDelegate;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.ClientContainerFactory;
 import org.jboss.jms.client.container.FactoryInterceptor;
+import org.jboss.jms.server.MessageBroker;
 import org.jboss.jms.server.container.Client;
+import org.jboss.jms.server.container.ServerConnectionInterceptor;
+import org.jboss.jms.server.container.ServerContainerFactory;
+import org.jboss.jms.server.container.ServerFactoryInterceptor;
 
 /**
  * The in jvm implementation
@@ -32,9 +36,17 @@ public class JVMImplementation
 
    // Attributes ----------------------------------------------------
 
+   /** The message broker */
+   private MessageBroker broker;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+
+   public JVMImplementation(MessageBroker broker)
+   {
+      this.broker = broker;
+   }
 
    // Public --------------------------------------------------------
 
@@ -42,12 +54,19 @@ public class JVMImplementation
 
    public ConnectionDelegate createConnection(String userName, String password) throws JMSException
    {
-      Interceptor[] interceptors = new Interceptor[]
+      Client client = new Client(broker);
+      Interceptor[] serverInterceptors = new Interceptor[]
       {
-         FactoryInterceptor.singleton,
-         new Client() 
+         ServerFactoryInterceptor.singleton,
+         ServerConnectionInterceptor.singleton 
       };
-      return ClientContainerFactory.getConnectionContainer(this, interceptors, null);
+      ConnectionDelegate delegate = ServerContainerFactory.getConnectionContainer(this, serverInterceptors, client.getMetaData()); 
+
+      Interceptor[] clientInterceptors = new Interceptor[]
+      {
+         FactoryInterceptor.singleton
+      };
+      return ClientContainerFactory.getConnectionContainer(this, delegate, clientInterceptors, null);
    }
 
    public Reference getReference() throws NamingException

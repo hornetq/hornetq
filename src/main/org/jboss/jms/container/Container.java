@@ -6,10 +6,13 @@
  */
 package org.jboss.jms.container;
 
+import java.lang.reflect.Proxy;
+
 import javax.jms.JMSException;
 
 import org.jboss.aop.Interceptor;
 import org.jboss.aop.Invocation;
+import org.jboss.aop.MetaDataResolver;
 import org.jboss.aop.SimpleMetaData;
 import org.jboss.aop.proxy.DynamicProxyIH;
 
@@ -34,6 +37,20 @@ public class Container
    // Static --------------------------------------------------------
 
    /**
+    * Get the container from a proxy
+    * 
+    * @param object the proxy
+    * @returns the container
+    * @throws Throwable for any error
+    */
+   public static Container getContainer(Object object)
+      throws Throwable
+   {
+      Proxy proxy = (Proxy) object;
+      return (Container) Proxy.getInvocationHandler(proxy);
+   }
+
+   /**
     * Get the container from an invocation
     * 
     * @param invocation the conatiner
@@ -41,7 +58,7 @@ public class Container
     */
    public static Container getContainer(Invocation invocation)
    {
-      return (Container) invocation.getMetaData().getMetaData("JMS", "Container");
+      return (Container) invocation.getMetaData("JMS", "Container");
    }
 
    /**
@@ -69,7 +86,7 @@ public class Container
    {
       super(interceptors);
       if (metadata != null)
-         this.metadata = metadata; // TODO Clone
+         this.metadata = metadata;
       this.metadata.addMetaData("JMS", "Container", this);
    }
 
@@ -83,6 +100,21 @@ public class Container
    public void setProxy(Object proxy)
    {
       this.proxy = proxy;
+   }
+
+   public Object invoke (Invocation invocation)
+      throws Throwable
+   {
+      MetaDataResolver oldMetaData = invocation.instanceResolver;
+      invocation.instanceResolver = getMetaData();
+      try
+      {
+         return invocation.invokeNext(interceptors);
+      }
+      finally
+      {
+         invocation.instanceResolver = oldMetaData;
+      }
    }
 
    // Protected ------------------------------------------------------

@@ -62,7 +62,8 @@ public class JVMImplementationFactory
    protected JVMImplementation getImplementation(Reference reference)
       throws Exception
    {
-      return new JVMImplementation();
+      // TODO getImplementation
+      return null;
    }
    
    // Package Private ------------------------------------------------

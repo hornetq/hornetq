@@ -9,20 +9,18 @@ package org.jboss.jms.server;
 import org.jboss.jms.message.JBossMessage;
 
 /**
- * A message reference
+ * A factory for delivery endpoints
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface MessageReference
+public interface DeliveryEndpointFactory
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   JBossMessage getMessage() throws Exception;
-   
-   String getMessageID() throws Exception;
+   DeliveryEndpoint getDeliveryEndpoint(MessageReference message);
 
-   int getPriority() throws Exception;
+   MessageReference getMessageReference(JBossMessage message);
 }

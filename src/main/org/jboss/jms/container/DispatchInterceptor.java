@@ -6,33 +6,41 @@
  */
 package org.jboss.jms.container;
 
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
 
 import org.jboss.aop.Interceptor;
 import org.jboss.aop.Invocation;
 import org.jboss.aop.MethodInvocation;
-import org.jboss.logging.Logger;
 
 /**
- * An interceptor for logging invocations.
+ * An interceptor for dispatching invocations.
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class LogInterceptor
+public class DispatchInterceptor
    implements Interceptor
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(LogInterceptor.class);
-
    // Attributes ----------------------------------------------------
+
+   /** The target object */
+   private Object target;
 
    // Static --------------------------------------------------------
 
-   public static LogInterceptor singleton = new LogInterceptor();
-
    // Constructors --------------------------------------------------
+
+   /**
+    * Create a new dispatch interceptor
+    * 
+    * @param target the target object
+    */
+   public DispatchInterceptor(Object target)
+   {
+      this.target = target;
+   }
 
    // Public --------------------------------------------------------
 
@@ -40,42 +48,25 @@ public class LogInterceptor
 
    public String getName()
    {
-      return "LogInterceptor";
+      return "DispatchInterceptor";
    }
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      StringBuffer desc = getDescription(invocation);
-      log.info("invoke:" + desc);
-      Object result = null;
+      MethodInvocation mi = (MethodInvocation) invocation;
       try
       {
-         result = invocation.invokeNext();
-         log.info("result: " + result + " of invoke:" + desc);
-         return result;
+         return mi.method.invoke(target, mi.arguments);
       }
       catch (Throwable t)
       {
-         log.info("error in invoke:" + desc, t);
+         if (t instanceof InvocationTargetException)
+            throw ((InvocationTargetException) t).getTargetException();
          throw t;
       }
    }
 
    // Protected ------------------------------------------------------
-
-   protected StringBuffer getDescription(Invocation invocation)
-   {
-      MethodInvocation mi = (MethodInvocation) invocation;
-      StringBuffer buffer = new StringBuffer(50);
-      buffer.append(" method=").append(mi.method.getName());
-      buffer.append(" params=");
-      if (mi.arguments == null)
-         buffer.append("[]");
-      else
-         buffer.append(Arrays.asList(mi.arguments));
-      buffer.append(" object=").append(Container.getProxy(invocation));
-      return buffer;
-   }
    
    // Package Private ------------------------------------------------
 

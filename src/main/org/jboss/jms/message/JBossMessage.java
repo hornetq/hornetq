@@ -18,11 +18,13 @@ import org.jboss.jms.client.SessionDelegate;
  * @version $Revision$
  */
 public interface JBossMessage
-   extends Message
+   extends Message, Cloneable
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
+
+   Object clone() throws CloneNotSupportedException;
 
    /**
     * Retrieve the session for this message

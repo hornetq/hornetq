@@ -6,23 +6,17 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.jms.message.JBossMessage;
-
 /**
- * A message reference
+ * A factory for browser endpoints
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface MessageReference
+public interface BrowserEndpointFactory
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   JBossMessage getMessage() throws Exception;
-   
-   String getMessageID() throws Exception;
-
-   int getPriority() throws Exception;
+   BrowserEndpoint getBrowserEndpoint();
 }

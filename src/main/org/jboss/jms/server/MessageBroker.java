@@ -6,23 +6,24 @@
  */
 package org.jboss.jms.server;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 
 /**
- * A message reference
+ * A message broker
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public interface MessageReference
+public interface MessageBroker
 {
    // Constants -----------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   JBossMessage getMessage() throws Exception;
-   
-   String getMessageID() throws Exception;
+   BrowserEndpointFactory getBrowserEndpointFactory(JBossDestination destination, String selector);
 
-   int getPriority() throws Exception;
+   DeliveryEndpointFactory getDeliveryEndpointFactory(JBossDestination destination);
+
+   MessageReference getMessageReference(JBossMessage message);
 }

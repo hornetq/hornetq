@@ -66,7 +66,7 @@ public class JBossBrowser
 
    public Enumeration getEnumeration() throws JMSException
    {
-      return delegate.getEnumeration();
+      return new BrowserEnumeration(delegate.browse());
    }
 
    public String getMessageSelector() throws JMSException

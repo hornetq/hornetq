@@ -4,56 +4,54 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.client.p2p;
+package org.jboss.jms.client;
 
+import java.util.Enumeration;
 import java.util.List;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.BrowserDelegate;
+import java.util.ListIterator;
 
 /**
- * The p2p browser
+ * A browser enumeration
  * 
- * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class P2PBrowserDelegate
-   implements BrowserDelegate
+class BrowserEnumeration 
+   implements Enumeration
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private P2PSessionDelegate session = null;
+   /** The list iterator */
+   private ListIterator iterator;
 
-   // Static --------------------------------------------------------
+	// Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public P2PBrowserDelegate(P2PSessionDelegate session, Destination destination, String selector)
-      throws JMSException
-   {
-      this.session = session;
-   }
-
    // Public --------------------------------------------------------
 
-   // BrowserDelegate implementation --------------------------------
-
-	public void close() throws JMSException
-	{
-	}
-
-	public void closing() throws JMSException
-	{
-	}
-
-   public List browse() throws JMSException
+   /**
+    * Create a new BrowserEnumeration
+    * 
+    * @param list the list
+    */
+   public BrowserEnumeration(List list)
    {
-      return null;
+      iterator = list.listIterator();
+   }
+
+   // Enumeration implementation ------------------------------------
+
+   public boolean hasMoreElements()
+   {
+      return iterator.hasNext();
+   }
+
+   public Object nextElement()
+   {
+      return iterator.next();
    }
 
    // Protected ------------------------------------------------------

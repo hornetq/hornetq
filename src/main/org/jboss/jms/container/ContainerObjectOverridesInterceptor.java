@@ -56,17 +56,21 @@ public class ContainerObjectOverridesInterceptor
 
    protected String toString(MethodInvocation mi)
    {
-      return Container.getContainer(mi).toString();
+      Object proxy = Container.getProxy(mi);
+      String className = proxy.getClass().getInterfaces()[0].getName();
+      StringBuffer buffer = new StringBuffer(20);
+      buffer.append(className).append('@').append(System.identityHashCode(proxy));
+      return buffer.toString();
    }
 
    protected Boolean equals(MethodInvocation mi)
    {
-      return new Boolean(Container.getContainer(mi).equals(mi.arguments[0]));
+      return new Boolean(Container.getProxy(mi).equals(mi.arguments[0]));
    }
 
    protected Integer hashCode(MethodInvocation mi)
    {
-      return new Integer(Container.getContainer(mi).hashCode());
+      return new Integer(System.identityHashCode(Container.getProxy(mi)));
    }
    
    // Package Private ------------------------------------------------

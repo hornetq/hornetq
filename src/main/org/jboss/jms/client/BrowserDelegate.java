@@ -6,7 +6,7 @@
  */
 package org.jboss.jms.client;
 
-import java.util.Enumeration;
+import java.util.List;
 
 import javax.jms.JMSException;
 
@@ -39,10 +39,10 @@ public interface BrowserDelegate
    /**
     * Browse the messages
     * 
-    * @return an Enumeration of messages
+    * @return a list of messages
     * @throws JMSException for any error
     */
-   Enumeration getEnumeration() throws JMSException;
+   List browse() throws JMSException;
 
    // Inner Classes --------------------------------------------------
 }

@@ -4,56 +4,48 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.client.p2p;
+package org.jboss.jms.server.standard;
 
-import java.util.List;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.BrowserDelegate;
+import org.jboss.jms.server.BrowserEndpoint;
+import org.jboss.jms.server.BrowserEndpointFactory;
+import org.jboss.jms.server.list.MessageList;
 
 /**
- * The p2p browser
+ * A queue delivery endpoint factory
  * 
- * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @version $Revision$
  */
-public class P2PBrowserDelegate
-   implements BrowserDelegate
+public class QueueBrowserEndpointFactory
+   implements BrowserEndpointFactory
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private P2PSessionDelegate session = null;
+   /** The message list */
+   private MessageList list;
+
+   /** The selector */
+   private String selector;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public P2PBrowserDelegate(P2PSessionDelegate session, Destination destination, String selector)
-      throws JMSException
+   public QueueBrowserEndpointFactory(MessageList list, String selector)
    {
-      this.session = session;
+      this.list = list;
+      this.selector = selector;
    }
 
    // Public --------------------------------------------------------
 
-   // BrowserDelegate implementation --------------------------------
+   // BrowserEndpointFactory implementation -------------------------
 
-	public void close() throws JMSException
-	{
-	}
-
-	public void closing() throws JMSException
-	{
-	}
-
-   public List browse() throws JMSException
+   public BrowserEndpoint getBrowserEndpoint()
    {
-      return null;
+      return new QueueBrowserEndpoint(list, selector);
    }
 
    // Protected ------------------------------------------------------
