@@ -4,13 +4,7 @@
 #
 #
 
-CLESTER_HOME=/work/clester/dist
-TARGET_CLASS=org.jboss.messaging.tools.PipeClient
-TARGET_CLASS=org.jboss.messaging.tools.JChannelClient
-TARGET_CLASS=org.jboss.messaging.tools.RpcDispatcherClient
-TARGET_CLASS=org.jboss.messaging.tools.DistributedPipeClient
-#TARGET_CLASS=org.jboss.messaging.tools.ToErase
-TARGET_CLASS=org.jboss.messaging.tools.DistributedQueueClient
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.DistributedQueuePeerTest
 
 cygwin=false;
 case "`uname`" in
@@ -46,11 +40,12 @@ done
 reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
 $reldir/../../output/etc${SEP}\
+$reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
+$reldir/../../../thirdparty/junit-junit/lib/junit.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../resources/jgroups-core.jar${SEP}\
-${CLESTER_HOME}/clester.jar \
-org.clester.Main $TARGET_CLASS
+ $TARGET_CLASS
 

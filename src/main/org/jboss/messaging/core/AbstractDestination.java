@@ -14,7 +14,7 @@ import org.jboss.messaging.interfaces.Receiver;
 import java.util.Iterator;
 
 /**
- * A Channel with a routing policy in place. It delegates routing to a Router.
+ * A Channel with a routing policy in place. It delegates the routing policy to a Router instance.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>

@@ -87,28 +87,6 @@ search() {
 }
 
 #
-# Reads build.properties and returns the corresponding -Dname=value at stdout
-# Exits with 0 if everything is OK or with 1 and an stderr message if something goes wrong.
-#
-read_local_properties() {
-
-   filename="build.properties"
-
-   if [ ! -f $filename ]; then
-      exit 0;
-   fi
-
-   cat $filename | while read line; do
-      line=`echo $line | grep ".*=.*" | grep -v "^ *\#`
-      if [ "$line" != "" ]; then
-         echo -n "-D$line "
-      fi
-   done
-   exit 0;
-}
-
-
-#
 # Main function.
 #
 main() {
@@ -180,13 +158,15 @@ main() {
     export ANT ANT_HOME ANT_OPTS
 
     # override properties locally
-    ANT_OPTIONS="$ANT_OPTIONS "`read_local_properties`
+    if [ -f $DIRNAME/build.properties ]; then
+         LOCAL_PROPERTIES="-propertyfile $DIRNAME/build.properties"
+    fi
 
     # execute in debug mode, or simply execute
     if [ "x$ANT_DEBUG" != "x" ]; then
-	/bin/sh -x $ANT $ANT_OPTIONS "$@"
+	/bin/sh -x $ANT $ANT_OPTIONS $LOCAL_PROPERTIES "$@"
     else
-	exec $ANT $ANT_OPTIONS "$@"
+	exec $ANT $ANT_OPTIONS $LOCAL_PROPERTIES "$@"
     fi
 }
 

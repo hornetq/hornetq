@@ -38,7 +38,9 @@
       <path refid="apache.log4j.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="junit.junit.classpath"/>
-      <path refid="jgroups.jgroups.classpath"/>
+      <!-- I temporarily use a newer version of JGroups, not available in the thirdparty dir -->
+      <!-- <path refid="jgroups.jgroups.classpath"/> -->
+      <pathelement path="${module.root}/../src/resources/jgroups-core.jar"/>
       <path refid="apache.commons.classpath"/>
    </path>
 
@@ -140,9 +142,9 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}">
          <classpath>
+            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-            <pathelement location="${module.root}/etc"/>
          </classpath>
          <formatter type="plain" usefile="${junit.formatter.usefile}"/>
          <batchtest fork="${junit.batchtest.fork}"
@@ -172,9 +174,9 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}">
          <classpath>
+            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-            <pathelement location="${module.root}/etc"/>
          </classpath>
          <formatter type="plain" usefile="${junit.formatter.usefile}"/>
          <test name="${test.classname}"

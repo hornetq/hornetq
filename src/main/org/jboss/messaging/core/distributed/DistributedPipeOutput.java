@@ -10,7 +10,6 @@ import org.jboss.messaging.interfaces.Receiver;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.util.RpcServer;
 import org.jboss.logging.Logger;
-import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
 
@@ -20,11 +19,14 @@ import java.io.Serializable;
  * <p>
  * "Listens" on a RpcDispatcher and synchronously/asynchronously handles messages sent by the input
  * end of the distributed pipe.
+ * <p>
+ * Multiple distributed pipes can share the same DistributedPipeOutput instance (and implicitly the
+ * pipeID), as long the DistributedPipeIntput instances are different.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class DistributedPipeOutput
+public class DistributedPipeOutput implements DistributedPipeOutputSubServer
 {
    // Constants -----------------------------------------------------
 
@@ -33,30 +35,54 @@ public class DistributedPipeOutput
 
    // Attributes ----------------------------------------------------
 
-   protected RpcDispatcher dispatcher;
    protected Serializable pipeID;
    protected Receiver receiver;
 
    // Constructors --------------------------------------------------
 
    /**
-    * @param dispatcher - the dispatcher to listen on.
     * @param pipeID - the id of the distributed pipe. It must match the id used to instantiate the
     *        input end of the pipe.
-    * @exception IllegalStateException - thrown if the RpcDispatcher is not configured with an
-    *            RpcServer, so this instance cannot register itself to field distributed calls.
     */
-   public DistributedPipeOutput(RpcDispatcher dispatcher, Serializable pipeID, Receiver receiver)
+   public DistributedPipeOutput(Serializable pipeID, Receiver receiver)
    {
-      this.dispatcher = dispatcher;
       this.pipeID = pipeID;
       this.receiver = receiver;
-      init();
    }
 
-   // Receiver implementation ---------------------------------------
+   // DistributedPipeOutputSubServer implementation --------------
+
+   public Serializable getID()
+   {
+      return pipeID;
+   }
+
+   /**
+    * The metohd to be called remotely by the input end of the distributed pipe.
+    *
+    * @return the acknowledgement as returned by the associated receiver.
+    */
+   public boolean handle(Message m)
+   {
+      try
+      {
+         return receiver.handle(m);
+      }
+      catch(Exception e)
+      {
+         log.error("The receiver connected to " + this + " is unable to handle the message: " + e);
+         return false;
+      }
+   }
 
    // Public --------------------------------------------------------
+
+   public boolean register(RpcServer rpcServer, Serializable category)
+   {
+      return rpcServer.register(category, this);
+   }
+
+   // TODO unregister myself from the rpcServer when I am decomissioned.
 
    /**
     * @return the receiver connected to the pipe or null if there is no Receiver.
@@ -79,23 +105,6 @@ public class DistributedPipeOutput
       return pipeID;
    }
 
-   /**
-    * The metohd to be called remotely by the input end of the distributed pipe.
-    *
-    * @return the acknowledgement as returned by the associated receiver.
-    */
-   public boolean handle(Message m)
-   {
-      try
-      {
-         return receiver.handle(m);
-      }
-      catch(Exception e)
-      {
-         log.error("The receiver connected to "+this+" is unable to handle the message: "+e);
-         return false;
-      }
-   }
 
    public String toString()
    {
@@ -107,18 +116,20 @@ public class DistributedPipeOutput
 
    // Private -------------------------------------------------------
 
-   private void init()
+   // Static --------------------------------------------------------
+
+   /** access it only from getUniqueID() */
+   private static int sequence = 0;
+
+   /**
+    * Returns runtime DistributedPipeOutput IDs that are unique per classloading domain.
+    * @return an unique Integer.
+    */
+   synchronized static Integer getUniqueID()
    {
-      Object serverObject = dispatcher.getServerObject();
-      if (!(serverObject instanceof RpcServer))
-      {
-         throw new IllegalStateException("The RpcDispatcher does not have an RpcServer installed");
-      }
-      RpcServer rpcServer = (RpcServer)serverObject;
-      rpcServer.register(pipeID, this);
+      return new Integer(sequence++);
    }
 
-   // TODO: unregister myself from the rpcServer when I am decomissioned.
 }
 
 

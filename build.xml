@@ -76,10 +76,12 @@
 
     <!-- The combined library classpath -->
     <path id="library.classpath">
-      <path refid="oswego.concurrent.classpath"/>
-      <path refid="javassist.classpath"/>
-      <path refid="jgroups.jgroups.classpath"/>
-      <path refid="junit.junit.classpath"/>
+       <path refid="oswego.concurrent.classpath"/>
+       <path refid="javassist.classpath"/>
+       <!-- I temporarily use a newer version of JGroups, not available in the thirdparty dir -->
+       <!-- <path refid="jgroups.jgroups.classpath"/> -->
+       <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
+       <path refid="junit.junit.classpath"/>
     </path>
 
     <!-- ======= -->

@@ -66,10 +66,10 @@ public class PointToPointRouterTest extends MessagingTestCase
       if (iOne.hasNext())
       {
          // then rOne got the message
-         m = (Message)iTwo.next();
-         assertFalse(iTwo.hasNext());
+         m = (Message)iOne.next();
+         assertFalse(iOne.hasNext());
          assertEquals(new Integer(2), m.getMessageID());
-         assertFalse(iTwo.hasNext());
+         assertFalse(iOne.hasNext());
       }
       else
       {

@@ -86,6 +86,33 @@ public class CoreMessage implements Message
       return m;
    }
 
+   public boolean equals(Object o)
+   {
+      if (this == o)
+      {
+         return true;
+      }
+      if (!(o instanceof CoreMessage))
+      {
+         return false;
+      }
+      CoreMessage that = (CoreMessage)o;
+      if (id == null)
+      {
+         return that.id == null;
+      }
+      return id.equals(that.id);
+   }
+
+   public int hashCode()
+   {
+      if (id == null)
+      {
+         return 0;
+      }
+      return id.hashCode();
+   }
+
    // Public --------------------------------------------------------
 
    public String toString()

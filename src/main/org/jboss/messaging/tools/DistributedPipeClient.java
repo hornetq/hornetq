@@ -6,16 +6,12 @@
  */
 package org.jboss.messaging.tools;
 
-import org.jboss.messaging.core.Pipe;
 import org.jboss.messaging.core.CoreMessage;
 import org.jboss.messaging.core.distributed.DistributedPipeInput;
 import org.jboss.messaging.core.distributed.DistributedPipeOutput;
 import org.jboss.messaging.interfaces.Message;
-import org.jboss.messaging.interfaces.Channel;
 import org.jboss.messaging.util.RpcServer;
-import org.jgroups.JChannel;
 import org.jgroups.stack.IpAddress;
-import org.jgroups.blocks.RpcDispatcher;
 
 /**
  * Class that provides a command line interface to a DistributedPipeInput or a DistributedPipeOutput
@@ -50,7 +46,7 @@ public class DistributedPipeClient extends RpcDispatcherClient
                              "already instantiated, cannot use this client as pipe input");
       }
 
-      pipeInput = new DistributedPipeInput(true, rpcDispatcher, pipeID);
+      pipeInput = new DistributedPipeInput(true, rpcDispatcher, null, pipeID);
 
    }
 
@@ -68,8 +64,8 @@ public class DistributedPipeClient extends RpcDispatcherClient
                              "already instantiated, cannot use this client as pipe output");
       }
 
-      pipeOutput = new DistributedPipeOutput(rpcDispatcher, pipeID,
-                                             new ReceiverImpl("Default Output Receiver"));
+      pipeOutput = new DistributedPipeOutput(pipeID, new ReceiverImpl("Default Output Receiver"));
+      pipeOutput.register((RpcServer)rpcDispatcher.getServerObject(), pipeID);
    }
 
    public void send()

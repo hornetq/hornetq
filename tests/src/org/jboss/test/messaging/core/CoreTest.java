@@ -7,7 +7,6 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.MessagingTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -6,22 +6,23 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.interfaces.Channel;
 import org.jboss.messaging.interfaces.Message;
 import org.jboss.messaging.interfaces.Receiver;
+import org.jboss.messaging.util.RpcServerCall;
+import org.jboss.messaging.util.SubServerResponse;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.TimeoutException;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.MethodCall;
 import org.jgroups.blocks.GroupRequest;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
- * The input end of a distributed pipe - a distributed channel with only one output that forwards
- * messages to a remote receiver running in a different address space than the sender.
+ * The input end of a distributed pipe - a pipe that forwards messages to a remote receiver running
+ * in a different address space than the sender.
  * <p>
  * The output end of the distributed pipe its identified by a JGroups address. When configuring the
  * output end of the pipe, the remote end must use the same pipeID as the one used to configure the
@@ -29,6 +30,9 @@ import java.io.Serializable;
  * <p>
  * The asynchronous/synchronous behaviour of the distributed pipe can be configured using
  * setSynchronous().
+ * <p>
+ * Multiple distributed pipes can share the same DistributedPipeOutput instance (and implicitly the
+ * pipeID), as long the DistributedPipeIntput instances are different.
  *
  * @see org.jboss.messaging.interfaces.Receiver
  *
@@ -53,16 +57,13 @@ public class DistributedPipeInput implements Receiver
    // Constructors --------------------------------------------------
 
 
-   public DistributedPipeInput(boolean mode, RpcDispatcher dispatcher, Serializable senderID)
-   {
-      this(mode, dispatcher, null, senderID);
-   }
-
    /**
     * DistributedPipeInput constructor.
     *
     * @param mode - true for synchronous behaviour, false otherwise.
-    * @param dispatcher - the RPCDipatcher to delegate the transport to.
+    * @param dispatcher - the RPCDipatcher to delegate the transport to. The underlying JChannel
+    *        doesn't necessarily have to be connected at the time the DistributedPipeInput is
+    *        created.
     * @param outputAddress - the address of the group member the receiving end is available on.
     * @param pipeID - the unique identifier of the distributed pipe. This pipe's output end must
     *        be initialized with the same pipeID.
@@ -148,40 +149,65 @@ public class DistributedPipeInput implements Receiver
       }
 
       String methodName = "handle";
-      MethodCall groupCall =
-            new MethodCall("invoke",
-                           new Object[] {pipeID,
-                                         methodName,
-                                         new Object[] {m},
-                                         new String[] {"org.jboss.messaging.interfaces.Message"}},
-                           new String[] {"java.io.Serializable",
-                                         "java.lang.String",
-                                         "[Ljava.lang.Object;",
-                                         "[Ljava.lang.String;"});
+      RpcServerCall rpcServerCall =
+            new RpcServerCall(pipeID,
+                              methodName,
+                              new Object[] {m},
+                              new String[] {"org.jboss.messaging.interfaces.Message"});
       try
       {
          // TODO use the timout when I'll change the send() signature or deal with the timeout
          Object result = dispatcher.callRemoteMethod(outputAddress,
-                                                     groupCall,
+                                                     rpcServerCall,
                                                      GroupRequest.GET_ALL,
-                                                     2000);
+                                                     30000);
+
+         // TODO TOO COMPLICATED result handling. Encapsulate and push away as a static method
+         // TODO in RpcServer
 
          // TODO refine the semantics of the return
          if (result instanceof Throwable)
          {
-            log.error("Remote RPC call " + methodName + "() on " + outputAddress +
+            log.error("Remote call " + methodName + "() on " + outputAddress +
                       " had thrown an exception when executing remotely", (Throwable)result);
             return false;
          }
-         else if (result instanceof Boolean)
+         else if (result instanceof Collection)
          {
-            return ((Boolean)result).booleanValue();
+            Collection results = (Collection)result;
+            if (results.size() != 1)
+            {
+               log.error("Remote call " + methodName + "() on " + outputAddress +
+                         "got more than one results when expecting a single one");
+               return false;
+            }
+            Object r = results.iterator().next();
+            if (r instanceof SubServerResponse)
+            {
+               SubServerResponse ssr = (SubServerResponse)r;
+               Object ir = ssr.getInvocationResult();
+               if (!(ir instanceof Boolean))
+               {
+                  // unexpected result
+                  log.error("Remote call " + methodName + "() on " + outputAddress +
+                            " got server response carrying unexpected result: " + ir);
+                  return false;
+               }
+               return ((Boolean)ir).booleanValue();
+            }
+            else
+            {
+               // unexpected result
+               log.error("Remote call " + methodName + "() on " + outputAddress +
+                         " should have returned an SubServerResponse instance, not " + r);
+               return false;
+            }
          }
          else
          {
             // unexpected result
-            log.warn("Remote call " + methodName + "() on " + outputAddress +
-                     " got unexpected result: " + result);
+            log.error("Remote call " + methodName + "() on " + outputAddress +
+                      " got unexpected result: " + result);
             return false;
          }
       }
@@ -202,6 +228,7 @@ public class DistributedPipeInput implements Receiver
    private boolean asynchronousHandle(Message m)
    {
       // TODO
+      System.out.println(m);
       return false;
    }
 
