@@ -87,58 +87,6 @@ search() {
 }
 
 #
-# Processes the command line arguments to allow convenience shortcuts such as
-# ./build.sh test YourTest.
-# The command line to be processed must be provided as the function's argument.
-# If everything goes fine, the function sends the processed command line at stdout and exits with 0,
-# otherwise prints an error message at stderr and exits with 1.
-#
-process_command_line() {
-   args=""
-   while [ "$1" != "" ]; do
-      if [ "$1" = "test" ]; then
-
-         # for "test", look at the next argument. If it starts with -Dtest.classname=, leave
-         # the command line unchanged, otherwise try to build a -Dtest.classname=... based
-         # on the class name given as argument
-
-         present=`echo "$2" | $GREP "^-Dtest.classname=" -`
-         if [ "$present" != ""  ]; then
-            # canonical syntax, do not change the command line
-            args="$args $1"
-            shift
-         else
-            # find the class
-            fq_classname="";
-            find . -name $2.java | (while read filename; do
-               if [ "$fq_classname" != "" ]; then
-                  # found at least two classes that match
-                  echo "Found more than one class named $2.java. Use the canonical syntax \
-./build.sh test -Dtest.classname=fully.qualified.class.name" 1>&2
-                  exit 1
-               fi
-               fq_classname=$filename
-            done
-            echo "$fq_classname" 1>&2
-            if [ "$fq_classname" = "" ]; then
-               # didn't find a match
-               echo "Didn't find a class named $2.java. Use the canonical syntax \
-./build.sh test -Dtest.classname=fully.qualified.class.name" 1>&2
-               exit 1
-            fi
-            )
-            if [ $? -ne 0 ]; then exit 1; fi
-         fi
-      else
-         args="$args $1"
-         shift
-      fi
-   done
-   echo $args
-}
-
-
-#
 # Main function.
 #
 main() {
@@ -209,20 +157,11 @@ main() {
     # export some stuff for ant
     export ANT ANT_HOME ANT_OPTS
 
-    # process the command line arguments; if you don't want it, just uncomment
-    #args="$@"
-    args=`process_command_line "$@"`
-    if [ $? -ne 0 ]; then
-      # process_command_line failed and sent an error message at stderr
-      exit 1
-    fi
-
     # execute in debug mode, or simply execute
     if [ "x$ANT_DEBUG" != "x" ]; then
-	/bin/sh -x $ANT $ANT_OPTIONS $args
+	/bin/sh -x $ANT $ANT_OPTIONS "$@"
     else
-    echo exec $ANT $ANT_OPTIONS $args
-	exec $ANT $ANT_OPTIONS $args
+	exec $ANT $ANT_OPTIONS "$@"
     fi
 }
 
