@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.jms.message;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -86,6 +86,10 @@ public class MessageTest extends MessagingTestCase
       ServerManagement.stopInVMServer();
 
       super.tearDown();
+   }
+
+   public void testNothing()
+   {
    }
 
 

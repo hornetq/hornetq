@@ -103,7 +103,7 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
 
    protected void storeNACKedMessageLocally(Routable r, Serializable recID)
    {
-      if (log.isTraceEnabled()) {log.trace("store NACK locally: "+ r.getMessageID() + " from " + recID);}
+      if (log.isTraceEnabled()) {log.trace("store NACKed message unreliably: "+ r.getMessageID() + " from " + recID);}
 
       // the channel's lock is already acquired when invoking this method
 

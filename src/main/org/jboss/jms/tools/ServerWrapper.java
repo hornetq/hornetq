@@ -14,6 +14,8 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.Connector;
+import org.jboss.messaging.core.util.MessageStoreImpl;
+import org.jboss.messaging.core.util.AcknowledgmentStoreImpl;
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -83,7 +85,9 @@ public class ServerWrapper
       loadAspects();
       setupJNDI();
       initializeRemoting();
-      serverPeer = new ServerPeer(serverPeerID, locator, jndiEnvironment);
+      serverPeer = new ServerPeer(serverPeerID, locator, jndiEnvironment,
+                                  new MessageStoreImpl("MSGStore"),
+                                  new AcknowledgmentStoreImpl("ACKStore"));
       serverPeer.start();
       log.info("server started");
    }

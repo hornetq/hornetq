@@ -38,6 +38,8 @@
       <path refid="apache.log4j.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="junit.junit.classpath"/>
+      <path refid="javassist.classpath"/>
+      <path refid="trove.classpath"/>
       <!-- I temporarily use a newer version of JGroups, not available in the thirdparty dir -->
       <!-- <path refid="jgroups.jgroups.classpath"/> -->
       <pathelement path="${module.root}/../src/resources/jgroups-core.jar"/>
@@ -52,6 +54,9 @@
       <path refid="jboss.common.classpath"/>
       <path refid="jboss.jms.classpath"/>
       <path refid="jboss.j2ee.classpath"/>
+      <path refid="jboss.j2se.classpath"/>
+      <path refid="jboss.remoting.classpath"/>
+      <path refid="jboss.aop.classpath"/>
    </path>
 
    <!-- ===== -->
@@ -68,6 +73,7 @@
    <path id="test.classpath">
       <path refid="library.classpath"/>
       <path refid="dependentmodule.classpath"/>
+      <pathelement path="${module.root}/../src/etc"/>
    </path>
 
 
@@ -156,6 +162,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
+               <!-- <include name="**/messaging/jms/**/*Test.class"/> -->
                <exclude name="**/messaging/**/performance/**"/>
             </fileset>
          </batchtest>

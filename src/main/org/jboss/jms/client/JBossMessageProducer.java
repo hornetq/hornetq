@@ -8,6 +8,7 @@ package org.jboss.jms.client;
 
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.logging.Logger;
 
 import javax.jms.MessageProducer;
 import javax.jms.JMSException;
@@ -23,41 +24,50 @@ public class JBossMessageProducer implements MessageProducer
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    protected ProducerDelegate delegate;
 
-   protected int deliveryMode = DeliveryMode.PERSISTENT;
+   protected int deliveryMode;
+   protected boolean isMessageIDDisabled;
+   protected boolean isTimestampDisabled;
+   protected int priority;
 
    // Constructors --------------------------------------------------
 
    public JBossMessageProducer(ProducerDelegate delegate)
    {
       this.delegate = delegate;
+      deliveryMode = DeliveryMode.PERSISTENT;
+      isMessageIDDisabled = false;
+      isTimestampDisabled = false;
+      priority = 4;
    }
 
    // MessageProducer implementation --------------------------------
 
    public void setDisableMessageID(boolean value) throws JMSException
    {
-      throw new NotYetImplementedException();
+      log.warn("JBoss Messaging does not support disabling message ID generation");
    }
 
    public boolean getDisableMessageID() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return isMessageIDDisabled;
    }
 
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      throw new NotYetImplementedException();
+      isTimestampDisabled = value;
    }
 
    public boolean getDisableMessageTimestamp() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return isTimestampDisabled;
    }
 
    public void setDeliveryMode(int deliveryMode) throws JMSException
@@ -102,14 +112,18 @@ public class JBossMessageProducer implements MessageProducer
 
    public void send(Message message) throws JMSException
    {
-      configure(message);
-      delegate.send(message);
+      // by default the message never expires
+      send(message, this.deliveryMode, this.priority, 0l);
    }
 
+   /**
+    * @param timeToLive - 0 means never expire.
+    */
    public void send(Message message, int deliveryMode, int priority, long timeToLive)
          throws JMSException
    {
-      throw new NotYetImplementedException();
+      configure(message, deliveryMode, priority, timeToLive);
+      delegate.send(message);
    }
 
    public void send(Destination destination, Message message) throws JMSException
@@ -135,9 +149,28 @@ public class JBossMessageProducer implements MessageProducer
    /**
     * Set the headers.
     */
-   protected void configure(Message m) throws JMSException
+   protected void configure(Message m, int deliveryMode, int priority, long timeToLive)
+         throws JMSException
    {
       m.setJMSDeliveryMode(deliveryMode);
+      if (isTimestampDisabled)
+      {
+         m.setJMSTimestamp(0l);
+      }
+      else
+      {
+         m.setJMSTimestamp(System.currentTimeMillis());
+      }
+      // TODO priority
+
+      if (timeToLive == 0)
+      {
+         m.setJMSExpiration(Long.MAX_VALUE);
+      }
+      else
+      {
+         m.setJMSExpiration(System.currentTimeMillis() + timeToLive);
+      }
    }
 
    // Private -------------------------------------------------------

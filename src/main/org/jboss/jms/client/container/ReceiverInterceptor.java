@@ -60,22 +60,11 @@ public class ReceiverInterceptor implements Interceptor, Serializable
             // asynchronous delivery of the messages on destination, in case the destination holds
             // undelivered messages
 
-            try
+            synchronized(msgHandler.getRendezVous())
             {
-               msgHandler.lock(); // lock the handler to not missing an asynchronous delivery
                invocation.invokeNext();
+               return msgHandler.pullMessage(timeout);
             }
-            catch(Throwable t)
-            {
-               throw t;
-            }
-            finally
-            {
-               msgHandler.unlock();
-            }
-
-            return msgHandler.pullMessage(timeout);
-
          }
          else if (name.equals("receiveNoWait"))
          {

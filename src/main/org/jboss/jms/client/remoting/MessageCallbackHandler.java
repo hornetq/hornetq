@@ -12,7 +12,6 @@ import org.jboss.remoting.HandleCallbackException;
 import org.jboss.remoting.Client;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.RendezVous;
-import org.jboss.messaging.core.util.Lockable;
 
 import javax.jms.MessageListener;
 import javax.jms.Message;
@@ -22,7 +21,7 @@ import javax.jms.Message;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class MessageCallbackHandler extends Lockable implements InvokerCallbackHandler
+public class MessageCallbackHandler implements InvokerCallbackHandler
 {
    // Constants -----------------------------------------------------
 
@@ -53,37 +52,38 @@ public class MessageCallbackHandler extends Lockable implements InvokerCallbackH
     */
    public void handleCallback(InvocationRequest invocation) throws HandleCallbackException
    {
-      try
+      synchronized(rv)
       {
-         lock();
-
-         Message m = (Message)invocation.getParameter();
-
-         if (rv.put(m))
+         try
          {
-            // TODO: supposedly my receiver thread got it. However I dont' have a hard guarantee
-            return;
-         }
+            if (log.isTraceEnabled()) { log.trace("receiving asyncronous message " + ((Message)invocation.getParameter()).getJMSMessageID()); }
 
-         if (listener == null)
+            Message m = (Message)invocation.getParameter();
+
+            if (rv.put(m))
+            {
+               // TODO: supposedly my receiver thread got it. However I dont' have a hard guarantee
+               if (log.isTraceEnabled()) { log.trace("message " + m.getJMSMessageID() + " accepted"); }
+               return;
+            }
+
+            if (listener == null)
+            {
+               if (log.isTraceEnabled()) { log.trace("no one to handle message " + m.getJMSMessageID() + ", nacking ..."); }
+               throw new NACKCallbackException();
+            }
+
+            listener.onMessage(m);
+            if (log.isTraceEnabled()) { log.trace("message " + m.getJMSMessageID() + " submitted to listener"); }
+         }
+         catch(NACKCallbackException e)
          {
-            // no one to handle message here, nack it
-            throw new NACKCallbackException();
+            throw e;
          }
-
-         listener.onMessage(m);
-      }
-      catch(NACKCallbackException e)
-      {
-         throw e;
-      }
-      catch(Throwable t)
-      {
-         throw new HandleCallbackException("Failed to handle the message", t);
-      }
-      finally
-      {
-         unlock();
+         catch(Throwable t)
+         {
+            throw new HandleCallbackException("Failed to handle the message", t);
+         }
       }
    }
 
@@ -115,6 +115,14 @@ public class MessageCallbackHandler extends Lockable implements InvokerCallbackH
       return (Message)rv.get(timeout);
    }
 
+   /**
+    * Returns a reference to the MessageCallbackHandler's rendezVous. Useful for its synchronization
+    * lock.
+    */
+   public Object getRendezVous()
+   {
+      return rv;
+   }
 
    // Package protected ---------------------------------------------
    

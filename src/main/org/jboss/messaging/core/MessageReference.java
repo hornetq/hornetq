@@ -19,6 +19,6 @@ public interface MessageReference extends Routable
    /**
     * The Message ID, <i>relative to the MessageStoreImpl</i>
     */
-   public Serializable getStorageID();
+   public Serializable getStoreID();
 
 }

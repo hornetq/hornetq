@@ -4,12 +4,13 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core;
+package org.jboss.messaging.core.util;
 
-import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * TODO - incomplete implementation - just simulates an AcknowledgmentStore for testing purposes
@@ -28,8 +29,10 @@ public class AcknowledgmentStoreImpl implements AcknowledgmentStore
    
    // Attributes ----------------------------------------------------
 
-   protected Serializable id;
+   protected Serializable storeID;
    protected Serializable state;
+
+   protected Map map;
 
    // Constructors --------------------------------------------------
 
@@ -38,14 +41,16 @@ public class AcknowledgmentStoreImpl implements AcknowledgmentStore
       this(id, VALID);
    }
 
-   public AcknowledgmentStoreImpl(Serializable id, String state)
+   public AcknowledgmentStoreImpl(Serializable storeID, String state)
    {
       if (!isValid(state))
       {
          throw new IllegalArgumentException("Unknown state: "+state);
       }
-      this.id = id;
+      this.storeID = storeID;
       this.state = state;
+
+      map = new HashMap();
    }
 
 
@@ -53,26 +58,42 @@ public class AcknowledgmentStoreImpl implements AcknowledgmentStore
 
    public Serializable getStoreID()
    {
-      return id;
+      return storeID;
    }
 
-   public void storeNACK(Serializable messageID, Serializable receiverID) throws Throwable
+   public synchronized void storeNACK(Serializable messageID, Serializable receiverID)
+         throws Throwable
    {
       if (state == BROKEN)
       {
          throw new Throwable("THIS IS A THROWABLE THAT SIMULATES "+
                              "THE BEHAVIOUR OF A BROKEN ACKNOWLEDGMENT STORE");
       }
+
+      Map messages = (Map)map.get(receiverID);
+      if (messages == null)
+      {
+         messages = new HashMap();
+         map.put(receiverID, messages);
+      }
+      messages.put(messageID, messageID);
    }
 
-   public boolean forgetNACK(Serializable messageID, Serializable receiverID) throws Throwable
+   public synchronized boolean forgetNACK(Serializable messageID, Serializable receiverID)
+         throws Throwable
    {
       if (state == BROKEN)
       {
          throw new Throwable("THIS IS A THROWABLE THAT SIMULATES "+
                              "THE BEHAVIOUR OF A BROKEN ACKNOWLEDGMENT STORE");
       }
-      return true;
+
+      Map messages = (Map)map.get(receiverID);
+      if (messages == null)
+      {
+         return false;
+      }
+      return messages.remove(messageID) != null;
    }
 
 

@@ -8,14 +8,11 @@ package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.util.MessageStoreImpl;
+import org.jboss.messaging.core.util.AcknowledgmentStoreImpl;
 import org.jboss.messaging.core.message.MessageReferenceSupport;
 import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.MessageReferenceSupport;
-import org.jboss.messaging.core.message.MessageReferenceSupport;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.RoutableSupport;
 
 import java.util.List;
 import java.util.Set;
@@ -449,5 +446,28 @@ public class ChannelSupportTest extends MessagingTestCase
       assertTrue(receiverOne.contains("routableID2"));
       assertTrue(receiverOne.contains("routableID3"));
    }
+
+   public void testMessageExpiration() throws Exception
+   {
+      if (channel == null) { return; }
+
+      channel.setSynchronous(false);
+      receiverOne.setState(ReceiverImpl.DENYING);
+
+      assertTrue(channel.handle(new RoutableSupport("routableID1", false, 1000))); // this should expire
+      assertTrue(channel.handle(new RoutableSupport("routableID2", false, 100000)));
+
+      assertEquals(2, channel.getUnacknowledged().size());
+
+      Thread.sleep(2000);
+
+      receiverOne.setState(ReceiverImpl.HANDLING);
+
+      assertTrue(channel.deliver());
+
+      assertEquals(1, receiverOne.getMessages().size());
+      assertTrue(receiverOne.contains("routableID2"));
+   }
+
 
 }

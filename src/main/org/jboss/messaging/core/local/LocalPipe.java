@@ -112,6 +112,8 @@ public class LocalPipe extends SingleOutputChannelSupport
    {
       lock();
 
+      if (log.isTraceEnabled()) { log.trace("asynchronous delivery triggered on " + getReceiverID()); }
+
       try
       {
          // try to flush the message store
@@ -120,6 +122,15 @@ public class LocalPipe extends SingleOutputChannelSupport
             Routable r = (Routable)i.next();
             try
             {
+
+               if (System.currentTimeMillis() > r.getExpirationTime())
+               {
+                  // message expired
+                  log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
+                  i.remove();
+                  continue;
+               }
+
                if (receiver.handle(r))
                {
                   i.remove();

@@ -33,13 +33,20 @@ public class JBossMessage implements javax.jms.Message, Routable
    protected String id;
    protected boolean reliable;
    protected Destination destination;
+   protected long timestamp;
+   /** GMT milliseconds at which this message expires. 0 means never expires **/
+   protected long expiration;
+   protected boolean redelivered;
 
    // Constructors --------------------------------------------------
 
    public JBossMessage()
    {
-      id = "0";
+      id = null;
       reliable = false;
+      timestamp = 0l;
+      expiration = Long.MAX_VALUE;
+      redelivered = false;
    }
 
    // javax.jmx.Message implementation ------------------------------
@@ -49,7 +56,6 @@ public class JBossMessage implements javax.jms.Message, Routable
       return id;
    }
 
-
    public void setJMSMessageID(String id) throws JMSException
    {
       this.id = id;
@@ -57,12 +63,12 @@ public class JBossMessage implements javax.jms.Message, Routable
 
    public long getJMSTimestamp() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return timestamp;
    }
 
    public void setJMSTimestamp(long timestamp) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.timestamp = timestamp;
    }
 
    public byte [] getJMSCorrelationIDAsBytes() throws JMSException
@@ -129,12 +135,12 @@ public class JBossMessage implements javax.jms.Message, Routable
    
    public boolean getJMSRedelivered() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return isRedelivered();
    }
  
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
-      throw new NotYetImplementedException();
+      setRedelivered(redelivered);
    }
        
    public String getJMSType() throws JMSException
@@ -149,12 +155,12 @@ public class JBossMessage implements javax.jms.Message, Routable
  
    public long getJMSExpiration() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return expiration;
    }
  
    public void setJMSExpiration(long expiration) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.expiration = expiration;
    }
 
    public int getJMSPriority() throws JMSException
@@ -296,7 +302,17 @@ public class JBossMessage implements javax.jms.Message, Routable
 
    public long getExpirationTime()
    {
-      throw new NotYetImplementedException();
+      return expiration;
+   }
+
+   public boolean isRedelivered()
+   {
+      return redelivered;
+   }
+
+   public void setRedelivered(boolean b)
+   {
+      redelivered = b;
    }
 
    public Serializable putHeader(String name, Serializable value)

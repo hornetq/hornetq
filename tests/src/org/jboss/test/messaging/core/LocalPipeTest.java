@@ -8,8 +8,6 @@ package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.local.LocalPipe;
 import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.core.local.LocalPipe;
-import org.jboss.messaging.core.message.RoutableSupport;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -76,4 +74,6 @@ public class LocalPipeTest extends ChannelSupportTest
       assertTrue(receiverOne.contains("routableID2"));
       assertTrue(receiverOne.contains("routableID3"));
    }
+
+
 }

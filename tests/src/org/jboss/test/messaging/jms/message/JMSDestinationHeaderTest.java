@@ -4,16 +4,32 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.jms.message;
 
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.message.MessageTest;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.util.InVMInitialContextFactory;
+
+import javax.jms.Connection;
+import javax.jms.Session;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageProducer;
+import javax.jms.MessageConsumer;
+import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.DeliveryMode;
+import javax.jms.MessageListener;
+import javax.naming.InitialContext;
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSDeliveryModeHeaderTest extends MessageTest
+public class JMSDestinationHeaderTest extends MessageTest
 {
    // Constants -----------------------------------------------------
 
@@ -23,7 +39,7 @@ public class JMSDeliveryModeHeaderTest extends MessageTest
 
    // Constructors --------------------------------------------------
 
-   public JMSDeliveryModeHeaderTest(String name)
+   public JMSDestinationHeaderTest(String name)
    {
       super(name);
    }
@@ -40,32 +56,15 @@ public class JMSDeliveryModeHeaderTest extends MessageTest
       super.tearDown();
    }
 
-   public void testDefaultDeliveryMode() throws Exception
+
+   public void testJMSDestination() throws Exception
    {
-      assertEquals(DeliveryMode.PERSISTENT, producer.getDeliveryMode());
+      producer.send(producerSession.createMessage());
+      Message m = consumer.receive();
+      assertEquals(queue, m.getJMSDestination());
    }
 
-   public void testNonPersistentDeliveryMode() throws Exception
-   {
-      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      assertEquals(DeliveryMode.NON_PERSISTENT, producer.getDeliveryMode());
 
-      Message m = producerSession.createMessage();
-      producer.send(m);
-
-      assertEquals(DeliveryMode.NON_PERSISTENT, consumer.receive().getJMSDeliveryMode());
-   }
-
-   public void testPersistentDeliveryMode() throws Exception
-   {
-      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      assertEquals(DeliveryMode.PERSISTENT, producer.getDeliveryMode());
-
-      Message m = producerSession.createMessage();
-      producer.send(m);
-
-      assertEquals(DeliveryMode.PERSISTENT, consumer.receive().getJMSDeliveryMode());
-   }
 
    // Package protected ---------------------------------------------
    

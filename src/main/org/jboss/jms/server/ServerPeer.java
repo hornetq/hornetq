@@ -21,6 +21,8 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.AcknowledgmentStore;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
@@ -66,10 +68,15 @@ public class ServerPeer
 
    protected PooledExecutor threadPool;
 
+   protected MessageStore messageStore;
+   protected AcknowledgmentStore acknowledgmentStore;
+
 
    // Constructors --------------------------------------------------
 
-   public ServerPeer(String id, InvokerLocator locator, Hashtable jndiEnvironment) throws Exception
+   public ServerPeer(String id, InvokerLocator locator, Hashtable jndiEnvironment,
+                     MessageStore messageStore, AcknowledgmentStore acknowledgmentStore)
+         throws Exception
    {
       this.id = id;
       this.locator = locator;
@@ -80,6 +87,9 @@ public class ServerPeer
       started = false;
       initialContext = new InitialContext(jndiEnvironment);
       threadPool = new PooledExecutor();
+
+      this.messageStore = messageStore;
+      this.acknowledgmentStore = acknowledgmentStore;
    }
 
    // Public --------------------------------------------------------
@@ -179,6 +189,15 @@ public class ServerPeer
       return threadPool;
    }
 
+   public MessageStore getMessageStore()
+   {
+      return messageStore;
+   }
+
+   public AcknowledgmentStore getAcknowledgmentStore()
+   {
+      return acknowledgmentStore;
+   }
 
    // Package protected ---------------------------------------------
    

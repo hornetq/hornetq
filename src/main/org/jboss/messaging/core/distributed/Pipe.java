@@ -9,9 +9,6 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.local.SingleOutputChannelSupport;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.local.SingleOutputChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
@@ -98,12 +95,23 @@ public class Pipe extends SingleOutputChannelSupport
    {
       lock();
 
+      if (log.isTraceEnabled()) { log.trace("asynchronous delivery triggered on " + getReceiverID()); }
+
       try
       {
          // try to flush the message store
          for(Iterator i = unacked.iterator(); i.hasNext(); )
          {
             Routable r = (Routable)i.next();
+
+            if (System.currentTimeMillis() > r.getExpirationTime())
+            {
+               // message expired
+               log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
+               i.remove();
+               continue;
+            }
+
             if (handleSynchronously(r))
             {
                i.remove();

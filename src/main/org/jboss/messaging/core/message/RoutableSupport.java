@@ -28,6 +28,7 @@ public class RoutableSupport implements Routable
    protected boolean reliable;
    protected long expirationTime;
    protected Map headers;
+   protected boolean redelivered;
 
    // Constructors --------------------------------------------------
 
@@ -36,7 +37,7 @@ public class RoutableSupport implements Routable
     */
    public RoutableSupport(Serializable messageID)
    {
-      this(messageID, false, 0);
+      this(messageID, false, Long.MAX_VALUE);
    }
 
    /**
@@ -44,14 +45,16 @@ public class RoutableSupport implements Routable
     */
    public RoutableSupport(Serializable messageID, boolean reliable)
    {
-      this(messageID, reliable, 0);
+      this(messageID, reliable, Long.MAX_VALUE);
    }
 
-   public RoutableSupport(Serializable messageID, boolean reliable, long expirationTime)
+   public RoutableSupport(Serializable messageID, boolean reliable, long timeToLive)
    {
       this.messageID = messageID;
       this.reliable = reliable;
-      this.expirationTime = expirationTime;
+      expirationTime = timeToLive == Long.MAX_VALUE ?
+                       Long.MAX_VALUE :
+                       System.currentTimeMillis() + timeToLive;
       headers = new HashMap();
    }
 
@@ -70,6 +73,16 @@ public class RoutableSupport implements Routable
    public long getExpirationTime()
    {
       return expirationTime;
+   }
+
+   public boolean isRedelivered()
+   {
+      return redelivered;
+   }
+
+   public void setRedelivered(boolean redelivered)
+   {
+      this.redelivered = redelivered;
    }
 
    public Serializable putHeader(String name, Serializable value)

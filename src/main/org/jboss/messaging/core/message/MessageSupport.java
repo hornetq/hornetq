@@ -40,18 +40,18 @@ public class MessageSupport extends RoutableSupport implements Message
 
    public MessageSupport(Serializable messageID, boolean reliable)
    {
-      this(messageID, reliable, 0, null);
+      this(messageID, reliable, Long.MAX_VALUE, null);
    }
 
-   public MessageSupport(Serializable messageID, boolean reliable, long expirationTime)
+   public MessageSupport(Serializable messageID, boolean reliable, long timeToLive)
    {
-      this(messageID, reliable, expirationTime, null);
+      this(messageID, reliable, timeToLive, null);
    }
 
-   public MessageSupport(Serializable messageID, boolean reliable, long expirationTime,
+   public MessageSupport(Serializable messageID, boolean reliable, long timeToLive,
                          Serializable payload)
    {
-      super(messageID, reliable, expirationTime);
+      super(messageID, reliable, timeToLive);
       this.payload = payload;
    }
 

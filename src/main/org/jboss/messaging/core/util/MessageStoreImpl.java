@@ -4,18 +4,16 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core;
+package org.jboss.messaging.core.util;
 
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageReferenceSupport;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * TODO - incomplete implementation - just simulates a MessageStore for testing purposes
@@ -30,28 +28,30 @@ public class MessageStoreImpl implements MessageStore
    public static final String VALID = "VALID";
    public static final String BROKEN = "BROKEN";
 
-
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   protected Serializable id;
+   protected Serializable storeID;
    protected String state;
+
+   protected Map map;
 
    // Constructors --------------------------------------------------
 
-   public MessageStoreImpl(Serializable id)
+   public MessageStoreImpl(Serializable storeID)
    {
-      this(id, VALID);
+      this(storeID, VALID);
    }
 
-   public MessageStoreImpl(Serializable id, String state)
+   public MessageStoreImpl(Serializable storeID, String state)
    {
       if (!isValid(state))
       {
          throw new IllegalArgumentException("Unknown state: "+state);
       }
-      this.id = id;
+      this.storeID = storeID;
       this.state = state;
+      map = new HashMap();
    }
 
 
@@ -59,22 +59,34 @@ public class MessageStoreImpl implements MessageStore
 
    public Serializable getStoreID()
    {
-      return id;
+      return storeID;
    }
 
-   public MessageReference store(Message m) throws Throwable
+   public synchronized MessageReference store(Message m) throws Throwable
    {
       if (state == BROKEN)
       {
          throw new Throwable("THIS IS A THROWABLE THAT SIMULATES "+
                              "THE BEHAVIOUR OF A BROKEN MESSAGE STORE");
       }
-      return new MessageReferenceSupport(m, id);
+
+      Serializable messageID = m.getMessageID();
+
+      if (map.get(messageID) == null)
+      {
+         map.put(messageID, m);
+      }
+      return new MessageReferenceSupport(m, storeID);
    }
 
    public Message retrieve(MessageReference r)
    {
-      throw new NotYetImplementedException();
+      Serializable storeID = r.getStoreID();
+      if (!this.storeID.equals(storeID))
+      {
+         return null;
+      }
+      return (Message)map.get(r.getMessageID());
    }
 
 

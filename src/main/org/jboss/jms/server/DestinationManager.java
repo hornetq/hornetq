@@ -71,6 +71,10 @@ public class DestinationManager
          if (isQueue)
          {
             ad = new LocalQueue(name);
+
+            ad.setAcknowledgmentStore(serverPeer.getAcknowledgmentStore());
+            ad.setMessageStore(serverPeer.getMessageStore());
+
             queues.put(name, ad);
          }
          else

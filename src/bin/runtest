@@ -7,7 +7,9 @@
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-TARGET_CLASS=org.jboss.test.messaging.jms.JMSDeliveryModeHeaderTest
+TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
+TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeTest
+
 
 cygwin=false;
 case "`uname`" in

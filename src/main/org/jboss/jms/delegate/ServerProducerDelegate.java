@@ -9,6 +9,7 @@ package org.jboss.jms.delegate;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 
 import javax.jms.Message;
 import javax.jms.Destination;
@@ -52,7 +53,10 @@ public class ServerProducerDelegate implements ProducerDelegate
 
       try
       {
+         // TODO JMS1.1 specs 3.4.3. If the client can live without a messageID, do not set a new messageID on the message
+         m.setJMSMessageID(generateMessageID());
          m.setJMSDestination(jmsDestination);
+
 
          boolean acked = destination.handle((Routable)m);
 
@@ -71,6 +75,13 @@ public class ServerProducerDelegate implements ProducerDelegate
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
+
+   protected String generateMessageID()
+   {
+      StringBuffer sb = new StringBuffer("ID:");
+      sb.append(new GUID().toString());
+      return sb.toString();
+   }
 
    // Protected -----------------------------------------------------
 

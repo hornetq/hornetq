@@ -41,11 +41,17 @@ public interface Routable extends Serializable
    public boolean isReliable();
 
    /**
-    * TODO more explanations here
-    * Returns the time (in milliseconds) at which this Routable expires and must be dissapear from
-    * the system. 0 means this Routable will never expire. .
+    * Returns the time (in GMT milliseconds) at which this Routable expires and must be dissapear
+    * from the system. A Long.MAX_VALUE return value means this Routable never expires.
     */
    public long getExpirationTime();
+
+   /**
+    * True if the message was delivered at least once but not acknowledged.
+    */
+   public boolean isRedelivered();
+
+   public void setRedelivered(boolean redelivered);
 
    /**
     * Associates the specified value with the specified header name. If the header map previously

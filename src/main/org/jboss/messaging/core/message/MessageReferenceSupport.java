@@ -24,7 +24,7 @@ public class MessageReferenceSupport extends RoutableSupport implements MessageR
 {
    // Attributes ----------------------------------------------------
 
-   protected Serializable storageID;
+   protected Serializable storeID;
 
    // Constructors --------------------------------------------------
 
@@ -37,18 +37,18 @@ public class MessageReferenceSupport extends RoutableSupport implements MessageR
    }
 
    public MessageReferenceSupport(Serializable messageID, boolean reliable,
-                                  long expirationTime, Serializable storageID)
+                                  long expirationTime, Serializable storeID)
    {
       super(messageID, reliable, expirationTime);
-      this.storageID = storageID;
+      this.storeID = storeID;
    }
 
    /**
     * Creates a reference based on a given message.
     */
-   public MessageReferenceSupport(Message m, Serializable storageID)
+   public MessageReferenceSupport(Message m, Serializable storeID)
    {
-      this(m.getMessageID(), m.isReliable(), m.getExpirationTime(), storageID);
+      this(m.getMessageID(), m.isReliable(), m.getExpirationTime(), storeID);
       for(Iterator i = m.getHeaderNames().iterator(); i.hasNext(); )
       {
          String name = (String)i.next();
@@ -58,9 +58,9 @@ public class MessageReferenceSupport extends RoutableSupport implements MessageR
 
    // Message implementation ----------------------------------------
 
-   public Serializable getStorageID()
+   public Serializable getStoreID()
    {
-      return storageID;
+      return storeID;
    }
 
    // Public --------------------------------------------------------

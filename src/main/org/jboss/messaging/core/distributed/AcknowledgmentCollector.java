@@ -9,8 +9,6 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.Lockable;
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
@@ -302,6 +300,15 @@ public class AcknowledgmentCollector
             {
                Ticket t = (Ticket)i.next();
                Routable r = t.getRoutable();
+
+               if (System.currentTimeMillis() > r.getExpirationTime())
+               {
+                  // message expired
+                  log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
+                  i.remove();
+                  continue;
+               }
+
                Set outputPeerIDs = (Set)unacked.get(t);
                for(Iterator j = outputPeerIDs.iterator(); j.hasNext(); )
                {
