@@ -11,6 +11,9 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 import javax.jms.Connection;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.JMSException;
 import javax.jms.ConnectionMetaData;
@@ -19,12 +22,22 @@ import javax.jms.ConnectionConsumer;
 import javax.jms.Destination;
 import javax.jms.ServerSessionPool;
 import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.XAConnection;
+import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
+import javax.jms.XATopicConnection;
+import javax.jms.XATopicSession;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossConnection implements Connection
+public class JBossConnection implements
+    Connection, QueueConnection, TopicConnection,
+    XAConnection, XAQueueConnection, XATopicConnection
 {
    // Constants -----------------------------------------------------
 
@@ -33,12 +46,15 @@ public class JBossConnection implements Connection
    // Attributes ----------------------------------------------------
 
    protected ConnectionDelegate delegate;
+   private boolean isXAConnection;
+   private ExceptionListener exceptionListener;
 
    // Constructors --------------------------------------------------
 
-   public JBossConnection(ConnectionDelegate delegate)
+   public JBossConnection(ConnectionDelegate delegate, boolean isXAConnection)
    {
       this.delegate = delegate;
+      this.isXAConnection = isXAConnection;
    }
 
    // Connection implementation -------------------------------------
@@ -66,17 +82,17 @@ public class JBossConnection implements Connection
 
    public ConnectionMetaData getMetaData() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return new JBossConnectionMetaData();
    }
 
    public ExceptionListener getExceptionListener() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return exceptionListener;
    }
 
    public void setExceptionListener(ExceptionListener listener) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.exceptionListener = listener;
    }
 
    public void start() throws JMSException
@@ -113,6 +129,58 @@ public class JBossConnection implements Connection
          throws JMSException
    {
       throw new NotYetImplementedException();
+   }
+   
+   // QueueConnection implementation ---------------------------------
+
+   public QueueSession createQueueSession(boolean transacted,
+                                          int acknowledgeMode) throws JMSException
+   {
+       return (QueueSession)createSession(transacted, acknowledgeMode);
+   }
+   
+   public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector,
+                                                      ServerSessionPool sessionPool,
+                                                      int maxMessages) throws JMSException
+    {
+       throw new NotYetImplementedException();
+    }
+   
+   // TopicConnection implementation ---------------------------------
+
+   public TopicSession createTopicSession(boolean transacted,
+                                          int acknowledgeMode) throws JMSException
+   {
+       return (TopicSession)createSession(transacted, acknowledgeMode);
+   }
+   
+   public ConnectionConsumer createConnectionConsumer(Topic topic, String messageSelector,
+                                                      ServerSessionPool sessionPool,
+                                                      int maxMessages) throws JMSException
+   {
+       throw new NotYetImplementedException();
+   }
+   
+   // XAConnection implementation -------------------------------------
+
+   public XASession createXASession() throws JMSException
+   {
+       if (!isXAConnection) throw new JMSException("Not an XA connection");       
+       return (XASession)createSession(true, Session.SESSION_TRANSACTED);
+   }
+   
+   // XAQueueConnection implementation ---------------------------------
+
+   public XAQueueSession createXAQueueSession() throws JMSException
+   {
+       return (XAQueueSession)createXASession();
+   }
+   
+   // XATopicConnection implementation ---------------------------------
+
+   public XATopicSession createXATopicSession() throws JMSException
+   {
+       return (XATopicSession)createXASession();
    }
 
    // Public --------------------------------------------------------
