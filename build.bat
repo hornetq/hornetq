@@ -27,12 +27,7 @@ SETLOCAL
 
 set CLASSPATH=
 set ANT_HOME=
-set JAXP_DOM_FACTORY=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
-set JAXP_SAX_FACTORY=org.apache.crimson.jaxp.SAXParserFactoryImpl
-REM set JAXP_DOM_FACTORY=org.apache.xerces.jaxp.DocumentBuilderFactoryImpl
-REM set JAXP_SAX_FACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
-
-set ANT_OPTS=-Djava.protocol.handler.pkgs=org.jboss.net.protocol -Djavax.xml.parsers.DocumentBuilderFactory=%JAXP_DOM_FACTORY% -Djavax.xml.parsers.SAXParserFactory=%JAXP_SAX_FACTORY% -Dbuild.script=build.bat
+set ANT_OPTS=-Djava.protocol.handler.pkgs=org.jboss.net.protocol -Dbuild.script=build.bat
 
 REM ******************************************************
 REM - "for" loops have been unrolled for compatibility

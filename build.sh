@@ -47,12 +47,6 @@ case "`uname`" in
         ;;
 esac
 
-# the jaxp parser to use
-if [ "x$JAXP" = "x" ]; then
-    # Default to crimson
-    JAXP="crimson"
-fi
-
 #
 # Helper to complain.
 #
@@ -150,28 +144,8 @@ main() {
 	die "Ant file is not executable: $ANT"
     fi
 
-    # specify the jaxp parser impls to use
-    case "$JAXP" in
-	crimson)
-	    JAXP_DOM_FACTORY="org.apache.crimson.jaxp.DocumentBuilderFactoryImpl"
-	    JAXP_SAX_FACTORY="org.apache.crimson.jaxp.SAXParserFactoryImpl"
-	    ;;
-	   
-	xerces)
-	    JAXP_DOM_FACTORY="org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"
-	    JAXP_SAX_FACTORY="org.apache.xerces.jaxp.SAXParserFactoryImpl"
-	    ;;
-    esac
-
-    if [ "x$JAXP_DOM_FACTORY" != "x" ]; then
-	ANT_OPTS="$ANT_OPTS -Djavax.xml.parsers.DocumentBuilderFactory=$JAXP_DOM_FACTORY"
-    fi
-    if [ "x$JAXP_SAX_FACTORY" != "x" ]; then
-	ANT_OPTS="$ANT_OPTS -Djavax.xml.parsers.SAXParserFactory=$JAXP_SAX_FACTORY"
-    fi
-
     # need to specify planet57/buildmagic protocol handler package
-    ANT_OPTS="$ANT_OPTS -Djava.protocol.handler.pkgs=org.jboss.net.protocol"
+    ANT_OPTS="-Djava.protocol.handler.pkgs=org.jboss.net.protocol"
 
     # setup some build properties
     ANT_OPTS="$ANT_OPTS -Dbuild.script=$0"
