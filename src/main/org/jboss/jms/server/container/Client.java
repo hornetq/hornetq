@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.server.container;
 
-import org.jboss.aop.Invocation;
-import org.jboss.aop.MethodInvocation;
-import org.jboss.aop.SimpleMetaData;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.BrowserEndpointFactory;
 import org.jboss.jms.server.DeliveryEndpointFactory;

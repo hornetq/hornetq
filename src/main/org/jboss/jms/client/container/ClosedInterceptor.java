@@ -10,9 +10,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.Invocation;
-import org.jboss.aop.MethodInvocation;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Lifecycle;
 import org.jboss.jms.container.Container;
 

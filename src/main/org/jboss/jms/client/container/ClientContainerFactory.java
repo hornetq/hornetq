@@ -10,8 +10,8 @@ import java.lang.reflect.Proxy;
 
 import javax.jms.JMSException;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.SimpleMetaData;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.client.BrowserDelegate;
 import org.jboss.jms.client.ConnectionDelegate;
 import org.jboss.jms.client.ConsumerDelegate;

@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.server.container;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.Invocation;
-import org.jboss.aop.MethodInvocation;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.DeliveryEndpoint;
 import org.jboss.jms.server.DeliveryEndpointFactory;
@@ -50,7 +50,7 @@ public class ServerProducerInterceptor
       {
          
          JBossMessage message = (JBossMessage) mi.arguments[0];
-         JBossMessage clone = (JBossMessage) ((JBossMessage) message).clone();
+         JBossMessage clone = (JBossMessage) message.clone();
          DeliveryEndpointFactory factory = (DeliveryEndpointFactory) mi.getMetaData("JMS", "DeliveryEndpointFactory");
          MessageReference reference = factory.getMessageReference(clone);
          DeliveryEndpoint endpoint = factory.getDeliveryEndpoint(reference);

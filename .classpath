@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-    <classpathentry kind="src" path="src/main"/>
-    <classpathentry kind="src" path="src/test"/>
-    <classpathentry kind="src" path="output/gen-src"/>
-    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="lib" path="/thirdparty/javagroups-javagroups/lib/jgroups.jar"/>
-    <classpathentry kind="src" path="/j2ee"/>
-    <classpathentry kind="src" path="/common"/>
-    <classpathentry kind="src" path="/system"/>
-    <classpathentry kind="src" path="/remoting"/>
-    <classpathentry kind="src" path="/aop"/>
-    <classpathentry kind="lib" path="/thirdparty/junit-junit/lib/junit.jar"/>
-    <classpathentry kind="lib" path="/thirdparty/javassist/lib/javassist.jar"/>
-    <classpathentry kind="src" path="/jmx"/>
-    <classpathentry kind="lib" path="/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
-    <classpathentry kind="output" path="output/eclipse-classes"/>
+	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="src/test"/>
+	<classpathentry kind="src" path="output/gen-src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/thirdparty/javagroups-javagroups/lib/jgroups.jar"/>
+	<classpathentry kind="src" path="/j2ee"/>
+	<classpathentry kind="src" path="/common"/>
+	<classpathentry kind="src" path="/system"/>
+	<classpathentry kind="src" path="/remoting"/>
+	<classpathentry kind="src" path="/aop"/>
+	<classpathentry kind="lib" path="/thirdparty/junit-junit/lib/junit.jar"/>
+	<classpathentry kind="lib" path="/thirdparty/javassist/lib/javassist.jar"/>
+	<classpathentry kind="src" path="/jmx"/>
+	<classpathentry kind="lib" path="/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
+	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
+	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>

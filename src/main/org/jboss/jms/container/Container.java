@@ -13,10 +13,10 @@ import java.util.Set;
 
 import javax.jms.JMSException;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.Invocation;
-import org.jboss.aop.MetaDataResolver;
-import org.jboss.aop.SimpleMetaData;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.metadata.MetaDataResolver;
+import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.proxy.DynamicProxyIH;
 
 /**

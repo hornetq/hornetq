@@ -11,7 +11,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
-import org.jboss.aop.Interceptor;
+import org.jboss.aop.advice.Interceptor;
 import org.jboss.jms.client.ConnectionDelegate;
 import org.jboss.jms.client.ImplementationDelegate;
 import org.jboss.jms.client.JBossConnectionFactory;

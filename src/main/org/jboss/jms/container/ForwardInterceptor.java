@@ -6,8 +6,8 @@
  */
 package org.jboss.jms.container;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.Invocation;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
 
 /**
  * An interceptor for forwarding invocations.

@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.server.container;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.Invocation;
-import org.jboss.aop.MethodInvocation;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 
 /**
  * The server implementation of the session

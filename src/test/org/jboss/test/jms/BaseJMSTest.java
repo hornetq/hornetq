@@ -7,9 +7,10 @@
  */
 package org.jboss.test.jms;
 
-import java.util.logging.Logger;
-
 import junit.framework.TestCase;
+
+import org.jboss.logging.Logger;
+import org.jboss.logging.XLevel;
 
 /**
  * The base jms test
@@ -24,7 +25,7 @@ public class BaseJMSTest extends TestCase
    // Attributes ----------------------------------------------------
 
    /** The logger */
-   protected Logger log = Logger.getLogger(getClass().getName());
+   protected Logger log = Logger.getLogger(getClass());
 
    // Static --------------------------------------------------------
 
@@ -33,6 +34,8 @@ public class BaseJMSTest extends TestCase
    public BaseJMSTest(String name)
    {
       super(name);
+      org.apache.log4j.Logger jboss = org.apache.log4j.Logger.getLogger("org.jboss");
+      jboss.setLevel(XLevel.ALL);
    }
 
    // Public --------------------------------------------------------

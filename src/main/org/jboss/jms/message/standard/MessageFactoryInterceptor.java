@@ -8,9 +8,9 @@ package org.jboss.jms.message.standard;
 
 import javax.jms.Message;
 
-import org.jboss.aop.Interceptor;
-import org.jboss.aop.Invocation;
-import org.jboss.aop.MethodInvocation;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.SessionDelegate;
 import org.jboss.jms.container.Container;
 
