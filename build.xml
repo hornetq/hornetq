@@ -124,9 +124,6 @@
       <path refid="dependentmodule.classpath"/>
     </path>
 
-    <!-- This module is based on Java 1.2 -->
-    <property name="javac.target" value="1.2"/>
-
     <!-- RMIC should generate stubs compatible with Java 1.2+ -->
     <property name="rmic.stubVersion" value="1.2"/>
 
