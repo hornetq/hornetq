@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.client;
 
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -15,6 +14,9 @@ import javax.jms.Queue;
 import javax.jms.QueueSender;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
+
+import org.jboss.jms.JMSValidator;
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * A producer
@@ -115,10 +117,29 @@ public class JBossProducer
          throw new JMSException("Null destination");
       if (message == null)
          throw new JMSException("Null message");
-      validateDeliveryMode(deliveryMode);
-      validatePriority(priority);
-      validateTimeToLive(timeToLive);
-      delegate.send(destination, message, deliveryMode, priority, timeToLive);
+      JMSValidator.validateDeliveryMode(deliveryMode);
+      JMSValidator.validatePriority(priority);
+      JMSValidator.validateTimeToLive(timeToLive);
+
+      JBossMessage msg;
+      if ((message instanceof JBossMessage))
+         msg = (JBossMessage) message;
+      else
+         msg = delegate.encapsulateMessage(message);
+
+      if (disableMessageID == false)
+         msg.generateMessageID();
+
+      if (disableTimestamp == false)
+         msg.generateTimestamp();
+
+      message.setJMSDestination(destination);
+      message.setJMSDeliveryMode(deliveryMode);
+      message.setJMSPriority(priority);
+      if (disableTimestamp == false && timeToLive != 0)
+      message.setJMSExpiration(msg.getJMSTimestamp() + timeToLive);
+
+      delegate.send(message);
 	}
 
 	public void send(Destination destination, Message message) throws JMSException
@@ -138,7 +159,7 @@ public class JBossProducer
 
 	public void setDeliveryMode(int deliveryMode) throws JMSException
 	{
-      validateDeliveryMode(deliveryMode);
+      JMSValidator.validateDeliveryMode(deliveryMode);
       this.defaultDeliveryMode = deliveryMode;
 	}
 
@@ -154,13 +175,13 @@ public class JBossProducer
 
 	public void setPriority(int defaultPriority) throws JMSException
 	{
-      validatePriority(defaultPriority);
+      JMSValidator.validatePriority(defaultPriority);
       this.defaultPriority = defaultPriority;
 	}
 
 	public void setTimeToLive(long timeToLive) throws JMSException
 	{
-      validateTimeToLive(timeToLive);
+      JMSValidator.validateTimeToLive(timeToLive);
       this.defaultTimeToLive = timeToLive;
 	}
 
@@ -210,44 +231,6 @@ public class JBossProducer
 	}
 
    // Protected ------------------------------------------------------
-
-   /**
-    * Validate the delivery mode
-    * 
-    * @param the delivery mode to validate
-    * @throws JMSException for any error 
-    */
-   protected void validateDeliveryMode(int deliveryMode)
-      throws JMSException
-   {
-      if (deliveryMode != DeliveryMode.NON_PERSISTENT &&
-          deliveryMode != DeliveryMode.PERSISTENT)
-         throw new JMSException("Invalid delivery mode " + deliveryMode);
-   }
-
-   /**
-    * Validate the priority
-    * 
-    * @param the priority to validate
-    * @throws JMSException for any error 
-    */
-   protected void validatePriority(int priority)
-      throws JMSException
-   {
-      if (priority < 0 || priority > 9)
-         throw new JMSException("Invalid priority " + priority);
-   }
-
-   /**
-    * Validate the time to live
-    * 
-    * @param the ttl to validate
-    * @throws JMSException for any error 
-    */
-   protected void validateTimeToLive(long timeToLive)
-      throws JMSException
-   {
-   }
 
    // Package Private ------------------------------------------------
 

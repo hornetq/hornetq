@@ -19,15 +19,18 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.SessionDelegate;
 import org.jboss.jms.client.p2p.P2PSessionDelegate;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.util.JMSMap;
+import org.jboss.util.id.GUID;
 
 /**
  *
  * @author <a href="mailto:nathan@jboss.org">Nathan Phelps</a>
  * @version $Revision$ $Date$
  */
-public class MessageImpl implements Message, Cloneable, Serializable
+public class MessageImpl implements JBossMessage, Cloneable, Serializable
 {
     static final String BYTES_MESSAGE_NAME = "BytesMessage";
     static final String MAP_MESSAGE_NAME = "MapMessage";
@@ -52,7 +55,7 @@ public class MessageImpl implements Message, Cloneable, Serializable
     protected String type = null;
 
     private P2PSessionDelegate session = null;
-    private long deliveryId = -1L;
+    public long deliveryId = -1L;
     private boolean local = false;
     private String originClientId = null;
 
@@ -96,7 +99,7 @@ public class MessageImpl implements Message, Cloneable, Serializable
     {
         if (this.session != null)
         {
-            this.session.ancknowledge(this.deliveryId);
+            this.session.acknowledge(this, true);
         }
     }
 
@@ -373,6 +376,20 @@ public class MessageImpl implements Message, Cloneable, Serializable
     {
         this.properties.setString(name, value);
     }
+   public void generateMessageID() throws JMSException
+   {
+      messageID = GUID.asString();
+   }
+
+   public void generateTimestamp() throws JMSException
+   {
+      timestamp = System.currentTimeMillis();
+   }
+
+   public SessionDelegate getSessionDelegate() throws JMSException
+   {
+      return session;
+   }
 
     public Object clone()
     {
@@ -392,4 +409,5 @@ public class MessageImpl implements Message, Cloneable, Serializable
             throw new MessageNotWriteableException("Unable to write body: the message body is currently read only.");
         }
     }
+
 }

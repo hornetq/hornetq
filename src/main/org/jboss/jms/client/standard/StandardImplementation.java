@@ -48,7 +48,7 @@ public class StandardImplementation
 
    public ConnectionDelegate createConnection(String userName, String password) throws JMSException
    {
-      //TODO
+      //TODO createConnection
       return null;
    }
 

@@ -101,7 +101,6 @@ public class P2PConnectionDelegate
 
 	public void closing() throws JMSException
 	{
-		// TODO Auto-generated method stub
 	}
 
 	public SessionDelegate createSession(boolean isXA, boolean transacted, int acknowledgeMode) throws JMSException
@@ -122,7 +121,7 @@ public class P2PConnectionDelegate
 
 	public Enumeration getJMSXPropertyNames() throws JMSException
 	{
-		// TODO Auto-generated method stub
+		// TODO getJMSXPropertyNames
 		return null;
 	}
 

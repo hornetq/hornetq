@@ -48,10 +48,17 @@ public class BasicTestCase extends BaseJMSTest
       Queue queue = new JBossQueue("queue");
       ConnectionFactory cf = new JBossConnectionFactory(new JVMImplementation());
       Connection c = cf.createConnection();
-      Session s = c.createSession(true, 0);
-      MessageProducer p = s.createProducer(queue);
-      Message m = s.createMessage();
-      //p.send(m);
+      try
+      {
+         Session s = c.createSession(true, 0);
+         MessageProducer p = s.createProducer(queue);
+         Message m = s.createMessage();
+         //p.send(m);
+      }
+      finally
+      {
+         //c.close();
+      }
    }
 
    // Protected ------------------------------------------------------

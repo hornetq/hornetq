@@ -12,6 +12,7 @@ import javax.jms.Message;
 
 import org.jboss.jms.MessageImpl;
 import org.jboss.jms.client.ProducerDelegate;
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * The p2p producer
@@ -51,19 +52,16 @@ public class P2PProducerDelegate
 	{
 	}
 
-   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive)
+   public void send(Message message)
       throws JMSException
    {
-      MessageImpl clone = (MessageImpl) ((MessageImpl) message).clone();
-      clone.setJMSDestination(destination);
-      clone.setJMSDeliveryMode(deliveryMode);
-      clone.setJMSPriority(priority);
-      if (timeToLive != 0)
-      {
-          clone.setJMSExpiration(System.currentTimeMillis() + timeToLive);
-      }
-      clone.setReadOnly(true);
-      this.session.send(clone);
+      this.session.send((MessageImpl) ((MessageImpl) message).clone());
+   }
+
+   public JBossMessage encapsulateMessage(Message message)
+   {
+      // TODO encapsulateMessage
+      return null;
    }
 
    // Protected ------------------------------------------------------

@@ -11,7 +11,8 @@ import javax.jms.Message;
 import org.jboss.aop.Interceptor;
 import org.jboss.aop.Invocation;
 import org.jboss.aop.MethodInvocation;
-import org.jboss.jms.MessageImpl;
+import org.jboss.jms.client.SessionDelegate;
+import org.jboss.jms.container.Container;
 
 /**
  * An interceptor for creating messages
@@ -55,7 +56,7 @@ public class MessageFactoryInterceptor
    protected Message createMessage(Invocation invocation)
       throws Throwable
    {
-      return new MessageImpl();
+      return new StandardMessage((SessionDelegate) Container.getProxy(invocation));
    }
 
    // Package Private ------------------------------------------------

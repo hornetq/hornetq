@@ -89,7 +89,7 @@ public class JBossConnection
 		int maxMessages)
 		throws JMSException
 	{
-		// TODO Auto-generated method stub
+		// TODO createConnectionConsumer
 		return null;
 	}
 
@@ -101,7 +101,7 @@ public class JBossConnection
 		int maxMessages)
 		throws JMSException
 	{
-		// TODO Auto-generated method stub
+		// TODO createDurableConnectionConsumer
 		return null;
 	}
 

@@ -18,6 +18,7 @@ import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
+import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
@@ -115,7 +116,6 @@ public class P2PSessionDelegate
 
    public void closing() throws JMSException
    {
-      // TODO Auto-generated method stub
    }
 
    public void commit() throws JMSException
@@ -201,7 +201,7 @@ public class P2PSessionDelegate
 
    public Destination createTempDestination(int type) throws JMSException
    {
-      // TODO Auto-generated method stub
+      // TODO createTempDestination
       return null;
    }
 
@@ -213,18 +213,18 @@ public class P2PSessionDelegate
 
    public void deleteTempDestination(JBossDestination destination)
    {
-      // TODO Auto-generated method stub
+      // TODO deleteTempDestination
    }
 
    public Destination getDestination(String name) throws JMSException
    {
-      // TODO Auto-generated method stub
+      // TODO getDestination
       return null;
    }
 
    public XAResource getXAResource()
    {
-      // TODO Auto-generated method stub
+      // TODO getXAResource
       return null;
    }
 
@@ -266,7 +266,7 @@ public class P2PSessionDelegate
 
    public void run()
    {
-      // TODO Auto-generated method stub
+      // TODO run
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
@@ -296,7 +296,7 @@ public class P2PSessionDelegate
        }
    }
 
-   public void ancknowledge(long deliveryId)
+   public void acknowledge(Message message, boolean acknowledge)
    {
        if (!this.transacted)
        {
@@ -306,7 +306,7 @@ public class P2PSessionDelegate
                while (iterator.hasNext())
                {
                    Long currentKey = (Long) iterator.next();
-                   if (currentKey.longValue() <= deliveryId)
+                   if (currentKey.longValue() <= ((MessageImpl) message).deliveryId)
                    {
                        iterator.remove();
                    }

@@ -41,6 +41,15 @@ public interface SessionDelegate
    // Public --------------------------------------------------------
 
    /**
+    * 
+    * Acknowledge a message
+    * 
+    * @param message the message to acknowledge
+    * @param acknowledge true for acknowledge, false for a Nack
+    */
+   void acknowledge(Message message, boolean acknowledge);
+
+   /**
     * Notify about to close
     * 
     * @throws JMSException for any error

@@ -6,9 +6,10 @@
  */
 package org.jboss.jms.client;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * The implementation of a producer
@@ -39,15 +40,19 @@ public interface ProducerDelegate
    /**
     * Send a message
     * 
-    * @param destination the destination
     * @param message the message
-    * @param deliveryMode the delivery mode
-    * @param priority the priority
-    * @param timeToLive the time to live
     * @throws JMSException for any error
     */
-   void send(Destination destination, Message message, int deliveryMode,
-             int priority, long timeToLive)
+   void send(Message message)
+      throws JMSException;
+
+   /**
+    * Encapsulate a message
+    * 
+    * @param message the message
+    * @throws JMSException for any error
+    */
+   JBossMessage encapsulateMessage(Message message)
       throws JMSException;
 
    // Inner Classes --------------------------------------------------
