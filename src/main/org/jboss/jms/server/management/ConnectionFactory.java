@@ -7,10 +7,8 @@
 package org.jboss.jms.server.management;
 
 import org.jboss.jms.ConnectionFactoryImpl;
-import org.jboss.remoting.InvokerLocator;
 import org.jboss.system.ServiceMBeanSupport;
 
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 /**

@@ -43,7 +43,7 @@ public class NonDurableConsumer implements Consumer
         this.metaData = metaData;
         this.queuedMessages =
                 new SortedSetPriorityQueue(this.metaData.getMessageComparator());
-        if (this.metaData.isEnabled())
+        if (ConsumerMetaData.isEnabled())
         {
             this.metaData.setActivationTimeMills(System.currentTimeMillis());
         }
@@ -107,7 +107,7 @@ public class NonDurableConsumer implements Consumer
          */
         int deliverySize = messages.size();
         messages.clear();
-        if (this.metaData.isEnabled())
+        if (ConsumerMetaData.isEnabled())
         {
             this.metaData.setLastMessageDeliveryTimeMillis(
                     System.currentTimeMillis());

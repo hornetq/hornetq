@@ -282,7 +282,7 @@ public class ConsumerMetaData implements Serializable
     {
 
         String metaDataString = "CONSUMER METADATA";
-        if (this.isEnabled())
+        if (isEnabled())
         {
             metaDataString =
                     metaDataString =
