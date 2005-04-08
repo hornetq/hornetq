@@ -85,13 +85,16 @@ public class Consumer implements Receiver
          // TODO what happens if handling takes a long time?
          callbackHandler.handleCallback(req);
       }
-      catch(NACKCallbackException e)
-      {
-         return false;
-      }
       catch(HandleCallbackException e)
       {
          Throwable cause = e.getCause();
+
+         // according http://jira.jboss.com/jira/browse/JBREM-93, the HandleCallbackException
+         // always wraps the original exception that was generated on the client.
+         if (cause instanceof NACKCallbackException)
+         {
+            return false;
+         }
          log.error("The client failed to acknowledge the message", cause);
          return false;
       }
