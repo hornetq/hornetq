@@ -6,15 +6,13 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aop.util.MethodHashing;
-import org.jboss.aop.MethodInfo;
-import org.jboss.aop.joinpoint.MethodInvocation;
-
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.io.Serializable;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.util.MethodHashing;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -65,12 +63,7 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
 
       long hash = MethodHashing.calculateHash(method);
 
-      MethodInfo info = new MethodInfo();
-      info.hash = hash;
-      info.advisedMethod = method;
-      info.unadvisedMethod = method;
-
-      MethodInvocation invocation = new MethodInvocation(info, interceptors);
+      MethodInvocation invocation = new MethodInvocation(interceptors, hash, method, method, null);
       invocation.setArguments(args);
 
       // initialize the invocation's metadata
