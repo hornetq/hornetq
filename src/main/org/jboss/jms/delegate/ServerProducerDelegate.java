@@ -8,9 +8,11 @@ package org.jboss.jms.delegate;
 
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Destination;
 
@@ -29,7 +31,7 @@ public class ServerProducerDelegate implements ProducerDelegate
    // Attributes ----------------------------------------------------
 
    protected String id;
-   protected Receiver destination;
+   //protected Receiver destination;
    /** I need this to set up the JMSDestination header on outgoing messages */
    protected Destination jmsDestination;
    protected ServerSessionDelegate sessionEndpoint;
@@ -40,48 +42,40 @@ public class ServerProducerDelegate implements ProducerDelegate
                                  Destination jmsDestination, ServerSessionDelegate parent)
    {
       this.id = id;
-      this.destination = destination;
+      //this.destination = destination;
       this.jmsDestination = jmsDestination;
       sessionEndpoint = parent;
    }
 
    // ProducerDelegate implementation ------------------------
+   
+   public void close()
+      throws JMSException
+   {
+      //Currently this does nothing
+      System.out.println("In ServerProducerDelegate.close()");
+   }
+   
+   public void closing()
+      throws JMSException
+   {
+      //Currently this does nothing
+      System.out.println("In ServerProducerDelegate.closing()");
+   }
 
    public void send(Message m)
+      throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("sending message " + m + " to the core"); }
 
-      try
-      {
-         // TODO JMS1.1 specs 3.4.3. If the client can live without a messageID, do not set a new messageID on the message
-         m.setJMSMessageID(generateMessageID());
-         m.setJMSDestination(jmsDestination);
-
-
-         boolean acked = destination.handle((Routable)m);
-
-         if (!acked)
-         {
-            log.debug("The message was not acknowledged");
-         }
-      }
-      catch(Throwable t)
-      {
-         log.error("Message handling failure", t);
-      }
-
+      sessionEndpoint.sendMessage(m);
    }
 
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
 
-   protected String generateMessageID()
-   {
-      StringBuffer sb = new StringBuffer("ID:");
-      sb.append(new GUID().toString());
-      return sb.toString();
-   }
+   
 
    // Protected -----------------------------------------------------
 

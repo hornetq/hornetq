@@ -30,6 +30,7 @@ public class InvokerInterceptor implements Interceptor, Serializable
    public static final String SUBSYSTEM = "SUBSYSTEM";
    public static final String CLIENT = "CLIENT";
 
+   private static final long serialVersionUID = -8628256359399051120L;
 
    // Static --------------------------------------------------------
    

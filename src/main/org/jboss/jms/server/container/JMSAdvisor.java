@@ -28,6 +28,8 @@ public class JMSAdvisor extends ClassAdvisor
    public static final String REMOTING_SESSION_ID = "REMOTING_SESSION_ID";
    public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
    public static final String DELIVERY_MODE = "DELIVERY_MODE";
+   public static final String XID = "XID";
+   public static final String EXCEPTION_LISTENER = "E_LISTENER";
 
    // Static --------------------------------------------------------
    

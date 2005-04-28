@@ -41,6 +41,9 @@ public class MessageProducerTest extends MessagingTestCase
    protected Session producerSession, consumerSession;
    protected MessageProducer producer;
    protected MessageConsumer consumer;
+   protected MessageConsumer consumer2;
+   protected Destination topic;
+   protected Destination topic2;
 
    // Constructors --------------------------------------------------
 
@@ -57,10 +60,12 @@ public class MessageProducerTest extends MessagingTestCase
 
       ServerManagement.startInVMServer();
       ServerManagement.deployTopic("Topic");
+      ServerManagement.deployTopic("Topic2");
 
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/messaging/ConnectionFactory");
-      Destination topic = (Destination)ic.lookup("/messaging/topics/Topic");
+      topic = (Destination)ic.lookup("/messaging/topics/Topic");
+      topic2 = (Destination)ic.lookup("/messaging/topics/Topic2");
 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
@@ -70,14 +75,14 @@ public class MessageProducerTest extends MessagingTestCase
 
       producer = producerSession.createProducer(topic);
       consumer = consumerSession.createConsumer(topic);
+      consumer2 = consumerSession.createConsumer(topic2);
 
    }
 
    public void tearDown() throws Exception
    {
-      // TODO uncomment these
-//      producerConnection.close();
-//      consumerConnection.close();
+      producerConnection.close();
+      consumerConnection.close();
 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.stopInVMServer();
@@ -85,9 +90,48 @@ public class MessageProducerTest extends MessagingTestCase
       super.tearDown();
    }
 
+   
    public void testDefaultDeliveryMode() throws Exception
    {
       assertEquals(DeliveryMode.PERSISTENT, producer.getDeliveryMode());
+   }
+   
+   
+   /* Test sending to destination where the Destination is specified in the send */      
+   public void testSendDestination() throws Exception
+   {      
+     
+      final Message m1 = producerSession.createMessage();
+      
+      consumerConnection.start();
+      
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
+               producer.send(topic2, m1);
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "Producer").start();
+
+      Message m2 = consumer2.receive(3000);
+      assertNotNull(m2);
+      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+   }
+   
+   
+   public void testGetDestination() throws Exception
+   {      
+      Destination dest = producer.getDestination();     
+      assertEquals(dest, topic);
    }
 
    // Package protected ---------------------------------------------

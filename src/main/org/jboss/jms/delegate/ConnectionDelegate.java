@@ -6,13 +6,16 @@
  */
 package org.jboss.jms.delegate;
 
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+
+import org.jboss.jms.client.Closeable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface ConnectionDelegate
+public interface ConnectionDelegate extends Closeable
 {
    public SessionDelegate createSessionDelegate(boolean transacted, int acknowledgmentMode)
           throws JMSException;
@@ -21,7 +24,9 @@ public interface ConnectionDelegate
    public void setClientID(String id) throws JMSException;
 
    public void start() throws JMSException;
-   public void stop() throws JMSException;
-   public void close() throws JMSException;
-
+   public void stop() throws JMSException;   
+   
+   public ExceptionListener getExceptionListener() throws JMSException;
+   public void setExceptionListener(ExceptionListener listener) throws JMSException;
+  
 }

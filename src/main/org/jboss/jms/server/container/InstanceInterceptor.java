@@ -52,11 +52,12 @@ public class InstanceInterceptor implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+      
       if (invocation instanceof MethodInvocation)
       {
          MethodInvocation mi = (MethodInvocation)invocation;
          Method m = mi.getMethod();
-         String methodName = m.getName();
+         String methodName = m.getName();         
          JMSAdvisor jmsAdvisor = (JMSAdvisor)mi.getAdvisor();
 
          if ("createConnectionDelegate".equals(methodName))
@@ -68,7 +69,9 @@ public class InstanceInterceptor implements Interceptor
          }
          else if ("createSessionDelegate".equals(methodName) ||
                   "start".equals(methodName) ||
-                  "stop".equals(methodName))
+                  "stop".equals(methodName) ||
+                  (("close".equals(methodName) || "closing".equals(methodName)) && 
+                        m.getDeclaringClass().equals(ServerConnectionDelegate.class)))
          {
             // look up the corresponding ServerConnectionDelegate and use that instance
             String clientID = (String)invocation.getMetaData().
@@ -84,7 +87,10 @@ public class InstanceInterceptor implements Interceptor
             invocation.setTargetObject(scd);
          }
          else if ("createProducerDelegate".equals(methodName) ||
-                  "createConsumer".equals(methodName))
+                  "createConsumer".equals(methodName) ||
+                  "sendTransaction".equals(methodName) ||
+                  (("close".equals(methodName) || "closing".equals(methodName)) && 
+                     m.getDeclaringClass().equals(ServerSessionDelegate.class)))
          {
             // lookup the corresponding ServerSessionDelegate and use it as target for the invocation
             String clientID =
@@ -123,7 +129,9 @@ public class InstanceInterceptor implements Interceptor
                ssd.unlock();
             }
          }
-         else if ("send".equals(methodName))
+         else if ("send".equals(methodName) ||
+               (("close".equals(methodName) || "closing".equals(methodName)) && 
+                     m.getDeclaringClass().equals(ServerProducerDelegate.class)))
          {
             // lookup the corresponding ServerProducerDelegate and use it as target for the invocation
             String clientID =
@@ -158,6 +166,8 @@ public class InstanceInterceptor implements Interceptor
             }
             invocation.setTargetObject(spd);
          }
+         
+         
       }
       return invocation.invokeNext();
    }

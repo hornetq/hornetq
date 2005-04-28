@@ -15,19 +15,25 @@ import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.DeliveryMode;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.QueueSender;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossMessageProducer implements MessageProducer
+public class JBossMessageProducer
+   implements MessageProducer, QueueSender, TopicPublisher
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
+   // Constants -----------------------------------------------------  
 
    // Static --------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
+   
    // Attributes ----------------------------------------------------
 
    protected ProducerDelegate delegate;
@@ -36,16 +42,19 @@ public class JBossMessageProducer implements MessageProducer
    protected boolean isMessageIDDisabled;
    protected boolean isTimestampDisabled;
    protected int priority;
-
+   
+   protected Destination destination;
+   
    // Constructors --------------------------------------------------
 
-   public JBossMessageProducer(ProducerDelegate delegate)
-   {
+   public JBossMessageProducer(ProducerDelegate delegate, Destination destination)
+   {      
       this.delegate = delegate;
+      this.destination = destination;
       deliveryMode = DeliveryMode.PERSISTENT;
       isMessageIDDisabled = false;
       isTimestampDisabled = false;
-      priority = 4;
+      priority = 4;      
    }
 
    // MessageProducer implementation --------------------------------
@@ -102,12 +111,12 @@ public class JBossMessageProducer implements MessageProducer
 
    public Destination getDestination() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return destination;
    }
 
    public void close() throws JMSException
    {
-      throw new NotYetImplementedException();
+      //Don't need to do anything
    }
 
    public void send(Message message) throws JMSException
@@ -122,13 +131,14 @@ public class JBossMessageProducer implements MessageProducer
    public void send(Message message, int deliveryMode, int priority, long timeToLive)
          throws JMSException
    {
-      configure(message, deliveryMode, priority, timeToLive);
-      delegate.send(message);
+      configure(message, deliveryMode, priority, timeToLive, this.destination);
+      delegate.send(message);     
    }
 
    public void send(Destination destination, Message message) throws JMSException
    {
-      throw new NotYetImplementedException();
+      configure(message, this.deliveryMode, this.priority, 0, destination);
+      delegate.send(message);    
    }
 
    public void send(Destination destination,
@@ -137,7 +147,56 @@ public class JBossMessageProducer implements MessageProducer
                     int priority,
                     long timeToLive) throws JMSException
    {
-      throw new NotYetImplementedException();
+      configure(message, deliveryMode, priority, timeToLive, destination);
+      delegate.send(message);
+   }
+   
+   // TopicPublisher Implementation
+   //--------------------------------------- 
+   
+   public Topic getTopic() throws JMSException
+   {
+      return (Topic)destination;
+   }
+   
+   public void publish(Message message) throws JMSException
+   {
+      send(message);
+   }
+   
+   public void publish(Topic topic, Message message) throws JMSException
+   {
+      send(topic, message);
+   }
+   
+   public void publish(Message message, int deliveryMode, int priority, long timeToLive)
+      throws JMSException
+   {
+      send(message, deliveryMode, priority, timeToLive);
+   }
+   
+   public void publish(Topic topic, Message message, int deliveryMode, 
+                       int priority, long timeToLive) throws JMSException
+   {
+      send(topic, message, deliveryMode, priority, timeToLive);
+   }
+   
+   // QueueSender Implementation
+   //---------------------------------------
+   public void send(Queue queue, Message message) throws JMSException
+   {
+      send((Destination)queue, message);
+   }
+   
+   public void send(Queue queue, Message message, int deliveryMode, int priority,
+                    long timeToLive) throws JMSException
+   {
+      send((Destination)queue, message, deliveryMode, priority, timeToLive);
+   }
+   
+   public Queue getQueue() throws JMSException
+   {
+      return (Queue)destination;
    }
 
    // Public --------------------------------------------------------
@@ -149,7 +208,8 @@ public class JBossMessageProducer implements MessageProducer
    /**
     * Set the headers.
     */
-   protected void configure(Message m, int deliveryMode, int priority, long timeToLive)
+   protected void configure(Message m, int deliveryMode, int priority,
+                            long timeToLive, Destination dest)
          throws JMSException
    {
       m.setJMSDeliveryMode(deliveryMode);
@@ -171,6 +231,8 @@ public class JBossMessageProducer implements MessageProducer
       {
          m.setJMSExpiration(System.currentTimeMillis() + timeToLive);
       }
+      
+      m.setJMSDestination(dest);
    }
 
    // Private -------------------------------------------------------

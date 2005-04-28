@@ -14,8 +14,21 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.MethodHashing;
 
+import org.jboss.aop.MethodInfo;
+import org.jboss.aop.joinpoint.MethodInvocation;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.io.Serializable;
+
+
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a> Adapted to maintain hierarchy
  * @version <tt>$Revision$</tt>
  */
 public class JMSInvocationHandler implements InvocationHandler, Serializable
@@ -33,12 +46,18 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
    // metadate to be transferred to the invocation when it is created. Usually contains oids (the
    // id used to locate the right Advisor in the Dispatcher's map), remoting locators, etc.
    protected SimpleMetaData metadata;
+   
+   protected JMSInvocationHandler parent;
+   
+   protected Set children = Collections.synchronizedSet(new HashSet());
+   
+   protected Object delegate;
 
    // Constructors --------------------------------------------------
 
    public JMSInvocationHandler(Interceptor[] interceptors)
    {
-      this.interceptors = interceptors;
+      this.interceptors = interceptors;      
    }
 
    // Public --------------------------------------------------------
@@ -63,14 +82,60 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
 
       long hash = MethodHashing.calculateHash(method);
 
-      MethodInvocation invocation = new MethodInvocation(interceptors, hash, method, method, null);
-      invocation.setArguments(args);
+      MethodInfo info = new MethodInfo();
+      info.hash = hash;
+      info.advisedMethod = method;
+      info.unadvisedMethod = method;
 
+      MethodInvocation invocation = new JMSMethodInvocation(info, interceptors, this);
+
+      invocation.setArguments(args);
+     
       // initialize the invocation's metadata
       // TODO I don't know if this is the most efficient thing to do
-      invocation.getMetaData().mergeIn(getMetaData());
+      invocation.getMetaData().mergeIn(getMetaData());           
 
       return invocation.invokeNext();
+   }
+   
+   
+   //tim's stuff
+   
+   public JMSInvocationHandler getParent()
+   {
+       return parent;
+   }
+   
+   public void setParent(JMSInvocationHandler parent)
+   {
+      this.parent = parent;
+   }
+   
+   public Set getChildren()
+   {
+       return children;
+   }
+   
+   public void addChild(JMSInvocationHandler child)
+   {
+       children.add(child);
+       child.setParent(this);
+   }
+   
+   public void removeChild(JMSInvocationHandler child)
+   {
+       children.remove(child);
+       child.setParent(null);
+   }
+   
+   public Object getDelegate()
+   {
+       return delegate;
+   }
+   
+   public void setDelegate(Object proxy)
+   {
+       this.delegate = proxy;
    }
 
    // Package protected ---------------------------------------------

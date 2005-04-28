@@ -16,14 +16,12 @@ import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aspects.remoting.InvokeRemoteInterceptor;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
@@ -92,13 +90,14 @@ public class ServerConnectionDelegate implements ConnectionDelegate
                            PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, clientID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
+      
 
       h.getMetaData().mergeIn(metadata);
 
       // TODO 
       ClassLoader loader = getClass().getClassLoader();
       Class[] interfaces = new Class[] { SessionDelegate.class };
-      sd = (SessionDelegate)Proxy.newProxyInstance(loader, interfaces, h);
+      sd = (SessionDelegate)Proxy.newProxyInstance(loader, interfaces, h);      
 
       // create the corresponding "server-side" SessionDelegate and register it with this
       // ConnectionDelegate instance
@@ -133,13 +132,35 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    public synchronized void stop()
    {
       // TODO what about the inflight messages?
-      // TODO This call must blocksuntil receives and/or message listeners in progress have completed
+      // TODO This call must blocks until receives and/or message listeners in progress have completed
       started = false;
    }
 
-   public void close()
+   public void close() throws JMSException
    {
-      throw new NotYetImplementedException();
+      log.trace("In ServerConnectionDelegate.close()");
+      
+      System.out.println("In ServerConnectionDelegate.close()");
+      
+      /* I don't think we need to close the children here since
+      The traversal of the children is done in the ClosedInterceptor */                                                 
+   }
+   
+   public void closing() throws JMSException
+   {
+      log.trace("In ServerConnectionDelegate.closing()");
+      
+      //This currently does nothing
+   }
+   
+   public ExceptionListener getExceptionListener() throws JMSException
+   {
+      throw new IllegalStateException("getExceptionListener is not handled on the server");
+   }
+   
+   public void setExceptionListener(ExceptionListener listener) throws JMSException
+   {
+      throw new IllegalStateException("setExceptionListener is not handled on the server");
    }
 
    // Public --------------------------------------------------------

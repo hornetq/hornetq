@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.delegate;
 
+
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
@@ -13,6 +14,7 @@ import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.endpoint.Consumer;
+import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
@@ -20,15 +22,21 @@ import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.util.id.GUID;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
@@ -50,7 +58,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    protected String sessionID;
    protected ServerConnectionDelegate connectionEndpoint;
-
+      
    protected int producerIDCounter;
    protected int consumerIDCounter;
 
@@ -66,7 +74,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    public ServerSessionDelegate(String sessionID, ServerConnectionDelegate connectionEndpoint)
    {
       this.sessionID = sessionID;
-      this.connectionEndpoint = connectionEndpoint;
+      this.connectionEndpoint = connectionEndpoint;      
       producers = new HashMap();
       consumers = new HashMap();
       producerIDCounter = 0;
@@ -124,7 +132,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.PRODUCER_ID, producerID, PayloadKey.AS_IS);
-
+      
       h.getMetaData().mergeIn(metadata);
 
       // TODO
@@ -142,7 +150,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       return pd;
    }
-
 
    public MessageConsumer createConsumer(Destination jmsDestination) throws JBossJMSException
    {
@@ -204,10 +211,60 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return proxy;
    }
 
-
-   public Message createMessage() throws JMSException
+   public Message createMessage() throws JBossJMSException
    {
-      throw new JMSException("We don't create messages on the server");
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+   
+   public void close() throws JBossJMSException
+   {
+      log.trace("In ServerSessionDelegate.close()");
+    
+      System.out.println("In ServerSessionDelegate.close()");
+            
+      //The traversal of the children is done in the ClosedInterceptor                            
+   }
+   
+   public void closing() throws JMSException
+   {
+      log.trace("In ServerSessionDelegate.closing()");
+      
+      //Currently does nothing
+   }
+   
+   public void commit() throws JMSException
+   {
+      throw new JMSException("commit is not handled on the server");
+   }
+   
+   public void rollback() throws JMSException
+   {
+      throw new JMSException("rollback is not handled on the server");
+   }
+   
+   public void recover() throws JMSException
+   {
+      throw new JMSException("recover is not handled on the server");
+   }
+   
+   
+   
+   public void sendTransaction(LocalTx tx)
+      throws JMSException
+   {            
+      log.debug("Sending transaction to receiver");
+      
+      List messages = tx.getMessages();
+      
+      log.debug("Messages:" + messages);
+      
+      Iterator iter = messages.iterator();
+      while (iter.hasNext())
+      {
+         Message m = (Message)iter.next();
+         sendMessage(m);
+         log.debug("Sent message");
+      }
    }
 
    // Public --------------------------------------------------------
@@ -259,6 +316,36 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    }
 
    // Package protected ---------------------------------------------
+   
+   void sendMessage(Message m)
+      throws JMSException
+   {
+      //The JMSDestination header must already have been set for each message
+      Destination dest = m.getJMSDestination();
+      if (dest == null) throw new IllegalStateException("JMSDestination header not set!");
+      
+      Receiver receiver = null;
+      try
+      {
+         DestinationManager dm = serverPeer.getDestinationManager();
+         receiver = dm.getDestination(dest);
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("Cannot map destination " + dest, e);
+      }
+      
+      m.setJMSMessageID(generateMessageID());         
+   
+      boolean acked = receiver.handle((Routable)m);
+   
+      if (!acked)
+      {
+         log.debug("The message was not acknowledged");
+         //TODO deal with this properly
+      }  
+      
+   }
 
    // Protected -----------------------------------------------------
 
@@ -291,5 +378,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // Private -------------------------------------------------------
 
+   private String generateMessageID()
+   {
+      StringBuffer sb = new StringBuffer("ID:");
+      sb.append(new GUID().toString());
+      return sb.toString();
+   }
+   
    // Inner classes -------------------------------------------------
 }

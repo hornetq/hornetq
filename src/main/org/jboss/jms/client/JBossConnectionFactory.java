@@ -27,6 +27,7 @@ import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class JBossConnectionFactory implements
@@ -60,32 +61,31 @@ public class JBossConnectionFactory implements
 
    public Connection createConnection(String username, String password) throws JMSException
    {
-      ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
-      return new JBossConnection(cd, false);
+      return createConnectionInternal(username, password, false, JBossConnection.TYPE_GENERIC_CONNECTION);
    }
    
    // QueueConnectionFactory implementation -------------------------
 
    public QueueConnection createQueueConnection() throws JMSException
    {
-       return (QueueConnection)createConnection(null, null);
+      return createQueueConnection(null, null);
    }
 
    public QueueConnection createQueueConnection(String username, String password) throws JMSException
    {
-       return (QueueConnection)createConnection(username, password);
+       return createConnectionInternal(username, password, false, JBossConnection.TYPE_QUEUE_CONNECTION);
    }
    
    // TopicConnectionFactory implementation -------------------------
 
    public TopicConnection createTopicConnection() throws JMSException
    {
-       return (TopicConnection)createConnection(null, null);
+      return createTopicConnection(null, null);
    }
 
    public TopicConnection createTopicConnection(String username, String password) throws JMSException
    {
-       return (TopicConnection)createConnection(username, password);
+      return createConnectionInternal(username, password, false, JBossConnection.TYPE_TOPIC_CONNECTION);
    }
    
    // XAConnectionFactory implementation ------------------------------
@@ -97,32 +97,31 @@ public class JBossConnectionFactory implements
 
    public XAConnection createXAConnection(String username, String password) throws JMSException
    {
-      ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
-      return new JBossConnection(cd, true);
+      return createConnectionInternal(username, password, true, JBossConnection.TYPE_GENERIC_CONNECTION);   
    }
    
    // XAQueueConnectionFactory implementation -------------------------
 
    public XAQueueConnection createXAQueueConnection() throws JMSException
    {
-       return (XAQueueConnection)createXAConnection(null, null);
+       return createXAQueueConnection(null, null);
    }
 
    public XAQueueConnection createXAQueueConnection(String username, String password) throws JMSException
    {
-       return (XAQueueConnection)createXAConnection(username, password);
+      return createConnectionInternal(username, password, true, JBossConnection.TYPE_QUEUE_CONNECTION);   
    }
    
    // XATopicConnectionFactory implementation -------------------------
    
    public XATopicConnection createXATopicConnection() throws JMSException
    {
-       return (XATopicConnection)createXAConnection(null, null);
+      return createXATopicConnection(null, null);
    }
 
    public XATopicConnection createXATopicConnection(String username, String password) throws JMSException
    {
-       return (XATopicConnection)createXAConnection(username, password);
+      return createConnectionInternal(username, password, true, JBossConnection.TYPE_TOPIC_CONNECTION);   
    }
 
    // Public --------------------------------------------------------
@@ -130,7 +129,14 @@ public class JBossConnectionFactory implements
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
+   protected JBossConnection createConnectionInternal(String username, String password, boolean isXA, int type)
+      throws JMSException
+   {
+      ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
+      return new JBossConnection(cd, isXA, type);
+   }
+   
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

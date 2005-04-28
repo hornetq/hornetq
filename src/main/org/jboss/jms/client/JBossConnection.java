@@ -33,6 +33,7 @@ import javax.jms.XATopicSession;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class JBossConnection implements
@@ -40,29 +41,33 @@ public class JBossConnection implements
     XAConnection, XAQueueConnection, XATopicConnection
 {
    // Constants -----------------------------------------------------
-
+   static final int TYPE_GENERIC_CONNECTION = 0;
+   static final int TYPE_QUEUE_CONNECTION = 1;
+   static final int TYPE_TOPIC_CONNECTION = 2;
+   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    protected ConnectionDelegate delegate;
-   private boolean isXAConnection;
-   private ExceptionListener exceptionListener;
+   private boolean isXA;
+   private int connectionType;   
 
    // Constructors --------------------------------------------------
 
-   public JBossConnection(ConnectionDelegate delegate, boolean isXAConnection)
+   public JBossConnection(ConnectionDelegate delegate, boolean isXA,
+                          int connectionType)
    {
       this.delegate = delegate;
-      this.isXAConnection = isXAConnection;
+      this.isXA = isXA;
+      this.connectionType = connectionType;
    }
 
    // Connection implementation -------------------------------------
 
    public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException
    {
-      SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode);
-      return new JBossSession(sessionDelegate);
+      return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -87,12 +92,12 @@ public class JBossConnection implements
 
    public ExceptionListener getExceptionListener() throws JMSException
    {
-      return exceptionListener;
+      return delegate.getExceptionListener();
    }
 
    public void setExceptionListener(ExceptionListener listener) throws JMSException
    {
-      this.exceptionListener = listener;
+      delegate.setExceptionListener(listener);
    }
 
    public void start() throws JMSException
@@ -107,7 +112,8 @@ public class JBossConnection implements
 
    public void close() throws JMSException
    {
-      throw new NotYetImplementedException();
+      delegate.closing();
+      delegate.close();
    }
 
    public ConnectionConsumer createConnectionConsumer(
@@ -127,7 +133,10 @@ public class JBossConnection implements
          ServerSessionPool sessionPool,
          int maxMessages)
          throws JMSException
-   {
+   {      
+      //As spec. section 4.11
+      if (connectionType == TYPE_QUEUE_CONNECTION)
+         throw new IllegalStateException("Cannot create a durable connection consumer on a QueueConnection");
       throw new NotYetImplementedException();
    }
    
@@ -135,8 +144,8 @@ public class JBossConnection implements
 
    public QueueSession createQueueSession(boolean transacted,
                                           int acknowledgeMode) throws JMSException
-   {
-       return (QueueSession)createSession(transacted, acknowledgeMode);
+   {    
+       return createSessionInternal(transacted, acknowledgeMode, false, JBossSession.TYPE_QUEUE_SESSION);
    }
    
    public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector,
@@ -151,7 +160,7 @@ public class JBossConnection implements
    public TopicSession createTopicSession(boolean transacted,
                                           int acknowledgeMode) throws JMSException
    {
-       return (TopicSession)createSession(transacted, acknowledgeMode);
+      return createSessionInternal(transacted, acknowledgeMode, false, JBossSession.TYPE_TOPIC_SESSION);
    }
    
    public ConnectionConsumer createConnectionConsumer(Topic topic, String messageSelector,
@@ -165,22 +174,26 @@ public class JBossConnection implements
 
    public XASession createXASession() throws JMSException
    {
-       if (!isXAConnection) throw new JMSException("Not an XA connection");       
-       return (XASession)createSession(true, Session.SESSION_TRANSACTED);
+       if (!isXA) throw new JMSException("Not an XA connection");       
+       return createSessionInternal(true, Session.SESSION_TRANSACTED, true, JBossSession.TYPE_GENERIC_SESSION);
    }
    
    // XAQueueConnection implementation ---------------------------------
 
    public XAQueueSession createXAQueueSession() throws JMSException
    {
-       return (XAQueueSession)createXASession();
+      if (!isXA) throw new JMSException("Not an XA connection");       
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, JBossSession.TYPE_QUEUE_SESSION);
+
    }
    
    // XATopicConnection implementation ---------------------------------
 
    public XATopicSession createXATopicSession() throws JMSException
    {
-       return (XATopicSession)createXASession();
+      if (!isXA) throw new JMSException("Not an XA connection");       
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, JBossSession.TYPE_TOPIC_SESSION);
+
    }
 
    // Public --------------------------------------------------------
@@ -188,6 +201,14 @@ public class JBossConnection implements
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   protected JBossSession createSessionInternal(boolean transacted, int acknowledgeMode,
+                                           boolean isXA, int type) throws JMSException
+   {
+      SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode);
+      return new JBossSession(sessionDelegate, isXA,
+                              type, transacted, acknowledgeMode);
+   }
 
    // Private -------------------------------------------------------
 

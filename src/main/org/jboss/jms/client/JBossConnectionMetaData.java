@@ -15,7 +15,7 @@ import org.jboss.messaging.util.NotYetImplementedException;
 /**
  * Connection metadata
  * 
- * @author Tim Fox
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  */
 public class JBossConnectionMetaData implements ConnectionMetaData {
 

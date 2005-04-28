@@ -11,16 +11,27 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.tx.LocalTx;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface SessionDelegate
+public interface SessionDelegate extends Closeable
 {
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
    public MessageConsumer createConsumer(Destination destination) throws JMSException;
 
    public Message createMessage() throws JMSException;
+   
+   public void sendTransaction(LocalTx tx) throws JMSException;
+   
+   public void commit() throws JMSException;
+   
+   public void rollback() throws JMSException;
+   
+   public void recover() throws JMSException;
 
 }

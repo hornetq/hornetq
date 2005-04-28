@@ -23,9 +23,12 @@ import java.io.Serializable;
  */
 public class JMSExceptionInterceptor implements Interceptor, Serializable
 {
+	
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JMSExceptionInterceptor.class);
+   
+   private static final long serialVersionUID = -1027228559036457690L;
 
    // Static --------------------------------------------------------
 
@@ -64,6 +67,10 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
          {
             log.error("The cause of the JMSException: ", cause);
          }
+         throw e;
+      }
+      catch (RuntimeException e)
+      {         
          throw e;
       }
       catch(Exception e)
