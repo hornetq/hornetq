@@ -9,6 +9,7 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.jms.delegate.ServerConnectionDelegate;
 
 import javax.naming.InitialContext;
 import javax.jms.Connection;
@@ -62,20 +63,14 @@ public class ConnectionTest extends MessagingTestCase
       super.setUp();
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf =
-            (ConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
-      
+      cf = (ConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
       ServerManagement.deployTopic("Topic");
       topic = (Destination)initialContext.lookup("/messaging/topics/Topic");
-
-      
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.stopInVMServer();
-      //connection.stop();
-      //connection = null;
       super.tearDown();
    }
 
@@ -87,9 +82,11 @@ public class ConnectionTest extends MessagingTestCase
       Connection connection = cf.createConnection();
       String clientID = connection.getClientID();
 
-      Set clientIDs = ServerManagement.getConnections();
+      Set clientIDs = ServerManagement.getServerPeer().getClientManager().getConnections();
       assertEquals(1, clientIDs.size());
       assertEquals(clientID, clientIDs.iterator().next());
+
+      connection.close();
    }
 
    public void testSetClientID() throws Exception
@@ -104,11 +101,32 @@ public class ConnectionTest extends MessagingTestCase
       {
          // OK
       }
+
+      connection.close();
    }
    
-   //TODO add tests for starting and stopping a connection
-   
-   
+   public void testStartStop() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      String clientID = connection.getClientID();
+
+      ServerConnectionDelegate d =
+            ServerManagement.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+
+      assertFalse(d.isStarted());
+
+      connection.start();
+
+      assertTrue(d.isStarted());
+
+      connection.stop();
+
+      assertFalse(d.isStarted());
+
+      connection.close();
+   }
+
+
    /* Tests for closing connection
     * ============================
     */
@@ -299,7 +317,7 @@ public class ConnectionTest extends MessagingTestCase
       
       ExceptionListener listener2 = conn.getExceptionListener(); 
       
-      this.assertNotNull(listener2);
+      assertNotNull(listener2);
                   
       assertEquals(listener1, listener2);
                   

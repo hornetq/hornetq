@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.util;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -14,11 +16,13 @@ public class RendezVous
 {
    // Constants -----------------------------------------------------
 
+   public static final Logger log = Logger.getLogger(RendezVous.class);
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private boolean threadWaiting;
+   private boolean threadWaiting = false;
    private Object object;
 
 
@@ -53,12 +57,14 @@ public class RendezVous
          }
          catch(InterruptedException e)
          {
+            log.warn(e);
          }
          finally
          {
             threadWaiting = false;
             Object tmp = object;
             object = null;
+            if (log.isTraceEnabled()) { log.trace("get() returns " + tmp); }
             return tmp;
          }
       }
@@ -75,13 +81,14 @@ public class RendezVous
    {
       synchronized(this)
       {
-         if (!threadWaiting)
+         if (!threadWaiting || object != null)
          {
             return false;
          }
 
          object = o;
          notifyAll();
+         if (log.isTraceEnabled()) { log.trace("put(" + o + ")"); }
          return true;
       }
    }

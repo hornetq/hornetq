@@ -317,12 +317,14 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // Package protected ---------------------------------------------
    
-   void sendMessage(Message m)
-      throws JMSException
+   void sendMessage(Message m) throws JMSException
    {
       //The JMSDestination header must already have been set for each message
       Destination dest = m.getJMSDestination();
-      if (dest == null) throw new IllegalStateException("JMSDestination header not set!");
+      if (dest == null)
+      {
+         throw new IllegalStateException("JMSDestination header not set!");
+      }
       
       Receiver receiver = null;
       try

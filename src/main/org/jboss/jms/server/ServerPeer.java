@@ -176,14 +176,6 @@ public class ServerPeer
       return jndiEnvironment;
    }
 
-   /**
-    * @return the active connections clientIDs (as Strings)
-    */
-   public Set getConnections()
-   {
-      return clientManager.getConnections();
-   }
-
    public PooledExecutor getThreadPool()
    {
       return threadPool;

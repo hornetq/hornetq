@@ -8,8 +8,7 @@ package org.jboss.test.messaging.tools;
 
 import org.jboss.jms.tools.ServerWrapper;
 import org.jboss.jms.util.InVMInitialContextFactory;
-
-import java.util.Set;
+import org.jboss.jms.server.ServerPeer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -67,13 +66,10 @@ public class ServerManagement
       serverWrapper.undeployQueue(name);
    }
 
-   /**
-    * @return the active connections clientIDs (as Strings)
-    */
-   public static Set getConnections() throws Exception
+   public static ServerPeer getServerPeer() throws Exception
    {
       insureStarted();
-      return serverWrapper.getConnections();
+      return serverWrapper.getServerPeer();
    }
 
    // Attributes ----------------------------------------------------

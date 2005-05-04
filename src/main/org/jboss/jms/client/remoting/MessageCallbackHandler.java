@@ -56,14 +56,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       {
          try
          {
-            if (log.isTraceEnabled()) { log.trace("receiving asyncronous message " + ((Message)invocation.getParameter()).getJMSMessageID()); }
-
             Message m = (Message)invocation.getParameter();
+
+            if (log.isTraceEnabled()) { log.trace("receiving asyncronous message " + m); }
+
 
             if (rv.put(m))
             {
                // TODO: supposedly my receiver thread got it. However I dont' have a hard guarantee
-               if (log.isTraceEnabled()) { log.trace("message " + m.getJMSMessageID() + " accepted"); }
+               if (log.isTraceEnabled()) { log.trace("message " + m + " accepted"); }
                return;
             }
 

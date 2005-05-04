@@ -83,17 +83,30 @@
       <priority value="INFO"/>
    </category>
 
-   <category name="org.jboss.messaging">
+
+   <!--
+   <category name="org.jboss.jms.client.remoting.MessageCallbackHandler">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
-
-   <category name="org.jboss.messaging.core.util">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.jms">
+   <category name="org.jboss.jms.util.RendezVous">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
+   <category name="org.jboss.jms.server.endpoint.Consumer">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   <category name="org.jboss.jms.delegate">
+      <priority value="DEBUG"/>
+   </category>
+   <category name="org.jboss.jms.client.container.TransactionInterceptor">
+      <priority value="DEBUG"/>
+   </category>
+   <category name="org.jboss.messaging.core.local">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   <category name="org.jboss.messaging.core.util.Lockable">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   -->
 
    <!-- ======================= -->
    <!-- Setup the Root category -->

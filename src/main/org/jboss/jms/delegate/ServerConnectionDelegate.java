@@ -121,6 +121,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public synchronized void start()
    {
+      log.debug("Connection " + clientID + " started");
       started = true;
    }
 
@@ -131,16 +132,16 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public synchronized void stop()
    {
+      log.debug("Connection " + clientID + " stopped");
+
       // TODO what about the inflight messages?
-      // TODO This call must blocks until receives and/or message listeners in progress have completed
+      // TODO This call must block until receives and/or message listeners in progress have completed
       started = false;
    }
 
    public void close() throws JMSException
    {
-      log.trace("In ServerConnectionDelegate.close()");
-      
-      System.out.println("In ServerConnectionDelegate.close()");
+      if (log.isTraceEnabled()) { log.trace("In ServerConnectionDelegate.close()"); }
       
       /* I don't think we need to close the children here since
       The traversal of the children is done in the ClosedInterceptor */                                                 

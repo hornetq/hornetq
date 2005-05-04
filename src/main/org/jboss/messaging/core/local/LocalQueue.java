@@ -37,4 +37,15 @@ public class LocalQueue extends AbstractDestination
        return new PointToPointRouter("P2PRouter");
    }
 
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("LocalQueue[");
+      sb.append(getReceiverID());
+      sb.append("]");
+      return sb.toString();
+   }
+
+
 }

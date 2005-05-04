@@ -37,6 +37,7 @@ public class JBossMessage implements javax.jms.Message, Routable
    /** GMT milliseconds at which this message expires. 0 means never expires **/
    protected long expiration;
    protected boolean redelivered;
+   protected String type;
 
    // Constructors --------------------------------------------------
 
@@ -47,6 +48,7 @@ public class JBossMessage implements javax.jms.Message, Routable
       timestamp = 0l;
       expiration = Long.MAX_VALUE;
       redelivered = false;
+      type = null;
    }
 
    // javax.jmx.Message implementation ------------------------------
@@ -142,15 +144,24 @@ public class JBossMessage implements javax.jms.Message, Routable
    {
       setRedelivered(redelivered);
    }
-       
+
+   /**
+    * 
+    * @return java.lang.String type
+    * @throws JMSException
+    */
    public String getJMSType() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return type;
    }
-
+   /**
+    * 
+    * @param type
+    * @throws JMSException
+    */
    public void setJMSType(String type) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.type = type;
    }
  
    public long getJMSExpiration() throws JMSException
@@ -341,6 +352,15 @@ public class JBossMessage implements javax.jms.Message, Routable
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("JBossMessage[");
+      sb.append("ID=");
+      sb.append(id);
+      sb.append("]");
+      return sb.toString();
+   }
 
    // Package protected ---------------------------------------------
 

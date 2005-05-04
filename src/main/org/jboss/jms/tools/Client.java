@@ -102,6 +102,31 @@ public class Client
       connection = connectionFactory.createConnection();
    }
 
+
+   public void startConnection() throws Exception
+   {
+      if (connection == null)
+      {
+         System.out.println("There is no connection. Create a connection first");
+         return;
+      }
+
+      connection.start();
+   }
+
+
+   public void stopConnection() throws Exception
+   {
+      if (connection == null)
+      {
+         System.out.println("There is no connection. Create a connection first");
+         return;
+      }
+
+      connection.stop();
+   }
+
+
    public void createSession() throws Exception
    {
       if (session != null)
@@ -152,6 +177,7 @@ public class Client
       consumer = session.createConsumer(lookupDestination(destination));
    }
 
+
    public void setMessageListener() throws Exception
    {
       if (consumer == null)
@@ -178,10 +204,48 @@ public class Client
       producer.send(m);
    }
 
+   /**
+    * Sends a burst of messages.
+    * @throws Exception
+    */
+   public void send(int count) throws Exception
+   {
+      insureProducer();
+      Message m;
+      for(int i = 0; i < count; i ++)
+      {
+         m = session.createMessage();
+         producer.send(m);
+      }
+   }
+
+
    public Object receive(long timeout) throws Exception
    {
       insureConsumer();
       return consumer.receive(timeout);
+   }
+
+   public void receiveOnASeparateThread()
+   {
+      insureConsumer();
+      new Thread(new Runnable() {
+         public void run()
+         {
+            int cnt = 1;
+            while(true)
+            {
+               try
+               {
+                  consumer.receive();
+                  System.out.println("received " + cnt++);
+               }
+               catch(Exception e)
+               {
+                  e.printStackTrace();
+               }
+            }
+         }}, "Consumer").start();
    }
 
    public Object receiveNoWait() throws Exception

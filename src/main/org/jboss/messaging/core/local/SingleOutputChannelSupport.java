@@ -19,7 +19,7 @@ import java.util.Iterator;
 
 /**
  * An exended set of functionalities for single output channels (LocalPipes, Pipes). It assumes
- * the unacknowledged messages are kept in a List.
+ * that unacknowledged messages are kept in a List.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -103,7 +103,7 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
 
    protected void storeNACKedMessageLocally(Routable r, Serializable recID)
    {
-      if (log.isTraceEnabled()) {log.trace("store NACKed message unreliably: "+ r.getMessageID() + " from " + recID);}
+      if (log.isTraceEnabled()) {log.trace(this + ": store unreliably NACKed message ("+ r.getMessageID() + ") for " + recID);}
 
       // the channel's lock is already acquired when invoking this method
 

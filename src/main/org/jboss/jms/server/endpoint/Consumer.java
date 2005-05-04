@@ -87,7 +87,7 @@ public class Consumer implements Receiver
       }
       catch(HandleCallbackException e)
       {
-         Throwable cause = e.getCause();
+         Throwable cause = e.getCause().getCause();
 
          // according http://jira.jboss.com/jira/browse/JBREM-93, the HandleCallbackException
          // always wraps the original exception that was generated on the client.
@@ -95,6 +95,7 @@ public class Consumer implements Receiver
          {
             return false;
          }
+
          log.error("The client failed to acknowledge the message", cause);
          return false;
       }
@@ -112,6 +113,7 @@ public class Consumer implements Receiver
     */
    public void initiateAsynchDelivery() throws JBossJMSException
    {
+
       // the delivery must be always initiate from another thread than the caller's. This is to
       // avoid the situation when the caller thread re-acquires reentrant locks in an in-VM
       // situation
@@ -125,6 +127,7 @@ public class Consumer implements Receiver
          {
             public void run()
             {
+               if (log.isTraceEnabled()) { log.trace(id + " initiates asynchronous delivery on " + destination.getReceiverID()); };
                destination.deliver();
             }
          });

@@ -152,7 +152,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
    {
       lock();
 
-      if (log.isTraceEnabled()) { log.trace("storing NACKed message " + r.getMessageID() + " from " + receiverID); }
+      if (log.isTraceEnabled()) { log.trace(this + ": storing NACKed message " + r.getMessageID() + " from " + receiverID); }
 
       try
       {
@@ -177,7 +177,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
          }
          catch(Throwable t)
          {
-            log.warn("Cannot keep NACKed message " + r, t);
+            log.warn(this + ": cannot keep NACKed message " + r, t);
             return false;
          }
       }

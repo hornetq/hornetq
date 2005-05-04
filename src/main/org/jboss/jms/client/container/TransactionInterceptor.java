@@ -8,6 +8,7 @@ package org.jboss.jms.client.container;
 
 
 import java.lang.reflect.Proxy;
+import java.io.Serializable;
 
 import javax.jms.Message;
 
@@ -24,10 +25,11 @@ import org.jboss.logging.Logger;
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
  */
-public class TransactionInterceptor
-   implements Interceptor
+public class TransactionInterceptor implements Interceptor, Serializable
 {
    // Constants -----------------------------------------------------
+
+   private final static long serialVersionUID = -34322737839473785L;
 
    // Attributes ----------------------------------------------------
 
@@ -56,7 +58,7 @@ public class TransactionInterceptor
          
          if ("createSessionDelegate".equals(methodName))
          {
-            log.debug("TransactionInterceptor: createSessionDelegate");
+            log.debug("createSessionDelegate");
             
             SessionDelegate sd = (SessionDelegate)invocation.invokeNext();
             
@@ -68,6 +70,7 @@ public class TransactionInterceptor
             
             if (transacted == null)
                throw new IllegalStateException("Cannot find transacted argument");
+
             if (transacted.booleanValue())
             {
                log.debug("Session is transacted");
@@ -97,7 +100,7 @@ public class TransactionInterceptor
          }
          else if ("commit".equals(methodName))
          {
-            log.debug("TransactionInterceptor: commit");                       
+            log.debug("commit");
             Object Xid = getMetaData(mi, JMSAdvisor.XID);                        
             SessionDelegate sd = (SessionDelegate)getDelegate(mi);            
             Object newXid = ResourceManager.instance().commit(Xid, sd);
@@ -105,21 +108,24 @@ public class TransactionInterceptor
          }
          else if ("rollback".equals(methodName))
          {
-            log.debug("TransactionInterceptor: commit");
+            log.debug("rollback");
             Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);                     
             Object newXid = ResourceManager.instance().rollback(Xid);
             setMetaData(mi, JMSAdvisor.XID, newXid); 
          }
          else if ("send".equals(methodName))
          {
-            log.debug("TransactionInterceptor: send");            
+            if (log.isTraceEnabled()) { log.trace("send"); }
+
             JMSInvocationHandler sessionInvocationHandler = getHandler(invocation).getParent();
-            log.debug("sessionInvocationHandler:" + sessionInvocationHandler);
+
+            if (log.isTraceEnabled()) { log.trace("sessionInvocationHandler: " + sessionInvocationHandler); }
+
             Object Xid = getMetaData(sessionInvocationHandler, JMSAdvisor.XID);
             if (Xid != null)
             {
                //Session is transacted - so we add message to tx instead of sending now
-               log.debug("Session is transacted, storing mesage until commit");
+               if (log.isTraceEnabled()) { log.trace("Session is transacted, storing mesage until commit"); }
                Message m = (Message)mi.getArguments()[0];
                ResourceManager.instance().addMessage(Xid, m);
 
@@ -128,7 +134,7 @@ public class TransactionInterceptor
             }
             else
             {
-               log.debug("Session is not transacted, sending message now");
+               if (log.isTraceEnabled()) { log.trace("Session is not transacted, sending message now"); }
             }
          }
          else if ("recover".equals(methodName))

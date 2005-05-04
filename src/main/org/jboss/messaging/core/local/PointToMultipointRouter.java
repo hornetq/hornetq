@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.AbstractRouter;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
 
@@ -49,7 +48,6 @@ public class PointToMultipointRouter extends AbstractRouter
     */
    public boolean handle(Routable r)
    {
-
       boolean allSuccessful = true;
       synchronized(this)
       {

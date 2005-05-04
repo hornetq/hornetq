@@ -77,7 +77,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             // I created the client already, pass it along to be used by the InvokerInterceptor
             metaData.addMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.CLIENT,
                                  client, PayloadKey.TRANSIENT);
-            // This I will need on the server-side to create the ConsumerDelegate
+            // I will need this on the server-side to create the ConsumerDelegate
             metaData.addMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_SESSION_ID,
                                  client.getSessionId(), PayloadKey.AS_IS);
 

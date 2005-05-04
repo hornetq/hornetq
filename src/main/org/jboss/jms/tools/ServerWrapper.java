@@ -24,7 +24,6 @@ import javax.naming.NamingEnumeration;
 import javax.naming.Binding;
 import java.net.URL;
 import java.util.Hashtable;
-import java.util.Set;
 
 /**
  * A place-holder for the micro-container. Used to bootstrap a server instance, until proper
@@ -126,16 +125,10 @@ public class ServerWrapper
       c.unbind(name);
    }
 
-   /**
-    * @return the active connections clientIDs (as Strings)
-    */
-   public Set getConnections() throws Exception
+   public ServerPeer getServerPeer()
    {
-      return serverPeer.getConnections();
+      return serverPeer;
    }
-
-
-
 
    // Package protected ---------------------------------------------
    

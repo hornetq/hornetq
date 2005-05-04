@@ -49,15 +49,19 @@ public class PointToPointRouter extends AbstractRouter
          }
 
          // iterate over targets and try to send the message until either send succeeds or there are
-         //  no targets left
+         // no targets left
          for(Iterator i = iterator(); i.hasNext(); )
          {
             Serializable receiverID = (Serializable)i.next();
             Receiver receiver = (Receiver)receivers.get(receiverID);
             try
             {
+               if (log.isTraceEnabled()) { log.trace("attempting to deliver to " + receiverID); }
                boolean successful = receiver.handle(r);
+               if (log.isTraceEnabled()) { log.trace((successful ? "successful" : "unsuccessful") + " delivery to " + receiverID); }
+
                acknowledgments.put(receiverID, new Boolean(successful));
+
                if (successful)
                {
                   return true;

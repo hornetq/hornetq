@@ -95,9 +95,12 @@ public class LocalPipe extends SingleOutputChannelSupport
       try
       {
          receiverID = receiver.getReceiverID();
+
+         if (log.isTraceEnabled()) { log.trace(this + ": attempting to deliver to " + receiverID); }
          if (receiver.handle(r))
          {
             // successful synchronous delivery
+            if (log.isTraceEnabled()) { log.trace(this + ": successful delivery to " + receiverID); }
             return true;
          }
       }
@@ -105,6 +108,8 @@ public class LocalPipe extends SingleOutputChannelSupport
       {
          log.warn("The receiver " + receiverID + " failed to handle the message", e);
       }
+
+      if (log.isTraceEnabled()) { log.trace(this + ": unsuccessful delivery to " + receiverID + ", storing the message"); }
       return storeNACKedMessage(r, receiverID);
    }
 
@@ -112,7 +117,9 @@ public class LocalPipe extends SingleOutputChannelSupport
    {
       lock();
 
-      if (log.isTraceEnabled()) { log.trace("asynchronous delivery triggered on " + getReceiverID()); }
+      if (log.isTraceEnabled()) { log.trace(id + ": asynchronous delivery triggered, " + unacked.size() + " messages to deliver"); }
+
+      Serializable targetID = receiver.getReceiverID();
 
       try
       {
@@ -131,8 +138,10 @@ public class LocalPipe extends SingleOutputChannelSupport
                   continue;
                }
 
+               if (log.isTraceEnabled()) { log.trace(this + ": attempting to redeliver to " + targetID); }
                if (receiver.handle(r))
                {
+                  if (log.isTraceEnabled()) { log.trace(this + ": successful redelivery to " + targetID + ", removing the message"); }
                   i.remove();
                }
             }
@@ -193,5 +202,13 @@ public class LocalPipe extends SingleOutputChannelSupport
       {
          unlock();
       }
+   }
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("LocalPipe[");
+      sb.append(id);
+      sb.append("]");
+      return sb.toString();
    }
 }

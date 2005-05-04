@@ -6,25 +6,10 @@
  */
 package org.jboss.test.messaging.util;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.ServerDelegate;
-import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.util.ServerResponse;
-import org.jboss.messaging.core.util.ServerDelegateResponse;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.util.ServerDelegate;
-import org.jboss.messaging.core.util.ServerDelegateResponse;
-import org.jboss.messaging.core.util.ServerResponse;
 import org.jboss.jms.util.RendezVous;
-import org.jgroups.JChannel;
-import org.jgroups.blocks.RpcDispatcher;
 
-import java.util.Set;
-import java.util.Collection;
-import java.util.Iterator;
-import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
@@ -93,6 +78,67 @@ public class RendezVousTest extends TestCase
       }
 
       assertTrue(o == result);
+
+   }
+
+
+   public void testRendezVousStress() throws Exception
+   {
+      final RendezVous rv = new RendezVous();
+
+      int count = 100;
+      final List sent = new ArrayList();
+      for(int i = 0; i < count; i++)
+      {
+         sent.add(new Integer(i));
+      }
+      List received = new ArrayList();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            // give the receiver thread enough thime to block
+            try
+            {
+               Thread.sleep(500);
+            }
+            catch(Exception e)
+            {
+               e.printStackTrace();
+            }
+
+            int i = 0;
+            while(i < sent.size())
+            {
+               if (rv.put(sent.get(i)))
+               {
+                  i++;
+               }
+            }
+         }
+      }, "Sender").start();
+
+      while(true)
+      {
+         result = rv.get(3000);
+         if (result == null)
+         {
+            break;
+         }
+
+         // simulate lengthy processing
+         Thread.sleep(100);
+
+         received.add(result);
+      }
+
+
+      assertEquals(sent.size(), received.size());
+      for(int i = 0; i < sent.size(); i++)
+      {
+         assertEquals(sent.get(i), received.get(i));
+      }
 
    }
 
