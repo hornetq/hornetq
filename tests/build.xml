@@ -55,7 +55,9 @@
       <path refid="jboss.jms.classpath"/>
       <path refid="jboss.j2ee.classpath"/>
       <path refid="jboss.j2se.classpath"/>
-      <path refid="jboss.remoting.classpath"/>
+      <!-- Temporarily I use the "patched" jboss-remoting.jar from src/resources -->
+      <!-- <path refid="jboss.remoting.classpath"/> -->
+      <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
       <path refid="jboss.aop.classpath"/>
    </path>
 

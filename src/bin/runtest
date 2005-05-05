@@ -39,6 +39,10 @@ done
 #Temporarily use a newer JGroups version, not available in the thirdparty dir
 #$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar${SEP}\
 
+#Temporarily I use the "patched" jboss-remoting.jar from src/resources
+#$reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
+
+
 reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
 $reldir/../../src/etc${SEP}\
@@ -46,7 +50,7 @@ $reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
-$reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
+$reldir/../resources/jboss-remoting.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\

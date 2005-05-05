@@ -71,8 +71,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
       topicProducer = producerSession.createProducer(topic);
       topicConsumer = consumerSession.createConsumer(topic);
-//      queueProducer = producerSession.createProducer(queue);
-//      queueConsumer = consumerSession.createConsumer(queue);
+      queueProducer = producerSession.createProducer(queue);
+      queueConsumer = consumerSession.createConsumer(queue);
    }
 
    public void tearDown() throws Exception
@@ -87,63 +87,63 @@ public class MessageConsumerTest extends MessagingTestCase
       super.tearDown();
    }
 
-//   public void testReceiveOnTopicTimeoutNoMessage() throws Exception
-//   {
-//      Message m = topicConsumer.receive(1000);
-//      assertNull(m);
-//   }
-//
-//   public void testReceiveOnTopicConnectionStopped() throws Exception
-//   {
-//      consumerConnection.stop();
-//
-//      final Message m = producerSession.createMessage();
-//      new Thread(new Runnable()
-//      {
-//         public void run()
-//         {
-//            try
-//            {
-//               // this is needed to make sure the main thread has enough time to block
-//               Thread.sleep(1000);
-//               topicProducer.send(m);
-//            }
-//            catch(Exception e)
-//            {
-//               log.error(e);
-//            }
-//         }
-//      }, "Producer").start();
-//
-//      assertNull(topicConsumer.receive(2000));
-//   }
-//
-//
-//   public void testReceiveOnTopicTimeout() throws Exception
-//   {
-//      consumerConnection.start();
-//
-//      final Message m1 = producerSession.createMessage();
-//      new Thread(new Runnable()
-//      {
-//         public void run()
-//         {
-//            try
-//            {
-//               // this is needed to make sure the main thread has enough time to block
-//               Thread.sleep(1000);
-//               topicProducer.send(m1);
-//            }
-//            catch(Exception e)
-//            {
-//               log.error(e);
-//            }
-//         }
-//      }, "Producer").start();
-//
-//      Message m2 = topicConsumer.receive(2000);
-//      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
-//   }
+   public void testReceiveOnTopicTimeoutNoMessage() throws Exception
+   {
+      Message m = topicConsumer.receive(1000);
+      assertNull(m);
+   }
+
+   public void testReceiveOnTopicConnectionStopped() throws Exception
+   {
+      consumerConnection.stop();
+
+      final Message m = producerSession.createMessage();
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
+               topicProducer.send(m);
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "Producer").start();
+
+      assertNull(topicConsumer.receive(2000));
+   }
+
+
+   public void testReceiveOnTopicTimeout() throws Exception
+   {
+      consumerConnection.start();
+
+      final Message m1 = producerSession.createMessage();
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
+               topicProducer.send(m1);
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "Producer").start();
+
+      Message m2 = topicConsumer.receive(2000);
+      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+   }
 
    public void testReceiveOnTopic() throws Exception
    {
@@ -171,67 +171,67 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
    }
 
-//   /**
-//    * The test sends a burst of messages and verifies if the consumer receives all of them.
-//    */
-//   public void testStressReceiveOnQueue() throws Exception
-//   {
-//
-//      final int count = 4;
-//
-//      consumerConnection.start();
-//
-//      new Thread(new Runnable()
-//      {
-//         public void run()
-//         {
-//            try
-//            {
-//               // this is needed to make sure the main thread has enough time to block
-//               Thread.sleep(1000);
-//
-//
-//               for (int i = 0; i < count; i++)
-//               {
-//                  Message m = producerSession.createMessage();
-//                  queueProducer.send(m);
-//               }
-//            }
-//            catch(Exception e)
-//            {
-//               log.error(e);
-//            }
-//         }
-//      }, "ProducerTestThread").start();
-//
-//      int received = 0;
-//      while(true)
-//      {
-//         Message m = queueConsumer.receive(3000);
-//         if (m == null)
-//         {
-//            break;
-//         }
-//         Thread.sleep(1000);
-//         received++;
-//      }
-//
-//      assertEquals(count, received);
-//
-//   }
-//
-//
-//   public void testMessageListenerOnTopic() throws Exception
-//   {
-//      MessageListenerImpl l = new MessageListenerImpl();
-//      topicConsumer.setMessageListener(l);
-//
-//      consumerConnection.start();
-//
-//      Message m1 = producerSession.createMessage();
-//      topicProducer.send(m1);
-//      assertEquals(m1.getJMSMessageID(), l.getNextMessage().getJMSMessageID());
-//   }
+   /**
+    * The test sends a burst of messages and verifies if the consumer receives all of them.
+    */
+   public void testStressReceiveOnQueue() throws Exception
+   {
+
+      final int count = 4;
+
+      consumerConnection.start();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
+
+
+               for (int i = 0; i < count; i++)
+               {
+                  Message m = producerSession.createMessage();
+                  queueProducer.send(m);
+               }
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "ProducerTestThread").start();
+
+      int received = 0;
+      while(true)
+      {
+         Message m = queueConsumer.receive(3000);
+         if (m == null)
+         {
+            break;
+         }
+         Thread.sleep(1000);
+         received++;
+      }
+
+      assertEquals(count, received);
+
+   }
+
+
+   public void testMessageListenerOnTopic() throws Exception
+   {
+      MessageListenerImpl l = new MessageListenerImpl();
+      topicConsumer.setMessageListener(l);
+
+      consumerConnection.start();
+
+      Message m1 = producerSession.createMessage();
+      topicProducer.send(m1);
+      assertEquals(m1.getJMSMessageID(), l.getNextMessage().getJMSMessageID());
+   }
 
    // Package protected ---------------------------------------------
    

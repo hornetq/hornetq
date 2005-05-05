@@ -78,9 +78,11 @@
     <path id="library.classpath">
        <path refid="oswego.concurrent.classpath"/>
        <path refid="javassist.classpath"/>
-       <!-- I temporarily use a newer version of JGroups, not available in the thirdparty dir -->
+
+       <!-- Temporarily I use the "patched" JGroups from src/resources -->
        <!-- <path refid="jgroups.jgroups.classpath"/> -->
        <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
+
        <path refid="junit.junit.classpath"/>
     </path>
 
@@ -92,7 +94,9 @@
     <path id="dependentmodule.classpath">
       <path refid="jboss.common.classpath"/>
       <path refid="jboss.j2ee.classpath"/>
-      <path refid="jboss.remoting.classpath"/>
+       <!-- Temporarily I use the "patched" jboss-remoting.jar from src/resources -->
+      <!-- <path refid="jboss.remoting.classpath"/> -->
+      <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.aspects.classpath"/>
       <path refid="jboss.j2se.classpath"/>
