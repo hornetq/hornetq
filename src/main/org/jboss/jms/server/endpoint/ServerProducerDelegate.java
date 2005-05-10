@@ -4,13 +4,11 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
-import org.jboss.util.id.GUID;
+import org.jboss.jms.delegate.ProducerDelegate;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

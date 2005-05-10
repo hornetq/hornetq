@@ -4,12 +4,14 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.AspectManager;
@@ -22,6 +24,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
@@ -45,7 +48,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    protected ServerPeer serverPeer;
 
    protected Map sessions;
-   protected boolean started;
+   protected volatile boolean started;
 
    // Constructors --------------------------------------------------
 
@@ -119,24 +122,21 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       this.clientID = clientID;
    }
 
-   public synchronized void start()
+   public void start()
    {
+      setStarted(true);
       log.debug("Connection " + clientID + " started");
-      started = true;
    }
 
-   public synchronized boolean isStarted()
+   public boolean isStarted()
    {
       return started;
    }
 
    public synchronized void stop()
    {
+      setStarted(false);
       log.debug("Connection " + clientID + " stopped");
-
-      // TODO what about the inflight messages?
-      // TODO This call must block until receives and/or message listeners in progress have completed
-      started = false;
    }
 
    public void close() throws JMSException
@@ -205,6 +205,20 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    }
 
    // Private -------------------------------------------------------
+
+   private void setStarted(boolean s)
+   {
+      synchronized(sessions)
+      {
+         for (Iterator i = sessions.values().iterator(); i.hasNext(); )
+         {
+            ServerSessionDelegate sd = (ServerSessionDelegate)i.next();
+            sd.setStarted(s);
+         }
+         started = s;
+      }
+   }
+
 
    // Inner classes -------------------------------------------------
 }

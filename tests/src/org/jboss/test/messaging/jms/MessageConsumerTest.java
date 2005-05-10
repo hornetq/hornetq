@@ -177,7 +177,7 @@ public class MessageConsumerTest extends MessagingTestCase
    public void testStressReceiveOnQueue() throws Exception
    {
 
-      final int count = 4;
+      final int count = 100;
 
       consumerConnection.start();
 
@@ -219,6 +219,57 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(count, received);
 
    }
+
+   // TODO uncomment this when I fix consumer delivery
+//   /**
+//    * The test sends a burst of messages and verifies if the consumer receives all of them.
+//    */
+//   public void testStressReceiveOnTopic() throws Exception
+//   {
+//
+//      final int count = 100;
+//
+//      consumerConnection.start();
+//
+//      new Thread(new Runnable()
+//      {
+//         public void run()
+//         {
+//            try
+//            {
+//               // this is needed to make sure the main thread has enough time to block
+//               Thread.sleep(1000);
+//
+//
+//               for (int i = 0; i < count; i++)
+//               {
+//                  Message m = producerSession.createMessage();
+//                  topicProducer.send(m);
+//               }
+//            }
+//            catch(Exception e)
+//            {
+//               log.error(e);
+//            }
+//         }
+//      }, "ProducerTestThread").start();
+//
+//      int received = 0;
+//      while(true)
+//      {
+//         Message m = topicConsumer.receive(3000);
+//         if (m == null)
+//         {
+//            break;
+//         }
+//         Thread.sleep(1000);
+//         received++;
+//      }
+//
+//      assertEquals(count, received);
+//
+//   }
+
 
 
    public void testMessageListenerOnTopic() throws Exception

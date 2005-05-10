@@ -53,18 +53,10 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          if (name.equals("receive"))
          {
             long timeout = args == null ? 0 : ((Long)args[0]).longValue();
-            MessageCallbackHandler msgHandler = (MessageCallbackHandler)mi.
+            MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
                   getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
 
-            // notify destination that a consumer intends to do a blocking wait; this will trigger
-            // asynchronous delivery of the messages on destination, in case the destination holds
-            // undelivered messages
-
-            synchronized(msgHandler.getRendezVous())
-            {
-               invocation.invokeNext();
-               return msgHandler.pullMessage(timeout);
-            }
+            return messageHandler.receive(timeout);
          }
          else if (name.equals("receiveNoWait"))
          {

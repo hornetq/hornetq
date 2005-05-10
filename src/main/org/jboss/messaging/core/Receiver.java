@@ -41,7 +41,7 @@ public interface Receiver
     * @param routable the routable to be handled by the Receiver.
     *
     * @return true if the Receiver acknowledges the Routable and relieves the sender of the
-    *         responsibity of dealing with the Routable.
+    *         responsibity to deal with the Routable.
     */
    public boolean handle(Routable routable);
 

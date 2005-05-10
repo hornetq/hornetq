@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 
 import org.jboss.jms.client.container.JMSInvocationHandler;
@@ -13,9 +13,11 @@ import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.endpoint.Consumer;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.delegate.AcknowledgmentHandler;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.AspectManager;
@@ -176,8 +178,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       String consumerID = generateConsumerID();
       SimpleMetaData metadata = new SimpleMetaData();
 
-      // the remote calls for Consumer do not need a target, will be handled by interceptors
-      metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, "GenericTarget", PayloadKey.AS_IS);
+      metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, serverPeer.getConsumerAdvisor().getName(), PayloadKey.AS_IS);
       metadata.addMetaData(InvokerInterceptor.REMOTING,
                            InvokerInterceptor.INVOKER_LOCATOR,
                            serverPeer.getLocator(),
@@ -194,7 +195,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // TODO
       ClassLoader loader = getClass().getClassLoader();
-      Class[] interfaces = new Class[] { MessageConsumer.class };
+      Class[] interfaces = new Class[] { MessageConsumer.class, AcknowledgmentHandler.class };
       MessageConsumer proxy = (MessageConsumer)Proxy.newProxyInstance(loader, interfaces, h);
 
       if (callbackHandler == null)
@@ -204,9 +205,9 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // create the Consumer endpoint and register it with this SessionDelegate instance
       Consumer c =  new Consumer(consumerID, destination, callbackHandler, this);
-      putConsumerDelegate(consumerID, c);
+      putConsumer(consumerID, c);
 
-      log.debug("creating consumer endpoint (destination=" + jmsDestination + ")");
+      log.debug("created consumer endpoint (destination=" + jmsDestination + ")");
 
       return proxy;
    }
@@ -285,7 +286,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
    }
 
-   public Consumer putConsumerDelegate(String consumerID, Consumer d)
+   public Consumer putConsumer(String consumerID, Consumer d)
    {
       synchronized(consumers)
       {
@@ -293,7 +294,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
    }
 
-   public Consumer getConsumerDelegate(String consumerID)
+   public Consumer getConsumer(String consumerID)
    {
       synchronized(consumers)
       {
@@ -306,14 +307,14 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return connectionEndpoint;
    }
 
-
    /**
-    * IoC.
+    * IoC
     */
    public void setCallbackHandler(InvokerCallbackHandler callbackHandler)
    {
       this.callbackHandler = callbackHandler;
    }
+
 
    // Package protected ---------------------------------------------
    
@@ -346,7 +347,21 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          log.debug("The message was not acknowledged");
          //TODO deal with this properly
       }  
-      
+   }
+
+   /**
+    * Starts this session's Consumers
+    */
+   void setStarted(boolean s)
+   {
+      synchronized(consumers)
+      {
+         for(Iterator i = consumers.values().iterator(); i.hasNext(); )
+         {
+            ((Consumer)i.next()).setStarted(s);
+
+         }
+      }
    }
 
    // Protected -----------------------------------------------------

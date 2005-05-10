@@ -4,13 +4,15 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.AspectManager;

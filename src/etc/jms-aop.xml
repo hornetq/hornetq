@@ -130,7 +130,7 @@
       </bind>
    </domain>
 
-   <domain name="ServerConsumerDelegate">
+   <domain name="Consumer">
       <bind pointcut="execution(* *->*(..))">
          <stack-ref name="ServerConsumerStack"/>
       </bind>

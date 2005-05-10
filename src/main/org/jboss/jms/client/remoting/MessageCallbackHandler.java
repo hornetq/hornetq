@@ -9,19 +9,22 @@ package org.jboss.jms.client.remoting;
 import org.jboss.remoting.InvokerCallbackHandler;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.HandleCallbackException;
-import org.jboss.remoting.Client;
 import org.jboss.logging.Logger;
-import org.jboss.jms.util.RendezVous;
+import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.delegate.AcknowledgmentHandler;
 
 import javax.jms.MessageListener;
 import javax.jms.Message;
+import javax.jms.JMSException;
+
+import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class MessageCallbackHandler implements InvokerCallbackHandler
+public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 {
    // Constants -----------------------------------------------------
 
@@ -31,78 +34,96 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    // Attributes ----------------------------------------------------
 
-   /** the remoting client this callback handler is registered with **/
-   protected Client client;
+   protected AcknowledgmentHandler acknowledgmentHandler;
+
+   private volatile boolean receiving;
+
+   protected int capacity = 100;
+   protected BoundedBuffer messages;
+
    protected MessageListener listener;
-   protected RendezVous rv;
+   protected Thread listenerThread;
+   private int listenerThreadCount = 0;
+
+
 
    // Constructors --------------------------------------------------
 
-   public MessageCallbackHandler(Client client)
+   public MessageCallbackHandler()
    {
-      this.client = client;
-      rv = new RendezVous();
+      messages = new BoundedBuffer(capacity);
    }
 
    // InvokerCallbackHandler implementation -------------------------
 
-   /**
-    * The method first tries to aquire the handler's lock, so in order to accept asynchronous
-    * deliveries, the handler must be unlocked.
-    */
    public void handleCallback(InvocationRequest invocation) throws HandleCallbackException
    {
-      synchronized(rv)
+
+      Message m = (Message)invocation.getParameter();
+
+      if (log.isTraceEnabled()) { log.trace("receiving from server: " + m); }
+
+      try
+      {
+         messages.put(m);
+         if (log.isTraceEnabled()) { log.trace("message " + m + " accepted for delivery"); }
+      }
+      catch(InterruptedException e)
+      {
+         String msg = "Interrupted attempt to put the message in the delivery buffer";
+         log.warn(msg);
+         throw new HandleCallbackException(msg, e);
+      }
+   }
+
+   // Runnable implementation ---------------------------------------
+
+   /**
+    * Receive messages for the message listener.
+    */
+   public void run()
+   {
+      while(true)
       {
          try
          {
-            Message m = (Message)invocation.getParameter();
-
-            if (log.isTraceEnabled()) { log.trace("receiving asyncronous message " + m); }
-
-
-            if (rv.put(m))
-            {
-               // TODO: supposedly my receiver thread got it. However I dont' have a hard guarantee
-               if (log.isTraceEnabled()) { log.trace("message " + m + " accepted"); }
-               return;
-            }
-
-            if (listener == null)
-            {
-               if (log.isTraceEnabled()) { log.trace("no one to handle message " + m.getJMSMessageID() + ", nacking ..."); }
-               throw new NACKCallbackException();
-            }
-
+            Message m = (Message)messages.take();
             listener.onMessage(m);
-            if (log.isTraceEnabled()) { log.trace("message " + m.getJMSMessageID() + " submitted to listener"); }
+            acknowledge(m);
          }
-         catch(NACKCallbackException e)
+         catch(InterruptedException e)
          {
-            throw e;
+            log.warn("The message listener thread has been interrupted", e);
          }
          catch(Throwable t)
          {
-            throw new HandleCallbackException("Failed to handle the message", t);
+            // TODO - different actions for client error/commuication error
+            // TODO - try several times and then give up?
+            log.error(t);
          }
       }
    }
 
    // Public --------------------------------------------------------
 
-   public Client getClient()
+   public void setAcknowledgmentHandler(AcknowledgmentHandler acknowledgmentHandler)
    {
-      return client;
+      this.acknowledgmentHandler = acknowledgmentHandler;
    }
 
-   public MessageListener getMessageListener()
+   public synchronized MessageListener getMessageListener()
    {
       return listener;
    }
 
-   public void setMessageListener(MessageListener listener)
+   public synchronized void setMessageListener(MessageListener listener)
    {
+      if (this.listener == null && listener != null)
+      {
+         listenerThread = new Thread(this, "MessageListener Thread " + listenerThreadCount++);
+      }
       this.listener = listener;
+      listenerThread.start();
    }
 
    /**
@@ -111,18 +132,46 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
     * @param timeout - the timeout value in milliseconds. A zero timeount never expires, and the
     *        call blocks indefinitely.
     */
-   public Message pullMessage(long timeout)
+   public Message receive(long timeout) throws JMSException, InterruptedException
    {
-      return (Message)rv.get(timeout);
-   }
+      // make sure the current state allows receiving
 
-   /**
-    * Returns a reference to the MessageCallbackHandler's rendezVous. Useful for its synchronization
-    * lock.
-    */
-   public Object getRendezVous()
-   {
-      return rv;
+      synchronized(this)
+      {
+         if (listener != null)
+         {
+            throw new JBossJMSException("A message listener is already registered");
+         }
+      }
+      if (receiving)
+      {
+         throw new JBossJMSException("Another thread is already in receive.");
+      }
+
+      try
+      {
+         if (log.isTraceEnabled()) { log.trace("receive, timeout = "+timeout+" ms"); }
+
+         receiving = true;
+         Message m = null;
+         if (timeout == 0)
+         {
+            m = (Message)messages.take();
+         }
+         else
+         {
+            m = (Message)messages.poll(timeout);
+         }
+         if (m != null)
+         {
+            acknowledge(m);
+         }
+         return m;
+      }
+      finally
+      {
+         receiving = false;
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -130,6 +179,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   public void acknowledge(Message m) throws JMSException
+   {
+      acknowledgmentHandler.acknowledge(m.getJMSMessageID());
+   }
+
+   // Inner classes -------------------------------------------------
 }
+
+
+
+

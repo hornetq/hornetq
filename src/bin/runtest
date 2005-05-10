@@ -4,9 +4,9 @@
 #
 #
 
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
+
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_CLASS=org.jboss.test.messaging.util.RendezVousTest
+
 
 cygwin=false;
 case "`uname`" in

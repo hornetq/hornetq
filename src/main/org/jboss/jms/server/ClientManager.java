@@ -6,7 +6,8 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.jms.delegate.ServerConnectionDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 
 import java.util.Map;
 import java.util.HashMap;

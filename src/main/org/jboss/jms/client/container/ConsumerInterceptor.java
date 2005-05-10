@@ -16,6 +16,7 @@ import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.client.remoting.Remoting;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.delegate.AcknowledgmentHandler;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -70,14 +71,14 @@ public class ConsumerInterceptor implements Interceptor, Serializable
                throw new RuntimeException("No subsystem supplied.  Can't invoke remotely!");
             }
             Client client = new Client(locator, subsystem);
-            MessageCallbackHandler msgHandler = new MessageCallbackHandler(client);
+            MessageCallbackHandler msgHandler = new MessageCallbackHandler();
             client.addListener(msgHandler, Remoting.getCallbackServer().getLocator());
 
             SimpleMetaData metaData = invocation.getMetaData();
             // I created the client already, pass it along to be used by the InvokerInterceptor
             metaData.addMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.CLIENT,
                                  client, PayloadKey.TRANSIENT);
-            // I will need this on the server-side to create the ConsumerDelegate
+            // I will need this on the server-side to create the Consumer delegate
             metaData.addMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_SESSION_ID,
                                  client.getSessionId(), PayloadKey.AS_IS);
 
@@ -85,6 +86,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             JMSConsumerInvocationHandler ih =
                   (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerProxy);
             ih.setMessageHandler(msgHandler);
+            msgHandler.setAcknowledgmentHandler((AcknowledgmentHandler)consumerProxy);
 
             return consumerProxy;
          }

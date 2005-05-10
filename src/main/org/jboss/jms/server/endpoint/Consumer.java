@@ -10,12 +10,9 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.jms.delegate.ServerSessionDelegate;
-import org.jboss.jms.client.remoting.NACKCallbackException;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.delegate.AcknowledgmentHandler;
 import org.jboss.remoting.InvokerCallbackHandler;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.HandleCallbackException;
 
 import java.io.Serializable;
 
@@ -29,7 +26,7 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Consumer implements Receiver
+public class Consumer implements Receiver, AcknowledgmentHandler
 {
    // Constants -----------------------------------------------------
 
@@ -44,6 +41,8 @@ public class Consumer implements Receiver
    protected ServerSessionDelegate sessionEndpoint;
    protected InvokerCallbackHandler callbackHandler;
 
+   protected PooledExecutor threadPool;
+
    // Constructors --------------------------------------------------
 
    public Consumer(String id, AbstractDestination destination,
@@ -54,9 +53,7 @@ public class Consumer implements Receiver
       this.destination = destination;
       this.sessionEndpoint = sessionEndpoint;
       this.callbackHandler = callbackHandler;
-
-      // register myself with the destination
-      destination.add(this);
+      threadPool = sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
    }
 
    // Receiver implementation ---------------------------------------
@@ -68,46 +65,51 @@ public class Consumer implements Receiver
 
    public boolean handle(Routable r)
    {
-      // I only accept messages if my connection is started
-      if (!sessionEndpoint.getConnectionEndpoint().isStarted())
-      {
-         // nack
-         return false;
-      }
-
       if (log.isTraceEnabled()) { log.trace("receiving routable " + r + " from the core"); }
 
-      // push the message to the client
-      InvocationRequest req = new InvocationRequest(null, null, r, null, null, null);
+      // deliver the message on a different thread than the core thread that brought it here
 
       try
       {
-         // TODO what happens if handling takes a long time?
-         callbackHandler.handleCallback(req);
+         threadPool.execute(new Delivery(callbackHandler, r, log));
       }
-      catch(HandleCallbackException e)
+      catch(InterruptedException e)
       {
-         Throwable cause = e.getCause().getCause();
-
-         // according http://jira.jboss.com/jira/browse/JBREM-93, the HandleCallbackException
-         // always wraps the original exception that was generated on the client.
-         if (cause instanceof NACKCallbackException)
-         {
-            return false;
-         }
-
-         log.error("The client failed to acknowledge the message", cause);
-         return false;
+         log.warn("Interrupted asynchronous delivery", e);
       }
 
-      return true;
+      // always NACK the message; it will be asynchronously ACKED later
+      return false;
+   }
+
+   // AcknowledgmentHandler implementation --------------------------
+
+   public void acknowledge(Serializable messageID)
+   {
+      if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
    }
 
    // Public --------------------------------------------------------
 
+   void setStarted(boolean s)
+   {
+      if (s)
+      {
+         destination.add(this);
+      }
+      else
+      {
+         destination.remove(id);
+      }
+   }
+
    /**
+    * @deprecated
+    *
+    * TODO get rid of it
+    * 
     * The facade initiated a blocking wait, so this method makes sure that any messages hold by
-    * the destination are delivered.
+    * the destination are delivered.    *
     *
     * @throws JBossJMSException - wraps an InterruptedException
     */
@@ -117,10 +119,6 @@ public class Consumer implements Receiver
       // the delivery must be always initiate from another thread than the caller's. This is to
       // avoid the situation when the caller thread re-acquires reentrant locks in an in-VM
       // situation
-
-      PooledExecutor threadPool =
-            sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
-
       try
       {
          threadPool.execute(new Runnable()

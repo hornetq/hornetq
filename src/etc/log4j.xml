@@ -84,16 +84,15 @@
    </category>
 
 
-   <!--
    <category name="org.jboss.jms.client.remoting.MessageCallbackHandler">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
-   <category name="org.jboss.jms.util.RendezVous">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
+   
    <category name="org.jboss.jms.server.endpoint.Consumer">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
+
+   <!--
    <category name="org.jboss.jms.delegate">
       <priority value="DEBUG"/>
    </category>

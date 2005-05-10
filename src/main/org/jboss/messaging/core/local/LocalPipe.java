@@ -119,8 +119,6 @@ public class LocalPipe extends SingleOutputChannelSupport
 
       if (log.isTraceEnabled()) { log.trace(id + ": asynchronous delivery triggered, " + unacked.size() + " messages to deliver"); }
 
-      Serializable targetID = receiver.getReceiverID();
-
       try
       {
          // try to flush the message store
@@ -138,10 +136,10 @@ public class LocalPipe extends SingleOutputChannelSupport
                   continue;
                }
 
-               if (log.isTraceEnabled()) { log.trace(this + ": attempting to redeliver to " + targetID); }
+               if (log.isTraceEnabled()) { log.trace(this + ": attempting to redeliver to " + receiver.getReceiverID()); }
                if (receiver.handle(r))
                {
-                  if (log.isTraceEnabled()) { log.trace(this + ": successful redelivery to " + targetID + ", removing the message"); }
+                  if (log.isTraceEnabled()) { log.trace(this + ": successful redelivery to " + receiver.getReceiverID() + ", removing the message"); }
                   i.remove();
                }
             }

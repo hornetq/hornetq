@@ -226,7 +226,7 @@ public class Client
       return consumer.receive(timeout);
    }
 
-   public void receiveOnASeparateThread()
+   public void receiveOnASeparateThread(final int workTimeMs)
    {
       insureConsumer();
       new Thread(new Runnable() {
@@ -239,6 +239,9 @@ public class Client
                {
                   consumer.receive();
                   System.out.println("received " + cnt++);
+
+                  // process
+                  Thread.sleep(workTimeMs);
                }
                catch(Exception e)
                {

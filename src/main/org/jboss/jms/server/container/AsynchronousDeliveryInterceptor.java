@@ -9,8 +9,8 @@ package org.jboss.jms.server.container;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.delegate.ServerConnectionDelegate;
-import org.jboss.jms.delegate.ServerSessionDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 import org.jboss.jms.server.endpoint.Consumer;
 
 import java.lang.reflect.Method;
@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 /**
  *
  * Triggers asynchronous delivery on destinations.
+ *
+ * @deprecated
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -79,7 +81,7 @@ public class AsynchronousDeliveryInterceptor implements Interceptor
                   (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,
                                                                JMSAdvisor.CONSUMER_ID);
 
-            Consumer consumer = ssd.getConsumerDelegate(consumerID);
+            Consumer consumer = ssd.getConsumer(consumerID);
             if (consumer == null)
             {
                throw new Exception("The session " + sessionID + "  doesn't know of any consumer " +

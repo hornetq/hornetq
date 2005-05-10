@@ -8,8 +8,9 @@ package org.jboss.jms.server;
 
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.delegate.ServerConnectionFactoryDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
@@ -30,7 +31,6 @@ import javax.naming.Context;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
-import java.util.Set;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -64,6 +64,7 @@ public class ServerPeer
    protected ClassAdvisor connAdvisor;
    protected ClassAdvisor sessionAdvisor;
    protected ClassAdvisor producerAdvisor;
+   protected ClassAdvisor consumerAdvisor;
    protected ClassAdvisor genericAdvisor;
 
    protected PooledExecutor threadPool;
@@ -170,6 +171,12 @@ public class ServerPeer
       return producerAdvisor;
    }
 
+   public ClassAdvisor getConsumerAdvisor()
+   {
+      return consumerAdvisor;
+   }
+
+
 
    public Hashtable getJNDIEnvironment()
    {
@@ -201,12 +208,13 @@ public class ServerPeer
                                            "ServerConnectionDelegate",
                                            "ServerSessionDelegate",
                                            "ServerProducerDelegate",
+                                           "Consumer",
                                            "GenericTarget"};
 
    private void initializeAdvisors() throws Exception
    {
 
-      ClassAdvisor[] advisors = new ClassAdvisor[5];
+      ClassAdvisor[] advisors = new ClassAdvisor[6];
 
       for(int i = 0; i < domainNames.length; i++)
       {
@@ -216,7 +224,7 @@ public class ServerPeer
             throw new RuntimeException("Domain " + domainNames[i] + " not found");
          }
          advisors[i] = new JMSAdvisor(domainNames[i], domainDefinition.getManager(), this);
-         Class c = Class.forName("org.jboss.jms.delegate." + domainNames[i]);
+         Class c = Class.forName("org.jboss.jms.server.endpoint." + domainNames[i]);
          advisors[i].attachClass(c);
 
          // register the advisor with the Dispatcher
@@ -226,7 +234,8 @@ public class ServerPeer
       connAdvisor = advisors[1];
       sessionAdvisor = advisors[2];
       producerAdvisor = advisors[3];
-      genericAdvisor = advisors[4];
+      consumerAdvisor = advisors[4];
+      genericAdvisor = advisors[5];
    }
 
    private void tearDownAdvisors() throws Exception
