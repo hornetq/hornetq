@@ -83,17 +83,22 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     */
    public void run()
    {
+      if (log.isTraceEnabled()) { log.trace("listener thread started"); }
+
       while(true)
       {
          try
          {
+            if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
             Message m = (Message)messages.take();
             listener.onMessage(m);
+            if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
             acknowledge(m);
          }
          catch(InterruptedException e)
          {
-            log.warn("The message listener thread has been interrupted", e);
+            log.debug("message listener thread interrupted, exiting");
+            return;
          }
          catch(Throwable t)
          {
@@ -116,15 +121,26 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       return listener;
    }
 
-   public synchronized void setMessageListener(MessageListener listener)
+   public synchronized void setMessageListener(MessageListener listener) throws JMSException
    {
-      if (this.listener == null && listener != null)
+      if (receiving)
       {
-         listenerThread = new Thread(this, "MessageListener Thread " + listenerThreadCount++);
+         throw new JBossJMSException("Another thread is already receiving");
       }
+
+      if (listenerThread != null)
+      {
+         listenerThread.interrupt();
+      }
+
       this.listener = listener;
-      listenerThread.start();
+      if (listener != null)
+      {
+         listenerThread = new Thread(this, "MessageListenerThread-" + listenerThreadCount++);
+         listenerThread.start();
+      }
    }
+
 
    /**
     * Method used by the client thread to get a Message, if available.
@@ -142,17 +158,17 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             throw new JBossJMSException("A message listener is already registered");
          }
-      }
-      if (receiving)
-      {
-         throw new JBossJMSException("Another thread is already in receive.");
+         if (receiving)
+         {
+            throw new JBossJMSException("Another thread is already receiving");
+         }
+         receiving = true;
       }
 
       try
       {
-         if (log.isTraceEnabled()) { log.trace("receive, timeout = "+timeout+" ms"); }
+         if (log.isTraceEnabled()) { log.trace("receive, timeout = " + timeout + " ms"); }
 
-         receiving = true;
          Message m = null;
          if (timeout == 0)
          {

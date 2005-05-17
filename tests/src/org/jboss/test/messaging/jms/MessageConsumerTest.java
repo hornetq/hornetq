@@ -18,6 +18,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.JMSException;
 import javax.naming.InitialContext;
 import java.util.List;
 import java.util.Collections;
@@ -40,6 +41,8 @@ public class MessageConsumerTest extends MessagingTestCase
    protected Session producerSession, consumerSession;
    protected MessageProducer topicProducer, queueProducer;
    protected MessageConsumer topicConsumer, queueConsumer;
+
+   protected Thread worker1;
 
    // Constructors --------------------------------------------------
 
@@ -79,6 +82,11 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       producerConnection.close();
       consumerConnection.close();
+
+      if (worker1 != null)
+      {
+         worker1.interrupt();
+      }
 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
@@ -270,7 +278,9 @@ public class MessageConsumerTest extends MessagingTestCase
 //
 //   }
 
-
+   //
+   // MessageListener tests
+   //
 
    public void testMessageListenerOnTopic() throws Exception
    {
@@ -281,7 +291,66 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Message m1 = producerSession.createMessage();
       topicProducer.send(m1);
+
+      // block the current thread until the listener gets something; this is to avoid closing
+      // the connection too early
+      l.waitForMessages();
+
       assertEquals(m1.getJMSMessageID(), l.getNextMessage().getJMSMessageID());
+   }
+
+   public void testSetMessageListenerTwice() throws Exception
+   {
+      MessageListenerImpl listener1 = new MessageListenerImpl();
+      topicConsumer.setMessageListener(listener1);
+
+      MessageListenerImpl listener2 = new MessageListenerImpl();
+      topicConsumer.setMessageListener(listener2);
+
+      consumerConnection.start();
+
+      Message m1 = producerSession.createMessage();
+      topicProducer.send(m1);
+
+      // block the current thread until the listener gets something; this is to avoid closing
+      // the connection too early
+      listener2.waitForMessages();
+
+      assertEquals(m1.getJMSMessageID(), listener2.getNextMessage().getJMSMessageID());
+      assertEquals(0, listener1.size());
+   }
+
+   public void testSetMessageListenerWhileReceiving() throws Exception
+   {
+      consumerConnection.start();
+      worker1= new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               topicConsumer.receive();
+            }
+            catch(Exception e)
+            {
+               e.printStackTrace();
+            }
+         }}, "Receiver");
+
+      worker1.start();
+
+      Thread.sleep(100);
+
+      try
+      {
+         topicConsumer.setMessageListener(new MessageListenerImpl());
+         fail("should have thrown JMSException");
+      }
+      catch(JMSException e)
+      {
+          // ok
+         log.info(e.getMessage());
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -295,10 +364,26 @@ public class MessageConsumerTest extends MessagingTestCase
    private class MessageListenerImpl implements MessageListener
    {
       private List messages = Collections.synchronizedList(new ArrayList());
+      private Object mutex = new Object();
+
+      /** Blocks the calling thread until at least a message is received */
+      public void waitForMessages() throws InterruptedException
+      {
+         synchronized(mutex)
+         {
+            mutex.wait();
+         }
+      }
 
       public void onMessage(Message m)
       {
          messages.add(m);
+         log.info("Added message " + m + " to my list");
+
+         synchronized(mutex)
+         {
+            mutex.notify();
+         }
       };
 
       public Message getNextMessage()
@@ -311,6 +396,11 @@ public class MessageConsumerTest extends MessagingTestCase
          Message m = (Message)i.next();
          i.remove();
          return m;
+      }
+
+      public int size()
+      {
+         return messages.size();
       }
 
       public void clear()

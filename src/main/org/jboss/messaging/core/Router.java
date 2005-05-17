@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.Receiver;
 
 /**
  * A Router is a message handling component that incapsulates a "routing policy". A Router will

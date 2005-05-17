@@ -165,7 +165,7 @@ public class Client
 
       if (consumer != null)
       {
-         System.out.println("Producer already created");
+         System.out.println("Consumer already created");
          return;
       }
 
@@ -193,6 +193,17 @@ public class Client
          }
       });
    }
+
+   public void unsetMessageListener() throws Exception
+   {
+      if (consumer == null)
+      {
+         throw new Exception("You need to create a consumer first. " +
+                             "Use createConsumer(destination)");
+      }
+      consumer.setMessageListener(null);
+   }
+
 
 
 
