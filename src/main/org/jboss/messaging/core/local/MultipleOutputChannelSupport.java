@@ -7,17 +7,17 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentStore;
+import org.jboss.messaging.core.util.SingleChannelAcknowledgmentStore;
 
 
 /**
- * Extends ChannelSupport for single output channels. It assumes that there is only one
- * Receiver that can handle messages, so there is only one source of NACKs.
+ * Extends ChannelSupport for multiple output channels. It assumes that there are multiple Receivers
+ * that can potentially receive messages from this channel, so nacked messages are kept in a map.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class SingleOutputChannelSupport extends ChannelSupport
+public abstract class MultipleOutputChannelSupport extends ChannelSupport
 {
    // Constants -----------------------------------------------------
 
@@ -30,16 +30,15 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
    /**
     * The default behaviour is synchronous.
     */
-   public SingleOutputChannelSupport()
+   public MultipleOutputChannelSupport()
    {
       this(Channel.SYNCHRONOUS);
    }
 
-   public SingleOutputChannelSupport(boolean mode)
+   public MultipleOutputChannelSupport(boolean mode)
    {
       super(mode);
-      // the channel uses an AcknowlegmentStore optimized for a single receiver
-      localAcknowledgmentStore = new SingleReceiverAcknowledgmentStore("LocalAckStore");
+      localAcknowledgmentStore = new SingleChannelAcknowledgmentStore("LocalAckStore");
    }
 
    // Public --------------------------------------------------------
@@ -51,4 +50,5 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+
 }

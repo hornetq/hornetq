@@ -7,11 +7,13 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.AbstractRouter;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.util.AcknowledgmentImpl;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.Serializable;
 
 /**
@@ -24,57 +26,59 @@ public class PointToPointRouter extends AbstractRouter
 {
    // Attributes ----------------------------------------------------
 
-   protected Logger log = Logger.getLogger(getClass());
-
    // Constructors --------------------------------------------------
 
    public PointToPointRouter(Serializable id)
    {
       super(id);
+      log = Logger.getLogger(PointToPointRouter.class);
    }
 
    // AbstractRouter implementation ---------------------------------
 
-   /**
-    * @return true if the router successfully delivered the message to one and only one receiver
-    *         (handle() invocation on that receiver returned true), false otherwise.
-    */
-   public boolean handle(Routable r)
+
+   public Set handle(Routable r, Set receiverIDs)
    {
+      Set acks = new HashSet();
+
       synchronized(this)
       {
-         if (receivers.isEmpty())
-         {
-            return false;
-         }
-
-         // iterate over targets and try to send the message until either send succeeds or there are
-         // no targets left
-         for(Iterator i = iterator(); i.hasNext(); )
+         for(Iterator i = iterator(receiverIDs); i.hasNext(); )
          {
             Serializable receiverID = (Serializable)i.next();
             Receiver receiver = (Receiver)receivers.get(receiverID);
             try
             {
-               if (log.isTraceEnabled()) { log.trace("attempting to deliver to " + receiverID); }
+               if (log.isTraceEnabled()) { log.trace(this + " attempting to deliver to " + receiverID); }
+
                boolean successful = receiver.handle(r);
-               if (log.isTraceEnabled()) { log.trace((successful ? "successful" : "unsuccessful") + " delivery to " + receiverID); }
 
-               acknowledgments.put(receiverID, new Boolean(successful));
+               if (log.isTraceEnabled()) { log.trace(this + ": receiver " + receiverID + (successful ? " ACKed" : " NACKed") + " the message"); }
 
-               if (successful)
-               {
-                  return true;
-               }
+               acks.add(new AcknowledgmentImpl(receiverID, successful));
+               break;
             }
-            catch(Exception e)
+            catch(Throwable t)
             {
                // broken receiver - log the exception and ignore the receiver
-               log.error("The receiver " + receiverID + " cannot handle the message.", e);
+               log.error("The receiver " + receiverID + " is broken", t);
             }
          }
       }
-      // cannot deliver, let the sender know
-      return false;
+      return acks;
    }
+
+   // Public -----------------------------------------------------------
+
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("P2PRouter[");
+      sb.append(getRouterID());
+      sb.append("]");
+      return sb.toString();
+   }
+
+   // Private ----------------------------------------------------------
+
 }

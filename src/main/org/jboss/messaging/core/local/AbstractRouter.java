@@ -9,15 +9,18 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.logging.Logger;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.Serializable;
 
 /**
- * Does Receiver management but it stops short of enforcing any routing policy, leaving its
- * implementation to subclasses.
+ * Does Receiver management but it stops short of enforcing any routing policy, leaving it to
+ * subclasses.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -30,16 +33,12 @@ public abstract class AbstractRouter implements Router
     * <ReceiverID - Receiver> map
     */
    protected Map receivers;
-
-   /**
-    * <Receiver - Boolean> map, where the boolean instance contains the result of the latest
-    * handle() invocation on that Receiver.
-    */
-   protected Map acknowledgments;
-
    protected Serializable id;
+   protected Logger log;
 
    protected boolean passByReference;
+
+
 
    // Constructors --------------------------------------------------
 
@@ -47,7 +46,6 @@ public abstract class AbstractRouter implements Router
    {
       this.id = id;
       receivers = new HashMap();
-      acknowledgments = new HashMap();
 
       // by default a router passes by reference
       passByReference = true;
@@ -56,6 +54,16 @@ public abstract class AbstractRouter implements Router
    // Public --------------------------------------------------------
 
    // Router implementation -----------------------------------------
+
+   public Serializable getRouterID()
+   {
+      return id;
+   }
+
+   public Set handle(Routable r)
+   {
+      return handle(r, null);
+   }
 
    public boolean isPassByReference()
    {
@@ -73,7 +81,6 @@ public abstract class AbstractRouter implements Router
             return false;
          }
          receivers.put(id, r);
-         acknowledgments.put(id, new Boolean(false));
          return true;
       }
    }
@@ -91,7 +98,6 @@ public abstract class AbstractRouter implements Router
        synchronized(this)
        {
           Receiver removed = (Receiver)receivers.remove(receiverID);
-          acknowledgments.remove(receiverID);
           return removed;
        }
    }
@@ -117,32 +123,38 @@ public abstract class AbstractRouter implements Router
       synchronized(this)
       {
          receivers.clear();
-         acknowledgments.clear();
       }
    }
 
-   public boolean acknowledged(Serializable receiverID)
+   // Protected  ----------------------------------------------------
+
+   /**
+    * @return the intersection between the current receiverID set and the given receiverID set.
+    */
+   protected Iterator iterator(Set receiverIDs)
    {
-      Boolean successful;
-      synchronized(this)
+      if (receiverIDs == null)
       {
-         successful = (Boolean)acknowledgments.get(receiverID);
+         return iterator();
       }
-      if (successful == null)
+
+      Set result = new HashSet();
+      for(Iterator i = receiverIDs.iterator(); i.hasNext();)
       {
-         return false;
+         Object o = i.next();
+         if (receivers.containsKey(o))
+         {
+            result.add(o);
+         }
+         else
+         {
+            log.warn("receiver " + o + "has disappeared; the message for it will be dropped");
+         }
       }
-      return successful.booleanValue();
+      return result.iterator();
    }
 
-   // Receiver implementation ---------------------------------------
 
-   public Serializable getReceiverID()
-   {
-      return id;
-   }
-
-   public abstract boolean handle(Routable m);
 
 }
 

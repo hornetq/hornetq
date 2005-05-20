@@ -10,6 +10,7 @@ import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -22,6 +23,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
+ * TODO - have AcknoweldgmentCollector implement AcknowledgmentStore. Currently the
+ *        AcknowledgmentCollector only keeps the id of the receivers that NACKed.
+ *        An AcknowledgmentStore keeps Acknowledgments (ACKs, NACKs and Channel NACKs).
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
@@ -182,8 +187,23 @@ public class AcknowledgmentCollector
       {
          unlock();
       }
-
    }
+
+
+   /**
+    * TODO - necessary to connect the new acknowledgment storage system with this Collector.
+    *
+    * @param acks contains Acknowledgments. Empty set means Channel NACK.
+    */
+   public void update(Routable r, Set acks)
+   {
+      for(Iterator i = acks.iterator(); i.hasNext(); )
+      {
+         Acknowledgment a = (Acknowledgment)i.next();
+         addNACK(r, a.getReceiverID());
+      }
+   }
+
    /**
     * TODO hack
     */

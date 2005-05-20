@@ -61,10 +61,10 @@ public class AbstractDestinationTest extends ChannelSupportTest
       assertTrue(abstractDestination.handle(new RoutableSupport("routableID2", false)));
       assertTrue(abstractDestination.handle(new RoutableSupport("routableID3", false)));
 
-      assertEquals(3, abstractDestination.getUnacknowledged().size());
+      assertEquals(3, abstractDestination.getUndelivered().size());
 
       assertFalse(abstractDestination.deliver());
-      assertEquals(3, abstractDestination.getUnacknowledged().size());
+      assertEquals(3, abstractDestination.getUndelivered().size());
 
       // this should trigger asynchronous delivery attempt
       abstractDestination.add(receiverOne);

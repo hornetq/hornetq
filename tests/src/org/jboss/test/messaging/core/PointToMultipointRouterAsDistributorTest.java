@@ -7,13 +7,13 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.local.PointToMultipointRouter;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.local.PointToMultipointRouter;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -57,7 +57,8 @@ public class PointToMultipointRouterAsDistributorTest extends DistributorTest
       // send without a receiver
 
       Routable m = new MessageSupport(new Integer(0));
-      assertFalse(router.handle(m));
+      Set acks = router.handle(m);
+      assertEquals(0, acks.size());
 
       // send with one receiver
 
@@ -65,7 +66,11 @@ public class PointToMultipointRouterAsDistributorTest extends DistributorTest
       assertTrue(router.add(rOne));
 
       m = new MessageSupport(new Integer(1));
-      assertTrue(router.handle(m));
+      Set result = router.handle(m);
+      assertEquals(1, result.size());
+      Acknowledgment a = (Acknowledgment)result.iterator().next();
+      assertTrue(a.isPositive());
+      assertEquals("ONE", a.getReceiverID());
 
       Iterator i = rOne.iterator();
       Routable n = (Routable)i.next();
@@ -80,7 +85,17 @@ public class PointToMultipointRouterAsDistributorTest extends DistributorTest
       assertTrue(router.add(rTwo));
 
       m = new MessageSupport(new Integer(2));
-      assertTrue(router.handle(m));
+      result = router.handle(m);
+      assertEquals(2, result.size());
+      Set ids = new HashSet();
+      for(Iterator j = result.iterator(); j.hasNext(); )
+      {
+         Acknowledgment ack = (Acknowledgment)j.next();
+         assertTrue(ack.isPositive());
+         ids.add(ack.getReceiverID());
+      }
+      assertTrue(ids.contains("ONE"));
+      assertTrue(ids.contains("TWO"));
 
       Iterator iOne = rOne.iterator();
       n = (Routable)iOne.next();
@@ -94,67 +109,116 @@ public class PointToMultipointRouterAsDistributorTest extends DistributorTest
    }
 
 
-   public void testDenyingReceiver() throws Exception
+   public void testNackingReceiver() throws Exception
    {
       PointToMultipointRouter router = new PointToMultipointRouter("");
 
-      ReceiverImpl denying = new ReceiverImpl("ReceiverONE", ReceiverImpl.DENYING);
-      assertTrue(router.add(denying));
+      // one NACKing receiver
+
+      ReceiverImpl nacking = new ReceiverImpl("ReceiverONE", ReceiverImpl.NACKING);
+      assertTrue(router.add(nacking));
 
       Routable m = new MessageSupport("");
-      assertFalse(router.handle(m));
+      Set result = router.handle(m);
+      assertEquals(1, result.size());
+      Acknowledgment a = (Acknowledgment)result.iterator().next();
+      assertTrue(a.isNegative());
+      assertEquals("ReceiverONE", a.getReceiverID());
 
-      Iterator i = denying.iterator();
+      Iterator i = nacking.iterator();
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(router.acknowledged(denying.getReceiverID()));
+      // a NACKing and a handling receiver
 
       ReceiverImpl handling = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(router.add(handling));
-      assertFalse(router.handle(m));
+      result = router.handle(m);
 
-      i = denying.iterator();
+      assertEquals(2, result.size());
+      Set booleans = new HashSet();
+      Set ids = new HashSet();
+      for(Iterator j = result.iterator(); j.hasNext(); )
+      {
+         Acknowledgment ack = (Acknowledgment)j.next();
+         booleans.add(new Boolean(ack.isPositive()));
+         ids.add(ack.getReceiverID());
+      }
+      assertTrue(booleans.contains(Boolean.TRUE));
+      assertTrue(booleans.contains(Boolean.FALSE));
+      assertTrue(ids.contains("ReceiverONE"));
+      assertTrue(ids.contains("ReceiverTWO"));
+
+
+      i = nacking.iterator();
       assertFalse(i.hasNext());
-
       i = handling.iterator();
       assertTrue(m == i.next());
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(router.acknowledged(denying.getReceiverID()));
-      assertTrue(router.acknowledged(handling.getReceiverID()));
    }
 
    public void testBrokenReceiver() throws Exception
    {
       PointToMultipointRouter router = new PointToMultipointRouter("");
 
+      // a broken receiver
+
       ReceiverImpl broken = new ReceiverImpl("ReceiverONE", ReceiverImpl.BROKEN);
       assertTrue(router.add(broken));
 
       Routable m = new MessageSupport("");
-      assertFalse(router.handle(m));
+      Set result = router.handle(m);
+      assertEquals(0, result.size());
 
       Iterator i = broken.iterator();
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(router.acknowledged(broken.getReceiverID()));
+      // a broken receiver and a handling receiver
 
       ReceiverImpl handling = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(router.add(handling));
-      assertFalse(router.handle(m));
+      result = router.handle(m);
+      assertEquals(1, result.size());
+      Acknowledgment a = (Acknowledgment)result.iterator().next();
+      assertTrue(a.isPositive());
+      assertEquals("ReceiverTWO", a.getReceiverID());
+
 
       i = broken.iterator();
       assertFalse(i.hasNext());
-
       i = handling.iterator();
       assertTrue(m == i.next());
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(router.acknowledged(broken.getReceiverID()));
-      assertTrue(router.acknowledged(handling.getReceiverID()));
+      handling.clear();
+
+      // a broken, handling and NACKing receivers
+
+      ReceiverImpl nacking = new ReceiverImpl("ReceiverTHREE", ReceiverImpl.NACKING);
+      assertTrue(router.add(nacking));
+      result = router.handle(m);
+
+      assertEquals(2, result.size());
+      Set booleans = new HashSet();
+      Set ids = new HashSet();
+      for(Iterator j = result.iterator(); j.hasNext(); )
+      {
+         Acknowledgment ack = (Acknowledgment)j.next();
+         booleans.add(new Boolean(ack.isPositive()));
+         ids.add(ack.getReceiverID());
+      }
+      assertTrue(booleans.contains(Boolean.TRUE));
+      assertTrue(booleans.contains(Boolean.FALSE));
+      assertTrue(ids.contains("ReceiverTHREE"));
+      assertTrue(ids.contains("ReceiverTWO"));
+
+
+      i = broken.iterator();
+      assertFalse(i.hasNext());
+      i = handling.iterator();
+      assertTrue(m == i.next());
+      assertFalse(i.hasNext());
+      i = nacking.iterator();
+      assertFalse(i.hasNext());
    }
 }

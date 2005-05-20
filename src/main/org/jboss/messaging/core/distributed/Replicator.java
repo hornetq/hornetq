@@ -7,10 +7,10 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.util.AcknowledgmentImpl;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.ChannelSupport;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.ChannelSupport;
+import org.jboss.messaging.core.local.MultipleOutputChannelSupport;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.ChannelListener;
@@ -20,9 +20,14 @@ import java.io.Serializable;
 import java.util.Random;
 import java.util.Set;
 import java.util.Iterator;
+import java.util.HashSet;
 
 
 /**
+ *
+ * TODO - review the design to incoroporate the new acknowledgment handling
+ *
+ *
  * A Replicator is a distributed channel that replicates a message to multiple receivers living
  * <i>in different address spaces</i> synchronously or asynchronously. A replicator can have
  * multiple inputs and multiple outputs. Messages sent by an input are replicated to every output.
@@ -46,7 +51,7 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Replicator extends ChannelSupport
+public class Replicator extends MultipleOutputChannelSupport
 {
    // Constants -----------------------------------------------------
 
@@ -92,6 +97,8 @@ public class Replicator extends ChannelSupport
       rpcServer = (RpcServer)serverObject;
       this.dispatcher = dispatcher;
       this.replicatorID = replicatorID;
+      // I don't need the default localAcknoweldgmentStore. GC it
+      localAcknowledgmentStore = null;
       started = false;
    }
 
@@ -137,17 +144,19 @@ public class Replicator extends ChannelSupport
 
             if (isSynchronous())
             {
-               // optimisation for a more efficient synchronous handling
+               // optimization for a more efficient synchronous handling
                ticket = collector.addNACK(r, view);
             }
             else
             {
                // store the messages and the NACKs in a reliable way
+               Set nacks = new HashSet();
                for(Iterator i = view.iterator(); i.hasNext(); )
                {
                   // TODO if message storing fails for one output peer, the others remain in the
-                  // TODO store as garbage
-                  if (!storeNACKedMessage(r, (Serializable)i.next()))
+                  //      store as garbage
+                  nacks.add(new AcknowledgmentImpl((Serializable)i.next(), false));
+                  if (!updateAcknowledgments(r, nacks))
                   {
                      return false;
                   }
@@ -189,9 +198,31 @@ public class Replicator extends ChannelSupport
       return !collector.isEmpty();
    }
 
-   public Set getUnacknowledged()
+   public Set getUndelivered()
    {
       return collector.getMessageIDs();
+   }
+
+
+   // ChannelDelegate overrides -------------------------------------
+
+   /**
+    * Always called from a synchronized block, no need to synchronize. It can throw unchecked
+    * exceptions, the caller is prepared to deal with them.
+    *
+    * @param acks - Set of Acknowledgments. Empty set (or null) means Channel NACK.
+    */
+   protected void updateLocalAcknowledgments(Routable r, Set acks)
+   {
+      if(log.isTraceEnabled()) { log.trace("updating acknowledgments " + r + " locally"); }
+
+      // the channel's lock is already acquired when invoking this method
+      collector.update(r, acks);
+   }
+
+   protected void removeLocalMessage(Serializable messageID)
+   {
+      throw new NotYetImplementedException();
    }
 
    // Public --------------------------------------------------------
@@ -294,14 +325,6 @@ public class Replicator extends ChannelSupport
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void storeNACKedMessageLocally(Routable r, Serializable receiverID)
-   {
-
-      // TODO This is a hack to have a quick implementation, so ReceiverTest would pass; review
-      collector.addNACK(r, receiverID);
-
-   }
 
    protected ReplicatorTopology getTopology()
    {

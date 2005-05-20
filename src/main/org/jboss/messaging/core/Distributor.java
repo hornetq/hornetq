@@ -50,18 +50,6 @@ public interface Distributor
     */
    public void clear();
 
-   /**
-    * Returns the message acknowledgment status of the last message handled, on a per-receiver
-    * basis. The message acknowledgment status is the result of the lastest handle() invocation on
-    * this Receiver. If handle() was not yet invoked on the Receiver, returns false.
-    * <p>
-    * If the caller wants a consistent result relative to the whole set of receivers, it is the
-    * caller's responsibility to insure adequate locking of the Distributor between successive
-    * acknowledge() invocations. 
-    *
-    * @return the message acknowledgment status.
-    */
-   public boolean acknowledged(Serializable receiverID);
 
 }
 

@@ -9,12 +9,12 @@ package org.jboss.test.messaging.core;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.message.MessageSupport;
 
 import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -89,14 +89,20 @@ public class DistributorTest extends MessagingTestCase
 
       ReceiverImpl r = new ReceiverImpl();
       assertTrue(distributor.add(r));
-      assertFalse(distributor.acknowledged(r.getReceiverID()));
 
-      assertTrue(((Receiver)distributor).handle(new MessageSupport("")));
-      assertTrue(distributor.acknowledged(r.getReceiverID()));
+      if (distributor instanceof Receiver)
+      {
+         boolean result = ((Receiver)distributor).handle(new MessageSupport(""));
+         assertTrue(result);
+      }
+      else if (distributor instanceof Router)
+      {
+         Set acks = ((Router)distributor).handle(new MessageSupport(""));
+         assertEquals(1, acks.size());
+         assertTrue(((Acknowledgment)acks.iterator().next()).isPositive());
+      }
 
-      // make sure that a spurious add attempt does not change the status of the last handle() call
       assertFalse(distributor.add(r));
-      assertTrue(distributor.acknowledged(r.getReceiverID()));
    }
 
 

@@ -7,7 +7,9 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.util.AcknowledgmentImpl;
 import org.jboss.messaging.core.local.SingleOutputChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
@@ -15,7 +17,9 @@ import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collections;
 
 /**
  * The input end of a distributed pipe - a channel with only one output that forwards messages to a
@@ -48,6 +52,9 @@ public class Pipe extends SingleOutputChannelSupport
    protected Address outputAddress;
    protected Serializable pipeID;
 
+   /** speed optimization, avoid creating unnecessary instances **/
+   protected Acknowledgment ACK, NACK;
+
    // Constructors --------------------------------------------------
 
    /**
@@ -70,11 +77,12 @@ public class Pipe extends SingleOutputChannelSupport
       this.dispatcher = dispatcher;
       this.outputAddress = outputAddress;
       this.pipeID = pipeID;
-      unacked = new ArrayList();
+      ACK = new AcknowledgmentImpl(pipeID, true);
+      NACK = new AcknowledgmentImpl(pipeID, false);
       log.debug(this + " created");
    }
 
-   // ChannelSupport implementation ---------------------------------
+   // Channel implementation ----------------------------------------
 
    public Serializable getReceiverID()
    {
@@ -83,13 +91,16 @@ public class Pipe extends SingleOutputChannelSupport
 
    public boolean handle(Routable r)
    {
-      if (handleSynchronously(r))
+      Acknowledgment ack = handleSynchronously(r);
+      if (ack != null && ack.isPositive())
       {
          // successful synchronous delivery
          return true;
       }
-      return storeNACKedMessage(r, pipeID);
+      Set acks = ack == null ? null : Collections.singleton(ack);
+      return updateAcknowledgments(r, acks);
    }
+
 
    public boolean deliver()
    {
@@ -97,38 +108,47 @@ public class Pipe extends SingleOutputChannelSupport
 
       if (log.isTraceEnabled()) { log.trace("asynchronous delivery triggered on " + getReceiverID()); }
 
+      Set nackedMessages = new HashSet();
+
       try
       {
-         // try to flush the message store
-         for(Iterator i = unacked.iterator(); i.hasNext(); )
+         for(Iterator i = localAcknowledgmentStore.getUnacknowledged(null).iterator(); i.hasNext();)
          {
-            Routable r = (Routable)i.next();
-
-            if (System.currentTimeMillis() > r.getExpirationTime())
-            {
-               // message expired
-               log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
-               i.remove();
-               continue;
-            }
-
-            if (handleSynchronously(r))
-            {
-               i.remove();
-            }
-            else
-            {
-               // most likely the receiver is broken, don't insist
-               break;
-            }
+            nackedMessages.add(i.next());
          }
-         return unacked.isEmpty();
       }
       finally
       {
          unlock();
       }
+
+      // flush unacknowledged messages
+
+      for(Iterator i = nackedMessages.iterator(); i.hasNext(); )
+      {
+         Serializable messageID = (Serializable)i.next();
+         Routable r = (Routable)messages.get(messageID);
+
+         if (System.currentTimeMillis() > r.getExpirationTime())
+         {
+            // message expired
+            log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
+            removeLocalMessage(messageID);
+            i.remove();
+            continue;
+         }
+
+         if (log.isTraceEnabled()) { log.trace(this + " attempting to redeliver " + r); }
+
+         Acknowledgment ack = handleSynchronously(r);
+         Set acks = ack == null ? null : Collections.singleton(ack);
+         updateLocalAcknowledgments(r, acks);
+      }
+
+      return !hasMessages();
+
    }
+
 
    // Public --------------------------------------------------------
 
@@ -155,9 +175,14 @@ public class Pipe extends SingleOutputChannelSupport
 
    // Protected -----------------------------------------------------
 
+
    // Private -------------------------------------------------------
 
-   private boolean handleSynchronously(Routable r)
+   /**
+    * @return a positive, negative or null Acknowledgment. null means the receiver could not
+    *         be contacted at all or there is no receiver.
+    */
+   private Acknowledgment handleSynchronously(Routable r)
    {
       // Check if the message was sent remotely; in this case, I must not resend it to avoid
       // endless loops among peers or worse, deadlock on distributed RPC if deadlock detection
@@ -166,14 +191,14 @@ public class Pipe extends SingleOutputChannelSupport
       if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
       {
          // don't send
-         return false;
+         return null;
       }
 
       if (outputAddress == null)
       {
          // A distributed pipe must be configured with a valid output address
          log.error(this + " has a null output address.");
-         return false;
+         return null;
       }
 
       String methodName = "handle";
@@ -186,14 +211,14 @@ public class Pipe extends SingleOutputChannelSupport
       try
       {
          // call on the PipeOutput unique server delegate
-         return ((Boolean)rpcServerCall.remoteInvoke(dispatcher, outputAddress, 30000)).
-               booleanValue();
+         Boolean result = (Boolean)rpcServerCall.remoteInvoke(dispatcher, outputAddress, 30000);
+         return result.booleanValue() ? ACK : NACK;
       }
       catch(Throwable e)
       {
          log.error("Remote call " + methodName + "() on " + outputAddress +  "." + pipeID +
                   " failed", e);
-         return false;
+         return null;
       }
    }
 }

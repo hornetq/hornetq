@@ -9,7 +9,6 @@ package org.jboss.test.messaging.core;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.LocalQueue;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.local.LocalQueue;
 
 
 import java.util.Iterator;
@@ -116,55 +115,66 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
 
 
    /**
-    * Tests the behaviour of a "denying" receiver (whose handle() returns false). However, the
-    * test don't deal with the case when the receiver "heals" (starts accepting messages). See
-    * testDenyingReceiverThatStartsAccepting() for that.
+    * Tests the behaviour of a "nacking" receiver (whose handle() returns false). However, the
+    * test doesn't deal with the case when the receiver "heals" (starts accepting messages). See
+    * testNackingReceiverThatStartsAccepting() for that.
     */
-   public void testDenyingReceiver() throws Exception
+   public void testNackingReceiver() throws Exception
    {
       LocalQueue queue = new LocalQueue("");
 
-      ReceiverImpl denying = new ReceiverImpl("DenyingReceiverID", ReceiverImpl.DENYING);
-      assertTrue(queue.add(denying));
+      ReceiverImpl nacking = new ReceiverImpl("NackingReceiverID", ReceiverImpl.NACKING);
+      assertTrue(queue.add(nacking));
 
       Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
-      Iterator i = denying.iterator();
+      Iterator i = nacking.iterator();
       assertFalse(i.hasNext());
+
+      // the queue holds a NACK for the nacking receiver, so it cannot deliver the message
+      // until either the nacking receiver ACKs or the message expires, otherwise the queue
+      // will deliver the same message to two receivers.
 
       ReceiverImpl handling = new ReceiverImpl("HandlingReceiverID", ReceiverImpl.HANDLING);
       assertTrue(queue.add(handling));
 
-      // the delivery should have taken place already
+      // there should be an unsuccessful delivery attempt
 
-      i = denying.iterator();
+      assertTrue(queue.hasMessages());
+
+      // an explicit delivery attempt should faile
+      assertFalse(queue.deliver());
+
+      i = nacking.iterator();
       assertFalse(i.hasNext());
 
       i = handling.iterator();
-      assertTrue(m == i.next());
       assertFalse(i.hasNext());
    }
 
-   public void testDenyingReceiverThatStartsAccepting() throws Exception
+   public void testNackingReceiverThatStartsAccepting() throws Exception
    {
       LocalQueue queue = new LocalQueue("");
 
-      ReceiverImpl denying = new ReceiverImpl(ReceiverImpl.DENYING);
-      assertTrue(queue.add(denying));
+      ReceiverImpl nacking = new ReceiverImpl(ReceiverImpl.NACKING);
+      assertTrue(queue.add(nacking));
 
       Routable m = new MessageSupport("");
       assertTrue(queue.handle(m));
 
-      Iterator i = denying.iterator();
+      Iterator i = nacking.iterator();
       assertFalse(i.hasNext());
+
       assertTrue(queue.hasMessages());
 
       // "heal" the receiver and attempt re-delivery
-      denying.setState(ReceiverImpl.HANDLING);
+      nacking.setState(ReceiverImpl.HANDLING);
+
       assertTrue(queue.deliver());
       assertFalse(queue.hasMessages());
-      i = denying.iterator();
+
+      i = nacking.iterator();
       assertTrue(m == i.next());
       assertFalse(i.hasNext());
    }

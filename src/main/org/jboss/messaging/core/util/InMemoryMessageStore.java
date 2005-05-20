@@ -4,43 +4,55 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.local;
+package org.jboss.messaging.core.util;
 
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentStore;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Message;
 
+import java.io.Serializable;
+import java.util.Map;
 
 /**
- * Extends ChannelSupport for single output channels. It assumes that there is only one
- * Receiver that can handle messages, so there is only one source of NACKs.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class SingleOutputChannelSupport extends ChannelSupport
+public class InMemoryMessageStore implements MessageStore
 {
    // Constants -----------------------------------------------------
+
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
+   protected Serializable storeID;
+   protected Map map;
+
    // Constructors --------------------------------------------------
 
-   /**
-    * The default behaviour is synchronous.
-    */
-   public SingleOutputChannelSupport()
+   public InMemoryMessageStore(Serializable storeID)
    {
-      this(Channel.SYNCHRONOUS);
+      this.storeID = storeID;
    }
 
-   public SingleOutputChannelSupport(boolean mode)
+   // MessageStore implementation ----------------------------------
+
+   public Serializable getStoreID()
    {
-      super(mode);
-      // the channel uses an AcknowlegmentStore optimized for a single receiver
-      localAcknowledgmentStore = new SingleReceiverAcknowledgmentStore("LocalAckStore");
+      return storeID;
    }
+
+   public MessageReference store(Message m) throws Throwable
+   {
+      return null;
+   }
+
+   public Message retrieve(MessageReference r)
+   {
+      return null;
+   }
+
 
    // Public --------------------------------------------------------
 
@@ -49,6 +61,6 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

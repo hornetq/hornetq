@@ -34,7 +34,7 @@ public class ReceiverImpl implements Receiver
    private static final Logger log = Logger.getLogger(ReceiverImpl.class);
 
    public static final String HANDLING = "HANDLING";
-   public static final String DENYING = "DENYING";
+   public static final String NACKING = "NACKING";
    public static final String BROKEN = "BROKEN";
 
    private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
@@ -93,7 +93,7 @@ public class ReceiverImpl implements Receiver
             throw new RuntimeException("THIS IS AN EXCEPTION THAT SIMULATES "+
                                        "THE BEHAVIOUR OF A BROKEN RECEIVER");
          }
-         if (DENYING.equals(state))
+         if (NACKING.equals(state))
          {
             // politely tells that it cannot handle the message
             return false;
@@ -257,7 +257,7 @@ public class ReceiverImpl implements Receiver
    private static boolean isValid(String state)
    {
       if (HANDLING.equals(state) ||
-          DENYING.equals(state) ||
+          NACKING.equals(state) ||
           BROKEN.equals(state))
       {
          return true;

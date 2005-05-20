@@ -31,6 +31,12 @@ public interface Receiver
    /**
     * Hand over the routable to the Receiver.
     *
+    * If handle() returns false, this doesn't necessarily mean that the Receiver won't eventually
+    * handle the message. It usually means that the Receiver is in process of handling the message
+    * (asynchronously) and a possible positive acknowledgment could arrive later.
+    *
+    * 
+    *
     * <p>
     * When invoking this method, be prepared to deal with unchecked exceptions the Receiver may
     * throw. This is equivalent with a negative acknowledgement, but the sender may also decide

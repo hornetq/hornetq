@@ -6,16 +6,15 @@
  */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.logging.Logger;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.HashSet;
 import java.io.Serializable;
 
 /**
@@ -24,15 +23,18 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class AbstractDestination extends ChannelSupport implements Distributor
+public abstract class AbstractDestination
+      extends MultipleOutputChannelSupport implements Distributor
 {
+
+   private static final Logger log = Logger.getLogger(AbstractDestination.class);
+
    // Attributes ----------------------------------------------------
 
-   protected LocalPipe inputPipe;
    protected AbstractRouter router;
+   protected Serializable id;
 
    // Constructors --------------------------------------------------
-
 
    /**
     * By default, a Destination is an asynchronous channel.
@@ -45,73 +47,68 @@ public abstract class AbstractDestination extends ChannelSupport implements Dist
 
    protected AbstractDestination(Serializable id, boolean mode)
    {
+      super(mode);
       router = createRouter();
-      inputPipe = new LocalPipe(id, mode, router);
+      this.id = id;
    }
 
    // Channel implementation ----------------------------------------
 
    public Serializable getReceiverID()
    {
-      return inputPipe.getReceiverID();
+      return id;
    }
 
-   public boolean handle(Routable m)
-   {
-      return inputPipe.handle(m);
-   }
-
-   public boolean hasMessages()
-   {
-      return inputPipe.hasMessages();
-   }
-
-   public Set getUnacknowledged()
-   {
-      return inputPipe.getUnacknowledged();
-   }
-
-   public boolean setSynchronous(boolean b)
-   {
-      return inputPipe.setSynchronous(b);
-   }
-
-   public boolean isSynchronous()
-   {
-      return inputPipe.isSynchronous();
-   }
-
-   public void setMessageStore(MessageStore store)
-   {
-      // the Queue and the LocalPipe share the message store
-      super.setMessageStore(store);
-      inputPipe.setMessageStore(store);
-   }
-
-   public MessageStore getMessageStore()
-   {
-      return super.getMessageStore();
-   }
-
-   public void setAcknowledgmentStore(AcknowledgmentStore store)
-   {
-      // the Queue and the LocalPipe share the acknowledgment store
-      super.setAcknowledgmentStore(store);
-      inputPipe.setAcknowledgmentStore(store);
-   }
-
-   public AcknowledgmentStore getAcknowledgmentStore()
-   {
-      return super.getAcknowledgmentStore();
-   }
-
-
-   /**
-    * Override if you want a more sophisticated delivery mechanism.
-    */
    public boolean deliver()
    {
-      return inputPipe.deliver();
+      lock();
+
+      if (log.isTraceEnabled())
+      {
+         log.trace(id + " asynchronous delivery triggered, " +
+                   localAcknowledgmentStore.getUnacknowledged(getReceiverID()).size() +
+                   " messages to deliver");
+      }
+
+      Set nackedMessages = new HashSet();
+
+      try
+      {
+         for(Iterator i = localAcknowledgmentStore.getUnacknowledged(getReceiverID()).iterator();
+             i.hasNext();)
+         {
+            nackedMessages.add(i.next());
+         }
+      }
+      finally
+      {
+         unlock();
+      }
+
+      // flush unacknowledged messages
+
+      for(Iterator i = nackedMessages.iterator(); i.hasNext(); )
+      {
+         Serializable messageID = (Serializable)i.next();
+         Routable r = (Routable)messages.get(messageID);
+
+         if (System.currentTimeMillis() > r.getExpirationTime())
+         {
+            // message expired
+            log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
+            removeLocalMessage(messageID);
+            i.remove();
+            continue;
+         }
+
+         if (log.isTraceEnabled()) { log.trace(this + " attempting to redeliver " + r); }
+
+         Set targets = localAcknowledgmentStore.getNACK(getReceiverID(), messageID);
+         Set acks = router.handle(r, targets);
+         updateLocalAcknowledgments(r, acks);
+      }
+
+      return !hasMessages();
    }
 
    // Distributor interface -----------------------------------------
@@ -124,9 +121,9 @@ public abstract class AbstractDestination extends ChannelSupport implements Dist
       }
 
       // adding a Receiver triggers an asynchronous delivery attempt
-      if (inputPipe.hasMessages())
+      if (hasMessages())
       {
-         inputPipe.deliver();
+         deliver();
       }
       return true;
    }
@@ -156,21 +153,11 @@ public abstract class AbstractDestination extends ChannelSupport implements Dist
       router.clear();
    }
 
-   public boolean acknowledged(Serializable receiverID)
-   {
-      return router.acknowledged(receiverID);
-   }
-
    // Public --------------------------------------------------------
 
    // Protected -----------------------------------------------------
 
    protected abstract AbstractRouter createRouter();
-
-   protected void storeNACKedMessageLocally(Routable r, Serializable receiverID)
-   {
-      throw new NotYetImplementedException();
-   }
 
 }
 

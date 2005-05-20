@@ -15,7 +15,8 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.messaging.core.util.MessageStoreImpl;
-import org.jboss.messaging.core.util.AcknowledgmentStoreImpl;
+import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
+
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -86,7 +87,7 @@ public class ServerWrapper
       initializeRemoting();
       serverPeer = new ServerPeer(serverPeerID, locator, jndiEnvironment,
                                   new MessageStoreImpl("MSGStore"),
-                                  new AcknowledgmentStoreImpl("ACKStore"));
+                                  new InMemoryAcknowledgmentStore("ACKStore"));
       serverPeer.start();
       log.info("server started");
    }

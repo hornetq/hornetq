@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.AcknowledgmentStore;
-
 import java.util.Set;
 
 /**
@@ -59,6 +57,17 @@ public interface Channel extends Receiver
     */
    public boolean isSynchronous();
 
+
+   /**
+    * In a situation when it has no receivers (or existing receivers are broken), an asynchronous
+    * channel may choose to acknowledge the message and store it for further delivery (queue
+    * behavior), or just acknowledge it and discard it (topic behavior). The result of this method
+    * is irrelevant for a synchronous channel, since it doesn't store messages.
+    * @return
+    */
+   public boolean isStoringUndeliverableMessages();
+
+
    /**
     * Attempt asynchronous delivery of messages being held by the Channel.
     *
@@ -69,13 +78,18 @@ public interface Channel extends Receiver
 
    /**
     * @return true if the Channel holds at least one undelivered message, false otherwise.
+    *         Undelivered message is considered either a message whose delivery has been attempted
+    *         but it is currently NACKed or a message whose delivery has not been attempted at all.
     */
    public boolean hasMessages();
 
    /**
-    * @return a set containing unacknowledged message IDs. Could return and empty Set but never null
+    * @return a Set containing the IDs of all undelivered messages. Undelivered message is
+    *         considered either a message whose delivery has been attempted but it is currently
+    *         NACKed or a message whose delivery has not been attempted at all. Could return an
+    *         empty Set but never null.
     */
-   public Set getUnacknowledged();
+   public Set getUndelivered();
 
    public void setMessageStore(MessageStore store);
 

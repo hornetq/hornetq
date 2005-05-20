@@ -14,11 +14,6 @@ import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jboss.test.messaging.core.ChannelSupportTest;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.message.MessageSupport;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 import org.jgroups.Address;
@@ -152,20 +147,20 @@ public class PipeTest extends ChannelSupportTest
       assertFalse(i.hasNext());
    }
 
-   public void testDenyingReceiver() throws Exception
+   public void testNackingReceiver() throws Exception
    {
       assertTrue(inputJChannel.isConnected());
       assertTrue(outputJChannel.isConnected());
       Pipe inputPipe = new Pipe(true, inputDispatcher, outputAddress, "testPipe");
 
-      ReceiverImpl r = new ReceiverImpl(ReceiverImpl.DENYING);
-      PipeOutput outputPipe = new PipeOutput("testPipe", r);
+      ReceiverImpl nacking = new ReceiverImpl(ReceiverImpl.NACKING);
+      PipeOutput outputPipe = new PipeOutput("testPipe", nacking);
       outputPipe.register((RpcServer)outputDispatcher.getServerObject());
 
       Routable m = new MessageSupport("");
       assertFalse(inputPipe.handle(m));
 
-      Iterator i = r.iterator();
+      Iterator i = nacking.iterator();
       assertFalse(i.hasNext());
    }
 

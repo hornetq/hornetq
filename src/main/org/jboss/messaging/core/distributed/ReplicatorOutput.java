@@ -340,7 +340,7 @@ public class ReplicatorOutput
          rpcServer.register(replicatorID, identityDelegate);
 
 
-         acknowledgmentThread = new Thread(this, this + " Acknowledgment Thread");
+         acknowledgmentThread = new Thread(this, this + " Acknowlegment Thread");
          ackThreadActive = true;
          acknowledgmentThread.start();
 

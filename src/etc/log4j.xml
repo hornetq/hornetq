@@ -92,15 +92,18 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
+
+
    <!--
+   <category name="org.jboss.messaging.core">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   
    <category name="org.jboss.jms.delegate">
       <priority value="DEBUG"/>
    </category>
    <category name="org.jboss.jms.client.container.TransactionInterceptor">
       <priority value="DEBUG"/>
-   </category>
-   <category name="org.jboss.messaging.core.local">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
    <category name="org.jboss.messaging.core.util.Lockable">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>

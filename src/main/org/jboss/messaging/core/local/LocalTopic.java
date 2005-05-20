@@ -6,10 +6,14 @@
  */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.local.AbstractRouter;
+
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
+import java.util.Set;
+import java.util.Iterator;
 
 /**
  * A LocalTopic implements a Publishes/Subscriber messaging domain. It sends a message to all
@@ -21,14 +25,49 @@ import java.io.Serializable;
  */
 public class LocalTopic extends AbstractDestination
 {
+   private static final Logger log = Logger.getLogger(LocalTopic.class);
+
    // Constructors --------------------------------------------------
 
    public LocalTopic(Serializable id)
    {
-       super(id);
+       super(id, false);
+   }
 
-       // set the input pipe to be synchronous
-       inputPipe.setSynchronous(true);
+   // Channel implementation ----------------------------------------
+
+   public boolean handle(Routable r)
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " forwarding to router"); }
+
+      boolean synchronous = isSynchronous();
+
+      Set acks = router.handle(r);
+
+      boolean allSuccessful = false;
+      if (!acks.isEmpty())
+      {
+         allSuccessful = true;
+         for(Iterator i = acks.iterator(); i.hasNext() && allSuccessful; )
+         {
+            allSuccessful &= ((Acknowledgment)i.next()).isPositive();
+         }
+      }
+
+      if (acks.isEmpty() && !synchronous || allSuccessful)
+      {
+         // I do not store undeliverable messages, but I positively ACK them
+         if (log.isTraceEnabled()) { log.trace(this + " successful synchronous delivery"); }
+         return true;
+      }
+
+      return updateAcknowledgments(r, acks);
+   }
+
+   public boolean isStoringUndeliverableMessages()
+   {
+      // positively acknowledge and discard a message if there are no receivers
+      return false;
    }
 
    // AbstractDestination implementation ----------------------------

@@ -77,7 +77,7 @@ public class ReplicatorTimeoutExceptionTest extends MessagingTestCase
       inputJChannel.connect("ReplicatorTestGroup");
       outputJChannel.connect("ReplicatorTestGroup");
 
-      ReceiverImpl receiver = new ReceiverImpl("ReceiverID", ReceiverImpl.DENYING);
+      ReceiverImpl receiver = new ReceiverImpl("ReceiverID", ReceiverImpl.NACKING);
       ReplicatorOutput output = new ReplicatorOutput(outputDispatcher, "ReplicatorID", receiver);
       output.start();
 

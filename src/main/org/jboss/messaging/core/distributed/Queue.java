@@ -12,10 +12,6 @@ import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.ServerResponse;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.util.ServerResponse;
-import org.jboss.messaging.core.Channel;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -26,6 +22,9 @@ import java.util.Iterator;
 
 /**
  * A distributed queue "representative" on a peer VM.
+ *
+ * TODO The distributed queue is broken. Review the implementation to use an AbstractDestination
+ *      instead of a LocalPipe and a Router. See how LocalQueue is implemented.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -148,8 +147,17 @@ public class Queue extends LocalQueue implements QueueServerDelegate
       }
 
 
-      // register the server ojects with the RpcServer
-      PipeOutput pipeOutput = new PipeOutput(pipeID, router);
+      // register the server objects with the RpcServer
+
+      //
+      // TODO FIX THIS and then enable the tests!
+      //
+//      PipeOutput pipeOutput = new PipeOutput(pipeID, router);
+      PipeOutput pipeOutput = null;
+      //
+      //
+      //
+
       if (!rpcServer.registerUnique(pipeID, pipeOutput))
       {
          // the pipe output server delegate not unique under category

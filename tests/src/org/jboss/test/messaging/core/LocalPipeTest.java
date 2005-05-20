@@ -59,10 +59,10 @@ public class LocalPipeTest extends ChannelSupportTest
       assertTrue(pipe.handle(new RoutableSupport("routableID2", false)));
       assertTrue(pipe.handle(new RoutableSupport("routableID3", false)));
 
-      assertEquals(3, pipe.getUnacknowledged().size());
+      assertEquals(3, pipe.getUndelivered().size());
 
       assertFalse(pipe.deliver());
-      assertEquals(3, pipe.getUnacknowledged().size());
+      assertEquals(3, pipe.getUndelivered().size());
 
       // this should trigger asynchronous delivery attempt
       pipe.setReceiver(receiverOne);

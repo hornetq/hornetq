@@ -9,11 +9,9 @@ package org.jboss.test.messaging.core;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.LocalTopic;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.LocalTopic;
-import org.jboss.messaging.core.message.MessageSupport;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -52,81 +50,127 @@ public class LocalTopicAsChannelTest extends ChannelSupportTest
 
    public void testDefaultAsynchronous()
    {
-      assertTrue(channel.isSynchronous());
+      assertTrue(!channel.isSynchronous());
    }
 
 
-   public void testTopic() throws Exception
+   public void testTopicOneReceiver() throws Exception
    {
       LocalTopic topic = new LocalTopic("");
 
       // send without a receiver
 
-      Routable m = new MessageSupport("");
-      assertFalse(topic.handle(m));
+      Routable r = new MessageSupport("");
+      assertTrue(topic.handle(r));
 
       // send with one receiver
 
       ReceiverImpl rOne = new ReceiverImpl("ReceiverONE", ReceiverImpl.HANDLING);
       assertTrue(topic.add(rOne));
 
-      m = new MessageSupport("");
-      assertTrue(topic.handle(m));
+      r = new MessageSupport("");
+      assertTrue(topic.handle(r));
 
       Iterator i = rOne.iterator();
-      assertTrue(m == i.next());
+      assertTrue(r == i.next());
       assertFalse(i.hasNext());
+   }
 
-      rOne.clear();
+   public void testTopicTwoReceivers() throws Exception
+   {
+      LocalTopic topic = new LocalTopic("");
 
-      // send with two receivers
+
+      ReceiverImpl rOne = new ReceiverImpl("ReceiverONE", ReceiverImpl.HANDLING);
+      assertTrue(topic.add(rOne));
 
       ReceiverImpl rTwo = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(topic.add(rTwo));
 
-      m = new MessageSupport("");
-      assertTrue(topic.handle(m));
+      Routable r = new MessageSupport("");
+      assertTrue(topic.handle(r));
 
       Iterator iOne = rOne.iterator();
-      assertTrue(m == iOne.next());
+      assertTrue(r == iOne.next());
       assertFalse(iOne.hasNext());
 
       Iterator iTwo = rTwo.iterator();
-      assertTrue(m == iTwo.next());
+      assertTrue(r == iTwo.next());
       assertFalse(iTwo.hasNext());
    }
 
 
-   public void testDenyingReceiver() throws Exception
+   public void testNackingReceiver() throws Exception
    {
       LocalTopic topic = new LocalTopic("");
 
-      ReceiverImpl denying = new ReceiverImpl("ReceiverONE", ReceiverImpl.DENYING);
-      assertTrue(topic.add(denying));
+      ReceiverImpl nacking = new ReceiverImpl("ReceiverONE", ReceiverImpl.NACKING);
+      assertTrue(topic.add(nacking));
 
-      Routable m = new MessageSupport("");
-      assertFalse(topic.handle(m));
+      Routable r = new MessageSupport("");
+      assertTrue(topic.handle(r));
+      assertTrue(topic.hasMessages());
 
-      Iterator i = denying.iterator();
+      Iterator i = nacking.iterator();
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(topic.acknowledged(denying.getReceiverID()));
+      // enable the nacking receiver
 
-      ReceiverImpl handling = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
+      nacking.setState(ReceiverImpl.HANDLING);
+
+      assertTrue(topic.deliver());
+      assertFalse(topic.hasMessages());
+
+      i = nacking.iterator();
+      assertTrue(r == i.next());
+      assertFalse(i.hasNext());
+   }
+
+   public void testNackingAndHandlingReceivers() throws Exception
+   {
+      LocalTopic topic = new LocalTopic("");
+
+      Routable rOne = new MessageSupport("ONE");
+      assertTrue(topic.handle(rOne));
+      assertFalse(topic.hasMessages());
+
+      ReceiverImpl nacking = new ReceiverImpl("ReceiverA", ReceiverImpl.NACKING);
+      assertTrue(topic.add(nacking));
+
+      Routable rTwo = new MessageSupport("TWO");
+      assertTrue(topic.handle(rTwo));
+      assertTrue(topic.hasMessages());
+      Iterator i = nacking.iterator();
+      assertFalse(i.hasNext());
+
+      ReceiverImpl handling = new ReceiverImpl("ReceiverB", ReceiverImpl.HANDLING);
       assertTrue(topic.add(handling));
-      assertFalse(topic.handle(m));
-
-      i = denying.iterator();
-      assertFalse(i.hasNext());
-
       i = handling.iterator();
-      assertTrue(m == i.next());
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(topic.acknowledged(denying.getReceiverID()));
-      assertTrue(topic.acknowledged(handling.getReceiverID()));
+      Routable rThree = new MessageSupport("THREE");
+      assertTrue(topic.handle(rThree));
+      assertTrue(topic.hasMessages());
+
+      i = nacking.iterator();
+      assertFalse(i.hasNext());
+      i = handling.iterator();
+      assertTrue(rThree == i.next());
+      assertFalse(i.hasNext());
+      handling.clear();
+
+      // enable ReceiverA
+
+      nacking.setState(ReceiverImpl.HANDLING);
+      assertTrue(topic.deliver());
+      assertFalse(topic.hasMessages());
+
+      List l = nacking.getMessages();
+      assertEquals(2, l.size());
+      assertTrue(l.contains(rTwo));
+      assertTrue(l.contains(rThree));
+      i = handling.iterator();
+      assertFalse(i.hasNext());
    }
 
    public void testBrokenReceiver() throws Exception
@@ -136,28 +180,22 @@ public class LocalTopicAsChannelTest extends ChannelSupportTest
       ReceiverImpl broken = new ReceiverImpl("ReceiverONE", ReceiverImpl.BROKEN);
       assertTrue(topic.add(broken));
 
-      Routable m = new MessageSupport("");
-      assertFalse(topic.handle(m));
+      Routable r = new MessageSupport("");
+      assertTrue(topic.handle(r));
+      assertFalse(topic.hasMessages());
 
       Iterator i = broken.iterator();
       assertFalse(i.hasNext());
 
-      // test the acknowledgement
-      assertFalse(topic.acknowledged(broken.getReceiverID()));
-
       ReceiverImpl handling = new ReceiverImpl("ReceiverTWO", ReceiverImpl.HANDLING);
       assertTrue(topic.add(handling));
-      assertFalse(topic.handle(m));
+      assertTrue(topic.handle(r));
 
       i = broken.iterator();
       assertFalse(i.hasNext());
 
       i = handling.iterator();
-      assertTrue(m == i.next());
+      assertTrue(r == i.next());
       assertFalse(i.hasNext());
-
-      // test the acknowledgement
-      assertFalse(topic.acknowledged(broken.getReceiverID()));
-      assertTrue(topic.acknowledged(handling.getReceiverID()));
    }
 }

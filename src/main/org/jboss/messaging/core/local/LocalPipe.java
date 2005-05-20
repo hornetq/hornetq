@@ -10,9 +10,14 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.messaging.core.util.AcknowledgmentImpl;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collections;
 
 /**
  * A local Channel with only one output. Both the input and the output endpoints are in the same
@@ -20,8 +25,7 @@ import java.util.Iterator;
  *
  * <p>
  * Only one receiver can be connected to this channel at a time. Synchronous delivery is attempted,
- * but if it is not possible, the LocalPipe will hold the message (subject to the asynchronous
- * behavior conditions).
+ * but if it is not possible, the LocalPipe will hold the message.
  *
  * @see org.jboss.messaging.core.Channel
  *
@@ -38,8 +42,12 @@ public class LocalPipe extends SingleOutputChannelSupport
    // Attributes ----------------------------------------------------
 
    protected Receiver receiver = null;
-
    protected Serializable id;
+
+   /** speed optimization, avoid creating unnecessary instances **/
+   protected Acknowledgment ACK, NACK;
+   protected Set ACKSet, NACKSet;
+
 
    // Constructors --------------------------------------------------
 
@@ -79,7 +87,7 @@ public class LocalPipe extends SingleOutputChannelSupport
    {
       super(mode);
       this.id = id;
-      this.receiver = receiver;
+      setReceiver(receiver);
    }
 
    // Channel implementation ----------------------------------------
@@ -91,73 +99,91 @@ public class LocalPipe extends SingleOutputChannelSupport
 
    public boolean handle(Routable r)
    {
-      Serializable receiverID = null;
-      try
+      Set acks = Collections.EMPTY_SET;
+      if (receiver != null)
       {
-         receiverID = receiver.getReceiverID();
-
-         if (log.isTraceEnabled()) { log.trace(this + ": attempting to deliver to " + receiverID); }
-         if (receiver.handle(r))
+         Serializable receiverID = receiver.getReceiverID();
+         try
          {
-            // successful synchronous delivery
-            if (log.isTraceEnabled()) { log.trace(this + ": successful delivery to " + receiverID); }
-            return true;
+            if (log.isTraceEnabled()) { log.trace(this + ": attempting to deliver to " + receiverID); }
+            if (receiver.handle(r))
+            {
+               // successful synchronous delivery
+               if (log.isTraceEnabled()) { log.trace(this + ": successful delivery to " + receiverID); }
+               return true;
+            }
+            acks = NACKSet;
+         }
+         catch(Throwable e)
+         {
+            log.warn("The receiver " + receiverID + " failed to handle the message", e);
          }
       }
-      catch(Throwable e)
-      {
-         log.warn("The receiver " + receiverID + " failed to handle the message", e);
-      }
-
-      if (log.isTraceEnabled()) { log.trace(this + ": unsuccessful delivery to " + receiverID + ", storing the message"); }
-      return storeNACKedMessage(r, receiverID);
+        
+      if (log.isTraceEnabled()) { log.trace(this + ": unsuccessful delivery, storing the message"); }
+      return updateAcknowledgments(r, acks);
    }
 
    public boolean deliver()
    {
       lock();
 
-      if (log.isTraceEnabled()) { log.trace(id + ": asynchronous delivery triggered, " + unacked.size() + " messages to deliver"); }
+      if (log.isTraceEnabled()) { log.trace("asynchronous delivery triggered on " + getReceiverID()); }
+
+      Set nackedMessages = new HashSet();
 
       try
       {
-         // try to flush the message store
-         for(Iterator i = unacked.iterator(); i.hasNext(); )
+         for(Iterator i = localAcknowledgmentStore.getUnacknowledged(null).iterator(); i.hasNext();)
          {
-            Routable r = (Routable)i.next();
-            try
-            {
-
-               if (System.currentTimeMillis() > r.getExpirationTime())
-               {
-                  // message expired
-                  log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
-                  i.remove();
-                  continue;
-               }
-
-               if (log.isTraceEnabled()) { log.trace(this + ": attempting to redeliver to " + receiver.getReceiverID()); }
-               if (receiver.handle(r))
-               {
-                  if (log.isTraceEnabled()) { log.trace(this + ": successful redelivery to " + receiver.getReceiverID() + ", removing the message"); }
-                  i.remove();
-               }
-            }
-            catch(Throwable t)
-            {
-               // most likely the receiver is broken, don't insist
-               log.warn("The receiver " + (receiver == null ? "null" : receiver.getReceiverID()) +
-                        " failed to handle the message", t);
-               break;
-            }
+            nackedMessages.add(i.next());
          }
-         return unacked.isEmpty();
       }
       finally
       {
          unlock();
       }
+
+      // flush unacknowledged messages
+
+      for(Iterator i = nackedMessages.iterator(); i.hasNext(); )
+      {
+         Serializable messageID = (Serializable)i.next();
+         Routable r = (Routable)messages.get(messageID);
+
+         if (System.currentTimeMillis() > r.getExpirationTime())
+         {
+            // message expired
+            log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
+            removeLocalMessage(messageID);
+            i.remove();
+            continue;
+         }
+
+         if (log.isTraceEnabled()) { log.trace(this + " attempting to redeliver " + r); }
+
+         Set acks = NACKSet;
+         try
+         {
+            if (receiver.handle(r))
+            {
+               acks = ACKSet;
+            }
+         }
+         catch(Throwable t)
+         {
+            // most likely the receiver is broken, don't insist
+            log.warn("The receiver " + (receiver == null ? "null" : receiver.getReceiverID()) +
+                     " failed to handle the message", t);
+            break;
+         }
+
+         updateLocalAcknowledgments(r, acks);
+      }
+
+      return !hasMessages();
    }
+
 
    // Public --------------------------------------------------------
 
@@ -188,6 +214,15 @@ public class LocalPipe extends SingleOutputChannelSupport
       try
       {
          receiver = r;
+
+         // speed optimization
+         if (r != null)
+         {
+            ACK = new AcknowledgmentImpl(r.getReceiverID(), true);
+            NACK = new AcknowledgmentImpl(r.getReceiverID(), false);
+            ACKSet = Collections.singleton(ACK);
+            NACKSet = Collections.singleton(NACK);
+         }
 
          // adding a Receiver triggers an asynchronous delivery attempt
          // TODO Is this good?

@@ -6,10 +6,13 @@
  */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.local.AbstractRouter;
+
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * A LocalQueue implements a Point to Point messaging domain. It sends a message to one and only one
@@ -23,11 +26,33 @@ import java.io.Serializable;
  */
 public class LocalQueue extends AbstractDestination
 {
+
+   private static final Logger log = Logger.getLogger(LocalQueue.class);
+
    // Constructors --------------------------------------------------
 
    public LocalQueue(Serializable id)
    {
       super(id);
+   }
+
+   // Channel implementation ----------------------------------------
+
+   public boolean handle(Routable r)
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " forwarding to router"); }
+
+      Set acks = router.handle(r);
+
+      // the router either returns an empty set or a set containing one element
+
+      if (acks.size() == 1 && ((Acknowledgment)acks.iterator().next()).isPositive())
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " successful synchronous delivery"); }
+         return true;
+      }
+
+      return updateAcknowledgments(r, acks);
    }
 
    // AbstractDestination implementation ----------------------------

@@ -9,7 +9,6 @@ package org.jboss.test.messaging.core;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.util.MessageStoreImpl;
-import org.jboss.messaging.core.util.AcknowledgmentStoreImpl;
 import org.jboss.messaging.core.message.MessageReferenceSupport;
 import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.message.MessageSupport;
@@ -43,7 +42,7 @@ public class ChannelSupportTest extends MessagingTestCase
    {
       if (channel == null) { return; }
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
       assertTrue(channel.handle(new RoutableSupport("routableID")));
       assertTrue(channel.hasMessages());
@@ -72,7 +71,7 @@ public class ChannelSupportTest extends MessagingTestCase
    {
       if (channel == null) { return; }
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(true));
       assertFalse(channel.handle(new RoutableSupport("routableID")));
       assertFalse(channel.hasMessages());
@@ -119,11 +118,11 @@ public class ChannelSupportTest extends MessagingTestCase
       assertEquals("routableID", ((RoutableSupport)receiverOne.iterator().next()).getMessageID());
    }
 
-   public void testDenyingReceiverOnAsynchronousChannel_UnreliableRoutable()
+   public void testNackingReceiverOnAsynchronousChannel_UnreliableRoutable()
    {
       if (channel == null) { return; }
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
 
       assertTrue(channel.handle(new RoutableSupport("routableID", false)));
@@ -140,7 +139,14 @@ public class ChannelSupportTest extends MessagingTestCase
       assertTrue(channel.setSynchronous(false));
 
       assertTrue(channel.handle(new RoutableSupport("routableID", false)));
-      assertTrue(channel.hasMessages());
+      if (channel.isStoringUndeliverableMessages())
+      {
+         assertTrue(channel.hasMessages());
+      }
+      else
+      {
+         assertFalse(channel.hasMessages());
+      }
       List l = receiverOne.getMessages();
       assertEquals(0, l.size());
    }
@@ -155,7 +161,7 @@ public class ChannelSupportTest extends MessagingTestCase
       if (channel == null) { return; }
 
       receiverOne.setState(ReceiverImpl.HANDLING);
-      channel.setAcknowledgmentStore(new AcknowledgmentStoreImpl("ACKStoreID"));
+      channel.setAcknowledgmentStore(new TestAcknowledgmentStore("ACKStoreID"));
       channel.setMessageStore(new MessageStoreImpl("MessageStoreID"));
       assertTrue(channel.setSynchronous(false));
 
@@ -178,7 +184,7 @@ public class ChannelSupportTest extends MessagingTestCase
    {
       if (channel == null) { return; }
 
-      internalTestReceiverOnAsynchronousChannel_ReliableRoutable(ReceiverImpl.DENYING);
+      internalTestReceiverOnAsynchronousChannel_ReliableRoutable(ReceiverImpl.NACKING);
    }
 
    public void testBrokenReceiverOnAsynchronousChannel()
@@ -203,14 +209,32 @@ public class ChannelSupportTest extends MessagingTestCase
 
       // send a reliable message
 
-      assertFalse(channel.handle(new MessageSupport("messageID", true)));
+      boolean ack = channel.handle(new MessageSupport("messageID", true));
+
+      if (receiverState == ReceiverImpl.BROKEN && !channel.isStoringUndeliverableMessages())
+      {
+         assertTrue(ack);
+      }
+      else
+      {
+         assertFalse(ack);
+      }
       assertFalse(channel.hasMessages());
       List l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
       // send a reliable reference
 
-      assertFalse(channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID")));
+      ack = channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID"));
+      if (receiverState == ReceiverImpl.BROKEN && !channel.isStoringUndeliverableMessages())
+      {
+          assertTrue(ack);
+      }
+      else
+      {
+          assertFalse(ack);
+      }
+
       assertFalse(channel.hasMessages());
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
@@ -219,19 +243,35 @@ public class ChannelSupportTest extends MessagingTestCase
 
 
       // install a broken acknowledgment store, but not a message store yet
-      channel.setAcknowledgmentStore(new AcknowledgmentStoreImpl("ACKStoreID",
-                                                                 AcknowledgmentStoreImpl.BROKEN));
+      channel.setAcknowledgmentStore(new TestAcknowledgmentStore("ACKStoreID",
+                                                                 TestAcknowledgmentStore.BROKEN));
 
       // send a reliable message
 
-      assertFalse(channel.handle(new MessageSupport("messageID", true)));
+      ack = channel.handle(new MessageSupport("messageID", true));
+      if (receiverState == ReceiverImpl.BROKEN && !channel.isStoringUndeliverableMessages())
+      {
+          assertTrue(ack);
+      }
+      else
+      {
+          assertFalse(ack);
+      }
       assertFalse(channel.hasMessages());
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
       // send a reliable reference
 
-      assertFalse(channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID")));
+      ack = channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID"));
+      if (receiverState == ReceiverImpl.BROKEN && !channel.isStoringUndeliverableMessages())
+      {
+          assertTrue(ack);
+      }
+      else
+      {
+          assertFalse(ack);
+      }
       assertFalse(channel.hasMessages());
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
@@ -240,19 +280,37 @@ public class ChannelSupportTest extends MessagingTestCase
 
 
       // install a valid acknowledgment store, but not a message store yet
-      channel.setAcknowledgmentStore(new AcknowledgmentStoreImpl("ACKStoreID"));
+      channel.setAcknowledgmentStore(new TestAcknowledgmentStore("ACKStoreID"));
 
       // send a reliable message
 
-      assertFalse(channel.handle(new MessageSupport("messageID", true)));
+      ack = channel.handle(new MessageSupport("messageID", true));
+      if (receiverState == ReceiverImpl.BROKEN && !channel.isStoringUndeliverableMessages())
+      {
+          assertTrue(ack);
+      }
+      else
+      {
+          assertFalse(ack);
+      }
       assertFalse(channel.hasMessages());
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
       // send a reliable reference
 
-      assertTrue(channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID")));
-      assertTrue(channel.hasMessages());
+      assertTrue(channel.handle(new MessageReferenceSupport("messageID", true, Long.MAX_VALUE, "someStoreID")));
+
+      if (receiverState == ReceiverImpl.NACKING ||
+          receiverState == ReceiverImpl.BROKEN && channel.isStoringUndeliverableMessages())
+      {
+         assertTrue(channel.hasMessages());
+      }
+      else
+      {
+         assertFalse(channel.hasMessages());
+      }
+
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
@@ -273,18 +331,35 @@ public class ChannelSupportTest extends MessagingTestCase
 
       // send a reliable message
 
-      assertFalse(channel.handle(new MessageSupport("messageID", true)));
+      ack = channel.handle(new MessageSupport("messageID", true));
+      if (receiverState == ReceiverImpl.BROKEN && !channel.isStoringUndeliverableMessages())
+      {
+          assertTrue(ack);
+      }
+      else
+      {
+          assertFalse(ack);
+      }
       assertFalse(channel.hasMessages());
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
       // send a reliable reference
 
-      assertTrue(channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID")));
-      assertTrue(channel.hasMessages());
+      assertTrue(channel.handle(new MessageReferenceSupport("messageID", true, Long.MAX_VALUE, "someStoreID")));
+
+      if (receiverState == ReceiverImpl.NACKING ||
+          receiverState == ReceiverImpl.BROKEN && channel.isStoringUndeliverableMessages())
+      {
+         assertTrue(channel.hasMessages());
+      }
+      else
+      {
+         assertFalse(channel.hasMessages());
+      }
+
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
-
       // "fix" the receiver store and get rid of the nacked message
       s = receiverOne.getState();
       receiverOne.setState(ReceiverImpl.HANDLING);
@@ -303,7 +378,15 @@ public class ChannelSupportTest extends MessagingTestCase
       // send a reliable message
 
       assertTrue(channel.handle(new MessageSupport("messageID", true)));
-      assertTrue(channel.hasMessages());
+      if (receiverState == ReceiverImpl.NACKING ||
+          receiverState == ReceiverImpl.BROKEN && channel.isStoringUndeliverableMessages())
+      {
+         assertTrue(channel.hasMessages());
+      }
+      else
+      {
+         assertFalse(channel.hasMessages());
+      }
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
@@ -318,8 +401,16 @@ public class ChannelSupportTest extends MessagingTestCase
 
       // send a reliable reference
 
-      assertTrue(channel.handle(new MessageReferenceSupport("messageID", true, 0, "someStoreID")));
-      assertTrue(channel.hasMessages());
+      assertTrue(channel.handle(new MessageReferenceSupport("messageID", true, Long.MAX_VALUE, "someStoreID")));
+      if (receiverState == ReceiverImpl.NACKING ||
+          receiverState == ReceiverImpl.BROKEN && channel.isStoringUndeliverableMessages())
+      {
+         assertTrue(channel.hasMessages());
+      }
+      else
+      {
+         assertFalse(channel.hasMessages());
+      }
       l = receiverOne.getMessages();
       assertEquals(0, l.size());
 
@@ -344,7 +435,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
       // deliver none
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
       assertTrue(channel.handle(new RoutableSupport("routableID1")));
       assertTrue(channel.hasMessages());
@@ -363,7 +454,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
       // deliver none
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
       assertTrue(channel.handle(new RoutableSupport("routableID1")));
       assertTrue(channel.handle(new RoutableSupport("routableID2")));
@@ -391,7 +482,7 @@ public class ChannelSupportTest extends MessagingTestCase
    {
       if (channel == null) { return; }
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
 
       assertTrue(channel.handle(new RoutableSupport("routableID1", false)));
@@ -400,11 +491,11 @@ public class ChannelSupportTest extends MessagingTestCase
       assertTrue(channel.hasMessages());
 
       receiverOne.setState(ReceiverImpl.HANDLING);
-      receiverOne.setState(ReceiverImpl.DENYING, 2);
+      receiverOne.setState(ReceiverImpl.NACKING, 2);
 
       assertFalse(channel.deliver());
 
-      Set unacked = channel.getUnacknowledged();
+      Set unacked = channel.getUndelivered();
       assertEquals(1, unacked.size());
 
       receiverOne.setState(ReceiverImpl.HANDLING);
@@ -421,7 +512,7 @@ public class ChannelSupportTest extends MessagingTestCase
    {
       if (channel == null) { return; }
 
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
 
       assertTrue(channel.handle(new RoutableSupport("routableID1", false)));
@@ -434,7 +525,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
       assertFalse(channel.deliver());
 
-      Set unacked = channel.getUnacknowledged();
+      Set unacked = channel.getUndelivered();
       assertEquals(1, unacked.size());
 
       receiverOne.setState(ReceiverImpl.HANDLING);
@@ -452,12 +543,12 @@ public class ChannelSupportTest extends MessagingTestCase
       if (channel == null) { return; }
 
       channel.setSynchronous(false);
-      receiverOne.setState(ReceiverImpl.DENYING);
+      receiverOne.setState(ReceiverImpl.NACKING);
 
       assertTrue(channel.handle(new RoutableSupport("routableID1", false, 1000))); // this should expire
       assertTrue(channel.handle(new RoutableSupport("routableID2", false, 100000)));
 
-      assertEquals(2, channel.getUnacknowledged().size());
+      assertEquals(2, channel.getUndelivered().size());
 
       Thread.sleep(2000);
 

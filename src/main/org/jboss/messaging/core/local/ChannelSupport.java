@@ -14,11 +14,14 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
 import org.jboss.logging.Logger;
 
-import java.io.Serializable;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.io.Serializable;
+
 
 /**
- * Basic functionality that must be available in to all Channel implementation.
+ * Basic functionality that must be made available by all Channel implementation.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -33,10 +36,15 @@ public abstract class ChannelSupport extends Lockable implements Channel
    
    // Attributes ----------------------------------------------------
 
-   /** true if the channel is synchronous */
    private volatile boolean synchronous;
+
+   protected AcknowledgmentStore localAcknowledgmentStore;
+   // <messageID - Routable>
+   protected Map messages;
+
    private MessageStore messageStore;
-   private AcknowledgmentStore acknowledgmentStore;
+   private AcknowledgmentStore externalAcknowledgmentStore;
+
 
    // Constructors --------------------------------------------------
 
@@ -55,6 +63,8 @@ public abstract class ChannelSupport extends Lockable implements Channel
    public ChannelSupport(boolean mode)
    {
       synchronous = mode;
+      messages = new HashMap();
+
    }
 
    // Channel implementation ----------------------------------------
@@ -88,21 +98,48 @@ public abstract class ChannelSupport extends Lockable implements Channel
       return synchronous;
    }
 
+   public boolean hasMessages()
+   {
+      lock();
+
+      try
+      {
+         return !localAcknowledgmentStore.getUnacknowledged(getReceiverID()).isEmpty();
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   public Set getUndelivered()
+   {
+      lock();
+
+      try
+      {
+         return localAcknowledgmentStore.getUnacknowledged(getReceiverID());
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   /**
+    * This is the default behaviour of an asynchronous channel: if there are no receivers, try to
+    * store the message and positively acknowledge if storage is successful. Override for topic-like
+    * behavior.
+    */
+   public boolean isStoringUndeliverableMessages()
+   {
+      return true;
+   }
+
    /**
     * Must acquire the channel's reentrant lock.
     */
    public abstract boolean deliver();
-
-   /**
-    * Must acquire the channel's reentrant lock.
-    */
-   public abstract boolean hasMessages();
-
-   /**
-    * Must acquire the channel's reentrant lock.
-    */
-   public abstract Set getUnacknowledged();
-
 
    public void setMessageStore(MessageStore store)
    {
@@ -116,12 +153,12 @@ public abstract class ChannelSupport extends Lockable implements Channel
 
    public void setAcknowledgmentStore(AcknowledgmentStore store)
    {
-      acknowledgmentStore = store;
+      externalAcknowledgmentStore = store;
    }
 
    public AcknowledgmentStore getAcknowledgmentStore()
    {
-      return acknowledgmentStore;
+      return externalAcknowledgmentStore;
    }
 
    // Public --------------------------------------------------------
@@ -131,28 +168,18 @@ public abstract class ChannelSupport extends Lockable implements Channel
    // Protected -----------------------------------------------------
 
    /**
-    * Method to be implemented by the subclasses to keep the NACKed messages locally in memory.
-    * Always called from a synchronized block, so no need to synchronize. It can throw unchecked
-    * exceptions, the caller is prepared to deal with them.
+    * Helper method that updates acknowledgments and stores the message if necessary.
     *
-    * @param receiverID could be null if the Channel doesn't currently have receivers.
-    */
-   protected abstract void storeNACKedMessageLocally(Routable r, Serializable receiverID);
-
-   /**
-    * This method is called if the channel must keep the message, because the message was NACKed by
-    * the receiver. Mustn't throw unchecked exceptions.
-    *
-    * @param receiverID could be null if the Channel doesn't currently have receivers.
+    * @param acks - Set of Acknowledgments. null means Channel NACK.
     *
     * @return true if the Channel assumes responsibility for delivery, or false if the channel
-    *         NACKs the message too.
+    *         NACKs the message.
     */
-   protected boolean storeNACKedMessage(Routable r, Serializable receiverID)
+   protected boolean updateAcknowledgments(Routable r, Set acks)
    {
       lock();
 
-      if (log.isTraceEnabled()) { log.trace(this + ": storing NACKed message " + r.getMessageID() + " from " + receiverID); }
+      if (log.isTraceEnabled()) { log.trace(this + " updating acknowledgments for " + r.getMessageID()); }
 
       try
       {
@@ -170,9 +197,14 @@ public abstract class ChannelSupport extends Lockable implements Channel
                   // TODO if this succeeds and acknowledgmentStore fails, I add garbage to the message store
                   r = messageStore.store((Message)r);
                }
-               acknowledgmentStore.storeNACK(r.getMessageID(), receiverID);
+               externalAcknowledgmentStore.updateAcknowledgments(r.getMessageID(),
+                                                                 getReceiverID(),
+                                                                 acks);
             }
-            storeNACKedMessageLocally(r, receiverID);
+
+            // always update local NACKs TODO optimization? use external acknowledgment store?
+            updateLocalAcknowledgments(r, acks);
+
             return true;
          }
          catch(Throwable t)
@@ -186,6 +218,68 @@ public abstract class ChannelSupport extends Lockable implements Channel
          unlock();
       }
    }
+
+   /**
+    * Subclasses could override this method to refresh their local acknowledgment maps.
+    *
+    * Always called from a synchronized block, no need to synchronize. It can throw unchecked
+    * exceptions, the caller is prepared to deal with them.
+    *
+    * @param acks - Set of Acknowledgments. Empty set (or null) means Channel NACK.
+    */
+   protected void updateLocalAcknowledgments(Routable r, Set acks)
+   {
+      if(log.isTraceEnabled()) { log.trace("updating acknowledgments " + r + " locally"); }
+
+      // the channel's lock is already acquired when invoking this method
+
+      Serializable messageID = r.getMessageID();
+      try
+      {
+         localAcknowledgmentStore.updateAcknowledgments(null, messageID, acks);
+         if (localAcknowledgmentStore.hasNACK(getReceiverID(), messageID))
+         {
+            if (!messages.containsKey(messageID))
+            {
+               messages.put(messageID, r);
+            }
+         }
+         else
+         {
+            messages.remove(messageID);
+         }
+      }
+      catch(Throwable t)
+      {
+         log.error("Cannot update acknowledgments locally", t);
+      }
+   }
+
+
+
+   /**
+    * Subclasses  could override this to get rid of a message from local storage (possibly due to
+    * expiration).
+    *
+    * @param messageID
+    */
+   protected void removeLocalMessage(Serializable messageID)
+   {
+      if(log.isTraceEnabled()) { log.trace("removing message " + messageID + " locally"); }
+
+      // the channel's lock is already acquired when invoking this method
+
+      try
+      {
+         localAcknowledgmentStore.remove(getReceiverID(), messageID);
+         messages.remove(messageID);
+      }
+      catch(Throwable t)
+      {
+         log.error("Cannot remove message locally", t);
+      }
+   }
+
 
    // Private -------------------------------------------------------
    

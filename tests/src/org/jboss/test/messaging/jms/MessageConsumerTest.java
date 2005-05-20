@@ -19,11 +19,14 @@ import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.JMSException;
+import javax.jms.DeliveryMode;
 import javax.naming.InitialContext;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -73,8 +76,10 @@ public class MessageConsumerTest extends MessagingTestCase
       consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       topicProducer = producerSession.createProducer(topic);
+      topicProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       topicConsumer = consumerSession.createConsumer(topic);
       queueProducer = producerSession.createProducer(queue);
+      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueConsumer = consumerSession.createConsumer(queue);
    }
 
@@ -228,6 +233,14 @@ public class MessageConsumerTest extends MessagingTestCase
 
    }
 
+
+
+
+
+
+
+
+
    // TODO uncomment this when I fix consumer delivery
 //   /**
 //    * The test sends a burst of messages and verifies if the consumer receives all of them.
@@ -364,15 +377,12 @@ public class MessageConsumerTest extends MessagingTestCase
    private class MessageListenerImpl implements MessageListener
    {
       private List messages = Collections.synchronizedList(new ArrayList());
-      private Object mutex = new Object();
+      private Latch latch = new Latch();
 
       /** Blocks the calling thread until at least a message is received */
       public void waitForMessages() throws InterruptedException
       {
-         synchronized(mutex)
-         {
-            mutex.wait();
-         }
+         latch.acquire();
       }
 
       public void onMessage(Message m)
@@ -380,10 +390,8 @@ public class MessageConsumerTest extends MessagingTestCase
          messages.add(m);
          log.info("Added message " + m + " to my list");
 
-         synchronized(mutex)
-         {
-            mutex.notify();
-         }
+         latch.release();
+
       };
 
       public Message getNextMessage()

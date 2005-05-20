@@ -9,12 +9,15 @@ package org.jboss.messaging.core.local;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.util.AcknowledgmentImpl;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.Serializable;
 
 /**
- * A Router that synchronously delivers the Routable to all its receivers. What will be actually
+ * A Router that synchronously delivers the Routable to all of its receivers. What will be actually
  * passed is the reference to the incoming Routable.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -24,58 +27,56 @@ public class PointToMultipointRouter extends AbstractRouter
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PointToMultipointRouter.class); 
-
    // Constructors --------------------------------------------------
 
    public PointToMultipointRouter(Serializable id)
    {
       super(id);
+      log = Logger.getLogger(PointToPointRouter.class);
    }
 
    // AbstractRouter implementation ---------------------------------
 
-   /**
-    * The method tries to deliver the message to all receivers connected to the router. If all of
-    * them acknowledge the message, the method returns true. If there is at least one who doesn't,
-    * the method returns false. In this case, it is the sender's responsibility to find out which
-    * receiver did not acknowledge the message and retry delivery.
-    * <p>
-    * The sender can obtain the acknowledgment situation on a per-receiver basis using the
-    * acknowledged() method.
-    *
-    * @see org.jboss.messaging.core.Distributor#acknowledged(Serializable)
-    */
-   public boolean handle(Routable r)
+   public Set handle(Routable r, Set receiverIDs)
    {
-      boolean allSuccessful = true;
+
+      Set acks = new HashSet();
+
       synchronized(this)
       {
-         if (receivers.isEmpty())
-         {
-            return false;
-         }
-         for (Iterator i = iterator(); i.hasNext(); )
+         for(Iterator i = iterator(receiverIDs); i.hasNext(); )
          {
             Serializable receiverID = (Serializable)i.next();
             Receiver receiver = (Receiver)receivers.get(receiverID);
             try
             {
+               if (log.isTraceEnabled()) { log.trace(this + " attempting to deliver to " + receiverID); }
+
                boolean successful = receiver.handle(r);
-               allSuccessful &= successful;
-               acknowledgments.put(receiverID, new Boolean(successful));
+
+               if (log.isTraceEnabled()) { log.trace(this + ": receiver " + receiverID + (successful ? " ACKed" : "NACKed") + " the message"); }
+
+               acks.add(new AcknowledgmentImpl(receiverID, successful));
             }
-            catch(Exception e)
+            catch(Throwable t)
             {
                // broken receiver - log the exception and ignore the receiver
-               allSuccessful = false;
-               log.error("The receiver " + receiverID + " cannot handle the message.", e);
+               log.error("The receiver " + receiverID + " is broken", t);
             }
          }
       }
-      return allSuccessful;
+      return acks;
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("P2MRouter[");
+      sb.append(getRouterID());
+      sb.append("]");
+      return sb.toString();
+   }
+
 
 }
