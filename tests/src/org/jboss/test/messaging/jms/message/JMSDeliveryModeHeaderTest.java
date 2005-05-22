@@ -42,29 +42,29 @@ public class JMSDeliveryModeHeaderTest extends MessageTest
 
    public void testDefaultDeliveryMode() throws Exception
    {
-      assertEquals(DeliveryMode.PERSISTENT, producer.getDeliveryMode());
+      assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
    }
 
    public void testNonPersistentDeliveryMode() throws Exception
    {
-      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      assertEquals(DeliveryMode.NON_PERSISTENT, producer.getDeliveryMode());
+      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      assertEquals(DeliveryMode.NON_PERSISTENT, queueProducer.getDeliveryMode());
 
-      Message m = producerSession.createMessage();
-      producer.send(m);
+      Message m = queueProducerSession.createMessage();
+      queueProducer.send(m);
 
-      assertEquals(DeliveryMode.NON_PERSISTENT, consumer.receive().getJMSDeliveryMode());
+      assertEquals(DeliveryMode.NON_PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
    }
 
    public void testPersistentDeliveryMode() throws Exception
    {
-      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      assertEquals(DeliveryMode.PERSISTENT, producer.getDeliveryMode());
+      queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+      assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
 
-      Message m = producerSession.createMessage();
-      producer.send(m);
+      Message m = queueProducerSession.createMessage();
+      queueProducer.send(m);
 
-      assertEquals(DeliveryMode.PERSISTENT, consumer.receive().getJMSDeliveryMode());
+      assertEquals(DeliveryMode.PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
    }
 
    // Package protected ---------------------------------------------

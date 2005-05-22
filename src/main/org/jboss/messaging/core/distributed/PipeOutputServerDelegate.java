@@ -8,7 +8,8 @@ package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.util.ServerDelegate;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.util.ServerDelegate;
+
+import java.io.Serializable;
 
 
 /**
@@ -26,5 +27,13 @@ interface PipeOutputServerDelegate extends ServerDelegate
     * @return the acknowledgement as returned by the associated receiver.
     */
    public boolean handle(Routable r);
+
+
+   /**
+    * The metohd to be called remotely by the input end of the distributed pipe.
+    *
+    * @return the receiver ID of the attached receiver or null if there is no receiver.
+    */
+   public Serializable getOutputID();
 
 }

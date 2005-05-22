@@ -8,8 +8,6 @@ package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.logging.Logger;
 
@@ -52,8 +50,6 @@ public class PipeOutput implements PipeOutputServerDelegate
       this.receiver = receiver;
    }
 
-
-
    // PipeOutputServerDelegate implementation -----------------------
 
    public Serializable getID()
@@ -61,11 +57,6 @@ public class PipeOutput implements PipeOutputServerDelegate
       return pipeID;
    }
 
-   /**
-    * The metohd to be called remotely by the input end of the distributed pipe.
-    *
-    * @return the acknowledgement as returned by the associated receiver.
-    */
    public boolean handle(Routable m)
    {
       try
@@ -80,6 +71,16 @@ public class PipeOutput implements PipeOutputServerDelegate
          return false;
       }
    }
+
+   public Serializable getOutputID()
+   {
+      if (receiver == null)
+      {
+         return null;
+      }
+      return receiver.getReceiverID();      
+   }
+
 
    // Public --------------------------------------------------------
 

@@ -8,6 +8,9 @@ package org.jboss.messaging.core.local;
 
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentStore;
+import org.jboss.logging.Logger;
+
+import java.io.Serializable;
 
 
 /**
@@ -20,6 +23,8 @@ import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentStore;
 public abstract class SingleOutputChannelSupport extends ChannelSupport
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(SingleOutputChannelSupport.class);
 
    // Static --------------------------------------------------------
    
@@ -42,7 +47,28 @@ public abstract class SingleOutputChannelSupport extends ChannelSupport
       localAcknowledgmentStore = new SingleReceiverAcknowledgmentStore("LocalAckStore");
    }
 
+   // ChannelSupport overrides --------------------------------------
+
+   public void acknowledge(Serializable messageID, Serializable receiverID)
+   {
+      Serializable myOutputID = getOutputID();
+      if (myOutputID == null || !myOutputID.equals(receiverID))
+      {
+         log.debug("Other receiver (" + receiverID + ") than my current output tries to acknowledge a message");
+         return;
+      }
+      super.acknowledge(messageID, receiverID);
+   }
+
+
    // Public --------------------------------------------------------
+
+   /**
+    * Returns output Receiver's ID.
+    *
+    * TODO Have a SingleOutputChannel/MultipleOutputChannel interface and add this method there?
+    */
+   public abstract Serializable getOutputID();
 
    // Package protected ---------------------------------------------
    

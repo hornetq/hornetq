@@ -151,10 +151,8 @@ public class LocalPipe extends SingleOutputChannelSupport
          Serializable messageID = (Serializable)i.next();
          Routable r = (Routable)messages.get(messageID);
 
-         if (System.currentTimeMillis() > r.getExpirationTime())
+         if (r.isExpired())
          {
-            // message expired
-            log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
             removeLocalMessage(messageID);
             i.remove();
             continue;
@@ -184,6 +182,16 @@ public class LocalPipe extends SingleOutputChannelSupport
       return !hasMessages();
    }
 
+   // SingleOutputChannelSupport overrides --------------------------
+
+   public Serializable getOutputID()
+   {
+      if (receiver == null)
+      {
+         return null;
+      }
+      return receiver.getReceiverID();
+   }
 
    // Public --------------------------------------------------------
 

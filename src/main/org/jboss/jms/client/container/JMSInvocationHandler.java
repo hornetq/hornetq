@@ -15,14 +15,9 @@ import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.MethodHashing;
 
 import org.jboss.aop.MethodInfo;
-import org.jboss.aop.joinpoint.MethodInvocation;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.io.Serializable;
 
 
 

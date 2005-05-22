@@ -12,25 +12,12 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.util.InVMInitialContextFactory;
 
 import javax.naming.InitialContext;
-import javax.transaction.xa.XAResource;
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
-import javax.jms.XAConnection;
-import javax.jms.XASession;
-
-
-import java.util.Set;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>

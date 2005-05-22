@@ -221,6 +221,7 @@ public class JBossMessageProducer
       {
          m.setJMSTimestamp(System.currentTimeMillis());
       }
+      
       // TODO priority
 
       if (timeToLive == 0)

@@ -13,23 +13,24 @@ import org.jboss.messaging.core.message.RoutableSupport;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LocalPipeTest extends ChannelSupportTest
+public class LocalPipeAsChannelTest extends SingleOutputChannelSupportTest
 {
    // Constructors --------------------------------------------------
 
-   public LocalPipeTest(String name)
+   public LocalPipeAsChannelTest(String name)
    {
       super(name);
    }
 
    public void setUp() throws Exception
    {
-      super.setUp();
-
       // Create a receiver and a LocalPipe to be testes by the superclass tests
 
       receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
       channel = new LocalPipe("LocalPipeID", receiverOne);
+
+      // important, I need the channel set at this point
+      super.setUp();
    }
 
    public void tearDown()throws Exception

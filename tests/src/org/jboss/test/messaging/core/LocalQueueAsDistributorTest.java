@@ -7,7 +7,6 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.local.LocalQueue;
-import org.jboss.messaging.core.local.LocalQueue;
 
 
 /**

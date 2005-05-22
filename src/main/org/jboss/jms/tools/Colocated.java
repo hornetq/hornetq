@@ -7,6 +7,7 @@
 package org.jboss.jms.tools;
 
 import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -22,6 +23,8 @@ public class Colocated extends Client
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(Colocated.class);
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -35,6 +38,9 @@ public class Colocated extends Client
       super(InVMInitialContextFactory.getJNDIEnvironment());
       server = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment());
       server.start();
+
+      deployTopic("T");
+      log.info("Topic messaging/topics/T deployed");
    }
 
    // Public --------------------------------------------------------

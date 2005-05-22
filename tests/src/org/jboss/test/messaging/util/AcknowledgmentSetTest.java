@@ -12,7 +12,6 @@ import org.jboss.messaging.core.util.AcknowledgmentSet;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.HashSet;
 
 
 /**

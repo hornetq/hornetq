@@ -6,10 +6,7 @@
  */
 package org.jboss.test.messaging;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.BasicConfigurator;
 import org.jboss.logging.Logger;
-import org.jboss.logging.XLevel;
 import junit.framework.TestCase;
 
 /**
@@ -31,13 +28,6 @@ public class MessagingTestCase extends TestCase
    public MessagingTestCase(String name)
    {
       super(name);
-//      org.apache.log4j.Logger jboss = org.apache.log4j.Logger.getLogger("org.jboss");
-//      jboss.setLevel(XLevel.ALL);
-//
-//      BasicConfigurator.configure(); //Dumps output to console
-//
-//
-//      log.info("Configured");
    }
 
    // Public --------------------------------------------------------

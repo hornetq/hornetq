@@ -17,13 +17,8 @@ import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.MessageListener;
 import javax.jms.DeliveryMode;
 import javax.naming.InitialContext;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

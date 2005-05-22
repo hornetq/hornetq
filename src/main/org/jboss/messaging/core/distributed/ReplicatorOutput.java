@@ -10,10 +10,6 @@ import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.util.ServerResponse;
 import org.jboss.messaging.core.util.Lockable;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.ServerResponse;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
@@ -132,19 +128,21 @@ public class ReplicatorOutput
             Serializable inputPeerID = r.removeHeader(Routable.REPLICATOR_INPUT_ID);
             // Mark the message as being received from a remote endpoint
             r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+            Serializable receiverID = null;
             boolean acked = false;
             try
             {
                acked = receiver.handle(r);
+               receiverID = receiver.getReceiverID();
             }
             catch(Throwable t)
             {
-               log.warn(this + "'s receiver did not acknowledge the message", t);
+               log.warn(this + "'s receiver is broken", t);
                acked = false;
             }
             MessageAcknowledgment ack = new MessageAcknowledgment(jgroupsMessage.getSrc(),
-                                                                  inputPeerID, r.getMessageID(),
-                                                                  acked);
+                                                                  inputPeerID, receiverID,
+                                                                  r.getMessageID(), acked);
             while(true)
             {
                try
@@ -465,11 +463,14 @@ public class ReplicatorOutput
 
       try
       {
-         RpcServerCall call = new RpcServerCall(ack.getInputPeerID(), "acknowledge",
+         RpcServerCall call = new RpcServerCall(ack.getInputPeerID(),
+                                                "acknowledge",
                                                 new Object[] {ack.getMessageID(),
                                                               peerID,
+                                                              ack.getReceiverID(),
                                                               ack.isPositive()},
                                                 new String[] {"java.io.Serializable",
+                                                              "java.io.Serializable",
                                                               "java.io.Serializable",
                                                               "java.lang.Boolean"});
 

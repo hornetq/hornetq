@@ -12,7 +12,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.distributed.Pipe;
 import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.test.messaging.core.ReceiverImpl;
-import org.jboss.test.messaging.core.ChannelSupportTest;
+import org.jboss.test.messaging.core.SingleOutputChannelSupportTest;
 import org.jboss.messaging.core.Routable;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class PipeTest extends ChannelSupportTest
+public class PipeAsChannelTest extends SingleOutputChannelSupportTest
 {
    // Constants -----------------------------------------------------
 
@@ -52,15 +52,13 @@ public class PipeTest extends ChannelSupportTest
 
    // Constructors --------------------------------------------------
 
-   public PipeTest(String name)
+   public PipeAsChannelTest(String name)
    {
       super(name);
    }
 
    public void setUp() throws Exception
    {
-      super.setUp();
-
       inputJChannel = new JChannel(props);
       inputDispatcher = new RpcDispatcher(inputJChannel, null, null, null);
 
@@ -76,6 +74,9 @@ public class PipeTest extends ChannelSupportTest
       pipeOutput = new PipeOutput("DistributedPipeID", receiverOne);
       pipeOutput.register((RpcServer)outputDispatcher.getServerObject());
       channel = new Pipe(true, inputDispatcher, outputAddress, "DistributedPipeID");
+
+      // important, I need the channel set at this point
+      super.setUp();
    }
 
    public void tearDown()throws Exception

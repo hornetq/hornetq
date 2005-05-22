@@ -11,6 +11,7 @@ import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -46,6 +47,10 @@ public class AcknowledgmentCollector
 
    /** <ticket - Set of outputPeerIDs that did NOT acknowledge yet> */
    protected Map unacked;
+   // TODO This is a hack
+   /** <ticket - Set of outputPeerIDs that positively acknowledged using acknowledge() */
+   protected Map acked;
+
 
    // Constructors --------------------------------------------------
 
@@ -53,6 +58,7 @@ public class AcknowledgmentCollector
    {
       this.peer = peer;
       unacked = new HashMap();
+      acked = new HashMap();
    }
 
    // AcknowledgmentCollectorServerDelegate implementation ----------
@@ -63,7 +69,8 @@ public class AcknowledgmentCollector
       return peer.getPeerID();
    }
 
-   public void acknowledge(Serializable messageID, Serializable outputPeerID, Boolean positive)
+   public void acknowledge(Serializable messageID, Serializable outputPeerID,
+                           Serializable receiverID, Boolean positive)
    {
       lock();
 
@@ -73,7 +80,7 @@ public class AcknowledgmentCollector
          {
             log.trace("message " + messageID +
                       (positive.booleanValue() ? " POSITIVELY" : " NEGATIVELY" ) +
-                      " acked by " + outputPeerID);
+                      " acked by " + outputPeerID + " on behalf of " + receiverID);
          }
 
          for(Iterator i = unacked.keySet().iterator(); i.hasNext(); )
@@ -99,6 +106,22 @@ public class AcknowledgmentCollector
                }
             }
          }
+
+         // TODO This is a hack
+         for(Iterator i = acked.keySet().iterator(); i.hasNext(); )
+         {
+            Ticket t = (Ticket)i.next();
+            if (t.getRoutable().getMessageID().equals(messageID))
+            {
+               if (!positive.booleanValue())
+               {
+                  // negative acknowlegment, cancel the ACK
+                  Set s = (Set)acked.get(t);
+                  s.remove(receiverID);
+               }
+            }
+         }
+
       }
       finally
       {
@@ -115,8 +138,10 @@ public class AcknowledgmentCollector
       try
       {
          for(Iterator i = outputPeerIDs.iterator(); i.hasNext(); )
-         {
-            acknowledge(messageID, (Serializable)i.next(), positive);
+         {                                        // TODO hack
+                                                  //        |
+                                                  //        v
+            acknowledge(messageID, (Serializable)i.next(), null, positive);
          }
       }
       finally
@@ -201,6 +226,48 @@ public class AcknowledgmentCollector
       {
          Acknowledgment a = (Acknowledgment)i.next();
          addNACK(r, a.getReceiverID());
+      }
+   }
+
+   public void acknowledge(Serializable messageID, Serializable receiverID)
+   {
+      //
+      // TODO This whole method implementation is a hack to get tests passing
+      //
+
+      lock();
+
+      acknowledge(messageID, null, receiverID, Boolean.TRUE);
+
+
+      try
+      {
+         Ticket ticket = null;
+         Set s = null;
+         for(Iterator i = acked.keySet().iterator(); i.hasNext(); )
+         {
+            Ticket t = (Ticket)i.next();
+            if (t.getRoutable().getMessageID().equals(messageID))
+            {
+               ticket = t;
+            }
+         }
+         if (ticket == null)
+         {
+            ticket = new Ticket(new RoutableSupport(messageID));
+            s = new HashSet();
+            acked.put(ticket, s);
+         }
+         if (s == null)
+         {
+            s = (Set)acked.get(ticket);
+         }
+
+         s.add(receiverID);
+      }
+      finally
+      {
+         unlock();
       }
    }
 
@@ -321,10 +388,8 @@ public class AcknowledgmentCollector
                Ticket t = (Ticket)i.next();
                Routable r = t.getRoutable();
 
-               if (System.currentTimeMillis() > r.getExpirationTime())
+               if (r.isExpired())
                {
-                  // message expired
-                  log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
                   i.remove();
                   continue;
                }

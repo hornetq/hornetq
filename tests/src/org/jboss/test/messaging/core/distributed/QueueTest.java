@@ -9,10 +9,7 @@ package org.jboss.test.messaging.core.distributed;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.distributed.Queue;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.test.messaging.core.ReceiverImpl;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
@@ -76,99 +73,89 @@ public class QueueTest extends MessagingTestCase
       super.tearDown();
    }
 
-   //
-   // TODO Uncomment tests after I fix the Queue
-   //
-
-   public void test()
+   public void testOneQueuePeerOneJChannel() throws Exception
    {
+      jChannelOne.connect("testGroup");
 
+      Queue queue = new Queue(dispatcherOne, "QueueOne");
+      queue.start();
+      assertTrue(queue.isStarted());
+
+      ReceiverImpl r = new ReceiverImpl();
+      queue.add(r);
+
+      assertTrue(queue.handle(new MessageSupport("someid")));
+      Iterator i = r.iterator();
+      assertEquals(new MessageSupport("someid"), i.next());
+      assertFalse(i.hasNext());
+   }
+
+   public void testTwoQueuePeersOneJChannel() throws Exception
+   {
+      jChannelOne.connect("testGroup");
+
+      Queue queuePeerOne = new Queue(dispatcherOne, "QueueOne");
+      Queue queuePeerTwo = new Queue(dispatcherOne, "QueueOne");
+      queuePeerOne.start();
+      queuePeerTwo.start();
+      assertTrue(queuePeerOne.isStarted());
+      assertTrue(queuePeerTwo.isStarted());
+
+      ReceiverImpl r = new ReceiverImpl();
+      queuePeerOne.add(r);
+
+      assertTrue(queuePeerTwo.handle(new MessageSupport("someid")));
+      Iterator i = r.iterator();
+      assertEquals(new MessageSupport("someid"), i.next());
+      assertFalse(i.hasNext());
    }
 
 
-//   public void testOneQueuePeerOneJChannel() throws Exception
-//   {
-//      jChannelOne.connect("testGroup");
-//
-//      Queue queue = new Queue(dispatcherOne, "QueueOne");
-//      queue.start();
-//      assertTrue(queue.isStarted());
-//
-//      ReceiverImpl r = new ReceiverImpl();
-//      queue.add(r);
-//
-//      assertTrue(queue.handle(new MessageSupport("someid")));
-//      Iterator i = r.iterator();
-//      assertEquals(new MessageSupport("someid"), i.next());
-//      assertFalse(i.hasNext());
-//   }
-//
-//   public void testTwoQueuePeersOneJChannel() throws Exception
-//   {
-//      jChannelOne.connect("testGroup");
-//
-//      Queue queuePeerOne = new Queue(dispatcherOne, "QueueOne");
-//      Queue queuePeerTwo = new Queue(dispatcherOne, "QueueOne");
-//      queuePeerOne.start();
-//      queuePeerTwo.start();
-//      assertTrue(queuePeerOne.isStarted());
-//      assertTrue(queuePeerTwo.isStarted());
-//
-//      ReceiverImpl r = new ReceiverImpl();
-//      queuePeerOne.add(r);
-//
-//      assertTrue(queuePeerTwo.handle(new MessageSupport("someid")));
-//      Iterator i = r.iterator();
-//      assertEquals(new MessageSupport("someid"), i.next());
-//      assertFalse(i.hasNext());
-//   }
-//
-//
-//   public void testOneQueuePeerTwoJChannels() throws Exception
-//   {
-//      jChannelOne.connect("testGroup");
-//      jChannelTwo.connect("testGroup");
-//
-//      Queue queue = new Queue(dispatcherOne, "QueueOne");
-//      queue.start();
-//      assertTrue(queue.isStarted());
-//
-//      ReceiverImpl r = new ReceiverImpl();
-//      queue.add(r);
-//
-//      assertTrue(queue.handle(new MessageSupport("someid")));
-//      Iterator i = r.iterator();
-//      assertEquals(new MessageSupport("someid"), i.next());
-//      assertFalse(i.hasNext());
-//   }
-//
-//   public void testTwoQueuePeersOnSeparateChannels() throws Exception
-//   {
-//      jChannelOne.connect("testGroup");
-//      jChannelTwo.connect("testGroup");
-//
-//      Queue queuePeerOne = new Queue(dispatcherOne, "AQueue");
-//      Queue queuePeerTwo = new Queue(dispatcherTwo, "AQueue");
-//      queuePeerOne.start();
-//      queuePeerTwo.start();
-//
-//      assertTrue(queuePeerOne.isStarted());
-//      assertTrue(queuePeerTwo.isStarted());
-//
-//      ReceiverImpl r = new ReceiverImpl();
-//      queuePeerTwo.add(r);
-//
-//      assertTrue(queuePeerOne.handle(new MessageSupport("someid")));
-//      Iterator i = r.iterator();
-//      assertEquals(new MessageSupport("someid"), i.next());
-//      assertFalse(i.hasNext());
-//   }
-//
-//
-//
-//   public static void main(String[] args) throws Exception
-//   {
-//      TestRunner.run(QueueTest.class);
-//   }
+   public void testOneQueuePeerTwoJChannels() throws Exception
+   {
+      jChannelOne.connect("testGroup");
+      jChannelTwo.connect("testGroup");
+
+      Queue queue = new Queue(dispatcherOne, "QueueOne");
+      queue.start();
+      assertTrue(queue.isStarted());
+
+      ReceiverImpl r = new ReceiverImpl();
+      queue.add(r);
+
+      assertTrue(queue.handle(new MessageSupport("someid")));
+      Iterator i = r.iterator();
+      assertEquals(new MessageSupport("someid"), i.next());
+      assertFalse(i.hasNext());
+   }
+
+   public void testTwoQueuePeersOnSeparateChannels() throws Exception
+   {
+      jChannelOne.connect("testGroup");
+      jChannelTwo.connect("testGroup");
+
+      Queue queuePeerOne = new Queue(dispatcherOne, "AQueue");
+      Queue queuePeerTwo = new Queue(dispatcherTwo, "AQueue");
+      queuePeerOne.start();
+      queuePeerTwo.start();
+
+      assertTrue(queuePeerOne.isStarted());
+      assertTrue(queuePeerTwo.isStarted());
+
+      ReceiverImpl r = new ReceiverImpl();
+      queuePeerTwo.add(r);
+
+      assertTrue(queuePeerOne.handle(new MessageSupport("someid")));
+      Iterator i = r.iterator();
+      assertEquals(new MessageSupport("someid"), i.next());
+      assertFalse(i.hasNext());
+   }
+
+
+
+   public static void main(String[] args) throws Exception
+   {
+      TestRunner.run(QueueTest.class);
+   }
 
 }

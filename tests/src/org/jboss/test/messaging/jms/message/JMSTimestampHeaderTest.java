@@ -41,12 +41,12 @@ public class JMSTimestampHeaderTest extends MessageTest
 
    public void testJMSTimestamp() throws Exception
    {
-      Message m = producerSession.createMessage();
+      Message m = queueProducerSession.createMessage();
 
       long t1 = System.currentTimeMillis();
-      producer.send(m);
+      queueProducer.send(m);
       long t2 = System.currentTimeMillis();
-      long timestamp = consumer.receive().getJMSTimestamp();
+      long timestamp = queueConsumer.receive().getJMSTimestamp();
 
       assertTrue(timestamp >= t1);
       assertTrue(timestamp <= t2);
@@ -54,11 +54,11 @@ public class JMSTimestampHeaderTest extends MessageTest
 
    public void testDisabledTimestamp() throws Exception
    {
-      Message m = producerSession.createMessage();
+      Message m = queueProducerSession.createMessage();
 
-      producer.setDisableMessageTimestamp(true);
-      producer.send(m);
-      assertEquals(0l, consumer.receive().getJMSTimestamp());
+      queueProducer.setDisableMessageTimestamp(true);
+      queueProducer.send(m);
+      assertEquals(0l, queueConsumer.receive().getJMSTimestamp());
    }
 
 

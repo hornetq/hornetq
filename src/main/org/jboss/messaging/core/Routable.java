@@ -42,9 +42,16 @@ public interface Routable extends Serializable
 
    /**
     * Returns the time (in GMT milliseconds) at which this Routable expires and must be dissapear
-    * from the system. A Long.MAX_VALUE return value means this Routable never expires.
+    * from the system. A zero value means this Routable never expires.
     */
-   public long getExpirationTime();
+   public long getExpiration();
+
+   public boolean isExpired();
+
+   /**
+    * Returns the time a Routable was handed off to the provider.
+    */
+   public long getTimestamp();
 
    /**
     * True if the message was delivered at least once but not acknowledged.

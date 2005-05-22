@@ -20,53 +20,55 @@ public interface AcknowledgmentStore
    public Serializable getStoreID();
 
    /**
+    * Overwrites currently stored acknowledgments. A positive ACK is ignored, unless the store
+    * contains a corresponding NACK. The ACK will cancel the waiting NACK in this case.
+    *
     * The metohd can have the lateral effect of removing the message from the acknowledgment store
-    * alltogether, if all outstanding NACKs are canceled by ACKs.
+    * altogether, if all outstanding NACKs are canceled by ACKs.
     * 
     * @param channelID - the ID of the channel tried to deliver the message.
     * @param acks - Set of Acknowledgments.
     * @throws Throwable
     */
-   public void updateAcknowledgments(Serializable channelID,
-                                     Serializable messageID,
-                                     Set acks)
+   public void update(Serializable channelID, Serializable messageID, Set acks)
          throws Throwable;
 
+   /**
+    * Method to be used for asynchronous positive acknowledgments. A positive acknowlegment
+    * submitted this way is explicitely stored, unless there is a waiting NACK.
+    */
+   public void acknowledge(Serializable channelID, Serializable messageID, Serializable receiverID)
+         throws Throwable;
 
    /**
-    * Removes the message reference from the acknowledgment store, regardless of its outstanding
+    * Remove the message reference from the acknowledgment store, regardless of its outstanding
     * acknowlegments.
     * 
     * @param channelID
     * @param messageID
     * @throws Throwable
     */
-   public void remove(Serializable channelID,
-                      Serializable messageID)
-         throws Throwable;
+   public void remove(Serializable channelID, Serializable messageID) throws Throwable;
 
    /**
-    *
-    * @param channelID
     * @return a Set containing unacknowledged message IDs.
     */
    public Set getUnacknowledged(Serializable channelID);
 
-
    /**
-    * @param channelID
-    * @param messageID
     * @return true if the specified message has been NACKed by at least one receiver or the
     *         message got a Channel NACK.
     */
    public boolean hasNACK(Serializable channelID, Serializable messageID);
 
    /**
-    *
-    * @param channelID
-    * @param messageID
-    * @return a Set containing receiver IDs or null if is a Channel NACK.
+    * @return a Set receiver IDs or <b>null</b> if is a Channel NACK.
     */
    public Set getNACK(Serializable channelID, Serializable messageID);
 
+   /**
+    * @return a Set containg IDs of the receivers for which there are outstanding ACKs in the
+    *         store.
+    */
+   public Set getACK(Serializable channelID, Serializable messageID);
 }

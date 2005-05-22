@@ -10,7 +10,6 @@ import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 import java.util.Set;
-import java.util.Collections;
 
 /**
  * An AcknowledgmentStore that stores acknowledgments for a single channel AND for a single
@@ -43,9 +42,7 @@ public class SingleReceiverAcknowledgmentStore extends SingleChannelAcknowledgme
 
    // AcknowledgmentStore implementation ----------------------------
 
-   public synchronized void updateAcknowledgments(Serializable channelID,
-                                                  Serializable messageID,
-                                                  Set acks)
+   public synchronized void update(Serializable channelID, Serializable messageID, Set acks)
          throws Throwable
    {
       // channelID is ignored
@@ -68,12 +65,21 @@ public class SingleReceiverAcknowledgmentStore extends SingleChannelAcknowledgme
       }
    }
 
-   /**
-    * Will always return an empty Set, since receiverID is not maintained. Use hasNACK() instead.
-    */
-   public Set getNACK(Serializable channelID, Serializable messageID)
+   public void acknowledge(Serializable channelID, Serializable messageID, Serializable receiverID)
+         throws Throwable
    {
-      return Collections.EMPTY_SET;
+      // channelID is ignored
+
+      AcknowledgmentSet ackSet = (AcknowledgmentSet)map.get(messageID);
+
+      if (ackSet == null)
+      {
+         // receiverID from inside the acknowledgment is ignored, may as well be null
+         ackSet = new SingleReceiverAcknowledgmentSet();
+         map.put(messageID, ackSet);
+      }
+
+      ackSet.acknowledge(null);
    }
 
    // Public --------------------------------------------------------

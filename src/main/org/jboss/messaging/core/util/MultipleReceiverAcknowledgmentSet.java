@@ -22,7 +22,7 @@ import java.io.Serializable;
  *
  * TODO Do I need to synchronize access to a AcknowledgmentSet instance?
  *
- * TODO What happens with positive ACK placed in the map and not canceled out?
+ * TODO What happens with positive acknowledge placed in the map and not canceled out?
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -72,9 +72,9 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
          }
          else
          {
-            // negative ACK
+            // negative acknowledge
 
-            // see if there is a positive ACK waiting for us
+            // see if there is a positive acknowledge waiting for us
             Boolean storedAck = (Boolean)acks.get(receiverID);
             if (storedAck != null && storedAck.booleanValue())
             {
@@ -88,7 +88,7 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
       }
    }
 
-   public void ACK(Serializable receiverID)
+   public void acknowledge(Serializable receiverID)
    {
       deliveryAttempted = true;
 
@@ -123,21 +123,21 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
 
    public Set getNACK()
    {
-      Set s = null;
+      Set s = Collections.EMPTY_SET;
       for(Iterator i = acks.keySet().iterator(); i.hasNext(); )
       {
          Serializable receiverID = (Serializable)i.next();
          Boolean ack = (Boolean)acks.get(receiverID);
          if (ack.booleanValue() == false)
          {
-            if (s == null)
+            if (s == Collections.EMPTY_SET)
             {
                s = new HashSet();
             }
-            s.add(receiverID);
+            s.add(new AcknowledgmentImpl(receiverID, false));
          }
       }
-      return s == null ? Collections.EMPTY_SET : s;
+      return s;
    }
 
 
@@ -156,21 +156,21 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
 
    public Set getACK()
    {
-      Set s = null;
+      Set s = Collections.EMPTY_SET;
       for(Iterator i = acks.keySet().iterator(); i.hasNext(); )
       {
          Serializable receiverID = (Serializable)i.next();
          Boolean ack = (Boolean)acks.get(receiverID);
          if (ack.booleanValue() == true)
          {
-            if (s == null)
+            if (s == Collections.EMPTY_SET)
             {
                s = new HashSet();
             }
-            s.add(receiverID);
+            s.add(new AcknowledgmentImpl(receiverID, true));
          }
       }
-      return s == null ? Collections.EMPTY_SET : s;
+      return s;
    }
 
 

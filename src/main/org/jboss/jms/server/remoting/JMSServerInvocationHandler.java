@@ -17,10 +17,8 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.jms.server.container.JMSAdvisor;
 
 import javax.management.MBeanServer;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.Iterator;
 
 /**

@@ -78,18 +78,26 @@ public class ClosedInterceptor
       if (isClosing)
       {         
          if (checkClosingAlreadyDone())
+         {
             return null;
+         }
       }
       else if (isClose)
       {         
          if(checkCloseAlreadyDone())
+         {
             return null;
+         }
       }
       else
+      {
          inuse();
+      }
 
       if (isClosing)
+      {
          maintainRelatives(invocation);
+      }
 
       try
       {
@@ -98,11 +106,17 @@ public class ClosedInterceptor
       finally
       {
          if (isClosing)
+         {
             closing();
+         }
          else if (isClose)
+         {
             closed();
+         }
          else
+         {
             done();
+         }
       }
    }
 
@@ -117,7 +131,9 @@ public class ClosedInterceptor
       throws Throwable
    {
       if (state != NOT_CLOSED)
+      {
          return true;
+      }
       state = IN_CLOSING;
       return false;
    }
@@ -141,9 +157,13 @@ public class ClosedInterceptor
       throws Throwable
    {
       if (state != CLOSING)
+      {
          return true;
+      }
       while (inuseCount > 0)
+      {
          wait();
+      }
       state = IN_CLOSE;
       return false;
    }
@@ -164,7 +184,9 @@ public class ClosedInterceptor
       throws Throwable
    {
       if (state != NOT_CLOSED)
+      {
          throw new IllegalStateException("Already closed");
+      }
       ++inuseCount;
       
           
@@ -177,7 +199,9 @@ public class ClosedInterceptor
       throws Throwable
    {
       if (--inuseCount == 0)
+      {
          notifyAll();
+      }
    }
 
    /**

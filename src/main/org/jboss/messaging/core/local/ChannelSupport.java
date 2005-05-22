@@ -104,7 +104,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
 
       try
       {
-         return !localAcknowledgmentStore.getUnacknowledged(getReceiverID()).isEmpty();
+         return !localAcknowledgmentStore.getUnacknowledged(null).isEmpty();
       }
       finally
       {
@@ -118,12 +118,36 @@ public abstract class ChannelSupport extends Lockable implements Channel
 
       try
       {
-         return localAcknowledgmentStore.getUnacknowledged(getReceiverID());
+         return localAcknowledgmentStore.getUnacknowledged(null);
       }
       finally
       {
          unlock();
       }
+   }
+
+   public void acknowledge(Serializable messageID, Serializable receiverID)
+   {
+      try
+      {
+         localAcknowledgmentStore.acknowledge(null, messageID, receiverID);
+         if (externalAcknowledgmentStore != null)
+         {
+            externalAcknowledgmentStore.acknowledge(getReceiverID(), messageID, receiverID);
+         }
+      }
+      catch(Throwable t)
+      {
+         log.error("Channel " + getReceiverID() + " failed to handle positive acknowledgment " +
+                   " from receiver " + receiverID + " for message " + messageID, t);
+         return;
+      }
+      if (!localAcknowledgmentStore.hasNACK(null, messageID))
+      {
+         // cleanup the local store, I only keep it if it is NACKed
+         messages.remove(messageID);
+      }
+      // TODO Who cleans the external store?
    }
 
    /**
@@ -135,11 +159,6 @@ public abstract class ChannelSupport extends Lockable implements Channel
    {
       return true;
    }
-
-   /**
-    * Must acquire the channel's reentrant lock.
-    */
-   public abstract boolean deliver();
 
    public void setMessageStore(MessageStore store)
    {
@@ -160,6 +179,11 @@ public abstract class ChannelSupport extends Lockable implements Channel
    {
       return externalAcknowledgmentStore;
    }
+
+   /**
+    * Must acquire the channel's reentrant lock.
+    */
+   public abstract boolean deliver();
 
    // Public --------------------------------------------------------
 
@@ -197,9 +221,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
                   // TODO if this succeeds and acknowledgmentStore fails, I add garbage to the message store
                   r = messageStore.store((Message)r);
                }
-               externalAcknowledgmentStore.updateAcknowledgments(r.getMessageID(),
-                                                                 getReceiverID(),
-                                                                 acks);
+               externalAcknowledgmentStore.update(r.getMessageID(), getReceiverID(), acks);
             }
 
             // always update local NACKs TODO optimization? use external acknowledgment store?
@@ -236,7 +258,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
       Serializable messageID = r.getMessageID();
       try
       {
-         localAcknowledgmentStore.updateAcknowledgments(null, messageID, acks);
+         localAcknowledgmentStore.update(null, messageID, acks);
          if (localAcknowledgmentStore.hasNACK(getReceiverID(), messageID))
          {
             if (!messages.containsKey(messageID))

@@ -129,10 +129,8 @@ public class Pipe extends SingleOutputChannelSupport
          Serializable messageID = (Serializable)i.next();
          Routable r = (Routable)messages.get(messageID);
 
-         if (System.currentTimeMillis() > r.getExpirationTime())
+         if (r.isExpired())
          {
-            // message expired
-            log.warn("Message " + r.getMessageID() + " expired by " + (System.currentTimeMillis() - r.getExpirationTime()) + " ms");
             removeLocalMessage(messageID);
             i.remove();
             continue;
@@ -149,6 +147,20 @@ public class Pipe extends SingleOutputChannelSupport
 
    }
 
+   // SingleOutputChannelSupport overrides --------------------------
+
+   public Serializable getOutputID()
+   {
+      try
+      {
+         return (Serializable)call("getOutputID", new Object[0], new String[0]);
+      }
+      catch(Throwable e)
+      {
+         log.error("Could not get output ID from the PipeOutput", e);
+      }
+      return null;
+   }
 
    // Public --------------------------------------------------------
 
@@ -194,31 +206,32 @@ public class Pipe extends SingleOutputChannelSupport
          return null;
       }
 
-      if (outputAddress == null)
-      {
-         // A distributed pipe must be configured with a valid output address
-         log.error(this + " has a null output address.");
-         return null;
-      }
-
-      String methodName = "handle";
-      RpcServerCall rpcServerCall =
-            new RpcServerCall(pipeID,
-                              methodName,
-                              new Object[] {r},
-                              new String[] {"org.jboss.messaging.core.Routable"});
-
       try
       {
          // call on the PipeOutput unique server delegate
-         Boolean result = (Boolean)rpcServerCall.remoteInvoke(dispatcher, outputAddress, 30000);
+         Boolean result = (Boolean)call("handle",
+                                        new Object[] {r},
+                                        new String[] {"org.jboss.messaging.core.Routable"});
          return result.booleanValue() ? ACK : NACK;
       }
       catch(Throwable e)
       {
-         log.error("Remote call " + methodName + "() on " + outputAddress +  "." + pipeID +
-                  " failed", e);
+         log.error("Remote call handle() on " + outputAddress +  "." + pipeID + " failed", e);
          return null;
       }
+   }
+
+   /**
+    * Synchronous remote call.
+    */
+   private Object call(String methodName, Object[] args, String[] argTypes) throws Throwable
+   {
+      if (outputAddress == null)
+      {
+         // A distributed pipe must be configured with a valid output address
+         throw new Exception(this + " has a null output address");
+      }
+      RpcServerCall rpcServerCall =  new RpcServerCall(pipeID, methodName, args, argTypes);
+      return rpcServerCall.remoteInvoke(dispatcher, outputAddress, 30000);
    }
 }

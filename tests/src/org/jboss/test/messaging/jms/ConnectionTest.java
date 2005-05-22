@@ -219,9 +219,6 @@ public class ConnectionTest extends MessagingTestCase
       Connection conn = cf.createConnection();
       conn.close();
       
-      String failed = null;
-      
-
       try
       {
          conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

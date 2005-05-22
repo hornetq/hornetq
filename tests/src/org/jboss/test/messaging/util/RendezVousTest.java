@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import junit.framework.TestCase;
 
 /**
+ * @deprecated
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */

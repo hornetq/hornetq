@@ -41,9 +41,9 @@ public class JMSMessageIDHeaderTest extends MessageTest
 
    public void testJMSMessageIDPrefix() throws Exception
    {
-      Message m = producerSession.createMessage();
-      producer.send(m);
-      String messageID = consumer.receive().getJMSMessageID();
+      Message m = queueProducerSession.createMessage();
+      queueProducer.send(m);
+      String messageID = queueConsumer.receive().getJMSMessageID();
       // JMS1.1 specs 3.4.3
       assertTrue(messageID.startsWith("ID:"));
    }

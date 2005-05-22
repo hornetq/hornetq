@@ -66,9 +66,11 @@
    <!-- ===== -->
 
    <property name="source.tests.java" value="${module.source}"/>
+   <property name="source.tests.stylesheets" value="${module.source}/stylesheets"/>
    <property name="build.tests.classes" value="${module.output}/classes"/>
    <property name="build.tests.lib" value="${module.output}/lib"/>
-   <property name="build.tests.output" value="${module.output}/reports"/>
+   <property name="build.tests.reports" value="${module.output}/reports"/>
+   <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
 
@@ -127,8 +129,8 @@
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
    <property name="junit.jvm.options" value=""/>
-   <property name="junit.formatter.usefile" value="false"/>
-   <property name="junit.batchtest.todir" value="${build.tests.output}"/>
+   <property name="junit.formatter.usefile" value="true"/>
+   <property name="junit.batchtest.todir" value="${build.tests.reports}"/>
    <property name="junit.batchtest.haltonerror" value="true"/>
    <property name="junit.batchtest.haltonfailure" value="true"/>
    <property name="junit.batchtest.fork" value="true"/>
@@ -137,7 +139,7 @@
 
    <target name="prepare-testdirs"
            description="Prepares the directory structure required by a test run">
-      <mkdir dir="${build.tests.output}"/>
+      <mkdir dir="${build.tests.reports}"/>
    </target>
 
    <target name="tests"
@@ -156,7 +158,7 @@
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
-         <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <batchtest fork="${junit.batchtest.fork}"
                     todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
@@ -164,7 +166,6 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
-               <!-- <include name="**/messaging/jms/**/*Test.class"/> -->
                <exclude name="**/messaging/**/performance/**"/>
             </fileset>
          </batchtest>
@@ -190,7 +191,7 @@
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
-         <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <test name="${test.classname}"
                fork="${junit.batchtest.fork}"
                todir="${junit.batchtest.todir}"
@@ -199,6 +200,30 @@
          </test>
       </junit>
    </target>
+
+   <target name="compile-stylesheets">
+      <mkdir dir="${build.tests.stylesheets}"/>
+      <copy todir="${build.tests.stylesheets}" filtering="yes">
+         <fileset dir="${source.tests.stylesheets}">
+            <include name="**/*"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="tests-report" depends="tests, compile-stylesheets">
+      <mkdir dir="${build.tests.reports}/html"/>
+
+      <junitreport todir="${build.tests.reports}">
+         <fileset dir="${build.tests.reports}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+            todir="${build.tests.reports}/html"
+            styledir="${build.tests.stylesheets}"
+            />
+      </junitreport>
+   </target>
+
 
    <target name="performance-tests"/>
 

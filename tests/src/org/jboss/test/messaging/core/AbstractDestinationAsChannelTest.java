@@ -6,27 +6,15 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.MessageReferenceSupport;
-import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.core.local.LocalPipe;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.message.RoutableSupport;
 
-import java.util.List;
-import java.util.Set;
-import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class AbstractDestinationTest extends ChannelSupportTest
+public class AbstractDestinationAsChannelTest extends ChannelSupportTest
 {
    // Attributes ----------------------------------------------------
 
@@ -34,7 +22,7 @@ public class AbstractDestinationTest extends ChannelSupportTest
 
    // Constructors --------------------------------------------------
 
-   public AbstractDestinationTest(String name)
+   public AbstractDestinationAsChannelTest(String name)
    {
       super(name);
    }

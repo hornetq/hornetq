@@ -48,7 +48,7 @@ public class MessageReferenceSupport extends RoutableSupport implements MessageR
     */
    public MessageReferenceSupport(Message m, Serializable storeID)
    {
-      this(m.getMessageID(), m.isReliable(), m.getExpirationTime(), storeID);
+      this(m.getMessageID(), m.isReliable(), m.getExpiration(), storeID);
       for(Iterator i = m.getHeaderNames().iterator(); i.hasNext(); )
       {
          String name = (String)i.next();

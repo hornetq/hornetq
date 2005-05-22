@@ -20,7 +20,7 @@ public interface AcknowledgmentSet
    /**
     * Cancels positive acks if their corresponding negative acks are found and store negative
     * acks for which there are no positive acks. Unpaired positive acks are ignored. If you want
-    * to place a positive ack in advance, use ACK().
+    * to place a positive ack in advance, use acknowledge().
     *
     * Null is equivalent with an empty Set and usually means Channel NACK.
     * @param newAcks - a set of positive/negative acknoweldgments. An empty set means Channel NACK.
@@ -33,19 +33,22 @@ public interface AcknowledgmentSet
     * the positive ack is stored in the set.
     * @param receiverID
     */
-   public void ACK(Serializable receiverID);
+   public void acknowledge(Serializable receiverID);
 
    /**
     * Returns true if at least one receiver saw the message, and returned either a positive or a
-    * negative acknowledgment.
+    * negative acknowledgment, false for a Channel NACK.
     */
    public boolean isDeliveryAttempted();
 
+   /**
+    * Does not count a Channel NACK.
+    */
    public int nackCount();
 
    /**
     *
-    * @return a Set of receiverIDs
+    * @return a Set of Acknowledgments
     */
    public Set getNACK();
 
@@ -53,12 +56,13 @@ public interface AcknowledgmentSet
 
    /**
     *
-    * @return a Set of receiverIDs
+    * @return a Set of Acknowledgments
     */
    public Set getACK();
 
    /**
-    * Returns the total number of stored acknowlegments (positive or negative).
+    * Returns the total number of stored acknowlegments (positive or negative). Does not include
+    * a Channel NACK.
     * @return
     */
    public int size();

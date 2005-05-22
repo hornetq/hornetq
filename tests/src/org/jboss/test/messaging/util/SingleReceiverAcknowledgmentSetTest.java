@@ -9,6 +9,8 @@ package org.jboss.test.messaging.util;
 import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentSet;
 import org.jboss.messaging.core.Acknowledgment;
 
+import java.util.Set;
+
 
 
 /**
@@ -47,7 +49,9 @@ public class SingleReceiverAcknowledgmentSetTest extends AcknowledgmentSetTest
 
       assertTrue(acknowledgmentSet.isDeliveryAttempted());
       assertEquals(1, acknowledgmentSet.nackCount());
-      assertTrue(acknowledgmentSet.getNACK().isEmpty());
+      Set s = acknowledgmentSet.getNACK();
+      assertEquals(1, s.size());
+      assertTrue(((Acknowledgment)s.iterator().next()).isNegative());
       assertEquals(0, acknowledgmentSet.ackCount());
       assertTrue(acknowledgmentSet.getACK().isEmpty());
       assertEquals(1, acknowledgmentSet.size());
@@ -58,11 +62,13 @@ public class SingleReceiverAcknowledgmentSetTest extends AcknowledgmentSetTest
    {
       // add an ACK
 
-      acknowledgmentSet.ACK(null);
+      acknowledgmentSet.acknowledge(null);
 
       assertTrue(acknowledgmentSet.isDeliveryAttempted());
       assertEquals(1, acknowledgmentSet.ackCount());
-      assertTrue(acknowledgmentSet.getACK().isEmpty());
+      Set s = acknowledgmentSet.getACK();
+      assertEquals(1, s.size());
+      assertTrue(((Acknowledgment)s.iterator().next()).isPositive());
       assertEquals(0, acknowledgmentSet.nackCount());
       assertTrue(acknowledgmentSet.getNACK().isEmpty());
       assertEquals(1, acknowledgmentSet.size());
@@ -87,12 +93,14 @@ public class SingleReceiverAcknowledgmentSetTest extends AcknowledgmentSetTest
       assertEquals(0, acknowledgmentSet.ackCount());
       assertTrue(acknowledgmentSet.getACK().isEmpty());
       assertEquals(1, acknowledgmentSet.nackCount());
-      assertTrue(acknowledgmentSet.getNACK().isEmpty());
+      s = acknowledgmentSet.getNACK();
+      assertEquals(1, s.size());
+      assertTrue(((Acknowledgment)s.iterator().next()).isNegative());
       assertEquals(1, acknowledgmentSet.size());
 
       // cancel it
 
-      acknowledgmentSet.ACK(null);
+      acknowledgmentSet.acknowledge(null);
 
       assertTrue(acknowledgmentSet.isDeliveryAttempted());
       assertEquals(0, acknowledgmentSet.ackCount());

@@ -16,13 +16,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageListener;
 import javax.naming.InitialContext;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Base class for all tests concerning message headers, properties, etc.
@@ -40,9 +34,9 @@ public class MessageTest extends MessagingTestCase
 
    protected Destination queue;
    protected Connection producerConnection, consumerConnection;
-   protected Session producerSession, consumerSession;
-   protected MessageProducer producer;
-   protected MessageConsumer consumer;
+   protected Session queueProducerSession, queueConsumerSession;
+   protected MessageProducer queueProducer;
+   protected MessageConsumer queueConsumer;
 
    // Constructors --------------------------------------------------
 
@@ -67,11 +61,11 @@ public class MessageTest extends MessagingTestCase
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 
-      producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      producer = producerSession.createProducer(queue);
-      consumer = consumerSession.createConsumer(queue);
+      queueProducer = queueProducerSession.createProducer(queue);
+      queueConsumer = queueConsumerSession.createConsumer(queue);
 
       consumerConnection.start();
    }

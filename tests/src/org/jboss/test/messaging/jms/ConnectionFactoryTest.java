@@ -10,7 +10,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnection;

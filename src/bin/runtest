@@ -4,28 +4,37 @@
 #
 #
 
+
+#
+# core utils
+#
+
 #TARGET_CLASS=org.jboss.test.messaging.util.AcknowledgmentSetTest
 #TARGET_CLASS=org.jboss.test.messaging.util.MultipleReceiverAcknowledgmentSetTest
 #TARGET_CLASS=org.jboss.test.messaging.util.SingleReceiverAcknowledgmentSetTest
+
+#TARGET_CLASS=org.jboss.test.messaging.util.SingleReceiverAcknowledgmentStoreTest
+#TARGET_CLASS=org.jboss.test.messaging.util.SingleChannelAcknowledgmentStoreTest
+#TARGET_CLASS=org.jboss.test.messaging.util.InMemoryAcknowledgmentStoreTest
 
 #
 # local core
 #
 
-#TARGET_CLASS=org.jboss.test.messaging.core.AbstractDestinationTest
-#TARGET_CLASS=org.jboss.test.messaging.core.ChannelSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
 #TARGET_CLASS=org.jboss.test.messaging.core.DistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageReferenceSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.PointToMultipointRouterAsDistributorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.PointToPointRouterAsDistributorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.RoutableSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsDistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsDistributorTest
+#TARGET_CLASS=org.jboss.test.messaging.core.ChannelSupportTest
+#TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.AbstractDestinationAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeAsChannelTest
 
 #
 # distributed core
@@ -33,37 +42,29 @@
 
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.SharedPipeOutputTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
-
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #
 # JMS Facade
 #
 
-TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
-TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
-TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 
 #
 # Message tests
 #
-TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
-
-
-# current tests
-
-
-
-
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
 
 
 

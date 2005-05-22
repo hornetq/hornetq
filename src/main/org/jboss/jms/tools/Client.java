@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.tools;
 
+import org.jboss.logging.Logger;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -14,6 +16,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.DeliveryMode;
 import javax.naming.InitialContext;
 import java.util.Hashtable;
 
@@ -27,6 +30,8 @@ import java.util.Hashtable;
 public class Client
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(Client.class);
 
    // Static --------------------------------------------------------
 
@@ -158,6 +163,9 @@ public class Client
       }
 
       producer = session.createProducer(lookupDestination(destination));
+
+      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      log.info("The producer's delivery mode was set ot NON_PERSISTENT");
    }
 
    public void createConsumer(String destination) throws Exception

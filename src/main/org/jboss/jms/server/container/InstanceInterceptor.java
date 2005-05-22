@@ -11,18 +11,9 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 import org.jboss.jms.server.endpoint.ServerProducerDelegate;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-import org.jboss.jms.server.endpoint.ServerProducerDelegate;
-import org.jboss.jms.server.endpoint.ServerProducerDelegate;
-import org.jboss.jms.server.endpoint.ServerSessionDelegate;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-import org.jboss.jms.server.endpoint.ServerProducerDelegate;
-import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 import org.jboss.jms.server.endpoint.Consumer;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerCallbackHandler;
 
 import java.lang.reflect.Method;
@@ -42,7 +33,7 @@ public class InstanceInterceptor implements Interceptor
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(InstanceInterceptor.class);
+   //private static final Logger log = Logger.getLogger(InstanceInterceptor.class);
 
    // Static --------------------------------------------------------
 

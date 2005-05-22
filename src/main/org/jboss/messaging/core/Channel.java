@@ -7,6 +7,7 @@
 package org.jboss.messaging.core;
 
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * A Channel is an abstraction that defines a message delivery mechanism that forwards a message
@@ -90,6 +91,11 @@ public interface Channel extends Receiver
     *         empty Set but never null.
     */
    public Set getUndelivered();
+
+   /**
+    * Method to be used to send asynchronous positive acknowledgments.
+    */
+   public void acknowledge(Serializable messageID, Serializable receiverID);
 
    public void setMessageStore(MessageStore store);
 

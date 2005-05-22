@@ -13,9 +13,6 @@ import org.jboss.messaging.core.distributed.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.Replicator;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.message.MessageSupport;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 

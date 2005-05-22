@@ -8,6 +8,7 @@ package org.jboss.test.messaging.util;
 
 import org.jboss.messaging.core.util.AcknowledgmentImpl;
 import org.jboss.messaging.core.util.MultipleReceiverAcknowledgmentSet;
+import org.jboss.messaging.core.Acknowledgment;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -56,7 +57,9 @@ public class MultipleReceiverAcknowledgmentSetTest extends AcknowledgmentSetTest
       assertEquals(1, acknowledgmentSet.nackCount());
       Set nacks = acknowledgmentSet.getNACK();
       assertEquals(1, nacks.size());
-      assertTrue(nacks.contains("receiverID"));
+      Acknowledgment a = (Acknowledgment)nacks.iterator().next();
+      assertEquals("receiverID", a.getReceiverID());
+      assertTrue(a.isNegative());
       assertEquals(0, acknowledgmentSet.ackCount());
       assertTrue(acknowledgmentSet.getACK().isEmpty());
       assertEquals(1, acknowledgmentSet.size());
@@ -69,13 +72,15 @@ public class MultipleReceiverAcknowledgmentSetTest extends AcknowledgmentSetTest
 
       // add an ACK
 
-      acknowledgmentSet.ACK("receiver1");
+      acknowledgmentSet.acknowledge("receiver1");
 
       assertTrue(acknowledgmentSet.isDeliveryAttempted());
       assertEquals(1, acknowledgmentSet.ackCount());
       Set acks = acknowledgmentSet.getACK();
       assertEquals(1, acks.size());
-      assertTrue(acks.contains("receiver1"));
+      Acknowledgment a = (Acknowledgment)acks.iterator().next();
+      assertEquals("receiver1", a.getReceiverID());
+      assertTrue(a.isPositive());
       assertEquals(0, acknowledgmentSet.nackCount());
       assertTrue(acknowledgmentSet.getNACK().isEmpty());
       assertEquals(1, acknowledgmentSet.size());
@@ -106,12 +111,14 @@ public class MultipleReceiverAcknowledgmentSetTest extends AcknowledgmentSetTest
       assertEquals(1, acknowledgmentSet.nackCount());
       Set nacks = acknowledgmentSet.getNACK();
       assertEquals(1, nacks.size());
-      assertTrue(nacks.contains("receiver2"));
+      a = (Acknowledgment)nacks.iterator().next();
+      assertEquals("receiver2", a.getReceiverID());
+      assertTrue(a.isNegative());
       assertEquals(1, acknowledgmentSet.size());
 
       // cancel it
 
-      acknowledgmentSet.ACK("receiver2");
+      acknowledgmentSet.acknowledge("receiver2");
 
       assertTrue(acknowledgmentSet.isDeliveryAttempted());
       assertEquals(0, acknowledgmentSet.ackCount());

@@ -48,7 +48,7 @@ public class TestAcknowledgmentStore extends InMemoryAcknowledgmentStore
 
    // AcknowledgmentStore implementation ----------------------------
 
-   public synchronized void updateAcknowledgments(Serializable channelID,
+   public synchronized void update(Serializable channelID,
                                                   Serializable messageID,
                                                   Set receiverIDs)
          throws Throwable
@@ -59,7 +59,7 @@ public class TestAcknowledgmentStore extends InMemoryAcknowledgmentStore
                              "THE BEHAVIOUR OF A BROKEN ACKNOWLEDGMENT STORE");
       }
 
-      super.updateAcknowledgments(messageID, channelID, receiverIDs);
+      super.update(messageID, channelID, receiverIDs);
    }
 
    // Public --------------------------------------------------------

@@ -41,19 +41,19 @@ public class JMSTypeHeaderTest extends MessageTest
 
    public void testJMSType() throws Exception
    {
-      Message m = producerSession.createMessage();
+      Message m = queueProducerSession.createMessage();
       String originalType =  "TYPE1";
       m.setJMSType(originalType);
-      producer.send(m);    
-      String gotType = consumer.receive().getJMSType();
+      queueProducer.send(m);
+      String gotType = queueConsumer.receive().getJMSType();
       assertEquals(originalType, gotType);
    }
 
    public void testNULLJMSType() throws Exception
    {
-      Message m = producerSession.createMessage();
-      producer.send(m);
-      assertEquals(null, consumer.receive().getJMSType());
+      Message m = queueProducerSession.createMessage();
+      queueProducer.send(m);
+      assertEquals(null, queueConsumer.receive().getJMSType());
    }
 
 

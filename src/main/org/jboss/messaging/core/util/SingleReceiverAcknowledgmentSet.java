@@ -20,7 +20,7 @@ import java.io.Serializable;
  *
  * TODO Do I need to synchronize access to a AcknowledgmentSet instance?
  *
- * TODO What happens with positive ACK placed in the map and not canceled out?
+ * TODO What happens with positive acknowledge placed in the map and not canceled out?
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -65,9 +65,9 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
       }
       else
       {
-         // negative ACK
+         // negative acknowledge
 
-         // see if there is a positive ACK waiting for us
+         // see if there is a positive acknowledge waiting for us
          if (acknowledgment != null && acknowledgment.booleanValue())
          {
             acknowledgment = null; // acks cancel each other
@@ -79,7 +79,7 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
       }
    }
 
-   public void ACK(Serializable receiverID)
+   public void acknowledge(Serializable receiverID)
    {
       // ignore receiverID
 
@@ -109,8 +109,16 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
       return 0;
    }
 
+   /**
+    * @return a set possibly containing a generic negative acknowledgment. The receiverID value is
+    *         undefined.
+    */
    public Set getNACK()
    {
+      if (acknowledgment != null && !acknowledgment.booleanValue())
+      {
+         return Acknowledgment.NACKSet;
+      }
       return Collections.EMPTY_SET;
    }
 
@@ -124,8 +132,16 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
       return 0;
    }
 
+   /**
+    * @return a set possibly containing a generic positive acknowledgment. The receiverID value is
+    *         undefined.
+    */
    public Set getACK()
    {
+      if (acknowledgment != null && acknowledgment.booleanValue())
+      {
+         return Acknowledgment.ACKSet;
+      }
       return Collections.EMPTY_SET;
    }
 

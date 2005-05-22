@@ -561,4 +561,55 @@ public class ChannelSupportTest extends MessagingTestCase
    }
 
 
+   //
+   // Asynchronous ACK tests
+   //
+   public void testInvalidAsynchronousACK() throws Exception
+   {
+      if (channel == null) { return; }
+
+      receiverOne.setState(ReceiverImpl.NACKING);
+      assertTrue(channel.setSynchronous(false));
+
+      assertTrue(channel.handle(new RoutableSupport("routableID1", false)));
+      assertTrue(channel.handle(new RoutableSupport("routableID2", false)));
+
+      channel.acknowledge("inexistentMessageID", receiverOne.getReceiverID());
+
+      assertTrue(channel.hasMessages());
+      Set stillNaked = channel.getUndelivered();
+      assertEquals(2, stillNaked.size());
+      assertTrue(stillNaked.contains("routableID1"));
+      assertTrue(stillNaked.contains("routableID2"));
+
+      channel.acknowledge("routableID1", "inexistentReceiver");
+
+      assertTrue(channel.hasMessages());
+      stillNaked = channel.getUndelivered();
+      assertEquals(2, stillNaked.size());
+      assertTrue(stillNaked.contains("routableID1"));
+      assertTrue(stillNaked.contains("routableID2"));
+   }
+
+   public void testAsynchronousACK() throws Exception
+   {
+      if (channel == null) { return; }
+
+      receiverOne.setState(ReceiverImpl.NACKING);
+      assertTrue(channel.setSynchronous(false));
+
+      assertTrue(channel.handle(new RoutableSupport("routableID1", false)));
+      assertTrue(channel.handle(new RoutableSupport("routableID2", false)));
+
+      channel.acknowledge("routableID1", receiverOne.getReceiverID());
+
+      assertTrue(channel.hasMessages());
+      Set stillNaked = channel.getUndelivered();
+      assertEquals(1, stillNaked.size());
+      assertTrue(stillNaked.contains("routableID2"));
+
+      channel.acknowledge("routableID2", receiverOne.getReceiverID());
+
+      assertFalse(channel.hasMessages());
+   }
 }

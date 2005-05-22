@@ -233,63 +233,108 @@ public class MessageConsumerTest extends MessagingTestCase
 
    }
 
+   /**
+    * The test sends a burst of messages and verifies if the consumer receives all of them.
+    */
+   public void testStressReceiveOnTopic() throws Exception
+   {
+
+      final int count = 100;
+
+      consumerConnection.start();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
 
 
+               for (int i = 0; i < count; i++)
+               {
+                  Message m = producerSession.createMessage();
+                  topicProducer.send(m);
+               }
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "ProducerTestThread").start();
+
+      int received = 0;
+      while(true)
+      {
+         Message m = topicConsumer.receive(3000);
+         if (m == null)
+         {
+            break;
+         }
+         Thread.sleep(1000);
+         received++;
+      }
+
+      assertEquals(count, received);
+
+   }
 
 
+   public void testReceiveOnClose() throws Exception
+   {
+      consumerConnection.start();
+      Thread closerThread = new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
+               topicConsumer.close();
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "closer thread");
+      closerThread.start();
 
+      assertNull(topicConsumer.receive());
+   }
 
+   public void testTimeoutReceiveOnClose() throws Exception
+   {
+      consumerConnection.start();
+      final long timeToSleep = 1000;
+      Thread closerThread = new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(timeToSleep);
+               topicConsumer.close();
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "closer thread");
+      closerThread.start();
 
+      long t1 = System.currentTimeMillis();
+      assertNull(topicConsumer.receive(2000));
+      // make sure it didn't wait 2 seconds to return null
+      assertTrue(System.currentTimeMillis() - t1 <= timeToSleep);
+   }
 
-   // TODO uncomment this when I fix consumer delivery
-//   /**
-//    * The test sends a burst of messages and verifies if the consumer receives all of them.
-//    */
-//   public void testStressReceiveOnTopic() throws Exception
-//   {
-//
-//      final int count = 100;
-//
-//      consumerConnection.start();
-//
-//      new Thread(new Runnable()
-//      {
-//         public void run()
-//         {
-//            try
-//            {
-//               // this is needed to make sure the main thread has enough time to block
-//               Thread.sleep(1000);
-//
-//
-//               for (int i = 0; i < count; i++)
-//               {
-//                  Message m = producerSession.createMessage();
-//                  topicProducer.send(m);
-//               }
-//            }
-//            catch(Exception e)
-//            {
-//               log.error(e);
-//            }
-//         }
-//      }, "ProducerTestThread").start();
-//
-//      int received = 0;
-//      while(true)
-//      {
-//         Message m = topicConsumer.receive(3000);
-//         if (m == null)
-//         {
-//            break;
-//         }
-//         Thread.sleep(1000);
-//         received++;
-//      }
-//
-//      assertEquals(count, received);
-//
-//   }
 
    //
    // MessageListener tests
@@ -367,11 +412,11 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
    private class MessageListenerImpl implements MessageListener

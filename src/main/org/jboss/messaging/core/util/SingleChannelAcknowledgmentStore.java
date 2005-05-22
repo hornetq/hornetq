@@ -7,10 +7,13 @@
 package org.jboss.messaging.core.util;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Acknowledgment;
 
 import java.io.Serializable;
 import java.util.Set;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.HashSet;
 
 /**
  * An AcknowledgmentStore that stores acknowledgments for a single channel. channelID passed as
@@ -38,9 +41,7 @@ public class SingleChannelAcknowledgmentStore extends InMemoryAcknowledgmentStor
 
    // AcknowledgmentStore implementation ----------------------------
 
-   public synchronized void updateAcknowledgments(Serializable channelID,
-                                                  Serializable messageID,
-                                                  Set acks)
+   public synchronized void update(Serializable channelID, Serializable messageID, Set acks)
          throws Throwable
    {
       // channelID is ignored
@@ -62,6 +63,23 @@ public class SingleChannelAcknowledgmentStore extends InMemoryAcknowledgmentStor
       }
    }
 
+   public void acknowledge(Serializable channelID, Serializable messageID, Serializable receiverID)
+         throws Throwable
+   {
+      // channelID is ignored
+
+      AcknowledgmentSet ackSet = (AcknowledgmentSet)map.get(messageID);
+
+      if (ackSet == null)
+      {
+         ackSet = new MultipleReceiverAcknowledgmentSet();
+         map.put(messageID, ackSet);
+      }
+
+      ackSet.acknowledge(receiverID);
+   }
+
+
    public synchronized void remove(Serializable channelID,
                                    Serializable messageID)
          throws Throwable
@@ -76,7 +94,21 @@ public class SingleChannelAcknowledgmentStore extends InMemoryAcknowledgmentStor
    {
       // channelID is ignored
 
-      return map.keySet();
+      Set result = Collections.EMPTY_SET;
+      for(Iterator i = map.keySet().iterator(); i.hasNext(); )
+      {
+         Serializable messageID = (Serializable)i.next();
+         AcknowledgmentSet s = (AcknowledgmentSet)map.get(messageID);
+         if (s.nackCount() > 0 || !s.isDeliveryAttempted())
+         {
+            if (result == Collections.EMPTY_SET)
+            {
+               result = new HashSet();
+            }
+            result.add(messageID);
+         }
+      }
+      return result;
    }
 
    public boolean hasNACK(Serializable channelID, Serializable messageID)
@@ -107,8 +139,42 @@ public class SingleChannelAcknowledgmentStore extends InMemoryAcknowledgmentStor
       {
          return null;
       }
-      return ackSet.getNACK();
+
+      Set s = Collections.EMPTY_SET;
+      for(Iterator i = ackSet.getNACK().iterator(); i.hasNext(); )
+      {
+         if (s == Collections.EMPTY_SET)
+         {
+            s = new HashSet();
+         }
+         s.add(((Acknowledgment)i.next()).getReceiverID());
+      }
+      return s;
    }
+
+   public Set getACK(Serializable channelID, Serializable messageID)
+   {
+      // channelID is ignored
+
+      AcknowledgmentSet ackSet = (AcknowledgmentSet)map.get(messageID);
+      if (ackSet == null)
+      {
+         return Collections.EMPTY_SET;
+      }
+
+      Set s = Collections.EMPTY_SET;
+      for(Iterator i = ackSet.getACK().iterator(); i.hasNext(); )
+      {
+         if (s == Collections.EMPTY_SET)
+         {
+            s = new HashSet();
+         }
+         s.add(((Acknowledgment)i.next()).getReceiverID());
+      }
+      return s;
+   }
+
+
 
    // Public --------------------------------------------------------
 

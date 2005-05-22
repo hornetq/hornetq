@@ -204,6 +204,19 @@ public class Replicator extends MultipleOutputChannelSupport
    }
 
 
+   public void acknowledge(Serializable messageID, Serializable receiverID)
+   {
+      //
+      // TODO: I totally override ChannelSupport.acknowledge() because I am not using
+      //       localAcknowledgmentStore and super.acknowledge() will throw NPE. However,
+      //       when AcknowledgmentCollector will implement AcknolwedgmentStore, I will
+      //       just delegate to super.acknowledge()
+      //
+      collector.acknowledge(messageID, receiverID);
+   }
+
+
+
    // ChannelDelegate overrides -------------------------------------
 
    /**

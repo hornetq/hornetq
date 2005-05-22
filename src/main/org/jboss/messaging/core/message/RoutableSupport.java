@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.Routable;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -22,11 +23,17 @@ import java.util.HashMap;
 public class RoutableSupport implements Routable
 {
 
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(RoutableSupport.class);
+
    // Attributes ----------------------------------------------------
 
    protected Serializable messageID;
    protected boolean reliable;
-   protected long expirationTime;
+   /** GMT milliseconds at which this message expires. 0 means never expires **/
+   protected long expiration;
+   protected long timestamp;
    protected Map headers;
    protected boolean redelivered;
 
@@ -52,9 +59,8 @@ public class RoutableSupport implements Routable
    {
       this.messageID = messageID;
       this.reliable = reliable;
-      expirationTime = timeToLive == Long.MAX_VALUE ?
-                       Long.MAX_VALUE :
-                       System.currentTimeMillis() + timeToLive;
+      timestamp = System.currentTimeMillis();
+      expiration = timeToLive == Long.MAX_VALUE ? 0 : timestamp + timeToLive;
       headers = new HashMap();
    }
 
@@ -70,9 +76,14 @@ public class RoutableSupport implements Routable
       return reliable;
    }
 
-   public long getExpirationTime()
+   public long getExpiration()
    {
-      return expirationTime;
+      return expiration;
+   }
+
+   public long getTimestamp()
+   {
+      return timestamp;
    }
 
    public boolean isRedelivered()
@@ -111,6 +122,22 @@ public class RoutableSupport implements Routable
    }
 
    // Public --------------------------------------------------------
+
+   public boolean isExpired()
+   {
+      if (expiration == 0)
+      {
+         return false;
+      }
+      long overtime = System.currentTimeMillis() - expiration;
+      if (overtime >= 0)
+      {
+         // discard it
+         log.debug("Message " + messageID + " expired by " + overtime + " ms");
+         return true;
+      }
+      return false;
+   }
 
    public String toString()
    {

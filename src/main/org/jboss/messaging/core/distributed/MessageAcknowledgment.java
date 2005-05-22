@@ -22,6 +22,7 @@ class MessageAcknowledgment
    protected Address sender;
    protected Serializable inputPeerID;
    protected Serializable acknowledgedMessageID;
+   protected Serializable receiverID;
    protected Boolean positive;
 
    // Constructors --------------------------------------------------
@@ -34,11 +35,13 @@ class MessageAcknowledgment
     */
    public MessageAcknowledgment(Address sender,
                                 Serializable inputPeerID,
+                                Serializable receiverID,
                                 Serializable acknowledgedMessageID,
                                 boolean mode)
    {
       this.sender = sender;
       this.inputPeerID = inputPeerID;
+      this.receiverID = receiverID;
       this.acknowledgedMessageID = acknowledgedMessageID;
       positive = mode ? Boolean.TRUE : Boolean.FALSE;
    }
@@ -55,6 +58,10 @@ class MessageAcknowledgment
       return inputPeerID;
    }
 
+   public Serializable getReceiverID()
+   {
+      return receiverID;
+   }
 
    /**
     * @return the acknowldeget message id

@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jgroups.Address;
-import org.jboss.messaging.core.util.ServerDelegate;
 import org.jboss.messaging.core.util.ServerDelegate;
 
 import java.io.Serializable;
@@ -20,5 +18,6 @@ import java.io.Serializable;
  */
 interface AcknowledgmentCollectorServerDelegate extends ServerDelegate
 {
-   public void acknowledge(Serializable messageID, Serializable outputPeerID, Boolean positive);
+   public void acknowledge(Serializable messageID, Serializable outputPeerID,
+                           Serializable receiverID, Boolean positive);
 }

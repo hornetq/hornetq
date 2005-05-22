@@ -7,22 +7,20 @@
 package org.jboss.jms.message;
 
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.jms.util.JBossJMSException;
 
 import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.DeliveryMode;
 import java.util.Enumeration;
-import java.util.Set;
-import java.io.Serializable;
 
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossMessage implements javax.jms.Message, Routable
+public class JBossMessage extends RoutableSupport implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
@@ -30,23 +28,20 @@ public class JBossMessage implements javax.jms.Message, Routable
 
    // Attributes ----------------------------------------------------
 
-   protected String id;
-   protected boolean reliable;
    protected Destination destination;
-   protected long timestamp;
-   /** GMT milliseconds at which this message expires. 0 means never expires **/
-   protected long expiration;
-   protected boolean redelivered;
    protected String type;
 
    // Constructors --------------------------------------------------
 
    public JBossMessage()
    {
-      id = null;
+      this(null);
+   }
+
+   public JBossMessage(String messageID)
+   {
+      super(messageID);
       reliable = false;
-      timestamp = 0l;
-      expiration = Long.MAX_VALUE;
       redelivered = false;
       type = null;
    }
@@ -55,12 +50,12 @@ public class JBossMessage implements javax.jms.Message, Routable
    
    public String getJMSMessageID() throws JMSException
    {
-      return id;
+      return (String)messageID;
    }
 
-   public void setJMSMessageID(String id) throws JMSException
+   public void setJMSMessageID(String messageID) throws JMSException
    {
-      this.id = id;
+      this.messageID = messageID;
    }
 
    public long getJMSTimestamp() throws JMSException
@@ -299,65 +294,13 @@ public class JBossMessage implements javax.jms.Message, Routable
       throw new NotYetImplementedException();
    }
 
-   // org.jboss.messaging.core.Routable implementation --------------
-
-   public Serializable getMessageID()
-   {
-      return id;
-   }
-
-   public boolean isReliable()
-   {
-      return reliable;
-   }
-
-   public long getExpirationTime()
-   {
-      return expiration;
-   }
-
-   public boolean isRedelivered()
-   {
-      return redelivered;
-   }
-
-   public void setRedelivered(boolean b)
-   {
-      redelivered = b;
-   }
-
-   public Serializable putHeader(String name, Serializable value)
-   {
-      throw new NotYetImplementedException();
-   }
-
-   public Serializable getHeader(String name)
-   {
-      throw new NotYetImplementedException();
-   }
-
-   public Serializable removeHeader(String name)
-   {
-      throw new NotYetImplementedException();
-   }
-
-   public boolean containsHeader(String name)
-   {
-      throw new NotYetImplementedException();
-   }
-
-   public Set getHeaderNames()
-   {
-      throw new NotYetImplementedException();
-   }
-
    // Public --------------------------------------------------------
 
    public String toString()
    {
       StringBuffer sb = new StringBuffer("JBossMessage[");
       sb.append("ID=");
-      sb.append(id);
+      sb.append(messageID);
       sb.append("]");
       return sb.toString();
    }

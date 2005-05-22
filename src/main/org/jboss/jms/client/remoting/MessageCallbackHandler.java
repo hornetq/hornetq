@@ -12,6 +12,7 @@ import org.jboss.remoting.HandleCallbackException;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.delegate.AcknowledgmentHandler;
+import org.jboss.jms.message.JBossMessage;
 
 import javax.jms.MessageListener;
 import javax.jms.Message;
@@ -70,7 +71,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       catch(InterruptedException e)
       {
-         String msg = "Interrupted attempt to put the message in the delivery buffer";
+         String msg = "Interrupted attempt to put message in the delivery buffer";
          log.warn(msg);
          throw new HandleCallbackException(msg, e);
       }
@@ -146,10 +147,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     * Method used by the client thread to get a Message, if available.
     *
     * @param timeout - the timeout value in milliseconds. A zero timeount never expires, and the
-    *        call blocks indefinitely.
+    *        call blocks indefinitely. Returns null if the consumer is concurrently closed.
     */
    public Message receive(long timeout) throws JMSException, InterruptedException
    {
+
+      long startTimestamp = System.currentTimeMillis();
+
       // make sure the current state allows receiving
 
       synchronized(this)
@@ -169,20 +173,50 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       {
          if (log.isTraceEnabled()) { log.trace("receive, timeout = " + timeout + " ms"); }
 
-         Message m = null;
-         if (timeout == 0)
+         JBossMessage m = null;
+         while(true)
          {
-            m = (Message)messages.take();
-         }
-         else
-         {
-            m = (Message)messages.poll(timeout);
-         }
-         if (m != null)
-         {
+            try
+            {
+               if (timeout <= 0)
+               {
+                  m = (JBossMessage)messages.take();
+               }
+               else
+               {
+                  m = (JBossMessage)messages.poll(timeout);
+
+                  if (m == null)
+                  {
+                     // receive expired
+                     return null;
+                  }
+               }
+            }
+            catch(InterruptedException e)
+            {
+               // TODO
+//               if (consumer is closing)
+//               {
+//                  return null;
+//               }
+//               else
+//               {
+                  throw e;
+//               }
+            }
+
+            // acknowledge even if the message expired
             acknowledge(m);
+
+            if (!m.isExpired())
+            {
+               return m;
+            }
+
+            // discard the message, adjust timeout and reenter the buffer
+            timeout -= System.currentTimeMillis() - startTimestamp;
          }
-         return m;
       }
       finally
       {

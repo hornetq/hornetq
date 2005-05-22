@@ -6,24 +6,7 @@
  */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.jms.message.MessageTest;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.InVMInitialContextFactory;
-
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.naming.InitialContext;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -59,8 +42,8 @@ public class JMSDestinationHeaderTest extends MessageTest
 
    public void testJMSDestination() throws Exception
    {
-      producer.send(producerSession.createMessage());
-      Message m = consumer.receive();
+      queueProducer.send(queueProducerSession.createMessage());
+      Message m = queueConsumer.receive();
       assertEquals(queue, m.getJMSDestination());
    }
 
