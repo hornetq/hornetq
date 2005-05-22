@@ -10,7 +10,6 @@ import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
@@ -65,7 +64,9 @@ public class ServerPeer
    protected ClassAdvisor sessionAdvisor;
    protected ClassAdvisor producerAdvisor;
    protected ClassAdvisor consumerAdvisor;
+	protected ClassAdvisor browserAdvisor;
    protected ClassAdvisor genericAdvisor;
+   
 
    protected PooledExecutor threadPool;
 
@@ -170,6 +171,11 @@ public class ServerPeer
    {
       return producerAdvisor;
    }
+   
+   public ClassAdvisor getBrowserAdvisor()
+   {
+      return browserAdvisor;
+   }
 
    public ClassAdvisor getConsumerAdvisor()
    {
@@ -208,13 +214,14 @@ public class ServerPeer
                                            "ServerConnectionDelegate",
                                            "ServerSessionDelegate",
                                            "ServerProducerDelegate",
-                                           "Consumer",
+														 "Consumer",
+                                           "ServerBrowserDelegate",
                                            "GenericTarget"};
 
    private void initializeAdvisors() throws Exception
    {
 
-      ClassAdvisor[] advisors = new ClassAdvisor[6];
+      ClassAdvisor[] advisors = new ClassAdvisor[7];
 
       for(int i = 0; i < domainNames.length; i++)
       {
@@ -234,8 +241,9 @@ public class ServerPeer
       connAdvisor = advisors[1];
       sessionAdvisor = advisors[2];
       producerAdvisor = advisors[3];
-      consumerAdvisor = advisors[4];
-      genericAdvisor = advisors[5];
+		consumerAdvisor = advisors[4];		
+      browserAdvisor = advisors[5];
+      genericAdvisor = advisors[6];
    }
 
    private void tearDownAdvisors() throws Exception
@@ -248,6 +256,7 @@ public class ServerPeer
       connAdvisor = null;
       sessionAdvisor = null;
       producerAdvisor = null;
+      browserAdvisor = null;
    }
 
    private ConnectionFactory createConnectionFactory() throws Exception

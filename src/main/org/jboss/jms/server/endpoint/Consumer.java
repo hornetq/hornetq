@@ -87,6 +87,8 @@ public class Consumer implements Receiver, AcknowledgmentHandler
    public void acknowledge(Serializable messageID)
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
+		
+		destination.acknowledge(messageID, this.getReceiverID());		
    }
 
    // Public --------------------------------------------------------

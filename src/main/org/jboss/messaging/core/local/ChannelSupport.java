@@ -17,6 +17,8 @@ import org.jboss.logging.Logger;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.HashSet;
 import java.io.Serializable;
 
 
@@ -124,6 +126,22 @@ public abstract class ChannelSupport extends Lockable implements Channel
       {
          unlock();
       }
+   }
+
+   public Set browse()
+   {
+      // TODO Very inefficient implementation, change it
+      Set messageIDs = getUndelivered();
+      Set s = new HashSet();
+      for(Iterator i = messageIDs.iterator(); i.hasNext(); )
+      {
+         Routable r = (Routable)messages.get(i.next());
+         if (r != null)
+         {
+            s.add(r);
+         }
+      }
+      return s;
    }
 
    public void acknowledge(Serializable messageID, Serializable receiverID)

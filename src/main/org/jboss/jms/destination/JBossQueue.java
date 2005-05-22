@@ -6,13 +6,18 @@
  */
 package org.jboss.jms.destination;
 
+import javax.jms.Queue;
+import javax.jms.JMSException;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossQueue extends JBossDestination
+public class JBossQueue extends JBossDestination implements Queue
 {
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = 4121129234371655479L;
 
    // Static --------------------------------------------------------
    
@@ -35,6 +40,13 @@ public class JBossQueue extends JBossDestination
    public boolean isQueue()
    {
       return true;
+   }
+
+   // Queue implementation ------------------------------------------
+
+   public String getQueueName() throws JMSException
+   {
+      return getName();
    }
 
    // Public --------------------------------------------------------

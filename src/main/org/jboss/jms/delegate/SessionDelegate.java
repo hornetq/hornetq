@@ -34,4 +34,6 @@ public interface SessionDelegate extends Closeable
    
    public void recover() throws JMSException;
 
+   public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
+         throws JMSException;
 }

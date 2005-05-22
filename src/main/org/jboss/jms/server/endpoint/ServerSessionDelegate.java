@@ -15,6 +15,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.AcknowledgmentHandler;
@@ -46,6 +47,7 @@ import java.lang.reflect.Proxy;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class ServerSessionDelegate extends Lockable implements SessionDelegate
@@ -63,9 +65,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       
    protected int producerIDCounter;
    protected int consumerIDCounter;
+	protected int browserIDCounter;
 
    protected Map producers;
    protected Map consumers;
+	protected Map browsers;
 
    protected ServerPeer serverPeer;
 
@@ -79,6 +83,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       this.connectionEndpoint = connectionEndpoint;      
       producers = new HashMap();
       consumers = new HashMap();
+		browsers = new HashMap();
       producerIDCounter = 0;
       consumerIDCounter = 0;
       serverPeer = connectionEndpoint.getServerPeer();
@@ -267,6 +272,63 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          log.debug("Sent message");
       }
    }
+	
+	public BrowserDelegate createBrowserDelegate(Destination jmsDestination, String messageSelector)
+   	throws JMSException
+	{
+	   // look-up destination
+	   DestinationManager dm = serverPeer.getDestinationManager();
+	   AbstractDestination destination = null;
+	   try
+	   {
+	      destination = dm.getDestination(jmsDestination);
+	   }
+	   catch(Exception e)
+	   {
+	      throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
+	   }
+	
+	   BrowserDelegate bd = null;
+	   Serializable oid = serverPeer.getBrowserAdvisor().getName();
+	   String stackName = "BrowserStack";
+	   AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
+	
+	   Interceptor[] interceptors = stack.createInterceptors(serverPeer.getBrowserAdvisor(), null);
+	   
+	   JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
+	
+	   String browserID = generateBrowserID();
+	
+	   SimpleMetaData metadata = new SimpleMetaData();      
+	   metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
+	   metadata.addMetaData(InvokerInterceptor.REMOTING,
+	                        InvokerInterceptor.INVOKER_LOCATOR,
+	                        serverPeer.getLocator(),
+	                        PayloadKey.AS_IS);
+	   metadata.addMetaData(InvokerInterceptor.REMOTING,
+	                        InvokerInterceptor.SUBSYSTEM,
+	                        "JMS",
+	                        PayloadKey.AS_IS);
+	  
+	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
+	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
+	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.BROWSER_ID, browserID, PayloadKey.AS_IS);
+	   
+	   h.getMetaData().mergeIn(metadata);
+		   
+	   ClassLoader loader = getClass().getClassLoader();
+	   Class[] interfaces = new Class[] { BrowserDelegate.class };
+	   bd = (BrowserDelegate)Proxy.newProxyInstance(loader, interfaces, h);
+	
+	   // create the corresponding "server-side" BrowserDelegate and register it with this
+	   // BrowserDelegate instance
+	   ServerBrowserDelegate sbd =
+	         new ServerBrowserDelegate(browserID, destination, messageSelector);
+	   putBrowserDelegate(browserID, sbd);
+	
+	   return bd;
+	}
+
 
    // Public --------------------------------------------------------
 
@@ -299,6 +361,22 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       synchronized(consumers)
       {
          return (Consumer)consumers.get(consumerID);
+      }
+   }
+	
+	public ServerBrowserDelegate putBrowserDelegate(String browserID, ServerBrowserDelegate sbd)
+   {
+      synchronized(browsers)
+      {
+         return (ServerBrowserDelegate)browsers.put(browserID, sbd);
+      }
+   }
+	
+	public ServerBrowserDelegate getBrowserDelegate(String browserID)
+   {
+      synchronized(browsers)
+      {
+         return (ServerBrowserDelegate)browsers.get(browserID);
       }
    }
 
@@ -378,6 +456,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
       return "Producer" + id;
    }
+	
+	
 
    /**
     * Generates a consumerID that is unique per this SessionDelegate instance
@@ -390,6 +470,19 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          id = consumerIDCounter++;
       }
       return "Consumer" + id;
+   }
+	
+	/**
+    * Generates a browserID that is unique per this SessionDelegate instance
+    */
+   protected String generateBrowserID()
+   {
+      int id;
+      synchronized(this)
+      {
+         id = browserIDCounter++;
+      }
+      return "Browser" + id;
    }
 
 

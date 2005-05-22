@@ -230,7 +230,7 @@ public class ClosedInterceptor
       for (Iterator i = clone.iterator(); i.hasNext();)
       {
          JMSInvocationHandler childHandler = (JMSInvocationHandler) i.next();
-         System.out.println("Getting child");
+         
          Closeable child = (Closeable) childHandler.getDelegate();             
          try
          {

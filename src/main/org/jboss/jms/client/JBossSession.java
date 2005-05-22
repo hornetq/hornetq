@@ -6,10 +6,10 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.delegate.BrowserDelegate;
 
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
@@ -56,8 +56,6 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    // Static --------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(JBossSession.class);
-
    // Attributes ----------------------------------------------------
 
    protected SessionDelegate sessionDelegate;   
@@ -228,7 +226,9 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
+      {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
+      }
       throw new NotYetImplementedException();
    }
 
@@ -236,23 +236,30 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
+      {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
-      throw new NotYetImplementedException();
+      }
+      return createBrowser(queue, null);
    }
 
    public QueueBrowser createBrowser(Queue queue, String messageSelector) throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
+      {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
-      throw new NotYetImplementedException();
+      }
+      BrowserDelegate delegate = sessionDelegate.createBrowserDelegate(queue, messageSelector);
+      return new JBossQueueBrowser(queue, messageSelector, delegate);
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
+      {
          throw new IllegalStateException("Cannot create a temp. queue using a TopicSession");
+      }
       throw new NotYetImplementedException();
    }
 

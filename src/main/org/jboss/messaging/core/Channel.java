@@ -93,6 +93,12 @@ public interface Channel extends Receiver
    public Set getUndelivered();
 
    /**
+    * TODO: define better the semantics of this method relative to getUndelivered()
+	 * @return a Set containing messages that haven't been delivered.
+    */
+   public Set browse();
+
+   /**
     * Method to be used to send asynchronous positive acknowledgments.
     */
    public void acknowledge(Serializable messageID, Serializable receiverID);

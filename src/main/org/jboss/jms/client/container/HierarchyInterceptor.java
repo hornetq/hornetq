@@ -48,9 +48,10 @@ public class HierarchyInterceptor  implements Interceptor, Serializable
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
       
       Object retVal = invocation.invokeNext();
-      
-      //TODO browser
-      if (methodName.equals("createSessionDelegate") || methodName.equals("createProducerDelegate"))
+            
+      if (methodName.equals("createSessionDelegate") ||
+          methodName.equals("createProducerDelegate") ||
+          methodName.equals("createBrowserDelegate"))
       {
          JMSInvocationHandler thisHandler = ((JMSMethodInvocation)invocation).getHandler();
          JMSInvocationHandler returnedHandler =

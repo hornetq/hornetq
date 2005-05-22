@@ -6,13 +6,18 @@
  */
 package org.jboss.jms.destination;
 
+import javax.jms.Topic;
+import javax.jms.JMSException;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossTopic extends JBossDestination
+public class JBossTopic extends JBossDestination implements Topic
 {
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 3257845497845724981L;
 
    // Static --------------------------------------------------------
    
@@ -35,6 +40,13 @@ public class JBossTopic extends JBossDestination
    public boolean isQueue()
    {
       return false;
+   }
+
+   // Topic implementation ------------------------------------------
+
+   public String getTopicName() throws JMSException
+   {
+      return getName();
    }
 
    // Public --------------------------------------------------------

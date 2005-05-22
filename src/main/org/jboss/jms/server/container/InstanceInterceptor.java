@@ -10,11 +10,13 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.endpoint.ServerBrowserDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 import org.jboss.jms.server.endpoint.ServerProducerDelegate;
 import org.jboss.jms.server.endpoint.Consumer;
 import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;
 
@@ -33,7 +35,7 @@ public class InstanceInterceptor implements Interceptor
 {
    // Constants -----------------------------------------------------
 
-   //private static final Logger log = Logger.getLogger(InstanceInterceptor.class);
+   private static final Logger log = Logger.getLogger(InstanceInterceptor.class);
 
    // Static --------------------------------------------------------
 
@@ -52,14 +54,15 @@ public class InstanceInterceptor implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      
       if (invocation instanceof MethodInvocation)
       {
          MethodInvocation mi = (MethodInvocation)invocation;
          Method m = mi.getMethod();
          String methodName = m.getName();         
          JMSAdvisor jmsAdvisor = (JMSAdvisor)mi.getAdvisor();
-
+			
+			if (log.isTraceEnabled()) log.trace("MethodName=" + methodName + " declaringclass=" + m.getDeclaringClass());
+						
          if ("createConnectionDelegate".equals(methodName))
          {
             // I only need a ConnectionFactoryDelegate instance, since it doesn't hold state,
@@ -67,11 +70,7 @@ public class InstanceInterceptor implements Interceptor
             ConnectionFactoryDelegate d = jmsAdvisor.getServerPeer().getConnectionFactoryDelegate();
             invocation.setTargetObject(d);
          }
-         else if ("createSessionDelegate".equals(methodName) ||
-                  "start".equals(methodName) ||
-                  "stop".equals(methodName) ||
-                  (("close".equals(methodName) || "closing".equals(methodName)) && 
-                        m.getDeclaringClass().equals(ServerConnectionDelegate.class)))
+         else if (m.getDeclaringClass().equals(ServerConnectionDelegate.class))
          {
             // look up the corresponding ServerConnectionDelegate and use that instance
             String clientID = (String)invocation.getMetaData().
@@ -86,11 +85,7 @@ public class InstanceInterceptor implements Interceptor
             }
             invocation.setTargetObject(scd);
          }
-         else if ("createProducerDelegate".equals(methodName) ||
-                  "createConsumer".equals(methodName) ||
-                  "sendTransaction".equals(methodName) ||
-                  (("close".equals(methodName) || "closing".equals(methodName)) && 
-                     m.getDeclaringClass().equals(ServerSessionDelegate.class)))
+         else if (m.getDeclaringClass().equals(ServerSessionDelegate.class))
          {
             // lookup the corresponding ServerSessionDelegate and use it as target for the invocation
             String clientID =
@@ -129,9 +124,7 @@ public class InstanceInterceptor implements Interceptor
                ssd.unlock();
             }
          }
-         else if ("send".equals(methodName) ||
-               (("close".equals(methodName) || "closing".equals(methodName)) && 
-                     m.getDeclaringClass().equals(ServerProducerDelegate.class)))
+         else if (m.getDeclaringClass().equals(ServerProducerDelegate.class))
          {
             // lookup the corresponding ServerProducerDelegate and use it as target for the invocation
             String clientID =
@@ -166,7 +159,7 @@ public class InstanceInterceptor implements Interceptor
             }
             invocation.setTargetObject(spd);
          }
-         else if ("acknowledge".equals(methodName))
+			else if (m.getDeclaringClass().equals(Consumer.class))
          {
             // lookup the corresponding Consumer and use it as target for the invocation
             String clientID =
@@ -192,7 +185,7 @@ public class InstanceInterceptor implements Interceptor
             String consumerID = (String)invocation.getMetaData().
                   getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID);
 
-            Consumer c  = ssd.getConsumer(consumerID);
+            Consumer c = ssd.getConsumer(consumerID);
             if (c == null)
             {
                throw new Exception("The session " + sessionID + "  doesn't know of any consumer " +
@@ -201,8 +194,43 @@ public class InstanceInterceptor implements Interceptor
             }
             invocation.setTargetObject(c);
          }
+         else if (m.getDeclaringClass().equals(ServerBrowserDelegate.class))
+         {				
+			
+            // lookup the corresponding ServerBrowserDelegate and use it as target for the invocation
+            String clientID =
+                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
+            ServerConnectionDelegate scd =
+                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+            if (scd == null)
+            {
+               throw new Exception("The server doesn't know of any connection with clientID=" +
+                                   clientID);
+               // TODO log error
+            }
+            String sessionID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID);
 
-      }
+            ServerSessionDelegate ssd = scd.getSessionDelegate(sessionID);
+            if (scd == null)
+            {
+               throw new Exception("The connection " + clientID + "  doesn't know of any session " +
+                                   "with sessionID=" + sessionID);
+               // TODO log error
+            }
+            String browserID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.BROWSER_ID);
+
+            ServerBrowserDelegate sbd = ssd.getBrowserDelegate(browserID);
+            if (sbd == null)
+            {
+               throw new Exception("The session " + sessionID + "  doesn't know of any browser " +
+                                   "with browserID=" + browserID);
+               // TODO log error
+            }
+            invocation.setTargetObject(sbd);
+         }               
+      }		
       return invocation.invokeNext();
    }
 
