@@ -276,8 +276,41 @@ public class Client
       return consumer.receiveNoWait();
    }
 
+   public void closeConnection() throws Exception
+   {
+      if (connection == null)
+      {
+         return;
+      }
+      connection.close();
+   }
 
+   public void closeSession() throws Exception
+   {
+      if (session == null)
+      {
+         return;
+      }
+      session.close();
+   }
 
+   public void closeProducer() throws Exception
+   {
+      if (producer == null)
+      {
+         return;
+      }
+      producer.close();
+   }
+
+   public void closeConsumer() throws Exception
+   {
+      if (consumer == null)
+      {
+         return;
+      }
+      consumer.close();
+   }
 
 
    public void dump()

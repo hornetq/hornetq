@@ -14,7 +14,7 @@ import org.jboss.jms.server.endpoint.ServerBrowserDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 import org.jboss.jms.server.endpoint.ServerProducerDelegate;
-import org.jboss.jms.server.endpoint.Consumer;
+import org.jboss.jms.server.endpoint.ServerConsumerDelegate;
 import org.jboss.remoting.InvokerCallbackHandler;
 import org.jboss.logging.Logger;
 
@@ -159,9 +159,9 @@ public class InstanceInterceptor implements Interceptor
             }
             invocation.setTargetObject(spd);
          }
-			else if (m.getDeclaringClass().equals(Consumer.class))
+			else if (m.getDeclaringClass().equals(ServerConsumerDelegate.class))
          {
-            // lookup the corresponding Consumer and use it as target for the invocation
+            // lookup the corresponding ServerConsumerDelegate and use it as target for the invocation
             String clientID =
                   (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
             ServerConnectionDelegate scd =
@@ -185,7 +185,7 @@ public class InstanceInterceptor implements Interceptor
             String consumerID = (String)invocation.getMetaData().
                   getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID);
 
-            Consumer c = ssd.getConsumer(consumerID);
+            ServerConsumerDelegate c = ssd.getConsumerDelegate(consumerID);
             if (c == null)
             {
                throw new Exception("The session " + sessionID + "  doesn't know of any consumer " +

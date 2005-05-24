@@ -25,8 +25,7 @@ import javax.jms.QueueSender;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossMessageProducer
-   implements MessageProducer, QueueSender, TopicPublisher
+class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
    // Constants -----------------------------------------------------  
 
@@ -116,7 +115,7 @@ public class JBossMessageProducer
 
    public void close() throws JMSException
    {
-      //Don't need to do anything
+      // Don't need to do anything
    }
 
    public void send(Message message) throws JMSException

@@ -9,7 +9,6 @@ package org.jboss.jms.delegate;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.tx.LocalTx;
@@ -22,7 +21,7 @@ public interface SessionDelegate extends Closeable
 {
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
-   public MessageConsumer createConsumer(Destination destination) throws JMSException;
+   public ConsumerDelegate createConsumerDelegate(Destination destination) throws JMSException;
 
    public Message createMessage() throws JMSException;
    

@@ -88,7 +88,7 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
    
-   <category name="org.jboss.jms.server.endpoint.Consumer">
+   <category name="org.jboss.jms.server.endpoint.ServerConsumerDelegate">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 

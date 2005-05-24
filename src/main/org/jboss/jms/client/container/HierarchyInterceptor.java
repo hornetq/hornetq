@@ -51,6 +51,7 @@ public class HierarchyInterceptor  implements Interceptor, Serializable
             
       if (methodName.equals("createSessionDelegate") ||
           methodName.equals("createProducerDelegate") ||
+          methodName.equals("createConsumerDelegate") ||
           methodName.equals("createBrowserDelegate"))
       {
          JMSInvocationHandler thisHandler = ((JMSMethodInvocation)invocation).getHandler();

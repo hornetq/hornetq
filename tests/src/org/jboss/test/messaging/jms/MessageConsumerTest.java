@@ -286,6 +286,7 @@ public class MessageConsumerTest extends MessagingTestCase
    public void testReceiveOnClose() throws Exception
    {
       consumerConnection.start();
+      final Latch latch = new Latch();
       Thread closerThread = new Thread(new Runnable()
       {
          public void run()
@@ -300,16 +301,24 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                log.error(e);
             }
+            finally
+            {
+               latch.release();
+            }
          }
-      }, "closer thread");
+      }, "closing thread");
       closerThread.start();
 
       assertNull(topicConsumer.receive());
+
+      // wait for the closing thread to finish
+      latch.acquire();
    }
 
    public void testTimeoutReceiveOnClose() throws Exception
    {
       consumerConnection.start();
+      final Latch latch = new Latch();
       final long timeToSleep = 1000;
       Thread closerThread = new Thread(new Runnable()
       {
@@ -325,14 +334,22 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                log.error(e);
             }
+            finally
+            {
+               latch.release();
+            }
          }
-      }, "closer thread");
+      }, "closing thread");
       closerThread.start();
 
       long t1 = System.currentTimeMillis();
-      assertNull(topicConsumer.receive(2000));
-      // make sure it didn't wait 2 seconds to return null
-      assertTrue(System.currentTimeMillis() - t1 <= timeToSleep);
+      assertNull(topicConsumer.receive(5000));
+      // make sure it didn't wait 5 seconds to return null; allow 10 ms for overhead
+      assertTrue(System.currentTimeMillis() - t1 <= timeToSleep + 10);
+
+
+      // wait for the closing thread to finish
+      latch.acquire();
    }
 
 
@@ -371,7 +388,7 @@ public class MessageConsumerTest extends MessagingTestCase
       topicProducer.send(m1);
 
       // block the current thread until the listener gets something; this is to avoid closing
-      // the connection too early
+      // connection too early
       listener2.waitForMessages();
 
       assertEquals(m1.getJMSMessageID(), listener2.getNextMessage().getJMSMessageID());

@@ -19,9 +19,8 @@ import org.jboss.jms.client.Closeable;
 
 
 /**
- * An interceptor for checking closed state. It waits for
- * other invocations to complete before allowing the close.
- * I.e. it performs the function of a "valve"
+ * An interceptor for checking closed state. It waits for other invocations to complete before
+ * allowing the close. I.e. it performs the function of a "valve"
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a> Adapted from the JBoss 4 version
@@ -101,7 +100,7 @@ public class ClosedInterceptor
 
       try
       {
-         return invocation.invokeNext();       
+         return invocation.invokeNext();
       }
       finally
       {
@@ -247,7 +246,9 @@ public class ClosedInterceptor
       // Remove from the parent
       JMSInvocationHandler parentHandler = thisHandler.getParent();
       if (parentHandler != null)
-          parentHandler.removeChild(thisHandler);
+      {
+         parentHandler.removeChild(thisHandler);
+      }
    }
 
    // Package Private ------------------------------------------------

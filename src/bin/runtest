@@ -60,7 +60,7 @@ TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
 
 #
 # Message tests

@@ -17,7 +17,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  */
-public class JBossQueueBrowser implements QueueBrowser
+class JBossQueueBrowser implements QueueBrowser
 {
    private BrowserDelegate delegate;
    private Queue queue;

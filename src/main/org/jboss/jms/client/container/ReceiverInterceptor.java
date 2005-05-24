@@ -77,6 +77,12 @@ public class ReceiverInterceptor implements Interceptor, Serializable
                   getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
             return msgHandler.getMessageListener();
          }
+         else if (name.equals("closing"))
+         {
+            MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
+                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
+            messageHandler.close();
+         }
       }
       return invocation.invokeNext();
    }

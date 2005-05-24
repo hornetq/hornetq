@@ -10,6 +10,7 @@ import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.ConsumerDelegate;
 
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
@@ -46,8 +47,8 @@ import java.io.Serializable;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossSession implements Session, XASession, QueueSession, XAQueueSession,
-      TopicSession, XATopicSession
+class JBossSession
+      implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
 {
    // Constants -----------------------------------------------------
    static final int TYPE_GENERIC_SESSION = 0;
@@ -58,7 +59,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    
    // Attributes ----------------------------------------------------
 
-   protected SessionDelegate sessionDelegate;   
+   protected SessionDelegate delegate;
    protected boolean isXA;
    protected int sessionType;
    protected boolean transacted;
@@ -70,7 +71,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                        int sessionType, boolean transacted,
                        int acknowledgeMode)
    {
-      this.sessionDelegate = delegate;
+      this.delegate = delegate;
       this.isXA = isXA;
       this.sessionType = sessionType;
       this.transacted = transacted;
@@ -91,7 +92,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public Message createMessage() throws JMSException
    {
-      return sessionDelegate.createMessage();
+      return delegate.createMessage();
    }
 
    public ObjectMessage createObjectMessage() throws JMSException
@@ -133,25 +134,25 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       if (!transacted)
          throw new IllegalStateException("Session is not transacted - cannot call commit()");
-      sessionDelegate.commit();
+      delegate.commit();
    }
 
    public void rollback() throws JMSException
    {
       if (!transacted)
          throw new IllegalStateException("Session is not transacted - cannot call rollback()");
-      sessionDelegate.rollback();
+      delegate.rollback();
    }
 
    public void close() throws JMSException
    {
-      sessionDelegate.closing();
-      sessionDelegate.close();
+      delegate.closing();
+      delegate.close();
    }
 
    public void recover() throws JMSException
    {
-      sessionDelegate.recover();
+      delegate.recover();
    }
 
    public MessageListener getMessageListener() throws JMSException
@@ -171,14 +172,14 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public MessageProducer createProducer(Destination d) throws JMSException
    {
-      ProducerDelegate producerDelegate = sessionDelegate.createProducerDelegate(d);
+      ProducerDelegate producerDelegate = delegate.createProducerDelegate(d);
       return new JBossMessageProducer(producerDelegate, d);
    }
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
-     MessageConsumer consumer = sessionDelegate.createConsumer(d);
-     return consumer;
+     ConsumerDelegate consumerDelegate = delegate.createConsumerDelegate(d);
+     return new JBossMessageConsumer(consumerDelegate, d);
   }
 
   public MessageConsumer createConsumer(Destination destination, String messageSelector)
@@ -249,7 +250,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
       }
-      BrowserDelegate delegate = sessionDelegate.createBrowserDelegate(queue, messageSelector);
+      BrowserDelegate delegate = this.delegate.createBrowserDelegate(queue, messageSelector);
       return new JBossQueueBrowser(queue, messageSelector, delegate);
    }
 

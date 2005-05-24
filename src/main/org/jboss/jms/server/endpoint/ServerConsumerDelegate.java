@@ -12,25 +12,31 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.delegate.AcknowledgmentHandler;
+import org.jboss.jms.client.Closeable;
 import org.jboss.remoting.InvokerCallbackHandler;
 
 import java.io.Serializable;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
+import javax.jms.JMSException;
+
 
 
 /**
  * A Consumer endpoint. Lives on the boundary between Messaging Core and the JMS Facade.
  *
+ * It doesn't implement ConsumerDelegate because ConsumerDelegate's methods will never land on the
+ * server side, they will be taken care of by the client-side interceptor chain.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Consumer implements Receiver, AcknowledgmentHandler
+public class ServerConsumerDelegate implements Receiver, Closeable, AcknowledgmentHandler
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(Consumer.class);
+   private static final Logger log = Logger.getLogger(ServerConsumerDelegate.class);
 
    // Static --------------------------------------------------------
 
@@ -45,7 +51,7 @@ public class Consumer implements Receiver, AcknowledgmentHandler
 
    // Constructors --------------------------------------------------
 
-   public Consumer(String id, AbstractDestination destination,
+   public ServerConsumerDelegate(String id, AbstractDestination destination,
                    InvokerCallbackHandler callbackHandler,
                    ServerSessionDelegate sessionEndpoint)
    {
@@ -90,6 +96,19 @@ public class Consumer implements Receiver, AcknowledgmentHandler
 		
 		destination.acknowledge(messageID, this.getReceiverID());		
    }
+
+   // Closeable implementation --------------------------------------
+
+   public void closing() throws JMSException
+   {
+      log.debug("closing");
+   }
+
+   public void close() throws JMSException
+   {
+      log.debug("close");
+   }
+   
 
    // Public --------------------------------------------------------
 

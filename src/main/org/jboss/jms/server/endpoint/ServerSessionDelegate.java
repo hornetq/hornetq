@@ -19,6 +19,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.AcknowledgmentHandler;
+import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.AspectManager;
@@ -36,7 +37,6 @@ import org.jboss.util.id.GUID;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 
 import java.util.Iterator;
 import java.util.List;
@@ -111,7 +111,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // create the dynamic proxy that implements ProducerDelegate
 
-      ProducerDelegate pd = null;
       Serializable oid = serverPeer.getProducerAdvisor().getName();
       String stackName = "ProducerStack";
       AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
@@ -145,7 +144,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       // TODO
       ClassLoader loader = getClass().getClassLoader();
       Class[] interfaces = new Class[] { ProducerDelegate.class };
-      pd = (ProducerDelegate)Proxy.newProxyInstance(loader, interfaces, h);
+      ProducerDelegate delegate = (ProducerDelegate)Proxy.newProxyInstance(loader, interfaces, h);
 
       // create the corresponding "server-side" ProducerDelegate and register it with this
       // SessionDelegate instance
@@ -155,10 +154,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       log.debug("created producer delegate (producerID=" + producerID + ")");
 
-      return pd;
+      return delegate;
    }
 
-   public MessageConsumer createConsumer(Destination jmsDestination) throws JBossJMSException
+   public ConsumerDelegate createConsumerDelegate(Destination jmsDestination)
+         throws JBossJMSException
    {
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
@@ -200,8 +200,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // TODO
       ClassLoader loader = getClass().getClassLoader();
-      Class[] interfaces = new Class[] { MessageConsumer.class, AcknowledgmentHandler.class };
-      MessageConsumer proxy = (MessageConsumer)Proxy.newProxyInstance(loader, interfaces, h);
+      Class[] interfaces = new Class[] { ConsumerDelegate.class, AcknowledgmentHandler.class };
+      ConsumerDelegate delegate = (ConsumerDelegate)Proxy.newProxyInstance(loader, interfaces, h);
 
       if (callbackHandler == null)
       {
@@ -209,12 +209,13 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
 
       // create the Consumer endpoint and register it with this SessionDelegate instance
-      Consumer c =  new Consumer(consumerID, destination, callbackHandler, this);
-      putConsumer(consumerID, c);
+      ServerConsumerDelegate scd =
+            new ServerConsumerDelegate(consumerID, destination, callbackHandler, this);
+      putConsumerDelegate(consumerID, scd);
 
       log.debug("created consumer endpoint (destination=" + jmsDestination + ")");
 
-      return proxy;
+      return delegate;
    }
 
    public Message createMessage() throws JBossJMSException
@@ -224,17 +225,15 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    
    public void close() throws JBossJMSException
    {
-      log.trace("In ServerSessionDelegate.close()");
+      log.debug("close()");
     
-      System.out.println("In ServerSessionDelegate.close()");
-            
-      //The traversal of the children is done in the ClosedInterceptor                            
+      //The traversal of the children is done in the ClosedInterceptor
    }
    
    public void closing() throws JMSException
    {
-      log.trace("In ServerSessionDelegate.closing()");
-      
+      log.debug("close()");
+
       //Currently does nothing
    }
    
@@ -348,19 +347,19 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
    }
 
-   public Consumer putConsumer(String consumerID, Consumer d)
+   public ServerConsumerDelegate putConsumerDelegate(String consumerID, ServerConsumerDelegate d)
    {
       synchronized(consumers)
       {
-         return (Consumer)consumers.put(consumerID, d);
+         return (ServerConsumerDelegate)consumers.put(consumerID, d);
       }
    }
 
-   public Consumer getConsumer(String consumerID)
+   public ServerConsumerDelegate getConsumerDelegate(String consumerID)
    {
       synchronized(consumers)
       {
-         return (Consumer)consumers.get(consumerID);
+         return (ServerConsumerDelegate)consumers.get(consumerID);
       }
    }
 	
@@ -436,7 +435,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          for(Iterator i = consumers.values().iterator(); i.hasNext(); )
          {
-            ((Consumer)i.next()).setStarted(s);
+            ((ServerConsumerDelegate)i.next()).setStarted(s);
 
          }
       }

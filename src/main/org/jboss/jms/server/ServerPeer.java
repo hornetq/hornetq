@@ -214,7 +214,7 @@ public class ServerPeer
                                            "ServerConnectionDelegate",
                                            "ServerSessionDelegate",
                                            "ServerProducerDelegate",
-														 "Consumer",
+														 "ServerConsumerDelegate",
                                            "ServerBrowserDelegate",
                                            "GenericTarget"};
 

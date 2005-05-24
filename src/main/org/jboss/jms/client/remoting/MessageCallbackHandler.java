@@ -37,14 +37,19 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 
    protected AcknowledgmentHandler acknowledgmentHandler;
 
-   private volatile boolean receiving;
 
    protected int capacity = 100;
    protected BoundedBuffer messages;
 
+   private volatile boolean receiving;
+   private Thread receivingThread;
+
+
    protected MessageListener listener;
    protected Thread listenerThread;
    private int listenerThreadCount = 0;
+
+   private volatile boolean closed;
 
 
 
@@ -173,6 +178,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       {
          if (log.isTraceEnabled()) { log.trace("receive, timeout = " + timeout + " ms"); }
 
+         receivingThread = Thread.currentThread();
+
          JBossMessage m = null;
          while(true)
          {
@@ -195,15 +202,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             }
             catch(InterruptedException e)
             {
-               // TODO
-//               if (consumer is closing)
-//               {
-//                  return null;
-//               }
-//               else
-//               {
+               if (closed)
+               {
+                  return null;
+               }
+               else
+               {
                   throw e;
-//               }
+               }
             }
 
             // acknowledge even if the message expired
@@ -221,6 +227,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       finally
       {
          receiving = false;
+         receivingThread = null;
+      }
+   }
+
+   public void close()
+   {
+      if (closed)
+      {
+         return;
+      }
+      closed = true;
+      if (receivingThread != null)
+      {
+         receivingThread.interrupt();
       }
    }
 

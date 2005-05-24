@@ -36,7 +36,7 @@ import javax.jms.XATopicSession;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class JBossConnection implements
+class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
     XAConnection, XAQueueConnection, XATopicConnection
 {

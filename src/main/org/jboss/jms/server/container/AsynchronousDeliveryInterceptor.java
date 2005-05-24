@@ -11,7 +11,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerSessionDelegate;
-import org.jboss.jms.server.endpoint.Consumer;
+import org.jboss.jms.server.endpoint.ServerConsumerDelegate;
 
 import java.lang.reflect.Method;
 
@@ -81,15 +81,15 @@ public class AsynchronousDeliveryInterceptor implements Interceptor
                   (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,
                                                                JMSAdvisor.CONSUMER_ID);
 
-            Consumer consumer = ssd.getConsumer(consumerID);
-            if (consumer == null)
+            ServerConsumerDelegate serverConsumerDelegate = ssd.getConsumerDelegate(consumerID);
+            if (serverConsumerDelegate == null)
             {
                throw new Exception("The session " + sessionID + "  doesn't know of any consumer " +
                                    "with consumerID=" + consumerID);
                // TODO log error
             }
 
-            consumer.initiateAsynchDelivery();
+            serverConsumerDelegate.initiateAsynchDelivery();
 
             return null;
          }

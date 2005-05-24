@@ -46,23 +46,20 @@ public class ServerProducerDelegate implements ProducerDelegate
    }
 
    // ProducerDelegate implementation ------------------------
-   
-   public void close()
-      throws JMSException
+
+   public void closing() throws JMSException
    {
       //Currently this does nothing
-      System.out.println("In ServerProducerDelegate.close()");
-   }
-   
-   public void closing()
-      throws JMSException
-   {
-      //Currently this does nothing
-      System.out.println("In ServerProducerDelegate.closing()");
+      log.debug("closing");
    }
 
-   public void send(Message m)
-      throws JMSException
+   public void close() throws JMSException
+   {
+      //Currently this does nothing
+      log.debug("close");
+   }
+   
+   public void send(Message m) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("sending message " + m + " to the core"); }
 
@@ -72,8 +69,6 @@ public class ServerProducerDelegate implements ProducerDelegate
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-
-   
 
    // Protected -----------------------------------------------------
 

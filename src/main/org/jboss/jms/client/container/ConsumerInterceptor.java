@@ -53,7 +53,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
       {
          MethodInvocation mi = (MethodInvocation)invocation;
          Method m = mi.getMethod();
-         if (m.getName().equals("createConsumer"))
+         if (m.getName().equals("createConsumerDelegate"))
          {
             // register/unregister a callback handler that deal with callbacks sent by the server
 
@@ -78,17 +78,18 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             // I created the client already, pass it along to be used by the InvokerInterceptor
             metaData.addMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.CLIENT,
                                  client, PayloadKey.TRANSIENT);
-            // I will need this on the server-side to create the Consumer delegate
+            // I will need this on the server-side to create the ConsumerDelegate instance
             metaData.addMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_SESSION_ID,
                                  client.getSessionId(), PayloadKey.AS_IS);
 
-            Object consumerProxy = invocation.invokeNext();
-            JMSConsumerInvocationHandler ih =
-                  (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerProxy);
-            ih.setMessageHandler(msgHandler);
-            msgHandler.setAcknowledgmentHandler((AcknowledgmentHandler)consumerProxy);
+            Object consumerDelegate = invocation.invokeNext();
 
-            return consumerProxy;
+            JMSConsumerInvocationHandler ih =
+                  (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerDelegate);
+            ih.setMessageHandler(msgHandler);
+            msgHandler.setAcknowledgmentHandler((AcknowledgmentHandler)consumerDelegate);
+
+            return consumerDelegate;
          }
       }
       return invocation.invokeNext();
