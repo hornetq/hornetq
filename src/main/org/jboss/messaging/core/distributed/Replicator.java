@@ -109,7 +109,36 @@ public class Replicator extends MultipleOutputChannelSupport
       return replicatorID;
    }
 
-   public boolean handle(Routable r)
+   public boolean deliver()
+   {
+      return collector.deliver(dispatcher);
+   }
+
+   public boolean hasMessages()
+   {
+      return !collector.isEmpty();
+   }
+
+   public Set getUndelivered()
+   {
+      return collector.getMessageIDs();
+   }
+
+
+   public void acknowledge(Serializable messageID, Serializable receiverID)
+   {
+      //
+      // TODO: I totally override ChannelSupport.acknowledge() because I am not using
+      //       localAcknowledgmentStore and super.acknowledge() will throw NPE. However,
+      //       when AcknowledgmentCollector will implement AcknolwedgmentStore, I will
+      //       just delegate to super.acknowledge()
+      //
+      collector.acknowledge(messageID, receiverID);
+   }
+
+   // ChannelSupport implementation ---------------------------------
+
+   public boolean nonTransactionalHandle(Routable r)
    {
       lock();
 
@@ -187,37 +216,6 @@ public class Replicator extends MultipleOutputChannelSupport
          unlock();
       }
    }
-
-   public boolean deliver()
-   {
-      return collector.deliver(dispatcher);
-   }
-
-   public boolean hasMessages()
-   {
-      return !collector.isEmpty();
-   }
-
-   public Set getUndelivered()
-   {
-      return collector.getMessageIDs();
-   }
-
-
-   public void acknowledge(Serializable messageID, Serializable receiverID)
-   {
-      //
-      // TODO: I totally override ChannelSupport.acknowledge() because I am not using
-      //       localAcknowledgmentStore and super.acknowledge() will throw NPE. However,
-      //       when AcknowledgmentCollector will implement AcknolwedgmentStore, I will
-      //       just delegate to super.acknowledge()
-      //
-      collector.acknowledge(messageID, receiverID);
-   }
-
-
-
-   // ChannelDelegate overrides -------------------------------------
 
    /**
     * Always called from a synchronized block, no need to synchronize. It can throw unchecked

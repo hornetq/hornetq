@@ -17,24 +17,29 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LocalQueueAsChannelTest extends ChannelSupportTest
+public class LocalQueueAsTransactionalChannelTest extends TransactionalChannelSupportTest
 {
+   private boolean runLocalTests = true;
+
    // Constructors --------------------------------------------------
 
-   public LocalQueueAsChannelTest(String name)
+   public LocalQueueAsTransactionalChannelTest(String name)
    {
       super(name);
    }
 
    public void setUp() throws Exception
    {
-      super.setUp();
-
       // Create a LocalQueue to be tested by the superclass tests
       channel = new LocalQueue("LocalQueueID");
       receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
       ((LocalQueue)channel).add(receiverOne);
 
+      runChannelSupportTests = true;
+      runTransactionalChannelSupportTests = true;
+      runLocalTests = true;
+
+      super.setUp();
    }
 
    public void tearDown()throws Exception
@@ -42,6 +47,7 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
       ((LocalQueue)channel).clear();
       channel = null;
       receiverOne = null;
+
       super.tearDown();
    }
 
@@ -51,11 +57,15 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
 
    public void testDefaultAsynchronous()
    {
+      if (skip()) { return; }
+
       assertFalse(channel.isSynchronous());
    }
 
    public void testQueue() throws Exception
    {
+      if (skip()) { return; }
+
       LocalQueue queue = new LocalQueue("");
 
       // send without a receiver
@@ -121,6 +131,8 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
     */
    public void testNackingReceiver() throws Exception
    {
+      if (skip()) { return; }
+
       LocalQueue queue = new LocalQueue("");
 
       ReceiverImpl nacking = new ReceiverImpl("NackingReceiverID", ReceiverImpl.NACKING);
@@ -155,6 +167,8 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
 
    public void testNackingReceiverThatStartsAccepting() throws Exception
    {
+      if (skip()) { return; }
+
       LocalQueue queue = new LocalQueue("");
 
       ReceiverImpl nacking = new ReceiverImpl(ReceiverImpl.NACKING);
@@ -187,6 +201,8 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
     */
    public void testBrokenReceiver() throws Exception
    {
+      if (skip()) { return; }
+
       LocalQueue queue = new LocalQueue("");
 
       ReceiverImpl broken = new ReceiverImpl("BrokenReceiverID", ReceiverImpl.BROKEN);
@@ -213,6 +229,8 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
 
    public void testBrokenReceiverThatHeals() throws Exception
    {
+      if (skip()) { return; }
+
       LocalQueue queue = new LocalQueue("");
 
       ReceiverImpl broken = new ReceiverImpl(ReceiverImpl.BROKEN);
@@ -232,5 +250,11 @@ public class LocalQueueAsChannelTest extends ChannelSupportTest
       i = broken.iterator();
       assertTrue(m == i.next());
       assertFalse(i.hasNext());
+   }
+
+
+   private boolean skip()
+   {
+      return !runLocalTests;
    }
 }

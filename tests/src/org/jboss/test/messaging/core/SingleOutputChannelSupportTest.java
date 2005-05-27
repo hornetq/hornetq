@@ -12,11 +12,14 @@ import org.jboss.messaging.core.local.SingleOutputChannelSupport;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class SingleOutputChannelSupportTest extends ChannelSupportTest
+public class SingleOutputChannelSupportTest extends TransactionalChannelSupportTest
 {
    // Attributes ----------------------------------------------------
 
    SingleOutputChannelSupport singleOutputChannel;
+
+   protected boolean runSingleOutputChannelSupportTests = true;
+
 
    // Constructors --------------------------------------------------
 
@@ -27,7 +30,10 @@ public class SingleOutputChannelSupportTest extends ChannelSupportTest
 
    public void setUp() throws Exception
    {
-      singleOutputChannel = (SingleOutputChannelSupport)channel;
+      if (runSingleOutputChannelSupportTests)
+      {
+         singleOutputChannel = (SingleOutputChannelSupport)channel;
+      }
       super.setUp();
    }
 
@@ -43,8 +49,14 @@ public class SingleOutputChannelSupportTest extends ChannelSupportTest
 
    public void testGetOutputID()
    {
-      if (channel == null) { return; }
+      if (skip()) { return; }
+
       assertEquals(receiverOne.getReceiverID(), singleOutputChannel.getOutputID());
+   }
+
+   private boolean skip()
+   {
+      return singleOutputChannel == null;
    }
 
 }

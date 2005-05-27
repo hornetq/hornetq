@@ -83,7 +83,6 @@
 
    <interceptor class="org.jboss.jms.server.container.InstanceInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.server.container.LogInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.jms.server.container.AsynchronousDeliveryInterceptor" scope="PER_VM"/>
 
    <stack name="ServerConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
@@ -117,7 +116,6 @@
 
    <stack name="GenericServerStack">
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.server.container.AsynchronousDeliveryInterceptor"/>
    </stack>
 
 

@@ -17,7 +17,7 @@ import org.jboss.messaging.core.util.SingleChannelAcknowledgmentStore;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class MultipleOutputChannelSupport extends ChannelSupport
+public abstract class MultipleOutputChannelSupport extends TransactionalChannelSupport
 {
    // Constants -----------------------------------------------------
 

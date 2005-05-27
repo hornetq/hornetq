@@ -26,6 +26,8 @@ public class ChannelSupportTest extends MessagingTestCase
 
    protected Channel channel;
    protected ReceiverImpl receiverOne;
+   protected boolean runChannelSupportTests = true;
+
 
    // Constructors --------------------------------------------------
 
@@ -40,7 +42,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testSwitchFromAsynchToSynchWhenChannelNotEmpty()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
@@ -56,7 +58,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testSuccessfulSynchronousDeliverOnSynchronousChannel()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.HANDLING);
       assertTrue(channel.setSynchronous(true));
@@ -69,7 +71,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testDenyingReceiverOnSynchronousChannel()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(true));
@@ -81,7 +83,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testBrokenReceiverOnSynchronousChannel()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.BROKEN);
       assertTrue(channel.setSynchronous(true));
@@ -100,7 +102,7 @@ public class ChannelSupportTest extends MessagingTestCase
    public void testSuccessfulSynchronousDeliverOnAsynchronousChannel_UnreliableRoutable()
          throws Exception
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.HANDLING);
       assertTrue(channel.setSynchronous(false));
@@ -120,7 +122,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testNackingReceiverOnAsynchronousChannel_UnreliableRoutable()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
@@ -133,7 +135,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testBrokenReceiverOnAsynchronousChannel_UnreliableRoutable()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.BROKEN);
       assertTrue(channel.setSynchronous(false));
@@ -158,7 +160,7 @@ public class ChannelSupportTest extends MessagingTestCase
    public void testSuccessfulSynchronousDeliverOnAsynchronousChannel_ReliableRoutable()
          throws Exception
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.HANDLING);
       channel.setAcknowledgmentStore(new TestAcknowledgmentStore("ACKStoreID"));
@@ -182,14 +184,14 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testDenyingReceiverOnAsynchronousChannel()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       internalTestReceiverOnAsynchronousChannel_ReliableRoutable(ReceiverImpl.NACKING);
    }
 
    public void testBrokenReceiverOnAsynchronousChannel()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       internalTestReceiverOnAsynchronousChannel_ReliableRoutable(ReceiverImpl.BROKEN);
    }
@@ -431,7 +433,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testDeliver()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       // deliver none
 
@@ -450,7 +452,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testDeliverMultiple()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       // deliver none
 
@@ -480,7 +482,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testDeliverPartiallyandSwitchToDenying()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
@@ -510,7 +512,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testDeliverPartiallyandSwitchToBroken()
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
@@ -540,7 +542,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testMessageExpiration() throws Exception
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       channel.setSynchronous(false);
       receiverOne.setState(ReceiverImpl.NACKING);
@@ -566,7 +568,7 @@ public class ChannelSupportTest extends MessagingTestCase
    //
    public void testInvalidAsynchronousACK() throws Exception
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
@@ -593,7 +595,7 @@ public class ChannelSupportTest extends MessagingTestCase
 
    public void testAsynchronousACK() throws Exception
    {
-      if (channel == null) { return; }
+      if(skip()) { return; }
 
       receiverOne.setState(ReceiverImpl.NACKING);
       assertTrue(channel.setSynchronous(false));
@@ -611,5 +613,11 @@ public class ChannelSupportTest extends MessagingTestCase
       channel.acknowledge("routableID2", receiverOne.getReceiverID());
 
       assertFalse(channel.hasMessages());
+   }
+
+
+   private boolean skip()
+   {
+      return channel == null || !runChannelSupportTests;
    }
 }

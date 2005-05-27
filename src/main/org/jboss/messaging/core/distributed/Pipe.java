@@ -89,19 +89,6 @@ public class Pipe extends SingleOutputChannelSupport
       return pipeID;
    }
 
-   public boolean handle(Routable r)
-   {
-      Acknowledgment ack = handleSynchronously(r);
-      if (ack != null && ack.isPositive())
-      {
-         // successful synchronous delivery
-         return true;
-      }
-      Set acks = ack == null ? null : Collections.singleton(ack);
-      return updateAcknowledgments(r, acks);
-   }
-
-
    public boolean deliver()
    {
       lock();
@@ -145,6 +132,20 @@ public class Pipe extends SingleOutputChannelSupport
 
       return !hasMessages();
 
+   }
+
+   // ChannelSupport implementation ---------------------------------
+
+   public boolean nonTransactionalHandle(Routable r)
+   {
+      Acknowledgment ack = handleSynchronously(r);
+      if (ack != null && ack.isPositive())
+      {
+         // successful synchronous delivery
+         return true;
+      }
+      Set acks = ack == null ? null : Collections.singleton(ack);
+      return updateAcknowledgments(r, acks);
    }
 
    // SingleOutputChannelSupport overrides --------------------------

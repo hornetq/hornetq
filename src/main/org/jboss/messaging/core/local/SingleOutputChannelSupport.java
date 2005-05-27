@@ -20,7 +20,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public abstract class SingleOutputChannelSupport extends ChannelSupport
+public abstract class SingleOutputChannelSupport extends TransactionalChannelSupport
 {
    // Constants -----------------------------------------------------
 

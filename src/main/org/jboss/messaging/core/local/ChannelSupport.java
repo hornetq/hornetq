@@ -295,8 +295,6 @@ public abstract class ChannelSupport extends Lockable implements Channel
       }
    }
 
-
-
    /**
     * Subclasses  could override this to get rid of a message from local storage (possibly due to
     * expiration).
@@ -320,6 +318,24 @@ public abstract class ChannelSupport extends Lockable implements Channel
       }
    }
 
+   /**
+    * Subclasses must override if they want transactional handling.
+    *
+    * @return true if the routable was successfully handled within the scope of the transaction and
+    *         its delivery will be triggered on transaction boundary; false if the channel is not
+    *         able to transactionally handle the Routable. The transaction may also be marked for
+    *         rollback.
+    *
+    */
+   protected boolean transactionalHandle(Routable r)
+   {
+      return false;
+   }
+
+   /**
+    * Same semantics as Receiver.handle().
+    */
+   protected abstract boolean nonTransactionalHandle(Routable r);
 
    // Private -------------------------------------------------------
    

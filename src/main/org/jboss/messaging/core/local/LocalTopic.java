@@ -36,7 +36,15 @@ public class LocalTopic extends AbstractDestination
 
    // Channel implementation ----------------------------------------
 
-   public boolean handle(Routable r)
+   public boolean isStoringUndeliverableMessages()
+   {
+      // positively acknowledge and discard a message if there are no receivers
+      return false;
+   }
+
+   // ChannelSupport implementation ---------------------------------
+
+   public boolean nonTransactionalHandle(Routable r)
    {
       if (log.isTraceEnabled()) { log.trace(this + " forwarding to router"); }
 
@@ -64,11 +72,7 @@ public class LocalTopic extends AbstractDestination
       return updateAcknowledgments(r, acks);
    }
 
-   public boolean isStoringUndeliverableMessages()
-   {
-      // positively acknowledge and discard a message if there are no receivers
-      return false;
-   }
+
 
    // AbstractDestination implementation ----------------------------
 

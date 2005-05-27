@@ -97,33 +97,6 @@ public class LocalPipe extends SingleOutputChannelSupport
       return id;
    }
 
-   public boolean handle(Routable r)
-   {
-      Set acks = Collections.EMPTY_SET;
-      if (receiver != null)
-      {
-         Serializable receiverID = receiver.getReceiverID();
-         try
-         {
-            if (log.isTraceEnabled()) { log.trace(this + ": attempting to deliver to " + receiverID); }
-            if (receiver.handle(r))
-            {
-               // successful synchronous delivery
-               if (log.isTraceEnabled()) { log.trace(this + ": successful delivery to " + receiverID); }
-               return true;
-            }
-            acks = NACKSet;
-         }
-         catch(Throwable e)
-         {
-            log.warn("The receiver " + receiverID + " failed to handle the message", e);
-         }
-      }
-        
-      if (log.isTraceEnabled()) { log.trace(this + ": unsuccessful delivery, storing the message"); }
-      return updateAcknowledgments(r, acks);
-   }
-
    public boolean deliver()
    {
       lock();
@@ -180,6 +153,35 @@ public class LocalPipe extends SingleOutputChannelSupport
       }
 
       return !hasMessages();
+   }
+   
+   // ChannelSupport implementation ---------------------------------
+
+   public boolean nonTransactionalHandle(Routable r)
+   {
+      Set acks = Collections.EMPTY_SET;
+      if (receiver != null)
+      {
+         Serializable receiverID = receiver.getReceiverID();
+         try
+         {
+            if (log.isTraceEnabled()) { log.trace(this + ": attempting to deliver to " + receiverID); }
+            if (receiver.handle(r))
+            {
+               // successful synchronous delivery
+               if (log.isTraceEnabled()) { log.trace(this + ": successful delivery to " + receiverID); }
+               return true;
+            }
+            acks = NACKSet;
+         }
+         catch(Throwable e)
+         {
+            log.warn("The receiver " + receiverID + " failed to handle the message", e);
+         }
+      }
+        
+      if (log.isTraceEnabled()) { log.trace(this + ": unsuccessful delivery, storing the message"); }
+      return updateAcknowledgments(r, acks);
    }
 
    // SingleOutputChannelSupport overrides --------------------------

@@ -36,9 +36,9 @@ public class LocalQueue extends AbstractDestination
       super(id);
    }
 
-   // Channel implementation ----------------------------------------
+   // ChannelSupport implementation ---------------------------------
 
-   public boolean handle(Routable r)
+   protected boolean nonTransactionalHandle(Routable r)
    {
       if (log.isTraceEnabled()) { log.trace(this + " forwarding to router"); }
 
