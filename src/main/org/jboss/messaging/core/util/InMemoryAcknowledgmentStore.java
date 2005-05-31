@@ -50,9 +50,7 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       return storeID;
    }
 
-   public synchronized void update(Serializable channelID,
-                                                  Serializable messageID,
-                                                  Set acks)
+   public synchronized void update(Serializable channelID, Serializable messageID, Set acks)
          throws Throwable
    {
       Map channelMap = (Map)map.get(channelID);
@@ -130,7 +128,7 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       {
          Serializable messageID = (Serializable)i.next();
          AcknowledgmentSet s = (AcknowledgmentSet)channelMap.get(messageID);
-         if (s.nackCount() > 0 || !s.isDeliveryAttempted())
+         if (s.nackCount() > 0 || (!s.isDeliveryAttempted() && !s.hasNonCommitted()))
          {
             if (result == Collections.EMPTY_SET)
             {
@@ -215,6 +213,51 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       return s;
 
    }
+
+   public void enableNonCommitted(Serializable channelID, String txID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return;
+      }
+
+      for(Iterator i = channelMap.keySet().iterator(); i.hasNext();)
+      {
+         Serializable messageID = (Serializable)i.next();
+         AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
+         if (ackSet == null)
+         {
+            continue;
+         }
+         ackSet.enableNonCommitted(txID);
+      }
+   }
+
+   public void discardNonCommitted(Serializable channelID, String txID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return;
+      }
+
+      for(Iterator i = channelMap.keySet().iterator(); i.hasNext();)
+      {
+         Serializable messageID = (Serializable)i.next();
+         AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
+         if (ackSet == null)
+         {
+            continue;
+         }
+         ackSet.discardNonCommitted(txID);
+         if (ackSet.isDeliveryAttempted() && ackSet.size() == 0)
+         {
+            i.remove();
+         }
+      }
+   }
+
 
    // Public --------------------------------------------------------
 

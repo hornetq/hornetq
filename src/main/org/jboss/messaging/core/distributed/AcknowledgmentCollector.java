@@ -9,6 +9,7 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.Lockable;
+import org.jboss.messaging.core.util.NonCommitted;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.message.RoutableSupport;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Collections;
 
 /**
  * TODO - have AcknoweldgmentCollector implement AcknowledgmentStore. Currently the
@@ -45,11 +47,15 @@ public class AcknowledgmentCollector
    // Attributes ----------------------------------------------------
    protected Replicator peer;
 
-   /** <ticket - Set of outputPeerIDs that did NOT acknowledge yet> */
+   // <ticket - Set of outputPeerIDs that did NOT acknowledge yet or null for ChannleNACK>
    protected Map unacked;
+
    // TODO This is a hack
-   /** <ticket - Set of outputPeerIDs that positively acknowledged using acknowledge() */
+   // <ticket - Set of outputPeerIDs that positively acknowledged using acknowledge()
    protected Map acked;
+
+   // <Routable - NonCommitted>
+   protected Map nonCommitted;
 
 
    // Constructors --------------------------------------------------
@@ -59,6 +65,7 @@ public class AcknowledgmentCollector
       this.peer = peer;
       unacked = new HashMap();
       acked = new HashMap();
+      nonCommitted = Collections.synchronizedMap(new HashMap());
    }
 
    // AcknowledgmentCollectorServerDelegate implementation ----------
@@ -218,12 +225,19 @@ public class AcknowledgmentCollector
    /**
     * TODO - necessary to connect the new acknowledgment storage system with this Collector.
     *
-    * @param acks contains Acknowledgments. Empty set means Channel NACK.
+    * @param acks contains Acknowledgments or NonCommitted. Empty set means Channel NACK.
     */
    public void update(Routable r, Set acks)
    {
       for(Iterator i = acks.iterator(); i.hasNext(); )
       {
+         Object o = i.next();
+         if (o instanceof NonCommitted)
+         {
+            // TODO incomplete, does not support multiple transactions and isolation
+            nonCommitted.put(r, o);
+            continue;
+         }
          Acknowledgment a = (Acknowledgment)i.next();
          addNACK(r, a.getReceiverID());
       }
@@ -355,6 +369,7 @@ public class AcknowledgmentCollector
 
    // TODO VERY inefficient implementation - for each peer that did not acknowledge, retry
    // TODO unicast delivery;
+   // TODO no support for ChannelNACK
    protected boolean deliver(RpcDispatcher dispatcher)
    {
 
@@ -395,6 +410,7 @@ public class AcknowledgmentCollector
                }
 
                Set outputPeerIDs = (Set)unacked.get(t);
+
                for(Iterator j = outputPeerIDs.iterator(); j.hasNext(); )
                {
                   Serializable peerID = (Serializable)j.next();
@@ -443,7 +459,7 @@ public class AcknowledgmentCollector
       }
 
       lock();
-      
+
       try
       {
          return unacked.isEmpty();
@@ -454,6 +470,34 @@ public class AcknowledgmentCollector
       }
 
    }
+
+   protected void enableNonCommitted(String txID)
+   {
+      for(Iterator i = nonCommitted.keySet().iterator(); i.hasNext();)
+      {
+         Routable r = (Routable)i.next();
+         NonCommitted nc = (NonCommitted)nonCommitted.get(r);
+         if (nc != null && nc.getTxID().equals(txID))
+         {
+            i.remove();
+            unacked.put(new Ticket(r), Collections.EMPTY_LIST);
+         }
+      }
+   }
+
+   protected void discardNonCommitted(String txID)
+   {
+      for(Iterator i = nonCommitted.keySet().iterator(); i.hasNext();)
+      {
+         Routable r = (Routable)i.next();
+         NonCommitted nc = (NonCommitted)nonCommitted.get(r);
+         if (nc != null && nc.getTxID().equals(txID))
+         {
+            i.remove();
+         }
+      }
+   }
+
 
    // Private -------------------------------------------------------
    

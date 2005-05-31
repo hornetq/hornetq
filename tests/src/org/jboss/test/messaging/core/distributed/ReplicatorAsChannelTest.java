@@ -7,7 +7,7 @@
 package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.core.ReceiverImpl;
-import org.jboss.test.messaging.core.ChannelSupportTest;
+import org.jboss.test.messaging.core.TransactionalChannelSupportTest;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.Replicator;
@@ -19,7 +19,7 @@ import org.jgroups.JChannel;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ReplicatorAsChannelTest extends ChannelSupportTest
+public class ReplicatorAsChannelTest extends TransactionalChannelSupportTest
 {
    // Constants -----------------------------------------------------
 
@@ -51,10 +51,8 @@ public class ReplicatorAsChannelTest extends ChannelSupportTest
 
    // Public --------------------------------------------------------
 
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
-      super.setUp();
-
       jChannelOne = new JChannel(props);
       dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
 
@@ -70,9 +68,11 @@ public class ReplicatorAsChannelTest extends ChannelSupportTest
       output.start();
       channel = new Replicator(dispatcherOne, "ReplicatorID");
       ((Replicator)channel).start();
+
+      super.setUp();
    }
 
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
       channel = null;
       receiverOne = null;
@@ -85,7 +85,7 @@ public class ReplicatorAsChannelTest extends ChannelSupportTest
    }
 
    //
-   // This test class runs all ChannelSupportTest's tests
+   // This test class runs all ChannelSupportTest tests
    //
 
 }

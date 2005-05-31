@@ -14,7 +14,7 @@ import org.jboss.messaging.core.local.AbstractDestination;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class AbstractDestinationAsChannelTest extends ChannelSupportTest
+public class AbstractDestinationAsChannelTest extends TransactionalChannelSupportTest
 {
    // Attributes ----------------------------------------------------
 
@@ -29,8 +29,9 @@ public class AbstractDestinationAsChannelTest extends ChannelSupportTest
 
    public void setUp() throws Exception
    {
-      super.setUp();
       abstractDestination = (AbstractDestination)channel;
+
+      super.setUp();
    }
 
    public void tearDown() throws Exception
@@ -64,4 +65,5 @@ public class AbstractDestinationAsChannelTest extends ChannelSupportTest
       assertTrue(receiverOne.contains("routableID2"));
       assertTrue(receiverOne.contains("routableID3"));
    }
+
 }

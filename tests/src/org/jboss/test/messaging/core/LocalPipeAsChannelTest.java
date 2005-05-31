@@ -76,5 +76,4 @@ public class LocalPipeAsChannelTest extends SingleOutputChannelSupportTest
       assertTrue(receiverOne.contains("routableID3"));
    }
 
-
 }

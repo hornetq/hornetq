@@ -10,7 +10,9 @@ import java.util.Set;
 import java.io.Serializable;
 
 /**
- * Contains a set of Acknowlegments.
+ * Contains a set of Acknowlegments or NonCommitted.
+ *
+ * TODO: refactor into a coherent State representation (Acknowledgment, ChannelNACK, NonCommitted)
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -18,13 +20,20 @@ import java.io.Serializable;
 public interface AcknowledgmentSet
 {
    /**
+    * Returns true if at least one receiver saw the message, and returned either a positive or a
+    * negative acknowledgment, false for a Channel NACK.
+    */
+   public boolean isDeliveryAttempted();
+
+   /**
     * Cancels positive acks if their corresponding negative acks are found and store negative
     * acks for which there are no positive acks. Unpaired positive acks are ignored. If you want
     * to place a positive ack in advance, use acknowledge().
     *
     * Null is equivalent with an empty Set and usually means Channel NACK.
-    * @param newAcks - a set of positive/negative acknoweldgments. An empty set means Channel NACK.
-    *                  null is also handled as Channel NACK but its use is discouraged.
+    * @param newAcks - a set of positive/negative acknowledgments or NonCommitted instances. An
+    *                  empty set means Channel NACK. null is also handled as Channel NACK but its
+    *                  use is discouraged.
     */
    public void update(Set newAcks);
 
@@ -34,12 +43,6 @@ public interface AcknowledgmentSet
     * @param receiverID
     */
    public void acknowledge(Serializable receiverID);
-
-   /**
-    * Returns true if at least one receiver saw the message, and returned either a positive or a
-    * negative acknowledgment, false for a Channel NACK.
-    */
-   public boolean isDeliveryAttempted();
 
    /**
     * Does not count a Channel NACK.
@@ -66,6 +69,22 @@ public interface AcknowledgmentSet
     * @return
     */
    public int size();
+
+   /**
+    * TODO temporary until refactoring
+    */
+   public void enableNonCommitted(String txID);
+
+   /**
+    * TODO temporary until refactoring
+    */
+   public void discardNonCommitted(String txID);
+
+   /**
+    * TODO temporary until refactoring
+    */
+   public boolean hasNonCommitted();
+
 }
 
 

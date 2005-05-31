@@ -44,7 +44,7 @@ public class LocalTopic extends AbstractDestination
 
    // ChannelSupport implementation ---------------------------------
 
-   public boolean nonTransactionalHandle(Routable r)
+   public boolean handleNoTx(Routable r)
    {
       if (log.isTraceEnabled()) { log.trace(this + " forwarding to router"); }
 

@@ -7,13 +7,16 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.TransactionalChannel;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
-import javax.transaction.TransactionManager;
 import javax.transaction.Transaction;
+import javax.transaction.RollbackException;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Iterator;
+
 
 
 /**
@@ -24,10 +27,8 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
 {
    // Attributes ----------------------------------------------------
 
-   protected TransactionManager tm;
+   protected TransactionManagerImpl tm;
    private TransactionalChannel transactionalChannel;
-
-   protected boolean runTransactionalChannelSupportTests = true;
 
    // Constructors --------------------------------------------------
 
@@ -38,10 +39,11 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
 
    public void setUp() throws Exception
    {
-      if (runTransactionalChannelSupportTests)
+      if (channel != null)
       {
          transactionalChannel = (TransactionalChannel)channel;
          tm = TransactionManagerImpl.getInstance();
+         transactionalChannel.setTransactionManager(tm);
       }
 
       super.setUp();
@@ -50,6 +52,10 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
    public void tearDown()throws Exception
    {
       transactionalChannel = null;
+      if (tm != null)
+      {
+         tm.setState(TransactionManagerImpl.OPERATIONAL);
+      }
       tm = null;
       super.tearDown();
    }
@@ -63,41 +69,137 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
    {
       if (skip()) { return; }
 
-      transactionalChannel.setTransactionManager(tm);
       assertTrue(tm == transactionalChannel.getTransactionManager());
 
+      transactionalChannel.setTransactionManager(null);
+      assertNull(transactionalChannel.getTransactionManager());
+
+      transactionalChannel.setTransactionManager(tm);
+      assertTrue(tm == transactionalChannel.getTransactionManager());
    }
 
-   public void testIsTransactional()
+   public void testHandleNoTransactionManager()
    {
       if (skip()) { return; }
 
-      assertFalse(transactionalChannel.isTransactional());
-      transactionalChannel.setTransactionManager(tm);
-      assertTrue(transactionalChannel.isTransactional());
+      transactionalChannel.setTransactionManager(null);
+      assertNull(transactionalChannel.getTransactionManager());
+
+      RoutableSupport r = new RoutableSupport("one");
+
+      // no transaction manager means regular non-transactional handling
+      assertTrue(transactionalChannel.handle(r));
+
+      assertFalse(transactionalChannel.hasMessages());
+      List l = receiverOne.getMessages();
+      assertEquals(1, l.size());
+      assertEquals("one", ((RoutableSupport)l.get(0)).getMessageID());
    }
 
-
-   public void testTransactionalSend() throws Exception
+   public void testHandleBrokenTransactionManager()
    {
       if (skip()) { return; }
 
-      transactionalChannel.setTransactionManager(tm);
+      tm.setState(TransactionManagerImpl.BROKEN);
+
+      try
+      {
+         transactionalChannel.handle(new RoutableSupport(""));
+         fail("Should have thrown exception");
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+   public void testHandleNoActiveTransaction()
+   {
+      if (skip()) { return; }
+
+      RoutableSupport r = new RoutableSupport("one");
+
+      // no active transaction means regular non-transactional handling
+      assertTrue(transactionalChannel.handle(r));
+
+      assertFalse(transactionalChannel.hasMessages());
+      List l = receiverOne.getMessages();
+      assertEquals(1, l.size());
+      assertEquals("one", ((RoutableSupport)l.get(0)).getMessageID());
+   }
+
+   public void testHandleActiveTransactionSynchronousChannel() throws Exception
+   {
+      if (skip()) { return; }
+
+      assertTrue(transactionalChannel.setSynchronous(true));
+
+      RoutableSupport r = new RoutableSupport("one");
 
       tm.begin();
       Transaction transaction = tm.getTransaction();
 
-      Routable r1 = new RoutableSupport("1");
-      Routable r2 = new RoutableSupport("2");
-      Routable r3 = new RoutableSupport("3");
+      transactionalChannel.handle(r);
+
+      assertFalse(transactionalChannel.hasMessages());
+      assertTrue(receiverOne.getMessages().isEmpty());
+
+      try
+      {
+         transaction.commit();
+         fail("should have thrown RollbackException");
+      }
+      catch(RollbackException e)
+      {
+         // OK
+      }
+   }
+
+   public void testHandleActiveTransactionAsynchronousChannel() throws Exception
+   {
+      if (skip()) { return; }
+
+      assertTrue(transactionalChannel.setSynchronous(false));
+
+      RoutableSupport r = new RoutableSupport("one");
+
+      tm.begin();
+      Transaction transaction = tm.getTransaction();
+
+      transactionalChannel.handle(r);
+
+      assertFalse(transactionalChannel.hasMessages());
+      assertTrue(receiverOne.getMessages().isEmpty());
+
+      transaction.commit();
+
+      assertFalse(transactionalChannel.hasMessages());
+      List l = receiverOne.getMessages();
+      assertEquals(1, l.size());
+      assertEquals("one", ((RoutableSupport)l.get(0)).getMessageID());
+   }
+
+
+
+   public void testHandleActiveTransactionAsynchronousChannel2() throws Exception
+   {
+      if (skip()) { return; }
+
+      assertTrue(transactionalChannel.setSynchronous(false));
+
+      RoutableSupport r1 = new RoutableSupport("1");
+      RoutableSupport r2 = new RoutableSupport("2");
+      RoutableSupport r3 = new RoutableSupport("3");
+
+      tm.begin();
+      Transaction transaction = tm.getTransaction();
+
 
       transactionalChannel.handle(r1);
       transactionalChannel.handle(r2);
       transactionalChannel.handle(r3);
 
-      // no messages are being held by the channel
       assertFalse(transactionalChannel.hasMessages());
-      // no messages were delivered to the receiver
       assertTrue(receiverOne.getMessages().isEmpty());
 
       transaction.commit();
@@ -106,16 +208,17 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
       assertFalse(transactionalChannel.hasMessages());
       List l = receiverOne.getMessages();
       assertEquals(3, l.size());
-      assertTrue(l.contains(r1));
-      assertTrue(l.contains(r2));
-      assertTrue(l.contains(r3));
+
+      Set ids = new HashSet();
+      for(Iterator i = receiverOne.iterator(); i.hasNext(); )
+      {
+         ids.add(((RoutableSupport)i.next()).getMessageID());
+      }
+      assertTrue(ids.contains("1"));
+      assertTrue(ids.contains("2"));
+      assertTrue(ids.contains("3"));
 
    }
-
-
-
-
-
 
    private boolean skip()
    {

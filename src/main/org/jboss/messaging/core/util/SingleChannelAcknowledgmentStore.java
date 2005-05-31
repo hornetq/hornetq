@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * An AcknowledgmentStore that stores acknowledgments for a single channel. channelID passed as
@@ -99,7 +100,7 @@ public class SingleChannelAcknowledgmentStore extends InMemoryAcknowledgmentStor
       {
          Serializable messageID = (Serializable)i.next();
          AcknowledgmentSet s = (AcknowledgmentSet)map.get(messageID);
-         if (s.nackCount() > 0 || !s.isDeliveryAttempted())
+         if (s.nackCount() > 0 || (!s.isDeliveryAttempted() && !s.hasNonCommitted()))
          {
             if (result == Collections.EMPTY_SET)
             {
@@ -173,6 +174,43 @@ public class SingleChannelAcknowledgmentStore extends InMemoryAcknowledgmentStor
       }
       return s;
    }
+
+   public void enableNonCommitted(Serializable channelID, String txID)
+   {
+      // channelID is ignored
+
+      for(Iterator i = map.keySet().iterator(); i.hasNext();)
+      {
+         Serializable messageID = (Serializable)i.next();
+         AcknowledgmentSet ackSet = (AcknowledgmentSet)map.get(messageID);
+         if (ackSet == null)
+         {
+            continue;
+         }
+         ackSet.enableNonCommitted(txID);
+      }
+   }
+
+   public void discardNonCommitted(Serializable channelID, String txID)
+   {
+      // channelID is ignored
+
+      for(Iterator i = map.keySet().iterator(); i.hasNext();)
+      {
+         Serializable messageID = (Serializable)i.next();
+         AcknowledgmentSet ackSet = (AcknowledgmentSet)map.get(messageID);
+         if (ackSet == null)
+         {
+            continue;
+         }
+         ackSet.discardNonCommitted(txID);
+         if (ackSet.isDeliveryAttempted() && ackSet.size() == 0)
+         {
+            i.remove();
+         }
+      }
+   }
+
 
 
 

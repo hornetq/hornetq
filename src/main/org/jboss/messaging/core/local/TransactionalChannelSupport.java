@@ -9,14 +9,18 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.TransactionalChannel;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.util.NonCommitted;
 import org.jboss.logging.Logger;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.Transaction;
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Status;
 import javax.transaction.RollbackException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Collections;
 
 
 /**
@@ -34,7 +38,11 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    
    // Attributes ----------------------------------------------------
 
-   private TransactionManager transactionManager;
+   private volatile TransactionManager transactionManager;
+
+   // This map <Transaction - ChannelSynchronization> prevents us from registering twice the
+   // same synchronization on a transaction.
+   private Map synchronizations;
 
    // Constructors --------------------------------------------------
 
@@ -50,22 +58,53 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    public TransactionalChannelSupport(boolean mode)
    {
       super(mode);
-      messages = new HashMap();
+      synchronizations = new HashMap();
 
    }
 
    // Channel implementation ----------------------------------------
 
-   public boolean handle(Routable r)
+   /**
+    * If there is no active transaction, the semantics is similar to Receiver's handle().<p>
+    *
+    * If there is an active transaction, the channel will either deliver the message on
+    * transaction's commit, or, if there is a problem with the message delivery, the whole
+    * transaction will be rolled back.
+    * In case of transactional handling, the method's return value is irrelevant (most likely it
+    * will return true).
+    *
+    * @exception IllegalStateException - thrown on failure to interact with the transaction manager,
+    *            if a transaction manager is available.
+    *
+    */
+   public final boolean handle(Routable r)
    {
-      if (isTransactional())
+      if (transactionManager == null)
       {
-         return transactionalHandle(r);
+         // handle the message non-transactionally
+         return handleNoTx(r);
       }
-      else
+
+      try
       {
-         return nonTransactionalHandle(r);
+         Transaction transaction = transactionManager.getTransaction();
+
+         if (transaction == null)
+         {
+            // no active transaction, handle the message non-transactionally
+            return handleNoTx(r);
+         }
+
+         handleWithTx(r, transaction);
       }
+      catch(SystemException e)
+      {
+         String msg = "Failed to access current transaction";
+         log.error(msg, e);
+         throw new IllegalStateException(msg);
+      }
+
+      return true;
    }
 
    // TransactionalChannel implementation ---------------------------
@@ -81,91 +120,161 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
       return transactionManager;
    }
 
-   public boolean isTransactional()
-   {
-      return transactionManager != null;
-   }
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
 
-   protected boolean transactionalHandle(Routable r)
-   {
+   /**
+    * Same semantics as Receiver.handle().
+    *
+    * @see org.jboss.messaging.core.Receiver#handle(org.jboss.messaging.core.Routable)
+    */
+   protected abstract boolean handleNoTx(Routable r);
 
-      if (log.isTraceEnabled()) { log.trace("handling " + r + " transactionally"); }
-
-      Transaction t = null;
-
-      try
-      {
-         if (transactionManager == null || (t = transactionManager.getTransaction()) == null)
-         {
-            return false;
-         }
-
-         if (Status.STATUS_MARKED_ROLLBACK == t.getStatus())
-         {
-            // don't bother with it, it will be rolled back anyway
-            // TODO
-            return false;
-         }
-
-         // TODO
-         // register a callback with the transaction only if I am sure the channel will ACK the
-         // message when handle() will be called upon it
-
-         t.registerSynchronization(new RoutableSynchronization(r));
-
-      }
-      catch(RollbackException e)
-      {
-         // I shouldn't get this because I've just check whether transaction is marked for rollback
-         log.error("Unexpected rollback condition", e);
-         return false;
-      }
-      catch(Exception e)
-      {
-         log.error(e);
-         return false;
-      }
-
-      return true;
-
-   }
 
    // Private -------------------------------------------------------
-   
+
+   /**
+    * Loads the message to be delivered by the channel when transaction commits.
+    *
+    * @param r - the Routable to deliver.
+    * @param transaction - a non-null Transaction.
+    *
+    * @exception SystemException - failed to interact with the transaction
+    */
+   private void handleWithTx(Routable r, Transaction transaction) throws SystemException
+   {
+      if (log.isTraceEnabled()) { log.trace("handling " + r + " transactionally"); }
+
+      String txID;
+      synchronized(synchronizations)
+      {
+         // TODO if the same logical transaction is represented by more than one Transaction instances, this won't work correctly
+         ChannelSynchronization sync = (ChannelSynchronization)synchronizations.get(transaction);
+         if (sync == null)
+         {
+            txID = generateUniqueTransactionID();
+            sync = new ChannelSynchronization(txID);
+            try
+            {
+               transaction.registerSynchronization(sync);
+            }
+            catch(RollbackException e)
+            {
+               log.debug("Transaction already marked for rollback", e);
+               return;
+            }
+            synchronizations.put(transaction, sync);
+         }
+         txID = sync.getTxID();
+      }
+
+      // add the message to channel's internal storage, but don't deliver yet
+      if (!updateAcknowledgments(r, Collections.singleton(new NonCommitted(txID))))
+      {
+         // not accepted, rollback
+         transaction.setRollbackOnly();
+      }
+   }
+
+   /**
+    * Turns the state of all non-commited messages of this transaction to Channel NACK.
+    *
+    * @param txID - a channel-specific transaction ID
+    */
+   protected void enableNonCommitted(String txID)
+   {
+      // TODO: this doesn't take care of the externalAcknowledgmentStore, if exists, so the NonCommitted will stay there
+      localAcknowledgmentStore.enableNonCommitted(null, txID);
+   }
+
+   /**
+    * Discards non-commited messages of this transaction.
+    *
+    * @param txID - a channel-specific transaction ID
+    */
+   protected void discardNonCommitted(String txID)
+   {
+      // TODO: this doesn't take care of the externalAcknowledgmentStore, if exists, so the NonCommitted will stay there
+      localAcknowledgmentStore.discardNonCommitted(null, txID);
+   }
+
+
+   // to be accessed only from generateUniqueTransactionID();
+   private int txID = 0;
+
+   /**
+    * TODO replace it with a more solid (and fast) algorithm
+    *
+    * @return a unique ID that will be the identity of a Transaction relative to this channel.
+    */
+   private synchronized String generateUniqueTransactionID()
+   {
+      StringBuffer sb = new StringBuffer("TX:");
+      sb.append(getReceiverID());
+      sb.append(":");
+      sb.append(txID++);
+      sb.append(":");
+      sb.append(System.currentTimeMillis());
+      return sb.toString();
+   }
+
    // Inner classes -------------------------------------------------
 
-   private class RoutableSynchronization implements Synchronization
+   private class ChannelSynchronization implements Synchronization
    {
-      private Routable routable;
+      // the channel-specific ID that identifies the transaction this Synchronization is attached to
+      private String txID;
 
-      public RoutableSynchronization(Routable r)
+      ChannelSynchronization(String txID)
       {
-         this.routable = r;
+         this.txID = txID;
       }
+
+      // Synchronization implementation --------------------------------
 
       public void beforeCompletion()
       {
+         try
+         {
+            // this call is executed with the transaction context of the transaction
+            // that is being committed
+            Transaction crtTransaction = transactionManager.getTransaction();
+
+            if (crtTransaction.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+            {
+               return;
+            }
+
+            // enable delivery
+            enableNonCommitted(txID);
+            deliver();
+
+         }
+         catch(SystemException e)
+         {
+            // not much to do, just log the exception and discard the changes
+            log.error("Failed to access current transaction", e);
+            discardNonCommitted(txID);
+         }
       }
 
       public void afterCompletion(int status)
       {
-         if (status == Status.STATUS_COMMITTED)
+         if (status == Status.STATUS_ROLLEDBACK)
          {
-            nonTransactionalHandle(routable);
-            // TODO what happens if the message its NACKed?
+            discardNonCommitted(txID);
          }
-         else if (status == Status.STATUS_ROLLEDBACK)
-         {
-            // remove routable from persistent storage
-            // TODO what happens if the message its NACKed?
-         }
-
       }
+
+      // Public implementation -----------------------------------------
+
+      public String getTxID()
+      {
+         return txID;
+      }
+
    }
 }

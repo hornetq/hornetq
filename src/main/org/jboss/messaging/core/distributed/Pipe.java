@@ -136,7 +136,7 @@ public class Pipe extends SingleOutputChannelSupport
 
    // ChannelSupport implementation ---------------------------------
 
-   public boolean nonTransactionalHandle(Routable r)
+   public boolean handleNoTx(Routable r)
    {
       Acknowledgment ack = handleSynchronously(r);
       if (ack != null && ack.isPositive())

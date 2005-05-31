@@ -21,7 +21,7 @@ public class JMSMethodInvocation extends MethodInvocation
 {   
 	private static final long serialVersionUID = -4217789262697969755L;
 
-   private JMSInvocationHandler handler;
+   private transient JMSInvocationHandler handler;
 
    /** Externalizable classes should have a no-argument constructor **/
    public JMSMethodInvocation()

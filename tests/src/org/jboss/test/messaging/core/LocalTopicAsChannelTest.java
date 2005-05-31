@@ -17,7 +17,7 @@ import java.util.List;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LocalTopicAsChannelTest extends ChannelSupportTest
+public class LocalTopicAsChannelTest extends TransactionalChannelSupportTest
 {
    // Constructors --------------------------------------------------
 
@@ -28,12 +28,12 @@ public class LocalTopicAsChannelTest extends ChannelSupportTest
 
    public void setUp() throws Exception
    {
-      super.setUp();
-
       // Create a LocalTopic to be tested by the superclass tests
       channel = new LocalTopic("LocalTopicID");
       receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
       ((LocalTopic)channel).add(receiverOne);
+
+      super.setUp();
    }
 
    public void tearDown()throws Exception
@@ -79,7 +79,6 @@ public class LocalTopicAsChannelTest extends ChannelSupportTest
    public void testTopicTwoReceivers() throws Exception
    {
       LocalTopic topic = new LocalTopic("");
-
 
       ReceiverImpl rOne = new ReceiverImpl("ReceiverONE", ReceiverImpl.HANDLING);
       assertTrue(topic.add(rOne));

@@ -138,7 +138,7 @@ public class Replicator extends MultipleOutputChannelSupport
 
    // ChannelSupport implementation ---------------------------------
 
-   public boolean nonTransactionalHandle(Routable r)
+   public boolean handleNoTx(Routable r)
    {
       lock();
 
@@ -221,7 +221,7 @@ public class Replicator extends MultipleOutputChannelSupport
     * Always called from a synchronized block, no need to synchronize. It can throw unchecked
     * exceptions, the caller is prepared to deal with them.
     *
-    * @param acks - Set of Acknowledgments. Empty set (or null) means Channel NACK.
+    * @param acks - Set of Acknowledgments or NonCommitted. Empty set (or null) means Channel NACK.
     */
    protected void updateLocalAcknowledgments(Routable r, Set acks)
    {
@@ -235,6 +235,17 @@ public class Replicator extends MultipleOutputChannelSupport
    {
       throw new NotYetImplementedException();
    }
+
+   protected void enableNonCommitted(String txID)
+   {
+      collector.enableNonCommitted(txID);
+   }
+
+   protected void discardNonCommitted(String txID)
+   {
+      collector.discardNonCommitted(txID);
+   }
+
 
    // Public --------------------------------------------------------
 

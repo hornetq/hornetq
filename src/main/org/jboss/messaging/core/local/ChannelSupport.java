@@ -212,10 +212,10 @@ public abstract class ChannelSupport extends Lockable implements Channel
    /**
     * Helper method that updates acknowledgments and stores the message if necessary.
     *
-    * @param acks - Set of Acknowledgments. null means Channel NACK.
+    * @param acks - Set of Acknowledgments or NonCommitted. Empty set (or null) means Channel NACK.
     *
     * @return true if the Channel assumes responsibility for delivery, or false if the channel
-    *         NACKs the message.
+    *         rejects the message.
     */
    protected boolean updateAcknowledgments(Routable r, Set acks)
    {
@@ -265,7 +265,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
     * Always called from a synchronized block, no need to synchronize. It can throw unchecked
     * exceptions, the caller is prepared to deal with them.
     *
-    * @param acks - Set of Acknowledgments. Empty set (or null) means Channel NACK.
+    * @param acks - Set of Acknowledgments, NonCommitted. Empty set (or null) means Channel NACK.
     */
    protected void updateLocalAcknowledgments(Routable r, Set acks)
    {
@@ -317,25 +317,6 @@ public abstract class ChannelSupport extends Lockable implements Channel
          log.error("Cannot remove message locally", t);
       }
    }
-
-   /**
-    * Subclasses must override if they want transactional handling.
-    *
-    * @return true if the routable was successfully handled within the scope of the transaction and
-    *         its delivery will be triggered on transaction boundary; false if the channel is not
-    *         able to transactionally handle the Routable. The transaction may also be marked for
-    *         rollback.
-    *
-    */
-   protected boolean transactionalHandle(Routable r)
-   {
-      return false;
-   }
-
-   /**
-    * Same semantics as Receiver.handle().
-    */
-   protected abstract boolean nonTransactionalHandle(Routable r);
 
    // Private -------------------------------------------------------
    

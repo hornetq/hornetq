@@ -27,7 +27,7 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
+public class MultipleReceiverAcknowledgmentSet implements AcknowledgmentSet
 {
    // Constants -----------------------------------------------------
 
@@ -38,6 +38,9 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
    // <receiverID - Boolean>
    protected Map acks;
 
+   // <NonCommitted>
+   protected Set nonCommitted;
+
    protected boolean deliveryAttempted;
 
    // Constructors --------------------------------------------------
@@ -45,6 +48,7 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
    public MultipleReceiverAcknowledgmentSet()
    {
       acks = new HashMap();
+      nonCommitted = new HashSet();
       deliveryAttempted = false;
    }
 
@@ -60,9 +64,18 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
 
       for(Iterator i = newAcks.iterator(); i.hasNext(); )
       {
+
+         Object o = i.next();
+
+         if (o instanceof NonCommitted)
+         {
+            nonCommitted.add(o);
+            continue;
+         }
+
          deliveryAttempted = true;
 
-         Acknowledgment ack = (Acknowledgment)i.next();
+         Acknowledgment ack = (Acknowledgment)o;
          Serializable receiverID = ack.getReceiverID();
          boolean positive = ack.isPositive();
 
@@ -173,11 +186,48 @@ public class MultipleReceiverAcknowledgmentSet  implements AcknowledgmentSet
       return s;
    }
 
-
    public int size()
    {
       return acks.keySet().size();
    }
+
+   public void enableNonCommitted(String txID)
+   {
+      for(Iterator i = nonCommitted.iterator(); i.hasNext(); )
+      {
+         NonCommitted nc = (NonCommitted)i.next();
+         if (txID.equals(nc.getTxID()))
+         {
+            i.remove();
+         }
+      }
+   }
+
+   public void discardNonCommitted(String txID)
+   {
+      for(Iterator i = nonCommitted.iterator(); i.hasNext(); )
+      {
+         NonCommitted nc = (NonCommitted)i.next();
+         if (txID.equals(nc.getTxID()))
+         {
+            i.remove();
+         }
+      }
+
+      // make this set ready to be discarded at sweep
+      // deliveryAttempted = true and ackSet.size() == 0
+      if (nonCommitted.isEmpty() && !deliveryAttempted)
+      {
+         deliveryAttempted = true;
+      }
+   }
+
+   public boolean hasNonCommitted()
+   {
+      return !nonCommitted.isEmpty();
+   }
+   
+
 
    // Package protected ---------------------------------------------
    

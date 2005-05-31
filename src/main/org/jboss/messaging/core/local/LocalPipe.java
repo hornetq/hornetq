@@ -157,7 +157,7 @@ public class LocalPipe extends SingleOutputChannelSupport
    
    // ChannelSupport implementation ---------------------------------
 
-   public boolean nonTransactionalHandle(Routable r)
+   public boolean handleNoTx(Routable r)
    {
       Set acks = Collections.EMPTY_SET;
       if (receiver != null)

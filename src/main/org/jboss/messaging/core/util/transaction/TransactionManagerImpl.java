@@ -30,6 +30,9 @@ public class TransactionManagerImpl implements TransactionManager
 {
    // Constants -----------------------------------------------------
 
+   public static final String BROKEN = "BROKEN";
+   public static final String OPERATIONAL = "OPERATIONAL";
+
    // Static --------------------------------------------------------
 
    private static TransactionManagerImpl singleton = new TransactionManagerImpl();
@@ -62,6 +65,8 @@ public class TransactionManagerImpl implements TransactionManager
    private volatile int rollbackCount;
 
    private RecoveryLogger recovery;
+
+   private String state;
 
    // Constructors --------------------------------------------------
 
@@ -130,6 +135,13 @@ public class TransactionManagerImpl implements TransactionManager
 
    public Transaction getTransaction() throws SystemException
    {
+
+      if (BROKEN.equals(state))
+      {
+         throw new SystemException("THIS IS AN EXCEPTION THAT SIMULATES A PROBLEM " +
+                                   "WITH THE TRANSACTION MANAGER");
+      }
+
       ThreadInfo ti = getThreadInfo();
       TransactionImpl current = ti.transaction;
 
@@ -162,6 +174,23 @@ public class TransactionManagerImpl implements TransactionManager
    }
 
    // Public --------------------------------------------------------
+
+   /**
+    * Used for testing.
+    */
+   public void setState(String state)
+   {
+
+      if (BROKEN.equals(state) ||
+          OPERATIONAL.equals(state))
+      {
+         this.state = state;
+      }
+      else
+      {
+         throw new IllegalArgumentException("Unknon state: " + state);
+      }
+   }
 
    // Package protected ---------------------------------------------
 

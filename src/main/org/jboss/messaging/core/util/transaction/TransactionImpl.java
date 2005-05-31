@@ -218,7 +218,7 @@ class TransactionImpl implements Transaction
 
          if (status != Status.STATUS_COMMITTED)
          {
-            Throwable causedByThrowable = cause;
+//            Throwable causedByThrowable = cause;
             rollbackResources();
             completeTransaction();
 
@@ -251,9 +251,41 @@ class TransactionImpl implements Transaction
 
    public void setRollbackOnly() throws IllegalStateException, SystemException
    {
-      throw new NotYetImplementedException();
-   }
+      lock();
+      try
+      {
+         if (log.isTraceEnabled()) { log.trace("setRollbackOnly(): Entered, tx=" + toString() + " status=" + getStringStatus(status)); }
 
+         switch (status)
+         {
+            case Status.STATUS_ACTIVE:
+            case Status.STATUS_PREPARING:
+            case Status.STATUS_PREPARED:
+               status = Status.STATUS_MARKED_ROLLBACK;
+               // fall through..
+            case Status.STATUS_MARKED_ROLLBACK:
+            case Status.STATUS_ROLLING_BACK:
+               return;
+            case Status.STATUS_COMMITTING:
+               throw new IllegalStateException("Already started committing. " + this);
+            case Status.STATUS_COMMITTED:
+               throw new IllegalStateException("Already committed. " + this);
+            case Status.STATUS_ROLLEDBACK:
+               throw new IllegalStateException("Already rolled back. " + this);
+            case Status.STATUS_NO_TRANSACTION:
+               throw new IllegalStateException("No transaction. " + this);
+            case Status.STATUS_UNKNOWN:
+               throw new IllegalStateException("Unknown state " + this);
+            default:
+               throw new IllegalStateException("Illegal status: " + getStringStatus(status) +
+                                               " tx=" + this);
+         }
+      }
+      finally
+      {
+         unlock();
+      }
+   }
 
    public int getStatus() throws SystemException
    {

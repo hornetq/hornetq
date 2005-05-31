@@ -48,9 +48,7 @@ public class TestAcknowledgmentStore extends InMemoryAcknowledgmentStore
 
    // AcknowledgmentStore implementation ----------------------------
 
-   public synchronized void update(Serializable channelID,
-                                                  Serializable messageID,
-                                                  Set receiverIDs)
+   public synchronized void update(Serializable channelID, Serializable messageID, Set receiverIDs)
          throws Throwable
    {
       if (state == BROKEN)

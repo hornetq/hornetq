@@ -18,9 +18,6 @@ public class SingleOutputChannelSupportTest extends TransactionalChannelSupportT
 
    SingleOutputChannelSupport singleOutputChannel;
 
-   protected boolean runSingleOutputChannelSupportTests = true;
-
-
    // Constructors --------------------------------------------------
 
    public SingleOutputChannelSupportTest(String name)
@@ -30,10 +27,7 @@ public class SingleOutputChannelSupportTest extends TransactionalChannelSupportT
 
    public void setUp() throws Exception
    {
-      if (runSingleOutputChannelSupportTests)
-      {
-         singleOutputChannel = (SingleOutputChannelSupport)channel;
-      }
+      singleOutputChannel = (SingleOutputChannelSupport)channel;
       super.setUp();
    }
 

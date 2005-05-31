@@ -37,6 +37,7 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
 
    protected Boolean acknowledgment;
    protected boolean deliveryAttempted;
+   protected NonCommitted nonCommitted;
 
    // Constructors --------------------------------------------------
 
@@ -56,8 +57,16 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
 
       checkSet(ackSet);
 
+      Object o = ackSet.iterator().next();
+
+      if (o instanceof NonCommitted)
+      {
+         nonCommitted = (NonCommitted)o;
+         return;
+      }
+
       deliveryAttempted = true;
-      Acknowledgment ack = (Acknowledgment)ackSet.iterator().next();
+      Acknowledgment ack = (Acknowledgment)o;
       boolean positive = ack.isPositive();
       if (positive)
       {
@@ -150,6 +159,32 @@ public class SingleReceiverAcknowledgmentSet  implements AcknowledgmentSet
    {
       return acknowledgment == null ? 0 : 1;
    }
+
+   public void enableNonCommitted(String txID)
+   {
+      if (nonCommitted != null && txID.equals(nonCommitted.getTxID()))
+      {
+         nonCommitted = null;
+      }
+   }
+
+   public void discardNonCommitted(String txID)
+   {
+      if (nonCommitted != null && txID.equals(nonCommitted.getTxID()))
+      {
+         nonCommitted = null;
+      }
+      // make this set ready to be discarded at sweep
+      // deliveryAttempted = true and ackSet.size() == 0
+      deliveryAttempted = true;
+   }
+
+   public boolean hasNonCommitted()
+   {
+      return nonCommitted != null;
+   }
+
+
 
    // Package protected ---------------------------------------------
 

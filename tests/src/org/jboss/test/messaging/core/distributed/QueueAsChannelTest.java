@@ -9,7 +9,7 @@ package org.jboss.test.messaging.core.distributed;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.distributed.Queue;
 import org.jboss.test.messaging.core.ReceiverImpl;
-import org.jboss.test.messaging.core.ChannelSupportTest;
+import org.jboss.test.messaging.core.TransactionalChannelSupportTest;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 
@@ -18,7 +18,7 @@ import org.jgroups.JChannel;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class QueueAsChannelTest extends ChannelSupportTest
+public class QueueAsChannelTest extends TransactionalChannelSupportTest
 {
    // Constants -----------------------------------------------------
 
@@ -49,10 +49,8 @@ public class QueueAsChannelTest extends ChannelSupportTest
 
    // Public --------------------------------------------------------
 
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
-      super.setUp();
-
       jChannelOne = new JChannel(props);
       dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
 
@@ -71,9 +69,11 @@ public class QueueAsChannelTest extends ChannelSupportTest
       Queue outputPeer = new Queue(dispatcherTwo, "QueueID");
       ((Queue)outputPeer).add(receiverOne);
       ((Queue)outputPeer).start();
+
+      super.setUp();
    }
 
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
 
       channel = null;
@@ -87,6 +87,7 @@ public class QueueAsChannelTest extends ChannelSupportTest
    }
 
    //
-   // This test class runs all ChannelSupportTest's tests
+   // This test class runs all ChannelSupportTest tests
    //
+
 }

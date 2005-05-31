@@ -49,7 +49,6 @@ public class PipeAsChannelTest extends SingleOutputChannelSupportTest
    private PipeOutput pipeOutput;
    private Address outputAddress;
 
-
    // Constructors --------------------------------------------------
 
    public PipeAsChannelTest(String name)

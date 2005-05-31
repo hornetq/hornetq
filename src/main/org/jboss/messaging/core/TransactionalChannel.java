@@ -16,13 +16,6 @@ import javax.transaction.TransactionManager;
  */
 public interface TransactionalChannel extends Channel
 {
-   /**
-    * @return true if the channel was configured to handle messages transactionally, false
-    *         otherwise. For the time being, setting a valid transaction manager is sufficient
-    *         to enable transactional handling. TODO review this. 
-    */
-   public boolean isTransactional();
-
    public void setTransactionManager(TransactionManager tm);
 
    public TransactionManager getTransactionManager();

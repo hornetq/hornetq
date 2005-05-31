@@ -26,8 +26,6 @@ public class ChannelSupportTest extends MessagingTestCase
 
    protected Channel channel;
    protected ReceiverImpl receiverOne;
-   protected boolean runChannelSupportTests = true;
-
 
    // Constructors --------------------------------------------------
 
@@ -618,6 +616,6 @@ public class ChannelSupportTest extends MessagingTestCase
 
    private boolean skip()
    {
-      return channel == null || !runChannelSupportTests;
+      return channel == null;
    }
 }

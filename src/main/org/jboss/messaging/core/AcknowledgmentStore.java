@@ -27,7 +27,7 @@ public interface AcknowledgmentStore
     * altogether, if all outstanding NACKs are canceled by ACKs.
     * 
     * @param channelID - the ID of the channel tried to deliver the message.
-    * @param acks - Set of Acknowledgments.
+    * @param acks - Set of Acknowledgments, NonCommitted or null (which means ChannelNACK).
     * @throws Throwable
     */
    public void update(Serializable channelID, Serializable messageID, Set acks)
@@ -71,4 +71,16 @@ public interface AcknowledgmentStore
     *         store.
     */
    public Set getACK(Serializable channelID, Serializable messageID);
+
+
+   /**
+    * TODO temporary until refactoring
+    */
+   public void enableNonCommitted(Serializable channelID, String txID);
+
+   /**
+    * TODO temporary until refactoring
+    */
+   public void discardNonCommitted(Serializable channelID, String txID);
+
 }
