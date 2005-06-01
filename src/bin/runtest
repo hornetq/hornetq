@@ -9,15 +9,13 @@
 # core utils
 #
 
-#TARGET_CLASS=org.jboss.test.messaging.util.AcknowledgmentSetTest
-#TARGET_CLASS=org.jboss.test.messaging.util.MultipleReceiverAcknowledgmentSetTest
-#TARGET_CLASS=org.jboss.test.messaging.util.SingleReceiverAcknowledgmentSetTest
+#TARGET_CLASS=org.jboss.test.messaging.util.MutableStateTest
+#TARGET_CLASS=org.jboss.test.messaging.util.StateImplTest
 
-#TARGET_CLASS=org.jboss.test.messaging.util.SingleReceiverAcknowledgmentStoreTest
 #TARGET_CLASS=org.jboss.test.messaging.util.SingleChannelAcknowledgmentStoreTest
 #TARGET_CLASS=org.jboss.test.messaging.util.InMemoryAcknowledgmentStoreTest
 
-#
+
 # local core
 #
 

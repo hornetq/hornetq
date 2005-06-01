@@ -78,6 +78,10 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
       assertTrue(tm == transactionalChannel.getTransactionManager());
    }
 
+   //
+   // Transacted handle() tests
+   //
+
    public void testHandleNoTransactionManager()
    {
       if (skip()) { return; }
@@ -219,6 +223,221 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
       assertTrue(ids.contains("3"));
 
    }
+
+   //
+   // Transacted acknowledge() tests
+   //
+
+   public void testAcknowledgeNoTransactionManager()
+   {
+      if (skip()) { return; }
+
+      transactionalChannel.setTransactionManager(null);
+      assertNull(transactionalChannel.getTransactionManager());
+
+      // add an undeliverable message to the channel
+      assertTrue(transactionalChannel.setSynchronous(false));
+      receiverOne.setState(ReceiverImpl.NACKING);
+      RoutableSupport r = new RoutableSupport("one");
+      assertTrue(transactionalChannel.handle(r));
+      assertTrue(transactionalChannel.hasMessages());
+      Set undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertEquals("one", undelivered.iterator().next());
+
+      // no transaction manager means regular non-transactional acknowledgment
+      transactionalChannel.acknowledge("one", receiverOne.getReceiverID());
+
+      assertFalse(transactionalChannel.hasMessages());
+      assertTrue(transactionalChannel.getUndelivered().isEmpty());
+   }
+
+   public void testAcknowledgeBrokenTransactionManager()
+   {
+      if (skip()) { return; }
+
+      // add an undeliverable message to the channel
+      assertTrue(transactionalChannel.setSynchronous(false));
+      receiverOne.setState(ReceiverImpl.NACKING);
+      RoutableSupport r = new RoutableSupport("one");
+      assertTrue(transactionalChannel.handle(r));
+      assertTrue(transactionalChannel.hasMessages());
+      Set undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertEquals("one", undelivered.iterator().next());
+
+
+      // break the transaction manager
+      tm.setState(TransactionManagerImpl.BROKEN);
+
+      try
+      {
+         transactionalChannel.acknowledge("one", receiverOne.getReceiverID());
+         fail("Should have thrown exception");
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+      }
+
+      assertTrue(transactionalChannel.hasMessages());
+      undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertEquals("one", undelivered.iterator().next());
+   }
+
+   public void testAcknowledgeNoActiveTransaction()
+   {
+      if (skip()) { return; }
+
+      // add an undeliverable message to the channel
+      assertTrue(transactionalChannel.setSynchronous(false));
+      receiverOne.setState(ReceiverImpl.NACKING);
+      RoutableSupport r = new RoutableSupport("one");
+      assertTrue(transactionalChannel.handle(r));
+      assertTrue(transactionalChannel.hasMessages());
+      Set undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertEquals("one", undelivered.iterator().next());
+
+      // no active transaction means regular non-transactional acknowledgment
+      transactionalChannel.acknowledge("one", receiverOne.getReceiverID());
+
+      assertFalse(transactionalChannel.hasMessages());
+      assertTrue(transactionalChannel.getUndelivered().isEmpty());
+   }
+
+   public void testAcknowledgeActiveTransaction() throws Exception
+   {
+      if (skip()) { return; }
+
+      // add an undeliverable message to the channel
+      assertTrue(transactionalChannel.setSynchronous(false));
+      receiverOne.setState(ReceiverImpl.NACKING);
+      RoutableSupport r = new RoutableSupport("one");
+      assertTrue(transactionalChannel.handle(r));
+      assertTrue(transactionalChannel.hasMessages());
+      Set undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertEquals("one", undelivered.iterator().next());
+
+
+      tm.begin();
+      Transaction transaction = tm.getTransaction();
+
+      // acknowledge transactionally
+      transactionalChannel.acknowledge("one", receiverOne.getReceiverID());
+
+      // the channel should still keep the message
+      assertTrue(transactionalChannel.hasMessages());
+      undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertEquals("one", undelivered.iterator().next());
+
+      transaction.commit();
+
+      assertFalse(transactionalChannel.hasMessages());
+      assertTrue(transactionalChannel.getUndelivered().isEmpty());
+   }
+
+   public void testAcknowledgeActiveTransactionMultipleMessages() throws Exception
+   {
+      if (skip()) { return; }
+
+      // add an undeliverable message to the channel
+      assertTrue(transactionalChannel.setSynchronous(false));
+      receiverOne.setState(ReceiverImpl.NACKING);
+      assertTrue(transactionalChannel.handle(new RoutableSupport("one")));
+      assertTrue(transactionalChannel.handle(new RoutableSupport("two")));
+      assertTrue(transactionalChannel.handle(new RoutableSupport("three")));
+      assertTrue(transactionalChannel.hasMessages());
+      Set undelivered = transactionalChannel.getUndelivered();
+      assertEquals(3, undelivered.size());
+      assertTrue(undelivered.contains("one"));
+      assertTrue(undelivered.contains("two"));
+      assertTrue(undelivered.contains("three"));
+
+      tm.begin();
+      Transaction transaction = tm.getTransaction();
+
+      // acknowledge transactionally
+      transactionalChannel.acknowledge("one", receiverOne.getReceiverID());
+      transactionalChannel.acknowledge("two", receiverOne.getReceiverID());
+
+      // the channel should still keep the message
+      assertTrue(transactionalChannel.hasMessages());
+      undelivered = transactionalChannel.getUndelivered();
+      assertEquals(3, undelivered.size());
+      assertTrue(undelivered.contains("one"));
+      assertTrue(undelivered.contains("two"));
+      assertTrue(undelivered.contains("three"));
+
+      transaction.commit();
+
+      // the channel should still keep one message
+      assertTrue(transactionalChannel.hasMessages());
+      undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertTrue(undelivered.contains("three"));
+
+      tm.begin();
+      transaction = tm.getTransaction();
+      transactionalChannel.acknowledge("three", receiverOne.getReceiverID());
+
+      // the channel should still keep one message
+      assertTrue(transactionalChannel.hasMessages());
+      undelivered = transactionalChannel.getUndelivered();
+      assertEquals(1, undelivered.size());
+      assertTrue(undelivered.contains("three"));
+
+      transaction.commit();
+
+      assertFalse(transactionalChannel.hasMessages());
+      assertTrue(transactionalChannel.getUndelivered().isEmpty());
+   }
+
+//
+//
+//
+//   public void testHandleActiveTransactionAsynchronousChannel2() throws Exception
+//   {
+//      if (skip()) { return; }
+//
+//      assertTrue(transactionalChannel.setSynchronous(false));
+//
+//      RoutableSupport r1 = new RoutableSupport("1");
+//      RoutableSupport r2 = new RoutableSupport("2");
+//      RoutableSupport r3 = new RoutableSupport("3");
+//
+//      tm.begin();
+//      Transaction transaction = tm.getTransaction();
+//
+//
+//      transactionalChannel.handle(r1);
+//      transactionalChannel.handle(r2);
+//      transactionalChannel.handle(r3);
+//
+//      assertFalse(transactionalChannel.hasMessages());
+//      assertTrue(receiverOne.getMessages().isEmpty());
+//
+//      transaction.commit();
+//
+//      // all messages went to the receiver
+//      assertFalse(transactionalChannel.hasMessages());
+//      List l = receiverOne.getMessages();
+//      assertEquals(3, l.size());
+//
+//      Set ids = new HashSet();
+//      for(Iterator i = receiverOne.iterator(); i.hasNext(); )
+//      {
+//         ids.add(((RoutableSupport)i.next()).getMessageID());
+//      }
+//      assertTrue(ids.contains("1"));
+//      assertTrue(ids.contains("2"));
+//      assertTrue(ids.contains("3"));
+//
+//   }
+
 
    private boolean skip()
    {

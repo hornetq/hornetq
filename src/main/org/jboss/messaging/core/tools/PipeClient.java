@@ -10,7 +10,6 @@ import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.distributed.Pipe;
 import org.jboss.messaging.core.distributed.PipeOutput;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jgroups.stack.IpAddress;
 

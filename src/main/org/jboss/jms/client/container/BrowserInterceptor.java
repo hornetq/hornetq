@@ -23,6 +23,8 @@ import javax.jms.Message;
  */
 public class BrowserInterceptor implements Interceptor, Serializable
 {
+   private static final long serialVersionUID = 4876256983116744734L;
+
    private static final boolean BATCH_MESSAGES = true;
 	private static final int MSG_BLOCK_SIZE = 5;
 	

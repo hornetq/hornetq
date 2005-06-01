@@ -8,7 +8,6 @@ package org.jboss.messaging.core.distributed;
 
 import org.jgroups.Address;
 import org.jboss.messaging.core.util.ServerDelegate;
-import org.jboss.messaging.core.util.ServerDelegate;
 
 import java.io.Serializable;
 

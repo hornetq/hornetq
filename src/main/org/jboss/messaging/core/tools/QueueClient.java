@@ -9,8 +9,6 @@ package org.jboss.messaging.core.tools;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.distributed.Queue;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.util.RpcServer;
 
 /**

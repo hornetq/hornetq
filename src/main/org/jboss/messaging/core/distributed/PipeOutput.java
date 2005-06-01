@@ -8,8 +8,9 @@ package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.util.AcknowledgmentImpl;
 
 import java.io.Serializable;
 
@@ -30,7 +31,7 @@ public class PipeOutput implements PipeOutputServerDelegate
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PipeOutput.class);
+//   private static final Logger log = Logger.getLogger(PipeOutput.class);
 
 
    // Attributes ----------------------------------------------------
@@ -57,19 +58,12 @@ public class PipeOutput implements PipeOutputServerDelegate
       return pipeID;
    }
 
-   public boolean handle(Routable m)
+   public Acknowledgment handle(Routable m)
    {
-      try
-      {
-         // Mark the message as being received from a remote endpoint
-         m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
-         return receiver.handle(m);
-      }
-      catch(Exception e)
-      {
-         log.error("The receiver connected to " + this + " is unable to handle the message: " + e);
-         return false;
-      }
+      // Mark the message as being received from a remote endpoint
+      m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+      boolean result = receiver.handle(m);
+      return new AcknowledgmentImpl(receiver.getReceiverID(), result);
    }
 
    public Serializable getOutputID()

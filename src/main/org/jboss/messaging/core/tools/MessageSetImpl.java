@@ -8,8 +8,6 @@ package org.jboss.messaging.core.tools;
 
 import org.jboss.messaging.core.MessageSet;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.MessageSet;
-import org.jboss.messaging.core.Routable;
 
 import java.util.Set;
 import java.util.HashSet;

@@ -8,6 +8,7 @@ package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.util.AcknowledgmentImpl;
+import org.jboss.messaging.core.util.StateImpl;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.MultipleOutputChannelSupport;
 import org.jboss.messaging.util.NotYetImplementedException;
@@ -125,16 +126,17 @@ public class Replicator extends MultipleOutputChannelSupport
    }
 
 
-   public void acknowledge(Serializable messageID, Serializable receiverID)
-   {
-      //
-      // TODO: I totally override ChannelSupport.acknowledge() because I am not using
-      //       localAcknowledgmentStore and super.acknowledge() will throw NPE. However,
-      //       when AcknowledgmentCollector will implement AcknolwedgmentStore, I will
-      //       just delegate to super.acknowledge()
-      //
-      collector.acknowledge(messageID, receiverID);
-   }
+      // TODO - when refactoring Replicator, I won't need an acknowledge() method here, because the collector will be a AcknolwledgmentStore  
+//   public void acknowledge(Serializable messageID, Serializable receiverID)
+//   {
+//      //
+//      // TODO: I totally override ChannelSupport.acknowledge() because I am not using
+//      //       localAcknowledgmentStore and super.acknowledge() will throw NPE. However,
+//      //       when AcknowledgmentCollector will implement AcknolwedgmentStore, I will
+//      //       just delegate to super.acknowledge()
+//      //
+//      collector.acknowledge(messageID, receiverID);
+//   }
 
    // ChannelSupport implementation ---------------------------------
 
@@ -185,10 +187,10 @@ public class Replicator extends MultipleOutputChannelSupport
                   // TODO if message storing fails for one output peer, the others remain in the
                   //      store as garbage
                   nacks.add(new AcknowledgmentImpl((Serializable)i.next(), false));
-                  if (!updateAcknowledgments(r, nacks))
-                  {
-                     return false;
-                  }
+               }
+               if (!updateAcknowledgments(r, new StateImpl(nacks)))
+               {
+                  return false;
                }
             }
          }

@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.util;
 
 import org.jgroups.Address;
-import org.jboss.messaging.core.util.RpcServer;
 
 import java.io.Serializable;
 

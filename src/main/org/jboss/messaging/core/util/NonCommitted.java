@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.util;
 
+import org.jboss.messaging.core.TransactionalState;
+
 /**
  * Class that represents a "NON-COMMITED" state of a message in an AcknowledgmentStore.
  * TODO: refactor into a coherent State representation (Acknowledgment, ChannelNACK, NonCommitted)
@@ -13,7 +15,7 @@ package org.jboss.messaging.core.util;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class NonCommitted
+public class NonCommitted extends TransactionalState
 {
    // Constants -----------------------------------------------------
 

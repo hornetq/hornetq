@@ -6,8 +6,10 @@
  */
 package org.jboss.messaging.core.util;
 
-import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.messaging.core.State;
+import org.jboss.messaging.core.MutableState;
+import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;
@@ -50,54 +52,23 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       return storeID;
    }
 
-   public synchronized void update(Serializable channelID, Serializable messageID, Set acks)
+   public synchronized void update(Serializable channelID, Serializable messageID, State newState)
          throws Throwable
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         channelMap = new HashMap();
-         map.put(channelID, channelMap);
-      }
-
-      AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-
-      if (ackSet == null)
-      {
-         ackSet = new MultipleReceiverAcknowledgmentSet();
-         channelMap.put(messageID, ackSet);
-      }
-
-      ackSet.update(acks);
-
-      if (ackSet.isDeliveryAttempted() && ackSet.size() == 0)
-      {
-         // the message has been acknowledged by all receivers, delete it from the map
-         channelMap.remove(messageID);
-      }
+      Map channelMap = ensureChannelMap(channelID);
+      update(channelMap, messageID, newState);
    }
 
-
-   public void acknowledge(Serializable channelID, Serializable messageID, Serializable receiverID)
+   public void acknowledge(Serializable channelID, 
+                           Serializable messageID, 
+                           Serializable receiverID,
+                           String txID)
          throws Throwable
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         channelMap = new HashMap();
-         map.put(channelID, channelMap);
-      }
-
-      AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-
-      if (ackSet == null)
-      {
-         ackSet = new MultipleReceiverAcknowledgmentSet();
-         channelMap.put(messageID, ackSet);
-      }
-
-      ackSet.acknowledge(receiverID);
+      Map channelMap = ensureChannelMap(channelID);
+      acknowledge(channelMap, messageID, receiverID, txID);
    }
+
 
 
    public synchronized void remove(Serializable channelID,
@@ -110,9 +81,8 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       {
          return;
       }
-      channelMap.remove(messageID);
+      remove(channelMap, messageID);
    }
-
 
    public Set getUnacknowledged(Serializable channelID)
    {
@@ -122,13 +92,108 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
          // TODO - throw an unchecked exception?
          return Collections.EMPTY_SET;
       }
+      return getUnacknowledged(channelMap);
+   }
 
+   public boolean hasNACK(Serializable channelID, Serializable messageID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return false;
+      }
+      return hasNACK(channelMap, messageID);
+   }
+
+
+   public Set getNACK(Serializable channelID, Serializable messageID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return Collections.EMPTY_SET;
+      }
+      return getNACK(channelMap, messageID);
+   }
+
+
+   public Set getACK(Serializable channelID, Serializable messageID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return Collections.EMPTY_SET;
+      }
+      return getACK(channelMap, messageID);
+   }
+
+   public void commit(Serializable channelID, String txID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return;
+      }
+      commit(channelMap, txID);
+   }
+
+   public void rollback(Serializable channelID, String txID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         return;
+      }
+      rollback(channelMap, txID);
+   }
+
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   /**
+    * @param channelMap <messageID - State>
+    */
+   protected void update(Map channelMap, Serializable messageID, State newState)
+   {
+      MutableState state = ensureState(channelMap, messageID);
+      state.update(newState);
+
+      if (!state.isChannelNACK() && state.size() == 0)
+      {
+         // the message has been acknowledged by all receivers, delete it from the map
+         channelMap.remove(messageID);
+      }
+   }
+
+   /**
+    * @param channelMap <messageID - State>
+    */
+   protected void acknowledge(Map channelMap, 
+                              Serializable messageID, 
+                              Serializable receiverID,
+                              String txID)
+   {
+      MutableState state = ensureState(channelMap, messageID);
+      state.acknowledge(receiverID, txID);
+   }
+
+   protected void remove(Map channelMap, Serializable messageID)
+   {
+      channelMap.remove(messageID);
+   }
+
+   protected Set getUnacknowledged(Map channelMap)
+   {
       Set result = Collections.EMPTY_SET;
       for(Iterator i = channelMap.keySet().iterator(); i.hasNext(); )
       {
          Serializable messageID = (Serializable)i.next();
-         AcknowledgmentSet s = (AcknowledgmentSet)channelMap.get(messageID);
-         if (s.nackCount() > 0 || (!s.isDeliveryAttempted() && !s.hasNonCommitted()))
+         State s = (State)channelMap.get(messageID);
+         if (s.nackCount() > 0 || (s.isChannelNACK() && s.nonCommittedCount() == 0))
          {
             if (result == Collections.EMPTY_SET)
             {
@@ -140,43 +205,32 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       return result;
    }
 
-   public boolean hasNACK(Serializable channelID, Serializable messageID)
+   protected boolean hasNACK(Map channelMap, Serializable messageID)
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         return false;
-      }
-      AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-      if (ackSet == null)
+      State s = (State)channelMap.get(messageID);
+      if (s == null)
       {
          return false;
       }
       // there is either the Channel NACK or a set or receiver NACKS.
-      return !ackSet.isDeliveryAttempted() || ackSet.nackCount() != 0;
+      return s.isChannelNACK() || s.nackCount() != 0;
    }
 
-
-   public Set getNACK(Serializable channelID, Serializable messageID)
+   protected Set getNACK(Map channelMap, Serializable messageID)
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         return Collections.EMPTY_SET;
-      }
-      AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-      if (ackSet == null)
+      State state = (State)channelMap.get(messageID);
+      if (state == null)
       {
          return Collections.EMPTY_SET;
       }
 
-      if (!ackSet.isDeliveryAttempted())
+      if (state.isChannelNACK())
       {
          return null;
       }
 
       Set s = Collections.EMPTY_SET;
-      for(Iterator i = ackSet.getNACK().iterator(); i.hasNext(); )
+      for(Iterator i = state.getNACK().iterator(); i.hasNext(); )
       {
          if (s == Collections.EMPTY_SET)
          {
@@ -187,22 +241,16 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
       return s;
    }
 
-
-   public Set getACK(Serializable channelID, Serializable messageID)
+   protected Set getACK(Map channelMap, Serializable messageID)
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         return Collections.EMPTY_SET;
-      }
-      AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-      if (ackSet == null)
+      State state = (State)channelMap.get(messageID);
+      if (state == null)
       {
          return Collections.EMPTY_SET;
       }
 
       Set s = Collections.EMPTY_SET;
-      for(Iterator i = ackSet.getACK().iterator(); i.hasNext(); )
+      for(Iterator i = state.getACK().iterator(); i.hasNext(); )
       {
          if (s == Collections.EMPTY_SET)
          {
@@ -211,61 +259,63 @@ public class InMemoryAcknowledgmentStore implements AcknowledgmentStore
          s.add(((Acknowledgment)i.next()).getReceiverID());
       }
       return s;
-
    }
 
-   public void enableNonCommitted(Serializable channelID, String txID)
+   protected void commit(Map channelMap, String txID)
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         return;
-      }
-
       for(Iterator i = channelMap.keySet().iterator(); i.hasNext();)
       {
          Serializable messageID = (Serializable)i.next();
-         AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-         if (ackSet == null)
+         MutableState state = (MutableState)channelMap.get(messageID);
+         if (state == null)
          {
             continue;
          }
-         ackSet.enableNonCommitted(txID);
+         state.commit(txID);
       }
    }
 
-   public void discardNonCommitted(Serializable channelID, String txID)
+   protected void rollback(Map channelMap, String txID)
    {
-      Map channelMap = (Map)map.get(channelID);
-      if (channelMap == null)
-      {
-         return;
-      }
-
       for(Iterator i = channelMap.keySet().iterator(); i.hasNext();)
       {
          Serializable messageID = (Serializable)i.next();
-         AcknowledgmentSet ackSet = (AcknowledgmentSet)channelMap.get(messageID);
-         if (ackSet == null)
+         MutableState state = (MutableState)channelMap.get(messageID);
+         if (state == null)
          {
             continue;
          }
-         ackSet.discardNonCommitted(txID);
-         if (ackSet.isDeliveryAttempted() && ackSet.size() == 0)
+         state.rollback(txID);
+         if (!state.isChannelNACK() && state.size() == 0)
          {
             i.remove();
          }
       }
    }
 
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-
    // Private -------------------------------------------------------
+
+   private Map ensureChannelMap(Serializable channelID)
+   {
+      Map channelMap = (Map)map.get(channelID);
+      if (channelMap == null)
+      {
+         channelMap = new HashMap();
+         map.put(channelID, channelMap);
+      }
+      return channelMap;
+   }
+
+   private MutableState ensureState(Map channelMap, Serializable messageID)
+   {
+      MutableState state = (MutableState)channelMap.get(messageID);
+      if (state == null)
+      {
+         state = new StateImpl();
+         channelMap.put(messageID, state);
+      }
+      return state;
+   }
 
    // Inner classes -------------------------------------------------
 }

@@ -6,9 +6,6 @@
  */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-
 import java.io.Serializable;
 
 /**

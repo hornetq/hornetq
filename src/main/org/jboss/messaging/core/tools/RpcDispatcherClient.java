@@ -7,8 +7,6 @@
 package org.jboss.messaging.core.tools;
 
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.ChannelListener;
-import org.jgroups.Channel;
 import org.jgroups.Address;
 import org.jgroups.MessageListener;
 import org.jgroups.Message;

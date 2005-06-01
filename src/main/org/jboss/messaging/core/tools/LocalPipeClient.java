@@ -9,9 +9,6 @@ package org.jboss.messaging.core.tools;
 import org.jboss.messaging.core.local.LocalPipe;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.LocalPipe;
-import org.jboss.messaging.core.message.MessageSupport;
 
 /**
  * Class that provides a command line interface to a LocalPipe. Run it with Clester.

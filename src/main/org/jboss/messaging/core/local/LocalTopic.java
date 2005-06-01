@@ -9,6 +9,7 @@ package org.jboss.messaging.core.local;
 
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.messaging.core.util.StateImpl;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;
@@ -69,7 +70,7 @@ public class LocalTopic extends AbstractDestination
          return true;
       }
 
-      return updateAcknowledgments(r, acks);
+      return updateAcknowledgments(r, new StateImpl(acks));
    }
 
 

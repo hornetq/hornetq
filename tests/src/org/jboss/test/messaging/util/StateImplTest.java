@@ -6,18 +6,19 @@
  */
 package org.jboss.test.messaging.util;
 
-import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentStore;
+import org.jboss.messaging.core.util.StateImpl;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class SingleReceiverAcknowledgmentStoreTest extends AcknowledgmentStoreTest
+public class StateImplTest extends MutableStateTest
 {
 
    // Constructors --------------------------------------------------
 
-   public SingleReceiverAcknowledgmentStoreTest(String name)
+   public StateImplTest(String name)
    {
       super(name);
    }
@@ -27,18 +28,18 @@ public class SingleReceiverAcknowledgmentStoreTest extends AcknowledgmentStoreTe
    public void setUp() throws Exception
    {
       super.setUp();
-      acknowledgmentStore = new SingleReceiverAcknowledgmentStore("SingleReceiverStoreID");
+      state = new StateImpl();
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
-      acknowledgmentStore = null;
+      state = null;
       
    }
-   
+
    //
-   // It also runs all tests from AcknowledgmentStoreTest
+   // It also runs MutableStateTest's tests.
    //
 
 }

@@ -12,6 +12,7 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.State;
 import org.jboss.logging.Logger;
 
 import java.util.Set;
@@ -146,26 +147,9 @@ public abstract class ChannelSupport extends Lockable implements Channel
 
    public void acknowledge(Serializable messageID, Serializable receiverID)
    {
-      try
-      {
-         localAcknowledgmentStore.acknowledge(null, messageID, receiverID);
-         if (externalAcknowledgmentStore != null)
-         {
-            externalAcknowledgmentStore.acknowledge(getReceiverID(), messageID, receiverID);
-         }
-      }
-      catch(Throwable t)
-      {
-         log.error("Channel " + getReceiverID() + " failed to handle positive acknowledgment " +
-                   " from receiver " + receiverID + " for message " + messageID, t);
-         return;
-      }
-      if (!localAcknowledgmentStore.hasNACK(null, messageID))
-      {
-         // cleanup the local store, I only keep it if it is NACKed
-         messages.remove(messageID);
-      }
-      // TODO Who cleans the external store?
+      // default non-transactional handling; for transactional handling,
+      // see TransactionalChannelSupport implementation
+      acknowledge(messageID, receiverID, null);
    }
 
    /**
@@ -212,12 +196,12 @@ public abstract class ChannelSupport extends Lockable implements Channel
    /**
     * Helper method that updates acknowledgments and stores the message if necessary.
     *
-    * @param acks - Set of Acknowledgments or NonCommitted. Empty set (or null) means Channel NACK.
+    * @param state - the new routable state.
     *
     * @return true if the Channel assumes responsibility for delivery, or false if the channel
     *         rejects the message.
     */
-   protected boolean updateAcknowledgments(Routable r, Set acks)
+   protected boolean updateAcknowledgments(Routable r, State state)
    {
       lock();
 
@@ -239,11 +223,11 @@ public abstract class ChannelSupport extends Lockable implements Channel
                   // TODO if this succeeds and acknowledgmentStore fails, I add garbage to the message store
                   r = messageStore.store((Message)r);
                }
-               externalAcknowledgmentStore.update(r.getMessageID(), getReceiverID(), acks);
+               externalAcknowledgmentStore.update(r.getMessageID(), getReceiverID(), state);
             }
 
             // always update local NACKs TODO optimization? use external acknowledgment store?
-            updateLocalAcknowledgments(r, acks);
+            updateLocalAcknowledgments(r, state);
 
             return true;
          }
@@ -265,9 +249,9 @@ public abstract class ChannelSupport extends Lockable implements Channel
     * Always called from a synchronized block, no need to synchronize. It can throw unchecked
     * exceptions, the caller is prepared to deal with them.
     *
-    * @param acks - Set of Acknowledgments, NonCommitted. Empty set (or null) means Channel NACK.
+    * @param state - The new routable state.
     */
-   protected void updateLocalAcknowledgments(Routable r, Set acks)
+   protected void updateLocalAcknowledgments(Routable r, State state)
    {
       if(log.isTraceEnabled()) { log.trace("updating acknowledgments " + r + " locally"); }
 
@@ -276,7 +260,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
       Serializable messageID = r.getMessageID();
       try
       {
-         localAcknowledgmentStore.update(null, messageID, acks);
+         localAcknowledgmentStore.update(null, messageID, state);
          if (localAcknowledgmentStore.hasNACK(getReceiverID(), messageID))
          {
             if (!messages.containsKey(messageID))
@@ -317,6 +301,31 @@ public abstract class ChannelSupport extends Lockable implements Channel
          log.error("Cannot remove message locally", t);
       }
    }
+
+   protected void acknowledge(Serializable messageID, Serializable receiverID, String txID)
+   {
+      try
+      {
+         localAcknowledgmentStore.acknowledge(null, messageID, receiverID, txID);
+         if (externalAcknowledgmentStore != null)
+         {
+            externalAcknowledgmentStore.acknowledge(getReceiverID(), messageID, receiverID, txID);
+         }
+      }
+      catch(Throwable t)
+      {
+         log.error("Channel " + getReceiverID() + " failed to handle positive acknowledgment " +
+                   " from receiver " + receiverID + " for message " + messageID, t);
+         return;
+      }
+      if (!localAcknowledgmentStore.hasNACK(null, messageID))
+      {
+         // cleanup the local store, I only keep it if it is NACKed
+         messages.remove(messageID);
+      }
+      // TODO Who cleans the external store?
+   }
+
 
    // Private -------------------------------------------------------
    

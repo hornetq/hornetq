@@ -10,6 +10,7 @@ import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.util.StateImpl;
 import org.jboss.logging.Logger;
 
 import java.util.Iterator;
@@ -103,7 +104,7 @@ public abstract class AbstractDestination
 
          Set targets = localAcknowledgmentStore.getNACK(getReceiverID(), messageID);
          Set acks = router.handle(r, targets);
-         updateLocalAcknowledgments(r, acks);
+         updateLocalAcknowledgments(r, new StateImpl(acks));
       }
 
       return !hasMessages();

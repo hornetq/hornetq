@@ -9,7 +9,7 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.TransactionalChannel;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.util.NonCommitted;
+import org.jboss.messaging.core.util.StateImpl;
 import org.jboss.logging.Logger;
 
 import javax.transaction.TransactionManager;
@@ -20,7 +20,7 @@ import javax.transaction.Status;
 import javax.transaction.RollbackException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
+import java.io.Serializable;
 
 
 /**
@@ -107,6 +107,48 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
       return true;
    }
 
+   /**
+    * If there is no active transaction, the semantics is similar to Channel's acknowledge().<p>
+    *
+    * If there is an active transaction, the channel will either enable the acknowledgment on
+    * transaction's commit, or, if there is a problem with the acknowledgment delivery, the whole
+    * transaction will be rolled back.
+    *
+    * @exception IllegalStateException - thrown on failure to interact with the transaction manager,
+    *            if a transaction manager is available.
+    *
+    */
+   public void acknowledge(Serializable messageID, Serializable receiverID)
+   {
+      if (transactionManager == null)
+      {
+         // handle the message non-transactionally
+         acknowledge(messageID, receiverID, null);
+         return;
+      }
+
+      try
+      {
+         Transaction transaction = transactionManager.getTransaction();
+
+         if (transaction == null)
+         {
+            // no active transaction, handle the acknowledgment non-transactionally
+            acknowledge(messageID, receiverID, null);
+            return;
+         }
+
+         acknowledgeWithTx(messageID, receiverID, transaction);
+      }
+      catch(SystemException e)
+      {
+         String msg = "Failed to access current transaction";
+         log.error(msg, e);
+         throw new IllegalStateException(msg);
+      }
+   }
+
+
    // TransactionalChannel implementation ---------------------------
 
    public void setTransactionManager(TransactionManager tm)
@@ -134,6 +176,30 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    protected abstract boolean handleNoTx(Routable r);
 
 
+   /**
+    * Called on txID's commit. Enable delivery on routables that have been waiting for transaction
+    * to commit.
+    *
+    * @param txID - a channel-specific transaction ID
+    */
+   protected void commit(String txID)
+   {
+      // TODO: this doesn't take care of the externalAcknowledgmentStore, if exists, so the NonCommitted will stay there
+      localAcknowledgmentStore.commit(null, txID);
+   }
+
+   /**
+    * Called on txID's rollback. Discards the routables that have been waiting for transaction
+    * to commit.
+    *
+    * @param txID - a channel-specific transaction ID
+    */
+   protected void rollback(String txID)
+   {
+      // TODO: this doesn't take care of the externalAcknowledgmentStore, if exists, so the NonCommitted will stay there
+      localAcknowledgmentStore.rollback(null, txID);
+   }
+
    // Private -------------------------------------------------------
 
    /**
@@ -148,6 +214,46 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    {
       if (log.isTraceEnabled()) { log.trace("handling " + r + " transactionally"); }
 
+      String txID = registerSynchronization(transaction);
+      if (txID == null)
+      {
+         return;
+      }
+
+      // add the message to channel's internal storage, but don't deliver yet
+      if (!updateAcknowledgments(r, new StateImpl(txID)))
+      {
+         // not accepted, rollback
+         transaction.setRollbackOnly();
+      }
+   }
+
+   /**
+    * Accumulate acknowledgments until transaction commits.
+    *
+    * @exception SystemException - failed to interact with the transaction
+    */
+   private void acknowledgeWithTx(Serializable messageID,
+                                  Serializable receiverID,
+                                  Transaction transaction) throws SystemException
+   {
+      if (log.isTraceEnabled()) { log.trace("handling acknowledgment for " + messageID + " transactionally"); }
+
+      String txID = registerSynchronization(transaction);
+      if (txID == null)
+      {
+         return;
+      }
+      // add the acknowledgments to channel's internal storage, but don't enable them yet
+      acknowledge(messageID, receiverID, txID);
+   }
+
+   /**
+    * @return the txID or null if the transaction is already marked for rollback.
+    * @throws SystemException
+    */
+   private String registerSynchronization(Transaction transaction) throws SystemException
+   {
       String txID;
       synchronized(synchronizations)
       {
@@ -164,43 +270,14 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
             catch(RollbackException e)
             {
                log.debug("Transaction already marked for rollback", e);
-               return;
+               return null;
             }
             synchronizations.put(transaction, sync);
          }
          txID = sync.getTxID();
       }
-
-      // add the message to channel's internal storage, but don't deliver yet
-      if (!updateAcknowledgments(r, Collections.singleton(new NonCommitted(txID))))
-      {
-         // not accepted, rollback
-         transaction.setRollbackOnly();
-      }
+      return txID;
    }
-
-   /**
-    * Turns the state of all non-commited messages of this transaction to Channel NACK.
-    *
-    * @param txID - a channel-specific transaction ID
-    */
-   protected void enableNonCommitted(String txID)
-   {
-      // TODO: this doesn't take care of the externalAcknowledgmentStore, if exists, so the NonCommitted will stay there
-      localAcknowledgmentStore.enableNonCommitted(null, txID);
-   }
-
-   /**
-    * Discards non-commited messages of this transaction.
-    *
-    * @param txID - a channel-specific transaction ID
-    */
-   protected void discardNonCommitted(String txID)
-   {
-      // TODO: this doesn't take care of the externalAcknowledgmentStore, if exists, so the NonCommitted will stay there
-      localAcknowledgmentStore.discardNonCommitted(null, txID);
-   }
-
 
    // to be accessed only from generateUniqueTransactionID();
    private int txID = 0;
@@ -249,7 +326,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
             }
 
             // enable delivery
-            enableNonCommitted(txID);
+            commit(txID);
             deliver();
 
          }
@@ -257,7 +334,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
          {
             // not much to do, just log the exception and discard the changes
             log.error("Failed to access current transaction", e);
-            discardNonCommitted(txID);
+            rollback(txID);
          }
       }
 
@@ -265,7 +342,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
       {
          if (status == Status.STATUS_ROLLEDBACK)
          {
-            discardNonCommitted(txID);
+            rollback(txID);
          }
       }
 

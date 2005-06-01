@@ -14,9 +14,11 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class AcknowledgmentImpl implements Acknowledgment
+public class AcknowledgmentImpl extends Acknowledgment implements Serializable
 {
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 4568395353453454345L;
 
    // Static --------------------------------------------------------
    

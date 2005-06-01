@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.util.SingleReceiverAcknowledgmentStore;
+import org.jboss.messaging.core.util.SingleChannelAcknowledgmentStore;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;
@@ -44,7 +44,7 @@ public abstract class SingleOutputChannelSupport extends TransactionalChannelSup
    {
       super(mode);
       // the channel uses an AcknowlegmentStore optimized for a single receiver
-      localAcknowledgmentStore = new SingleReceiverAcknowledgmentStore("LocalAckStore");
+      localAcknowledgmentStore = new SingleChannelAcknowledgmentStore("LocalAckStore");
    }
 
    // ChannelSupport overrides --------------------------------------

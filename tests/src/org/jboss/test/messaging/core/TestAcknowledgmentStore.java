@@ -7,9 +7,9 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
+import org.jboss.messaging.core.State;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -48,7 +48,7 @@ public class TestAcknowledgmentStore extends InMemoryAcknowledgmentStore
 
    // AcknowledgmentStore implementation ----------------------------
 
-   public synchronized void update(Serializable channelID, Serializable messageID, Set receiverIDs)
+   public synchronized void update(Serializable channelID, Serializable messageID, State newState)
          throws Throwable
    {
       if (state == BROKEN)
@@ -57,7 +57,7 @@ public class TestAcknowledgmentStore extends InMemoryAcknowledgmentStore
                              "THE BEHAVIOUR OF A BROKEN ACKNOWLEDGMENT STORE");
       }
 
-      super.update(messageID, channelID, receiverIDs);
+      super.update(messageID, channelID, newState);
    }
 
    // Public --------------------------------------------------------

@@ -11,10 +11,13 @@ import java.util.Set;
 import java.util.Collections;
 
 /**
+ * A state component representing a positive or a negative acknowledgment submitted by a
+ * receiver.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface Acknowledgment
+public abstract class Acknowledgment implements StateComponent
 {
    // Constants -----------------------------------------------------
 
@@ -24,10 +27,12 @@ public interface Acknowledgment
       {
          return null;
       }
+
       public boolean isPositive()
       {
          return true;
       }
+
       public boolean isNegative()
       {
          return false;
@@ -40,10 +45,12 @@ public interface Acknowledgment
       {
          return null;
       }
+
       public boolean isPositive()
       {
          return false;
       }
+
       public boolean isNegative()
       {
          return true;
@@ -53,11 +60,17 @@ public interface Acknowledgment
    public static final Set ACKSet = Collections.singleton(ACK);
    public static final Set NACKSet = Collections.singleton(NACK);
 
+
+   public boolean isAcknowledgment()
+   {
+      return true;
+   }
+
    // Public  -------------------------------------------------
 
-   Serializable getReceiverID();
+   public abstract Serializable getReceiverID();
 
-   boolean isPositive();
+   public abstract boolean isPositive();
 
-   boolean isNegative();
+   public abstract boolean isNegative();
 }

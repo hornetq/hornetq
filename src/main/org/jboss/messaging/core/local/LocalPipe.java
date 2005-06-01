@@ -12,6 +12,7 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.util.AcknowledgmentImpl;
+import org.jboss.messaging.core.util.StateImpl;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -149,7 +150,7 @@ public class LocalPipe extends SingleOutputChannelSupport
             break;
          }
 
-         updateLocalAcknowledgments(r, acks);
+         updateLocalAcknowledgments(r, new StateImpl(acks));
       }
 
       return !hasMessages();
@@ -181,7 +182,7 @@ public class LocalPipe extends SingleOutputChannelSupport
       }
         
       if (log.isTraceEnabled()) { log.trace(this + ": unsuccessful delivery, storing the message"); }
-      return updateAcknowledgments(r, acks);
+      return updateAcknowledgments(r, new StateImpl(acks));
    }
 
    // SingleOutputChannelSupport overrides --------------------------

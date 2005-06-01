@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- * An AcknowledgmentStore is a reliable repository for negative acknowledgments.
+ * An AcknowledgmentStore is a reliable message state repository.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -20,38 +20,8 @@ public interface AcknowledgmentStore
    public Serializable getStoreID();
 
    /**
-    * Overwrites currently stored acknowledgments. A positive ACK is ignored, unless the store
-    * contains a corresponding NACK. The ACK will cancel the waiting NACK in this case.
-    *
-    * The metohd can have the lateral effect of removing the message from the acknowledgment store
-    * altogether, if all outstanding NACKs are canceled by ACKs.
-    * 
-    * @param channelID - the ID of the channel tried to deliver the message.
-    * @param acks - Set of Acknowledgments, NonCommitted or null (which means ChannelNACK).
-    * @throws Throwable
-    */
-   public void update(Serializable channelID, Serializable messageID, Set acks)
-         throws Throwable;
-
-   /**
-    * Method to be used for asynchronous positive acknowledgments. A positive acknowlegment
-    * submitted this way is explicitely stored, unless there is a waiting NACK.
-    */
-   public void acknowledge(Serializable channelID, Serializable messageID, Serializable receiverID)
-         throws Throwable;
-
-   /**
-    * Remove the message reference from the acknowledgment store, regardless of its outstanding
-    * acknowlegments.
-    * 
-    * @param channelID
-    * @param messageID
-    * @throws Throwable
-    */
-   public void remove(Serializable channelID, Serializable messageID) throws Throwable;
-
-   /**
-    * @return a Set containing unacknowledged message IDs.
+    * @return a Set containing unacknowledged message IDs. Unacknowledged messages include
+    *         ChannelNACKed, NACKed and messages.
     */
    public Set getUnacknowledged(Serializable channelID);
 
@@ -72,15 +42,58 @@ public interface AcknowledgmentStore
     */
    public Set getACK(Serializable channelID, Serializable messageID);
 
+   /**
+    * Overwrites currently stored acknowledgments. A positive ACK is ignored, unless the store
+    * contains a corresponding NACK or a ChannelNACK. The ACK will cancel the waiting NACK in
+    * this case.
+    *
+    * The metohd can have the lateral effect of removing the message from the acknowledgment store
+    * altogether, if all outstanding NACKs are canceled by ACKs.
+    * 
+    * @param channelID - the ID of the channel tried to deliver the message.
+    * @param newState - the new state of the message.
+    * @throws Throwable
+    */
+   public void update(Serializable channelID, Serializable messageID, State newState)
+         throws Throwable;
 
    /**
-    * TODO temporary until refactoring
+    * Method to be used for asynchronous positive acknowledgments. A positive acknowlegment
+    * submitted this way is explicitely stored, unless there is a waiting NACK.
+    *
+    * If txID is not null, the acknowledgment is accepted by the store, but not enabled until
+    * transaction commits.
+    *
     */
-   public void enableNonCommitted(Serializable channelID, String txID);
+   public void acknowledge(Serializable channelID, 
+                           Serializable messageID, 
+                           Serializable receiverID,
+                           String txID)
+         throws Throwable;
 
    /**
-    * TODO temporary until refactoring
+    * Remove the message reference from the acknowledgment store, regardless of its outstanding
+    * acknowlegments.
+    * 
+    * @param channelID
+    * @param messageID
+    * @throws Throwable
     */
-   public void discardNonCommitted(Serializable channelID, String txID);
+   public void remove(Serializable channelID, Serializable messageID) throws Throwable;
 
+   /**
+    * Called on txID's commit. Enable delivery on routables that have been waiting for transaction
+    * to commit.
+    *
+    * @param txID - transaction's ID.
+    */
+   public void commit(Serializable channelID, String txID);
+
+   /**
+    * Called on txID's rollback. Discards the routables that have been waiting for transaction
+    * to commit.
+    *
+    * @param txID - transaction's ID.
+    */
+   public void rollback(Serializable channelID, String txID);
 }

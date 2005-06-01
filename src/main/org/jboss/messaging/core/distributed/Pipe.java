@@ -9,7 +9,7 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.util.AcknowledgmentImpl;
+import org.jboss.messaging.core.util.StateImpl;
 import org.jboss.messaging.core.local.SingleOutputChannelSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Collections;
 
 /**
  * The input end of a distributed pipe - a channel with only one output that forwards messages to a
@@ -52,8 +51,6 @@ public class Pipe extends SingleOutputChannelSupport
    protected Address outputAddress;
    protected Serializable pipeID;
 
-   /** speed optimization, avoid creating unnecessary instances **/
-   protected Acknowledgment ACK, NACK;
 
    // Constructors --------------------------------------------------
 
@@ -77,8 +74,6 @@ public class Pipe extends SingleOutputChannelSupport
       this.dispatcher = dispatcher;
       this.outputAddress = outputAddress;
       this.pipeID = pipeID;
-      ACK = new AcknowledgmentImpl(pipeID, true);
-      NACK = new AcknowledgmentImpl(pipeID, false);
       log.debug(this + " created");
    }
 
@@ -126,8 +121,7 @@ public class Pipe extends SingleOutputChannelSupport
          if (log.isTraceEnabled()) { log.trace(this + " attempting to redeliver " + r); }
 
          Acknowledgment ack = handleSynchronously(r);
-         Set acks = ack == null ? null : Collections.singleton(ack);
-         updateLocalAcknowledgments(r, acks);
+         updateLocalAcknowledgments(r, new StateImpl(ack));
       }
 
       return !hasMessages();
@@ -144,8 +138,7 @@ public class Pipe extends SingleOutputChannelSupport
          // successful synchronous delivery
          return true;
       }
-      Set acks = ack == null ? null : Collections.singleton(ack);
-      return updateAcknowledgments(r, acks);
+      return updateAcknowledgments(r, new StateImpl(ack));
    }
 
    // SingleOutputChannelSupport overrides --------------------------
@@ -210,10 +203,9 @@ public class Pipe extends SingleOutputChannelSupport
       try
       {
          // call on the PipeOutput unique server delegate
-         Boolean result = (Boolean)call("handle",
-                                        new Object[] {r},
-                                        new String[] {"org.jboss.messaging.core.Routable"});
-         return result.booleanValue() ? ACK : NACK;
+         return (Acknowledgment)call("handle",
+                                     new Object[] {r},
+                                     new String[] {"org.jboss.messaging.core.Routable"});
       }
       catch(Throwable e)
       {

@@ -9,15 +9,15 @@ package org.jboss.test.messaging.util;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.util.AcknowledgmentImpl;
+import org.jboss.messaging.core.util.ChannelNACK;
+import org.jboss.messaging.core.util.StateImpl;
 
-import java.util.Collections;
 import java.util.Set;
-
-
 
 /**
  * Contains tests for the lowest amount of functionality that has to be available in a
- * InMemoryAcknowledgmentStore, SingleChannelAcknowledgmentStore, etc
+ * InMemoryAcknowledgmentStore, SingleChannelAcknowledgmentStore, etc.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
@@ -49,7 +49,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.update("c1", "m1", Collections.EMPTY_SET);
+      acknowledgmentStore.update("c1", "m1", new ChannelNACK());
 
       Set s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(1, s.size());
@@ -65,8 +65,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.update("c1", "m1",
-                                 Collections.singleton(new AcknowledgmentImpl("r1", true)));
+      acknowledgmentStore.update("c1", "m1", new StateImpl(new AcknowledgmentImpl("r1", true)));
 
       Set s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(0, s.size());
@@ -82,8 +81,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.update("c1", "m1",
-                                 Collections.singleton(new AcknowledgmentImpl("r1", false)));
+      acknowledgmentStore.update("c1", "m1", new StateImpl(new AcknowledgmentImpl("r1", false)));
 
       Set s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(1, s.size());
@@ -99,11 +97,9 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.update("c1", "m1",
-                                 Collections.singleton(new AcknowledgmentImpl("r1", false)));
+      acknowledgmentStore.update("c1", "m1", new StateImpl(new AcknowledgmentImpl("r1", false)));
 
-      acknowledgmentStore.update("c1", "m1",
-                                 Collections.singleton(new AcknowledgmentImpl("r1", true)));
+      acknowledgmentStore.update("c1", "m1", new StateImpl(new AcknowledgmentImpl("r1", true)));
 
       Set s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(0, s.size());
@@ -119,7 +115,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.acknowledge("c1", "m1", "r1");
+      acknowledgmentStore.acknowledge("c1", "m1", "r1", null);
 
       Set s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(0, s.size());
@@ -130,7 +126,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
       assertEquals(1, s.size());
 
       // acknowledge() twice
-      acknowledgmentStore.acknowledge("c1", "m1", "r1");
+      acknowledgmentStore.acknowledge("c1", "m1", "r1", null);
 
       s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(0, s.size());
@@ -145,7 +141,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.acknowledge("c1", "m1", "r1");
+      acknowledgmentStore.acknowledge("c1", "m1", "r1", null);
 
    }
 
@@ -153,7 +149,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
    {
       if (acknowledgmentStore == null) { return; }
 
-      acknowledgmentStore.acknowledge("c1", "m1", "r1");
+      acknowledgmentStore.acknowledge("c1", "m1", "r1", null);
 
       Set s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(0, s.size());
@@ -163,8 +159,7 @@ public class AcknowledgmentStoreTest extends MessagingTestCase
       s = acknowledgmentStore.getACK("c1", "m1");
       assertEquals(1, s.size());
 
-      acknowledgmentStore.update("c1", "m1",
-                                 Collections.singleton(new AcknowledgmentImpl("r1", false)));
+      acknowledgmentStore.update("c1", "m1", new StateImpl(new AcknowledgmentImpl("r1", false)));
 
       s = acknowledgmentStore.getUnacknowledged("c1");
       assertEquals(0, s.size());

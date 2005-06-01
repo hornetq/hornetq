@@ -8,8 +8,6 @@ package org.jboss.messaging.core.tools;
 
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 
 import java.io.Serializable;
 
