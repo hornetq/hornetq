@@ -120,15 +120,15 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
     */
    public void acknowledge(Serializable messageID, Serializable receiverID)
    {
-      if (transactionManager == null)
-      {
-         // handle the message non-transactionally
-         acknowledge(messageID, receiverID, null);
-         return;
-      }
-
       try
       {
+         if (transactionManager == null)
+         {
+            // handle the message non-transactionally
+            acknowledge(messageID, receiverID, null);
+            return;
+         }
+
          Transaction transaction = transactionManager.getTransaction();
 
          if (transaction == null)
@@ -145,6 +145,12 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
          String msg = "Failed to access current transaction";
          log.error(msg, e);
          throw new IllegalStateException(msg);
+      }
+      catch(Throwable t)
+      {
+         log.error("Channel " + getReceiverID() + " failed to handle positive acknowledgment " +
+                   " from receiver " + receiverID + " for message " + messageID, t);
+         return;
       }
    }
 
@@ -208,7 +214,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
     * @param r - the Routable to deliver.
     * @param transaction - a non-null Transaction.
     *
-    * @exception SystemException - failed to interact with the transaction
+    * @exception SystemException - failed to interact with the transaction.
     */
    private void handleWithTx(Routable r, Transaction transaction) throws SystemException
    {
@@ -244,8 +250,16 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
       {
          return;
       }
-      // add the acknowledgments to channel's internal storage, but don't enable them yet
-      acknowledge(messageID, receiverID, txID);
+      try
+      {
+         // add the acknowledgment to channel's internal storage, but don't enable it yet
+         acknowledge(messageID, receiverID, txID);
+      }
+      catch(Throwable t)
+      {
+         log.error("Failed to submit acknowledgment to the store, rolling back transaction", t);
+         transaction.setRollbackOnly();
+      }
    }
 
    /**

@@ -30,7 +30,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsDistributorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.ChannelSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.TransactionalChannelSupportTest
-TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.AbstractDestinationAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeAsChannelTest
@@ -46,7 +46,7 @@ TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #

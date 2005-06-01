@@ -149,7 +149,16 @@ public abstract class ChannelSupport extends Lockable implements Channel
    {
       // default non-transactional handling; for transactional handling,
       // see TransactionalChannelSupport implementation
-      acknowledge(messageID, receiverID, null);
+      try
+      {
+         acknowledge(messageID, receiverID, null);
+      }
+      catch(Throwable t)
+      {
+         log.error("Channel " + getReceiverID() + " failed to handle positive acknowledgment " +
+                   " from receiver " + receiverID + " for message " + messageID, t);
+         return;
+      }
    }
 
    /**
@@ -303,21 +312,15 @@ public abstract class ChannelSupport extends Lockable implements Channel
    }
 
    protected void acknowledge(Serializable messageID, Serializable receiverID, String txID)
+         throws Throwable
    {
-      try
+      localAcknowledgmentStore.acknowledge(null, messageID, receiverID, txID);
+
+      if (externalAcknowledgmentStore != null)
       {
-         localAcknowledgmentStore.acknowledge(null, messageID, receiverID, txID);
-         if (externalAcknowledgmentStore != null)
-         {
-            externalAcknowledgmentStore.acknowledge(getReceiverID(), messageID, receiverID, txID);
-         }
+         externalAcknowledgmentStore.acknowledge(getReceiverID(), messageID, receiverID, txID);
       }
-      catch(Throwable t)
-      {
-         log.error("Channel " + getReceiverID() + " failed to handle positive acknowledgment " +
-                   " from receiver " + receiverID + " for message " + messageID, t);
-         return;
-      }
+
       if (!localAcknowledgmentStore.hasNACK(null, messageID))
       {
          // cleanup the local store, I only keep it if it is NACKed
