@@ -8,6 +8,7 @@ package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.tools.ReceiverImpl;
 import org.jboss.messaging.core.util.MessageStoreImpl;
 import org.jboss.messaging.core.message.MessageReferenceSupport;
 import org.jboss.messaging.core.message.RoutableSupport;

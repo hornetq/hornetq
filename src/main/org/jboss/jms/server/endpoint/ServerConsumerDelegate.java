@@ -51,8 +51,8 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    // Constructors --------------------------------------------------
 
    public ServerConsumerDelegate(String id, AbstractDestination destination,
-                   InvokerCallbackHandler callbackHandler,
-                   ServerSessionDelegate sessionEndpoint)
+                                 InvokerCallbackHandler callbackHandler,
+                                 ServerSessionDelegate sessionEndpoint)
    {
       this.id = id;
       this.destination = destination;

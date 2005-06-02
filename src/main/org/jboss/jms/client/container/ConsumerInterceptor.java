@@ -93,10 +93,10 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             JMSConsumerInvocationHandler ih =
                   (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerDelegate);
             ih.setMessageHandler(msgHandler);
-            //msgHandler.setAcknowledgmentHandler((AcknowledgmentHandler)consumerDelegate);
 				
 				msgHandler.setSessionDelegate(getDelegate(invocation));
-				msgHandler.setReceiverID((String)ih.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID));
+				msgHandler.setReceiverID((String)ih.getMetaData().
+                                             getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID));
 
             return consumerDelegate;
          }

@@ -55,12 +55,15 @@ public class SessionInterceptor implements Interceptor, Serializable
 		if ("acknowledgeSession".equals(methodName))
 		{
 			//Acknowledge all the messages received in this session
-			if (log.isTraceEnabled()) log.trace("acknowledgeSession called");
+			if (log.isTraceEnabled()) { log.trace("acknowledgeSession called"); }
 			
 			//This only does anything if in client acknowledge mode
 			int acknowledgmentMode =
 				((Integer)mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE)).intValue();
-			if (acknowledgmentMode != Session.CLIENT_ACKNOWLEDGE) return null;
+			if (acknowledgmentMode != Session.CLIENT_ACKNOWLEDGE)
+         {
+            return null;
+         }
 								
 			Object Xid = mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
 			
@@ -72,7 +75,7 @@ public class SessionInterceptor implements Interceptor, Serializable
 			else
 			{
 				ArrayList unacked = getUnacknowledged(invocation);
-				if (log.isTraceEnabled())
+				if (log.isTraceEnabled()) 
 					log.trace("I have " + unacked.size() + " messages in the session to ack");
 				Iterator iter = unacked.iterator();
 				while (iter.hasNext())

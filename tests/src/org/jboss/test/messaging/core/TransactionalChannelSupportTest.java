@@ -7,6 +7,7 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.TransactionalChannel;
+import org.jboss.messaging.core.tools.ReceiverImpl;
 import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
@@ -182,8 +183,6 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
       assertEquals(1, l.size());
       assertEquals("one", ((RoutableSupport)l.get(0)).getMessageID());
    }
-
-
 
    public void testHandleActiveTransactionAsynchronousChannel2() throws Exception
    {
@@ -395,48 +394,6 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
       assertFalse(transactionalChannel.hasMessages());
       assertTrue(transactionalChannel.getUndelivered().isEmpty());
    }
-
-//
-//
-//
-//   public void testHandleActiveTransactionAsynchronousChannel2() throws Exception
-//   {
-//      if (skip()) { return; }
-//
-//      assertTrue(transactionalChannel.setSynchronous(false));
-//
-//      RoutableSupport r1 = new RoutableSupport("1");
-//      RoutableSupport r2 = new RoutableSupport("2");
-//      RoutableSupport r3 = new RoutableSupport("3");
-//
-//      tm.begin();
-//      Transaction transaction = tm.getTransaction();
-//
-//
-//      transactionalChannel.handle(r1);
-//      transactionalChannel.handle(r2);
-//      transactionalChannel.handle(r3);
-//
-//      assertFalse(transactionalChannel.hasMessages());
-//      assertTrue(receiverOne.getMessages().isEmpty());
-//
-//      transaction.commit();
-//
-//      // all messages went to the receiver
-//      assertFalse(transactionalChannel.hasMessages());
-//      List l = receiverOne.getMessages();
-//      assertEquals(3, l.size());
-//
-//      Set ids = new HashSet();
-//      for(Iterator i = receiverOne.iterator(); i.hasNext(); )
-//      {
-//         ids.add(((RoutableSupport)i.next()).getMessageID());
-//      }
-//      assertTrue(ids.contains("1"));
-//      assertTrue(ids.contains("2"));
-//      assertTrue(ids.contains("3"));
-//
-//   }
 
 
    private boolean skip()

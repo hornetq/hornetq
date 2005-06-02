@@ -11,6 +11,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.Acknowledgment;
+import org.jboss.messaging.core.tools.ReceiverImpl;
 import org.jboss.messaging.core.message.MessageSupport;
 
 import java.util.Iterator;

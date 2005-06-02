@@ -181,8 +181,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    }
 	
 
-   public void sendTransaction(TxInfo tx)
-      throws JMSException
+   public void sendTransaction(TxInfo tx) throws JMSException
    {            
 		if (log.isTraceEnabled()) log.trace("Received transaction from client");
 		

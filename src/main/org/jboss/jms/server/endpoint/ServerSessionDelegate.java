@@ -31,7 +31,6 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
 import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.delegate.AcknowledgmentHandler;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
@@ -207,7 +206,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // TODO
       ClassLoader loader = getClass().getClassLoader();
-      Class[] interfaces = new Class[] { ConsumerDelegate.class, AcknowledgmentHandler.class };
+      Class[] interfaces = new Class[] { ConsumerDelegate.class };
       ConsumerDelegate delegate = (ConsumerDelegate)Proxy.newProxyInstance(loader, interfaces, h);
 
       if (callbackHandler == null)

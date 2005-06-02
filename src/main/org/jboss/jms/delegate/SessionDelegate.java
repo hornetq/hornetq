@@ -29,7 +29,8 @@ public interface SessionDelegate extends Closeable
 {
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
-   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector) throws JMSException;
+   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector)
+         throws JMSException;
 
    public Message createMessage() throws JMSException;
    
@@ -55,13 +56,29 @@ public interface SessionDelegate extends Closeable
 
    public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
          throws JMSException;
-	
-	public void delivered(String messageID, Destination destination, String receiverID) throws JMSException;
-	
-	public void acknowledge(String messageID, Destination destination, String receiverID) throws JMSException;
-	
+
+   /**
+    * Used to notify the session that a message was delivered on the client. The acknowledgment
+    * might not be immediate, though. The session decides when to acknowledge based on the
+    * acknowledgment mode.
+    */
+	public void delivered(String messageID, Destination destination, String receiverID)
+         throws JMSException;
+
+   /**
+    * Acknowledges a message back to the server (transactionally or not).
+    */
+	public void acknowledge(String messageID, Destination destination, String receiverID)
+         throws JMSException;
+
+   /**
+    * Acknowledges all messages received so far by this session.
+    */
 	public void acknowledgeSession() throws JMSException;
-	
+
+   /**
+    * Tell the server to redeliver any un-acked messages.	
+    */
 	public void redeliver() throws JMSException;
 		
 }

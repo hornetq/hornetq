@@ -46,119 +46,108 @@ public class TransactedSessionTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-		 super.setUp();
-		ServerManagement.startInVMServer();
-		initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-		cf =
-		      (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
-		
-		ServerManagement.deployQueue("Queue");
-		queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+      super.setUp();
+      ServerManagement.startInVMServer();
+      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
 
-      
+      ServerManagement.deployQueue("Queue");
+      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.stopInVMServer();
-      //connection.stop();
-      //connection = null;
       super.tearDown();
    }
 
 
    // Public --------------------------------------------------------
 
-	/*
+	/**
 	 * Send some messages in transacted session. Don't commit.
-	 * Verify message are not received by consumer
-	 * 
+	 * Verify message are not received by consumer.
 	 */
-	
    public void testSendNoCommit() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
-		
+
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			Message m = producerSess.createMessage();
 			producer.send(m);
 		}
-		
+
 		log.trace("Sent messages");
-		
+
 		Message m = consumer.receive(2000);
 		assertNull(m);
-		
+
 		conn.close();
    }
-   
-	
-	/*
+
+
+	/**
 	 * Send some messages in transacted session. Commit.
-	 * Verify message are received by consumer
-	 * 
+	 * Verify message are received by consumer.
 	 */
-	
    public void testSendCommit() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
-		
+
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			Message m = producerSess.createMessage();
 			producer.send(m);
 		}
-		
+
 		producerSess.commit();
-		
+
 		log.trace("Sent messages");
-		
+
 		int count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES, count);
-		
+
 		conn.close();
    }
-	
-	
-	/*
+
+
+	/**
 	 * Test IllegateStateException is thrown if commit is called on a non-transacted session
-	 * 
 	 */
-	
    public void testCommitIllegalState() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		
+
 		boolean thrown = false;
 		try
 		{
@@ -168,90 +157,87 @@ public class TransactedSessionTest extends MessagingTestCase
 		{
 			thrown = true;
 		}
-		
+
 		assertTrue(thrown);
-		
+
 		conn.close();
    }
-   
-  
-	/*
+
+
+	/**
 	 * Send some messages.
 	 * Receive them in a transacted session.
 	 * Do not commit the receiving session.
 	 * Close the connection
 	 * Create a new connection, session and consumer - verify messages are redelivered
-	 * 
+	 *
 	 */
-	
    public void testAckNoCommit() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
-		
+
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			Message m = producerSess.createMessage();
 			producer.send(m);
 		}
-		
+
 		log.trace("Sent messages");
-		
+
 		int count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES, count);
-		
-		conn.stop();		
+
+		conn.stop();
 		consumer.close();
-						
+
 		conn.close();
-		
-		conn = cf.createConnection();     
-		
+
+		conn = cf.createConnection();
+
 		consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES, count);
 		conn.close();
-		
+
    }
+
+
 	
 	
-	
-	
-	/*
+	/**
 	 * Send some messages.
 	 * Receive them in a transacted session.
 	 * Commit the receiving session
 	 * Close the connection
 	 * Create a new connection, session and consumer - verify messages are not redelivered
-	 * 
 	 */
-	
    public void testAckCommit() throws Exception
    {
 		Connection conn = cf.createConnection();     
@@ -314,50 +300,50 @@ public class TransactedSessionTest extends MessagingTestCase
 	 */
 	public void testSendRollback() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
-		
+
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			Message m = producerSess.createMessage();
 			producer.send(m);
 		}
-		
+
 		log.trace("Sent messages");
-		
+
 		producerSess.rollback();
-		
+
 		Message m = consumer.receive(2000);
-		
+
 		assertNull(m);
-						
+
 		conn.close();
-		
-		
+
+
    }
-	
-	
+
+
 	/*
 	 * Test IllegateStateException is thrown if rollback is
 	 * called on a non-transacted session
-	 * 
+	 *
 	 */
-	
+
    public void testRollbackIllegalState() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		
+
 		boolean thrown = false;
 		try
 		{
@@ -367,127 +353,127 @@ public class TransactedSessionTest extends MessagingTestCase
 		{
 			thrown = true;
 		}
-		
+
 		assertTrue(thrown);
-		
+
 		conn.close();
    }
-	
-	
+
+
 	/*
 	 * Send some messages.
 	 * Receive them in a transacted session.
 	 * Rollback the receiving session
 	 * Close the connection
 	 * Create a new connection, session and consumer - verify messages are redelivered
-	 * 
+	 *
 	 */
-	
+
    public void testAckRollback() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
-		
+
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			Message m = producerSess.createMessage();
 			producer.send(m);
 		}
-		
+
 		log.trace("Sent messages");
-		
+
 		int count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES, count);
-		
+
 		consumerSess.rollback();
-		
-		conn.stop();		
+
+		conn.stop();
 		consumer.close();
-						
+
 		conn.close();
-		
-		conn = cf.createConnection();     
-		
+
+		conn = cf.createConnection();
+
 		consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES, count);
-		
+
 		conn.close();
-		
+
    }
-	
-	
+
+
 	/*
 	 * Send multiple messages in multiple contiguous sessions
 	 */
 	public void testSendMultiple() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
 		final int NUM_TX = 10;
-		
+
 		//Send some messages
-		
+
 		for (int j = 0; j < NUM_TX; j++)
 		{
-		
+
 			for (int i = 0; i < NUM_MESSAGES; i++)
 			{
 				Message m = producerSess.createMessage();
 				producer.send(m);
 			}
-			
+
 			producerSess.commit();
 		}
-		
+
 		log.trace("Sent messages");
-		
+
 		int count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES * NUM_TX, count);
-						
+
 		conn.close();
-				
+
    }
 	
    

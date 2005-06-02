@@ -17,6 +17,7 @@ import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
 import javax.naming.InitialContext;
 import java.util.Hashtable;
 
@@ -132,7 +133,7 @@ public class Client
    }
 
 
-   public void createSession() throws Exception
+   public void createSession(boolean transacted, String acknowledgmentModeString) throws Exception
    {
       if (session != null)
       {
@@ -140,12 +141,19 @@ public class Client
          return;
       }
 
+      int acknowledgmentMode = -1;
+      if (!transacted)
+      {
+         acknowledgmentMode = acknowledgmentModeToInt(acknowledgmentModeString);
+      }
+
       if (connection == null)
       {
          createConnection();
       }
 
-      session = connection.createSession(false, 0);
+      session = connection.createSession(transacted, acknowledgmentMode);
+      displaySessionInfo(session);
    }
 
    public void createProducer(String destination) throws Exception
@@ -159,7 +167,7 @@ public class Client
 
       if (session == null)
       {
-         createSession();
+         createSession(false, "AUTO_ACKNOWLEDGE");
       }
 
       producer = session.createProducer(lookupDestination(destination));
@@ -179,7 +187,7 @@ public class Client
 
       if (session == null)
       {
-         createSession();
+         createSession(false, "AUTO_ACKNOWLEDGE");
       }
 
       consumer = session.createConsumer(lookupDestination(destination));
@@ -343,6 +351,56 @@ public class Client
       {
          throw new RuntimeException("You need to create a producer first. " +
                                     "Use createProducer(destination)");
+      }
+   }
+
+   private int acknowledgmentModeToInt(String ackModeString)
+   {
+      ackModeString = ackModeString.toUpperCase();
+      if ("AUTO_ACKNOWLEDGE".equals(ackModeString))
+      {
+         return Session.AUTO_ACKNOWLEDGE;
+      }
+      else if ("CLIENT_ACKNOWLEDGE".equals(ackModeString))
+      {
+         return Session.CLIENT_ACKNOWLEDGE;
+      }
+      else if ("DUPS_OK_ACKNOWLEDGE".equals(ackModeString))
+      {
+         return Session.DUPS_OK_ACKNOWLEDGE;
+      }
+      throw new IllegalArgumentException("No such acknowledgment mode: " + ackModeString);
+   }
+
+   private String acknowledgmentModeToString(int ackMode)
+   {
+
+      if (ackMode == Session.AUTO_ACKNOWLEDGE)
+      {
+         return "AUTO_ACKNOWLEDGE";
+      }
+      else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
+      {
+         return "CLIENT_ACKNOWLEDGE";
+      }
+      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         return "DUPS_OK_ACKNOWLEDGE";
+      }
+      return "UNKNOWN: " + ackMode;
+   }
+
+
+   public void displaySessionInfo(Session s) throws JMSException
+   {
+      if (s.getTransacted())
+      {
+         log.info("The session is TRANSACTED");
+      }
+      else
+      {
+         log.info("The session is NON-TRANSACTED, the delivery mode is " +
+                  acknowledgmentModeToString(s.getAcknowledgeMode()));
       }
    }
 

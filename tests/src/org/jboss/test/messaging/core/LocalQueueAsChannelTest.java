@@ -7,6 +7,7 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.tools.ReceiverImpl;
 import org.jboss.messaging.core.local.LocalQueue;
 import org.jboss.messaging.core.message.MessageSupport;
 

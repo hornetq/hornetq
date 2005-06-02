@@ -6,11 +6,12 @@
  */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.core.ReceiverImpl;
+import org.jboss.messaging.core.tools.ReceiverImpl;
 import org.jboss.test.messaging.core.TransactionalChannelSupportTest;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.distributed.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.Replicator;
+import org.jboss.messaging.core.tools.ReceiverImpl;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.JChannel;
 

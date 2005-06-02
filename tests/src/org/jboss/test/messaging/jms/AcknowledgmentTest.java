@@ -13,18 +13,16 @@ import org.jboss.jms.util.InVMInitialContextFactory;
 
 import javax.naming.InitialContext;
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  */
-public class AcknowledgementTest extends MessagingTestCase
+public class AcknowledgmentTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -39,7 +37,7 @@ public class AcknowledgementTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public AcknowledgementTest(String name)
+   public AcknowledgmentTest(String name)
    {
       super(name);
    }
@@ -71,12 +69,10 @@ public class AcknowledgementTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-	/* 
-	 * Send some messages, don't acknowledge them and verify that they are re-sent
-	 * on recovery
+	/**
+	 * Send some messages, don't acknowledge them and verify that they are re-sent on recovery.
 	 */
-	
-	public void testClientAcknowledge1() throws Exception
+	public void testClientAcknowledgeNoAcknowlegment() throws Exception
    {
 		
 		Connection conn = cf.createConnection();     
@@ -133,13 +129,11 @@ public class AcknowledgementTest extends MessagingTestCase
    
 	
 	
-	/* 
-	 * Send some messages, acknowledge them individually and
-	 * verify they are not resent after recovery
+	/**
+	 * Send some messages, acknowledge them individually and  verify they are not resent after
+    * recovery.
 	 */
-	
-	
-	public void testClientAcknowledge2() throws Exception
+	public void testIndividualClientAcknowledge() throws Exception
    {
 		
 		Connection conn = cf.createConnection();     
@@ -190,11 +184,11 @@ public class AcknowledgementTest extends MessagingTestCase
 	
 	
 	
-	/* 
-	 * Send some messages, acknowledge them once after all have been received
-	 * verify they are not resent after recovery
+	/**
+	 * Send some messages, acknowledge them once after all have been received verify they are not
+    * resent after recovery
 	 */
-	public void testClientAcknowledge3() throws Exception
+	public void testBulkClientAcknowledge() throws Exception
    {
 		
 		Connection conn = cf.createConnection();     
@@ -250,10 +244,11 @@ public class AcknowledgementTest extends MessagingTestCase
 	
 	
 	
-	/* 
-	 * Send some messages, acknowledge some of them, and verify that the others are resent after delivery
+	/**
+	 * Send some messages, acknowledge some of them, and verify that the others are resent after
+    * delivery
 	 */
-	public void testClientAcknowledge4() throws Exception
+	public void testPartialClientAcknowledge() throws Exception
    {
 		
 		Connection conn = cf.createConnection();     
@@ -280,11 +275,17 @@ public class AcknowledgementTest extends MessagingTestCase
 		int count = 0;
 		
 		Message m = null;
-		for (int i =0; i < NUM_MESSAGES; i++)
+		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			m = consumer.receive(500);
-			if (m == null) break;
-			if (count == ACKED_MESSAGES -1) m.acknowledge();
+			if (m == null)
+         {
+            break;
+         }
+			if (count == ACKED_MESSAGES -1)
+         {
+            m.acknowledge();
+         }
 			count++;
 		}
 		

@@ -36,9 +36,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Attributes ----------------------------------------------------
 
-   //protected AcknowledgmentHandler acknowledgmentHandler;
-
-
    protected int capacity = 100;
    protected BoundedBuffer messages;
 	protected SessionDelegate sessionDelegate;

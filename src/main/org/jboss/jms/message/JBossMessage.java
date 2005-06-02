@@ -68,7 +68,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    protected Destination destination;
    protected String type;
-	protected SessionDelegate delegate;	
+   // the delegate is set only on incoming messages, but we make it transient nonetheless
+	protected transient SessionDelegate delegate;
 	protected boolean messageReadWrite = true;
 	protected Map properties = new HashMap();
 	
@@ -229,7 +230,10 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    
    public void acknowledge() throws JMSException
    {		
-		if (delegate != null) delegate.acknowledgeSession();
+		if (delegate != null)
+      {
+         delegate.acknowledgeSession();
+      }
    }
    
    public void clearBody() throws JMSException

@@ -210,7 +210,7 @@
       </copy>
    </target>
 
-   <target name="tests-report" depends="tests, compile-stylesheets">
+   <target name="report" depends="tests, compile-stylesheets">
       <mkdir dir="${build.tests.reports}/html"/>
 
       <junitreport todir="${build.tests.reports}">
