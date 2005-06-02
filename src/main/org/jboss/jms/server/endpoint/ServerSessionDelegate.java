@@ -7,43 +7,44 @@
 package org.jboss.jms.server.endpoint;
 
 
-import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.tx.LocalTx;
-import org.jboss.jms.util.JBossJMSException;
-import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.delegate.AcknowledgmentHandler;
-import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.aop.advice.AdviceStack;
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.AspectManager;
-import org.jboss.aop.Dispatcher;
-import org.jboss.aop.util.PayloadKey;
-import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.util.Lockable;
-import org.jboss.logging.Logger;
-import org.jboss.remoting.InvokerCallbackHandler;
-import org.jboss.util.id.GUID;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.jms.BytesMessage;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+
+import org.jboss.aop.AspectManager;
+import org.jboss.aop.Dispatcher;
+import org.jboss.aop.advice.AdviceStack;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
+import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.delegate.AcknowledgmentHandler;
+import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.util.JBossJMSException;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.util.Lockable;
+import org.jboss.remoting.InvokerCallbackHandler;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -70,6 +71,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    protected Map producers;
    protected Map consumers;
 	protected Map browsers;
+	
+	protected int acknowledgmentMode;
 
    protected ServerPeer serverPeer;
 
@@ -77,9 +80,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // Constructors --------------------------------------------------
 
-   public ServerSessionDelegate(String sessionID, ServerConnectionDelegate connectionEndpoint)
+   public ServerSessionDelegate(String sessionID, ServerConnectionDelegate connectionEndpoint,
+										  int acknowledgmentMode)
    {
       this.sessionID = sessionID;
+		this.acknowledgmentMode = acknowledgmentMode;
       this.connectionEndpoint = connectionEndpoint;      
       producers = new HashMap();
       consumers = new HashMap();
@@ -157,8 +162,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return delegate;
    }
 
-   public ConsumerDelegate createConsumerDelegate(Destination jmsDestination)
-         throws JBossJMSException
+	public ConsumerDelegate createConsumerDelegate(Destination jmsDestination, String selector)
+		throws JMSException
    {
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
@@ -196,6 +201,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
+		//metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE, new Integer(acknowledgmentMode), PayloadKey.AS_IS);
+		
       h.getMetaData().mergeIn(metadata);
 
       // TODO
@@ -211,6 +218,15 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       // create the Consumer endpoint and register it with this SessionDelegate instance
       ServerConsumerDelegate scd =
             new ServerConsumerDelegate(consumerID, destination, callbackHandler, this);
+		
+		if (selector != null)
+		{
+			Selector messageSelector = new Selector(selector);
+			
+			//TODO add methods set/getFilter and accept() to Receiver interface
+			//scd.setFilter(messageSelector);
+		}
+		
       putConsumerDelegate(consumerID, scd);
 
       log.debug("created consumer endpoint (destination=" + jmsDestination + ")");
@@ -219,6 +235,41 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    }
 
    public Message createMessage() throws JBossJMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+   
+   public BytesMessage createBytesMessage() throws JMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+   
+   public MapMessage createMapMessage() throws JMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+
+   public ObjectMessage createObjectMessage() throws JMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+
+   public ObjectMessage createObjectMessage(Serializable object) throws JMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+
+   public StreamMessage createStreamMessage() throws JMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+
+   public TextMessage createTextMessage() throws JMSException
+   {
+      throw new JBossJMSException("We don't create messages on the server");
+   }
+   
+   public TextMessage createTextMessage(String text) throws JMSException
    {
       throw new JBossJMSException("We don't create messages on the server");
    }
@@ -253,25 +304,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    }
    
    
-   
-   public void sendTransaction(LocalTx tx)
-      throws JMSException
-   {            
-      log.debug("Sending transaction to receiver");
-      
-      List messages = tx.getMessages();
-      
-      log.debug("Messages:" + messages);
-      
-      Iterator iter = messages.iterator();
-      while (iter.hasNext())
-      {
-         Message m = (Message)iter.next();
-         sendMessage(m);
-         log.debug("Sent message");
-      }
-   }
-	
 	public BrowserDelegate createBrowserDelegate(Destination jmsDestination, String messageSelector)
    	throws JMSException
 	{
@@ -328,6 +360,40 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	   return bd;
 	}
 
+	
+	public void delivered(String messageID, Destination destination, String receiverID) throws JMSException
+	{
+		throw new JMSException("delivered is not handled on the server");
+	}
+	
+	
+	
+	public void acknowledgeSession() throws JMSException
+	{
+		throw new JMSException("acknowledgeSession is not handled on the server");
+	}
+	
+	/**
+	 * Redeliver all unacked messages for the session
+	 */
+	public void redeliver() throws JMSException
+	{
+		Iterator iter = this.consumers.values().iterator();
+		while (iter.hasNext())
+		{			
+			ServerConsumerDelegate scd = (ServerConsumerDelegate)iter.next();
+			
+			//TODO we really need to be able to tell the destination to redeliver messages only for
+			//a specific receiver
+			scd.destination.deliver();
+		}
+	}
+	
+	public void acknowledge(String messageID, Destination jmsDestination, String receiverID)
+		throws JMSException
+	{
+		this.connectionEndpoint.acknowledge(messageID, jmsDestination, receiverID);
+	}
 
    // Public --------------------------------------------------------
 
@@ -395,36 +461,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // Package protected ---------------------------------------------
    
-   void sendMessage(Message m) throws JMSException
-   {
-      //The JMSDestination header must already have been set for each message
-      Destination dest = m.getJMSDestination();
-      if (dest == null)
-      {
-         throw new IllegalStateException("JMSDestination header not set!");
-      }
-      
-      Receiver receiver = null;
-      try
-      {
-         DestinationManager dm = serverPeer.getDestinationManager();
-         receiver = dm.getDestination(dest);
-      }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Cannot map destination " + dest, e);
-      }
-      
-      m.setJMSMessageID(generateMessageID());         
-   
-      boolean acked = receiver.handle((Routable)m);
-   
-      if (!acked)
-      {
-         log.debug("The message was not acknowledged");
-         //TODO deal with this properly
-      }  
-   }
+  
 
    /**
     * Starts this session's Consumers
@@ -487,12 +524,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // Private -------------------------------------------------------
 
-   private String generateMessageID()
-   {
-      StringBuffer sb = new StringBuffer("ID:");
-      sb.append(new GUID().toString());
-      return sb.toString();
-   }
+ 
    
    // Inner classes -------------------------------------------------
 }

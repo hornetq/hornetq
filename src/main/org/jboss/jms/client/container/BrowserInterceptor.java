@@ -16,15 +16,20 @@ import org.jboss.jms.delegate.BrowserDelegate;
 
 import javax.jms.Message;
 
-
 /**
+ * 
+ * Interceptor that caches blocks of messages during queue browsing these allows us to cache blocks
+ * of browseable messages in the interceptor thus preventing excessiver network traffic.
+ * 
+ * There should be one instance of this interceptor per instance of a QueueBrowser.
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
  */
 public class BrowserInterceptor implements Interceptor, Serializable
 {
-   private static final long serialVersionUID = 4876256983116744734L;
-
+	private static final long serialVersionUID = 3694874918265592846L;
+	
+	//TODO - these need to be configurable by the user
    private static final boolean BATCH_MESSAGES = true;
 	private static final int MSG_BLOCK_SIZE = 5;
 	

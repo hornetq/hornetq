@@ -18,12 +18,15 @@
    <interceptor class="org.jboss.jms.client.container.ReceiverInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ConnectionInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.TransactionInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.jms.client.container.BrowserInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.BrowserInterceptor" scope="PER_CLASS"/>
+   <interceptor class="org.jboss.jms.client.container.SessionInterceptor" scope="PER_CLASS"/>
 
    <stack name="ConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>      
+      <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/> 
+      <interceptor-ref name="org.jboss.jms.client.container.HierarchyInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
@@ -45,6 +48,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.HierarchyInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.SessionInterceptor"/> 
       <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/>        
       <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>

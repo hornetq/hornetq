@@ -97,6 +97,8 @@ public interface Channel extends Receiver
 	 * @return a Set containing messages that haven't been delivered.
     */
    public Set browse();
+	
+	public Set browse(Filter filter);
 
    /**
     * Method to be used to send asynchronous positive acknowledgments.

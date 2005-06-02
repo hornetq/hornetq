@@ -37,7 +37,7 @@
   <!-- ================================================================== -->
 
   <!--
-     | Initialize the build system.  Must depend on '_buildmagic:init'.  
+     | Initialize the build system.  Must depend on '_buildmagic:init'.
      | Other targets should depend on 'init' or things will mysteriously fail.
    -->
 
@@ -50,9 +50,9 @@
   <!-- ================================================================== -->
 
   <!--
-     | Configure the build system.  
+     | Configure the build system.
      |
-     | This target is invoked by the Buildmagic initialization logic and 
+     | This target is invoked by the Buildmagic initialization logic and
      | should contain module specific configuration elements.
    -->
 
@@ -84,6 +84,11 @@
        <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
 
        <path refid="junit.junit.classpath"/>
+
+       <path refid="gnu.regexp.classpath"/>
+
+
+
     </path>
 
     <!-- ======= -->
@@ -119,6 +124,7 @@
     <property name="build.etc" value="${module.output}/etc"/>
     <property name="build.gen-src" value="${module.output}/gen-src"/>
     <property name="build.gen" value="${module.output}/gen"/>
+    <property name="build.parsers" value="${module.output}/parsers"/>
 
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>
@@ -158,7 +164,7 @@
         <include name="**/*.jar"/>
       </fileset>
     </path>
-    <property name="xdoclet.task.classpath" 
+    <property name="xdoclet.task.classpath"
 	      refid="xdoclet.task.classpath"/>
 
     <!-- Packages to include when generating api documentation -->
@@ -175,17 +181,61 @@
   <!-- Compile                                                            -->
   <!-- ================================================================== -->
 
-  <!-- 
+  <!--
      | Compile everything.
      |
-     | This target should depend on other compile-* targets for each 
+     | This target should depend on other compile-* targets for each
      | different type of compile that needs to be performed, short of
      | documentation compiles.
    -->
 
-  <target name="compile" 
+  <target name="compile"
 	  description="Compile all source files."
-	  depends="compile-classes, compile-etc"/>
+	  depends="compile-parsers, compile-classes, compile-etc"/>
+
+	<!-- Compile parsers -->
+  <target name="compile-parsers" depends="init">
+    <mkdir dir="${build.parsers}/org/jboss/jms/selector"/>
+
+    <!-- message selector parser -->
+    <javacc target="${source.java}/org/jboss/jms/selector/SelectorParser.jj"
+            outputdirectory="${build.parsers}/org/jboss/jms/selector"
+            javacchome="${sun.javacc.lib}"
+            static="false"/>
+
+    <!-- compile them now -->
+    <mkdir dir="${build.classes}"/>
+    <javac destdir="${build.classes}"
+           optimize="${javac.optimize}"
+           target="${javac.target}"
+           source="${javac.source}"
+           debug="${javac.debug}"
+           depend="${javac.depend}"
+           verbose="${javac.verbose}"
+           deprecation="${javac.deprecation}"
+           includeAntRuntime="${javac.include.ant.runtime}"
+           includeJavaRuntime="${javac.include.java.runtime}"
+           failonerror="${javac.fail.onerror}">
+       <classpath refid="javac.classpath"/>
+
+       <!-- JavaCC creates output in a flat namespace -->
+       <src path="${build.parsers}"/>
+       <!--
+       <include name="*.java"/>
+	-->
+       <!-- Only want to build required the bits under selectors.* here -->
+       <src path="${source.java}"/>
+       <include name="org/jboss/jms/selector/ASCII_CharStream.java"/>
+       <include name="org/jboss/jms/selector/ParserException.java"/>
+       <include name="org/jboss/jms/selector/SelectorParser.java"/>
+       <include name="org/jboss/jms/selector/SelectorParserConstants.java"/>
+       <include name="org/jboss/jms/selector/SelectorParserTokenManager.java"/>
+       <include name="org/jboss/jms/selector/Token.java"/>
+       <include name="org/jboss/jms/selector/TokenMgrError.java"/>
+       <include name="org/jboss/jms/selector/Operator.java"/>
+       <include name="org/jboss/jms/selector/Identifier.java"/>
+    </javac>
+  </target>
 
   <!-- Compile all class files -->
   <target name="compile-classes" depends="init">
@@ -223,7 +273,7 @@
   <!-- Archives                                                           -->
   <!-- ================================================================== -->
 
-  <!-- 
+  <!--
      | Build all jar files.
    -->
   <target name="jars" description="Builds all jar files."
@@ -233,7 +283,7 @@
     <call target="compile"/>
 
     <mkdir dir="${build.lib}"/>
-    
+
     <!-- Build the jboss-${module.name}.jar -->
     <jar jarfile="${build.lib}/jboss-${module.name}.jar"
 	 manifest="${build.etc}/default.mf">
@@ -255,9 +305,9 @@
   <target name="dist" depends="javadocs">
   </target>
 
-  <target name="install" 
+  <target name="install"
 	  description="Install the structure for a release."
-	  depends="all, _buildmagic:install:default"> 
+	  depends="all, _buildmagic:install:default">
 
       <mkdir dir="${module.source}/bin"/>
 
@@ -288,15 +338,15 @@
 
   <target name="release" depends="install"/>
 
-  <target name="release-zip" 
+  <target name="release-zip"
 	  description="Builds a ZIP distribution."
 	  depends="release, _buildmagic:release:zip"/>
 
-  <target name="release-tar" 
+  <target name="release-tar"
 	  description="Builds a TAR distribution."
 	  depends="release, _buildmagic:release:tar"/>
 
-  <target name="release-tgz" 
+  <target name="release-tgz"
 	  description="Builds a TAR-GZ distribution."
 	  depends="release, _buildmagic:release:tgz"/>
 
@@ -310,13 +360,13 @@
   <!-- ================================================================== -->
 
   <!-- Clean up all build output -->
-  <target name="clean" 
+  <target name="clean"
 	  description="Cleans up most generated files."
 	  depends="_buildmagic:clean">
   </target>
 
   <!-- Clean up all generated files -->
-  <target name="clobber" 
+  <target name="clobber"
 	  description="Cleans up all generated files."
 	  depends="_buildmagic:clobber, clean">
   </target>
@@ -328,14 +378,14 @@
 
   <target name="main" depends="most"
 	  description="Executes the default target (most)."/>
-    
+
   <target name="all" depends="jars, docs"
 	  description="Builds everything."/>
 
   <target name="most" depends="jars"
 	  description="Builds almost everything."/>
 
-  <target name="help" 
+  <target name="help"
           description="Show this help message."
 	  depends="_buildmagic:help:standard"/>
 

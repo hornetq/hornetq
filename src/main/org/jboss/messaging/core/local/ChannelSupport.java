@@ -13,6 +13,7 @@ import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.State;
+import org.jboss.messaging.core.Filter;
 import org.jboss.logging.Logger;
 
 import java.util.Set;
@@ -47,7 +48,7 @@ public abstract class ChannelSupport extends Lockable implements Channel
 
    private MessageStore messageStore;
    private AcknowledgmentStore externalAcknowledgmentStore;
-
+	
 
    // Constructors --------------------------------------------------
 
@@ -69,7 +70,8 @@ public abstract class ChannelSupport extends Lockable implements Channel
       messages = new HashMap();
 
    }
-
+	
+	
    // Channel implementation ----------------------------------------
 
    public boolean setSynchronous(boolean synch)
@@ -131,6 +133,11 @@ public abstract class ChannelSupport extends Lockable implements Channel
 
    public Set browse()
    {
+      return browse(null);
+   }
+	
+	public Set browse(Filter filter)
+   {
       // TODO Very inefficient implementation, change it
       Set messageIDs = getUndelivered();
       Set s = new HashSet();
@@ -139,11 +146,15 @@ public abstract class ChannelSupport extends Lockable implements Channel
          Routable r = (Routable)messages.get(i.next());
          if (r != null)
          {
-            s.add(r);
+				if (filter == null || (filter != null && filter.accept(r)))
+				{
+					s.add(r);
+				}
          }
       }
       return s;
    }
+	
 
    public void acknowledge(Serializable messageID, Serializable receiverID)
    {

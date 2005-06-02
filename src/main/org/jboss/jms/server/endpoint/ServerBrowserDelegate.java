@@ -13,7 +13,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.local.AbstractDestination;
 
 
@@ -32,11 +34,17 @@ public class ServerBrowserDelegate implements BrowserDelegate
    ServerBrowserDelegate(String browserID,
                          AbstractDestination destination,
                          String messageSelector)
+      throws JMSException
    {     
       this.browserID = browserID;
       this.messageSelector = messageSelector;    
       this.destination = destination;
-		iterator = destination.browse().iterator();
+		Filter filter = null;
+		if (messageSelector != null)
+		{	
+			filter = new Selector(messageSelector);		
+		}
+		iterator = destination.browse(filter).iterator();
    }
       
    

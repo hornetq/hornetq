@@ -18,12 +18,14 @@ public class WrapperException extends Exception
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
+	private static final long serialVersionUID = 7877473767540132668L;
+	
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public WrapperException(Throwable payload)
+ 	public WrapperException(Throwable payload)
    {
       super(null, payload);
    }

@@ -23,10 +23,13 @@ import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.Context;
+import javax.transaction.TransactionManager;
+
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
@@ -74,6 +77,7 @@ public class ServerPeer
    protected AcknowledgmentStore acknowledgmentStore;
 
 
+
    // Constructors --------------------------------------------------
 
    public ServerPeer(String id, InvokerLocator locator, Hashtable jndiEnvironment,
@@ -91,7 +95,7 @@ public class ServerPeer
       threadPool = new PooledExecutor();
 
       this.messageStore = messageStore;
-      this.acknowledgmentStore = acknowledgmentStore;
+      this.acknowledgmentStore = acknowledgmentStore;	
    }
 
    // Public --------------------------------------------------------

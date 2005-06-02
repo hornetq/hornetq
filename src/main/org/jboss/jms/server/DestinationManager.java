@@ -10,6 +10,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.core.local.LocalQueue;
 import org.jboss.messaging.core.local.LocalTopic;
 import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -74,6 +75,7 @@ public class DestinationManager
 
             ad.setAcknowledgmentStore(serverPeer.getAcknowledgmentStore());
             ad.setMessageStore(serverPeer.getMessageStore());
+				//ad.setTransactionManager(TransactionManagerImpl.getInstance());
 
             queues.put(name, ad);
          }
@@ -81,6 +83,7 @@ public class DestinationManager
          {
             // TODO I am using LocalTopics for the time being, switch to distributed Topics
             ad = new LocalTopic(name);
+				//ad.setTransactionManager(TransactionManagerImpl.getInstance());
             topics.put(name, ad);
          }
       }

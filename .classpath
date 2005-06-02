@@ -4,6 +4,14 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="output/parsers">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="tests/src">
+		<attributes>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 		</attributes>
@@ -52,7 +60,11 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/thirdparty/jboss/remoting/lib/jboss-remoting.jar">
+	<classpathentry kind="lib" path="/remoting/output/lib/jboss-remoting.jar">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/thirdparty/gnu-regexp/lib/gnu-regexp.jar">
 		<attributes>
 		</attributes>
 	</classpathentry>

@@ -11,9 +11,10 @@ import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.HandleCallbackException;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.jms.delegate.AcknowledgmentHandler;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 
+import javax.jms.Destination;
 import javax.jms.MessageListener;
 import javax.jms.Message;
 import javax.jms.JMSException;
@@ -35,11 +36,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Attributes ----------------------------------------------------
 
-   protected AcknowledgmentHandler acknowledgmentHandler;
+   //protected AcknowledgmentHandler acknowledgmentHandler;
 
 
    protected int capacity = 100;
    protected BoundedBuffer messages;
+	protected SessionDelegate sessionDelegate;
+	protected String receiverID;
+	protected Destination destination;
 
    private volatile boolean receiving;
    private Thread receivingThread;
@@ -55,9 +59,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 
    // Constructors --------------------------------------------------
 
-   public MessageCallbackHandler()
+   public MessageCallbackHandler(Destination destination)
    {
-      messages = new BoundedBuffer(capacity);
+      this.messages = new BoundedBuffer(capacity);	
+		this.destination = destination;
    }
 
    // InvokerCallbackHandler implementation -------------------------
@@ -70,7 +75,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       if (log.isTraceEnabled()) { log.trace("receiving from server: " + m); }
 
       try
-      {
+      {			
+			JBossMessage jm = (JBossMessage)m;	
+			jm.setSessionDelegate(sessionDelegate);
          messages.put(m);
          if (log.isTraceEnabled()) { log.trace("message " + m + " accepted for delivery"); }
       }
@@ -96,10 +103,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          try
          {
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
-            Message m = (Message)messages.take();
+            Message m = (Message)messages.take();				
             listener.onMessage(m);
             if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
-            acknowledge(m);
+            delivered(m);
          }
          catch(InterruptedException e)
          {
@@ -117,10 +124,18 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 
    // Public --------------------------------------------------------
 
-   public void setAcknowledgmentHandler(AcknowledgmentHandler acknowledgmentHandler)
+	
+	public void setSessionDelegate(SessionDelegate delegate)
    {
-      this.acknowledgmentHandler = acknowledgmentHandler;
+      this.sessionDelegate = delegate;
    }
+	
+	public void setReceiverID(String receiverID)
+	{
+		this.receiverID = receiverID;
+	}
+	
+	
 
    public synchronized MessageListener getMessageListener()
    {
@@ -187,7 +202,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             {
                if (timeout <= 0)
                {
+						if (log.isTraceEnabled()) log.trace("receive with no timeout");
                   m = (JBossMessage)messages.take();
+						if (log.isTraceEnabled()) log.trace("Got message:" + m);
                }
                else
                {
@@ -212,11 +229,16 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                }
             }
 
-            // acknowledge even if the message expired
-            acknowledge(m);
+				if (log.isTraceEnabled()) log.trace("Calling delivered()");
+				
+            //Notify that the message has been delivered (not necessarily acknowledged though)
+				delivered(m);
+				
+				if (log.isTraceEnabled()) log.trace("Called delivered()");
 
             if (!m.isExpired())
             {
+					if (log.isTraceEnabled()) log.trace("Message is not expired");
                return m;
             }
 
@@ -250,9 +272,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Private -------------------------------------------------------
 
-   public void acknowledge(Message m) throws JMSException
+   public void delivered(Message m) throws JMSException
    {
-      acknowledgmentHandler.acknowledge(m.getJMSMessageID());
+      sessionDelegate.delivered(m.getJMSMessageID(), destination, receiverID);
    }
 
    // Inner classes -------------------------------------------------

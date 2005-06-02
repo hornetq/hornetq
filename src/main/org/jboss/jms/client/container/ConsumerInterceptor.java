@@ -6,21 +6,23 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.util.PayloadKey;
-import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.jms.client.remoting.Remoting;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.delegate.AcknowledgmentHandler;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+
+import javax.jms.Destination;
+
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.remoting.Remoting;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.InvokerLocator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -71,10 +73,14 @@ public class ConsumerInterceptor implements Interceptor, Serializable
                throw new RuntimeException("No subsystem supplied.  Can't invoke remotely!");
             }
             Client client = new Client(locator, subsystem);
-            MessageCallbackHandler msgHandler = new MessageCallbackHandler();
+				
+				SimpleMetaData metaData = invocation.getMetaData();
+				
+            MessageCallbackHandler msgHandler =
+					new MessageCallbackHandler((Destination)mi.getArguments()[0]);
+				
             client.addListener(msgHandler, Remoting.getCallbackServer().getLocator());
-
-            SimpleMetaData metaData = invocation.getMetaData();
+            
             // I created the client already, pass it along to be used by the InvokerInterceptor
             metaData.addMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.CLIENT,
                                  client, PayloadKey.TRANSIENT);
@@ -87,7 +93,10 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             JMSConsumerInvocationHandler ih =
                   (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerDelegate);
             ih.setMessageHandler(msgHandler);
-            msgHandler.setAcknowledgmentHandler((AcknowledgmentHandler)consumerDelegate);
+            //msgHandler.setAcknowledgmentHandler((AcknowledgmentHandler)consumerDelegate);
+				
+				msgHandler.setSessionDelegate(getDelegate(invocation));
+				msgHandler.setReceiverID((String)ih.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID));
 
             return consumerDelegate;
          }
@@ -101,5 +110,15 @@ public class ConsumerInterceptor implements Interceptor, Serializable
 
    // Private -------------------------------------------------------
 
+	private JMSInvocationHandler getHandler(Invocation invocation)
+   {
+      return ((JMSMethodInvocation)invocation).getHandler();
+   }
+   
+   private SessionDelegate getDelegate(Invocation invocation)
+   {
+      return (SessionDelegate)getHandler(invocation).getDelegate();
+   }
+	
    // Inner classes -------------------------------------------------
 }

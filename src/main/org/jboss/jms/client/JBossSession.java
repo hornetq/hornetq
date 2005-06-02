@@ -40,6 +40,8 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
+import javax.jms.IllegalStateException;
+
 import java.io.Serializable;
 
 /**
@@ -82,12 +84,12 @@ class JBossSession
 
    public BytesMessage createBytesMessage() throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createBytesMessage();
    }
 
    public MapMessage createMapMessage() throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createMapMessage();
    }
 
    public Message createMessage() throws JMSException
@@ -97,27 +99,27 @@ class JBossSession
 
    public ObjectMessage createObjectMessage() throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createObjectMessage();
    }
 
    public ObjectMessage createObjectMessage(Serializable object) throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createObjectMessage(object);
    }
 
    public StreamMessage createStreamMessage() throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createStreamMessage();
    }
 
    public TextMessage createTextMessage() throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createTextMessage();
    }
 
    public TextMessage createTextMessage(String text) throws JMSException
    {
-      throw new NotYetImplementedException();
+   	return delegate.createTextMessage(text);
    }
 
    public boolean getTransacted() throws JMSException
@@ -178,14 +180,15 @@ class JBossSession
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
-     ConsumerDelegate consumerDelegate = delegate.createConsumerDelegate(d);
+     ConsumerDelegate consumerDelegate = delegate.createConsumerDelegate(d, null);
      return new JBossMessageConsumer(consumerDelegate, d);
   }
 
-  public MessageConsumer createConsumer(Destination destination, String messageSelector)
+  public MessageConsumer createConsumer(Destination d, String messageSelector)
         throws JMSException
   {
-     throw new NotYetImplementedException();
+	  ConsumerDelegate consumerDelegate = delegate.createConsumerDelegate(d, messageSelector);
+     return new JBossMessageConsumer(consumerDelegate, d);
   }
 
    public MessageConsumer createConsumer(Destination destination,
@@ -289,8 +292,7 @@ class JBossSession
    }
   
    public XAResource getXAResource()
-   {      
-      if (!isXA) throw new IllegalStateException("Is not an XASession");     
+   {          
       throw new NotYetImplementedException();
    }
    

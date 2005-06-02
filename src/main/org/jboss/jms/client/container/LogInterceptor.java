@@ -8,7 +8,6 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;

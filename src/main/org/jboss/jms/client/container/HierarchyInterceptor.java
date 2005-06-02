@@ -12,6 +12,7 @@ import java.lang.reflect.Proxy;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -31,7 +32,8 @@ public class HierarchyInterceptor  implements Interceptor, Serializable
 
    // Static --------------------------------------------------------
 
-   
+	private static final Logger log = Logger.getLogger(HierarchyInterceptor.class);
+	
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -52,11 +54,14 @@ public class HierarchyInterceptor  implements Interceptor, Serializable
       if (methodName.equals("createSessionDelegate") ||
           methodName.equals("createProducerDelegate") ||
           methodName.equals("createConsumerDelegate") ||
-          methodName.equals("createBrowserDelegate"))
+          methodName.equals("createBrowserDelegate") ||
+			 methodName.equals("createConnectionDelegate"))
       {
+			if (log.isTraceEnabled()) log.trace("Method name is " + methodName);
+			
          JMSInvocationHandler thisHandler = ((JMSMethodInvocation)invocation).getHandler();
          JMSInvocationHandler returnedHandler =
-            (JMSInvocationHandler)Proxy.getInvocationHandler(retVal);
+               (JMSInvocationHandler)Proxy.getInvocationHandler(retVal);
          returnedHandler.setDelegate(retVal);
          thisHandler.addChild(returnedHandler);
       }

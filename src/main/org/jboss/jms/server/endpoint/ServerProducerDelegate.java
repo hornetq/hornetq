@@ -63,7 +63,7 @@ public class ServerProducerDelegate implements ProducerDelegate
    {
       if (log.isTraceEnabled()) { log.trace("sending message " + m + " to the core"); }
 
-      sessionEndpoint.sendMessage(m);
+      sessionEndpoint.connectionEndpoint.sendMessage(m);
    }
 
    // Public --------------------------------------------------------

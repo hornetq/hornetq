@@ -10,6 +10,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.tx.TxInfo;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -29,4 +30,5 @@ public interface ConnectionDelegate extends Closeable
    public ExceptionListener getExceptionListener() throws JMSException;
    public void setExceptionListener(ExceptionListener listener) throws JMSException;
   
+	public void sendTransaction(TxInfo tx) throws JMSException;
 }

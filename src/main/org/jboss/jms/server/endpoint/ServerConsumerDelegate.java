@@ -11,7 +11,6 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.jms.delegate.AcknowledgmentHandler;
 import org.jboss.jms.client.Closeable;
 import org.jboss.remoting.InvokerCallbackHandler;
 
@@ -32,7 +31,7 @@ import javax.jms.JMSException;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ServerConsumerDelegate implements Receiver, Closeable, AcknowledgmentHandler
+public class ServerConsumerDelegate implements Receiver, Closeable
 {
    // Constants -----------------------------------------------------
 
@@ -46,7 +45,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable, Acknowledgme
    protected AbstractDestination destination;
    protected ServerSessionDelegate sessionEndpoint;
    protected InvokerCallbackHandler callbackHandler;
-
+	
    protected PooledExecutor threadPool;
 
    // Constructors --------------------------------------------------
@@ -87,26 +86,19 @@ public class ServerConsumerDelegate implements Receiver, Closeable, Acknowledgme
       // always NACK the message; it will be asynchronously ACKED later
       return false;
    }
-
-   // AcknowledgmentHandler implementation --------------------------
-
-   public void acknowledge(Serializable messageID)
-   {
-      if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
-		
-		destination.acknowledge(messageID, this.getReceiverID());		
-   }
+	
+  
 
    // Closeable implementation --------------------------------------
 
    public void closing() throws JMSException
    {
-      log.debug("closing");
+      
    }
 
    public void close() throws JMSException
    {
-      log.debug("close");
+		this.setStarted(false);
    }
    
 

@@ -6,18 +6,24 @@
  */
 package org.jboss.jms.client.container;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 
 /**
  * Constructs various things that can be created on the client.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class FactoryInterceptor implements Interceptor, Serializable
@@ -51,6 +57,36 @@ public class FactoryInterceptor implements Interceptor, Serializable
          {
             return new JBossMessage();
          }
+         else if (m.getName().equals("createBytesMessage"))
+         {
+            return new JBossBytesMessage();
+         }
+         else if (m.getName().equals("createMapMessage"))
+         {
+            return new JBossMapMessage();
+         }
+         else if (m.getName().equals("createObjectMessage"))
+         {
+         	JBossObjectMessage msg = new JBossObjectMessage();
+         	if (mi.getArguments().length != 0)
+         	{
+         		msg.setObject((Serializable)mi.getArguments()[0]);
+         	}
+         	return msg;
+         }
+         else if (m.getName().equals("createStreamMessage"))
+         {
+            return new JBossStreamMessage();
+         }
+         else if (m.getName().equals("createTextMessage"))
+         {
+         	JBossTextMessage msg = new JBossTextMessage();
+         	if (mi.getArguments().length != 0)
+         	{         		
+         		msg.setText((String)mi.getArguments()[0]);
+         	}
+         	return msg;
+         }         
       }
       return invocation.invokeNext();
    }
@@ -60,6 +96,6 @@ public class FactoryInterceptor implements Interceptor, Serializable
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
+		
    // Inner classes -------------------------------------------------
 }

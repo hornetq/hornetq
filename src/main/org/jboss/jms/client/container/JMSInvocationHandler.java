@@ -132,6 +132,7 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
    {
        this.delegate = proxy;
    }
+	
 
    // Package protected ---------------------------------------------
 

@@ -8,13 +8,16 @@ package org.jboss.jms.tx;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TransactionRolledBackException;
 
-import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.logging.Logger;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 
+ * 
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox </a>
  */
@@ -24,39 +27,39 @@ public class ResourceManager
 
    // Attributes ----------------------------------------------------
    
-   private ConcurrentReaderHashMap transactions = new ConcurrentReaderHashMap();
+	//TODO - If there are a lot of messages/acks in a tx
+	//we need to sensibly deal with this to avoid exhausting memory - 
+	//perhaps spill over into a persistent store
+   private ConcurrentHashMap transactions = new ConcurrentHashMap();
    
    private long idSequence;
+	
+	private ConnectionDelegate connection;
 
    // Static --------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ResourceManager.class);
    
-   private static ResourceManager instance = new ResourceManager();
-   
-   public static ResourceManager instance()
-   {
-      return instance;
-   }
-   
+           
    // Constructors --------------------------------------------------
 
-   private ResourceManager()
+   public ResourceManager(ConnectionDelegate connection)
    {
+		this.connection = connection;
    }
    
    // Public --------------------------------------------------------
    
    public Object createLocalTx()
    {
-      LocalTx tx = new LocalTx(getNextTxId());
+      TxInfo tx = new TxInfo(getNextTxId());
       transactions.put(tx.getId(), tx);
       return tx.getId();
    }
 
-   private LocalTx getTx(Object Xid)
+   private TxInfo getTx(Object Xid)
    {
-      LocalTx tx = (LocalTx) transactions.get(Xid);
+		TxInfo tx = (TxInfo) transactions.get(Xid);
       if (tx == null)
          throw new IllegalArgumentException("No such Xid:" + Xid);
       return tx;
@@ -64,40 +67,51 @@ public class ResourceManager
 
    public void addMessage(Object Xid, Message m)
    {
-      LocalTx tx = getTx(Xid);
+		TxInfo tx = getTx(Xid);
       tx.addMessage(m);
    }
 
    // TODO
-   public void addAck(Object Xid, Object ack)
+   public void addAck(Object Xid, AckInfo ackInfo)
    {
-      LocalTx tx = getTx(Xid);
-      tx.addAck(ack);
+		TxInfo tx = getTx(Xid);
+      tx.addAck(ackInfo);
    }
 
-   public Object commit(Object Xid, SessionDelegate sd) throws JMSException
+   public Object commit(Object Xid) throws JMSException
    {
       log.debug("Committing tx: " + Xid);
-      LocalTx tx = getTx(Xid);
-      if (tx.getMessages().size() > 0 || tx.getAcks().size() > 0)
-      {
-         log.debug("There is stuff to send");
-         sd.sendTransaction(tx);
-      }
-      transactions.remove(Xid);
+		try
+		{
+			TxInfo tx = getTx(Xid);
+	      if (tx.getMessages().size() > 0 || tx.getAcks().size() > 0)
+	      {
+	         log.debug("There is stuff to send");
+	         connection.sendTransaction(tx);
+	      }
+		}
+		catch (Throwable t)
+		{
+			log.error("Failed to commit tx", t);
+			throw new TransactionRolledBackException("Failed to commit tx: " + t.getMessage());
+		}
+		finally
+		{
+	      transactions.remove(Xid);
+		}
       return createLocalTx();
    }
 
    public Object rollback(Object Xid)
    {
       log.debug("Rolling back tx: " + Xid);
-      LocalTx tx = getTx(Xid);
+		TxInfo tx = getTx(Xid);
       transactions.remove(Xid);
       return createLocalTx();
    }
    
    
-   //TODO XA Stuff
+   // TODO XA Stuff
 
    // Interceptor implementation ------------------------------------
    
@@ -114,7 +128,4 @@ public class ResourceManager
    
    // Inner Classes --------------------------------------------------
    
-   
-   
-
 }

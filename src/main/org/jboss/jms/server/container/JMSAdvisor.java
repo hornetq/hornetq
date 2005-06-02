@@ -31,6 +31,9 @@ public class JMSAdvisor extends ClassAdvisor
    public static final String DELIVERY_MODE = "DELIVERY_MODE";
    public static final String XID = "XID";
    public static final String EXCEPTION_LISTENER = "EXCEPTION_LISTENER";
+	public static final String ACKNOWLEDGMENT_MODE = "ACKNOWLEDGMENT_MODE";
+	public static final String UNACKED = "UNACKED";
+	public static final String RESOURCE_MANAGER = "RESOURCE_MGR";
 
    // Static --------------------------------------------------------
    

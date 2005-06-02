@@ -10,6 +10,7 @@ package org.jboss.jms.client.container;
 import java.lang.reflect.Proxy;
 import java.io.Serializable;
 
+import javax.jms.Destination;
 import javax.jms.Message;
 
 import org.jboss.aop.advice.Interceptor;
@@ -17,7 +18,9 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
@@ -56,66 +59,84 @@ public class TransactionInterceptor implements Interceptor, Serializable
       
          String methodName = mi.getMethod().getName();
          
-         if ("createSessionDelegate".equals(methodName))
+			if ("createConnectionDelegate".equals(methodName))
+			{
+				if (log.isTraceEnabled()) log.trace("creating resource manager");
+				//Create new ResourceManager and add to meta-data for invocation handler
+				//for connection
+				ConnectionDelegate connectionDelegate = (ConnectionDelegate)invocation.invokeNext();
+				ResourceManager rm = new ResourceManager(connectionDelegate);
+				JMSInvocationHandler handler = (JMSInvocationHandler)Proxy.getInvocationHandler(connectionDelegate);				
+				handler.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER, rm);
+				return connectionDelegate;
+			}			
+			else if ("createSessionDelegate".equals(methodName))
          {
-            log.debug("createSessionDelegate");
+            if (log.isTraceEnabled()) log.trace("createSessionDelegate");
             
             SessionDelegate sd = (SessionDelegate)invocation.invokeNext();
             
-            //If we get here, the sesion has been created
+            //If we get here, the session has been created
             
             Boolean transacted = (Boolean)mi.getArguments()[0];
             
-            log.debug("Transacted: " + transacted);
+				if (log.isTraceEnabled()) log.trace("Transacted: " + transacted);
             
             if (transacted == null)
                throw new IllegalStateException("Cannot find transacted argument");
 
             if (transacted.booleanValue())
             {
-               log.debug("Session is transacted");
+					if (log.isTraceEnabled()) log.trace("Session is transacted");
                
                //Session has been created and is transacted so we start a tx               
                
-               Object Xid = ResourceManager.instance().createLocalTx();
+					JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
+					
+					ResourceManager rm =
+						(ResourceManager)handler.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);	
+					
+               Object Xid = rm.createLocalTx();
                
-               log.debug("Created tx");
+					if (log.isTraceEnabled()) log.trace("Created tx");
                
                //And set it on the meta-data of the returned delegate's invocation handler
                JMSInvocationHandler sessionHandler = getHandler(sd);               
                setMetaData(sessionHandler, JMSAdvisor.XID, Xid);               
                
-               log.debug("Added Xid to meta-data");
+					if (log.isTraceEnabled()) log.trace("Added Xid to meta-data");
             }
             
             return sd;
-         }
-         else if ("close".equals(methodName))
-         {
-            //Rollback the session
-            
-            //Make sure this invocation is for the Session since other delegates have a close() method
-            
-            //TODO
-         }
+         }         
          else if ("commit".equals(methodName))
          {
-            log.debug("commit");
+				if (log.isTraceEnabled()) log.trace("commit");
+				
             Object Xid = getMetaData(mi, JMSAdvisor.XID);                        
-            SessionDelegate sd = (SessionDelegate)getDelegate(mi);            
-            Object newXid = ResourceManager.instance().commit(Xid, sd);
-            setMetaData(mi, JMSAdvisor.XID, newXid);                      
+            //SessionDelegate sd = (SessionDelegate)getDelegate(mi);  
+				ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
+            Object newXid = rm.commit(Xid);
+            setMetaData(mi, JMSAdvisor.XID, newXid);   
+				
+				return null;
          }
          else if ("rollback".equals(methodName))
          {
-            log.debug("rollback");
-            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);                     
-            Object newXid = ResourceManager.instance().rollback(Xid);
+				if (log.isTraceEnabled()) log.trace("rollback");
+            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);   
+				ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
+            Object newXid = rm.rollback(Xid);
             setMetaData(mi, JMSAdvisor.XID, newXid); 
+				
+				//Rollback causes redelivery of messages
+				SessionDelegate sd = (SessionDelegate)getDelegate(mi);
+				sd.redeliver();
+				return null;				
          }
          else if ("send".equals(methodName))
          {
-            if (log.isTraceEnabled()) { log.trace("send"); }
+            if (log.isTraceEnabled()) log.trace("send"); 
 
             JMSInvocationHandler sessionInvocationHandler = getHandler(invocation).getParent();
 
@@ -125,9 +146,10 @@ public class TransactionInterceptor implements Interceptor, Serializable
             if (Xid != null)
             {
                //Session is transacted - so we add message to tx instead of sending now
-               if (log.isTraceEnabled()) { log.trace("Session is transacted, storing mesage until commit"); }
+               if (log.isTraceEnabled())  log.trace("Session is transacted, storing mesage until commit");
                Message m = (Message)mi.getArguments()[0];
-               ResourceManager.instance().addMessage(Xid, m);
+					ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
+					rm.addMessage(Xid, m);
 
                //And we don't invoke any further interceptors in the stack
                return null;               
@@ -137,12 +159,30 @@ public class TransactionInterceptor implements Interceptor, Serializable
                if (log.isTraceEnabled()) { log.trace("Session is not transacted, sending message now"); }
             }
          }
-         else if ("recover".equals(methodName))
-         {
-            //TODO
-            //I'm not sure whether this needs to be handled here or in the SesionInterceptor
-         }
-         
+         else if ("acknowledge".equals(methodName))
+			{
+				if (log.isTraceEnabled()) log.trace("acknowledge");
+				
+				Object Xid = mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
+				
+				if (Xid == null)
+				{
+					//Not transacted - this goes through to the ServerSessionDelegate
+					if (log.isTraceEnabled()) { log.trace("Session is not transacted, acking message now"); }
+				}
+				else 
+				{
+					String messageID = (String)mi.getArguments()[0];
+					Destination destination = (Destination)mi.getArguments()[1];
+					String receiverID = (String)mi.getArguments()[2];
+					
+					ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
+					
+					rm.addAck(Xid, new AckInfo(messageID, destination, receiverID));
+					
+					return null;
+				}
+			}                  
       }
                
       return invocation.invokeNext();            
@@ -156,7 +196,14 @@ public class TransactionInterceptor implements Interceptor, Serializable
          
    
    //Helper methods
+	
+	/*
+	private ResourceManager getResourceManager(Invocation invocation)
+	{
+		return (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);		
+	}
    
+   */
    private JMSInvocationHandler getHandler(Invocation invocation)
    {
       return ((JMSMethodInvocation)invocation).getHandler();

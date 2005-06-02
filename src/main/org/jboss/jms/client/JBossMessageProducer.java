@@ -8,6 +8,7 @@ package org.jboss.jms.client;
 
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 
 import javax.jms.MessageProducer;
@@ -210,7 +211,9 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    protected void configure(Message m, int deliveryMode, int priority,
                             long timeToLive, Destination dest)
          throws JMSException
-   {
+   {   	   	
+   	((JBossMessage)m).setPropertiesReadWrite(false);
+   	
       m.setJMSDeliveryMode(deliveryMode);
       if (isTimestampDisabled)
       {

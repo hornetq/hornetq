@@ -6,8 +6,12 @@
  */
 package org.jboss.jms.server.endpoint;
 
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.tx.TxInfo;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
@@ -19,9 +23,18 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
+import org.jboss.util.id.GUID;
 
+import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.transaction.TransactionManager;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -74,6 +87,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
       // TODO why do I need to the advisor to create the interceptor stack?
       Interceptor[] interceptors = stack.createInterceptors(serverPeer.getSessionAdvisor(), null);
+		
 
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
@@ -94,6 +108,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, clientID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       
+		metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE, new Integer(acknowledgmentMode), PayloadKey.AS_IS);
+		
 
       h.getMetaData().mergeIn(metadata);
 
@@ -104,7 +120,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
       // create the corresponding "server-side" SessionDelegate and register it with this
       // ConnectionDelegate instance
-      ServerSessionDelegate ssd = new ServerSessionDelegate(sessionID, this);
+      ServerSessionDelegate ssd = new ServerSessionDelegate(sessionID, this, acknowledgmentMode);
       putSessionDelegate(sessionID, ssd);
 
       log.debug("created session delegate (sessionID=" + sessionID + ")");
@@ -163,6 +179,75 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       throw new IllegalStateException("setExceptionListener is not handled on the server");
    }
+	
+
+   public void sendTransaction(TxInfo tx)
+      throws JMSException
+   {            
+		if (log.isTraceEnabled()) log.trace("Received transaction from client");
+		
+		if (log.isTraceEnabled()) log.trace("There are " + tx.getMessages().size() + " messages to send " +
+				"and " + tx.getAcks().size() + " messages to ack");
+                     
+		TransactionManager tm = TransactionManagerImpl.getInstance();		
+		
+		/*
+		
+		try
+		{
+			tm.begin();
+		}
+		catch (Exception e)
+		{
+			throw new JMSException("Failed to start transaction", e.getMessage());
+		}
+		
+		*/
+				
+		try
+		{		
+	      Iterator iter = tx.getMessages().iterator();
+	      while (iter.hasNext())
+	      {
+	         Message m = (Message)iter.next();
+	         sendMessage(m);
+	         if (log.isTraceEnabled()) log.trace("Sent message");
+	      }
+			
+			if (log.isTraceEnabled()) log.trace("Done the sends");
+			
+			//Then ack the acks	
+			iter = tx.getAcks().iterator();
+			while (iter.hasNext())
+			{
+				AckInfo ack = (AckInfo)iter.next();
+				
+				acknowledge(ack.messageID, ack.destination, ack.receiverID);
+				
+				if (log.isTraceEnabled()) log.trace("Acked message:" + ack.messageID);
+			}
+			
+			if (log.isTraceEnabled()) log.trace("Done the acks");
+			
+		}
+		catch (Exception e)
+		{
+			//TODO What to do here??
+		}
+		
+		/*
+		try
+		{
+			tm.commit();
+		}
+		catch (Exception e)
+		{
+			log.error("Failed to commit tx", e);
+			throw new JMSException("Failed to commit transaction", e.getMessage());
+		}
+		*/
+			
+   }
 
    // Public --------------------------------------------------------
 
@@ -188,6 +273,57 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    }
 
    // Package protected ---------------------------------------------
+	
+	void sendMessage(Message m) throws JMSException
+   {
+      //The JMSDestination header must already have been set for each message
+      Destination dest = m.getJMSDestination();
+      if (dest == null)
+      {
+         throw new IllegalStateException("JMSDestination header not set!");
+      }
+      
+      Receiver receiver = null;
+      try
+      {
+         DestinationManager dm = serverPeer.getDestinationManager();
+         receiver = dm.getDestination(dest);
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("Cannot map destination " + dest, e);
+      }
+      
+      m.setJMSMessageID(generateMessageID());         
+   
+      boolean acked = receiver.handle((Routable)m);
+   
+      if (!acked)
+      {
+         log.debug("The message was not acknowledged");
+         //TODO deal with this properly
+      }  
+   }
+	
+	void acknowledge(String messageID, Destination jmsDestination, String receiverID)
+		throws JMSException
+	{
+		 if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
+			
+		 DestinationManager dm = serverPeer.getDestinationManager();
+			
+		 AbstractDestination destination = null;
+		 try
+		 {
+			 destination = dm.getDestination(jmsDestination);
+		 }
+		 catch(Exception e)
+		 {
+			 throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
+		 }
+		 
+		 destination.acknowledge(messageID, receiverID);
+	}
 
    // Protected -----------------------------------------------------
 
@@ -202,6 +338,13 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          id = sessionIDCounter++;
       }
       return clientID + "-Session" + id;
+   }
+	
+	protected String generateMessageID()
+   {
+      StringBuffer sb = new StringBuffer("ID:");
+      sb.append(new GUID().toString());
+      return sb.toString();
    }
 
    // Private -------------------------------------------------------

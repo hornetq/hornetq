@@ -6,27 +6,47 @@
  */
 package org.jboss.jms.delegate;
 
+
+import java.io.Serializable;
+
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.tx.LocalTx;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public interface SessionDelegate extends Closeable
 {
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
-   public ConsumerDelegate createConsumerDelegate(Destination destination) throws JMSException;
+   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector) throws JMSException;
 
    public Message createMessage() throws JMSException;
    
-   public void sendTransaction(LocalTx tx) throws JMSException;
+   public BytesMessage createBytesMessage() throws JMSException;
+  
+   public MapMessage createMapMessage() throws JMSException;
+
+   public ObjectMessage createObjectMessage() throws JMSException;
+
+   public ObjectMessage createObjectMessage(Serializable object) throws JMSException;
+
+   public StreamMessage createStreamMessage() throws JMSException;
+
+   public TextMessage createTextMessage() throws JMSException;
    
+   public TextMessage createTextMessage(String text) throws JMSException;
+      
    public void commit() throws JMSException;
    
    public void rollback() throws JMSException;
@@ -35,4 +55,13 @@ public interface SessionDelegate extends Closeable
 
    public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
          throws JMSException;
+	
+	public void delivered(String messageID, Destination destination, String receiverID) throws JMSException;
+	
+	public void acknowledge(String messageID, Destination destination, String receiverID) throws JMSException;
+	
+	public void acknowledgeSession() throws JMSException;
+	
+	public void redeliver() throws JMSException;
+		
 }
