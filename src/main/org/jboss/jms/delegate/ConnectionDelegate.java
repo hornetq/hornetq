@@ -8,6 +8,8 @@ package org.jboss.jms.delegate;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.transaction.SystemException;
+import javax.transaction.NotSupportedException;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.tx.TxInfo;

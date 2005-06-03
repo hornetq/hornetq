@@ -6,8 +6,6 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import javax.jms.Message;
-import javax.jms.JMSException;
 
 /**
  * Provider of method definitions for all generic invocations.

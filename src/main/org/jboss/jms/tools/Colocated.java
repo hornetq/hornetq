@@ -8,6 +8,7 @@ package org.jboss.jms.tools;
 
 import org.jboss.jms.util.InVMInitialContextFactory;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 
 /**
@@ -36,7 +37,8 @@ public class Colocated extends Client
    public Colocated() throws Exception
    {
       super(InVMInitialContextFactory.getJNDIEnvironment());
-      server = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment());
+      server = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment(),
+                                 TransactionManagerImpl.getInstance());
       server.start();
 
       deployTopic("T");

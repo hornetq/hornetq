@@ -23,10 +23,8 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 import org.jboss.util.id.GUID;
 
 import javax.jms.Destination;
@@ -108,7 +106,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, clientID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       
-		metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE, new Integer(acknowledgmentMode), PayloadKey.AS_IS);
+		metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE,
+                           new Integer(acknowledgmentMode), PayloadKey.AS_IS);
 		
 
       h.getMetaData().mergeIn(metadata);
@@ -179,32 +178,21 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       throw new IllegalStateException("setExceptionListener is not handled on the server");
    }
-	
+
 
    public void sendTransaction(TxInfo tx) throws JMSException
-   {            
-		if (log.isTraceEnabled()) log.trace("Received transaction from client");
-		
-		if (log.isTraceEnabled()) log.trace("There are " + tx.getMessages().size() + " messages to send " +
-				"and " + tx.getAcks().size() + " messages to ack");
-                     
-		TransactionManager tm = TransactionManagerImpl.getInstance();		
-		
-		/*
-		
+   {
+		if (log.isTraceEnabled()) { log.trace("Received transaction from client"); }
+		if (log.isTraceEnabled()) { log.trace("There are " + tx.getMessages().size() + " messages to send " +	"and " + tx.getAcks().size() + " messages to ack"); }
+
+      TransactionManager tm = serverPeer.getTransactionManager();
+      boolean committed = false;
+
 		try
 		{
-			tm.begin();
-		}
-		catch (Exception e)
-		{
-			throw new JMSException("Failed to start transaction", e.getMessage());
-		}
-		
-		*/
-				
-		try
-		{		
+         // start the transaction
+         tm.begin();
+
 	      Iterator iter = tx.getMessages().iterator();
 	      while (iter.hasNext())
 	      {
@@ -212,40 +200,46 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 	         sendMessage(m);
 	         if (log.isTraceEnabled()) log.trace("Sent message");
 	      }
-			
+
 			if (log.isTraceEnabled()) log.trace("Done the sends");
-			
-			//Then ack the acks	
+
+			//Then ack the acks
 			iter = tx.getAcks().iterator();
 			while (iter.hasNext())
 			{
 				AckInfo ack = (AckInfo)iter.next();
-				
+
 				acknowledge(ack.messageID, ack.destination, ack.receiverID);
-				
+
 				if (log.isTraceEnabled()) log.trace("Acked message:" + ack.messageID);
 			}
-			
+
 			if (log.isTraceEnabled()) log.trace("Done the acks");
-			
+
+         tm.commit();
+         committed = true;
 		}
-		catch (Exception e)
+		catch (Throwable t)
 		{
-			//TODO What to do here??
+         String msg = "The server connection delegate failed to handle transaction";
+         log.error(msg, t);
+			throw new JBossJMSException(msg, t);
 		}
-		
-		/*
-		try
-		{
-			tm.commit();
-		}
-		catch (Exception e)
-		{
-			log.error("Failed to commit tx", e);
-			throw new JMSException("Failed to commit transaction", e.getMessage());
-		}
-		*/
-			
+      finally
+      {
+         if (tm != null && !committed)
+         {
+            try
+            {
+               tm.rollback();
+            }
+            catch(Exception e)
+            {
+               log.debug("Unable to rollback curent non-committed transaction", e);
+            }
+         }
+      }
+
    }
 
    // Public --------------------------------------------------------
@@ -282,26 +276,36 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new IllegalStateException("JMSDestination header not set!");
       }
       
-      Receiver receiver = null;
+      AbstractDestination destination = null;
       try
       {
          DestinationManager dm = serverPeer.getDestinationManager();
-         receiver = dm.getDestination(dest);
+         destination = dm.getDestination(dest);
       }
       catch(Exception e)
       {
          throw new JBossJMSException("Cannot map destination " + dest, e);
       }
       
-      m.setJMSMessageID(generateMessageID());         
-   
-      boolean acked = receiver.handle((Routable)m);
-   
+      m.setJMSMessageID(generateMessageID());
+
+      boolean acked = destination.handle((Routable)m);
+
+      if (destination.isTransactional() && isActiveTransaction())
+      {
+         // for a transacted invocation, the return value is irrelevant
+         return;
+      }
+
       if (!acked)
       {
-         log.debug("The message was not acknowledged");
-         //TODO deal with this properly
-      }  
+         // under normal circumstances, this shouldn't happen, since the destination
+         // is supposed to hold the message for redelivery
+
+         String msg = "The message was not acknowledged by destination " + destination;
+         log.error(msg);
+         throw new JBossJMSException(msg);
+      }
    }
 	
 	void acknowledge(String messageID, Destination jmsDestination, String receiverID)
@@ -358,6 +362,24 @@ public class ServerConnectionDelegate implements ConnectionDelegate
             sd.setStarted(s);
          }
          started = s;
+      }
+   }
+
+   private boolean isActiveTransaction()
+   {
+      TransactionManager tm = serverPeer.getTransactionManager();
+      if (tm == null)
+      {
+         return false;
+      }
+      try
+      {
+         return tm.getTransaction() != null;
+      }
+      catch(Exception e)
+      {
+         log.debug("failed to access transaction manager", e);
+         return false;
       }
    }
 

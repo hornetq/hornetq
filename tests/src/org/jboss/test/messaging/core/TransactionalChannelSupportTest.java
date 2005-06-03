@@ -79,6 +79,17 @@ public class TransactionalChannelSupportTest extends ChannelSupportTest
       assertTrue(tm == transactionalChannel.getTransactionManager());
    }
 
+   public void testIsTransactional()
+   {
+      if (skip()) { return; }
+
+      assertTrue(transactionalChannel.isTransactional());
+
+      transactionalChannel.setTransactionManager(null);
+      assertFalse(transactionalChannel.isTransactional());
+   }
+
+
    //
    // Transacted handle() tests
    //

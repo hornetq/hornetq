@@ -10,6 +10,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 import javax.naming.InitialContext;
 import javax.jms.Connection;
@@ -18,6 +19,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.JMSException;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -58,11 +60,77 @@ public class TransactedSessionTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.stopInVMServer();
+      TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.OPERATIONAL);
       super.tearDown();
    }
 
 
    // Public --------------------------------------------------------
+
+   public void testSendNoTransactionManager() throws Exception
+   {
+      ServerManagement.stopInVMServer();
+
+      // start the server without a transaction manager
+      ServerManagement.startInVMServer(null);
+      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+      ServerManagement.deployQueue("Queue");
+      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+
+      Connection c = cf.createConnection();
+
+      Session s = c.createSession(true, -1);
+      MessageProducer p = s.createProducer(queue);
+
+      // send a message
+
+      Message m = s.createMessage();
+      p.send(m);
+
+      try
+      {
+         s.commit();
+         fail("should have thrown exception");
+      }
+      catch(JMSException e)
+      {
+         // OK
+      }
+   }
+
+   public void testSendBrokenTransactionManager() throws Exception
+   {
+      ServerManagement.stopInVMServer();
+
+      // start the server with a broken manager
+      TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.BROKEN);
+      ServerManagement.startInVMServer();
+      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+      ServerManagement.deployQueue("Queue");
+      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+
+      Connection c = cf.createConnection();
+
+      Session s = c.createSession(true, -1);
+      MessageProducer p = s.createProducer(queue);
+
+      // send a message
+
+      Message m = s.createMessage();
+      p.send(m);
+
+      try
+      {
+         s.commit();
+         fail("should have thrown exception");
+      }
+      catch(JMSException e)
+      {
+         // OK
+      }
+   }
 
 	/**
 	 * Send some messages in transacted session. Don't commit.
@@ -229,8 +297,8 @@ public class TransactedSessionTest extends MessagingTestCase
    }
 
 
-	
-	
+
+
 	/**
 	 * Send some messages.
 	 * Receive them in a transacted session.
@@ -240,59 +308,59 @@ public class TransactedSessionTest extends MessagingTestCase
 	 */
    public void testAckCommit() throws Exception
    {
-		Connection conn = cf.createConnection();     
-		
+		Connection conn = cf.createConnection();
+
 		Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
-		
+
 		Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		final int NUM_MESSAGES = 10;
-		
+
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
 			Message m = producerSess.createMessage();
 			producer.send(m);
 		}
-		
+
 		log.trace("Sent messages");
-		
+
 		int count = 0;
-		while (true)		
+		while (true)
 		{
 			Message m = consumer.receive(500);
 			if (m == null) break;
 			count++;
 		}
-		
+
 		assertEquals(NUM_MESSAGES, count);
-		
+
 		consumerSess.commit();
-		
-		conn.stop();		
+
+		conn.stop();
 		consumer.close();
-						
+
 		conn.close();
-		
-		conn = cf.createConnection();     
-		
+
+		conn = cf.createConnection();
+
 		consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
 		consumer = consumerSess.createConsumer(queue);
 		conn.start();
-		
+
 		Message m = consumer.receive(2000);
-		
+
 		assertNull(m);
-		
+
 		conn.close();
-		
+
    }
-	
-	
-	
+
+
+
 	/*
 	 * Send some messages in a transacted session.
 	 * Rollback the session.

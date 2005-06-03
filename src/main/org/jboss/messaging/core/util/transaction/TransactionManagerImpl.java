@@ -111,13 +111,42 @@ public class TransactionManagerImpl implements TransactionManager
                                HeuristicRollbackException, SecurityException,
                                IllegalStateException, SystemException
    {
-      throw new NotYetImplementedException();
+      if (BROKEN.equals(state))
+      {
+         throw new SystemException("THIS IS AN EXCEPTION THAT SIMULATES A PROBLEM " +
+                                   "WITH THE TRANSACTION MANAGER");
+      }
+
+      ThreadInfo ti = getThreadInfo();
+      TransactionImpl current = ti.transaction;
+
+      if (current != null)
+      {
+         current.commit();
+         disassociateThread(ti);
+      }
+      else
+      {
+         throw new IllegalStateException("No transaction.");
+      }
    }
 
 
    public void rollback() throws IllegalStateException, SecurityException, SystemException
    {
-      throw new NotYetImplementedException();
+      ThreadInfo ti = getThreadInfo();
+      TransactionImpl current = ti.transaction;
+
+      if (current != null)
+      {
+         if (!current.isDone())
+         {
+            current.rollback();
+            return;
+         }
+         disassociateThread(ti);
+      }
+      throw new IllegalStateException("No transaction.");
    }
 
 

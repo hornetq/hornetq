@@ -23,7 +23,6 @@ import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
-import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
@@ -76,12 +75,15 @@ public class ServerPeer
    protected MessageStore messageStore;
    protected AcknowledgmentStore acknowledgmentStore;
 
+   protected TransactionManager transactionManager;
+
 
 
    // Constructors --------------------------------------------------
 
    public ServerPeer(String id, InvokerLocator locator, Hashtable jndiEnvironment,
-                     MessageStore messageStore, AcknowledgmentStore acknowledgmentStore)
+                     MessageStore messageStore, AcknowledgmentStore acknowledgmentStore,
+                     TransactionManager transactionManager)
          throws Exception
    {
       this.id = id;
@@ -95,7 +97,9 @@ public class ServerPeer
       threadPool = new PooledExecutor();
 
       this.messageStore = messageStore;
-      this.acknowledgmentStore = acknowledgmentStore;	
+      this.acknowledgmentStore = acknowledgmentStore;
+
+      this.transactionManager= transactionManager;
    }
 
    // Public --------------------------------------------------------
@@ -206,6 +210,11 @@ public class ServerPeer
    public AcknowledgmentStore getAcknowledgmentStore()
    {
       return acknowledgmentStore;
+   }
+
+   public TransactionManager getTransactionManager()
+   {
+      return transactionManager;
    }
 
    // Package protected ---------------------------------------------

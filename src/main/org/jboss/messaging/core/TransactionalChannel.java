@@ -16,6 +16,13 @@ import javax.transaction.TransactionManager;
  */
 public interface TransactionalChannel extends Channel
 {
+   /**
+    * Returns true if the channel is capable of performing transactional operations (a transactional
+    * manager is set and the channel was not explicitely configured to handle messages
+    * non-transactionally. 
+    */
+   public boolean isTransactional();
+
    public void setTransactionManager(TransactionManager tm);
 
    public TransactionManager getTransactionManager();

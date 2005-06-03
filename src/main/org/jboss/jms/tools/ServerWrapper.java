@@ -23,6 +23,7 @@ import javax.naming.Context;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.Binding;
+import javax.transaction.TransactionManager;
 import java.net.URL;
 import java.util.Hashtable;
 
@@ -56,6 +57,8 @@ public class ServerWrapper
    private InitialContext initialContext;
    private Hashtable jndiEnvironment;
 
+   private TransactionManager transactionManager;
+
    // Constructors --------------------------------------------------
 
    /**
@@ -63,16 +66,20 @@ public class ServerWrapper
     */
    public ServerWrapper() throws Exception
    {
-      this(null);
+      this(null, null);
    }
 
    /**
     * @param jndiEnvironment - Contains jndi properties. Null means using default properties
     *        (jndi.properties file)
+    * @param transactionManager - transaction manager instance to be used by the server. null if no
+    *        transaction manager is available.
     */
-   public ServerWrapper(Hashtable jndiEnvironment) throws Exception
+   public ServerWrapper(Hashtable jndiEnvironment, TransactionManager transactionManager)
+         throws Exception
    {
       this.jndiEnvironment = jndiEnvironment;
+      this.transactionManager = transactionManager;
       initialContext = new InitialContext(jndiEnvironment);
       locator = new InvokerLocator("socket://localhost:9890");
       serverPeerID = "ServerPeer0";
@@ -87,7 +94,8 @@ public class ServerWrapper
       initializeRemoting();
       serverPeer = new ServerPeer(serverPeerID, locator, jndiEnvironment,
                                   new MessageStoreImpl("MSGStore"),
-                                  new InMemoryAcknowledgmentStore("ACKStore"));
+                                  new InMemoryAcknowledgmentStore("ACKStore"),
+                                  transactionManager);
       serverPeer.start();
       log.info("server started");
    }
@@ -100,6 +108,11 @@ public class ServerWrapper
       tearDownJNDI();
       unloadAspects();
       log.info("server stopped");
+   }
+
+   public void setTransactionManager(TransactionManager tm)
+   {
+      transactionManager = tm;
    }
 
    public void deployTopic(String name) throws Exception

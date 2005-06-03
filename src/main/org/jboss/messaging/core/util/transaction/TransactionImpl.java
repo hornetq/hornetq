@@ -21,6 +21,7 @@ import javax.transaction.HeuristicCommitException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
+import javax.resource.spi.work.Work;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,6 +131,10 @@ class TransactionImpl implements Transaction
    // The heuristics status of this transaction.
    private int heuristicCode = HEUR_NONE;
 
+   /**
+    * Any current work associated with the transaction
+    */
+   private Work work;
 
    // Constructors --------------------------------------------------
 
@@ -245,7 +250,39 @@ class TransactionImpl implements Transaction
 
    public void rollback() throws IllegalStateException, SystemException
    {
-      throw new NotYetImplementedException();
+      lock();
+      try
+      {
+         checkWork();
+
+         switch (status)
+         {
+            case Status.STATUS_ACTIVE:
+               status = Status.STATUS_MARKED_ROLLBACK;
+               // fall through..
+            case Status.STATUS_MARKED_ROLLBACK:
+               endResources();
+               rollbackResources();
+               completeTransaction();
+               // Cannot throw heuristic exception, so we just have to
+               // clear the heuristics without reporting.
+               heuristicCode = HEUR_NONE;
+               return;
+            case Status.STATUS_PREPARING:
+               // Set status to avoid race with prepareResources().
+               status = Status.STATUS_MARKED_ROLLBACK;
+               return; // commit() will do rollback.
+            default:
+               throw new IllegalStateException("Cannot rollback(), tx=" +
+                                               toString() + " status=" +
+                                               getStringStatus(status));
+         }
+      }
+      finally
+      {
+         Thread.interrupted();// clear timeout that did an interrupt
+         unlock();
+      }
    }
 
 
@@ -1378,6 +1415,20 @@ class TransactionImpl implements Transaction
    {
       log.warn("XAException: tx=" + toString(), xae);
    }
+
+   /**
+    * Check we have no outstanding work
+    *
+    * @throws IllegalStateException when there is still work
+    */
+   private void checkWork()
+   {
+      if (work != null)
+      {
+         throw new IllegalStateException("Work still outstanding " + work + " tx=" + this);
+      }
+   }
+
 
    // Inner classes -------------------------------------------------
 

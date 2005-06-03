@@ -9,6 +9,9 @@ package org.jboss.test.messaging.tools;
 import org.jboss.jms.tools.ServerWrapper;
 import org.jboss.jms.util.InVMInitialContextFactory;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
+
+import javax.transaction.TransactionManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -22,15 +25,25 @@ public class ServerManagement
 
    private static ServerWrapper serverWrapper;
 
+   /**
+    * By default, the server uses a singleton
+    * org.jboss.messaging.core.util.transaction.TransactionManagerImpl.
+    */
    public synchronized static void startInVMServer() throws Exception
+   {
+      startInVMServer(TransactionManagerImpl.getInstance());
+   }
+
+   public synchronized static void startInVMServer(TransactionManager tm) throws Exception
    {
       if (serverWrapper != null)
       {
          throw new Exception("server already started!");
       }
-      serverWrapper = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment());
+      serverWrapper = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment(), tm);
       serverWrapper.start();
    }
+
 
    public synchronized static void stopInVMServer() throws Exception
    {

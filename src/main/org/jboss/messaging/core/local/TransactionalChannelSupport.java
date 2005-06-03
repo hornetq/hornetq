@@ -65,7 +65,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    // Channel implementation ----------------------------------------
 
    /**
-    * If there is no active transaction, the semantics is similar to Receiver's handle().<p>
+    * If there is no active transaction, the semantics is identical to Receiver's handle().<p>
     *
     * If there is an active transaction, the channel will either deliver the message on
     * transaction's commit, or, if there is a problem with the message delivery, the whole
@@ -166,6 +166,13 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    public TransactionManager getTransactionManager()
    {
       return transactionManager;
+   }
+
+   public boolean isTransactional()
+   {
+      // no explicit way of configuring the channel to be non-transactional is provided for the time
+      // being, except setting transaction manager to null
+      return transactionManager != null;
    }
 
    // Public --------------------------------------------------------
