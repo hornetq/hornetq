@@ -6,25 +6,28 @@
  */
 package org.jboss.jms.message;
 
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.util.Primitives;
-import org.jboss.util.Strings;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.util.JBossJMSException;
-
-import javax.jms.JMSException;
-import javax.jms.Destination;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
-
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageNotWriteableException;
+
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.util.JBossJMSException;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.util.Primitives;
+import org.jboss.util.Strings;
 
 /**
  * 
@@ -44,12 +47,14 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JBossMessage.class);
+   
+   private static final long serialVersionUID = 8341387096828690976L;
+
    // Static --------------------------------------------------------
-	
-	private static final long serialVersionUID = 8341387096828690976L;
-		
-   private static final HashSet reservedIdentifiers = new HashSet();	
-	static
+
+   private static final HashSet reservedIdentifiers = new HashSet();
+   static
    {
       reservedIdentifiers.add("NULL");
       reservedIdentifiers.add("TRUE");
@@ -67,18 +72,21 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    // Attributes ----------------------------------------------------
 
    protected Destination destination;
+
    protected String type;
+
    // the delegate is set only on incoming messages, but we make it transient nonetheless
-	protected transient SessionDelegate delegate;
-	protected boolean messageReadWrite = true;
-	protected Map properties = new HashMap();
-	
+   protected transient SessionDelegate delegate;
+
+   protected boolean messageReadWrite = true;
+
+   protected Map properties; 
 
    // Constructors --------------------------------------------------
 
    public JBossMessage()
    {
-      this(null);		
+      this((String) null);
    }
 
    public JBossMessage(String messageID)
@@ -87,14 +95,24 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       reliable = false;
       redelivered = false;
       type = null;
-		
+      properties = new HashMap();
+   }
+
+   protected JBossMessage(JBossMessage other)
+   {
+      super(other);
+      this.destination = other.destination;
+      this.type = other.type;
+      this.delegate = other.delegate;
+      this.messageReadWrite = other.messageReadWrite;
+      this.properties = new HashMap(other.properties);
    }
 
    // javax.jmx.Message implementation ------------------------------
-   
+
    public String getJMSMessageID() throws JMSException
    {
-      return (String)messageID;
+      return (String) messageID;
    }
 
    public void setJMSMessageID(String messageID) throws JMSException
@@ -112,7 +130,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       this.timestamp = timestamp;
    }
 
-   public byte [] getJMSCorrelationIDAsBytes() throws JMSException
+   public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
       throw new NotYetImplementedException();
    }
@@ -131,7 +149,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       throw new NotYetImplementedException();
    }
- 
+
    public Destination getJMSReplyTo() throws JMSException
    {
       throw new NotYetImplementedException();
@@ -151,12 +169,12 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       this.destination = destination;
    }
- 
+
    public int getJMSDeliveryMode() throws JMSException
    {
       return reliable ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
    }
- 
+
    public void setJMSDeliveryMode(int deliveryMode) throws JMSException
    {
       if (deliveryMode == DeliveryMode.PERSISTENT)
@@ -169,16 +187,16 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       }
       else
       {
-         throw new JBossJMSException("Delivery mode must be either DeliveryMode.PERSISTENT " +
-                                     "or DeliveryMode.NON_PERSISTENT");
+         throw new JBossJMSException("Delivery mode must be either DeliveryMode.PERSISTENT "
+               + "or DeliveryMode.NON_PERSISTENT");
       }
    }
-   
+
    public boolean getJMSRedelivered() throws JMSException
    {
       return isRedelivered();
    }
- 
+
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
       setRedelivered(redelivered);
@@ -193,6 +211,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       return type;
    }
+
    /**
     * 
     * @param type
@@ -202,12 +221,12 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       this.type = type;
    }
- 
+
    public long getJMSExpiration() throws JMSException
    {
       return expiration;
    }
- 
+
    public void setJMSExpiration(long expiration) throws JMSException
    {
       this.expiration = expiration;
@@ -222,25 +241,25 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       throw new NotYetImplementedException();
    }
-   
+
    public void clearProperties() throws JMSException
    {
       properties.clear();
    }
-   
+
    public void acknowledge() throws JMSException
-   {		
-		if (delegate != null)
+   {
+      if (delegate != null)
       {
          delegate.acknowledgeSession();
       }
    }
-   
+
    public void clearBody() throws JMSException
    {
-      //Do nothing - there is no body
+      this.messageReadWrite = true;
    }
-   
+
    public boolean propertyExists(String name) throws JMSException
    {
       return properties.containsKey(name);
@@ -494,7 +513,6 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
          throw new MessageFormatException("Invalid object type");
    }
 
-
    // Public --------------------------------------------------------
 
    public String toString()
@@ -505,56 +523,82 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       sb.append("]");
       return sb.toString();
    }
-	
-	
-	public void setSessionDelegate(SessionDelegate sd)
-	{
-		this.delegate = sd;
-	}
-	
-	public Map getJMSProperties()
-	{
-		return properties;
-	}
-	
-	public void setPropertiesReadWrite(boolean readWrite)
-	{
-		this.messageReadWrite = readWrite;
-	}
+
+   public void setSessionDelegate(SessionDelegate sd)
+   {
+      this.delegate = sd;
+   }
+
+   public Map getJMSProperties()
+   {
+      return properties;
+   }
+
+   public void setPropertiesReadWrite(boolean readWrite)
+   {
+      this.messageReadWrite = readWrite;
+   }
+
+   public JBossMessage getReceivedObject()
+   {
+      return this;
+   }
+
+   // Externalizable implementation ---------------------------------
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      super.writeExternal(out);
+
+      out.writeObject(destination);
+      writeString(out, type);
+      out.writeBoolean(messageReadWrite); //do we really need to write this??
+
+      writeMap(out, properties);
+
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      super.readExternal(in);
+
+      destination = (Destination) in.readObject();
+      type = readString(in);
+      messageReadWrite = in.readBoolean();
+      properties = readMap(in);
+
+   }
 
    // Package protected ---------------------------------------------
 
-	
-	/**
-	 * Check a property is valid
-	 * 
-	 * @param name the name
-	 * @param value the value
-	 * @throws JMSException for any error
-	 */
-  void checkProperty(String name, Object value) throws JMSException
-  {
-     if (name == null)
-        throw new IllegalArgumentException("The name of a property must not be null.");
+   /**
+    * Check a property is valid
+    * 
+    * @param name the name
+    * @param value the value
+    * @throws JMSException for any error
+    */
+   void checkProperty(String name, Object value) throws JMSException
+   {
+      if (name == null)
+         throw new IllegalArgumentException("The name of a property must not be null.");
 
-     if (name.equals(""))
-        throw new IllegalArgumentException("The name of a property must not be an empty String.");
+      if (name.equals(""))
+         throw new IllegalArgumentException("The name of a property must not be an empty String.");
 
-     if (Strings.isValidJavaIdentifier(name) == false)
-        throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
+      if (Strings.isValidJavaIdentifier(name) == false)
+         throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
 
-     if (reservedIdentifiers.contains(name))
-        throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
+      if (reservedIdentifiers.contains(name))
+         throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
 
-     if (name.regionMatches(false, 0, "JMSX", 0, 4))
-     {       
-        throw new JMSException("Illegal property name: " + name);
-     }
-  }
-	
+      if (name.regionMatches(false, 0, "JMSX", 0, 4))
+      {
+         throw new JMSException("Illegal property name: " + name);
+      }
+   }
+
    // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 }

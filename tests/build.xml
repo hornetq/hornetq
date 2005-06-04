@@ -44,6 +44,7 @@
       <!-- <path refid="jgroups.jgroups.classpath"/> -->
       <pathelement path="${module.root}/../src/resources/jgroups-core.jar"/>
       <path refid="apache.commons.classpath"/>
+      <path refid="gnu.regexp.classpath"/>
    </path>
 
    <!-- ======= -->
@@ -223,8 +224,8 @@
             />
       </junitreport>
    </target>
-
-
+	
+	
    <target name="performance-tests"/>
 
    <target name="functional-tests" depends="tests"/>

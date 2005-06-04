@@ -102,12 +102,14 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testReceiveOnTopicTimeoutNoMessage() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testReceiveOnTopicTimeoutNoMessage");
       Message m = topicConsumer.receive(1000);
       assertNull(m);
    }
 
    public void testReceiveOnTopicConnectionStopped() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testReceiveOnTopicConnectionStopped");
       consumerConnection.stop();
 
       final Message m = producerSession.createMessage();
@@ -134,6 +136,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testReceiveOnTopicTimeout() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testReceiveOnTopicTimeout");
       consumerConnection.start();
 
       final Message m1 = producerSession.createMessage();
@@ -160,6 +163,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testReceiveOnTopic() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testReceiveOnTopic");
       consumerConnection.start();
 
       final Message m1 = producerSession.createMessage();
@@ -189,7 +193,7 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testStressReceiveOnQueue() throws Exception
    {
-
+      if (log.isTraceEnabled()) log.trace("testStressReceiveOnQueue");
       final int count = 100;
 
       consumerConnection.start();
@@ -238,7 +242,7 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testStressReceiveOnTopic() throws Exception
    {
-
+      if (log.isTraceEnabled()) log.trace("testStressReceiveOnTopic");
       final int count = 100;
 
       consumerConnection.start();
@@ -285,6 +289,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testReceiveOnClose() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testReceiveOnClose");
       consumerConnection.start();
       final Latch latch = new Latch();
       Thread closerThread = new Thread(new Runnable()
@@ -317,6 +322,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testTimeoutReceiveOnClose() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
       consumerConnection.start();
       final Latch latch = new Latch();
       final long timeToSleep = 1000;
@@ -359,6 +365,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testMessageListenerOnTopic() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testMessageListenerOnTopic");
       MessageListenerImpl l = new MessageListenerImpl();
       topicConsumer.setMessageListener(l);
 
@@ -376,6 +383,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testSetMessageListenerTwice() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testSetMessageListenerTwice");
       MessageListenerImpl listener1 = new MessageListenerImpl();
       topicConsumer.setMessageListener(listener1);
 
@@ -397,6 +405,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testSetMessageListenerWhileReceiving() throws Exception
    {
+      if (log.isTraceEnabled()) log.trace("testSetMessageListenerWhileReceiving");
       consumerConnection.start();
       worker1= new Thread(new Runnable()
       {

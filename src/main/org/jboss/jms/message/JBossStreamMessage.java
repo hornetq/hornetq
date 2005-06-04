@@ -5,7 +5,11 @@
  */
 package org.jboss.jms.message;
 
-import java.util.Vector;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
@@ -14,33 +18,39 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.StreamMessage;
 
+import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
 
 /**
- * This class implements javax.jms.StreamMessage ported from SpyStreamMessage in JBossMQ.
+ * This class implements javax.jms.StreamMessage.
  * 
+ * It is largely ported from SpyStreamMessage in JBossMQ.
  * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * 
  * @version $Revision$
  */
 public class JBossStreamMessage extends JBossMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
 
-	private static final long serialVersionUID = 5504501713994881078L;
+   private static final long serialVersionUID = 5504501713994881078L;
+
+   private static final Logger log = Logger.getLogger(JBossStreamMessage.class);
 
    // Attributes ----------------------------------------------------
 
+   protected List content;
 
-	/** The content */
-   Vector content;
-   /** The position */
-   int position;
-   /** The offset */
-   int offset;
-   /** The size */
-   int size;
+   protected int position;
+
+   protected int offset;
+
+   protected int size;
+
+   protected transient boolean deserialised;
 
    // Static --------------------------------------------------------
 
@@ -48,13 +58,38 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public JBossStreamMessage()
    {
-      content = new Vector();
+      content = new ArrayList();
       position = 0;
       size = 0;
       offset = 0;
    }
 
+   protected JBossStreamMessage(JBossStreamMessage other)
+   {
+      super(other);
+      this.content = new ArrayList(other.content);
+      this.position = other.position;
+      this.size = other.size;
+      this.offset = other.offset;
+   }
+
    // Public --------------------------------------------------------
+
+   public JBossMessage getReceivedObject()
+   {
+      if (deserialised)
+      {
+         //If the object has been created from serialization then we just return it
+         return this;
+      }
+      else
+      {
+         //Otherwise we clone the object.
+         //This is because it's a requirement for a StreamMessage that changing the sent
+         //message after it was sent does not effect the received message
+         return new JBossStreamMessage(this);
+      }
+   }
 
    // StreamMessage implementation ----------------------------------
 
@@ -84,7 +119,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -116,7 +151,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -152,7 +187,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -177,7 +212,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -218,7 +253,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -264,7 +299,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -295,7 +330,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -331,7 +366,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -399,7 +434,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          else
             throw new MessageFormatException("Invalid conversion");
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -452,7 +487,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          }
 
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -470,7 +505,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
          return value;
       }
-      catch (ArrayIndexOutOfBoundsException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -605,7 +640,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void clearBody() throws JMSException
    {
-      content = new Vector();
+      content = new ArrayList();
       position = 0;
       offset = 0;
       size = 0;
@@ -613,19 +648,24 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super.clearBody();
    }
 
-   //TODO
-   
    // Externalizable implementation ---------------------------------
 
-   
-   /*
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void readExternal(ObjectInput in) throws IOException
    {
-      super.readExternal(in);
-      content = (Vector) in.readObject();
-      position = in.readInt();
-      offset = in.readInt();
-      size = in.readInt();
+      try
+      {
+         super.readExternal(in);
+         content = (ArrayList) in.readObject();
+         position = in.readInt();
+         offset = in.readInt();
+         size = in.readInt();
+         deserialised = true;
+      }
+      catch (ClassNotFoundException e)
+      {
+         log.error("Failed to find class", e);
+         throw new IOException(e.getMessage());
+      }
    }
 
    public void writeExternal(ObjectOutput out) throws IOException
@@ -636,9 +676,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       out.writeInt(offset);
       out.writeInt(size);
    }
-   
-   */
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -10,7 +10,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -18,42 +21,81 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
+import org.jboss.logging.Logger;
 
 /**
- * This class implements javax.jms.BytesMessage ported from SpyBytesMessage in JBossMQ.
+ * This class implements javax.jms.BytesMessage.
+ * 
+ * It is largely ported from SpyBytesMessage in JBossMQ.
  * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * 
  * @version $Revision$
  */
-public class JBossBytesMessage extends JBossMessage implements BytesMessage
+public class JBossBytesMessage extends JBossMessage implements BytesMessage, Externalizable
 {
    // Static -------------------------------------------------------
-   
-	private static final long serialVersionUID = 4636242783244742795L;
-   
+
+   private static final long serialVersionUID = 4636242783244742795L;
+
+   private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
+
    // Attributes ----------------------------------------------------
 
-	/** The internal representation */
-   byte[] internalArray = null;
-   
-   private transient ByteArrayOutputStream ostream = null;
-   private transient DataOutputStream p = null;
-   private transient ByteArrayInputStream istream = null;
-   private transient DataInputStream m = null;
+   protected byte[] internalArray;
+
+   private transient ByteArrayOutputStream ostream;
+
+   private transient DataOutputStream p;
+
+   private transient ByteArrayInputStream istream;
+
+   private transient DataInputStream m;
+
+   private transient boolean deserialised;
 
    // Constructor ---------------------------------------------------
 
    public JBossBytesMessage()
    {
+      if (log.isTraceEnabled())
+         log.trace("Creating new JBossBytesMessage");
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
    }
 
+   protected JBossBytesMessage(JBossBytesMessage other)
+   {
+      super(other);
+      if (other.internalArray != null)
+      {
+         this.internalArray = new byte[other.internalArray.length];
+         System.arraycopy(other.internalArray, 0, this.internalArray, 0, other.internalArray.length);
+      }
+   }
+
    // Public --------------------------------------------------------
 
+   public JBossMessage getReceivedObject()
+   {
+      if (deserialised)
+      {
+         //If the object has been created from serialization then we just return it
+         return this;
+      }
+      else
+      {
+         //Otherwise we clone the object.
+         //This is because it's a requirement for a BytesMessage that changing the sent
+         //message after it was sent does not effect the received message
+         return new JBossBytesMessage(this);
+      }
+   }
+
    // BytesMessage implementation -----------------------------------
-   
+
    public boolean readBoolean() throws JMSException
    {
       checkRead();
@@ -457,7 +499,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
          }
          if (value instanceof String)
          {
-            p.writeChars((String) value);
+            //p.writeChars((String) value);
+            p.writeUTF((String) value);
          }
          else if (value instanceof Boolean)
          {
@@ -505,12 +548,15 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void reset() throws JMSException
    {
+      if (log.isTraceEnabled()) log.trace("reset()");
       try
       {
          if (messageReadWrite)
          {
+            if (log.isTraceEnabled())  log.trace("Flushing ostream to array");
             p.flush();
             internalArray = ostream.toByteArray();
+            if (log.isTraceEnabled()) log.trace("Array is now: " + internalArray);
             ostream.close();
          }
          ostream = null;
@@ -531,7 +577,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    {
       try
       {
-         if (!!messageReadWrite)
+         if (messageReadWrite)
          {
             ostream.close();
          }
@@ -559,8 +605,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       super.clearBody();
    }
 
-
-   
    public long getBodyLength() throws JMSException
    {
       checkRead();
@@ -568,30 +612,26 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    }
 
    // Externalizable implementation ---------------------------------
-   
-   //TODO
-   
-   /*
-   
+
    public void writeExternal(ObjectOutput out) throws IOException
    {
       byte[] arrayToSend = null;
-      if (!!messageReadWrite)
-        {
+      if (messageReadWrite)
+      {
          p.flush();
          arrayToSend = ostream.toByteArray();
       }
       else
-        {
-         arrayToSend = InternalArray;
+      {
+         arrayToSend = internalArray;
       }
       super.writeExternal(out);
       if (arrayToSend == null)
-        {
+      {
          out.writeInt(0); //pretend to be empty array
       }
       else
-        {
+      {
          out.writeInt(arrayToSend.length);
          out.write(arrayToSend);
       }
@@ -602,24 +642,23 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       super.readExternal(in);
       int length = in.readInt();
       if (length < 0)
-        {
-         InternalArray = null;
+      {
+         internalArray = null;
       }
       else
-        {
-         InternalArray = new byte[length];
-         in.readFully(InternalArray);
+      {
+         internalArray = new byte[length];
+         in.readFully(internalArray);
       }
+      deserialised = true;
    }
-   
-   */
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    /**
     * Check the message is readable
     *
@@ -627,7 +666,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
     */
    private void checkRead() throws JMSException
    {
-      if (!!messageReadWrite)
+      if (messageReadWrite)
       {
          throw new MessageNotReadableException("readByte while the buffer is writeonly");
       }
@@ -635,11 +674,13 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       //We have just received/reset() the message, and the client is trying to
       // read it
       if (istream == null || m == null)
-        {
+      {
+         if (log.isTraceEnabled())
+            log.trace("internalArray:" + internalArray);
          istream = new ByteArrayInputStream(internalArray);
          m = new DataInputStream(istream);
       }
    }
-   
+
    // Inner classes -------------------------------------------------
 }

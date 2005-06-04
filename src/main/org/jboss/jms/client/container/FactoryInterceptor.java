@@ -68,7 +68,7 @@ public class FactoryInterceptor implements Interceptor, Serializable
          else if (m.getName().equals("createObjectMessage"))
          {
          	JBossObjectMessage msg = new JBossObjectMessage();
-         	if (mi.getArguments().length != 0)
+         	if (mi.getArguments() != null)
          	{
          		msg.setObject((Serializable)mi.getArguments()[0]);
          	}
@@ -81,7 +81,7 @@ public class FactoryInterceptor implements Interceptor, Serializable
          else if (m.getName().equals("createTextMessage"))
          {
          	JBossTextMessage msg = new JBossTextMessage();
-         	if (mi.getArguments().length != 0)
+         	if (mi.getArguments() != null)
          	{         		
          		msg.setText((String)mi.getArguments()[0]);
          	}

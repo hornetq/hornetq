@@ -29,52 +29,52 @@ import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 {
    // Constants -----------------------------------------------------
-
+   
    private static final Logger log = Logger.getLogger(MessageCallbackHandler.class);
-
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
+   
    protected int capacity = 100;
    protected BoundedBuffer messages;
-	protected SessionDelegate sessionDelegate;
-	protected String receiverID;
-	protected Destination destination;
-
+   protected SessionDelegate sessionDelegate;
+   protected String receiverID;
+   protected Destination destination;
+   
    private volatile boolean receiving;
    private Thread receivingThread;
-
-
+   
+   
    protected MessageListener listener;
    protected Thread listenerThread;
    private int listenerThreadCount = 0;
-
+   
    private volatile boolean closed;
-
-
-
+   
+   
+   
    // Constructors --------------------------------------------------
-
+   
    public MessageCallbackHandler(Destination destination)
    {
       this.messages = new BoundedBuffer(capacity);	
-		this.destination = destination;
+      this.destination = destination;
    }
-
+   
    // InvokerCallbackHandler implementation -------------------------
-
+   
    public void handleCallback(InvocationRequest invocation) throws HandleCallbackException
    {
-
+      
       Message m = (Message)invocation.getParameter();
-
+      
       if (log.isTraceEnabled()) { log.trace("receiving from server: " + m); }
-
+      
       try
       {			
-			JBossMessage jm = (JBossMessage)m;	
-			jm.setSessionDelegate(sessionDelegate);
+         JBossMessage jm = (JBossMessage)m;	
+         jm.setSessionDelegate(sessionDelegate);
          messages.put(m);
          if (log.isTraceEnabled()) { log.trace("message " + m + " accepted for delivery"); }
       }
@@ -85,23 +85,23 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          throw new HandleCallbackException(msg, e);
       }
    }
-
+   
    // Runnable implementation ---------------------------------------
-
+   
    /**
     * Receive messages for the message listener.
     */
    public void run()
    {
       if (log.isTraceEnabled()) { log.trace("listener thread started"); }
-
+      
       while(true)
       {
          try
          {
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
-            Message m = (Message)messages.take();				
-            listener.onMessage(m);
+            JBossMessage m = (JBossMessage)messages.take();				
+            listener.onMessage(m.getReceivedObject());
             if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
             delivered(m);
          }
@@ -118,39 +118,39 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          }
       }
    }
-
+   
    // Public --------------------------------------------------------
-
-	
-	public void setSessionDelegate(SessionDelegate delegate)
+   
+   
+   public void setSessionDelegate(SessionDelegate delegate)
    {
       this.sessionDelegate = delegate;
    }
-	
-	public void setReceiverID(String receiverID)
-	{
-		this.receiverID = receiverID;
-	}
-	
-	
-
+   
+   public void setReceiverID(String receiverID)
+   {
+      this.receiverID = receiverID;
+   }
+   
+   
+   
    public synchronized MessageListener getMessageListener()
    {
       return listener;
    }
-
+   
    public synchronized void setMessageListener(MessageListener listener) throws JMSException
    {
       if (receiving)
       {
          throw new JBossJMSException("Another thread is already receiving");
       }
-
+      
       if (listenerThread != null)
       {
          listenerThread.interrupt();
       }
-
+      
       this.listener = listener;
       if (listener != null)
       {
@@ -158,8 +158,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          listenerThread.start();
       }
    }
-
-
+   
+   
    /**
     * Method used by the client thread to get a Message, if available.
     *
@@ -168,11 +168,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     */
    public Message receive(long timeout) throws JMSException, InterruptedException
    {
-
+      
       long startTimestamp = System.currentTimeMillis();
-
+      
       // make sure the current state allows receiving
-
+      
       synchronized(this)
       {
          if (listener != null)
@@ -185,13 +185,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          }
          receiving = true;
       }
-
+      
       try
       {
          if (log.isTraceEnabled()) { log.trace("receive, timeout = " + timeout + " ms"); }
-
+         
          receivingThread = Thread.currentThread();
-
+         
          JBossMessage m = null;
          while(true)
          {
@@ -199,14 +199,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             {
                if (timeout <= 0)
                {
-						if (log.isTraceEnabled()) log.trace("receive with no timeout");
-                  m = (JBossMessage)messages.take();
-						if (log.isTraceEnabled()) log.trace("Got message:" + m);
+                  if (log.isTraceEnabled()) log.trace("receive with no timeout");
+                  m = ((JBossMessage)messages.take());
+                  if (log.isTraceEnabled()) log.trace("Got message:" + m);
                }
                else
                {
-                  m = (JBossMessage)messages.poll(timeout);
-
+                  m = ((JBossMessage)messages.poll(timeout));
+                  
                   if (m == null)
                   {
                      // receive expired
@@ -225,20 +225,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   throw e;
                }
             }
-
-				if (log.isTraceEnabled()) log.trace("Calling delivered()");
-				
+            
+            if (log.isTraceEnabled()) log.trace("Calling delivered()");
+            
             //Notify that the message has been delivered (not necessarily acknowledged though)
-				delivered(m);
-				
-				if (log.isTraceEnabled()) log.trace("Called delivered()");
-
+            delivered(m);
+            
+            if (log.isTraceEnabled()) log.trace("Called delivered()");
+            
             if (!m.isExpired())
             {
-					if (log.isTraceEnabled()) log.trace("Message is not expired");
-               return m;
+               if (log.isTraceEnabled()) log.trace("Message is not expired");
+               return m.getReceivedObject();
             }
-
+            
             // discard the message, adjust timeout and reenter the buffer
             timeout -= System.currentTimeMillis() - startTimestamp;
          }
@@ -249,7 +249,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          receivingThread = null;
       }
    }
-
+   
    public void close()
    {
       if (closed)
@@ -262,18 +262,18 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          receivingThread.interrupt();
       }
    }
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-
+   
    public void delivered(Message m) throws JMSException
    {
       sessionDelegate.delivered(m.getJMSMessageID(), destination, receiverID);
    }
-
+   
    // Inner classes -------------------------------------------------
 }
 

@@ -9,7 +9,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
@@ -19,42 +21,45 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 
+import org.jboss.logging.Logger;
 import org.jboss.util.Classes;
 
 /**
- * This class implements javax.jms.ObjectMessage ported from SpyObjectMessage in JBossMQ.
+ * This class implements javax.jms.ObjectMessage
+ * 
+ * It is largely ported from SpyObjectMessage in JBossMQ.
  *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * 
  * @version $Revision$
  */
 public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 {
    // Constants -----------------------------------------------------
 
-	private static final long serialVersionUID = -1626960567569667875L;
-   
+   private static final long serialVersionUID = -1626960567569667875L;
+
+   private static final Logger log = Logger.getLogger(JBossObjectMessage.class);
+
    // Attributes ----------------------------------------------------
 
-  
-	/** Is it a byte array */
-   boolean isByteArray = false;
-   /** The bytes */
-   byte[] objectBytes = null;
-   
+   protected boolean isByteArray = false;
+
+   protected byte[] objectBytes = null;
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
-     
+
    // Public --------------------------------------------------------
-   
+
    // ObjectMessage implementation ----------------------------------
 
    public void setObject(Serializable object) throws JMSException
    {
       if (!messageReadWrite)
-        {
+      {
          throw new MessageNotWriteableException("setObject");
       }
       if (object == null)
@@ -65,14 +70,14 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       try
       {
          if (object instanceof byte[])
-           {
+         {
             //cheat for byte arrays
             isByteArray = true;
             objectBytes = new byte[((byte[]) object).length];
             System.arraycopy(object, 0, objectBytes, 0, objectBytes.length);
          }
          else
-           {
+         {
             isByteArray = false;
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
             ObjectOutputStream objectOut = new ObjectOutputStream(byteArray);
@@ -83,7 +88,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       }
       catch (IOException e)
       {
-         throw new MessageFormatException("Object cannot be serialized");
+         log.error(e);
+         throw new MessageFormatException("Object cannot be serialized:" + e.getMessage());
       }
    }
 
@@ -139,7 +145,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       }
       return retVal;
    }
-   
+
    // JBossMessage overrides ----------------------------------------
 
    public void clearBody() throws JMSException
@@ -148,15 +154,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super.clearBody();
    }
 
-  
-   
    // Externalizable implementation ---------------------------------
 
-
-   //TODO
-   
-   
-   /*
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
@@ -187,14 +186,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          in.readFully(objectBytes);
       }
    }
-   
-   */
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

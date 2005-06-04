@@ -163,7 +163,13 @@ public class SessionInterceptor implements Interceptor, Serializable
 	
 	private synchronized ArrayList getUnacknowledged(Invocation invocation)
 	{
-		if (log.isTraceEnabled()) log.trace("Getting unackeknowledged messages");
+		if (log.isTraceEnabled()) log.trace("Getting unacknowledged messages");
+      
+      
+		//Sanity check - this will throw an exception if the invocation is not a SessionDelegate
+        getDelegate(invocation); 
+		
+      
 		//TODO If we have a lot of unacked messages building up for the session
 		//we need a better way to store them than just an ArrayList.
 		//We risk running out of memory otherwise

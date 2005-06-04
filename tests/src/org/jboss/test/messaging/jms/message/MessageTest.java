@@ -93,15 +93,17 @@ public class MessageTest extends MessagingTestCase
    {
    	Message m1 = queueProducerSession.createMessage();
    	
-   	boolean myBool = true;
-   	byte myByte = Byte.MAX_VALUE;
-   	short myShort = Short.MAX_VALUE;
-   	int myInt = Integer.MAX_VALUE;
-   	long myLong = Long.MAX_VALUE;
-   	float myFloat = Float.MAX_VALUE;
-   	double myDouble = Double.MAX_VALUE;
-   	String myString = "abcdefghijkl";
-   	
+     
+    //Some arbitrary values
+    boolean myBool = true;
+    byte myByte = 13;
+    short myShort = 15321;
+    int myInt = 0x71ab6c80;
+    long myLong = 0x20bf1e3fb6fa31dfL;
+    float myFloat = Float.MAX_VALUE - 23465;
+    double myDouble = Double.MAX_VALUE - 72387633;
+    String myString = "abcdef&^*&!^ghijkl";
+  	
    	
    	
    	m1.setBooleanProperty("myBool", myBool);  	
