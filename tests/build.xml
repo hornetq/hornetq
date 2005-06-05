@@ -83,7 +83,7 @@
 
 
    <!-- Compile all test files -->
-   <target name="compile-test-classes">
+   <target name="compile">
       <mkdir dir="${build.tests.classes}"/>
       <javac destdir="${build.tests.classes}"
          optimize="${javac.optimize}"
@@ -104,7 +104,7 @@
 
 
    <target name="tests-jar"
-           depends="compile-test-classes"
+           depends="compile"
            description="Creates the jar file with all the tests">
 
       <mkdir dir="${build.tests.lib}"/>
