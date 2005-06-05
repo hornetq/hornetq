@@ -34,7 +34,9 @@ public class DestinationManager
 
    protected ServerPeer serverPeer;
    protected Context ic;
+   // <name(String) - AbstractDestination>
    protected Map topics;
+   // <name(String) - AbstractDestination>
    protected Map queues;
 
    // Constructors --------------------------------------------------
