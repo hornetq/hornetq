@@ -9,6 +9,7 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.core.local.AbstractDestination;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -20,6 +21,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.JMSException;
 import javax.jms.DeliveryMode;
+import javax.jms.Topic;
+import javax.jms.Queue;
 import javax.naming.InitialContext;
 import java.util.List;
 import java.util.Collections;
@@ -44,6 +47,8 @@ public class MessageConsumerTest extends MessagingTestCase
    protected Session producerSession, consumerSession;
    protected MessageProducer topicProducer, queueProducer;
    protected MessageConsumer topicConsumer, queueConsumer;
+   protected Topic topic;
+   protected Queue queue;
 
    protected Thread worker1;
 
@@ -66,8 +71,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/messaging/ConnectionFactory");
-      Destination topic = (Destination)ic.lookup("/messaging/topics/Topic");
-      Destination queue = (Destination)ic.lookup("/messaging/queues/Queue");
+      topic = (Topic)ic.lookup("/messaging/topics/Topic");
+      queue = (Queue)ic.lookup("/messaging/queues/Queue");
 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
@@ -187,6 +192,26 @@ public class MessageConsumerTest extends MessagingTestCase
       Message m2 = topicConsumer.receive();
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
    }
+
+   public void testReceiveNoWaitOnTopic() throws Exception
+   {
+      consumerConnection.start();
+
+      Message m = topicConsumer.receiveNoWait();
+
+      assertNull(m);
+
+      Message m1 = producerSession.createMessage();
+      topicProducer.send(m1);
+
+      // block this thread for a while to allow ServerConsumerDelegate's delivery thread to kick in
+      Thread.sleep(5);
+
+      m = topicConsumer.receiveNoWait();
+
+      assertEquals(m1.getJMSMessageID(), m.getJMSMessageID());
+   }
+
 
    /**
     * The test sends a burst of messages and verifies if the consumer receives all of them.
@@ -350,12 +375,46 @@ public class MessageConsumerTest extends MessagingTestCase
 
       long t1 = System.currentTimeMillis();
       assertNull(topicConsumer.receive(5000));
-      // make sure it didn't wait 5 seconds to return null; allow 10 ms for overhead
-      assertTrue(System.currentTimeMillis() - t1 <= timeToSleep + 10);
+      long elapsed = System.currentTimeMillis() - t1;
+      log.info("timeToSleep = " + timeToSleep + " ms, elapsed = " + elapsed + " ms");
 
+      // make sure it didn't wait 5 seconds to return null; allow 10 ms for overhead
+      assertTrue(elapsed <= timeToSleep + 10);
 
       // wait for the closing thread to finish
       latch.acquire();
+   }
+
+
+   //
+   // Redelivery tests
+   //
+
+   public void testRedelivery() throws Exception
+   {
+
+      // start the consumer connection, so the consumer would buffer the message
+      consumerConnection.start();
+
+      // send a message to the queue
+      Message m = producerSession.createMessage();
+      queueProducer.send(m);
+
+      // the message is buffered on the client, but not delivered yet
+
+      // redeliver using core's internal API
+      AbstractDestination coreQueue =
+            ServerManagement.getServerPeer().getDestinationManager().getDestination(queue);
+
+      assertFalse(coreQueue.deliver());
+
+      int count = 0;
+      while(queueConsumer.receiveNoWait() != null)
+      {
+         count++;
+      }
+
+      assertEquals(1, count);
    }
 
 

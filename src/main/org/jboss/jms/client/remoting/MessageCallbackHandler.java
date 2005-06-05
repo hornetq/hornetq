@@ -25,6 +25,8 @@ import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 {
@@ -164,7 +166,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     * Method used by the client thread to get a Message, if available.
     *
     * @param timeout - the timeout value in milliseconds. A zero timeount never expires, and the
-    *        call blocks indefinitely. Returns null if the consumer is concurrently closed.
+    *        call blocks indefinitely. A -1 timeout means receiveNoWait(): return the next message
+    *        or null if one is not immediately available. Returns null if the consumer is
+    *        concurrently closed.
     */
    public Message receive(long timeout) throws JMSException, InterruptedException
    {
@@ -197,7 +201,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             try
             {
-               if (timeout <= 0)
+               if (timeout == 0)
                {
                   if (log.isTraceEnabled()) log.trace("receive with no timeout");
                   m = ((JBossMessage)messages.take());
@@ -209,7 +213,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   
                   if (m == null)
                   {
-                     // receive expired
+                     // timeout expired
                      return null;
                   }
                }
