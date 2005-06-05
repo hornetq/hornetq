@@ -116,40 +116,6 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       }
    }
 
-   /**
-    * @deprecated
-    *
-    * TODO get rid of it
-    * 
-    * The facade initiated a blocking wait, so this method makes sure that any messages hold by
-    * the destination are delivered.    *
-    *
-    * @throws JBossJMSException - wraps an InterruptedException
-    */
-   public void initiateAsynchDelivery() throws JBossJMSException
-   {
-
-      // the delivery must be always initiate from another thread than the caller's. This is to
-      // avoid the situation when the caller thread re-acquires reentrant locks in an in-VM
-      // situation
-      try
-      {
-         threadPool.execute(new Runnable()
-         {
-            public void run()
-            {
-               if (log.isTraceEnabled()) { log.trace(id + " initiates asynchronous delivery on " + destination.getReceiverID()); };
-               destination.deliver();
-            }
-         });
-      }
-      catch(InterruptedException e)
-      {
-         throw new JBossJMSException("interrupted asynchonous delivery", e);
-      }
-
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
