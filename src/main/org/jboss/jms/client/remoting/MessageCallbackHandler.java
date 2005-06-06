@@ -214,14 +214,17 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   if (m == null)
                   {
                      // timeout expired
+                     if (log.isTraceEnabled()) log.trace("Timeout expired");
                      return null;
                   }
                }
             }
             catch(InterruptedException e)
             {
+               if (log.isTraceEnabled()) log.trace("Thread was interrupted");
                if (closed)
                {
+                  if (log.isTraceEnabled()) log.trace("It's closed");
                   return null;
                }
                else
@@ -243,8 +246,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                return m.getReceivedObject();
             }
             
+            if (log.isTraceEnabled()) log.trace("Looping around");
+            
+            
             // discard the message, adjust timeout and reenter the buffer
-            timeout -= System.currentTimeMillis() - startTimestamp;
+            if (timeout != 0) timeout -= System.currentTimeMillis() - startTimestamp;
          }
       }
       finally
