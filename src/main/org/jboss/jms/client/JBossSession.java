@@ -7,10 +7,13 @@
 package org.jboss.jms.client;
 
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.destination.JBossTemporaryQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
 
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
@@ -61,7 +64,8 @@ class JBossSession
    
    // Attributes ----------------------------------------------------
 
-   protected SessionDelegate delegate;
+   protected SessionDelegate sessionDelegate;
+   protected ConnectionDelegate connectionDelegate;
    protected boolean isXA;
    protected int sessionType;
    protected boolean transacted;
@@ -69,11 +73,13 @@ class JBossSession
 
    // Constructors --------------------------------------------------
 
-   public JBossSession(SessionDelegate delegate, boolean isXA,
+   public JBossSession(ConnectionDelegate connectionDelegate, SessionDelegate sessionDelegate,
+                       boolean isXA,
                        int sessionType, boolean transacted,
                        int acknowledgeMode)
    {
-      this.delegate = delegate;
+      this.sessionDelegate = sessionDelegate;
+      this.connectionDelegate = connectionDelegate;
       this.isXA = isXA;
       this.sessionType = sessionType;
       this.transacted = transacted;
@@ -84,42 +90,42 @@ class JBossSession
 
    public BytesMessage createBytesMessage() throws JMSException
    {
-   	return delegate.createBytesMessage();
+   	return sessionDelegate.createBytesMessage();
    }
 
    public MapMessage createMapMessage() throws JMSException
    {
-   	return delegate.createMapMessage();
+   	return sessionDelegate.createMapMessage();
    }
 
    public Message createMessage() throws JMSException
    {
-      return delegate.createMessage();
+      return sessionDelegate.createMessage();
    }
 
    public ObjectMessage createObjectMessage() throws JMSException
    {
-   	return delegate.createObjectMessage();
+   	return sessionDelegate.createObjectMessage();
    }
 
    public ObjectMessage createObjectMessage(Serializable object) throws JMSException
    {
-   	return delegate.createObjectMessage(object);
+   	return sessionDelegate.createObjectMessage(object);
    }
 
    public StreamMessage createStreamMessage() throws JMSException
    {
-   	return delegate.createStreamMessage();
+   	return sessionDelegate.createStreamMessage();
    }
 
    public TextMessage createTextMessage() throws JMSException
    {
-   	return delegate.createTextMessage();
+   	return sessionDelegate.createTextMessage();
    }
 
    public TextMessage createTextMessage(String text) throws JMSException
    {
-   	return delegate.createTextMessage(text);
+   	return sessionDelegate.createTextMessage(text);
    }
 
    public boolean getTransacted() throws JMSException
@@ -136,25 +142,25 @@ class JBossSession
    {
       if (!transacted)
          throw new IllegalStateException("Session is not transacted - cannot call commit()");
-      delegate.commit();
+      sessionDelegate.commit();
    }
 
    public void rollback() throws JMSException
    {
       if (!transacted)
          throw new IllegalStateException("Session is not transacted - cannot call rollback()");
-      delegate.rollback();
+      sessionDelegate.rollback();
    }
 
    public void close() throws JMSException
    {
-      delegate.closing();
-      delegate.close();
+      sessionDelegate.closing();
+      sessionDelegate.close();
    }
 
    public void recover() throws JMSException
    {
-      delegate.recover();
+      sessionDelegate.recover();
    }
 
    public MessageListener getMessageListener() throws JMSException
@@ -174,20 +180,20 @@ class JBossSession
 
    public MessageProducer createProducer(Destination d) throws JMSException
    {
-      ProducerDelegate producerDelegate = delegate.createProducerDelegate(d);
+      ProducerDelegate producerDelegate = sessionDelegate.createProducerDelegate(d);
       return new JBossMessageProducer(producerDelegate, d);
    }
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
-     ConsumerDelegate consumerDelegate = delegate.createConsumerDelegate(d, null);
+     ConsumerDelegate consumerDelegate = sessionDelegate.createConsumerDelegate(d, null);
      return new JBossMessageConsumer(consumerDelegate, d);
   }
 
   public MessageConsumer createConsumer(Destination d, String messageSelector)
         throws JMSException
   {
-	  ConsumerDelegate consumerDelegate = delegate.createConsumerDelegate(d, messageSelector);
+	  ConsumerDelegate consumerDelegate = sessionDelegate.createConsumerDelegate(d, messageSelector);
      return new JBossMessageConsumer(consumerDelegate, d);
   }
 
@@ -253,7 +259,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
       }
-      BrowserDelegate delegate = this.delegate.createBrowserDelegate(queue, messageSelector);
+      BrowserDelegate delegate = this.sessionDelegate.createBrowserDelegate(queue, messageSelector);
       return new JBossQueueBrowser(queue, messageSelector, delegate);
    }
 
@@ -264,7 +270,9 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a temp. queue using a TopicSession");
       }
-      throw new NotYetImplementedException();
+      JBossTemporaryQueue queue = new JBossTemporaryQueue(connectionDelegate);
+      connectionDelegate.addTemporaryDestination(queue);
+      return queue;
    }
 
    public TemporaryTopic createTemporaryTopic() throws JMSException
@@ -272,7 +280,9 @@ class JBossSession
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
-      throw new NotYetImplementedException();
+      JBossTemporaryTopic topic = new JBossTemporaryTopic(connectionDelegate);
+      connectionDelegate.addTemporaryDestination(topic);
+      return topic;
    }
 
    public void unsubscribe(String name) throws JMSException

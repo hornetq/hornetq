@@ -206,7 +206,7 @@ class JBossConnection implements
                                            boolean isXA, int type) throws JMSException
    {
       SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode);
-      return new JBossSession(sessionDelegate, isXA,
+      return new JBossSession(this.delegate, sessionDelegate, isXA,
                               type, transacted, acknowledgeMode);
    }
 

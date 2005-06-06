@@ -50,13 +50,13 @@ public class ServerProducerDelegate implements ProducerDelegate
    public void closing() throws JMSException
    {
       //Currently this does nothing
-      log.debug("closing");
+      if (log.isTraceEnabled()) log.trace("closing");
    }
 
    public void close() throws JMSException
    {
       //Currently this does nothing
-      log.debug("close");
+      if (log.isTraceEnabled()) log.trace("close");
    }
    
    public void send(Message m) throws JMSException

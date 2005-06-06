@@ -96,21 +96,18 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    // SessionDelegate implementation --------------------------------
 
    public ProducerDelegate createProducerDelegate(Destination jmsDestination)
-         throws JBossJMSException
+         throws JMSException
    {
 
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination destination = null;
-      try
+     
+      if (jmsDestination != null)
       {
          destination = dm.getDestination(jmsDestination);
       }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
-      }
-
+     
       log.debug("got producer's destination: " + destination);
 
       // create the dynamic proxy that implements ProducerDelegate
@@ -166,16 +163,9 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    {
       // look-up destination
       DestinationManager dm = serverPeer.getDestinationManager();
-      AbstractDestination destination = null;
-      try
-      {
-         destination = dm.getDestination(jmsDestination);
-      }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
-      }
-
+    
+      AbstractDestination destination = dm.getDestination(jmsDestination);
+     
       // create the MessageConsumer dynamic proxy
 
       String stackName = "ConsumerStack";
@@ -308,15 +298,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	{
 	   // look-up destination
 	   DestinationManager dm = serverPeer.getDestinationManager();
-	   AbstractDestination destination = null;
-	   try
-	   {
-	      destination = dm.getDestination(jmsDestination);
-	   }
-	   catch(Exception e)
-	   {
-	      throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
-	   }
+	  
+      AbstractDestination destination = dm.getDestination(jmsDestination);
 	
 	   BrowserDelegate bd = null;
 	   Serializable oid = serverPeer.getBrowserAdvisor().getName();

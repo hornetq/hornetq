@@ -18,6 +18,7 @@ import org.jboss.messaging.core.util.MessageStoreImpl;
 import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
 
 
+import javax.jms.Destination;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
@@ -118,25 +119,31 @@ public class ServerWrapper
    public void deployTopic(String name) throws Exception
    {
       Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("topics");
-      c.rebind(name, new JBossTopic(name));
+      Destination topic = new JBossTopic(name);
+      c.rebind(name, topic);
+      serverPeer.getDestinationManager().addDestination(topic);
    }
 
    public void undeployTopic(String name) throws Exception
    {
       Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("topics");
       c.unbind(name);
+      serverPeer.getDestinationManager().removeDestination(name);
    }
 
    public void deployQueue(String name) throws Exception
    {
       Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("queues");
-      c.rebind(name, new JBossQueue(name));
+      Destination queue = new JBossQueue(name);
+      c.rebind(name, queue);
+      serverPeer.getDestinationManager().addDestination(queue);
    }
 
    public void undeployQueue(String name) throws Exception
    {
       Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("queues");
       c.unbind(name);
+      serverPeer.getDestinationManager().removeDestination(name);
    }
 
    public ServerPeer getServerPeer()

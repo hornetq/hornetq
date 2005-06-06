@@ -16,6 +16,7 @@ import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.AspectManager;
@@ -31,11 +32,15 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
 import javax.transaction.TransactionManager;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
@@ -59,6 +64,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    protected ServerPeer serverPeer;
    
    protected Map sessions;
+   
+   protected Set temporaryDestinations;
+   
    protected volatile boolean started;
    
    // Constructors --------------------------------------------------
@@ -69,6 +77,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       this.serverPeer = serverPeer;
       sessionIDCounter = 0;
       sessions = new HashMap();
+      temporaryDestinations = new HashSet();
       started = false;
       
    }
@@ -158,8 +167,14 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       if (log.isTraceEnabled()) { log.trace("In ServerConnectionDelegate.close()"); }
       
-      /* I don't think we need to close the children here since
-       The traversal of the children is done in the ClosedInterceptor */                                                 
+      DestinationManager dm = serverPeer.getDestinationManager();
+      Iterator iter = this.temporaryDestinations.iterator();
+      while (iter.hasNext())
+      {
+         JBossDestination dest = (JBossDestination)iter.next();
+         dm.removeDestination(dest.getName());
+      }
+      this.temporaryDestinations = null;
    }
    
    public void closing() throws JMSException
@@ -242,6 +257,33 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
    }
    
+   public void addTemporaryDestination(Destination dest) throws JMSException
+   {
+      JBossDestination d = (JBossDestination)dest;
+      if (!d.isTemporary())
+      {
+         throw new JMSException("Destination:" + dest + " is not a temporary destination");
+      }
+      this.temporaryDestinations.add(dest);
+      this.serverPeer.getDestinationManager().addDestination(dest);
+   }
+   
+   public void deleteTemporaryDestination(Destination dest) throws JMSException
+   {
+      JBossDestination d = (JBossDestination)dest;
+      
+      if (!d.isTemporary())
+      {
+         throw new JMSException("Destination:" + dest + " is not a temporary destination");
+      }
+      
+      DestinationManager dm = serverPeer.getDestinationManager();
+      dm.removeDestination(d.getName());
+     
+      this.temporaryDestinations.remove(dest);
+   }
+  
+   
    // Public --------------------------------------------------------
    
    public ServerSessionDelegate putSessionDelegate(String sessionID, ServerSessionDelegate d)
@@ -270,21 +312,20 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    void sendMessage(Message m) throws JMSException
    {
       //The JMSDestination header must already have been set for each message
-      Destination dest = m.getJMSDestination();
+      JBossDestination dest = (JBossDestination)m.getJMSDestination();
       if (dest == null)
       {
          throw new IllegalStateException("JMSDestination header not set!");
       }
-      
+    
       AbstractDestination destination = null;
-      try
+
+      DestinationManager dm = serverPeer.getDestinationManager();
+      destination = dm.getDestination(dest);
+      
+      if (destination == null)
       {
-         DestinationManager dm = serverPeer.getDestinationManager();
-         destination = dm.getDestination(dest);
-      }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Cannot map destination " + dest, e);
+         throw new JMSException("Destination " + dest.getName() + " does not exist");
       }
       
       m.setJMSMessageID(generateMessageID());
@@ -309,23 +350,15 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    }
    
    void acknowledge(String messageID, Destination jmsDestination, String receiverID)
-   throws JMSException
+      throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
       
       DestinationManager dm = serverPeer.getDestinationManager();
       
-      AbstractDestination destination = null;
-      try
-      {
-         destination = dm.getDestination(jmsDestination);
-      }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Cannot map destination " + jmsDestination, e);
-      }
+      AbstractDestination destination =  dm.getDestination(jmsDestination);
       
-      destination.acknowledge(messageID, receiverID);
+      destination.acknowledge(messageID, receiverID);      
    }
    
    // Protected -----------------------------------------------------

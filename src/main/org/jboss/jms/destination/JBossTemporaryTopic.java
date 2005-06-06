@@ -1,0 +1,62 @@
+/*
+ * JBoss, the OpenSource J2EE webOS
+ * 
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.jms.destination;
+
+import javax.jms.JMSException;
+import javax.jms.TemporaryTopic;
+
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.util.id.GUID;
+
+public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
+{
+   // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = -1412919224718697967L;
+      
+   // Attributes ----------------------------------------------------
+   
+   private transient ConnectionDelegate delegate;
+   
+   // Static --------------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+   
+   public JBossTemporaryTopic(ConnectionDelegate delegate)
+   {
+      super(new GUID().toString());
+      this.delegate = delegate;
+   }
+   
+   // Public --------------------------------------------------------
+   
+   // TemporaryQueue implementation ----------------------------------------------
+   
+   public void delete() throws JMSException
+   {
+      if (delegate != null) delegate.deleteTemporaryDestination(this);
+   }
+   
+   // JBossDestination overrides ---------------------------------------------------
+   
+   public boolean isTemporary()
+   {
+      return true;
+   }
+   
+   // Package protected ---------------------------------------------
+   
+   
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------
+   
+
+}

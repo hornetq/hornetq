@@ -13,7 +13,10 @@ import org.jboss.messaging.core.local.AbstractDestination;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.jms.Destination;
+import javax.jms.JMSException;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -55,40 +58,91 @@ public class DestinationManager
     * Returns the core abstract destination that corresponds to the given JNDI destination.
     * @exception Exception - thrown if the JNDI destination cannot be mapped on a core destination.
     */
-   public AbstractDestination getDestination(Destination dest) throws Exception
+   public AbstractDestination getDestination(Destination dest)
+      throws JMSException
    {
       JBossDestination d = (JBossDestination)dest;
       String name = d.getName();
       boolean isQueue = d.isQueue();
 
-      ic.lookup("/messaging/" + (isQueue ? "queues/" : "topics/") + name);
-
+      if (!d.isTemporary())
+      {
+         try
+         {
+            ic.lookup("/messaging/" + (isQueue ? "queues/" : "topics/") + name);
+         }
+         catch (NamingException e)
+         {
+            throw new JMSException("Destination " + name + " is not bound in JNDI");
+         }
+      }
+      
       AbstractDestination ad = isQueue ?
                                (AbstractDestination)queues.get(name) :
                                (AbstractDestination)topics.get(name);
-
-      if (ad == null)
-      {
-         // TODO I am using LocalQueues for the time being, switch to distributed Queues
-         if (isQueue)
-         {
-            ad = new LocalQueue(name);
-
-            ad.setAcknowledgmentStore(serverPeer.getAcknowledgmentStore());
-            ad.setMessageStore(serverPeer.getMessageStore());
-            queues.put(name, ad);
-         }
-         else
-         {
-            // TODO I am using LocalTopics for the time being, switch to distributed Topics
-            ad = new LocalTopic(name);
-            topics.put(name, ad);
-         }
-
-         // make the destination transactional if there is a transaction manager available
-         ad.setTransactionManager(serverPeer.getTransactionManager());
-      }
+                               
       return ad;
+   }
+
+   /**
+    * Add a JMS Deestination to the manager
+    * 
+    * @param dest The JMS destination to add
+    * @throws JMSException If the destination with that name already exists in the manager
+    */
+   public void addDestination(Destination dest)
+      throws JMSException
+   {
+      JBossDestination d = (JBossDestination)dest;
+      String name = d.getName();
+      boolean isQueue = d.isQueue();
+      
+      AbstractDestination ad = getDestination(dest);
+      if (ad != null)
+      {
+         throw new JMSException("Destination with name:" + name + " already exists");
+      }
+      
+      // TODO I am using LocalQueues for the time being, switch to distributed Queues
+      if (isQueue)
+      {
+         ad = new LocalQueue(name);
+
+         ad.setAcknowledgmentStore(serverPeer.getAcknowledgmentStore());
+         ad.setMessageStore(serverPeer.getMessageStore());
+         queues.put(name, ad);
+      }
+      else
+      {
+         // TODO I am using LocalTopics for the time being, switch to distributed Topics
+         ad = new LocalTopic(name);
+         topics.put(name, ad);
+      }
+
+      // make the destination transactional if there is a transaction manager available
+      ad.setTransactionManager(serverPeer.getTransactionManager()); 
+   }
+   
+   /**
+    * Remove a JMS Destination from the manager
+    * 
+    * @param name The name of the JMS Destination to remove
+    * @throws JMSException If there is no such destination to remove
+    */
+   public void removeDestination(String name)
+      throws JMSException
+   {
+      Object removed = queues.remove(name);
+      
+      if (removed == null)
+      {
+         removed = topics.remove(name);
+      }
+      
+      if (removed == null)
+      {
+         throw new JMSException("Cannot find destination:" + name + " to remove");
+      }
    }
 
    // Package protected ---------------------------------------------

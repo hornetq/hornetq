@@ -41,6 +41,11 @@ public abstract class JBossDestination implements Destination, Serializable
 
    public abstract boolean isTopic();
    public abstract boolean isQueue();
+   
+   public boolean isTemporary()
+   {
+      return false;
+   }
 
    public boolean equals(Object o)
    {
