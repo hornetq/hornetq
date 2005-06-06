@@ -72,6 +72,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    // Attributes ----------------------------------------------------
 
    protected Destination destination;
+   
+   protected Destination replyToDestination;
 
    protected String type;
 
@@ -81,6 +83,12 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    protected boolean messageReadWrite = true;
 
    protected Map properties; 
+   
+   protected boolean isCorrelationIDBytes;
+   
+   protected String correlationID;
+   
+   protected byte[] correlationIDBytes;
 
    // Constructors --------------------------------------------------
 
@@ -132,32 +140,42 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      throw new NotYetImplementedException();
+      if (!isCorrelationIDBytes)
+      {
+         throw new JMSException("CorrelationID is a String for this message");
+      }
+      return correlationIDBytes;
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
    {
-      throw new NotYetImplementedException();
+      correlationIDBytes = correlationID;
+      isCorrelationIDBytes = true;
    }
 
    public void setJMSCorrelationID(String correlationID) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.correlationID = correlationID;
+      isCorrelationIDBytes = false;
    }
 
    public String getJMSCorrelationID() throws JMSException
    {
-      throw new NotYetImplementedException();
+      if (isCorrelationIDBytes)
+      {
+         throw new JMSException("CorrelationID is a byte[] for this message");
+      }
+      return correlationID;
    }
 
    public Destination getJMSReplyTo() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return replyToDestination;
    }
 
    public void setJMSReplyTo(Destination replyTo) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.replyToDestination = replyTo;
    }
 
    public Destination getJMSDestination() throws JMSException
@@ -551,11 +569,29 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       super.writeExternal(out);
 
       out.writeObject(destination);
+      out.writeObject(replyToDestination);
       writeString(out, type);
       out.writeBoolean(messageReadWrite); //do we really need to write this??
 
       writeMap(out, properties);
-
+      
+      out.writeBoolean(isCorrelationIDBytes);
+      if (isCorrelationIDBytes)
+      {
+         if (correlationIDBytes == null)
+         {
+            out.writeInt(-1);
+         }
+         else
+         {
+            out.writeInt(correlationIDBytes.length);
+            out.write(correlationIDBytes);
+         }
+      }
+      else
+      {
+         writeString(out, correlationID);
+      }
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -563,10 +599,29 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       super.readExternal(in);
 
       destination = (Destination) in.readObject();
+      replyToDestination = (Destination) in.readObject();
       type = readString(in);
       messageReadWrite = in.readBoolean();
       properties = readMap(in);
-
+      
+      isCorrelationIDBytes = in.readBoolean();
+      if (isCorrelationIDBytes)
+      {
+         int length = in.readInt();
+         if (length == -1)
+         {
+            correlationIDBytes = null;
+         }
+         else
+         {
+            correlationIDBytes = new byte[length];
+            in.readFully(correlationIDBytes);
+         }
+      }
+      else
+      {
+         correlationID = readString(in);
+      }
    }
 
    // Package protected ---------------------------------------------
