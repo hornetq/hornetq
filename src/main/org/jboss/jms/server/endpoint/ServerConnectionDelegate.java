@@ -32,8 +32,6 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
 import javax.transaction.TransactionManager;
 
 import java.util.HashSet;
@@ -213,10 +211,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          {
             Message m = (Message)iter.next();
             sendMessage(m);
-            if (log.isTraceEnabled()) log.trace("Sent message");
+            if (log.isTraceEnabled()) { log.trace("Sent message"); }
          }
          
-         if (log.isTraceEnabled()) log.trace("Done the sends");
+         if (log.isTraceEnabled()) { log.trace("Done the sends"); }
          
          //Then ack the acks
          iter = tx.getAcks().iterator();
@@ -226,10 +224,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
             
             acknowledge(ack.messageID, ack.destination, ack.receiverID);
             
-            if (log.isTraceEnabled()) log.trace("Acked message:" + ack.messageID);
+            if (log.isTraceEnabled()) { log.trace("Acked message:" + ack.messageID); }
          }
          
-         if (log.isTraceEnabled()) log.trace("Done the acks");
+         if (log.isTraceEnabled()) { log.trace("Done the acks"); }
          
          tm.commit();
          committed = true;

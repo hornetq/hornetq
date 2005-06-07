@@ -150,7 +150,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       // create the corresponding "server-side" ProducerDelegate and register it with this
       // SessionDelegate instance
       ServerProducerDelegate spd =
-            new ServerProducerDelegate(producerID, destination, jmsDestination, this);
+            new ServerProducerDelegate(producerID, jmsDestination, this);
       putProducerDelegate(producerID, spd);
 
       log.debug("created producer delegate (producerID=" + producerID + ")");

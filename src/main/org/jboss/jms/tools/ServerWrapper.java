@@ -34,6 +34,8 @@ import java.util.Hashtable;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerWrapper
 {

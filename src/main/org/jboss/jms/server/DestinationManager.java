@@ -56,7 +56,7 @@ public class DestinationManager
 
    /**
     * Returns the core abstract destination that corresponds to the given JNDI destination.
-    * @exception Exception - thrown if the JNDI destination cannot be mapped on a core destination.
+    * @exception JMSException - thrown if the JNDI destination cannot be mapped on a core destination.
     */
    public AbstractDestination getDestination(Destination dest)
       throws JMSException

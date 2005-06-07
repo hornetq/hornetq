@@ -51,6 +51,8 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ * 
+ * $Id$
  */
 class JBossSession
       implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
@@ -73,9 +75,11 @@ class JBossSession
 
    // Constructors --------------------------------------------------
 
-   public JBossSession(ConnectionDelegate connectionDelegate, SessionDelegate sessionDelegate,
+   public JBossSession(ConnectionDelegate connectionDelegate,
+                       SessionDelegate sessionDelegate,
                        boolean isXA,
-                       int sessionType, boolean transacted,
+                       int sessionType,
+                       boolean transacted,
                        int acknowledgeMode)
    {
       this.sessionDelegate = sessionDelegate;
@@ -190,8 +194,7 @@ class JBossSession
      return new JBossMessageConsumer(consumerDelegate, d);
   }
 
-  public MessageConsumer createConsumer(Destination d, String messageSelector)
-        throws JMSException
+  public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
   {
 	  ConsumerDelegate consumerDelegate = sessionDelegate.createConsumerDelegate(d, messageSelector);
      return new JBossMessageConsumer(consumerDelegate, d);
@@ -209,7 +212,9 @@ class JBossSession
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
+      {
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
+      }
       throw new NotYetImplementedException();
    }
 
@@ -217,7 +222,9 @@ class JBossSession
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
+      {
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
+      }
       throw new NotYetImplementedException();
    }
 
@@ -225,14 +232,17 @@ class JBossSession
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
+      {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
+      }
       throw new NotYetImplementedException();
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
                                                   String name,
                                                   String messageSelector,
-                                                  boolean noLocal) throws JMSException
+                                                  boolean noLocal)
+         throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
@@ -279,7 +289,9 @@ class JBossSession
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
+      {
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
+      }
       JBossTemporaryTopic topic = new JBossTemporaryTopic(connectionDelegate);
       connectionDelegate.addTemporaryDestination(topic);
       return topic;
@@ -289,7 +301,9 @@ class JBossSession
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
+      {
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
+      }
       throw new NotYetImplementedException();
    }
    
@@ -297,7 +311,10 @@ class JBossSession
    
    public Session getSession() throws JMSException
    {
-      if (!isXA) throw new IllegalStateException("Is not an XASession");
+      if (!isXA)
+      {
+         throw new IllegalStateException("Is not an XASession");
+      }
       return this;
    }
   

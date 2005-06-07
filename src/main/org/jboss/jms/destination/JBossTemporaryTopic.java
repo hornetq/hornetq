@@ -12,6 +12,12 @@ import javax.jms.TemporaryTopic;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.util.id.GUID;
 
+/**
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ */
 public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
 {
    // Constants -----------------------------------------------------

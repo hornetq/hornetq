@@ -13,6 +13,12 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.util.id.GUID;
 
 
+/**
+ * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ */
 public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
 {
    // Constants -----------------------------------------------------

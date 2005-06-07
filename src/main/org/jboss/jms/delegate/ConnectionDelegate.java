@@ -9,10 +9,6 @@ package org.jboss.jms.delegate;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
-import javax.transaction.SystemException;
-import javax.transaction.NotSupportedException;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.tx.TxInfo;
@@ -21,6 +17,8 @@ import org.jboss.jms.tx.TxInfo;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface ConnectionDelegate extends Closeable
 {

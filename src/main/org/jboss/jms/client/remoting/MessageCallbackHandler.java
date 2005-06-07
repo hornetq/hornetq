@@ -203,9 +203,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             {
                if (timeout == 0)
                {
-                  if (log.isTraceEnabled()) log.trace("receive with no timeout");
+                  if (log.isTraceEnabled()) { log.trace("receive with no timeout"); }
                   m = ((JBossMessage)messages.take());
-                  if (log.isTraceEnabled()) log.trace("Got message:" + m);
+                  if (log.isTraceEnabled()) { log.trace("Got message:" + m); }
                }
                else
                {
@@ -214,17 +214,17 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   if (m == null)
                   {
                      // timeout expired
-                     if (log.isTraceEnabled()) log.trace("Timeout expired");
+                     if (log.isTraceEnabled()) { log.trace("Timeout expired"); }
                      return null;
                   }
                }
             }
             catch(InterruptedException e)
             {
-               if (log.isTraceEnabled()) log.trace("Thread was interrupted");
+               if (log.isTraceEnabled()) { log.trace("Thread was interrupted"); }
                if (closed)
                {
-                  if (log.isTraceEnabled()) log.trace("It's closed");
+                  if (log.isTraceEnabled()) { log.trace("It's closed"); }
                   return null;
                }
                else
@@ -233,24 +233,26 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                }
             }
             
-            if (log.isTraceEnabled()) log.trace("Calling delivered()");
+            if (log.isTraceEnabled()) { log.trace("Calling delivered()"); }
             
             //Notify that the message has been delivered (not necessarily acknowledged though)
             delivered(m);
             
-            if (log.isTraceEnabled()) log.trace("Called delivered()");
+            if (log.isTraceEnabled()) { log.trace("Called delivered()"); }
             
             if (!m.isExpired())
             {
-               if (log.isTraceEnabled()) log.trace("Message is not expired");
+               if (log.isTraceEnabled()) { log.trace("Message is not expired"); }
                return m.getReceivedObject();
             }
-            
-            if (log.isTraceEnabled()) log.trace("Looping around");
-            
-            
+
+            log.debug("Message expired");
+
             // discard the message, adjust timeout and reenter the buffer
-            if (timeout != 0) timeout -= System.currentTimeMillis() - startTimestamp;
+            if (timeout != 0)
+            {
+               timeout -= System.currentTimeMillis() - startTimestamp;
+            }
          }
       }
       finally

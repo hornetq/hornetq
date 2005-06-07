@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import org.jboss.messaging.core.Receiver;
 import org.jboss.logging.Logger;
 import org.jboss.jms.delegate.ProducerDelegate;
 
@@ -36,8 +35,9 @@ public class ServerProducerDelegate implements ProducerDelegate
 
    // Constructors --------------------------------------------------
 
-   public ServerProducerDelegate(String id, Receiver destination,
-                                 Destination jmsDestination, ServerSessionDelegate parent)
+   public ServerProducerDelegate(String id,
+                                 Destination jmsDestination,
+                                 ServerSessionDelegate parent)
    {
       this.id = id;
       //this.destination = destination;
@@ -50,13 +50,13 @@ public class ServerProducerDelegate implements ProducerDelegate
    public void closing() throws JMSException
    {
       //Currently this does nothing
-      if (log.isTraceEnabled()) log.trace("closing");
+      if (log.isTraceEnabled()) { log.trace("closing"); }
    }
 
    public void close() throws JMSException
    {
       //Currently this does nothing
-      if (log.isTraceEnabled()) log.trace("close");
+      if (log.isTraceEnabled()) { log.trace("close"); }
    }
    
    public void send(Message m) throws JMSException

@@ -41,7 +41,8 @@ import org.jboss.util.Strings;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author David Maplesden (David.Maplesden@orion.co.nz)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * 
+ *
+ * $Id$
  */
 public class JBossMessage extends RoutableSupport implements javax.jms.Message
 {
