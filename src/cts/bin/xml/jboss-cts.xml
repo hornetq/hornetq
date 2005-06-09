@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+     Ant script that applies modifications required to run JBoss Messaging TCK tests to
+     a JBoss/CTS installation. Replace $TS_HOME/bin/cts/jboss-cts.xml with this file.
+     For details more details, refer to
+     http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingTCKInstallation
+
+     $Id$
+
+ -->
+
+
+<project name="JBoss Messaging CTS Setup" default="setup-cts">
+
+
+   <property environment="ENV"/>
+   <property name="j2ee.home" value="to be set by caller"/>
+   <property name="j2ee.home.ri" value="to be set by caller"/>
+   <property name="ts.home" value="to be set by caller"/>
+   <property name="jboss.home" value="${j2ee.home}"/>
+   <property name="messaging.home" value="${ENV.JBOSS_MESSAGING_HOME}"/>
+
+
+   <target name="setup-cts"
+      description="Create a JBoss configuration for a JBoss Messaging CTS test run">
+
+
+      <echo message="j2ee.home.ri = ${j2ee.home.ri}"/>
+      <echo message="j2ee.home = ${j2ee.home}"/>
+      <echo message="ts.home = ${ts.home}"/>
+      <echo message="jboss.home = ${jboss.home}"/>
+      <echo message="messaging.home = ${messaging.home}"/>
+
+
+      <fail message="JBOSS_MESSAGE_HOME must be set!" unless="ENV.JBOSS_MESSAGING_HOME"/>
+
+
+      <echo message="Creating server configuration directory: ${jboss.home}/server/cts-messaging"/>
+      <mkdir dir="${jboss.home}/server/cts-messaging"/>
+
+
+      <echo message="Creating server configuration based on default"/>
+      <copy todir="${jboss.home}/server/cts-messaging" overwrite="true">
+         <fileset dir="${jboss.home}/server/default">
+            <exclude name="data/**"/>
+            <exclude name="log/**"/>
+            <exclude name="tmp/**"/>
+            <exclude name="work/**"/>
+            <!-- Exclude uneccessary deployments -->
+            <exclude name="deploy/bsh-deployer.xml"/>
+            <exclude name="deploy/cache-invalidation-service.xml"/>
+            <exclude name="deploy/http-invoker.sar/**"/>
+            <exclude name="deploy/jboss-ha-local-jdbc.rar"/>
+            <exclude name="deploy/jboss-ha-xa-jdbc.rar"/>
+            <exclude name="deploy/jboss-hibernate.deployer"/>
+            <exclude name="deploy/jboss-ws4ee.sar/**"/>
+            <exclude name="deploy/jms/**"/>
+            <exclude name="deploy/mail-ra.rar"/>
+            <exclude name="deploy/mail-service.xml"/>
+            <exclude name="deploy/management/**"/>
+            <exclude name="deploy/monitoring-service.xml"/>
+            <exclude name="deploy/schedule-manager-service.xml"/>
+            <exclude name="deploy/scheduler-service.xml"/>
+            <exclude name="lib/autonumber-plugin.jar"/>
+            <exclude name="lib/bcel.jar"/>
+            <exclude name="lib/bindingservice-plugin.jar"/>
+            <exclude name="lib/bsh-1.3.0.jar"/>
+            <exclude name="lib/bsh-deployer.jar"/>
+            <exclude name="lib/jboss-monitoring.jar"/>
+            <exclude name="lib/jbossmq.jar"/>
+            <exclude name="lib/mail-plugin.jar"/>
+            <exclude name="lib/mail.jar"/>
+            <exclude name="lib/scheduler*"/>
+         </fileset>
+      </copy>
+
+
+      <echo message="Copying customized configurations from ${messaging.home}/src/cts/conf"/>
+      <copy todir="${jboss.home}/server/cts-messaging/conf" overwrite="true">
+         <fileset dir="${messaging.home}/src/cts/conf"/>
+      </copy>
+
+
+      <echo message="Copying extra services from TS_HOME/jboss/deploy"/>
+      <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
+         <fileset dir="${ts.home}/jboss/deploy">
+            <include name="pointbase-ds.xml"/>
+            <include name="ROOT.war/**"/>
+         </fileset>
+         <filterset>
+            <filter token="pointbase.driver" value="${pointbase.driver}"/>
+            <filter token="pointbase.server" value="${pointbase.server}"/>
+            <filter token="pointbase.port" value="${pointbase.port}"/>
+            <filter token="pointbase.dbName" value="${pointbase.dbName}"/>
+            <filter token="pointbase.user" value="${pointbase.user}"/>
+            <filter token="pointbase.passwd" value="${pointbase.passwd}"/>
+            <filter token="xa.xadatasource.class" value="${xa.xadatasource.class}"/>
+         </filterset>
+      </copy>
+
+
+      <echo message="Copying extra services from ${messaging.home}/src/cts/deploy"/>
+      <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
+         <fileset dir="${messaging.home}/src/cts/deploy">
+            <include name="properties-service.xml"/>
+         </fileset>
+      </copy>
+
+
+      <echo message="Copying extra libraries from TS_HOME/lib"/>
+      <copy todir="${j2ee.home}/server/cts-messaging/lib" overwrite="true">
+         <fileset dir="${ts.home}/lib">
+            <include name="cts.jar"/>
+            <include name="javatest.jar"/>
+            <include name="tsharness.jar"/>
+            <include name="tsprovider.jar"/>
+         </fileset>
+      </copy>
+
+
+      <echo message="Copying extra libraries from TS_HOME/jboss/lib"/>
+      <copy todir="${j2ee.home}/server/cts-messaging/lib" overwrite="true">
+         <fileset dir="${ts.home}/jboss/lib">
+            <include name="jboss-porting.jar"/>
+         </fileset>
+      </copy>
+
+
+      <echo message="Copying the test keystore from TS_HOME/bin/certificates"/>
+      <copy todir="${j2ee.home}/server/cts-messaging/conf/keystores" overwrite="true">
+         <fileset dir="${ts.home}/bin/certificates"/>
+      </copy>
+   </target>
+
+
+   <target name="clean-cts"
+      description="Removes the JBoss Messaging CTS configuration from JBOSS_HOME/server/cts-messaging">
+      <echo message="Removing JBoss Messaging CTS configuration from ${jboss.home}/server"/>
+      <delete dir="${jboss.home}/server/cts-messaging"/>
+   </target>
+
+
+   <target name="restart.server">
+      <echo message="do nothing"/>
+   </target>
+
+
+
+
+
+</project>

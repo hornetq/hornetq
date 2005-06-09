@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Ant build file that applies changes required by a JBoss Messaging CTS run to a
+     CTS installation. For more details see
+     http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingTCKInstallation
+
+     $Id$
+ -->
+
+<project name="JBoss Messaging CTS run preparation" default="main" >
+
+   <property environment="ENV"/>
+
+   <target name="main">
+
+
+      <fail unless="ENV.TS_HOME" message="Environment variable TS_HOME must be set!"/>
+
+
+      <echo message="Copying CTS configuration files to ${ENV.TS_HOME}/bin/xml"/>
+      <copy file="bin/xml/j2ee_jboss_messaging.xml" tofile="${ENV.TS_HOME}/bin/xml/j2ee_vi.xml"
+         overwrite="true"/>
+      <copy file="bin/xml/jboss-cts.xml" todir="${ENV.TS_HOME}/bin/xml" overwrite="true"/>
+
+
+      <echo message="Updating ${ENV.TS_HOME}/bin/ts.jte"/>
+      <replaceregexp file="${ENV.TS_HOME}/bin/ts.jte"
+         match="server/cts[^-]" replace="server/cts-messaging"/>
+
+   </target>
+</project>
