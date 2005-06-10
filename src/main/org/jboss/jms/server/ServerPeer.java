@@ -426,17 +426,15 @@ public class ServerPeer
 
    private void bindConnectionFactory(ConnectionFactory factory) throws Exception
    {
-      Context c = (Context)initialContext.lookup("/");
-      c.rebind(CONNECTION_FACTORY_JNDI_NAME, factory);
-      c.rebind(XACONNECTION_FACTORY_JNDI_NAME, factory);
+      initialContext.rebind(CONNECTION_FACTORY_JNDI_NAME, factory);
+      initialContext.rebind(XACONNECTION_FACTORY_JNDI_NAME, factory);
 
    }
 
    private void unbindConnectionFactory() throws Exception
    {
-      Context c = (Context)initialContext.lookup("/");
-      c.unbind(CONNECTION_FACTORY_JNDI_NAME);
-      c.unbind(XACONNECTION_FACTORY_JNDI_NAME);
+      initialContext.unbind(CONNECTION_FACTORY_JNDI_NAME);
+      initialContext.unbind(XACONNECTION_FACTORY_JNDI_NAME);
 
    }
 

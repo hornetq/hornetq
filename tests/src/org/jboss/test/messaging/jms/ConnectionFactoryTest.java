@@ -58,7 +58,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void testQueueConnectionFactory() throws Exception
    {
       QueueConnectionFactory qcf =
-         (QueueConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+         (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
       QueueConnection qc = qcf.createQueueConnection();
       qc.close();
    }
@@ -69,7 +69,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void testTopicConnectionFactory() throws Exception
    {
       TopicConnectionFactory qcf =
-         (TopicConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+         (TopicConnectionFactory)initialContext.lookup("/ConnectionFactory");
       TopicConnection tc = qcf.createTopicConnection();
       tc.close();
    }

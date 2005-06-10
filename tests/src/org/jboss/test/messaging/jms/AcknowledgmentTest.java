@@ -50,10 +50,10 @@ public class AcknowledgmentTest extends MessagingTestCase
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       cf =
-            (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+            (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+      queue = (Destination)initialContext.lookup("/queue/Queue");
 
       
    }

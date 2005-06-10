@@ -62,6 +62,7 @@ public class ServerWrapper
    private InitialContext initialContext;
    private Hashtable jndiEnvironment;
    private MBeanServer jbossMBeanServer;
+   private TransactionManager transactionManager;
 
    // Constructors --------------------------------------------------
 
@@ -84,10 +85,7 @@ public class ServerWrapper
    {
       this.jndiEnvironment = jndiEnvironment;
       initialContext = new InitialContext(jndiEnvironment);
-      if (transactionManager != null)
-      {
-         initialContext.bind("java:/TransactionManager", transactionManager);
-      }
+      this.transactionManager = transactionManager;
       locator = new InvokerLocator("socket://localhost:9890");
       jbossMBeanServer = MBeanServerFactory.createMBeanServer("jboss");
       serverPeerID = "ServerPeer0";
@@ -119,7 +117,7 @@ public class ServerWrapper
 
    public void deployTopic(String name) throws Exception
    {
-      Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("topics");
+      Context c = (Context)initialContext.lookup("topic");
       Destination topic = new JBossTopic(name);
       c.rebind(name, topic);
       serverPeer.getDestinationManager().addDestination(topic);
@@ -127,14 +125,14 @@ public class ServerWrapper
 
    public void undeployTopic(String name) throws Exception
    {
-      Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("topics");
+      Context c = (Context)initialContext.lookup("topic");
       c.unbind(name);
       serverPeer.getDestinationManager().removeDestination(name);
    }
 
    public void deployQueue(String name) throws Exception
    {
-      Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("queues");
+      Context c = (Context)initialContext.lookup("queue");
       Destination queue = new JBossQueue(name);
       c.rebind(name, queue);
       serverPeer.getDestinationManager().addDestination(queue);
@@ -142,7 +140,7 @@ public class ServerWrapper
 
    public void undeployQueue(String name) throws Exception
    {
-      Context c = (Context)((Context)initialContext.lookup("messaging")).lookup("queues");
+      Context c = (Context)initialContext.lookup("queue");
       c.unbind(name);
       serverPeer.getDestinationManager().removeDestination(name);
    }
@@ -172,42 +170,43 @@ public class ServerWrapper
 
    private void setupJNDI() throws Exception
    {
-      Context c = null;
-      String path = "/";
-      String name = "messaging";
-
-      try
-      {
-         c = (Context)initialContext.lookup(name);
-      }
-      catch(NameNotFoundException e)
-      {
-         c = initialContext.createSubcontext(name);
-         log.info("Created context " + path + name);
-      }
-
-      path += name + "/";
-      String[] names = {"topics", "queues" };
+      String[] names = {"topic", "queue" };
 
       for (int i = 0; i < names.length; i++)
       {
          try
          {
-            c.lookup(names[i]);
+            initialContext.lookup(names[i]);
          }
          catch(NameNotFoundException e)
          {
-            c.createSubcontext(names[i]);
-            log.info("Created context " + path + names[i]);
+            initialContext.createSubcontext(names[i]);
+            log.info("Created context /" + names[i]);
          }
+      }
+
+      if (transactionManager != null)
+      {
+         initialContext.bind("java:/TransactionManager", transactionManager);
       }
    }
 
    private void tearDownJNDI() throws Exception
    {
-      Context messaging = (Context)initialContext.lookup("/messaging");
-      tearDownRecursively(messaging);
-      initialContext.unbind("messaging");
+      Context c = (Context)initialContext.lookup("/topic");
+      tearDownRecursively(c);
+      c = (Context)initialContext.lookup("/queue");
+      tearDownRecursively(c);
+
+      try
+      {
+         initialContext.unbind("java:/TransactionManager");
+      }
+      catch(Exception e)
+      {
+         log.info("Could not unbind transaction manager");
+      }
+
       log.info("unbound messaging");
    }
 
@@ -249,7 +248,7 @@ public class ServerWrapper
    public interface JBossRemotingConnectorMBean
    {
       public String getInvokerLocator() throws Exception;
-      public ServerInvocationHandler addInvocationHandler(String s, ObjectName objectName)
+      public ServerInvocationHandler addInvocationHandler(String s, ServerInvocationHandler h)
          throws Exception;
    }
 
@@ -267,10 +266,10 @@ public class ServerWrapper
          return connector.getInvokerLocator();
       }
 
-      public ServerInvocationHandler addInvocationHandler(String s, ObjectName objectName)
+      public ServerInvocationHandler addInvocationHandler(String s, ServerInvocationHandler h)
          throws Exception
       {
-         return connector.addInvocationHandler(s, objectName);
+         return connector.addInvocationHandler(s, h);
       }
    }
 }

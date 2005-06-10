@@ -56,9 +56,9 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
+TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 
@@ -114,6 +114,8 @@ $reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
+$reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
+$reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../resources/jboss-remoting.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
@@ -123,6 +125,7 @@ $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
+$reldir/../../../thirdparty/dom4j-dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../resources/jgroups-core.jar${SEP}\
  junit.textui.TestRunner $TARGET_CLASS

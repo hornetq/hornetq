@@ -62,8 +62,8 @@ public class MessageTest extends MessagingTestCase
       ServerManagement.deployQueue("Queue");
 
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/messaging/ConnectionFactory");
-      queue = (Destination)ic.lookup("/messaging/queues/Queue");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      queue = (Destination)ic.lookup("/queue/Queue");
 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();

@@ -60,13 +60,13 @@ public class QueueBrowserTest extends MessagingTestCase
 		super.setUp();
 		ServerManagement.startInVMServer();
 		initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-		cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+		cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 		
 		ServerManagement.deployQueue("Queue");
-		queue = (Queue)initialContext.lookup("/messaging/queues/Queue");			
+		queue = (Queue)initialContext.lookup("/queue/Queue");
 		
 		ServerManagement.deployTopic("Topic");
-		topic = (Topic)initialContext.lookup("/messaging/topics/Topic");
+		topic = (Topic)initialContext.lookup("/topic/Topic");
 	}
 	
 	public void tearDown() throws Exception

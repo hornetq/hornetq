@@ -51,10 +51,10 @@ public class TransactedSessionTest extends MessagingTestCase
       super.setUp();
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+      queue = (Destination)initialContext.lookup("/queue/Queue");
    }
    
    public void tearDown() throws Exception
@@ -74,9 +74,9 @@ public class TransactedSessionTest extends MessagingTestCase
       // start the server without a transaction manager
       ServerManagement.startInVMServer(null);
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+      queue = (Destination)initialContext.lookup("/queue/Queue");
       
       Connection c = cf.createConnection();
       
@@ -107,9 +107,9 @@ public class TransactedSessionTest extends MessagingTestCase
       TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.BROKEN);
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/messaging/queues/Queue");
+      queue = (Destination)initialContext.lookup("/queue/Queue");
       
       Connection c = cf.createConnection();
       

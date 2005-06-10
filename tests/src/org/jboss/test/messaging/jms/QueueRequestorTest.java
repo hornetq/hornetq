@@ -58,9 +58,9 @@ public class QueueRequestorTest extends MessagingTestCase
       super.setUp();
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf = (QueueConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+      cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");
-      queue = (Queue)initialContext.lookup("/messaging/queues/Queue");
+      queue = (Queue)initialContext.lookup("/queue/Queue");
    }
 
    public void tearDown() throws Exception

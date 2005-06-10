@@ -51,10 +51,10 @@ public class SessionTest extends MessagingTestCase
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       cf =
-            (JBossConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+            (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployTopic("Topic");
-      topic = (Destination)initialContext.lookup("/messaging/topics/Topic");
+      topic = (Destination)initialContext.lookup("/topic/Topic");
 
       
    }

@@ -58,9 +58,9 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic2");
 
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/messaging/ConnectionFactory");
-      topic = (Destination)ic.lookup("/messaging/topics/Topic");
-      topic2 = (Destination)ic.lookup("/messaging/topics/Topic2");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      topic = (Destination)ic.lookup("/topic/Topic");
+      topic2 = (Destination)ic.lookup("/topic/Topic2");
 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();

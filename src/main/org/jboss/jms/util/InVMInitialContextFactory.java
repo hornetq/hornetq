@@ -53,6 +53,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
       if (initialContext == null)
       {
          initialContext = new InVMContext();
+         initialContext.bind("java:/", new InVMContext());
       }
       return initialContext;
    }

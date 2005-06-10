@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.util;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 import javax.naming.Context;
@@ -33,8 +32,6 @@ public class InVMContext implements Context
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(InVMContext.class);
-
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -46,7 +43,6 @@ public class InVMContext implements Context
    public InVMContext()
    {
       map = Collections.synchronizedMap(new HashMap());
-      map.put("java:/", new InVMContext());
    }
 
    // Context implementation ----------------------------------------
