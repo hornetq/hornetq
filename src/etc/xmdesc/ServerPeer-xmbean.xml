@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+
+
+<mbean>
+   <description>JBoss Messaging Server Peer</description>
+   <class>org.jboss.jms.server.ServerPeer</class>
+
+   <!-- Managed constructors -->
+
+   <constructor>
+      <name>ServerPeer</name>
+      <parameter>
+         <name>serverPeerID</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </constructor>
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getServerPeerID">
+      <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
+      <name>serverPeerID</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getLocatorURI">
+      <description>The LocatorURI of the Connector to be used by this ServerPeer</description>
+      <name>locatorURI</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>
+
+   <operation>
+      <description>Create a JMS Queue</description>
+      <name>createQueue</name>
+      <parameter>
+         <description>The queue name</description>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </operation>
+
+   <operation>
+      <description>Create a JMS Topic</description>
+      <name>createTopic</name>
+      <parameter>
+         <description>The topic name</description>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </operation>
+
+
+</mbean>

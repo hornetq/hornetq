@@ -82,7 +82,7 @@ public class ClientManager
       {
          id = clientIDCounter++;
       }
-      return serverPeer.getID() + "-Connection" + id;
+      return serverPeer.getServerPeerID() + "-Connection" + id;
    }
 
    // Package protected ---------------------------------------------

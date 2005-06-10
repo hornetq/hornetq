@@ -10,6 +10,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.core.local.LocalQueue;
 import org.jboss.messaging.core.local.LocalTopic;
 import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -30,6 +31,8 @@ import java.util.HashMap;
 public class DestinationManager
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(DestinationManager.class);
 
    // Static --------------------------------------------------------
 
@@ -61,6 +64,9 @@ public class DestinationManager
    public AbstractDestination getDestination(Destination dest)
       throws JMSException
    {
+
+      if (log.isTraceEnabled()) { log.trace("getting core destination for " + dest); }
+
       JBossDestination d = (JBossDestination)dest;
       String name = d.getName();
       boolean isQueue = d.isQueue();
@@ -69,7 +75,8 @@ public class DestinationManager
       {
          try
          {
-            ic.lookup("/messaging/" + (isQueue ? "queues/" : "topics/") + name);
+            // TODO get rid of this
+            ic.lookup((isQueue ? "queue/" : "topic/") + name);
          }
          catch (NamingException e)
          {

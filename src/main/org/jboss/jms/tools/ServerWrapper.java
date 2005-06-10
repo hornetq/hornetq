@@ -7,15 +7,13 @@
 package org.jboss.jms.tools;
 
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.transport.Connector;
-import org.jboss.messaging.core.util.MessageStoreImpl;
-import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
 
 
 import javax.jms.Destination;
@@ -25,12 +23,16 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.Binding;
 import javax.transaction.TransactionManager;
+import javax.management.ObjectName;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import java.net.URL;
 import java.util.Hashtable;
 
 /**
  * A place-holder for the micro-container. Used to bootstrap a server instance, until proper
- * integration with the micro-container. Run it with bin/runserver.
+ * integration with the micro-container. Also useful for in memory testing. Run it with
+ * bin/runserver.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -59,8 +61,7 @@ public class ServerWrapper
    private String serverPeerID;
    private InitialContext initialContext;
    private Hashtable jndiEnvironment;
-
-   private TransactionManager transactionManager;
+   private MBeanServer jbossMBeanServer;
 
    // Constructors --------------------------------------------------
 
@@ -82,9 +83,13 @@ public class ServerWrapper
          throws Exception
    {
       this.jndiEnvironment = jndiEnvironment;
-      this.transactionManager = transactionManager;
       initialContext = new InitialContext(jndiEnvironment);
+      if (transactionManager != null)
+      {
+         initialContext.bind("java:/TransactionManager", transactionManager);
+      }
       locator = new InvokerLocator("socket://localhost:9890");
+      jbossMBeanServer = MBeanServerFactory.createMBeanServer("jboss");
       serverPeerID = "ServerPeer0";
    }
 
@@ -95,10 +100,7 @@ public class ServerWrapper
       loadAspects();
       setupJNDI();
       initializeRemoting();
-      serverPeer = new ServerPeer(serverPeerID, locator, jndiEnvironment,
-                                  new MessageStoreImpl("MSGStore"),
-                                  new InMemoryAcknowledgmentStore("ACKStore"),
-                                  transactionManager);
+      serverPeer = new ServerPeer(serverPeerID, jndiEnvironment);
       serverPeer.start();
       log.info("server started");
    }
@@ -110,12 +112,9 @@ public class ServerWrapper
       tearDownRemoting();
       tearDownJNDI();
       unloadAspects();
+      MBeanServerFactory.releaseMBeanServer(jbossMBeanServer);
+      jbossMBeanServer = null;
       log.info("server stopped");
-   }
-
-   public void setTransactionManager(TransactionManager tm)
-   {
-      transactionManager = tm;
    }
 
    public void deployTopic(String name) throws Exception
@@ -234,16 +233,44 @@ public class ServerWrapper
       connector.setInvokerLocator(locator.getLocatorURI());
       connector.start();
 
-      // also add the JMS subsystem
-      connector.addInvocationHandler("JMS", new JMSServerInvocationHandler());
+      // register the connector as an MBean to the MBeanServer the same way JBoss does
+      ObjectName on = new ObjectName("jboss.remoting:service=Connector,transport=socket");
+      jbossMBeanServer.registerMBean(new JBossRemotingConnector(connector), on);
    }
 
    private void tearDownRemoting() throws Exception
    {
-      connector.removeInvocationHandler("JMS");
       connector.stop();
       connector = null;
    }
 
    // Inner classes -------------------------------------------------
+
+   public interface JBossRemotingConnectorMBean
+   {
+      public String getInvokerLocator() throws Exception;
+      public ServerInvocationHandler addInvocationHandler(String s, ObjectName objectName)
+         throws Exception;
+   }
+
+   public class JBossRemotingConnector implements JBossRemotingConnectorMBean
+   {
+      private Connector connector;
+
+      public JBossRemotingConnector(Connector connector)
+      {
+         this.connector = connector;
+      }
+
+      public String getInvokerLocator() throws Exception
+      {
+         return connector.getInvokerLocator();
+      }
+
+      public ServerInvocationHandler addInvocationHandler(String s, ObjectName objectName)
+         throws Exception
+      {
+         return connector.addInvocationHandler(s, objectName);
+      }
+   }
 }

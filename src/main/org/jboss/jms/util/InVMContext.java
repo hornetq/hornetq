@@ -46,6 +46,7 @@ public class InVMContext implements Context
    public InVMContext()
    {
       map = Collections.synchronizedMap(new HashMap());
+      map.put("java:/", new InVMContext());
    }
 
    // Context implementation ----------------------------------------

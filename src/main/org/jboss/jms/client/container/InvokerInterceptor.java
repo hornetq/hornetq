@@ -61,6 +61,7 @@ public class InvokerInterceptor implements Interceptor, Serializable
          }
          client = new Client(locator, subsystem);
       }
+
       InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
       invocation.setResponseContextInfo(response.getContextInfo());
       return response.getResponse();

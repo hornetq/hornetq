@@ -10,9 +10,12 @@ import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.DomainDefinition;
 import org.jboss.aop.AspectManager;
@@ -23,15 +26,25 @@ import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
+import org.jboss.messaging.core.util.MessageStoreImpl;
+import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
+import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
+import org.jboss.logging.Logger;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -45,19 +58,23 @@ public class ServerPeer
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ServerPeer.class);
+
    // Static --------------------------------------------------------
 
    private final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
+   private final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
 
    // Attributes ----------------------------------------------------
 
-   protected String id;
+   protected String serverPeerID;
    protected InvokerLocator locator;
    protected ClientManager clientManager;
    protected DestinationManager destinationManager;
    protected ConnectionFactoryDelegate connFactoryDelegate;
    protected Hashtable jndiEnvironment;
    protected InitialContext initialContext;
+   protected MBeanServer mbeanServer;
 
    protected boolean started;
 
@@ -81,28 +98,33 @@ public class ServerPeer
 
    // Constructors --------------------------------------------------
 
-   public ServerPeer(String id, InvokerLocator locator, Hashtable jndiEnvironment,
-                     MessageStore messageStore, AcknowledgmentStore acknowledgmentStore,
-                     TransactionManager transactionManager)
-         throws Exception
+
+   public ServerPeer(String serverPeerID)
    {
-      this.id = id;
-      this.locator = locator;
+      this.serverPeerID = serverPeerID;
+   }
+
+   /**
+    * @param jndiEnvironment - map containing JNDI properties. Useful for testing. Passing null
+    *        means the server peer uses default JNDI properties.
+    */
+   public ServerPeer(String serverPeerID, Hashtable jndiEnvironment)
+   {
+      this(serverPeerID);
       this.jndiEnvironment = jndiEnvironment;
-      clientManager = new ClientManager(this);
-      destinationManager = new DestinationManager(this);
-      connFactoryDelegate = new ServerConnectionFactoryDelegate(this);
       started = false;
-      initialContext = new InitialContext(jndiEnvironment);
-      threadPool = new PooledExecutor();
-
-      this.messageStore = messageStore;
-      this.acknowledgmentStore = acknowledgmentStore;
-
-      this.transactionManager= transactionManager;
    }
 
    // Public --------------------------------------------------------
+
+   //
+   // JMX operations
+   //
+
+   public synchronized void create()
+   {
+      log.debug(this + " created");
+   }
 
    public synchronized void start() throws Exception
    {
@@ -111,10 +133,28 @@ public class ServerPeer
          return;
       }
 
+      log.debug(this + " starting");
+
+      initialContext = new InitialContext(jndiEnvironment);
+
+      mbeanServer = findMBeanServer();
+      transactionManager = findTransactionManager();
+
+      clientManager = new ClientManager(this);
+      destinationManager = new DestinationManager(this);
+      messageStore = new MessageStoreImpl("MessageStore");
+      acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
+      connFactoryDelegate = new ServerConnectionFactoryDelegate(this);
+      threadPool = new PooledExecutor();
+
+      initializeRemoting();
       initializeAdvisors();
+
       ConnectionFactory connectionFactory = createConnectionFactory();
-      bindConnectionFactory("messaging", connectionFactory);
+      bindConnectionFactory(connectionFactory);
       started = true;
+
+      log.debug(this + " started");
    }
 
    public synchronized void stop() throws Exception
@@ -123,19 +163,88 @@ public class ServerPeer
       {
          return;
       }
-      unbindConnectionFactory("messaging");
+
+      log.debug(this + " stopping");
+
+      unbindConnectionFactory();
       tearDownAdvisors();
       started = false;
+
+      log.debug(this + " stopped");
+
    }
+
+   public synchronized void destroy()
+   {
+      log.debug(this + " destroyed");
+   }
+
+
+   public void createQueue(String name) throws Exception
+   {
+      // TODO - temporary implementation
+      JBossQueue q = new JBossQueue(name);
+      Context queues;
+      try
+      {
+         queues = (Context)initialContext.lookup("queue");
+      }
+      catch(NamingException e)
+      {
+         queues = initialContext.createSubcontext("queue");
+      }
+      queues.rebind(name, q);
+      destinationManager.addDestination(q);
+   }
+
+   public void createTopic(String name) throws Exception
+   {
+      // TODO - temporary implementation
+      JBossTopic t = new JBossTopic(name);
+      Context topics;
+      try
+      {
+         topics = (Context)initialContext.lookup("topic");
+      }
+      catch(NamingException e)
+      {
+         topics = initialContext.createSubcontext("topic");
+      }
+      topics.rebind(name, t);
+      destinationManager.addDestination(t);
+   }
+
+
+   //
+   // end of JMX operations
+   //
+
+   //
+   // JMX attributes
+   //
+
+   public String getServerPeerID()
+   {
+      return serverPeerID;
+   }
+
+   public String getLocatorURI()
+   {
+      if (locator == null)
+      {
+         return null;
+      }
+      return locator.getLocatorURI();
+   }
+
+
+   //
+   // end of JMX attributes
+   //
 
    public synchronized boolean isStarted()
    {
       return started;
-   }
-
-   public String getID()
-   {
-      return id;
    }
 
    public InvokerLocator getLocator()
@@ -192,11 +301,6 @@ public class ServerPeer
 
 
 
-   public Hashtable getJNDIEnvironment()
-   {
-      return jndiEnvironment;
-   }
-
    public PooledExecutor getThreadPool()
    {
       return threadPool;
@@ -217,8 +321,22 @@ public class ServerPeer
       return transactionManager;
    }
 
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer();
+      sb.append("ServerPeer[id=");
+      sb.append(getServerPeerID());
+      sb.append("]");
+      return sb.toString();
+   }
+
    // Package protected ---------------------------------------------
-   
+
+   Hashtable getJNDIEnvironment()
+   {
+      return jndiEnvironment;
+   }
+
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
@@ -306,17 +424,73 @@ public class ServerPeer
       return Proxy.newProxyInstance(loader, interfaces, h);
    }
 
-   private void bindConnectionFactory(String contextName, ConnectionFactory factory)
-         throws Exception
+   private void bindConnectionFactory(ConnectionFactory factory) throws Exception
    {
-      Context c = (Context)initialContext.lookup(contextName);
+      Context c = (Context)initialContext.lookup("/");
       c.rebind(CONNECTION_FACTORY_JNDI_NAME, factory);
+      c.rebind(XACONNECTION_FACTORY_JNDI_NAME, factory);
+
    }
 
-   private void unbindConnectionFactory(String contextName) throws Exception
+   private void unbindConnectionFactory() throws Exception
    {
-      Context c = (Context)initialContext.lookup(contextName);
+      Context c = (Context)initialContext.lookup("/");
       c.unbind(CONNECTION_FACTORY_JNDI_NAME);
+      c.unbind(XACONNECTION_FACTORY_JNDI_NAME);
+
+   }
+
+   /**
+    * @return - may return null if it doesn't find a "jboss" MBeanServer.
+    */
+   private MBeanServer findMBeanServer()
+   {
+      MBeanServer result = null;
+      ArrayList l = MBeanServerFactory.findMBeanServer(null);
+      for(Iterator i = l.iterator(); i.hasNext(); )
+      {
+         MBeanServer s = (MBeanServer)l.iterator().next();
+         if ("jboss".equals(s.getDefaultDomain()))
+         {
+            result = s;
+            break;
+         }
+      }
+      return result;
+   }
+
+   private void initializeRemoting() throws Exception
+   {
+      ObjectName on = new ObjectName("jboss.remoting:service=Connector,transport=socket");
+      String s = (String)mbeanServer.invoke(on, "getInvokerLocator", new Object[0], new String[0]);
+      locator = new InvokerLocator(s);
+
+      log.debug("LocatorURI: " + getLocatorURI());
+
+      // add the JMS subsystem
+      mbeanServer.invoke(on, "addInvocationHandler",
+                         new Object[] {"JMS", new JMSServerInvocationHandler()},
+                         new String[] {"java.lang.String",
+                                       "org.jboss.remoting.ServerInvocationHandler"});
+
+      // TODO what happens if there is a JMS subsystem already registered? Normally, nothing bad,
+      // TODO since it delegates to a static dispatcher, but make sure
+
+      // TODO if this is ServerPeer is stopped, the InvocationHandler will be left hanging
+   }
+
+   private TransactionManager findTransactionManager() throws Exception
+   {
+      TransactionManager tm = (TransactionManager)initialContext.lookup("java:/TransactionManager");
+
+      if (tm == null)
+      {
+         tm = TransactionManagerImpl.getInstance();
+         log.warn("Cannot find a transaction manager, using an internal implementation!");
+      }
+
+      log.debug("TransactionManager: " + tm);
+      return tm;
    }
 
 

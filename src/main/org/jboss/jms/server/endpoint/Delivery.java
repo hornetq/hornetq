@@ -26,8 +26,8 @@ class Delivery extends InvocationRequest implements Runnable
    
    // Attributes ----------------------------------------------------
 
-   protected Logger log;
-   protected InvokerCallbackHandler callbackHandler;
+   protected transient Logger log;
+   protected transient InvokerCallbackHandler callbackHandler;
 
    // Constructors --------------------------------------------------
 

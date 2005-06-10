@@ -67,7 +67,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
 				ConnectionDelegate connectionDelegate = (ConnectionDelegate)invocation.invokeNext();
 				ResourceManager rm = new ResourceManager(connectionDelegate);
 				JMSInvocationHandler handler = (JMSInvocationHandler)Proxy.getInvocationHandler(connectionDelegate);				
-				handler.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER, rm);
+				handler.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER, rm, PayloadKey.TRANSIENT);
 				return connectionDelegate;
 			}			
 			else if ("createSessionDelegate".equals(methodName))

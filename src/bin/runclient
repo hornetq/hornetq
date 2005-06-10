@@ -37,8 +37,9 @@ $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
+$reldir/../../../server/output/lib/jboss.jar${SEP}\
 $reldir/../../../aspects/output/lib/jboss-aspect-library.jar${SEP}\
-$reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
+$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar \

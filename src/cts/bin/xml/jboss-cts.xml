@@ -73,6 +73,7 @@
             <exclude name="lib/mail-plugin.jar"/>
             <exclude name="lib/mail.jar"/>
             <exclude name="lib/scheduler*"/>
+            <exclude name="lib/jboss-messaging.jar"/>
          </fileset>
       </copy>
 

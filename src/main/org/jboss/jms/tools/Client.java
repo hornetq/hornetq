@@ -78,7 +78,7 @@ public class Client
       if (connectionFactory == null)
       {
          connectionFactory =
-         (ConnectionFactory)initialContext.lookup("/messaging/ConnectionFactory");
+         (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       }
    }
 

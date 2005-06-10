@@ -389,4 +389,46 @@
           description="Show this help message."
 	  depends="_buildmagic:help:standard"/>
 
+
+   <!-- CTS tasks -->
+
+   <property environment="ENV"/>
+
+   <target name="sar" depends="compile">
+
+      <mkdir dir="${build.lib}"/>
+
+      <mkdir dir="${build.classes}/META-INF"/>
+      <mkdir dir="${build.classes}/xmdesc"/>
+      
+      <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml" 
+         tofile="${build.classes}/META-INF/jboss-service.xml"/>
+
+      <copy todir="${build.classes}/xmdesc">
+         <fileset dir="${source.etc}/xmdesc">
+            <include name="*.xml"/>
+         </fileset>
+      </copy>
+
+      <copy file="${source.etc}/jms-aop.xml" todir="${build.classes}"/>
+
+      <jar jarfile="${build.lib}/jboss-${module.name}.sar"
+         manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}">
+            <include name="**"/>
+         </fileset>
+      </jar>
+   </target>
+
+
+   <target name="deploy" depends="sar">
+      <copy file="${build.lib}/jboss-${module.name}.sar"
+         todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
+   </target>
+
+
+   <target name="undeploy" depends="init">
+      <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
+   </target>
+
 </project>
