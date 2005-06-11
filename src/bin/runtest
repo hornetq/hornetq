@@ -46,7 +46,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #
@@ -56,8 +56,8 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
-TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest

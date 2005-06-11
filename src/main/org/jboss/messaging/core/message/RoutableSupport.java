@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 
-import javax.jms.Destination;
-
 /**
  * Contains the plumbing of a Routable.
  *
@@ -67,6 +65,13 @@ public class RoutableSupport implements Routable, Externalizable
    protected boolean redelivered;
 
    // Constructors --------------------------------------------------
+
+   /**
+    * Required by externalization.
+    */
+   public RoutableSupport()
+   {
+   }
 
    /**
     * Constructs a generic Routable that is not reliable and does not expire.

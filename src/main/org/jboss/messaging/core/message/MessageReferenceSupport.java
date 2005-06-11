@@ -29,6 +29,13 @@ public class MessageReferenceSupport extends RoutableSupport implements MessageR
    // Constructors --------------------------------------------------
 
    /**
+    * Required by externalization.
+    */
+   public MessageReferenceSupport()
+   {
+   }
+
+   /**
     * @param messageID
     */
    public MessageReferenceSupport(Serializable messageID)
