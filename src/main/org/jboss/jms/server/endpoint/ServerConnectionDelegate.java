@@ -6,41 +6,50 @@
  */
 package org.jboss.jms.server.endpoint;
 
+import java.io.Serializable;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.transaction.TransactionManager;
+
+import org.jboss.aop.AspectManager;
+import org.jboss.aop.Dispatcher;
+import org.jboss.aop.advice.AdviceStack;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TxInfo;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.aop.advice.AdviceStack;
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.AspectManager;
-import org.jboss.aop.Dispatcher;
-import org.jboss.aop.util.PayloadKey;
-import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.util.id.GUID;
 
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.transaction.TransactionManager;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.io.Serializable;
-import java.lang.reflect.Proxy;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -54,11 +63,14 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    // Static --------------------------------------------------------
    
+   
+   
    // Attributes ----------------------------------------------------
    
    private int sessionIDCounter;
    
-   protected String clientID;
+   protected String connectionID;
+   
    protected ServerPeer serverPeer;
    
    protected Map sessions;
@@ -67,17 +79,22 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    protected volatile boolean started;
    
+   protected String clientID;
+   
+   protected Map receivers;
+   
+    
    // Constructors --------------------------------------------------
    
-   public ServerConnectionDelegate(String clientID, ServerPeer serverPeer)
+   public ServerConnectionDelegate(ServerPeer serverPeer)
    {
-      this.clientID = clientID;
       this.serverPeer = serverPeer;
       sessionIDCounter = 0;
       sessions = new HashMap();
       temporaryDestinations = new HashSet();
       started = false;
-      
+      connectionID = new GUID().toString();
+      receivers = new ConcurrentReaderHashMap();
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -92,7 +109,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
       // TODO why do I need to the advisor to create the interceptor stack?
       Interceptor[] interceptors = stack.createInterceptors(serverPeer.getSessionAdvisor(), null);
-      
       
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
@@ -110,7 +126,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
             InvokerInterceptor.SUBSYSTEM,
             "JMS",
             PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, clientID, PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE,
@@ -134,9 +150,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return sd;
    }
    
-   public String getClientID()
+   
+   
+   public String getClientID() throws JMSException
    {
-      return clientID;
+      throw new JMSException("getClientID() is not handled on the server");
    }
    
    public void setClientID(String clientID)
@@ -144,10 +162,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       this.clientID = clientID;
    }
    
+   
    public void start()
    {
       setStarted(true);
-      log.debug("Connection " + clientID + " started");
+      log.debug("Connection " + connectionID + " started");
    }
    
    public boolean isStarted()
@@ -158,7 +177,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    public synchronized void stop()
    {
       setStarted(false);
-      log.debug("Connection " + clientID + " stopped");
+      log.debug("Connection " + connectionID + " stopped");
    }
    
    public void close() throws JMSException
@@ -173,6 +192,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          dm.removeDestination(dest.getName());
       }
       this.temporaryDestinations = null;
+      this.receivers = null;
+      
+      //TODO do we need to traverse the sessions and close them explicitly here?
+      //Or do we rely on the ClosedInterceptor to do this?
    }
    
    public void closing() throws JMSException
@@ -222,7 +245,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          {
             AckInfo ack = (AckInfo)iter.next();
             
-            acknowledge(ack.messageID, ack.destination, ack.receiverID);
+            acknowledge(ack.messageID, ack.receiverID);
             
             if (log.isTraceEnabled()) { log.trace("Acked message:" + ack.messageID); }
          }
@@ -280,6 +303,75 @@ public class ServerConnectionDelegate implements ConnectionDelegate
      
       this.temporaryDestinations.remove(dest);
    }
+   
+   public void unsubscribe(String subscriptionName) throws JMSException
+   {
+      DurableSubscriptionHolder subscription =
+         this.serverPeer.getClientManager().removeDurableSubscription(this.clientID, subscriptionName);
+      if (subscription == null)
+      {
+         throw new JMSException("Cannot find durable subscription with name " +
+            subscriptionName + " to unsubscribe");
+      }
+      subscription.getTopic().remove(subscription.getQueue().getReceiverID());
+      
+   }
+   
+
+   public Queue createQueue(String queueName, boolean create) throws JMSException
+   {
+      DestinationManager dm = this.serverPeer.getDestinationManager();
+   
+      AbstractDestination dest = dm.getDestination(queueName);
+      
+      Queue queue = null;
+      
+      if (dest == null)
+      {
+         if (!create)
+         {
+            throw new JMSException("There is no administratively defined queue with name:" + queueName);
+         }
+         else
+         {
+            queue = new JBossQueue(queueName);
+            dm.addDestination(queue);
+         }
+      }
+      else
+      {
+         queue = new JBossQueue(queueName);
+      }
+      return queue;  
+   }
+   
+
+   public Topic createTopic(String topicName, boolean create) throws JMSException
+   {
+      DestinationManager dm = this.serverPeer.getDestinationManager();
+      
+      AbstractDestination dest = dm.getDestination(topicName);
+      
+      Topic topic = null;
+      
+      if (dest == null)
+      {
+         if (!create)
+         {
+            throw new JMSException("There is no administratively defined topic with name:" + topicName);
+         }
+         else
+         {
+            topic = new JBossTopic(topicName);
+            dm.addDestination(topic);
+         }
+      }
+      else
+      {
+         topic = new JBossTopic(topicName);
+      }
+      return topic;  
+   }
   
    
    // Public --------------------------------------------------------
@@ -305,6 +397,13 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return serverPeer;
    }
    
+   
+   public String getConnectionID()
+   {
+      return connectionID;
+   }
+   
+   
    // Package protected ---------------------------------------------
    
    void sendMessage(Message m) throws JMSException
@@ -328,6 +427,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
       m.setJMSMessageID(generateMessageID());
       
+      //This allows the no-local consumers to filter out the messages that come from the
+      //same connection
+      //TODO Do we want to set this for ALL messages. Possibly an optimisation is possible here
+      ((JBossMessage)m).setConnectionID(connectionID);
+      
       boolean acked = destination.handle((Routable)m);
       
       if (destination.isTransactional() && isActiveTransaction())
@@ -347,18 +451,22 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       }
    }
    
-   void acknowledge(String messageID, Destination jmsDestination, String receiverID)
+   void acknowledge(String messageID, String receiverID)
       throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
+           
+      ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
+      if (receiver == null)
+      {
+         throw new IllegalStateException("Cannot find receiver:" + receiverID);
+      }
       
-      DestinationManager dm = serverPeer.getDestinationManager();
-      
-      AbstractDestination destination =  dm.getDestination(jmsDestination);
-      
-      destination.acknowledge(messageID, receiverID);      
+      receiver.acknowledge(messageID);
+    
    }
    
+
    // Protected -----------------------------------------------------
    
    /**
@@ -371,7 +479,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          id = sessionIDCounter++;
       }
-      return clientID + "-Session" + id;
+      return connectionID + "-Session" + id;
    }
    
    protected String generateMessageID()

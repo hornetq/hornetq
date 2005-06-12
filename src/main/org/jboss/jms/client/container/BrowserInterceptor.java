@@ -27,20 +27,32 @@ import javax.jms.Message;
  */
 public class BrowserInterceptor implements Interceptor, Serializable
 {
-	private static final long serialVersionUID = 3694874918265592846L;
-	
-	//TODO - these need to be configurable by the user
+   // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = 3694874918265592846L;
+   
+   //TODO - these need to be configurable by the user - should be configured from jboss-aop.xml
    private static final boolean BATCH_MESSAGES = true;
-	private static final int MSG_BLOCK_SIZE = 5;
-	
-	private Message[] cache;
-	private int pos;
+   private static final int MSG_BLOCK_SIZE = 5;
+   
+   // Attributes ----------------------------------------------------
+   
+   private Message[] cache;
+   private int pos;
 
+   // Static --------------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   // Interceptor implementation ----------------------------------
+   
    public String getName()
    {
       return "BrowserInterceptor";
    }
-
+   
    public Object invoke(Invocation invocation) throws Throwable
    {      
       if (!BATCH_MESSAGES)
@@ -50,39 +62,47 @@ public class BrowserInterceptor implements Interceptor, Serializable
       
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
       
-		if ("nextMessage".equals(methodName))
-		{
-			checkCache(invocation);
-			Message mess = cache[pos++];
-			if (pos == cache.length)
-			{
-				cache = null;
-			}
-			return mess;
-		}
-		else if ("hasNextMessage".equals(methodName))
-		{
-			if (cache != null)
-			{
-				return Boolean.TRUE;
-			}
-			return invocation.invokeNext();
-		}
+      if ("nextMessage".equals(methodName))
+      {
+         checkCache(invocation);
+         Message mess = cache[pos++];
+         if (pos == cache.length)
+         {
+            cache = null;
+         }
+         return mess;
+      }
+      else if ("hasNextMessage".equals(methodName))
+      {
+         if (cache != null)
+         {
+            return Boolean.TRUE;
+         }
+         return invocation.invokeNext();
+      }
 
       return invocation.invokeNext();
    }
-	
-	private void checkCache(Invocation invocation)
-	{
-		if (cache == null)
-		{
-			BrowserDelegate bd = getDelegate(invocation);
-			cache = bd.nextMessageBlock(MSG_BLOCK_SIZE);
-			pos = 0;
-		}
-	}
-	
-	private JMSInvocationHandler getHandler(Invocation invocation)
+   
+   // Class YYY overrides -------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Package Private -----------------------------------------------
+
+   // Private -------------------------------------------------------
+   
+   private void checkCache(Invocation invocation)
+   {
+      if (cache == null)
+      {
+         BrowserDelegate bd = getDelegate(invocation);
+         cache = bd.nextMessageBlock(MSG_BLOCK_SIZE);
+         pos = 0;
+      }
+   }
+   
+   private JMSInvocationHandler getHandler(Invocation invocation)
    {
       return ((JMSMethodInvocation)invocation).getHandler();
    }
@@ -91,6 +111,12 @@ public class BrowserInterceptor implements Interceptor, Serializable
    {
       return (BrowserDelegate)getHandler(invocation).getDelegate();
    }
+   
+   // Inner Classes -------------------------------------------------
+   
+   
+	
+	
 
 }
 

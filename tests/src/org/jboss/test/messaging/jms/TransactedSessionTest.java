@@ -67,6 +67,7 @@ public class TransactedSessionTest extends MessagingTestCase
    
    // Public --------------------------------------------------------
    
+   
    public void testSendNoTransactionManager() throws Exception
    {
       ServerManagement.stopInVMServer();
@@ -98,6 +99,7 @@ public class TransactedSessionTest extends MessagingTestCase
          // OK
       }
    }
+   
    
    public void testSendBrokenTransactionManager() throws Exception
    {

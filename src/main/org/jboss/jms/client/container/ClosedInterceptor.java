@@ -32,6 +32,7 @@ public class ClosedInterceptor
    
    private static final long serialVersionUID = 7564456983116742854L;
 
+   
    /** Not closed */
    private static final int NOT_CLOSED = 0;
    

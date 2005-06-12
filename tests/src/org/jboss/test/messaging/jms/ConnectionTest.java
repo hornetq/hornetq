@@ -9,11 +9,12 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+
 
 import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -28,8 +29,6 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
 
-
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -77,6 +76,12 @@ public class ConnectionTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
+   /*
+    
+   
+   I have commented this test out since I think it is invalid.
+   Connection ids are not the same as client ids
+   
    public void testGetClientID() throws Exception
    {
       Connection connection = cf.createConnection();
@@ -88,6 +93,9 @@ public class ConnectionTest extends MessagingTestCase
 
       connection.close();
    }
+
+   It is legal to set a client id on the client as long as it hasn't been set on the server
+   and it's the first thing done to the connection, so this test appears to be invalid
 
    public void testSetClientID() throws Exception
    {
@@ -104,7 +112,115 @@ public class ConnectionTest extends MessagingTestCase
 
       connection.close();
    }
+   
+   */
+   
+   public void testGetClientID() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      String clientID = connection.getClientID();
 
+      //We don't currently set client ids on the server, so this should be null.
+      //In the future we may provide conection factories that set a specific client id
+      //so this may change
+      assertNull(clientID);
+
+      connection.close();
+   }
+   
+   public void testSetClientID() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      
+      final String clientID = "my-test-client-id";
+      
+      connection.setClientID(clientID);
+      
+      assertEquals(clientID, connection.getClientID());
+
+      connection.close();
+   }
+   
+   public void testSetClientIDFail() throws Exception
+   {
+      final String clientID = "my-test-client-id";
+      
+      //Setting a client id must be the first thing done to the connection
+      //otherwise a javax.jms.IllegalStateException must be thrown
+      
+      Connection connection = cf.createConnection();
+      Session sess = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         connection.setClientID(clientID);
+         fail();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {  
+      }
+      connection.close();
+      
+      
+      connection = cf.createConnection(); 
+      String id = connection.getClientID();
+      try
+      {
+         connection.setClientID(clientID);
+         fail();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {  
+      }
+      connection.close();
+      
+      connection = cf.createConnection(); 
+      ExceptionListener listener = connection.getExceptionListener();
+      try
+      {
+         connection.setClientID(clientID);
+         fail();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {  
+      }
+      connection.close();  
+      
+      connection = cf.createConnection(); 
+      connection.setExceptionListener(listener);
+      try
+      {
+         connection.setClientID(clientID);
+         fail();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {  
+      }
+      connection.close();
+   }
+   
+   public void testGetMetadata() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      
+      ConnectionMetaData metaData = (ConnectionMetaData)connection.getMetaData();
+      
+      //TODO - need to check whether these are same as current version
+      metaData.getJMSMajorVersion();
+      metaData.getJMSMinorVersion();
+      metaData.getJMSProviderName();
+      metaData.getJMSVersion();
+      metaData.getJMSXPropertyNames();
+      metaData.getProviderMajorVersion();
+      metaData.getProviderMinorVersion();
+      metaData.getProviderVersion();
+      
+   }
+
+   /*
+    * 
+   
+   A client id is not the same as a connection if so this tests appears invalid
+   
    public void testStartStop() throws Exception
    {
       Connection connection = cf.createConnection();
@@ -122,6 +238,18 @@ public class ConnectionTest extends MessagingTestCase
       connection.stop();
 
       assertFalse(d.isStarted());
+
+      connection.close();
+   }
+   */
+   
+   public void testStartStop() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      
+      connection.start();
+
+      connection.stop();
 
       connection.close();
    }

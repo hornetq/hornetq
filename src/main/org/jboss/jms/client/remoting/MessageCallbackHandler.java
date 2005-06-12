@@ -14,7 +14,6 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 
-import javax.jms.Destination;
 import javax.jms.MessageListener;
 import javax.jms.Message;
 import javax.jms.JMSException;
@@ -42,7 +41,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    protected BoundedBuffer messages;
    protected SessionDelegate sessionDelegate;
    protected String receiverID;
-   protected Destination destination;
    
    private volatile boolean receiving;
    private Thread receivingThread;
@@ -58,10 +56,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Constructors --------------------------------------------------
    
-   public MessageCallbackHandler(Destination destination)
+   public MessageCallbackHandler()
    {
       this.messages = new BoundedBuffer(capacity);	
-      this.destination = destination;
    }
    
    // InvokerCallbackHandler implementation -------------------------
@@ -207,10 +204,16 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   m = ((JBossMessage)messages.take());
                   if (log.isTraceEnabled()) { log.trace("Got message:" + m); }
                }
+               else if (timeout == -1)
+               {
+                  //ReceiveNoWait
+                  m = ((JBossMessage)messages.poll(0));                  
+                  return m;
+               }
                else
                {
                   m = ((JBossMessage)messages.poll(timeout));
-                  
+                                    
                   if (m == null)
                   {
                      // timeout expired
@@ -283,7 +286,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    public void delivered(Message m) throws JMSException
    {
-      sessionDelegate.delivered(m.getJMSMessageID(), destination, receiverID);
+      sessionDelegate.delivered(m.getJMSMessageID(), receiverID);
    }
    
    // Inner classes -------------------------------------------------

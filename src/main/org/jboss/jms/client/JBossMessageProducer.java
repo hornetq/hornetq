@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMessage;
@@ -43,6 +42,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    protected boolean isMessageIDDisabled;
    protected boolean isTimestampDisabled;
    protected int priority;
+   protected long timeToLive;
    
    protected Destination destination;
    
@@ -92,22 +92,22 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    
    public void setPriority(int defaultPriority) throws JMSException
    {
-      throw new NotYetImplementedException();
+      priority = defaultPriority;
    }
    
    public int getPriority() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return priority;
    }
    
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.timeToLive = timeToLive;
    }
    
    public long getTimeToLive() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return timeToLive;
    }
    
    public Destination getDestination() throws JMSException
@@ -123,23 +123,21 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    public void send(Message message) throws JMSException
    {
       // by default the message never expires
-      send(message, this.deliveryMode, this.priority, 0l);
+      send(message, this.deliveryMode, this.priority, this.timeToLive);
    }
    
    /**
     * @param timeToLive - 0 means never expire.
     */
    public void send(Message message, int deliveryMode, int priority, long timeToLive)
-   throws JMSException
-   {
-      configure(message, deliveryMode, priority, timeToLive, this.destination);
-      delegate.send(message);     
+      throws JMSException
+   { 
+      send(destination, message, deliveryMode, priority, timeToLive);
    }
    
    public void send(Destination destination, Message message) throws JMSException
-   {
-      configure(message, this.deliveryMode, this.priority, 0, destination);
-      delegate.send(message);    
+   {      
+      send(destination, message, this.deliveryMode, this.priority, this.timeToLive);
    }
    
    public void send(Destination destination,
@@ -147,10 +145,10 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
          int deliveryMode,
          int priority,
          long timeToLive) throws JMSException
-         {
+   {
       configure(message, deliveryMode, priority, timeToLive, destination);
       delegate.send(message);
-         }
+   }
    
    // TopicPublisher Implementation
    //--------------------------------------- 
@@ -171,29 +169,29 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    }
    
    public void publish(Message message, int deliveryMode, int priority, long timeToLive)
-   throws JMSException
+      throws JMSException
    {
       send(message, deliveryMode, priority, timeToLive);
    }
    
    public void publish(Topic topic, Message message, int deliveryMode, 
          int priority, long timeToLive) throws JMSException
-         {
+   {
       send(topic, message, deliveryMode, priority, timeToLive);
-         }
+   }
    
    // QueueSender Implementation
    //---------------------------------------
    public void send(Queue queue, Message message) throws JMSException
    {
-      send((Destination)queue, message);
+      send(queue, message);
    }
    
    public void send(Queue queue, Message message, int deliveryMode, int priority,
          long timeToLive) throws JMSException
-         {
-      send((Destination)queue, message, deliveryMode, priority, timeToLive);
-         }
+   {
+      send(queue, message, deliveryMode, priority, timeToLive);
+   }
    
    public Queue getQueue() throws JMSException
    {
@@ -231,8 +229,6 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
       {
          m.setJMSTimestamp(System.currentTimeMillis());
       }
-      
-      // TODO priority
       
       if (timeToLive == 0)
       {

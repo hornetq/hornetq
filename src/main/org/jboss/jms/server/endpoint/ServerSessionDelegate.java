@@ -35,13 +35,16 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.local.LocalQueue;
+import org.jboss.messaging.core.local.LocalTopic;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.remoting.InvokerCallbackHandler;
 
@@ -136,7 +139,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                            "JMS",
                            PayloadKey.AS_IS);
       // TODO: Is this really necessary? Can't I just use the producerID?
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionEndpoint.getConnectionID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.PRODUCER_ID, producerID, PayloadKey.AS_IS);
       
@@ -158,7 +161,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return delegate;
    }
 
-	public ConsumerDelegate createConsumerDelegate(Destination jmsDestination, String selector)
+	public ConsumerDelegate createConsumerDelegate(Destination jmsDestination,
+                                                  String selector,
+                                                  boolean noLocal,
+                                                  String subscriptionName)
 		throws JMSException
    {
       // look-up destination
@@ -187,11 +193,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                            "JMS",
                            PayloadKey.AS_IS);
       // TODO: Is this really necessary? Can't I just use the consumerID?
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionEndpoint.getConnectionID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
-		//metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE, new Integer(acknowledgmentMode), PayloadKey.AS_IS);
-		
+				
       h.getMetaData().mergeIn(metadata);
 
       // TODO
@@ -203,22 +208,54 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          throw new JBossJMSException("null callback handler");
       }
-
-      // create the Consumer endpoint and register it with this SessionDelegate instance
+      
+      DurableSubscriptionHolder subscription = null;
+      if (subscriptionName != null)
+      {
+         String clientID = connectionEndpoint.clientID;
+         if (clientID == null)
+         {
+            throw new JMSException("Cannot create durable subscriber without having set client ID");
+         }
+                  
+         //It's a durable subscription - have we already got one with that name?
+         ClientManager clientManager = serverPeer.getClientManager();
+         
+         subscription =
+            clientManager.getDurableSubscription(clientID, subscriptionName);
+         
+         //FIXME - race condition here - can result in multiple subscribers of same subscription
+         
+         if (subscription != null && subscription.hasConsumer())
+         {
+            throw new JMSException("There is already an active subscriber for this durable subscription");
+         }
+         
+         if (subscription == null)
+         {
+            if (!(destination instanceof LocalTopic))
+            {
+               throw new JMSException("Cannot only create a durable subscription on a topic");
+            }
+            LocalTopic topic = (LocalTopic)destination;
+            subscription = new DurableSubscriptionHolder(subscriptionName, topic, new LocalQueue(consumerID));
+            clientManager.addDurableSubscription(clientID, subscriptionName, subscription);
+            //start it
+            destination.add(subscription.getQueue());
+         }
+         
+         subscription.setHasConsumer(true);
+      }
+      
       ServerConsumerDelegate scd =
-            new ServerConsumerDelegate(consumerID, destination, callbackHandler, this);
-		
-		if (selector != null)
-		{
-			Selector messageSelector = new Selector(selector);
-			
-			//TODO add methods set/getFilter and accept() to Receiver interface
-			//scd.setFilter(messageSelector);
-		}
-		
+         new ServerConsumerDelegate(consumerID,
+                                    subscriptionName == null ? destination : subscription.getQueue(),
+                                    callbackHandler, this, selector, noLocal, subscription);
+      
       putConsumerDelegate(consumerID, scd);
+      connectionEndpoint.receivers.put(consumerID, scd);
 
-      log.debug("created consumer endpoint (destination=" + jmsDestination + ")");
+      if (log.isTraceEnabled()) log.trace("created consumer endpoint (destination=" + jmsDestination + ")");
 
       return delegate;
    }
@@ -265,14 +302,14 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    
    public void close() throws JBossJMSException
    {
-      log.debug("close()");
+      if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.close()");
     
       //The traversal of the children is done in the ClosedInterceptor
    }
    
    public void closing() throws JMSException
    {
-      log.debug("close()");
+      if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.closing()");
 
       //Currently does nothing
    }
@@ -323,7 +360,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	                        "JMS",
 	                        PayloadKey.AS_IS);
 	  
-	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, connectionEndpoint.getClientID(), PayloadKey.AS_IS);
+	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionEndpoint.getConnectionID(), PayloadKey.AS_IS);
 	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
 	   metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.BROWSER_ID, browserID, PayloadKey.AS_IS);
 	   
@@ -343,7 +380,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	}
 
 	
-	public void delivered(String messageID, Destination destination, String receiverID) throws JMSException
+	public void delivered(String messageID, String receiverID) throws JMSException
 	{
 		throw new JMSException("delivered is not handled on the server");
 	}
@@ -371,10 +408,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 		}
 	}
 	
-	public void acknowledge(String messageID, Destination jmsDestination, String receiverID)
+	public void acknowledge(String messageID, String receiverID)
 		throws JMSException
 	{
-		this.connectionEndpoint.acknowledge(messageID, jmsDestination, receiverID);
+		this.connectionEndpoint.acknowledge(messageID, receiverID);
 	}
 
    // Public --------------------------------------------------------

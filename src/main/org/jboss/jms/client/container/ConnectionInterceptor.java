@@ -9,14 +9,18 @@ package org.jboss.jms.client.container;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import javax.jms.ExceptionListener;
+import javax.jms.IllegalStateException;
+
 /**
- * Interceptor that fields any metod calls which can be handled locally.
+ * Handles client id
+ * There is one instance of this interceptor per connection
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -29,10 +33,26 @@ public class ConnectionInterceptor implements Interceptor, Serializable
    private final static long serialVersionUID = -3245645348483459328L;
 
    // Static --------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ConnectionInterceptor.class);
 
    // Attributes ----------------------------------------------------
+   
+   private String clientID;
+   
+   private boolean justCreated = true;
+   
+   private ExceptionListener exceptionListener;
 
    // Constructors --------------------------------------------------
+   
+   public ConnectionInterceptor()
+   {
+      if (log.isTraceEnabled())
+      {
+         log.trace("Creating new ConnectionInterceptor");
+      }
+   }
 
    // Public --------------------------------------------------------
 
@@ -40,8 +60,10 @@ public class ConnectionInterceptor implements Interceptor, Serializable
 
    public String getName()
    {
-      return "ConnectionInterceptor";
+      return "ConnectionInterceptor";  
    }
+   
+  
 
    public Object invoke(Invocation invocation) throws Throwable
    {
@@ -50,31 +72,52 @@ public class ConnectionInterceptor implements Interceptor, Serializable
          MethodInvocation mi = (MethodInvocation)invocation;
          Method m = mi.getMethod();
          String name = m.getName();
+         
+         if (log.isTraceEnabled())
+         {
+            log.trace("ConnectionInterceptor, methodName=" + name);
+         }
+         
+         if (!"setClientID".equals(name))
+         {
+            justCreated = false;
+         }
+         
          if ("getClientID".equals(name))
          {
-            return mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID);
+            return getClientID(mi);
          }
          else if ("setClientID".equals(name))
          {
-            throw new WrapperException(new IllegalStateException("ClientID already set"));
+            String clientID = getClientID(mi);
+            if (clientID != null)
+            {
+               throw new IllegalStateException("Client id has already been set");
+            }
+            if (!justCreated)
+            {
+               throw new IllegalStateException("setClientID can only be called directly after the connection is created");
+            }
+            this.clientID = (String)mi.getArguments()[0];
+            //This gets invoked on the server too
+            return invocation.invokeNext();
          }
          else if ("getExceptionListener".equals(name))
-         {
-            return mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.EXCEPTION_LISTENER);
+         {            
+            return exceptionListener;
          }
          else if ("setExceptionListener".equals(name))
          {
-            JMSInvocationHandler thisHandler =
-               ((JMSMethodInvocation)invocation).getHandler();
-            thisHandler.getMetaData()
-               .addMetaData(JMSAdvisor.JMS,
-                            JMSAdvisor.EXCEPTION_LISTENER,
-                            mi.getArguments()[0],
-                            PayloadKey.AS_IS);
+            exceptionListener = (ExceptionListener)mi.getArguments()[0];
+            
             return null;
          }
+         else
+         {            
+            return invocation.invokeNext();
+         }
       }
-      return invocation.invokeNext();
+      throw new IllegalStateException("Shouldn't get here");
    }
 
    // Package protected ---------------------------------------------
@@ -82,6 +125,18 @@ public class ConnectionInterceptor implements Interceptor, Serializable
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private String getClientID(Invocation invocation)
+   {
+      if (clientID != null)
+      {
+         return clientID;
+      }
+      
+      clientID = (String)invocation.getMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID);
+      
+      return clientID;
+   }
 
    // Inner classes -------------------------------------------------
 }

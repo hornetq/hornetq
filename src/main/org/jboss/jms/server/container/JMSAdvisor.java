@@ -21,7 +21,7 @@ public class JMSAdvisor extends ClassAdvisor
    // Constants -----------------------------------------------------
 
    public static final String JMS = "JMS";
-   public static final String CLIENT_ID = "CLIENT_ID";
+   public static final String CONNECTION_ID = "CONNECTION_ID";
    public static final String SESSION_ID = "SESSION_ID";
    public static final String PRODUCER_ID = "PRODUCER_ID";
    public static final String CONSUMER_ID = "CONSUMER_ID";
@@ -34,6 +34,7 @@ public class JMSAdvisor extends ClassAdvisor
 	public static final String ACKNOWLEDGMENT_MODE = "ACKNOWLEDGMENT_MODE";
 	public static final String UNACKED = "UNACKED";
 	public static final String RESOURCE_MANAGER = "RESOURCE_MGR";
+   public static final String CLIENT_ID = "CLIENT_ID";
 
    // Static --------------------------------------------------------
    

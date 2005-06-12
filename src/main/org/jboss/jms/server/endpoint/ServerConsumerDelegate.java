@@ -6,19 +6,22 @@
  */
 package org.jboss.jms.server.endpoint;
 
+import java.io.Serializable;
+
+import javax.jms.JMSException;
+
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.jms.util.JBossJMSException;
-import org.jboss.jms.client.Closeable;
 import org.jboss.remoting.InvokerCallbackHandler;
-
-import java.io.Serializable;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
-import javax.jms.JMSException;
 
 
 
@@ -45,6 +48,9 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    protected AbstractDestination destination;
    protected ServerSessionDelegate sessionEndpoint;
    protected InvokerCallbackHandler callbackHandler;
+   protected boolean noLocal;
+   protected Selector messageSelector;
+   protected DurableSubscriptionHolder subscription;
 	
    protected PooledExecutor threadPool;
 
@@ -52,13 +58,23 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
    public ServerConsumerDelegate(String id, AbstractDestination destination,
                                  InvokerCallbackHandler callbackHandler,
-                                 ServerSessionDelegate sessionEndpoint)
+                                 ServerSessionDelegate sessionEndpoint,
+                                 String selector,
+                                 boolean noLocal,
+                                 DurableSubscriptionHolder subscription)
+      throws JMSException
    {
       this.id = id;
       this.destination = destination;
       this.sessionEndpoint = sessionEndpoint;
       this.callbackHandler = callbackHandler;
       threadPool = sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
+      this.noLocal = noLocal;
+      if (selector != null)
+      {
+         messageSelector = new Selector(selector);
+      }
+      this.subscription = subscription;
    }
 
    // Receiver implementation ---------------------------------------
@@ -70,8 +86,6 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
    public boolean handle(Routable r)
    {
-      if (log.isTraceEnabled()) { log.trace("receiving routable " + r + " from the core"); }
-
       // deliver the message on a different thread than the core thread that brought it here
 
       try
@@ -86,7 +100,29 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       // always NACK the message; it will be asynchronously ACKED later
       return false;
    }
-	
+   
+   
+   public boolean accept(Routable r)
+   {
+      boolean accept = true;
+      if (messageSelector != null)
+      {
+         accept = messageSelector.accept(r);
+      }
+      if (accept)
+      {
+         if (noLocal)
+         {
+            String conId =
+               ((JBossMessage)r).getConnectionID();
+            if (conId != null)
+            {
+               accept = conId.equals(sessionEndpoint.connectionEndpoint.connectionID);
+            }
+         }
+      }
+      return accept;
+   }
   
 
    // Closeable implementation --------------------------------------
@@ -99,13 +135,18 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    public void close() throws JMSException
    {
 		this.setStarted(false);
+      this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
+      if (subscription != null)
+      {
+         subscription.setHasConsumer(false);
+      }
    }
    
 
    // Public --------------------------------------------------------
 
    void setStarted(boolean s)
-   {
+   {     
       if (s)
       {
          destination.add(this);
@@ -115,8 +156,15 @@ public class ServerConsumerDelegate implements Receiver, Closeable
          destination.remove(id);
       }
    }
+   
+   void acknowledge(String messageID)
+   {
+      //We acknowledge on the destination itself
+      destination.acknowledge(messageID, this.getReceiverID());
+   }
 
    // Package protected ---------------------------------------------
+   
 
    // Protected -----------------------------------------------------
 

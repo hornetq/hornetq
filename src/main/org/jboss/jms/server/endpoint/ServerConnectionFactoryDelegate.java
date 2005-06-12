@@ -72,7 +72,7 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
 
       ClientManager clientManager = serverPeer.getClientManager();
-      String clientID = clientManager.generateClientID();
+      //String connectionID = clientManager.generateConnectionID();
 
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
@@ -85,7 +85,13 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
                            InvokerInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID, clientID, PayloadKey.AS_IS);
+      
+      //create the corresponding "server-side" ConnectionDelegate and register it with the
+      // server peer's ClientManager
+      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer);
+      clientManager.putConnectionDelegate(scd.getConnectionID(), scd);
+      
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, scd.getConnectionID(), PayloadKey.AS_IS);
 
       h.getMetaData().mergeIn(metadata);
 
@@ -94,12 +100,7 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       Class[] interfaces = new Class[] { ConnectionDelegate.class };
       cd = (ConnectionDelegate)Proxy.newProxyInstance(loader, interfaces, h);
 
-      // create the corresponding "server-side" ConnectionDelegate and register it with the
-      // server peer's ClientManager
-      ServerConnectionDelegate scd = new ServerConnectionDelegate(clientID, serverPeer);
-      clientManager.putConnectionDelegate(clientID, scd);
-
-      log.debug("created connection delegate (clientID=" + clientID + ")");
+      log.debug("created connection delegate (connectionID=" + scd.getConnectionID() + ")");
 
       return cd;
    }

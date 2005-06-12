@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import javax.jms.Destination;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
@@ -76,8 +75,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
 				
 				SimpleMetaData metaData = invocation.getMetaData();
 				
-            MessageCallbackHandler msgHandler =
-					new MessageCallbackHandler((Destination)mi.getArguments()[0]);
+            MessageCallbackHandler msgHandler = new MessageCallbackHandler();
 				
             client.addListener(msgHandler, Remoting.getCallbackServer().getLocator());
             

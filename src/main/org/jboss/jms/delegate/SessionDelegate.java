@@ -29,7 +29,8 @@ public interface SessionDelegate extends Closeable
 {
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
-   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector)
+   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
+                                                  boolean noLocal, String subscriptionName)
          throws JMSException;
 
    public Message createMessage() throws JMSException;
@@ -62,13 +63,13 @@ public interface SessionDelegate extends Closeable
     * might not be immediate, though. The session decides when to acknowledge based on the
     * acknowledgment mode.
     */
-	public void delivered(String messageID, Destination destination, String receiverID)
+	public void delivered(String messageID, String receiverID)
          throws JMSException;
 
    /**
     * Acknowledges a message back to the server (transactionally or not).
     */
-	public void acknowledge(String messageID, Destination destination, String receiverID)
+	public void acknowledge(String messageID, String receiverID)
          throws JMSException;
 
    /**
@@ -80,5 +81,6 @@ public interface SessionDelegate extends Closeable
     * Tell the server to redeliver any un-acked messages.	
     */
 	public void redeliver() throws JMSException;
+   
 		
 }

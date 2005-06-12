@@ -6,7 +6,9 @@
  */
 package org.jboss.jms.client;
 
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
@@ -74,7 +76,8 @@ class JBossConnectionMetaData implements ConnectionMetaData {
 
 
     public Enumeration getJMSXPropertyNames() throws JMSException {
-        throw new NotYetImplementedException();
+       //TODO
+       return new Vector().elements();
     }
 
 }

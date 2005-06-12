@@ -33,13 +33,17 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    protected ConsumerDelegate delegate;
    protected Destination destination;
+   protected boolean noLocal;
    
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(ConsumerDelegate delegate, Destination destination)
+   public JBossMessageConsumer(ConsumerDelegate delegate,
+                              Destination destination,
+                              boolean noLocal)
    {      
       this.delegate = delegate;
       this.destination = destination;
+      this.noLocal = noLocal;
    }
 
    // MessageConsumer implementation --------------------------------
@@ -106,7 +110,7 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public boolean getNoLocal() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return noLocal;
    }
 
    // Public --------------------------------------------------------

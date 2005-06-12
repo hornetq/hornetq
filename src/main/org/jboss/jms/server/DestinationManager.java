@@ -71,6 +71,7 @@ public class DestinationManager
       String name = d.getName();
       boolean isQueue = d.isQueue();
 
+      
       if (!d.isTemporary())
       {
          try
@@ -84,11 +85,24 @@ public class DestinationManager
          }
       }
       
+      
       AbstractDestination ad = isQueue ?
                                (AbstractDestination)queues.get(name) :
                                (AbstractDestination)topics.get(name);
                                
       return ad;
+   }
+   
+   public AbstractDestination getDestination(String destinationName)
+      throws JMSException
+   {
+      AbstractDestination dest = (AbstractDestination)queues.get(destinationName);
+      if (dest == null)
+      {
+         dest = (AbstractDestination)topics.get(destinationName);
+      }
+      
+      return dest;
    }
 
    /**

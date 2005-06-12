@@ -11,7 +11,6 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 import javax.jms.MessageListener;
 import java.io.Serializable;
@@ -60,7 +59,9 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          }
          else if (name.equals("receiveNoWait"))
          {
-            throw new NotYetImplementedException();
+            MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
+            getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
+            return messageHandler.receive(-1);
          }
          else if (name.equals("setMessageListener"))
          {

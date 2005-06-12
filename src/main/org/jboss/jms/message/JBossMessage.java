@@ -90,6 +90,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    protected String correlationID;
    
    protected byte[] correlationIDBytes;
+   
+   protected String connectionID;
 
    // Constructors --------------------------------------------------
 
@@ -562,6 +564,16 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       return this;
    }
+   
+   public String getConnectionID()
+   {
+      return connectionID;
+   }
+   
+   public void setConnectionID(String connectionID)
+   {
+      this.connectionID = connectionID;
+   }
 
    // Externalizable implementation ---------------------------------
 
@@ -652,6 +664,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       {
          throw new JMSException("Illegal property name: " + name);
       }
+     
+      
    }
 
    // Protected -----------------------------------------------------

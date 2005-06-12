@@ -9,6 +9,10 @@ package org.jboss.jms.server;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -27,18 +31,20 @@ public class ClientManager
 
    // Attributes ----------------------------------------------------
 
-   private int clientIDCounter;
+   private int connectionIDCounter;
 
    protected ServerPeer serverPeer;
    protected Map connections;
+   protected Map subscriptions;
 
    // Constructors --------------------------------------------------
 
    public ClientManager(ServerPeer serverPeer)
    {
       this.serverPeer = serverPeer;
-      connections = new HashMap();
-      clientIDCounter = 0;
+      connections = new ConcurrentReaderHashMap();
+      subscriptions = new ConcurrentReaderHashMap();
+      connectionIDCounter = 0;
    }
 
    // Public --------------------------------------------------------
@@ -46,44 +52,77 @@ public class ClientManager
    public ServerConnectionDelegate putConnectionDelegate(String clientID,
                                                          ServerConnectionDelegate d)
    {
-      synchronized(connections)
-      {
-         return (ServerConnectionDelegate)connections.put(clientID, d);
-      }
+      return (ServerConnectionDelegate)connections.put(clientID, d);
    }
 
    public ServerConnectionDelegate getConnectionDelegate(String clientID)
    {
-      synchronized(connections)
-      {
-         return (ServerConnectionDelegate)connections.get(clientID);
-      }
+      return (ServerConnectionDelegate)connections.get(clientID);
    }
+   
+   public Set getDurableSubscriptions(String clientID)
+   {
+      Map subs = (Map)subscriptions.get(clientID);
+      return subs != null ? new HashSet(subs.values()) : Collections.EMPTY_SET;
+   }
+   
+   public DurableSubscriptionHolder getDurableSubscription(String clientID, String subscriptionName)
+   {
+      Map subs = (Map)subscriptions.get(clientID);
+      return subs == null ? null : (DurableSubscriptionHolder)subs.get(subscriptionName);
+   }
+   
+   public void addDurableSubscription(String clientID, String subscriptionName, DurableSubscriptionHolder subscription)
+   {
+      Map subs = (Map)subscriptions.get(clientID);
+      if (subs == null)
+      {
+         subs = new ConcurrentReaderHashMap();
+         subscriptions.put(clientID, subs);
+      }
+      subs.put(subscriptionName, subscription);
+   }
+   
+   public DurableSubscriptionHolder removeDurableSubscription(String clientID, String subscriptionName)
+   {
+      Map subs = (Map)subscriptions.get(clientID);
+      
+      if (subs == null) return null;
+      
+      DurableSubscriptionHolder removed = (DurableSubscriptionHolder)subs.remove(subscriptionName);
+      
+      if (subs.size() == 0)
+      {
+         subscriptions.remove(clientID);
+      }
+      
+      return removed;
+   }
+   
 
    /**
     * @return the active connections clientIDs (as Strings)
     */
    public Set getConnections()
    {
-      synchronized(connections)
-      {
-         return connections.keySet();
-      }
+      return connections.keySet();
    }
 
 
    /**
     * Generates a clientID that is unique per this ClientManager instance
     */
-   public String generateClientID()
+   /*
+   public String generateConnectionID()
    {
       int id;
       synchronized(this)
       {
-         id = clientIDCounter++;
+         id = connectionIDCounter++;
       }
       return serverPeer.getServerPeerID() + "-Connection" + id;
    }
+   */
 
    // Package protected ---------------------------------------------
    

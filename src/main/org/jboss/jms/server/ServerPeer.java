@@ -34,6 +34,7 @@ import org.jboss.logging.Logger;
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.Context;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 import javax.management.MBeanServer;
@@ -479,7 +480,13 @@ public class ServerPeer
 
    private TransactionManager findTransactionManager() throws Exception
    {
-      TransactionManager tm = (TransactionManager)initialContext.lookup("java:/TransactionManager");
+      TransactionManager tm = null;
+      try
+      {
+         tm = (TransactionManager)initialContext.lookup("java:/TransactionManager");
+      }
+      catch(NameNotFoundException e)
+      {}
 
       if (tm == null)
       {

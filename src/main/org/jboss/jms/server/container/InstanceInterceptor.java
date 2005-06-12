@@ -73,14 +73,14 @@ public class InstanceInterceptor implements Interceptor
          else if (m.getDeclaringClass().equals(ServerConnectionDelegate.class))
          {
             // look up the corresponding ServerConnectionDelegate and use that instance
-            String clientID = (String)invocation.getMetaData().
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID);
+            String connectionID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID);
             ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
             if (scd == null)
             {
-               throw new Exception("The server doesn't know of any connection with clientID=" +
-                                   clientID);
+               throw new Exception("The server doesn't know of any connection with connectionID=" +
+                                   connectionID);
                // TODO log error
             }
             invocation.setTargetObject(scd);
@@ -88,14 +88,14 @@ public class InstanceInterceptor implements Interceptor
          else if (m.getDeclaringClass().equals(ServerSessionDelegate.class))
          {
             // lookup the corresponding ServerSessionDelegate and use it as target for the invocation
-            String clientID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
+            String connectionID =
+                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
             ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
             if (scd == null)
             {
-               throw new Exception("The server doesn't know of any connection with clientID=" +
-                                   clientID);
+               throw new Exception("The server doesn't know of any connection with connectionID=" +
+                                   connectionID);
                // TODO log error
             }
             String sessionID = (String)invocation.getMetaData().
@@ -104,7 +104,7 @@ public class InstanceInterceptor implements Interceptor
             ServerSessionDelegate ssd = scd.getSessionDelegate(sessionID);
             if (scd == null)
             {
-               throw new Exception("The connection " + clientID + "  doesn't know of any session " +
+               throw new Exception("The connection " + connectionID + "  doesn't know of any session " +
                                    "with sessionID=" + sessionID);
                // TODO log error
             }
@@ -127,14 +127,14 @@ public class InstanceInterceptor implements Interceptor
          else if (m.getDeclaringClass().equals(ServerProducerDelegate.class))
          {
             // lookup the corresponding ServerProducerDelegate and use it as target for the invocation
-            String clientID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
+            String connectionID =
+                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
             ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
             if (scd == null)
             {
-               throw new Exception("The server doesn't know of any connection with clientID=" +
-                                   clientID);
+               throw new Exception("The server doesn't know of any connection with connectionID=" +
+                                   connectionID);
                // TODO log error
             }
             String sessionID = (String)invocation.getMetaData().
@@ -143,7 +143,7 @@ public class InstanceInterceptor implements Interceptor
             ServerSessionDelegate ssd = scd.getSessionDelegate(sessionID);
             if (scd == null)
             {
-               throw new Exception("The connection " + clientID + "  doesn't know of any session " +
+               throw new Exception("The connection " + connectionID + "  doesn't know of any session " +
                                    "with sessionID=" + sessionID);
                // TODO log error
             }
@@ -162,14 +162,14 @@ public class InstanceInterceptor implements Interceptor
 			else if (m.getDeclaringClass().equals(ServerConsumerDelegate.class))
          {
             // lookup the corresponding ServerConsumerDelegate and use it as target for the invocation
-            String clientID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
+            String connectionID =
+                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
             ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
             if (scd == null)
             {
-               throw new Exception("The server doesn't know of any connection with clientID=" +
-                                   clientID);
+               throw new Exception("The server doesn't know of any connection with connectionID=" +
+                                   connectionID);
                // TODO log error
             }
             String sessionID = (String)invocation.getMetaData().
@@ -178,7 +178,7 @@ public class InstanceInterceptor implements Interceptor
             ServerSessionDelegate ssd = scd.getSessionDelegate(sessionID);
             if (scd == null)
             {
-               throw new Exception("The connection " + clientID + "  doesn't know of any session " +
+               throw new Exception("The connection " + connectionID + "  doesn't know of any session " +
                                    "with sessionID=" + sessionID);
                // TODO log error
             }
@@ -198,14 +198,14 @@ public class InstanceInterceptor implements Interceptor
          {				
 			
             // lookup the corresponding ServerBrowserDelegate and use it as target for the invocation
-            String clientID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CLIENT_ID);
+            String connectionID =
+                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
             ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
             if (scd == null)
             {
-               throw new Exception("The server doesn't know of any connection with clientID=" +
-                                   clientID);
+               throw new Exception("The server doesn't know of any connection with connectionID=" +
+                                   connectionID);
                // TODO log error
             }
             String sessionID = (String)invocation.getMetaData().
@@ -214,7 +214,7 @@ public class InstanceInterceptor implements Interceptor
             ServerSessionDelegate ssd = scd.getSessionDelegate(sessionID);
             if (scd == null)
             {
-               throw new Exception("The connection " + clientID + "  doesn't know of any session " +
+               throw new Exception("The connection " + connectionID + "  doesn't know of any session " +
                                    "with sessionID=" + sessionID);
                // TODO log error
             }

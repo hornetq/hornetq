@@ -7,18 +7,17 @@
 package org.jboss.jms.client.container;
 
 
-import java.lang.reflect.Proxy;
 import java.io.Serializable;
+import java.lang.reflect.Proxy;
 
-import javax.jms.Destination;
 import javax.jms.Message;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager;
@@ -33,12 +32,12 @@ public class TransactionInterceptor implements Interceptor, Serializable
    // Constants -----------------------------------------------------
 
    private final static long serialVersionUID = -34322737839473785L;
+   
+   private static final Logger log = Logger.getLogger(TransactionInterceptor.class);
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(TransactionInterceptor.class);
    
    // Constructors --------------------------------------------------
 
@@ -173,12 +172,11 @@ public class TransactionInterceptor implements Interceptor, Serializable
 				else 
 				{
 					String messageID = (String)mi.getArguments()[0];
-					Destination destination = (Destination)mi.getArguments()[1];
-					String receiverID = (String)mi.getArguments()[2];
+					String receiverID = (String)mi.getArguments()[1];
 					
 					ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
 					
-					rm.addAck(Xid, new AckInfo(messageID, destination, receiverID));
+					rm.addAck(Xid, new AckInfo(messageID, receiverID));
 					
 					return null;
 				}

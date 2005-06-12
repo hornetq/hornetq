@@ -79,11 +79,6 @@ class JBossConnection implements
 
    public void setClientID(String clientID) throws JMSException
    {
-      if (delegate.getClientID() != null)
-      {
-         throw new IllegalStateException("An administratively configured connection identifier " +
-                                         "already exists.");
-      }
       delegate.setClientID(clientID);
    }
 

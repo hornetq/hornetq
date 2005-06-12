@@ -169,16 +169,19 @@ class JBossSession
 
    public MessageListener getMessageListener() throws JMSException
    {
+      //TODO - This is optional - not required for basic JMS1.1 compliance
       throw new NotYetImplementedException();
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
+      //TODO - This is optional - not required for basic JMS1.1 compliance
       throw new NotYetImplementedException();
    }
 
    public void run()
    {
+      //TODO - This is optional - not required for basic JMS1.1 compliance
       throw new NotYetImplementedException();
    }
 
@@ -190,22 +193,26 @@ class JBossSession
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
-     ConsumerDelegate consumerDelegate = sessionDelegate.createConsumerDelegate(d, null);
-     return new JBossMessageConsumer(consumerDelegate, d);
+     ConsumerDelegate consumerDelegate =
+        sessionDelegate.createConsumerDelegate(d, null, false, null);
+     return new JBossMessageConsumer(consumerDelegate, d, false);
   }
 
   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
   {
-	  ConsumerDelegate consumerDelegate = sessionDelegate.createConsumerDelegate(d, messageSelector);
-     return new JBossMessageConsumer(consumerDelegate, d);
+	  ConsumerDelegate consumerDelegate =
+        sessionDelegate.createConsumerDelegate(d, messageSelector, false, null);
+     return new JBossMessageConsumer(consumerDelegate, d, false);
   }
 
-   public MessageConsumer createConsumer(Destination destination,
+   public MessageConsumer createConsumer(Destination d,
                                          String messageSelector,
-                                         boolean NoLocal)
+                                         boolean noLocal)
          throws JMSException
    {
-      throw new NotYetImplementedException();
+      ConsumerDelegate consumerDelegate =
+         sessionDelegate.createConsumerDelegate(d, messageSelector, true, null);
+      return new JBossMessageConsumer(consumerDelegate, d, noLocal);
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -215,7 +222,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
-      throw new NotYetImplementedException();
+      return connectionDelegate.createQueue(queueName, false);
    }
 
    public Topic createTopic(String topicName) throws JMSException
@@ -225,7 +232,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
-      throw new NotYetImplementedException();
+      return connectionDelegate.createTopic(topicName, false);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException
@@ -235,7 +242,9 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
-      throw new NotYetImplementedException();
+      ConsumerDelegate consumerDelegate =
+         sessionDelegate.createConsumerDelegate(topic, null, true, name);
+      return new JBossMessageConsumer(consumerDelegate, topic, false);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
@@ -249,7 +258,9 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
-      throw new NotYetImplementedException();
+      ConsumerDelegate consumerDelegate =
+         sessionDelegate.createConsumerDelegate(topic, messageSelector, noLocal, name);
+      return new JBossMessageConsumer(consumerDelegate, topic, noLocal);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
@@ -304,7 +315,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
-      throw new NotYetImplementedException();
+      connectionDelegate.unsubscribe(name);
    }
    
    // XASession implementation
@@ -320,6 +331,7 @@ class JBossSession
   
    public XAResource getXAResource()
    {          
+      // TODO -  not required for basic JMS1.1 compliance
       throw new NotYetImplementedException();
    }
    
