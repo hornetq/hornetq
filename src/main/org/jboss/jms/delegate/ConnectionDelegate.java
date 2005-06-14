@@ -56,8 +56,8 @@ public interface ConnectionDelegate extends Closeable
     * This is an alternative to looking up the destination via JNDI which is the preferred method
     * 
     * @param queueName The name of the queue to create.
-    * @param create If true then a new queue is created, otherwise only a reference to an existing queue
-    * is returned
+    * @param create If true then a new queue is created, otherwise only a reference to an existing
+    *        queue is returned.
     * @return Reference to the queue
     * @throws JMSException
     */
@@ -65,11 +65,11 @@ public interface ConnectionDelegate extends Closeable
    
    /**
     * Get an reference to an existing topic or create a new topic on the server.
-    * This is an alternative to looking up the destination via JNDI which is the preferred method
+    * This is an alternative to looking up the destination via JNDI which is the preferred method.
     * 
     * @param topicName The name of the topic to create.
-    * @param create If true then a new topic is created, otherwise only a reference to an existing topic
-    * is returned
+    * @param create If true then a new topic is created, otherwise only a reference to an existing
+    *        topic is returned.
     * @return Reference to the topic
     * @throws JMSException
     */

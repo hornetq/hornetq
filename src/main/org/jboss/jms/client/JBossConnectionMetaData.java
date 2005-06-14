@@ -6,13 +6,11 @@
  */
 package org.jboss.jms.client;
 
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
  * Connection metadata

@@ -25,6 +25,8 @@ import javax.jms.QueueSender;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
@@ -55,7 +57,8 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
       deliveryMode = DeliveryMode.PERSISTENT;
       isMessageIDDisabled = false;
       isTimestampDisabled = false;
-      priority = 4;      
+      timeToLive = 0l;
+      priority = 4;
    }
    
    // MessageProducer implementation --------------------------------
@@ -141,10 +144,10 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    }
    
    public void send(Destination destination,
-         Message message,
-         int deliveryMode,
-         int priority,
-         long timeToLive) throws JMSException
+                    Message message,
+                    int deliveryMode,
+                    int priority,
+                    long timeToLive) throws JMSException
    {
       configure(message, deliveryMode, priority, timeToLive, destination);
       delegate.send(message);
@@ -174,8 +177,8 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
       send(message, deliveryMode, priority, timeToLive);
    }
    
-   public void publish(Topic topic, Message message, int deliveryMode, 
-         int priority, long timeToLive) throws JMSException
+   public void publish(Topic topic, Message message, int deliveryMode,
+                       int priority, long timeToLive) throws JMSException
    {
       send(topic, message, deliveryMode, priority, timeToLive);
    }
@@ -188,7 +191,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    }
    
    public void send(Queue queue, Message message, int deliveryMode, int priority,
-         long timeToLive) throws JMSException
+                    long timeToLive) throws JMSException
    {
       send(queue, message, deliveryMode, priority, timeToLive);
    }
@@ -208,8 +211,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
     * Set the headers.
     */
    protected void configure(Message m, int deliveryMode, int priority,
-         long timeToLive, Destination dest)
-      throws JMSException
+                            long timeToLive, Destination dest) throws JMSException
    {   	   	      
       if (log.isTraceEnabled()) log.trace("In configure()");
       if (m instanceof JBossBytesMessage)

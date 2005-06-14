@@ -7,14 +7,12 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -22,6 +20,8 @@ import java.util.Set;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ClientManager
 {
@@ -72,7 +72,8 @@ public class ClientManager
       return subs == null ? null : (DurableSubscriptionHolder)subs.get(subscriptionName);
    }
    
-   public void addDurableSubscription(String clientID, String subscriptionName, DurableSubscriptionHolder subscription)
+   public void addDurableSubscription(String clientID, String subscriptionName,
+                                      DurableSubscriptionHolder subscription)
    {
       Map subs = (Map)subscriptions.get(clientID);
       if (subs == null)
@@ -83,7 +84,8 @@ public class ClientManager
       subs.put(subscriptionName, subscription);
    }
    
-   public DurableSubscriptionHolder removeDurableSubscription(String clientID, String subscriptionName)
+   public DurableSubscriptionHolder removeDurableSubscription(String clientID,
+                                                              String subscriptionName)
    {
       Map subs = (Map)subscriptions.get(clientID);
       

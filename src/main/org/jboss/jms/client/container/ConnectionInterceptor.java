@@ -25,6 +25,8 @@ import javax.jms.IllegalStateException;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ConnectionInterceptor implements Interceptor, Serializable
 {
