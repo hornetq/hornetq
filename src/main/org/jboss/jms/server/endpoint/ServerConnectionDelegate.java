@@ -40,6 +40,7 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TxInfo;
@@ -47,6 +48,7 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -184,12 +186,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       if (log.isTraceEnabled()) { log.trace("In ServerConnectionDelegate.close()"); }
       
-      DestinationManager dm = serverPeer.getDestinationManager();
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
       Iterator iter = this.temporaryDestinations.iterator();
       while (iter.hasNext())
       {
-         JBossDestination dest = (JBossDestination)iter.next();
-         dm.removeDestination(dest.getName());
+         dm.removeTemporaryDestination((JBossDestination)iter.next());
       }
       this.temporaryDestinations = null;
       this.receivers = null;
@@ -286,7 +287,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new JMSException("Destination:" + dest + " is not a temporary destination");
       }
       this.temporaryDestinations.add(dest);
-      this.serverPeer.getDestinationManager().addDestination(dest);
+      serverPeer.getDestinationManager().addTemporaryDestination(dest);
    }
    
    public void deleteTemporaryDestination(Destination dest) throws JMSException
@@ -298,9 +299,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new JMSException("Destination:" + dest + " is not a temporary destination");
       }
       
-      DestinationManager dm = serverPeer.getDestinationManager();
-      dm.removeDestination(d.getName());
-     
+      serverPeer.getDestinationManager().removeTemporaryDestination(dest);
       this.temporaryDestinations.remove(dest);
    }
    
@@ -320,57 +319,64 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public Queue createQueue(String queueName, boolean create) throws JMSException
    {
-      DestinationManager dm = this.serverPeer.getDestinationManager();
-   
-      AbstractDestination dest = dm.getDestination(queueName);
-      
-      Queue queue = null;
-      
-      if (dest == null)
-      {
-         if (!create)
-         {
-            throw new JMSException("There is no administratively defined queue with name:" + queueName);
-         }
-         else
-         {
-            queue = new JBossQueue(queueName);
-            dm.addDestination(queue);
-         }
-      }
-      else
-      {
-         queue = new JBossQueue(queueName);
-      }
-      return queue;  
+      throw new NotYetImplementedException();
+
+      // TODO fix this
+//      DestinationManagerImpl dm = this.serverPeer.getDestinationManager();
+//
+//      AbstractDestination dest = dm.getCoreDestination(queueName);
+//
+//      Queue queue = null;
+//
+//      if (dest == null)
+//      {
+//         if (!create)
+//         {
+//            throw new JMSException("There is no administratively defined queue with name:" +
+//                                   queueName);
+//         }
+//         else
+//         {
+//            dm.createQueue(queueName);
+//         }
+//      }
+//      else
+//      {
+//         queue = new JBossQueue(queueName);
+//      }
+//      return queue;
    }
    
 
    public Topic createTopic(String topicName, boolean create) throws JMSException
    {
-      DestinationManager dm = this.serverPeer.getDestinationManager();
-      
-      AbstractDestination dest = dm.getDestination(topicName);
-      
-      Topic topic = null;
-      
-      if (dest == null)
-      {
-         if (!create)
-         {
-            throw new JMSException("There is no administratively defined topic with name:" + topicName);
-         }
-         else
-         {
-            topic = new JBossTopic(topicName);
-            dm.addDestination(topic);
-         }
-      }
-      else
-      {
-         topic = new JBossTopic(topicName);
-      }
-      return topic;  
+      throw new NotYetImplementedException();
+
+      // TODO fix this
+
+//      DestinationManager dm = this.serverPeer.getDestinationManager();
+//
+//      AbstractDestination dest = dm.getDestination(topicName);
+//
+//      Topic topic = null;
+//
+//      if (dest == null)
+//      {
+//         if (!create)
+//         {
+//            throw new JMSException("There is no administratively defined topic with name:" + topicName);
+//         }
+//         else
+//         {
+//            topic = new JBossTopic(topicName);
+//            dm.addDestination(topic);
+//         }
+//      }
+//      else
+//      {
+//         topic = new JBossTopic(topicName);
+//      }
+//      return topic;
    }
   
    
@@ -409,20 +415,20 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    void sendMessage(Message m) throws JMSException
    {
       //The JMSDestination header must already have been set for each message
-      JBossDestination dest = (JBossDestination)m.getJMSDestination();
-      if (dest == null)
+      JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
+      if (jmsDestination == null)
       {
          throw new IllegalStateException("JMSDestination header not set!");
       }
     
-      AbstractDestination destination = null;
+      AbstractDestination coreDestination = null;
 
-      DestinationManager dm = serverPeer.getDestinationManager();
-      destination = dm.getDestination(dest);
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      coreDestination = dm.getCoreDestination(jmsDestination);
       
-      if (destination == null)
+      if (coreDestination == null)
       {
-         throw new JMSException("Destination " + dest.getName() + " does not exist");
+         throw new JMSException("Destination " + jmsDestination.getName() + " does not exist");
       }
       
       m.setJMSMessageID(generateMessageID());
@@ -432,9 +438,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       //TODO Do we want to set this for ALL messages. Possibly an optimisation is possible here
       ((JBossMessage)m).setConnectionID(connectionID);
       
-      boolean acked = destination.handle((Routable)m);
-      
-      if (destination.isTransactional() && isActiveTransaction())
+      boolean acked = coreDestination.handle((Routable)m);
+
+      if (coreDestination.isTransactional() && isActiveTransaction())
       {
          // for a transacted invocation, the return value is irrelevant
          return;
@@ -445,14 +451,13 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          // under normal circumstances, this shouldn't happen, since the destination
          // is supposed to hold the message for redelivery
          
-         String msg = "The message was not acknowledged by destination " + destination;
+         String msg = "The message was not acknowledged by destination " + coreDestination;
          log.error(msg);
          throw new JBossJMSException(msg);
       }
    }
    
-   void acknowledge(String messageID, String receiverID)
-      throws JMSException
+   void acknowledge(String messageID, String receiverID) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
            
@@ -461,9 +466,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          throw new IllegalStateException("Cannot find receiver:" + receiverID);
       }
-      
       receiver.acknowledge(messageID);
-    
    }
    
 

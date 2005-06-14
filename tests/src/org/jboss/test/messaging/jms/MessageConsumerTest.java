@@ -16,7 +16,6 @@ import javax.jms.Session;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.JMSException;
@@ -422,7 +421,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
       // redeliver using core's internal API
       AbstractDestination coreQueue =
-            ServerManagement.getServerPeer().getDestinationManager().getDestination(queue);
+            ServerManagement.getServerPeer().getDestinationManager().getCoreDestination(queue);
 
       assertFalse(coreQueue.deliver());
 

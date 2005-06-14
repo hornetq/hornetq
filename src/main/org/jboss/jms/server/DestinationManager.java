@@ -6,176 +6,48 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.messaging.core.local.LocalQueue;
-import org.jboss.messaging.core.local.LocalTopic;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.logging.Logger;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-
-import java.util.Map;
-import java.util.HashMap;
-
 /**
- * Manages access to distributed destinations. There is a single DestinationManager instance for
- * each server peer.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class DestinationManager
+public interface DestinationManager
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(DestinationManager.class);
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   protected ServerPeer serverPeer;
-   protected Context ic;
-   // <name(String) - AbstractDestination>
-   protected Map topics;
-   // <name(String) - AbstractDestination>
-   protected Map queues;
-
-   // Constructors --------------------------------------------------
-
-   public DestinationManager(ServerPeer serverPeer) throws Exception
-   {
-      this.serverPeer = serverPeer;
-      ic = new InitialContext(serverPeer.getJNDIEnvironment());
-      topics = new HashMap();
-      queues = new HashMap();
-   }
-
-   // Public --------------------------------------------------------
+   public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
+   public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
 
    /**
-    * Returns the core abstract destination that corresponds to the given JNDI destination.
-    * @exception JMSException - thrown if the JNDI destination cannot be mapped on a core destination.
+    * Creates and binds in JNDI a queue. The queue name is unique per JMS provider instance.
+    *
+    * @param name - the queue name.
+    * @param jndiName - the JNDI name to bind the newly created queue to. If null, the queue
+    *        will be bound in JNDI under the default context using the specified queue name.
+    *
+    * @throws Exception
     */
-   public AbstractDestination getDestination(Destination dest)
-      throws JMSException
-   {
-
-      if (log.isTraceEnabled()) { log.trace("getting core destination for " + dest); }
-
-      JBossDestination d = (JBossDestination)dest;
-      String name = d.getName();
-      boolean isQueue = d.isQueue();
-
-      
-      if (!d.isTemporary())
-      {
-         try
-         {
-            // TODO get rid of this
-            ic.lookup((isQueue ? "queue/" : "topic/") + name);
-         }
-         catch (NamingException e)
-         {
-            throw new JMSException("Destination " + name + " is not bound in JNDI");
-         }
-      }
-      
-      
-      AbstractDestination ad = isQueue ?
-                               (AbstractDestination)queues.get(name) :
-                               (AbstractDestination)topics.get(name);
-                               
-      return ad;
-   }
-   
-   public AbstractDestination getDestination(String destinationName)
-      throws JMSException
-   {
-      AbstractDestination dest = (AbstractDestination)queues.get(destinationName);
-      if (dest == null)
-      {
-         dest = (AbstractDestination)topics.get(destinationName);
-      }
-      
-      return dest;
-   }
+   public void createQueue(String name, String jndiName) throws Exception;
 
    /**
-    * Add a JMS Deestination to the manager
-    * 
-    * @param dest The JMS destination to add
-    * @throws JMSException If the destination with that name already exists in the manager
+    * Removes the queue both from JNDI and DestinationManager.
     */
-   public void addDestination(Destination dest)
-      throws JMSException
-   {
-      JBossDestination d = (JBossDestination)dest;
-      String name = d.getName();
-      boolean isQueue = d.isQueue();
-      
-      AbstractDestination ad = getDestination(dest);
-      if (ad != null)
-      {
-         throw new JMSException("Destination with name:" + name + " already exists");
-      }
-      
-      // TODO I am using LocalQueues for the time being, switch to distributed Queues
-      if (isQueue)
-      {
-         ad = new LocalQueue(name);
+   public void destroyQueue(String name) throws Exception;
 
-         ad.setAcknowledgmentStore(serverPeer.getAcknowledgmentStore());
-         ad.setMessageStore(serverPeer.getMessageStore());
-         queues.put(name, ad);
-      }
-      else
-      {
-         // TODO I am using LocalTopics for the time being, switch to distributed Topics
-         ad = new LocalTopic(name);
-         topics.put(name, ad);
-      }
-
-      // make the destination transactional if there is a transaction manager available
-      ad.setTransactionManager(serverPeer.getTransactionManager()); 
-   }
-   
    /**
-    * Remove a JMS Destination from the manager
-    * 
-    * @param name The name of the JMS Destination to remove
-    * @throws JMSException If there is no such destination to remove
+    * Creates and binds in JNDI a topic. The topic name is unique per JMS provider instance.
+    *
+    * @param name - the topic name.
+    * @param jndiName - the JNDI name to bind the newly created topic to. If null, the topic
+    *        will be bound in JNDI under the default context using the specified topic name.
+    *
+    * @throws Exception
     */
-   public void removeDestination(String name)
-      throws JMSException
-   {
-      Object removed = queues.remove(name);
-      
-      if (removed == null)
-      {
-         removed = topics.remove(name);
-      }
-      
-      if (removed == null)
-      {
-         throw new JMSException("Cannot find destination:" + name + " to remove");
-      }
-   }
+   public void createTopic(String name, String jndiName) throws Exception;
 
-   // Package protected ---------------------------------------------
+   /**
+    * Removes the topic both from JNDI and DestinationManager.
+    */
+   public void destroyTopic(String name) throws Exception;
 
-   // Protected -----------------------------------------------------
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
-
-
-
-
-

@@ -36,9 +36,9 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.ClientManager;
-import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
@@ -103,12 +103,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    {
 
       // look-up destination
-      DestinationManager dm = serverPeer.getDestinationManager();
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
       AbstractDestination destination = null;
      
       if (jmsDestination != null)
       {
-         destination = dm.getDestination(jmsDestination);
+         destination = dm.getCoreDestination(jmsDestination);
       }
      
       log.debug("got producer's destination: " + destination);
@@ -168,9 +168,9 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 		throws JMSException
    {
       // look-up destination
-      DestinationManager dm = serverPeer.getDestinationManager();
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
     
-      AbstractDestination destination = dm.getDestination(jmsDestination);
+      AbstractDestination destination = dm.getCoreDestination(jmsDestination);
      
       // create the MessageConsumer dynamic proxy
 
@@ -334,9 +334,9 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    	throws JMSException
 	{
 	   // look-up destination
-	   DestinationManager dm = serverPeer.getDestinationManager();
+	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
 	  
-      AbstractDestination destination = dm.getDestination(jmsDestination);
+      AbstractDestination destination = dm.getCoreDestination(jmsDestination);
 	
 	   BrowserDelegate bd = null;
 	   Serializable oid = serverPeer.getBrowserAdvisor().getName();

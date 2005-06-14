@@ -14,8 +14,7 @@ import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.util.JNDIUtil;
 import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.DomainDefinition;
 import org.jboss.aop.AspectManager;
@@ -35,7 +34,6 @@ import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -61,17 +59,32 @@ public class ServerPeer
 
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
-   // Static --------------------------------------------------------
+   private static final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
+   private static final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
+   private static ObjectName DESTINATION_MANAGER_OBJECT_NAME;
 
-   private final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
-   private final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
+   static
+   {
+      try
+      {
+         DESTINATION_MANAGER_OBJECT_NAME =
+         new ObjectName("jboss.messaging:service=DestinationManager");
+      }
+      catch(Exception e)
+      {
+         log.error(e);
+      }
+   }
+
+
+   // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    protected String serverPeerID;
    protected InvokerLocator locator;
    protected ClientManager clientManager;
-   protected DestinationManager destinationManager;
+   protected DestinationManagerImpl destinationManager;
    protected ConnectionFactoryDelegate connFactoryDelegate;
    protected Hashtable jndiEnvironment;
    protected InitialContext initialContext;
@@ -142,7 +155,7 @@ public class ServerPeer
       transactionManager = findTransactionManager();
 
       clientManager = new ClientManager(this);
-      destinationManager = new DestinationManager(this);
+      destinationManager = new DestinationManagerImpl(this);
       messageStore = new MessageStoreImpl("MessageStore");
       acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
       connFactoryDelegate = new ServerConnectionFactoryDelegate(this);
@@ -150,6 +163,8 @@ public class ServerPeer
 
       initializeRemoting();
       initializeAdvisors();
+
+      mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
 
       ConnectionFactory connectionFactory = createConnectionFactory();
       bindConnectionFactory(connectionFactory);
@@ -168,6 +183,8 @@ public class ServerPeer
       log.debug(this + " stopping");
 
       unbindConnectionFactory();
+
+      mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
       started = false;
 
@@ -183,36 +200,12 @@ public class ServerPeer
 
    public void createQueue(String name) throws Exception
    {
-      // TODO - temporary implementation
-      JBossQueue q = new JBossQueue(name);
-      Context queues;
-      try
-      {
-         queues = (Context)initialContext.lookup("queue");
-      }
-      catch(NamingException e)
-      {
-         queues = initialContext.createSubcontext("queue");
-      }
-      queues.rebind(name, q);
-      destinationManager.addDestination(q);
+      destinationManager.createQueue(name, null);
    }
 
    public void createTopic(String name) throws Exception
    {
-      // TODO - temporary implementation
-      JBossTopic t = new JBossTopic(name);
-      Context topics;
-      try
-      {
-         topics = (Context)initialContext.lookup("topic");
-      }
-      catch(NamingException e)
-      {
-         topics = initialContext.createSubcontext("topic");
-      }
-      topics.rebind(name, t);
-      destinationManager.addDestination(t);
+      destinationManager.createTopic(name, null);
    }
 
 
@@ -258,7 +251,7 @@ public class ServerPeer
       return clientManager;
    }
 
-   public DestinationManager getDestinationManager()
+   public DestinationManagerImpl getDestinationManager()
    {
       return destinationManager;
    }
@@ -429,6 +422,7 @@ public class ServerPeer
    {
       initialContext.rebind(CONNECTION_FACTORY_JNDI_NAME, factory);
       initialContext.rebind(XACONNECTION_FACTORY_JNDI_NAME, factory);
+      extraJNDILinks(true, factory);
 
    }
 
@@ -436,6 +430,7 @@ public class ServerPeer
    {
       initialContext.unbind(CONNECTION_FACTORY_JNDI_NAME);
       initialContext.unbind(XACONNECTION_FACTORY_JNDI_NAME);
+      extraJNDILinks(false, null);
 
    }
 
@@ -499,7 +494,41 @@ public class ServerPeer
    }
 
 
-
+   /**
+    * TODO TCK hack - get rid of it.
+    */
+   private void extraJNDILinks(boolean create, ConnectionFactory factory) throws Exception
+   {
+      String[][] names = new String[][]
+      {
+         {"jms","QueueConnectionFactory"},
+         {"jms","TopicConnectionFactory"}
+      };
+      for(int i = 0; i < names.length; i++)
+      {
+         String[] binding = names[i];
+         String context = binding[0];
+         String factoryName = binding[1];
+         if (create)
+         {
+            log.info("Binding connection factory as " + context + "/" + factoryName);
+            Context c = JNDIUtil.createContext(initialContext, context);
+            c.bind(factoryName, factory);
+         }
+         else
+         {
+            try
+            {
+               initialContext.unbind(context + "/" + factoryName);
+            }
+            catch(Exception e)
+            {
+               // ok
+            }
+            log.info(context + "/" + factoryName + " unbound");
+         }
+      }
+   }
 
 
    // Inner classes -------------------------------------------------

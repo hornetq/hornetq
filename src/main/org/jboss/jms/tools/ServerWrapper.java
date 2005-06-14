@@ -7,8 +7,8 @@
 package org.jboss.jms.tools;
 
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.util.JNDIUtil;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
@@ -16,7 +16,6 @@ import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.transport.Connector;
 
 
-import javax.jms.Destination;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
@@ -117,32 +116,22 @@ public class ServerWrapper
 
    public void deployTopic(String name) throws Exception
    {
-      Context c = (Context)initialContext.lookup("topic");
-      Destination topic = new JBossTopic(name);
-      c.rebind(name, topic);
-      serverPeer.getDestinationManager().addDestination(topic);
+      serverPeer.getDestinationManager().createTopic(name, null);
    }
 
    public void undeployTopic(String name) throws Exception
    {
-      Context c = (Context)initialContext.lookup("topic");
-      c.unbind(name);
-      serverPeer.getDestinationManager().removeDestination(name);
+      serverPeer.getDestinationManager().destroyTopic(name);
    }
 
    public void deployQueue(String name) throws Exception
    {
-      Context c = (Context)initialContext.lookup("queue");
-      Destination queue = new JBossQueue(name);
-      c.rebind(name, queue);
-      serverPeer.getDestinationManager().addDestination(queue);
+      serverPeer.getDestinationManager().createQueue(name, null);
    }
 
    public void undeployQueue(String name) throws Exception
    {
-      Context c = (Context)initialContext.lookup("queue");
-      c.unbind(name);
-      serverPeer.getDestinationManager().removeDestination(name);
+      serverPeer.getDestinationManager().destroyQueue(name);
    }
 
    public ServerPeer getServerPeer()
@@ -170,7 +159,8 @@ public class ServerWrapper
 
    private void setupJNDI() throws Exception
    {
-      String[] names = {"topic", "queue" };
+      String[] names = {DestinationManager.DEFAULT_QUEUE_CONTEXT,
+                        DestinationManager.DEFAULT_TOPIC_CONTEXT};
 
       for (int i = 0; i < names.length; i++)
       {
@@ -180,7 +170,7 @@ public class ServerWrapper
          }
          catch(NameNotFoundException e)
          {
-            initialContext.createSubcontext(names[i]);
+            JNDIUtil.createContext(initialContext, names[i]);
             log.info("Created context /" + names[i]);
          }
       }
