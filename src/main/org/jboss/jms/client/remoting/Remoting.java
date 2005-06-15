@@ -21,24 +21,22 @@ public class Remoting
 
    // Static --------------------------------------------------------
 
-   // TODO make possible to specify this URI as a parameter
-   private static String callbackServerURI = "socket://localhost:2222";
-   private static Connector callbackServer;
-
    /**
-    * This mehtod won't be necessary as soon as Remoting supports an UIL2-like transport.
+    * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
    public static Connector getCallbackServer() throws Exception
    {
-      if (callbackServer == null)
-      {
-         callbackServer = new Connector();
-         callbackServer.setInvokerLocator(new InvokerLocator(callbackServerURI).getLocatorURI());
-         callbackServer.start();
+      Connector callbackServer = new Connector();
 
-         // TODO this is unnecessary
-         callbackServer.addInvocationHandler("JMS", new ServerInvocationHandlerImpl());
-      }
+      // usa an anonymous port
+      InvokerLocator locator = new InvokerLocator("socket://localhost:0");
+
+      callbackServer.setInvokerLocator(locator.getLocatorURI());
+      callbackServer.start();
+
+      // TODO this is unnecessary
+      callbackServer.addInvocationHandler("JMS", new ServerInvocationHandlerImpl());
+
       return callbackServer;
    }
 

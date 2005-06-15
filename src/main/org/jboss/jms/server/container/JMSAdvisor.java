@@ -35,6 +35,7 @@ public class JMSAdvisor extends ClassAdvisor
 	public static final String UNACKED = "UNACKED";
 	public static final String RESOURCE_MANAGER = "RESOURCE_MGR";
    public static final String CLIENT_ID = "CLIENT_ID";
+   public static final String REMOTING_CALLBACK_SERVER = "REMOTING_CALLBACK_SERVER";
 
    // Static --------------------------------------------------------
    

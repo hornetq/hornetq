@@ -7,8 +7,8 @@
 package org.jboss.jms.client.remoting;
 
 import org.jboss.remoting.InvokerCallbackHandler;
-import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.HandleCallbackException;
+import org.jboss.remoting.Callback;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -63,10 +63,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // InvokerCallbackHandler implementation -------------------------
    
-   public void handleCallback(InvocationRequest invocation) throws HandleCallbackException
+   public void handleCallback(Callback callback) throws HandleCallbackException
    {
       
-      Message m = (Message)invocation.getParameter();
+      Message m = (Message)callback.getParameter();
       
       if (log.isTraceEnabled()) { log.trace("receiving from server: " + m); }
       

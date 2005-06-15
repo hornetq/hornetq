@@ -77,6 +77,11 @@
          </fileset>
       </copy>
 
+      <echo message="Copying locally patched jboss-remoting.jar from ${messaging.home}/src/resources/"/>
+      <copy todir="${jboss.home}/server/cts-messaging/lib"
+            file="${messaging.home}/src/resources/jboss-remoting.jar"
+            overwrite="true">
+      </copy>
 
       <echo message="Copying customized configurations from ${messaging.home}/src/cts/conf"/>
       <copy todir="${jboss.home}/server/cts-messaging/conf" overwrite="true">

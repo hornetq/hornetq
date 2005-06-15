@@ -6,8 +6,8 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.Callback;
 import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
 
@@ -18,7 +18,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-class Delivery extends InvocationRequest implements Runnable
+class Delivery extends Callback implements Runnable
 {
    // Constants -----------------------------------------------------
 
@@ -33,7 +33,7 @@ class Delivery extends InvocationRequest implements Runnable
 
    public Delivery(InvokerCallbackHandler callbackHandler, Routable r, Logger log)
    {
-      super(null, null, r, null, null, null);
+      super(r);
       this.callbackHandler = callbackHandler;
       this.log = log;
    }
