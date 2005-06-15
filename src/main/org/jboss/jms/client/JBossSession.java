@@ -243,7 +243,7 @@ class JBossSession
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
       ConsumerDelegate consumerDelegate =
-         sessionDelegate.createConsumerDelegate(topic, null, true, name);
+            sessionDelegate.createConsumerDelegate(topic, null, true, name);
       return new JBossMessageConsumer(consumerDelegate, topic, false);
    }
 
