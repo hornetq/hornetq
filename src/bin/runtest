@@ -58,7 +58,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 
@@ -66,7 +66,7 @@
 #
 # JMS Facade server
 #
-TARGET_CLASS=org.jboss.test.messaging.jms.server.DestinationManagerTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.server.DestinationManagerTest
 
 
 
@@ -117,6 +117,7 @@ done
 
 reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
+$reldir/../../tests/etc${SEP}\
 $reldir/../../src/etc${SEP}\
 $reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
