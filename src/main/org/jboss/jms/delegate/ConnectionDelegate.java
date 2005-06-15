@@ -13,6 +13,8 @@ import javax.jms.JMSException;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.tx.TxInfo;
 
+import java.io.Serializable;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -48,4 +50,6 @@ public interface ConnectionDelegate extends Closeable
     * @throws JMSException if the unsubscribe fails
     */
    public void unsubscribe(String subscriptionName) throws JMSException;
+
+   public Serializable getConnectionID();
 }

@@ -30,6 +30,7 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -38,7 +39,7 @@ import javax.jms.XATopicSession;
  *
  * $Id$
  */
-class JBossConnection implements
+public class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
     XAConnection, XAQueueConnection, XATopicConnection
 {
@@ -202,6 +203,11 @@ class JBossConnection implements
    }
 
    // Public --------------------------------------------------------
+
+   public Serializable getConnectionID()
+   {
+      return delegate.getConnectionID();
+   }
 
    // Package protected ---------------------------------------------
 

@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * Manages client connections. There is a single ClientManager instance for each server peer.
@@ -31,8 +32,6 @@ public class ClientManager
 
    // Attributes ----------------------------------------------------
 
-   private int connectionIDCounter;
-
    protected ServerPeer serverPeer;
    protected Map connections;
    protected Map subscriptions;
@@ -44,20 +43,19 @@ public class ClientManager
       this.serverPeer = serverPeer;
       connections = new ConcurrentReaderHashMap();
       subscriptions = new ConcurrentReaderHashMap();
-      connectionIDCounter = 0;
    }
 
    // Public --------------------------------------------------------
 
-   public ServerConnectionDelegate putConnectionDelegate(String clientID,
+   public ServerConnectionDelegate putConnectionDelegate(Serializable connectionID,
                                                          ServerConnectionDelegate d)
    {
-      return (ServerConnectionDelegate)connections.put(clientID, d);
+      return (ServerConnectionDelegate)connections.put(connectionID, d);
    }
 
-   public ServerConnectionDelegate getConnectionDelegate(String clientID)
+   public ServerConnectionDelegate getConnectionDelegate(Serializable connectionID)
    {
-      return (ServerConnectionDelegate)connections.get(clientID);
+      return (ServerConnectionDelegate)connections.get(connectionID);
    }
    
    public Set getDurableSubscriptions(String clientID)
@@ -101,30 +99,6 @@ public class ClientManager
       return removed;
    }
    
-
-   /**
-    * @return the active connections clientIDs (as Strings)
-    */
-   public Set getConnections()
-   {
-      return connections.keySet();
-   }
-
-
-   /**
-    * Generates a clientID that is unique per this ClientManager instance
-    */
-   /*
-   public String generateConnectionID()
-   {
-      int id;
-      synchronized(this)
-      {
-         id = connectionIDCounter++;
-      }
-      return serverPeer.getServerPeerID() + "-Connection" + id;
-   }
-   */
 
    // Package protected ---------------------------------------------
    

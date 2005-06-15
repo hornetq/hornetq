@@ -150,7 +150,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    public String getClientID() throws JMSException
    {
-      throw new JMSException("getClientID() is not handled on the server");
+      return clientID;
    }
    
    public void setClientID(String clientID)
@@ -310,7 +310,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       subscription.getTopic().remove(subscription.getQueue().getReceiverID());
       
    }
-   
+
+   public Serializable getConnectionID()
+   {
+      return connectionID;
+   }
 
    // Public --------------------------------------------------------
    
@@ -333,12 +337,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    public ServerPeer getServerPeer()
    {
       return serverPeer;
-   }
-   
-   
-   public String getConnectionID()
-   {
-      return connectionID;
    }
    
    

@@ -114,6 +114,10 @@ public class ConnectionInterceptor implements Interceptor, Serializable
             
             return null;
          }
+         if ("getConnectionID".equals(name))
+         {
+            return (Serializable)invocation.getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID);
+         }
          else
          {            
             return invocation.invokeNext();

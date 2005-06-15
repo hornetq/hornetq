@@ -9,6 +9,8 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.jms.client.JBossConnection;
 
 
 import javax.naming.InitialContext;
@@ -28,6 +30,7 @@ import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
+import java.io.Serializable;
 
 
 /**
@@ -76,45 +79,6 @@ public class ConnectionTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   /*
-    
-   
-   I have commented this test out since I think it is invalid.
-   Connection ids are not the same as client ids
-   
-   public void testGetClientID() throws Exception
-   {
-      Connection connection = cf.createConnection();
-      String clientID = connection.getClientID();
-
-      Set clientIDs = ServerManagement.getServerPeer().getClientManager().getConnections();
-      assertEquals(1, clientIDs.size());
-      assertEquals(clientID, clientIDs.iterator().next());
-
-      connection.close();
-   }
-
-   It is legal to set a client id on the client as long as it hasn't been set on the server
-   and it's the first thing done to the connection, so this test appears to be invalid
-
-   public void testSetClientID() throws Exception
-   {
-      Connection connection = cf.createConnection();
-      try
-      {
-         connection.setClientID("something");
-         fail("This should have failed");
-      }
-      catch(IllegalStateException e)
-      {
-         // OK
-      }
-
-      connection.close();
-   }
-   
-   */
-   
    public void testGetClientID() throws Exception
    {
       Connection connection = cf.createConnection();
@@ -216,18 +180,13 @@ public class ConnectionTest extends MessagingTestCase
       
    }
 
-   /*
-    * 
-   
-   A client id is not the same as a connection if so this tests appears invalid
-   
    public void testStartStop() throws Exception
    {
       Connection connection = cf.createConnection();
-      String clientID = connection.getClientID();
+      Serializable connectionID = ((JBossConnection)connection).getConnectionID();
 
       ServerConnectionDelegate d =
-            ServerManagement.getServerPeer().getClientManager().getConnectionDelegate(clientID);
+            ServerManagement.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
 
       assertFalse(d.isStarted());
 
@@ -238,18 +197,6 @@ public class ConnectionTest extends MessagingTestCase
       connection.stop();
 
       assertFalse(d.isStarted());
-
-      connection.close();
-   }
-   */
-   
-   public void testStartStop() throws Exception
-   {
-      Connection connection = cf.createConnection();
-      
-      connection.start();
-
-      connection.stop();
 
       connection.close();
    }
