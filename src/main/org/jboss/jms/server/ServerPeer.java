@@ -27,7 +27,6 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.util.MessageStoreImpl;
 import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
-import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 import org.jboss.logging.Logger;
 
 import javax.jms.ConnectionFactory;
@@ -483,11 +482,11 @@ public class ServerPeer
       catch(NameNotFoundException e)
       {}
 
-      if (tm == null)
-      {
-         tm = TransactionManagerImpl.getInstance();
-         log.warn("Cannot find a transaction manager, using an internal implementation!");
-      }
+//      if (tm == null)
+//      {
+//         tm = TransactionManagerImpl.getInstance();
+//         log.warn("Cannot find a transaction manager, using an internal implementation!");
+//      }
 
       log.debug("TransactionManager: " + tm);
       return tm;
