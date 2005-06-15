@@ -21,6 +21,8 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
+import javax.jms.Queue;
+import javax.jms.Topic;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
@@ -41,6 +43,8 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.messaging.core.local.LocalQueue;
@@ -299,7 +303,43 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    {
       throw new JBossJMSException("We don't create messages on the server");
    }
-   
+
+   public Queue createQueue(String name) throws JMSException
+   {
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      AbstractDestination coreDestination = dm.getCoreDestination(true, name);
+
+      if (coreDestination == null)
+      {
+         throw new JMSException("There is no administratively defined queue with name:" + name);
+      }
+
+      if (coreDestination instanceof LocalTopic)
+      {
+         throw new JMSException("A topic with the same name exists already");
+      }
+
+      return new JBossQueue(name);
+   }
+
+   public Topic createTopic(String name) throws JMSException
+   {
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      AbstractDestination coreDestination = dm.getCoreDestination(false, name);
+
+      if (coreDestination == null)
+      {
+         throw new JMSException("There is no administratively defined topic with name:" + name);
+      }
+
+      if (coreDestination instanceof LocalQueue)
+      {
+         throw new JMSException("A queue with the same name exists already");
+      }
+
+      return new JBossTopic(name);
+   }
+
    public void close() throws JBossJMSException
    {
       if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.close()");

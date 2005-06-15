@@ -177,6 +177,20 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
+
+   public void testCreateQueueAndTopicWithTheSameName() throws Exception
+   {
+      String name = "SomeName";
+      destinationManager.createQueue(name, null);
+      destinationManager.createTopic(name, null);
+
+      Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+
+      assertEquals(name, q.getQueueName());
+      assertEquals(name, t.getTopicName());
+   }
+
    public void testDestroyInexistentQueue() throws Exception
    {
       destinationManager.destroyQueue("there is not such a queue");

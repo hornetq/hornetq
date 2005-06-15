@@ -19,8 +19,6 @@ import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.Topic;
 import javax.transaction.TransactionManager;
 
 import org.jboss.aop.AspectManager;
@@ -34,10 +32,7 @@ import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManagerImpl;
@@ -48,7 +43,6 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -317,69 +311,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    }
    
 
-   public Queue createQueue(String queueName, boolean create) throws JMSException
-   {
-      throw new NotYetImplementedException();
-
-      // TODO fix this
-//      DestinationManagerImpl dm = this.serverPeer.getDestinationManager();
-//
-//      AbstractDestination dest = dm.getCoreDestination(queueName);
-//
-//      Queue queue = null;
-//
-//      if (dest == null)
-//      {
-//         if (!create)
-//         {
-//            throw new JMSException("There is no administratively defined queue with name:" +
-//                                   queueName);
-//         }
-//         else
-//         {
-//            dm.createQueue(queueName);
-//         }
-//      }
-//      else
-//      {
-//         queue = new JBossQueue(queueName);
-//      }
-//      return queue;
-   }
-   
-
-   public Topic createTopic(String topicName, boolean create) throws JMSException
-   {
-      throw new NotYetImplementedException();
-
-      // TODO fix this
-
-//      DestinationManager dm = this.serverPeer.getDestinationManager();
-//
-//      AbstractDestination dest = dm.getDestination(topicName);
-//
-//      Topic topic = null;
-//
-//      if (dest == null)
-//      {
-//         if (!create)
-//         {
-//            throw new JMSException("There is no administratively defined topic with name:" + topicName);
-//         }
-//         else
-//         {
-//            topic = new JBossTopic(topicName);
-//            dm.addDestination(topic);
-//         }
-//      }
-//      else
-//      {
-//         topic = new JBossTopic(topicName);
-//      }
-//      return topic;
-   }
-  
-   
    // Public --------------------------------------------------------
    
    public ServerSessionDelegate putSessionDelegate(String sessionID, ServerSessionDelegate d)

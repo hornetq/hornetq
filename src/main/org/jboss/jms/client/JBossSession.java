@@ -222,7 +222,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
-      return connectionDelegate.createQueue(queueName, false);
+      return sessionDelegate.createQueue(queueName);
    }
 
    public Topic createTopic(String topicName) throws JMSException
@@ -232,7 +232,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
-      return connectionDelegate.createTopic(topicName, false);
+      return sessionDelegate.createTopic(topicName);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException

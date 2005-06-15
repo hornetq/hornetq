@@ -14,7 +14,6 @@ import org.jboss.jms.util.InVMInitialContextFactory;
 import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -24,6 +23,10 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -39,7 +42,8 @@ public class SessionTest extends MessagingTestCase
    protected InitialContext initialContext;
    
    protected JBossConnectionFactory cf;
-   protected Destination topic;
+   protected Topic topic;
+   protected Queue queue;
 
    // Constructors --------------------------------------------------
 
@@ -55,14 +59,13 @@ public class SessionTest extends MessagingTestCase
       super.setUp();
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf =
-            (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployTopic("TestTopic");
-      topic = (Destination)initialContext.lookup("/topic/TestTopic");
+      topic = (Topic)initialContext.lookup("/topic/TestTopic");
       
       ServerManagement.deployQueue("TestQueue");
-      topic = (Destination)initialContext.lookup("/queue/TestQueue");
+      queue = (Queue)initialContext.lookup("/queue/TestQueue");
 
       
    }
@@ -70,8 +73,6 @@ public class SessionTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.stopInVMServer();
-      //connection.stop();
-      //connection = null;
       super.tearDown();
    }
 
@@ -83,7 +84,7 @@ public class SessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();      
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageProducer mp = sess.createProducer(topic);
+      sess.createProducer(topic);
       conn.close();
    }
    
@@ -92,7 +93,7 @@ public class SessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();      
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer mc = sess.createConsumer(topic);
+      sess.createConsumer(topic);
       conn.close();
    }
    
@@ -103,7 +104,7 @@ public class SessionTest extends MessagingTestCase
       
       try
       {
-         Session sess2 = ((XASession)sess).getSession();
+         ((XASession)sess).getSession();
          fail("Should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
@@ -116,37 +117,123 @@ public class SessionTest extends MessagingTestCase
       XAConnection conn = cf.createXAConnection();      
       XASession sess = conn.createXASession();
       
-      Session sess2 = sess.getSession();      
+      sess.getSession();
       conn.close();
    }
-   
-   public void testCreateQueue() throws Exception
+
+   //
+   // createQueue()/createTopic()
+   //
+
+
+   public void testCreateNonExistentQueue() throws Exception
    {
-      Connection conn = cf.createConnection();      
+      Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Queue queue = sess.createQueue("TestQueue");
-      
-      MessageProducer producer = sess.createProducer(queue);
-      MessageConsumer consumer = sess.createConsumer(queue);
-      conn.start();
-      
-      Message m = sess.createTextMessage("testing");
-      producer.send(m);
-      
-      Message m2 = consumer.receive(3000);
-      
-      assertNotNull(m2);
-      
       try
       {
-         Queue queue2 = sess.createQueue("QueueThatDoesNotExist");
+         sess.createQueue("QueueThatDoesNotExist");
          fail();
       }
       catch (JMSException e)
       {}
-  
    }
-   
+
+   public void testCreateQueueOnATopicSession() throws Exception
+   {
+      TopicConnection c = (TopicConnection)cf.createConnection();
+      TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try
+      {
+         s.createQueue("TestQueue");
+         fail("should throw IllegalStateException");
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+   public void testCreateQueueWhileTopicWithSameNameExists() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         sess.createQueue("TestTopic");
+         fail("should throw JMSException");
+      }
+      catch (JMSException e)
+      {
+         // OK
+      }
+   }
+
+   public void testCreateQueue() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Queue queue = sess.createQueue("TestQueue");
+
+      MessageProducer producer = sess.createProducer(queue);
+      MessageConsumer consumer = sess.createConsumer(queue);
+      conn.start();
+
+      Message m = sess.createTextMessage("testing");
+      producer.send(m);
+
+      Message m2 = consumer.receive(3000);
+
+      assertNotNull(m2);
+   }
+
+   public void testCreateNonExistentTopic() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         sess.createTopic("TopicThatDoesNotExist");
+         fail("should throw JMSException");
+      }
+      catch (JMSException e)
+      {
+         // OK
+      }
+   }
+
+   public void testCreateTopicOnAQueueSession() throws Exception
+   {
+      QueueConnection c = (QueueConnection)cf.createConnection();
+      QueueSession s = c.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try
+      {
+         s.createTopic("TestTopic");
+         fail("should throw IllegalStateException");
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+   public void testCreateTopicWhileQueueWithSameNameExists() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         sess.createTopic("TestQueue");
+         fail("should throw JMSException");
+      }
+      catch (JMSException e)
+      {
+         // OK
+      }
+   }
+
    public void testCreateTopic() throws Exception
    {
       Connection conn = cf.createConnection();      
@@ -195,17 +282,6 @@ public class SessionTest extends MessagingTestCase
       
       assertFalse(tr1.exceptionThrown);
       assertNotNull(tr1.m);
-      
-
-      
-      try
-      {
-         Topic topic2 = sess.createTopic("TopicThatDoesNotExist");
-         fail();
-      }
-      catch (JMSException e)
-      {}
-  
    }
    
 	 // TODO: enable it after implementing JBossSession.getXAResource()

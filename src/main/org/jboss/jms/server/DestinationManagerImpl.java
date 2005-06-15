@@ -46,7 +46,8 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
    protected CoreDestinationManager coreDestinationManager;
 
    // < name - JNDI name>
-   protected Map nameToJNDI;
+   protected Map queueNameToJNDI;
+   protected Map topicNameToJNDI;
 
 
    // Constructors --------------------------------------------------
@@ -56,7 +57,8 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       this.serverPeer = serverPeer;
       initialContext = new InitialContext(serverPeer.getJNDIEnvironment());
       coreDestinationManager = new CoreDestinationManager(this);
-      nameToJNDI = new HashMap();
+      queueNameToJNDI = new HashMap();
+      topicNameToJNDI = new HashMap();
    }
 
    // DestinationManager implementation -----------------------------
@@ -69,7 +71,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
 
    public void destroyQueue(String name) throws Exception
    {
-      removeDestination(name);
+      removeDestination(true, name);
    }
 
    public void createTopic(String name, String jndiName) throws Exception
@@ -79,7 +81,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
 
    public void destroyTopic(String name) throws Exception
    {
-      removeDestination(name);
+      removeDestination(false, name);
    }
 
    public void createQueue(String name) throws Exception
@@ -107,17 +109,23 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
 
    public void removeTemporaryDestination(Destination jmsDestination)
    {
-      coreDestinationManager.removeCoreDestination(((JBossDestination)jmsDestination).getName());
+      JBossDestination d = (JBossDestination)jmsDestination;
+      boolean isQueue = d.isQueue();
+      String name = d.getName();
+      coreDestinationManager.removeCoreDestination(isQueue, name);
    }
 
    public AbstractDestination getCoreDestination(Destination jmsDestination) throws JMSException
    {
-      return getCoreDestination(((JBossDestination)jmsDestination).getName());
+      JBossDestination d = (JBossDestination)jmsDestination;
+      boolean isQueue = d.isQueue();
+      String name = d.getName();
+      return getCoreDestination(isQueue, name);
    }
 
-   public AbstractDestination getCoreDestination(String name) throws JMSException
+   public AbstractDestination getCoreDestination(boolean isQueue, String name) throws JMSException
    {
-      return coreDestinationManager.getCoreDestination(name);
+      return coreDestinationManager.getCoreDestination(isQueue, name);
    }
 
 
@@ -173,11 +181,18 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       {
          Context c = JNDIUtil.createContext(initialContext, parentContext);
          c.bind(jndiNameInContext, jmsDestination);
-         nameToJNDI.put(name, jndiName);
+         if (isQueue)
+         {
+            queueNameToJNDI.put(name, jndiName);
+         }
+         else
+         {
+            topicNameToJNDI.put(name, jndiName);
+         }
       }
       catch(Exception e)
       {
-         coreDestinationManager.removeCoreDestination(name);
+         coreDestinationManager.removeCoreDestination(isQueue, name);
          throw e;
       }
 
@@ -186,11 +201,19 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
    }
 
 
-   private void removeDestination(String name) throws Exception
+   private void removeDestination(boolean isQueue, String name) throws Exception
    {
 
-      coreDestinationManager.removeCoreDestination(name);
-      String jndiName = (String)nameToJNDI.get(name);
+      coreDestinationManager.removeCoreDestination(isQueue, name);
+      String jndiName = null;
+      if (isQueue)
+      {
+         jndiName = (String)queueNameToJNDI.remove(name);
+      }
+      else
+      {
+         jndiName = (String)topicNameToJNDI.remove(name);
+      }
       if (jndiName == null)
       {
          return;

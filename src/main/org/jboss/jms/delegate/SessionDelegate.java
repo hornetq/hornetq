@@ -17,6 +17,8 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
+import javax.jms.Queue;
+import javax.jms.Topic;
 
 import org.jboss.jms.client.Closeable;
 
@@ -48,7 +50,21 @@ public interface SessionDelegate extends Closeable
    public TextMessage createTextMessage() throws JMSException;
    
    public TextMessage createTextMessage(String text) throws JMSException;
-      
+
+   /**
+    * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical
+    * creation of queues is an administrative task and is not to be initiated by the JMS API, with
+    * the exception of temporary queues.
+    */
+   public Queue createQueue(String queueName) throws JMSException;
+
+   /**
+    * Creates a topic identity given a Queue name. Does NOT create the physical topic. The physical
+    * creation of topics is an administrative task and is not to be initiated by the JMS API, with
+    * the exception of temporary topics.
+    */
+   public Topic createTopic(String topicName) throws JMSException;
+
    public void commit() throws JMSException;
    
    public void rollback() throws JMSException;
@@ -81,6 +97,4 @@ public interface SessionDelegate extends Closeable
     * Tell the server to redeliver any un-acked messages.	
     */
 	public void redeliver() throws JMSException;
-   
-		
 }
