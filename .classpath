@@ -16,6 +16,6 @@
 	<classpathentry kind="src" path="/j2se"/>
 	<classpathentry kind="src" path="/aspects"/>
 	<classpathentry kind="lib" path="/thirdparty/gnu-regexp/lib/gnu-regexp.jar"/>
-	<classpathentry kind="lib" path="/thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
+	<classpathentry kind="lib" path="src/resources/jboss-remoting.jar"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
