@@ -86,12 +86,13 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
                            "JMS",
                            PayloadKey.AS_IS);
       
-      //create the corresponding "server-side" ConnectionDelegate and register it with the
+      // create the corresponding "server-side" ConnectionDelegate and register it with the
       // server peer's ClientManager
       ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer);
       clientManager.putConnectionDelegate(scd.getConnectionID(), scd);
       
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, scd.getConnectionID(), PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,
+                           scd.getConnectionID(), PayloadKey.AS_IS);
 
       h.getMetaData().mergeIn(metadata);
 
