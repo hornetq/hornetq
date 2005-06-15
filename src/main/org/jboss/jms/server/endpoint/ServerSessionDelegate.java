@@ -216,7 +216,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       DurableSubscriptionHolder subscription = null;
       if (subscriptionName != null)
       {
-         String clientID = connectionEndpoint.clientID;
+         String clientID = connectionEndpoint.getClientID();
          if (clientID == null)
          {
             throw new JMSException("Cannot create durable subscriber without having set client ID");
@@ -225,8 +225,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          //It's a durable subscription - have we already got one with that name?
          ClientManager clientManager = serverPeer.getClientManager();
          
-         subscription =
-            clientManager.getDurableSubscription(clientID, subscriptionName);
+         subscription = clientManager.getDurableSubscription(clientID, subscriptionName);
          
          //FIXME - race condition here - can result in multiple subscribers of same subscription
          
@@ -242,7 +241,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                throw new JMSException("Cannot only create a durable subscription on a topic");
             }
             LocalTopic topic = (LocalTopic)destination;
-            subscription = new DurableSubscriptionHolder(subscriptionName, topic, new LocalQueue(consumerID));
+            subscription = new DurableSubscriptionHolder(subscriptionName, topic,
+                                                         new LocalQueue(consumerID));
             clientManager.addDurableSubscription(clientID, subscriptionName, subscription);
             //start it
             destination.add(subscription.getQueue());

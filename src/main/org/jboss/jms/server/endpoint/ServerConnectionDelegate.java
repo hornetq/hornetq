@@ -299,8 +299,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    public void unsubscribe(String subscriptionName) throws JMSException
    {
-      DurableSubscriptionHolder subscription =
-         this.serverPeer.getClientManager().removeDurableSubscription(this.clientID, subscriptionName);
+      DurableSubscriptionHolder subscription = this.serverPeer.getClientManager().
+            removeDurableSubscription(this.clientID, subscriptionName);
+
       if (subscription == null)
       {
          throw new JMSException("Cannot find durable subscription with name " +
