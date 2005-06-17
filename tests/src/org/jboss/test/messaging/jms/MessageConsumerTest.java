@@ -9,7 +9,11 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.remoting.InvokerRegistry;
+import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.transport.Connector;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -28,6 +32,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Collection;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -115,10 +120,26 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
-   public void testConnectorStartStop() throws Exception
+   public void testRemotingInternals() throws Exception
    {
+      Connector serverConnector = ServerManagement.getServerWrapper().getConnector();
+      ServerInvoker serverInvoker = serverConnector.getServerInvoker();
+      JMSServerInvocationHandler invocationHandler =
+            (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
+      Collection listeners = invocationHandler.getListeners();
+
+      assertEquals(2, listeners.size());  // topicConsumer's and queueConsumer's
+
       MessageConsumer c = consumerSession.createConsumer(queue);
+
+      listeners = invocationHandler.getListeners();
+      assertEquals(3, listeners.size());
+
       c.close();
+
+      listeners = invocationHandler.getListeners();
+      assertEquals(2, listeners.size());
+
    }
 
    public void testReceiveOnTopicTimeoutNoMessage() throws Exception

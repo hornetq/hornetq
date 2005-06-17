@@ -9,6 +9,8 @@ package org.jboss.jms.client.remoting;
 import org.jboss.remoting.InvokerCallbackHandler;
 import org.jboss.remoting.HandleCallbackException;
 import org.jboss.remoting.Callback;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.transport.Connector;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -55,12 +57,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    
    // Constructors --------------------------------------------------
-   
+
    public MessageCallbackHandler()
    {
       this.messages = new BoundedBuffer(capacity);	
    }
-   
+
    // InvokerCallbackHandler implementation -------------------------
    
    public void handleCallback(Callback callback) throws HandleCallbackException
@@ -157,8 +159,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          listenerThread.start();
       }
    }
-   
-   
+
+   /**
+    * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
+    */
+   private Connector callbackServer;
+   // I keep the client reference since I need to use the same client to remove a listener (sessionID)
+   private Client client;
+   public void setCallbackServer(Connector callbackServer, Client client)
+   {
+      this.callbackServer = callbackServer;
+      this.client = client;
+   }
+
+
    /**
     * Method used by the client thread to get a Message, if available.
     *
@@ -275,6 +289,22 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       if (receivingThread != null)
       {
          receivingThread.interrupt();
+      }
+
+      // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
+      try
+      {
+         // unregister this callback handler and stop the callback server
+
+         client.removeListener(this);
+         log.debug("Listener removed from server");
+
+         callbackServer.stop();
+         log.debug("Closed callback server " + callbackServer.getInvokerLocator());
+      }
+      catch(Throwable e)
+      {
+         log.warn("Failed to clean up callback handler/callback server", e);
       }
    }
    

@@ -50,7 +50,8 @@ public class DestinationManagerTest extends MessagingTestCase
       ServerManagement.startInVMServer();
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
 
-      destinationManager = ServerManagement.getServerPeer().getDestinationManager();
+      destinationManager =
+      ServerManagement.getServerWrapper().getServerPeer().getDestinationManager();
 
    }
 

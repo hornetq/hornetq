@@ -8,7 +8,6 @@ package org.jboss.test.messaging.tools;
 
 import org.jboss.jms.tools.ServerWrapper;
 import org.jboss.jms.util.InVMInitialContextFactory;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 import javax.transaction.TransactionManager;
@@ -79,10 +78,10 @@ public class ServerManagement
       serverWrapper.undeployQueue(name);
    }
 
-   public static ServerPeer getServerPeer() throws Exception
+   public static ServerWrapper getServerWrapper() throws Exception
    {
       insureStarted();
-      return serverWrapper.getServerPeer();
+      return serverWrapper;
    }
 
    // Attributes ----------------------------------------------------

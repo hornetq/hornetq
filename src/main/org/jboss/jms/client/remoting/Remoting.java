@@ -7,7 +7,6 @@
 package org.jboss.jms.client.remoting;
 
 import org.jboss.remoting.transport.Connector;
-import org.jboss.remoting.InvokerLocator;
 
 /**
  * Remoting static utilities.
@@ -29,9 +28,9 @@ public class Remoting
       Connector callbackServer = new Connector();
 
       // usa an anonymous port
-      InvokerLocator locator = new InvokerLocator("socket://localhost:0");
+      String locatorURI = "socket://localhost:0";
 
-      callbackServer.setInvokerLocator(locator.getLocatorURI());
+      callbackServer.setInvokerLocator(locatorURI);
       callbackServer.start();
 
       // TODO this is unnecessary

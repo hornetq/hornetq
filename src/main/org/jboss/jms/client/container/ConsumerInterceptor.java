@@ -7,7 +7,6 @@
 package org.jboss.jms.client.container;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 
@@ -56,74 +55,67 @@ public class ConsumerInterceptor implements Interceptor, Serializable
    {
       if (invocation instanceof MethodInvocation)
       {
-         JMSMethodInvocation mi = (JMSMethodInvocation)invocation;
-         JMSInvocationHandler handler = mi.getHandler();
-         Method m = mi.getMethod();
-         String methodName = m.getName();
+         MethodInvocation mi = (MethodInvocation)invocation;
+         String methodName = mi.getMethod().getName();
          SimpleMetaData invocationMetaData = invocation.getMetaData();
-         SimpleMetaData handlerMetaData = handler.getMetaData();
+
          if ("createConsumerDelegate".equals(methodName))
          {
             // register/unregister a callback handler that deal with callbacks sent by the server
 
-            InvokerLocator locator =
-                  (InvokerLocator)invocation.getMetaData(InvokerInterceptor.REMOTING,
-                                                         InvokerInterceptor.INVOKER_LOCATOR);
-            if (locator == null)
+            InvokerLocator serverLocator = (InvokerLocator)invocationMetaData.
+                  getMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.INVOKER_LOCATOR);
+
+            if (serverLocator == null)
             {
-               throw new RuntimeException("No InvokerLocator supplied.  Can't invoke remotely!");
+               throw new RuntimeException("No InvokerLocator supplied. Can't invoke remotely!");
             }
-            String subsystem = (String)invocation.getMetaData(InvokerInterceptor.REMOTING,
-                                                              InvokerInterceptor.SUBSYSTEM);
+
+            String subsystem = (String)invocationMetaData.
+                  getMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.SUBSYSTEM);
+
             if (subsystem == null)
             {
-               throw new RuntimeException("No subsystem supplied.  Can't invoke remotely!");
+               throw new RuntimeException("No subsystem supplied. Can't invoke remotely!");
             }
-            Client client = new Client(locator, subsystem);
-
-            MessageCallbackHandler msgHandler = new MessageCallbackHandler();
 
             // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
             Connector callbackServer = Remoting.getCallbackServer();
-            handlerMetaData.addMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_CALLBACK_SERVER,
-                                        callbackServer, PayloadKey.TRANSIENT);
-            InvokerLocator invokerLocator = callbackServer.getLocator();
-            log.debug("Callback server listening on " + invokerLocator);
+            InvokerLocator callbackServerLocator = callbackServer.getLocator();
+            log.debug("Callback server listening on " + callbackServerLocator);
 
-            client.addListener(msgHandler, invokerLocator);
 
-            // I created the client already, pass it along to be used by the InvokerInterceptor
+            MessageCallbackHandler msgHandler = new MessageCallbackHandler();
+
+
+            Client client = new Client(serverLocator, subsystem);
+            client.addListener(msgHandler, callbackServerLocator);
+
+
+            // Optimization: I've already created the client so I may as well pass it along to be
+            //               used by the InvokerInterceptor too.
             invocationMetaData.addMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.CLIENT,
                                            client, PayloadKey.TRANSIENT);
+
             // I will need this on the server-side to create the ConsumerDelegate instance
             invocationMetaData.addMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_SESSION_ID,
                                            client.getSessionId(), PayloadKey.AS_IS);
 
+
             Object consumerDelegate = invocation.invokeNext();
+
 
             JMSConsumerInvocationHandler ih =
                   (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerDelegate);
+
             ih.setMessageHandler(msgHandler);
 
 				msgHandler.setSessionDelegate(getDelegate(invocation));
-				msgHandler.setReceiverID((String)ih.getMetaData().
-                                             getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID));
+				msgHandler.setReceiverID((String)ih.getMetaData().getMetaData(JMSAdvisor.JMS,
+                                                                          JMSAdvisor.CONSUMER_ID));
+            msgHandler.setCallbackServer(callbackServer, client); // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
 
             return consumerDelegate;
-         }
-         else if ("closing".equals(methodName))
-         {
-            // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-            Connector callbackServer = (Connector)handlerMetaData.
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_CALLBACK_SERVER);
-
-            if (callbackServer != null)
-            {
-               InvokerLocator locator = callbackServer.getLocator();
-               callbackServer.stop();
-               handlerMetaData.removeMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_CALLBACK_SERVER);
-               log.debug("Closed callback server " + locator);
-            }
          }
       }
       return invocation.invokeNext();
