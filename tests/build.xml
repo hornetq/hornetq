@@ -46,6 +46,7 @@
       <pathelement path="${module.root}/../src/resources/jgroups-core.jar"/>
       <path refid="apache.commons.classpath"/>
       <path refid="gnu.regexp.classpath"/>
+      <path refid="sun.servlet.classpath"/>
    </path>
 
    <!-- ======= -->
