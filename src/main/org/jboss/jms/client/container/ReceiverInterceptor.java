@@ -49,39 +49,30 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          Method m = mi.getMethod();
          String name = m.getName();
          Object[] args = mi.getArguments();
+         MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
+               getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
+
          if (name.equals("receive"))
          {
             long timeout = args == null ? 0 : ((Long)args[0]).longValue();
-            MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
-
             return messageHandler.receive(timeout);
          }
          else if (name.equals("receiveNoWait"))
          {
-            MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
-            getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
             return messageHandler.receive(-1);
          }
          else if (name.equals("setMessageListener"))
          {
-            MessageCallbackHandler msgHandler = (MessageCallbackHandler)mi.
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
-
             MessageListener l = (MessageListener)args[0];
-            msgHandler.setMessageListener(l);
+            messageHandler.setMessageListener(l);
             return null;
          }
          else if (name.equals("getMessageListener"))
          {
-            MessageCallbackHandler msgHandler = (MessageCallbackHandler)mi.
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
-            return msgHandler.getMessageListener();
+            return messageHandler.getMessageListener();
          }
          else if (name.equals("closing"))
          {
-            MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
-                  getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
             messageHandler.close();
          }
       }
