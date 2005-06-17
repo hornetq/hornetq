@@ -20,6 +20,7 @@ import javax.management.MBeanServer;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -117,6 +118,17 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
                return;
             }
          }
+      }
+   }
+
+   /**
+    * @return a Collection of InvokerCallbackHandler
+    */
+   public Collection getListeners()
+   {
+      synchronized(callbackHandlers)
+      {
+         return callbackHandlers.values();
       }
    }
 
