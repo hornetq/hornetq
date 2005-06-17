@@ -185,8 +185,8 @@ public class ConnectionTest extends MessagingTestCase
       Connection connection = cf.createConnection();
       Serializable connectionID = ((JBossConnection)connection).getConnectionID();
 
-      ServerConnectionDelegate d =
-            ServerManagement.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
+      ServerConnectionDelegate d = ServerManagement.getServerWrapper().getServerPeer().
+            getClientManager().getConnectionDelegate(connectionID);
 
       assertFalse(d.isStarted());
 

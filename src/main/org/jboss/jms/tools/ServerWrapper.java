@@ -139,6 +139,11 @@ public class ServerWrapper
       return serverPeer;
    }
 
+   public Connector getConnector()
+   {
+      return connector;
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
