@@ -449,8 +449,8 @@ public class MessageConsumerTest extends MessagingTestCase
       // the message is buffered on the client, but not delivered yet
 
       // redeliver using core's internal API
-      AbstractDestination coreQueue =
-            ServerManagement.getServerPeer().getDestinationManager().getCoreDestination(queue);
+      AbstractDestination coreQueue = ServerManagement.getServerWrapper().getServerPeer().
+            getDestinationManager().getCoreDestination(queue);
 
       assertFalse(coreQueue.deliver());
 
