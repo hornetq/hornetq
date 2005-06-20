@@ -16,6 +16,7 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
+import javax.jms.IllegalStateException;
 
 
 /**

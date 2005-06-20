@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
 import javax.jms.Message;
+import javax.jms.IllegalStateException;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
