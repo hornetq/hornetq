@@ -25,7 +25,10 @@ import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class TemporaryDestinationTest extends MessagingTestCase
 {
@@ -39,6 +42,10 @@ public class TemporaryDestinationTest extends MessagingTestCase
    
    protected ConnectionFactory cf;
    //protected Destination topic;
+
+   protected Connection connection;
+
+   protected Session producerSession, consumerSession;
 
    // Constructors --------------------------------------------------
 
@@ -57,10 +64,16 @@ public class TemporaryDestinationTest extends MessagingTestCase
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployTopic("Topic");
       //topic = (Destination)initialContext.lookup("/topic/Topic");
+
+      connection = cf.createConnection();
+      producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      consumerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
    }
 
    public void tearDown() throws Exception
    {
+      connection.close();
       ServerManagement.stopInVMServer();
       super.tearDown();
    }
@@ -72,22 +85,18 @@ public class TemporaryDestinationTest extends MessagingTestCase
    
    public void testTemporaryQueueBasic() throws Exception
    {
-      Connection conn = cf.createConnection();
+
+      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
       
-      Session sessProducer1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessConsumer1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = producerSession.createProducer(tempQueue);
       
-      TemporaryQueue tempQueue = sessProducer1.createTemporaryQueue();
+      MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
       
-      MessageProducer producer = sessProducer1.createProducer(tempQueue);
-      
-      MessageConsumer consumer = sessConsumer1.createConsumer(tempQueue);
-      
-      conn.start();
+      connection.start();
       
       final String messageText = "This is a message";
       
-      Message m = sessProducer1.createTextMessage(messageText);
+      Message m = producerSession.createTextMessage(messageText);
       
       producer.send(m);
       
@@ -96,34 +105,38 @@ public class TemporaryDestinationTest extends MessagingTestCase
       assertNotNull(m2);
       
       assertEquals(messageText, m2.getText());
-      
-      conn.close();
-      
    }
-   
-   
-   
-   
+
+   public void testTemporaryQueueOnClosedSession() throws Exception
+   {
+      producerSession.close();
+
+      try
+      {
+         producerSession.createTemporaryQueue();
+         fail("should throw exception");
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
    public void testTemporaryQueueDeleted() throws Exception
    {
-      Connection conn = cf.createConnection();
-      
       //Make sure temporary queue cannot be used after it has been deleted
       
-      Session sessProducer1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessConsumer1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
       
-      TemporaryQueue tempQueue = sessProducer1.createTemporaryQueue();
+      MessageProducer producer = producerSession.createProducer(tempQueue);
       
-      MessageProducer producer = sessProducer1.createProducer(tempQueue);
+      MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
       
-      MessageConsumer consumer = sessConsumer1.createConsumer(tempQueue);
-      
-      conn.start();
+      connection.start();
       
       final String messageText = "This is a message";
       
-      Message m = sessProducer1.createTextMessage(messageText);
+      Message m = producerSession.createTextMessage(messageText);
       
       producer.send(m);
       
@@ -141,30 +154,23 @@ public class TemporaryDestinationTest extends MessagingTestCase
          fail();
       }
       catch (JMSException e) {}
-        
-      conn.close();    
    }
    
   
    
    public void testTemporaryTopicBasic() throws Exception
    {
-      Connection conn = cf.createConnection();
+      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
       
-      Session sessProducer1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessConsumer1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      final MessageProducer producer = producerSession.createProducer(tempTopic);
       
-      TemporaryTopic tempTopic = sessProducer1.createTemporaryTopic();
+      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
       
-      final MessageProducer producer = sessProducer1.createProducer(tempTopic);
-      
-      MessageConsumer consumer = sessConsumer1.createConsumer(tempTopic);
-      
-      conn.start();
+      connection.start();
       
       final String messageText = "This is a message";
       
-      final Message m = sessProducer1.createTextMessage(messageText);
+      final Message m = producerSession.createTextMessage(messageText);
       log.trace("Message reliable:" + ((JBossMessage)m).isReliable());
       
       Thread t = new Thread(new Runnable()
@@ -192,13 +198,25 @@ public class TemporaryDestinationTest extends MessagingTestCase
       assertEquals(messageText, m2.getText());
       
       t.join();
-      
-      conn.close();
-      
    }
    
    
-   
+   public void testTemporaryTopicOnClosedSession() throws Exception
+   {
+      producerSession.close();
+
+      try
+      {
+         producerSession.createTemporaryTopic();
+         fail("should throw exception");
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+
    
    
 
