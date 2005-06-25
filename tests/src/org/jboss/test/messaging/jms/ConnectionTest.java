@@ -21,16 +21,14 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
 import java.io.Serializable;
+import javax.jms.IllegalStateException;
 
 
 /**
@@ -113,7 +111,7 @@ public class ConnectionTest extends MessagingTestCase
       //otherwise a javax.jms.IllegalStateException must be thrown
       
       Connection connection = cf.createConnection();
-      Session sess = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
          connection.setClientID(clientID);
@@ -126,7 +124,7 @@ public class ConnectionTest extends MessagingTestCase
       
       
       connection = cf.createConnection(); 
-      String id = connection.getClientID();
+      connection.getClientID();
       try
       {
          connection.setClientID(clientID);
@@ -179,6 +177,23 @@ public class ConnectionTest extends MessagingTestCase
       metaData.getProviderVersion();
       
    }
+
+   public void testGetMetadataOnClosedConnection() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      connection.close();
+
+      try
+      {
+         connection.getMetaData();
+         fail("should throw exception");
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
 
    public void testStartStop() throws Exception
    {
@@ -311,7 +326,7 @@ public class ConnectionTest extends MessagingTestCase
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageConsumer consumer = sess.createConsumer(topic);
+      sess.createConsumer(topic);
       MessageProducer producer = sess.createProducer(topic);
 
       Message m = sess.createMessage();
@@ -356,7 +371,7 @@ public class ConnectionTest extends MessagingTestCase
 
       QueueConnection qc = qcf.createQueueConnection();
 
-      QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+      qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
       qc.close();
 
@@ -369,7 +384,7 @@ public class ConnectionTest extends MessagingTestCase
 
       TopicConnection tc = tcf.createTopicConnection();
 
-      TopicSession ts = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
       tc.close();
 

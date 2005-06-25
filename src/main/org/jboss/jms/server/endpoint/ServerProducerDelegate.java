@@ -10,8 +10,8 @@ import org.jboss.logging.Logger;
 import org.jboss.jms.delegate.ProducerDelegate;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.Destination;
+import javax.jms.Message;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -59,11 +59,44 @@ public class ServerProducerDelegate implements ProducerDelegate
       if (log.isTraceEnabled()) { log.trace("close"); }
    }
    
-   public void send(Message m) throws JMSException
+   public void send(Destination destination, Message m, int deliveryMode,
+                    int priority, long timeToLive) throws JMSException
    {
+      // TODO destination, deliveryMode, priority, timeToLive are ignored.
+      // TODO See "Delegate Implementation" thread http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
       if (log.isTraceEnabled()) { log.trace("sending message " + m + " to the core"); }
 
       sessionEndpoint.connectionEndpoint.sendMessage(m);
+   }
+
+   public Object getMetaData(Object attr)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("getMetaData(): NOT handled on the server-side");
+      return null;
+   }
+
+   public void addMetaData(Object attr, Object metaDataValue)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("addMetaData(): NOT handled on the server-side");
+   }
+
+   public Object removeMetaData(Object attr)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("removeMetaData(): NOT handled on the server-side");
+      return null;
    }
 
    // Public --------------------------------------------------------

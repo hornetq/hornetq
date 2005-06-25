@@ -61,8 +61,8 @@ public class JMSExpirationHeaderTest extends MessageTest
       queueProducer.send(m);
       assertEquals(Long.MAX_VALUE, queueConsumer.receive().getJMSExpiration());
    }
-   
-   
+
+
 
    public void testNoExpirationOnTimeoutReceive() throws Exception
    {
@@ -199,8 +199,8 @@ public class JMSExpirationHeaderTest extends MessageTest
       Message result = queueConsumer.receive();
       assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
-   
-   
+
+
 
    public void testExpirationOnReceive() throws Exception
    {
@@ -246,7 +246,7 @@ public class JMSExpirationHeaderTest extends MessageTest
       latch.acquire();
 
       log.trace("Expected message:" + expectedMessage);
-      
+
       assertEquals("placeholder-shouldnt-be-overwritten", expectedMessage.getJMSMessageID());
    }
 

@@ -8,6 +8,7 @@ package org.jboss.jms.client;
 
 import java.util.Enumeration;
 import java.util.Vector;
+import java.io.Serializable;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
@@ -17,7 +18,7 @@ import javax.jms.JMSException;
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  */
-class JBossConnectionMetaData implements ConnectionMetaData {
+public class JBossConnectionMetaData implements Serializable, ConnectionMetaData {
 
     // Constants -----------------------------------------------------
 
@@ -28,12 +29,9 @@ class JBossConnectionMetaData implements ConnectionMetaData {
     // Constructors --------------------------------------------------
 
     /**
-     * Create a new JBossConnectionMetaData object
-     * Note that this has package visibility.
-     * Only constructed from JBossConnection
-     *
+     * Create a new JBossConnectionMetaData object.
      */
-    JBossConnectionMetaData() {}
+    public JBossConnectionMetaData() {}
             
     
     // ConnectionMetaData Implementation
@@ -59,12 +57,12 @@ class JBossConnectionMetaData implements ConnectionMetaData {
 
  
     public String getProviderVersion() throws JMSException {        
-        return null;
+        return "1.0.0 alpha";
     }
 
 
     public int getProviderMajorVersion() throws JMSException {
-        return 5;
+        return 1;
     }
 
 

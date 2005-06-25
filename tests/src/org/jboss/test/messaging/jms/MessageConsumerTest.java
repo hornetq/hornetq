@@ -11,7 +11,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.InVMInitialContextFactory;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.remoting.InvokerRegistry;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.transport.Connector;
 
@@ -27,6 +26,8 @@ import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.Queue;
+import javax.jms.TopicSubscriber;
+import javax.jms.QueueReceiver;
 import javax.naming.InitialContext;
 import java.util.List;
 import java.util.Collections;
@@ -141,6 +142,71 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(2, listeners.size());
 
    }
+
+
+   public void testGetSelector() throws Exception
+   {
+      String selector = "JMSType = 'something'";
+      topicConsumer = consumerSession.createConsumer(topic, selector);
+      assertEquals(selector, topicConsumer.getMessageSelector());
+   }
+
+   public void testGetSelectorOnClosedConsumer() throws Exception
+   {
+      topicConsumer.close();
+
+      try
+      {
+         topicConsumer.getMessageSelector();
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+
+   public void testGetTopic() throws Exception
+   {
+      Topic t = ((TopicSubscriber)topicConsumer).getTopic();
+      assertEquals(topic, t);
+   }
+
+   public void testGetTopicOnClosedConsumer() throws Exception
+   {
+      topicConsumer.close();
+
+      try
+      {
+         ((TopicSubscriber)topicConsumer).getTopic();
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+
+   public void testGetQueue() throws Exception
+   {
+      Queue q = ((QueueReceiver)queueConsumer).getQueue();
+      assertEquals(queue, q);
+   }
+
+   public void testGetQueueOnClosedConsumer() throws Exception
+   {
+      queueConsumer.close();
+
+      try
+      {
+         ((QueueReceiver)queueConsumer).getQueue();
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
 
    public void testReceiveOnTopicTimeoutNoMessage() throws Exception
    {

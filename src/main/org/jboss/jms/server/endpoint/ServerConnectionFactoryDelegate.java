@@ -11,6 +11,7 @@ import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.client.JBossConnectionMetaData;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.aop.advice.AdviceStack;
@@ -85,7 +86,7 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
                            InvokerInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
-      
+
       // create the corresponding "server-side" ConnectionDelegate and register it with the
       // server peer's ClientManager
       ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer);
@@ -93,6 +94,9 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,
                            scd.getConnectionID(), PayloadKey.AS_IS);
+
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_META_DATA,
+                           new JBossConnectionMetaData());
 
       h.getMetaData().mergeIn(metadata);
 

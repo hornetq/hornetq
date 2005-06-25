@@ -23,9 +23,7 @@ import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
@@ -48,8 +46,6 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JBossMessage.class);
-   
    private static final long serialVersionUID = 8341387096828690976L;
 
    // Static --------------------------------------------------------
@@ -92,6 +88,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    protected byte[] correlationIDBytes;
    
    protected String connectionID;
+
+   protected int priority;
 
    // Constructors --------------------------------------------------
 
@@ -255,12 +253,12 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public int getJMSPriority() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return priority;
    }
 
    public void setJMSPriority(int priority) throws JMSException
    {
-      throw new NotYetImplementedException();
+      this.priority = priority;
    }
 
    public void clearProperties() throws JMSException

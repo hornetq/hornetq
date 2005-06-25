@@ -127,8 +127,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE,
             new Integer(acknowledgmentMode), PayloadKey.AS_IS);
-      
-      
+
       h.getMetaData().mergeIn(metadata);
       
       // TODO 
@@ -315,6 +314,36 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       return connectionID;
    }
+
+   public Object getMetaData(Object attr)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("getMetaData(): NOT handled on the server-side");
+      return null;
+   }
+
+   public void addMetaData(Object attr, Object metaDataValue)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("addMetaData(): NOT handled on the server-side");
+   }
+
+   public Object removeMetaData(Object attr)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("removeMetaData(): NOT handled on the server-side");
+      return null;
+   }
+
 
    // Public --------------------------------------------------------
    

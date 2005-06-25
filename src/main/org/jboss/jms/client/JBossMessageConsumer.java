@@ -6,8 +6,8 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.server.container.JMSAdvisor;
 
 import javax.jms.JMSException;
 import javax.jms.Destination;
@@ -32,25 +32,25 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
    // Attributes ----------------------------------------------------
 
    protected ConsumerDelegate delegate;
-   protected Destination destination;
-   protected boolean noLocal;
-   
+
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(ConsumerDelegate delegate,
-                              Destination destination,
-                              boolean noLocal)
+   public JBossMessageConsumer(ConsumerDelegate delegate, boolean noLocal) throws JMSException
    {      
       this.delegate = delegate;
-      this.destination = destination;
-      this.noLocal = noLocal;
+
+      delegate.addMetaData(JMSAdvisor.NO_LOCAL, noLocal ? Boolean.TRUE : Boolean.FALSE);
+
+       // make sure DESTINATION is TRANSIENT, to avoid unnecessary network traffic
+      Destination d = (Destination)delegate.removeMetaData(JMSAdvisor.DESTINATION);
+      delegate.addMetaData(JMSAdvisor.DESTINATION, d); // add as TRANSIENT
    }
 
    // MessageConsumer implementation --------------------------------
 
    public String getMessageSelector() throws JMSException
    {
-      throw new NotYetImplementedException();
+      return (String)delegate.getMetaData(JMSAdvisor.SELECTOR);
    }
 
 
@@ -96,7 +96,7 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public Queue getQueue() throws JMSException
    {
-      return (Queue)destination;
+      return (Queue)delegate.getMetaData(JMSAdvisor.DESTINATION);
    }
 
    // TopicSubscriber implementation --------------------------------
@@ -104,13 +104,13 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public Topic getTopic() throws JMSException
    {
-      return (Topic)destination;
+      return (Topic)delegate.getMetaData(JMSAdvisor.DESTINATION);
    }
 
 
    public boolean getNoLocal() throws JMSException
    {
-      return noLocal;
+      return ((Boolean)delegate.getMetaData(JMSAdvisor.NO_LOCAL)).booleanValue();
    }
 
    // Public --------------------------------------------------------

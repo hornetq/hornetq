@@ -45,7 +45,10 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
    
    public void delete() throws JMSException
    {
-      if (delegate != null) delegate.deleteTemporaryDestination(this);
+      if (delegate != null)
+      {
+         delegate.deleteTemporaryDestination(this);
+      }
    }
    
    // JBossDestination overrides ---------------------------------------------------

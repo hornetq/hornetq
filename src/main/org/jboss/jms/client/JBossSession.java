@@ -14,6 +14,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.jms.server.container.JMSAdvisor;
 
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
@@ -70,8 +71,7 @@ class JBossSession
    protected ConnectionDelegate connectionDelegate;
    protected boolean isXA;
    protected int sessionType;
-   protected boolean transacted;
-   protected int acknowledgeMode;   
+   protected int acknowledgeMode;
 
    // Constructors --------------------------------------------------
 
@@ -80,14 +80,14 @@ class JBossSession
                        boolean isXA,
                        int sessionType,
                        boolean transacted,
-                       int acknowledgeMode)
+                       int acknowledgeMode) throws JMSException
    {
       this.sessionDelegate = sessionDelegate;
       this.connectionDelegate = connectionDelegate;
       this.isXA = isXA;
       this.sessionType = sessionType;
-      this.transacted = transacted;
-      this.acknowledgeMode = acknowledgeMode;      
+      sessionDelegate.addMetaData(JMSAdvisor.TRANSACTED, transacted ? Boolean.TRUE : Boolean.FALSE);
+      this.acknowledgeMode = acknowledgeMode;
    }
 
    // Session implementation ----------------------------------------
@@ -134,7 +134,7 @@ class JBossSession
 
    public boolean getTransacted() throws JMSException
    {
-      return transacted;
+      return ((Boolean)sessionDelegate.getMetaData(JMSAdvisor.TRANSACTED)).booleanValue();
    }
 
    public int getAcknowledgeMode() throws JMSException
@@ -144,15 +144,11 @@ class JBossSession
 
    public void commit() throws JMSException
    {
-      if (!transacted)
-         throw new IllegalStateException("Session is not transacted - cannot call commit()");
       sessionDelegate.commit();
    }
 
    public void rollback() throws JMSException
    {
-      if (!transacted)
-         throw new IllegalStateException("Session is not transacted - cannot call rollback()");
       sessionDelegate.rollback();
    }
 
@@ -194,15 +190,15 @@ class JBossSession
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
      ConsumerDelegate consumerDelegate =
-        sessionDelegate.createConsumerDelegate(d, null, false, null);
-     return new JBossMessageConsumer(consumerDelegate, d, false);
+           sessionDelegate.createConsumerDelegate(d, null, false, null);
+     return new JBossMessageConsumer(consumerDelegate, false);
   }
 
   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
   {
 	  ConsumerDelegate consumerDelegate =
         sessionDelegate.createConsumerDelegate(d, messageSelector, false, null);
-     return new JBossMessageConsumer(consumerDelegate, d, false);
+     return new JBossMessageConsumer(consumerDelegate, false);
   }
 
    public MessageConsumer createConsumer(Destination d,
@@ -212,7 +208,7 @@ class JBossSession
    {
       ConsumerDelegate consumerDelegate =
          sessionDelegate.createConsumerDelegate(d, messageSelector, true, null);
-      return new JBossMessageConsumer(consumerDelegate, d, noLocal);
+      return new JBossMessageConsumer(consumerDelegate, noLocal);
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -244,7 +240,7 @@ class JBossSession
       }
       ConsumerDelegate consumerDelegate =
             sessionDelegate.createConsumerDelegate(topic, null, true, name);
-      return new JBossMessageConsumer(consumerDelegate, topic, false);
+      return new JBossMessageConsumer(consumerDelegate, false);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
@@ -260,7 +256,7 @@ class JBossSession
       }
       ConsumerDelegate consumerDelegate =
          sessionDelegate.createConsumerDelegate(topic, messageSelector, noLocal, name);
-      return new JBossMessageConsumer(consumerDelegate, topic, noLocal);
+      return new JBossMessageConsumer(consumerDelegate, noLocal);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
@@ -337,8 +333,7 @@ class JBossSession
    
    // QueueSession implementation
    
-   public QueueReceiver createReceiver(Queue queue, String messageSelector)
-         throws JMSException
+   public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException
    {
       return (QueueReceiver)createConsumer(queue, messageSelector);
    }

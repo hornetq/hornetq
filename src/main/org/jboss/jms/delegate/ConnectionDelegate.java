@@ -12,6 +12,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.tx.TxInfo;
+import org.jboss.jms.MetaDataRepository;
 
 import java.io.Serializable;
 
@@ -22,7 +23,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public interface ConnectionDelegate extends Closeable
+public interface ConnectionDelegate extends Closeable, MetaDataRepository
 {
    public SessionDelegate createSessionDelegate(boolean transacted, int acknowledgmentMode)
           throws JMSException;
@@ -37,7 +38,7 @@ public interface ConnectionDelegate extends Closeable
    public void setExceptionListener(ExceptionListener listener) throws JMSException;
   
 	public void sendTransaction(TxInfo tx) throws JMSException;
-   
+
    public void addTemporaryDestination(Destination destination) throws JMSException;
    
    public void deleteTemporaryDestination(Destination destination) throws JMSException;

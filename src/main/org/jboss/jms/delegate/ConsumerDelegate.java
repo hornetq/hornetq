@@ -11,12 +11,13 @@ import javax.jms.JMSException;
 import javax.jms.MessageListener;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.MetaDataRepository;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public interface ConsumerDelegate extends Closeable
+public interface ConsumerDelegate extends Closeable, MetaDataRepository
 {
 
    MessageListener getMessageListener() throws JMSException;

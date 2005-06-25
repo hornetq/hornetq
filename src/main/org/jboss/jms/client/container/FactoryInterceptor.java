@@ -11,16 +11,18 @@ import java.lang.reflect.Method;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.jms.destination.JBossTemporaryQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.jms.delegate.ConnectionDelegate;
 
 /**
- * Constructs various things that can be created on the client.
+ * Constructs various things that can be created entirely or partially on the client.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -49,23 +51,24 @@ public class FactoryInterceptor implements Interceptor, Serializable
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      if (invocation instanceof MethodInvocation)
+      if (invocation instanceof JMSMethodInvocation)
       {
-         MethodInvocation mi = (MethodInvocation)invocation;
+         JMSMethodInvocation mi = (JMSMethodInvocation)invocation;
          Method m = mi.getMethod();
-         if (m.getName().equals("createMessage"))
+         String methodName = m.getName();
+         if ("createMessage".equals(methodName))
          {
             return new JBossMessage();
          }
-         else if (m.getName().equals("createBytesMessage"))
+         else if ("createBytesMessage".equals(methodName))
          {
             return new JBossBytesMessage();
          }
-         else if (m.getName().equals("createMapMessage"))
+         else if ("createMapMessage".equals(methodName))
          {
             return new JBossMapMessage();
          }
-         else if (m.getName().equals("createObjectMessage"))
+         else if ("createObjectMessage".equals(methodName))
          {
          	JBossObjectMessage msg = new JBossObjectMessage();
          	if (mi.getArguments() != null)
@@ -74,20 +77,21 @@ public class FactoryInterceptor implements Interceptor, Serializable
          	}
          	return msg;
          }
-         else if (m.getName().equals("createStreamMessage"))
+         else if ("createStreamMessage".equals(methodName))
          {
             return new JBossStreamMessage();
          }
-         else if (m.getName().equals("createTextMessage"))
+         else if ("createTextMessage".equals(methodName))
          {
          	JBossTextMessage msg = new JBossTextMessage();
          	if (mi.getArguments() != null)
-         	{         		
+         	{
          		msg.setText((String)mi.getArguments()[0]);
          	}
          	return msg;
-         }         
+         }
       }
+
       return invocation.invokeNext();
    }
 

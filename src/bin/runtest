@@ -53,12 +53,12 @@
 # JMS Facade
 #
 
-#TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
+TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 
@@ -135,6 +135,7 @@ $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/dom4j-dom4j/lib/dom4j.jar${SEP}\
+$reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../resources/jgroups-core.jar${SEP}\
  junit.textui.TestRunner $TARGET_CLASS

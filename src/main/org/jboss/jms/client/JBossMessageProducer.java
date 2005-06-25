@@ -9,6 +9,7 @@ package org.jboss.jms.client;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.logging.Logger;
 
 import javax.jms.MessageProducer;
@@ -30,8 +31,8 @@ import javax.jms.QueueSender;
  */
 class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
-   // Constants -----------------------------------------------------  
-   
+   // Constants -----------------------------------------------------
+
    // Static --------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
@@ -39,26 +40,20 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    // Attributes ----------------------------------------------------
    
    protected ProducerDelegate delegate;
-   
-   protected int deliveryMode;
-   protected boolean isMessageIDDisabled;
-   protected boolean isTimestampDisabled;
-   protected int priority;
-   protected long timeToLive;
-   
-   protected Destination destination;
-   
+
    // Constructors --------------------------------------------------
    
    public JBossMessageProducer(ProducerDelegate delegate, Destination destination)
-   {      
+         throws JMSException
+   {
       this.delegate = delegate;
-      this.destination = destination;
-      deliveryMode = DeliveryMode.PERSISTENT;
-      isMessageIDDisabled = false;
-      isTimestampDisabled = false;
-      timeToLive = 0l;
-      priority = 4;
+      setDeliveryMode(DeliveryMode.PERSISTENT);
+      setDisableMessageTimestamp(false);
+      setPriority(4);
+      setTimeToLive(0l);
+      delegate.addMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED, Boolean.FALSE);
+      delegate.addMetaData(JMSAdvisor.DESTINATION, destination);
+
    }
    
    // MessageProducer implementation --------------------------------
@@ -66,67 +61,73 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    public void setDisableMessageID(boolean value) throws JMSException
    {
       log.warn("JBoss Messaging does not support disabling message ID generation");
+
+      // this is to trigger IllegalStateException in case the producer is closed
+      delegate.addMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED, Boolean.FALSE);
    }
    
    public boolean getDisableMessageID() throws JMSException
    {
-      return isMessageIDDisabled;
+      return ((Boolean)delegate.getMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED)).booleanValue();
    }
    
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      isTimestampDisabled = value;
+      Boolean b = value ? Boolean.TRUE : Boolean.FALSE;
+      delegate.addMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED, b);
    }
    
    public boolean getDisableMessageTimestamp() throws JMSException
    {
-      return isTimestampDisabled;
+      return ((Boolean)delegate.
+            getMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED)).booleanValue();
    }
    
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      this.deliveryMode = deliveryMode;
+      delegate.addMetaData(JMSAdvisor.DELIVERY_MODE, new Integer(deliveryMode));
    }
    
    public int getDeliveryMode() throws JMSException
    {
-      return deliveryMode;
+      return ((Integer)delegate.getMetaData(JMSAdvisor.DELIVERY_MODE)).intValue();
    }
    
    public void setPriority(int defaultPriority) throws JMSException
    {
-      priority = defaultPriority;
+      delegate.addMetaData(JMSAdvisor.PRIORITY, new Integer(defaultPriority));
    }
    
    public int getPriority() throws JMSException
    {
-      return priority;
+      return ((Integer)delegate.getMetaData(JMSAdvisor.PRIORITY)).intValue();
    }
    
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      this.timeToLive = timeToLive;
+      delegate.addMetaData(JMSAdvisor.TIME_TO_LIVE, new Long(timeToLive));
    }
    
    public long getTimeToLive() throws JMSException
    {
-      return timeToLive;
+      return ((Long)delegate.getMetaData(JMSAdvisor.TIME_TO_LIVE)).longValue();
    }
    
    public Destination getDestination() throws JMSException
    {
-      return destination;
+      return (Destination)delegate.getMetaData(JMSAdvisor.DESTINATION);
    }
    
    public void close() throws JMSException
    {
-      // Don't need to do anything
+      delegate.closing();
+      delegate.close();
    }
    
    public void send(Message message) throws JMSException
    {
       // by default the message never expires
-      send(message, this.deliveryMode, this.priority, this.timeToLive);
+      send(message, -1, -1, Long.MIN_VALUE);
    }
    
    /**
@@ -135,22 +136,29 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    public void send(Message message, int deliveryMode, int priority, long timeToLive)
       throws JMSException
    { 
-      send(destination, message, deliveryMode, priority, timeToLive);
+      send(null, message, deliveryMode, priority, timeToLive);
    }
    
    public void send(Destination destination, Message message) throws JMSException
    {      
-      send(destination, message, this.deliveryMode, this.priority, this.timeToLive);
+      send(destination, message, -1, -1, Long.MIN_VALUE);
    }
-   
+
    public void send(Destination destination,
-                    Message message,
+                    Message m,
                     int deliveryMode,
                     int priority,
                     long timeToLive) throws JMSException
    {
-      configure(message, deliveryMode, priority, timeToLive, destination);
-      delegate.send(message);
+      if (m instanceof JBossBytesMessage)
+      {
+         if (log.isTraceEnabled()) { log.trace("Calling reset()"); }
+         ((JBossBytesMessage)m).reset();
+      }
+
+      ((JBossMessage)m).setPropertiesReadWrite(false);
+
+      delegate.send(destination, m, deliveryMode, priority, timeToLive);
    }
    
    // TopicPublisher Implementation
@@ -158,7 +166,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    
    public Topic getTopic() throws JMSException
    {
-      return (Topic)destination;
+      return (Topic)getDestination();
    }
    
    public void publish(Message message) throws JMSException
@@ -187,18 +195,18 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    //---------------------------------------
    public void send(Queue queue, Message message) throws JMSException
    {
-      send(queue, message);
+      send((Destination)queue, message);
    }
    
    public void send(Queue queue, Message message, int deliveryMode, int priority,
                     long timeToLive) throws JMSException
    {
-      send(queue, message, deliveryMode, priority, timeToLive);
+      send((Destination)queue, message, deliveryMode, priority, timeToLive);
    }
    
    public Queue getQueue() throws JMSException
    {
-      return (Queue)destination;
+      return (Queue)getDestination();
    }
    
    // Public --------------------------------------------------------
@@ -206,43 +214,6 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
-   /**
-    * Set the headers.
-    */
-   protected void configure(Message m, int deliveryMode, int priority,
-                            long timeToLive, Destination dest) throws JMSException
-   {   	   	      
-      if (log.isTraceEnabled()) log.trace("In configure()");
-      if (m instanceof JBossBytesMessage)
-      {
-         if (log.isTraceEnabled()) log.trace("Calling reset()");
-         ((JBossBytesMessage)m).reset();
-      }
-      
-      ((JBossMessage)m).setPropertiesReadWrite(false);
-      
-      m.setJMSDeliveryMode(deliveryMode);
-      if (isTimestampDisabled)
-      {
-         m.setJMSTimestamp(0l);
-      }
-      else
-      {
-         m.setJMSTimestamp(System.currentTimeMillis());
-      }
-      
-      if (timeToLive == 0)
-      {
-         m.setJMSExpiration(Long.MAX_VALUE);
-      }
-      else
-      {
-         m.setJMSExpiration(System.currentTimeMillis() + timeToLive);
-      }
-      
-      m.setJMSDestination(dest);
-   }
    
    // Private -------------------------------------------------------
    

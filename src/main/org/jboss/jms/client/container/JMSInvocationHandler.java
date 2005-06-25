@@ -25,6 +25,8 @@ import java.util.Set;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a> Adapted to maintain hierarchy
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JMSInvocationHandler implements InvocationHandler, Serializable
 {

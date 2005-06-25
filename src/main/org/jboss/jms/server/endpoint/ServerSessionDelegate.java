@@ -200,7 +200,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionEndpoint.getConnectionID(), PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
-				
+
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SELECTOR, selector, PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.DESTINATION, jmsDestination);
+
       h.getMetaData().mergeIn(metadata);
 
       // TODO
@@ -453,6 +456,36 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	{
 		this.connectionEndpoint.acknowledge(messageID, receiverID);
 	}
+
+   public Object getMetaData(Object attr)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("getMetaData(): NOT handled on the server-side");
+      return null;
+   }
+
+   public void addMetaData(Object attr, Object metaDataValue)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("addMetaData(): NOT handled on the server-side");
+   }
+
+   public Object removeMetaData(Object attr)
+   {
+      // TODO - See "Delegate Implementation" thread
+      // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
+
+      // NOOP
+      log.warn("removeMetaData(): NOT handled on the server-side");
+      return null;
+   }
+
 
    // Public --------------------------------------------------------
 

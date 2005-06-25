@@ -8,6 +8,7 @@ package org.jboss.jms.client;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 import javax.jms.Connection;
@@ -58,12 +59,17 @@ public class JBossConnection implements
 
    // Constructors --------------------------------------------------
 
-   public JBossConnection(ConnectionDelegate delegate, boolean isXA,
-                          int connectionType)
+   public JBossConnection(ConnectionDelegate delegate, boolean isXA, int connectionType)
+         throws JMSException
    {
       this.delegate = delegate;
       this.isXA = isXA;
       this.connectionType = connectionType;
+
+      // make sure CONNECTION_META_DATA is TRANSIENT, to avoid unnecessary network traffic
+      ConnectionMetaData connectionMetaData =
+            (ConnectionMetaData)delegate.removeMetaData(JMSAdvisor.CONNECTION_META_DATA);
+      delegate.addMetaData(JMSAdvisor.CONNECTION_META_DATA, connectionMetaData); // add as TRANSIENT
    }
 
    // Connection implementation -------------------------------------
@@ -85,7 +91,7 @@ public class JBossConnection implements
 
    public ConnectionMetaData getMetaData() throws JMSException
    {
-      return new JBossConnectionMetaData();
+      return (ConnectionMetaData)delegate.getMetaData(JMSAdvisor.CONNECTION_META_DATA);
    }
 
    public ExceptionListener getExceptionListener() throws JMSException

@@ -111,6 +111,13 @@ public class TransactionInterceptor implements Interceptor, Serializable
          }         
          else if ("commit".equals(methodName))
          {
+            JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
+            Boolean transacted = (Boolean)getMetaData(handler, JMSAdvisor.TRANSACTED);
+            if (!transacted.booleanValue())
+            {
+               throw new IllegalStateException("Session is not transacted - cannot call commit()");
+            }
+
 				if (log.isTraceEnabled()) log.trace("commit");
 				
             Object Xid = getMetaData(mi, JMSAdvisor.XID);                        
@@ -123,8 +130,16 @@ public class TransactionInterceptor implements Interceptor, Serializable
          }
          else if ("rollback".equals(methodName))
          {
+            JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
+            Boolean transacted = (Boolean)getMetaData(handler, JMSAdvisor.TRANSACTED);
+            if (!transacted.booleanValue())
+            {
+               throw new IllegalStateException("Session is not transacted - cannot call rollback()");
+            }
+
 				if (log.isTraceEnabled()) log.trace("rollback");
-            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);   
+
+            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
 				ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
             Object newXid = rm.rollback(Xid);
             setMetaData(mi, JMSAdvisor.XID, newXid); 
@@ -147,7 +162,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
             {
                //Session is transacted - so we add message to tx instead of sending now
                if (log.isTraceEnabled())  log.trace("Session is transacted, storing mesage until commit");
-               Message m = (Message)mi.getArguments()[0];
+               Message m = (Message)mi.getArguments()[1];
 					ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
 					rm.addMessage(Xid, m);
 
