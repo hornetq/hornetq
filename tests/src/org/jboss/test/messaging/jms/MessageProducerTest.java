@@ -8,6 +8,7 @@ package org.jboss.test.messaging.jms;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.MessageImpl;
 import org.jboss.jms.util.InVMInitialContextFactory;
 
 import javax.jms.Connection;
@@ -96,12 +97,12 @@ public class MessageProducerTest extends MessagingTestCase
    
    /* Test sending to destination where the Destination is specified in the send */
    public void testSendDestination() throws Exception
-   {      
-     
+   {
+
       final Message m1 = producerSession.createMessage();
-      
+
       consumerConnection.start();
-      
+
       new Thread(new Runnable()
       {
          public void run()
@@ -123,10 +124,27 @@ public class MessageProducerTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
    }
-   
-   
+
+
+   public void testSendInvalidMessage() throws Exception
+   {
+      // send a message that is not created by the session
+
+      Message m = new MessageImpl();
+
+      try
+      {
+         topicProducer.send(m);
+      }
+      catch(javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+
    public void testGetDestination() throws Exception
-   {      
+   {
       Destination dest = topicProducer.getDestination();
       assertEquals(dest, topic);
    }

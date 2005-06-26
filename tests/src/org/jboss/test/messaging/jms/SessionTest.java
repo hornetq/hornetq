@@ -30,6 +30,10 @@ import javax.jms.QueueSession;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class SessionTest extends MessagingTestCase
 {

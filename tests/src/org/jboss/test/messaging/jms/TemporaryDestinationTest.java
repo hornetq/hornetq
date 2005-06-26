@@ -107,6 +107,9 @@ public class TemporaryDestinationTest extends MessagingTestCase
       assertEquals(messageText, m2.getText());
    }
 
+   /**
+    * http://jira.jboss.com/jira/browse/JBMESSAGING-93
+    */
    public void testTemporaryQueueOnClosedSession() throws Exception
    {
       producerSession.close();
@@ -199,8 +202,11 @@ public class TemporaryDestinationTest extends MessagingTestCase
       
       t.join();
    }
-   
-   
+
+
+   /**
+    * http://jira.jboss.com/jira/browse/JBMESSAGING-93
+    */
    public void testTemporaryTopicOnClosedSession() throws Exception
    {
       producerSession.close();

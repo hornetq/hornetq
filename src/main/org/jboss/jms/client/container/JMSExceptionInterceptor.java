@@ -72,8 +72,10 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
          throw e;
       }
       catch (RuntimeException e)
-      {         
-         throw e;
+      {
+         JMSException ex = new javax.jms.IllegalStateException(e.getMessage());
+         ex.setLinkedException(e);
+         throw ex; 
       }
       catch(Exception e)
       {

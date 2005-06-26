@@ -150,14 +150,6 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
                     int priority,
                     long timeToLive) throws JMSException
    {
-      if (m instanceof JBossBytesMessage)
-      {
-         if (log.isTraceEnabled()) { log.trace("Calling reset()"); }
-         ((JBossBytesMessage)m).reset();
-      }
-
-      ((JBossMessage)m).setPropertiesReadWrite(false);
-
       delegate.send(destination, m, deliveryMode, priority, timeToLive);
    }
    

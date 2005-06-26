@@ -501,7 +501,8 @@ public class ServerPeer
       String[][] names = new String[][]
       {
          {"jms","QueueConnectionFactory"},
-         {"jms","TopicConnectionFactory"}
+         {"jms","TopicConnectionFactory"},
+         {"jms","DURABLE_SUB_CONNECTION_FACTORY"}
       };
       for(int i = 0; i < names.length; i++)
       {

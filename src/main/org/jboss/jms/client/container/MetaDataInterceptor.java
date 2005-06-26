@@ -12,6 +12,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.logging.Logger;
 
 import javax.jms.Destination;
@@ -150,6 +151,16 @@ public class MetaDataInterceptor implements Interceptor, Serializable
             }
 
             m.setJMSDestination(destination);
+
+            // TODO - this probably doesn't belong here - move it when I reshufle the interceptors
+
+            if (m instanceof JBossBytesMessage)
+            {
+               if (log.isTraceEnabled()) { log.trace("Calling reset()"); }
+               ((JBossBytesMessage)m).reset();
+            }
+
+            m.setPropertiesReadWrite(false);
 
          }
       }
