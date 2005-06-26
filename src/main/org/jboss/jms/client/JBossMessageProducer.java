@@ -7,11 +7,8 @@
 package org.jboss.jms.client;
 
 import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.message.JBossBytesMessage;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.logging.Logger;
-import org.jboss.util.id.GUID;
 
 import javax.jms.MessageProducer;
 import javax.jms.JMSException;
@@ -151,28 +148,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
                     int priority,
                     long timeToLive) throws JMSException
    {
-      if (m instanceof JBossBytesMessage)
-      {
-         if (log.isTraceEnabled()) { log.trace("Calling reset()"); }
-         ((JBossBytesMessage)m).reset();
-      }
-
-            
-      //Section 3.9 of JMS1.1 spec states:
-      //"After sending a message, a client may retain and modify it without affecting
-      //the message that has been sent. The same message object may be sent multiple
-      //times."
-      //So we clone the message
-      JBossMessage cloned = ((JBossMessage)m).doClone();
-      String messageID = generateMessageID();
-      cloned.setJMSMessageID(messageID);
-      m.setJMSMessageID(messageID);
-      cloned.setPropertiesReadWrite(false);
-      
-      
-
-      delegate.send(destination, cloned, deliveryMode, priority, timeToLive);
-
+      delegate.send(destination, m, deliveryMode, priority, timeToLive);
    }
    
    // TopicPublisher Implementation
@@ -230,13 +206,6 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   protected String generateMessageID()
-   {
-      StringBuffer sb = new StringBuffer("ID:");
-      sb.append(new GUID().toString());
-      return sb.toString();
-   }
    
    // Inner classes -------------------------------------------------
 }

@@ -14,6 +14,7 @@ import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 
 import javax.jms.Destination;
 import java.io.Serializable;
@@ -87,12 +88,16 @@ public class MetaDataInterceptor implements Interceptor, Serializable
          }
          else if ("send".equals(methodName))
          {
-            // configure the message for sending, using attributes stored as metadata
             Destination destination = (Destination)args[0];
             JBossMessage m = (JBossMessage)args[1];
             int deliveryMode = ((Integer)args[2]).intValue();
             int priority = ((Integer)args[3]).intValue();
             long timeToLive = ((Long)args[4]).longValue();
+
+            // configure the message for sending, using attributes stored as metadata
+
+            String messageID = generateMessageID();
+            m.setJMSMessageID(messageID);
 
             if (deliveryMode == -1)
             {
@@ -162,6 +167,14 @@ public class MetaDataInterceptor implements Interceptor, Serializable
 
             m.setPropertiesReadWrite(false);
 
+            // Section 3.9 of JMS 1.1 spec states:
+            // "After sending a message, a client may retain and modify it without affecting the
+            //  message that has been sent. The same message object may be sent multiple times."
+            // So we clone the message, but after we modify all significant fields
+            JBossMessage clone = m.doClone();
+
+            // send the clone down the stack
+            args[1] = clone;
          }
       }
 
@@ -174,6 +187,13 @@ public class MetaDataInterceptor implements Interceptor, Serializable
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   protected String generateMessageID()
+   {
+      StringBuffer sb = new StringBuffer("ID:");
+      sb.append(new GUID().toString());
+      return sb.toString();
+   }
 
    // Inner classes -------------------------------------------------
 }
