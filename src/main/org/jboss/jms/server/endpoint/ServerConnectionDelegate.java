@@ -402,9 +402,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new JMSException("Destination " + jmsDestination.getName() + " does not exist");
       }
       
-      //Message id generation must be done on the client - see spec 3.4.3
-      //m.setJMSMessageID(generateMessageID());
-      
       //This allows the no-local consumers to filter out the messages that come from the
       //same connection
       //TODO Do we want to set this for ALL messages. Possibly an optimisation is possible here
