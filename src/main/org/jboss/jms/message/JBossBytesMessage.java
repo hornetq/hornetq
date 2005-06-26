@@ -76,16 +76,19 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
 
       // if the message is not reseted, is essential to clone ostream too
-      this.ostream = new ByteArrayOutputStream(other.ostream.size());
-      try
+      if (ostream != null)
       {
-         this.ostream.write(other.ostream.toByteArray());
+         this.ostream = new ByteArrayOutputStream(other.ostream.size());
+         try
+         {
+            this.ostream.write(other.ostream.toByteArray());
+         }
+         catch(Exception e)
+         {
+            throw new JBossJMSException("Failed to clone BytesMessage's ostream", e);
+         }
+         p = new DataOutputStream(this.ostream);
       }
-      catch(Exception e)
-      {
-         throw new JBossJMSException("Failed to clone BytesMessage's ostream", e);
-      }
-      p = new DataOutputStream(this.ostream);
    }
 
    // Public --------------------------------------------------------
