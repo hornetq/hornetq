@@ -21,10 +21,6 @@ import org.jboss.logging.Logger;
 import java.lang.reflect.Method;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
- */
-/**
  * The interceptor looks up various instances and associates them to the invocation as targets.
  * TODO Not sure this is the best way to create/associate instances.
  *
@@ -65,11 +61,15 @@ public class InstanceInterceptor implements Interceptor
 						
          if ("createConnectionDelegate".equals(methodName))
          {
-            //There can be multiple connection factories each with their own
-            //unique default client id
+            // There can be multiple connection factories each with their own
+            // unique default client id
+
             String connectionFactoryID = (String)invocation.getMetaData().
                getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_FACTORY_ID);
-            ConnectionFactoryDelegate d = jmsAdvisor.getServerPeer().getConnectionFactoryDelegate(connectionFactoryID);
+
+            ConnectionFactoryDelegate d = jmsAdvisor.getServerPeer().
+                  getConnectionFactoryDelegate(connectionFactoryID);
+
             invocation.setTargetObject(d);
          }
          else if (m.getDeclaringClass().equals(ServerConnectionDelegate.class))
@@ -77,23 +77,29 @@ public class InstanceInterceptor implements Interceptor
             // look up the corresponding ServerConnectionDelegate and use that instance
             String connectionID = (String)invocation.getMetaData().
                   getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID);
-            ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
+
+            ServerConnectionDelegate scd = jmsAdvisor.getServerPeer().
+                  getClientManager().getConnectionDelegate(connectionID);
+
             if (scd == null)
             {
                throw new Exception("The server doesn't know of any connection with connectionID=" +
                                    connectionID);
                // TODO log error
             }
+
             invocation.setTargetObject(scd);
          }
          else if (m.getDeclaringClass().equals(ServerSessionDelegate.class))
          {
             // lookup the corresponding ServerSessionDelegate and use it as target for the invocation
-            String connectionID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
-            ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
+
+            String connectionID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
+
+            ServerConnectionDelegate scd = jmsAdvisor.getServerPeer().
+                  getClientManager().getConnectionDelegate(connectionID);
+
             if (scd == null)
             {
                throw new Exception("The server doesn't know of any connection with connectionID=" +
@@ -129,10 +135,12 @@ public class InstanceInterceptor implements Interceptor
          else if (m.getDeclaringClass().equals(ServerProducerDelegate.class))
          {
             // lookup the corresponding ServerProducerDelegate and use it as target for the invocation
-            String connectionID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
-            ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
+            String connectionID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
+
+            ServerConnectionDelegate scd = jmsAdvisor.getServerPeer().
+                  getClientManager().getConnectionDelegate(connectionID);
+
             if (scd == null)
             {
                throw new Exception("The server doesn't know of any connection with connectionID=" +
@@ -164,10 +172,12 @@ public class InstanceInterceptor implements Interceptor
 			else if (m.getDeclaringClass().equals(ServerConsumerDelegate.class))
          {
             // lookup the corresponding ServerConsumerDelegate and use it as target for the invocation
-            String connectionID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
-            ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
+            String connectionID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
+
+            ServerConnectionDelegate scd = jmsAdvisor.getServerPeer().
+                  getClientManager().getConnectionDelegate(connectionID);
+
             if (scd == null)
             {
                throw new Exception("The server doesn't know of any connection with connectionID=" +
@@ -198,12 +208,14 @@ public class InstanceInterceptor implements Interceptor
          }
          else if (m.getDeclaringClass().equals(ServerBrowserDelegate.class))
          {				
-			
             // lookup the corresponding ServerBrowserDelegate and use it as target for the invocation
-            String connectionID =
-                  (String)invocation.getMetaData().getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
-            ServerConnectionDelegate scd =
-                  jmsAdvisor.getServerPeer().getClientManager().getConnectionDelegate(connectionID);
+            
+            String connectionID = (String)invocation.getMetaData().
+                  getMetaData(JMSAdvisor.JMS,JMSAdvisor.CONNECTION_ID);
+
+            ServerConnectionDelegate scd = jmsAdvisor.getServerPeer().
+                  getClientManager().getConnectionDelegate(connectionID);
+
             if (scd == null)
             {
                throw new Exception("The server doesn't know of any connection with connectionID=" +
