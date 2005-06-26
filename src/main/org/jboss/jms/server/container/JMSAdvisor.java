@@ -35,6 +35,7 @@ public class JMSAdvisor extends ClassAdvisor
 	public static final String UNACKED = "UNACKED";
 	public static final String RESOURCE_MANAGER = "RESOURCE_MGR";
    public static final String CLIENT_ID = "CLIENT_ID";
+   public static final String CONNECTION_FACTORY_ID = "CONNECTION_FACTORY_ID";
 
    public static final String DELIVERY_MODE = "DELIVERY_MODE";
    public static final String IS_MESSAGE_ID_DISABLED = "IS_MESSAGE_ID_DISABLED";

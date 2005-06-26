@@ -65,9 +65,11 @@ public class InstanceInterceptor implements Interceptor
 						
          if ("createConnectionDelegate".equals(methodName))
          {
-            // I only need a ConnectionFactoryDelegate instance, since it doesn't hold state,
-            // so I will always use the ServerPeer's one
-            ConnectionFactoryDelegate d = jmsAdvisor.getServerPeer().getConnectionFactoryDelegate();
+            //There can be multiple connection factories each with their own
+            //unique default client id
+            String connectionFactoryID = (String)invocation.getMetaData().
+               getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_FACTORY_ID);
+            ConnectionFactoryDelegate d = jmsAdvisor.getServerPeer().getConnectionFactoryDelegate(connectionFactoryID);
             invocation.setTargetObject(d);
          }
          else if (m.getDeclaringClass().equals(ServerConnectionDelegate.class))

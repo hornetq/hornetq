@@ -59,6 +59,8 @@ public class TransactionInterceptor implements Interceptor, Serializable
       
          String methodName = mi.getMethod().getName();
          
+         if (log.isTraceEnabled()) log.trace("In TransactionInterceptor: method is " + methodName);
+         
 			if ("createConnectionDelegate".equals(methodName))
 			{
 				if (log.isTraceEnabled()) log.trace("creating resource manager");
@@ -112,16 +114,15 @@ public class TransactionInterceptor implements Interceptor, Serializable
          else if ("commit".equals(methodName))
          {
             JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
-            Boolean transacted = (Boolean)getMetaData(handler, JMSAdvisor.TRANSACTED);
-            if (!transacted.booleanValue())
-            {
-               throw new IllegalStateException("Session is not transacted - cannot call commit()");
-            }
-
+            
 				if (log.isTraceEnabled()) log.trace("commit");
 				
-            Object Xid = getMetaData(mi, JMSAdvisor.XID);                        
-            //SessionDelegate sd = (SessionDelegate)getDelegate(mi);  
+            Object Xid = getMetaData(mi, JMSAdvisor.XID);                
+            if (Xid == null)
+            {
+               log.error("Attempt to commit a non-transacted session");
+               throw new IllegalStateException("Cannot commit a non-transacted session");
+            }
 				ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
             Object newXid = rm.commit(Xid);
             setMetaData(mi, JMSAdvisor.XID, newXid);   
@@ -130,16 +131,16 @@ public class TransactionInterceptor implements Interceptor, Serializable
          }
          else if ("rollback".equals(methodName))
          {
+            if (log.isTraceEnabled()) log.trace("rollback");
             JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
-            Boolean transacted = (Boolean)getMetaData(handler, JMSAdvisor.TRANSACTED);
-            if (!transacted.booleanValue())
+    
+            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);               
+            if (Xid == null)
             {
-               throw new IllegalStateException("Session is not transacted - cannot call rollback()");
+               log.error("Attempt to rollback a non-transacted session");
+               throw new IllegalStateException("Cannot rollback a non-transacted session");
             }
 
-				if (log.isTraceEnabled()) log.trace("rollback");
-
-            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
 				ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
             Object newXid = rm.rollback(Xid);
             setMetaData(mi, JMSAdvisor.XID, newXid); 

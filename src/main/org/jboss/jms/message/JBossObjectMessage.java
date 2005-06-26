@@ -51,8 +51,23 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+   
+   public JBossObjectMessage()
+   {
+      
+   }
+   
+   public JBossObjectMessage(JBossObjectMessage other)
+   {
+      super(other);
+      this.isByteArray = other.isByteArray;
+      this.objectBytes = new byte[other.objectBytes.length];
+      System.arraycopy(other.objectBytes, 0, this.objectBytes, 0, other.objectBytes.length);
+   }
 
    // Public --------------------------------------------------------
+   
+   
 
    // ObjectMessage implementation ----------------------------------
 
@@ -152,6 +167,11 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    {
       objectBytes = null;
       super.clearBody();
+   }
+   
+   public JBossMessage doClone()
+   {
+      return new JBossObjectMessage(this);
    }
 
    // Externalizable implementation ---------------------------------

@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.transaction.TransactionManager;
@@ -82,7 +83,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
     
    // Constructors --------------------------------------------------
    
-   public ServerConnectionDelegate(ServerPeer serverPeer)
+   public ServerConnectionDelegate(ServerPeer serverPeer, String clientID)
    {
       this.serverPeer = serverPeer;
       sessionIDCounter = 0;
@@ -91,6 +92,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       started = false;
       connectionID = new GUID().toString();
       receivers = new ConcurrentReaderHashMap();
+      this.clientID = clientID;
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -153,7 +155,13 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    }
    
    public void setClientID(String clientID)
+      throws IllegalStateException
    {
+      if (log.isTraceEnabled()) { log.trace("setClientID:" + clientID); }
+      if (this.clientID != null)
+      {
+         throw new IllegalStateException("Cannot set clientID, already set as:" + clientID);
+      }
       this.clientID = clientID;
    }
    
@@ -298,12 +306,16 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    public void unsubscribe(String subscriptionName) throws JMSException
    {
+      if (subscriptionName == null)
+      {
+         throw new InvalidDestinationException("Destination is null");
+      }
       DurableSubscriptionHolder subscription = this.serverPeer.getClientManager().
             removeDurableSubscription(this.clientID, subscriptionName);
 
       if (subscription == null)
       {
-         throw new JMSException("Cannot find durable subscription with name " +
+         throw new InvalidDestinationException("Cannot find durable subscription with name " +
             subscriptionName + " to unsubscribe");
       }
       subscription.getTopic().remove(subscription.getQueue().getReceiverID());
@@ -390,7 +402,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new JMSException("Destination " + jmsDestination.getName() + " does not exist");
       }
       
-      m.setJMSMessageID(generateMessageID());
+      //Message id generation must be done on the client - see spec 3.4.3
+      //m.setJMSMessageID(generateMessageID());
       
       //This allows the no-local consumers to filter out the messages that come from the
       //same connection
@@ -398,10 +411,12 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       ((JBossMessage)m).setConnectionID(connectionID);
       
       boolean acked = coreDestination.handle((Routable)m);
+      if (log.isTraceEnabled()) log.trace("Acked:" + acked);
 
       if (coreDestination.isTransactional() && isActiveTransaction())
       {
          // for a transacted invocation, the return value is irrelevant
+         if (log.isTraceEnabled()) log.trace("Transacted so returning");
          return;
       }
       
@@ -444,13 +459,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return connectionID + "-Session" + id;
    }
    
-   protected String generateMessageID()
-   {
-      StringBuffer sb = new StringBuffer("ID:");
-      sb.append(new GUID().toString());
-      return sb.toString();
-   }
-   
+  
    // Private -------------------------------------------------------
    
    private void setStarted(boolean s)

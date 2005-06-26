@@ -318,6 +318,37 @@ public class SessionTest extends MessagingTestCase
 //   }
    
    
+   public void testIllegalState() throws Exception
+   {
+      //IllegalStateException should be thrown if commit or rollback
+      //is invoked on a non transacted session
+      Connection conn = cf.createConnection();      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sess.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      Message m = sess.createTextMessage("hello");
+      prod.send(m);
+      
+      try
+      {
+         sess.rollback();
+         fail();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {}
+      
+      try
+      {
+         sess.commit();
+         fail();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {}
+      
+      conn.close();
+   }
+   
    
    
    // Package protected ---------------------------------------------

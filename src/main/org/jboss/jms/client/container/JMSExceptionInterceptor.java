@@ -60,10 +60,12 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
       }
       catch(WrapperException e)
       {
+         if (log.isTraceEnabled()) log.trace("Caught WrapperException");
          throw e.getPayload();
       }
       catch(JMSException e)
       {
+         if (log.isTraceEnabled()) log.trace("Caught JMSException:" + e);
          Exception cause = e.getLinkedException();
          if (cause != null)
          {
@@ -72,13 +74,15 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
          throw e;
       }
       catch (RuntimeException e)
-      {
+      {         
+         if (log.isTraceEnabled()) log.trace("Caught RuntimeException:" + e);
          JMSException ex = new javax.jms.IllegalStateException(e.getMessage());
          ex.setLinkedException(e);
          throw ex; 
       }
       catch(Exception e)
       {
+         if (log.isTraceEnabled()) log.trace("Caught Exception:" + e);
          log.error("The cause of the JMSException: ", e);
          throw new JBossJMSException(e.getMessage(), e);
       }

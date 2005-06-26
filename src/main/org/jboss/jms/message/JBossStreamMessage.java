@@ -50,7 +50,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    protected int size;
 
-   protected transient boolean deserialised;
+   //protected transient boolean deserialised;
 
    // Static --------------------------------------------------------
 
@@ -75,6 +75,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Public --------------------------------------------------------
 
+   /*
    public JBossMessage getReceivedObject()
    {
       if (deserialised)
@@ -90,6 +91,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          return new JBossStreamMessage(this);
       }
    }
+   */
 
    // StreamMessage implementation ----------------------------------
 
@@ -647,6 +649,11 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
       super.clearBody();
    }
+   
+   public JBossMessage doClone()
+   {
+      return new JBossStreamMessage(this);
+   }
 
    // Externalizable implementation ---------------------------------
 
@@ -659,7 +666,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          position = in.readInt();
          offset = in.readInt();
          size = in.readInt();
-         deserialised = true;
+         //deserialised = true;
       }
       catch (ClassNotFoundException e)
       {

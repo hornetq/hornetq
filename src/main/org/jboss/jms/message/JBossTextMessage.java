@@ -12,6 +12,9 @@ import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.container.TransactionInterceptor;
+import org.jboss.logging.Logger;
+
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
  * 
@@ -27,16 +30,28 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 7965361851565655163L;
+   
+   private static final Logger log = Logger.getLogger(JBossTextMessage.class);
 
    // Attributes ----------------------------------------------------
 
    protected String content;
 
-   private final static int chunkSize = 16384;
+   //private final static int chunkSize = 16384;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+   
+   public JBossTextMessage()
+   {
+   }
+   
+   public JBossTextMessage(JBossTextMessage other)
+   {
+      super(other);
+      this.content = other.content;
+   }
 
    // Public --------------------------------------------------------
 
@@ -68,7 +83,12 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
+      
+      if (log.isTraceEnabled()) log.trace("in readExternal");
+      
       byte type = in.readByte();
+      
+      if (log.isTraceEnabled()) log.trace("type is:" + type);
 
       if (type == NULL)
       {
@@ -128,6 +148,8 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
+      
+      if (log.isTraceEnabled()) log.trace("in writeExternal");
 
       if (content == null)
       {
@@ -135,6 +157,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       }
       else
       {
+         out.write(STRING);
          out.writeUTF(content);
 
          /*
@@ -179,7 +202,12 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       }
    }
 
-   // Object override -----------------------------------------------
+   // JBossMessage override -----------------------------------------------
+   
+   public JBossMessage doClone()
+   {
+      return new JBossTextMessage(this);
+   }
 
    // Package protected ---------------------------------------------
 

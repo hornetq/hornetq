@@ -33,6 +33,7 @@ import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -40,9 +41,11 @@ import javax.management.ObjectName;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -84,7 +87,7 @@ public class ServerPeer
    protected InvokerLocator locator;
    protected ClientManager clientManager;
    protected DestinationManagerImpl destinationManager;
-   protected ConnectionFactoryDelegate connFactoryDelegate;
+   protected Map connFactoryDelegates;
    protected Hashtable jndiEnvironment;
    protected InitialContext initialContext;
    protected MBeanServer mbeanServer;
@@ -107,7 +110,7 @@ public class ServerPeer
 
    protected TransactionManager transactionManager;
 
-
+   protected int connFactoryIDSequence;
 
    // Constructors --------------------------------------------------
 
@@ -115,6 +118,7 @@ public class ServerPeer
    public ServerPeer(String serverPeerID)
    {
       this.serverPeerID = serverPeerID;
+      this.connFactoryDelegates = new HashMap();
    }
 
    /**
@@ -157,7 +161,7 @@ public class ServerPeer
       destinationManager = new DestinationManagerImpl(this);
       messageStore = new MessageStoreImpl("MessageStore");
       acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
-      connFactoryDelegate = new ServerConnectionFactoryDelegate(this);
+            
       threadPool = new PooledExecutor();
 
       initializeRemoting();
@@ -165,12 +169,14 @@ public class ServerPeer
 
       mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
 
-      ConnectionFactory connectionFactory = createConnectionFactory();
-      bindConnectionFactory(connectionFactory);
+      setupConnectionFactories();
+      
       started = true;
 
       log.debug(this + " started");
    }
+   
+  
 
    public synchronized void stop() throws Exception
    {
@@ -181,10 +187,12 @@ public class ServerPeer
 
       log.debug(this + " stopping");
 
-      unbindConnectionFactory();
+      tearDownConnectionFactories();
 
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
+      
+      
       started = false;
 
       log.debug(this + " stopped");
@@ -255,9 +263,9 @@ public class ServerPeer
       return destinationManager;
    }
 
-   public ConnectionFactoryDelegate getConnectionFactoryDelegate()
+   public ConnectionFactoryDelegate getConnectionFactoryDelegate(String connectionFactoryID)
    {
-      return connFactoryDelegate;
+      return (ConnectionFactoryDelegate)connFactoryDelegates.get(connectionFactoryID);
    }
 
 
@@ -383,13 +391,13 @@ public class ServerPeer
       browserAdvisor = null;
    }
 
-   private ConnectionFactory createConnectionFactory() throws Exception
+   private ConnectionFactory createConnectionFactory(String connFactoryID) throws Exception
    {
-      ConnectionFactoryDelegate proxy = (ConnectionFactoryDelegate)createProxy();
+      ConnectionFactoryDelegate proxy = (ConnectionFactoryDelegate)createProxy(connFactoryID);
       return new JBossConnectionFactory(proxy);
    }
 
-   private Object createProxy() throws Exception
+   private Object createProxy(String connFactoryID) throws Exception
    {
       Serializable oid = connFactoryAdvisor.getName();
       String stackName = "ConnectionFactoryStack";
@@ -406,9 +414,15 @@ public class ServerPeer
                            locator,
                            PayloadKey.AS_IS);
       metadata.addMetaData(InvokerInterceptor.REMOTING,
+            InvokerInterceptor.INVOKER_LOCATOR,
+            locator,
+            PayloadKey.AS_IS);
+      metadata.addMetaData(InvokerInterceptor.REMOTING,
                            InvokerInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
+      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_FACTORY_ID, connFactoryID, PayloadKey.AS_IS);
+            
       h.getMetaData().mergeIn(metadata);
 
       // TODO 
@@ -417,27 +431,15 @@ public class ServerPeer
       return Proxy.newProxyInstance(loader, interfaces, h);
    }
 
-   private void bindConnectionFactory(ConnectionFactory factory) throws Exception
-   {
-      initialContext.rebind(CONNECTION_FACTORY_JNDI_NAME, factory);
-      initialContext.rebind(XACONNECTION_FACTORY_JNDI_NAME, factory);
-      extraJNDILinks(true, factory);
-
-   }
-
-   private void unbindConnectionFactory() throws Exception
-   {
-      initialContext.unbind(CONNECTION_FACTORY_JNDI_NAME);
-      initialContext.unbind(XACONNECTION_FACTORY_JNDI_NAME);
-      extraJNDILinks(false, null);
-
-   }
-
+   
    /**
     * @return - may return null if it doesn't find a "jboss" MBeanServer.
     */
    private MBeanServer findMBeanServer()
    {
+      System.setProperty("jmx.invoke.getters", "true");
+      
+      
       MBeanServer result = null;
       ArrayList l = MBeanServerFactory.findMBeanServer(null);
       for(Iterator i = l.iterator(); i.hasNext(); )
@@ -493,43 +495,71 @@ public class ServerPeer
    }
 
 
-   /**
-    * TODO TCK hack - get rid of it.
-    */
-   private void extraJNDILinks(boolean create, ConnectionFactory factory) throws Exception
+   private void setupConnectionFactories()
+      throws Exception
    {
-      String[][] names = new String[][]
-      {
-         {"jms","QueueConnectionFactory"},
-         {"jms","TopicConnectionFactory"},
-         {"jms","DURABLE_SUB_CONNECTION_FACTORY"}
-      };
-      for(int i = 0; i < names.length; i++)
-      {
-         String[] binding = names[i];
-         String context = binding[0];
-         String factoryName = binding[1];
-         if (create)
-         {
-            log.info("Binding connection factory as " + context + "/" + factoryName);
-            Context c = JNDIUtil.createContext(initialContext, context);
-            c.bind(factoryName, factory);
-         }
-         else
-         {
-            try
-            {
-               initialContext.unbind(context + "/" + factoryName);
-            }
-            catch(Exception e)
-            {
-               // ok
-            }
-            log.info(context + "/" + factoryName + " unbound");
-         }
-      }
-   }
 
+      ConnectionFactory cf = setupConnectionFactory(null);
+      initialContext.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
+      initialContext.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
+      
+      //And now the connection factories and links as required by the TCK 
+      //See section 4.4.15 of the TCK user guide.
+      //FIXME - this is a hack. It should be removed once a better way to manage
+      //connection factories is implemented
+      
+      Context jmsContext = JNDIUtil.createContext(initialContext, "jms");
+      jmsContext.rebind("QueueConnectionFactory", cf);
+      jmsContext.rebind("TopicConnectionFactory", cf);
+      
+      jmsContext.rebind("DURABLE_SUB_CONNECTION_FACTORY", setupConnectionFactory("cts"));
+      jmsContext.rebind("MDBTACCESSTEST_FACTORY", setupConnectionFactory("cts1"));
+      jmsContext.rebind("DURABLE_BMT_CONNECTION_FACTORY", setupConnectionFactory("cts2"));
+      jmsContext.rebind("DURABLE_CMT_CONNECTION_FACTORY", setupConnectionFactory("cts3"));
+      jmsContext.rebind("DURABLE_BMT_XCONNECTION_FACTORY", setupConnectionFactory("cts4"));
+      jmsContext.rebind("DURABLE_CMT_XCONNECTION_FACTORY", setupConnectionFactory("cts5"));
+      jmsContext.rebind("DURABLE_CMT_TXNS_XCONNECTION_FACTORY", setupConnectionFactory("cts6"));
+    
+   }
+   
+   private ConnectionFactory setupConnectionFactory(String clientID)
+      throws Exception
+   {
+      String connFactoryID = genConnFactoryID();
+      ServerConnectionFactoryDelegate serverDelegate = new ServerConnectionFactoryDelegate(this, clientID);
+      this.connFactoryDelegates.put(connFactoryID, serverDelegate);      
+      ConnectionFactory clientDelegate = createConnectionFactory(connFactoryID);
+      return clientDelegate;
+   }
+   
+   private void tearDownConnectionFactories()
+      throws Exception
+   {
+      
+      //FIXME - this is a hack. It should be removed once a better way to manage
+      //connection factories is implemented
+      initialContext.unbind("jms/DURABLE_SUB_CONNECTION_FACTORY");
+      initialContext.unbind("jms/MDBTACCESSTEST_FACTORY");
+      initialContext.unbind("jms/DURABLE_BMT_CONNECTION_FACTORY");
+      initialContext.unbind("jms/DURABLE_CMT_CONNECTION_FACTORY");
+      initialContext.unbind("jms/DURABLE_BMT_XCONNECTION_FACTORY");
+      initialContext.unbind("jms/DURABLE_CMT_XCONNECTION_FACTORY");
+      initialContext.unbind("jms/DURABLE_CMT_TXNS_XCONNECTION_FACTORY");
+      
+      initialContext.unbind(CONNECTION_FACTORY_JNDI_NAME);
+      initialContext.unbind(XACONNECTION_FACTORY_JNDI_NAME);
+     
+   }
+   
+ 
+   
+   private synchronized String genConnFactoryID()
+   {
+      return "CONNFACTORY" + connFactoryIDSequence++;
+   }
+   
+
+   
 
    // Inner classes -------------------------------------------------
 }

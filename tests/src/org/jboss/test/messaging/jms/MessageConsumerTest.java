@@ -121,6 +121,7 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
+   
    public void testRemotingInternals() throws Exception
    {
       Connector serverConnector = ServerManagement.getServerWrapper().getConnector();
@@ -268,6 +269,7 @@ public class MessageConsumerTest extends MessagingTestCase
       Message m2 = topicConsumer.receive(2000);
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
    }
+   
 
    public void testReceiveOnTopic() throws Exception
    {
@@ -293,9 +295,14 @@ public class MessageConsumerTest extends MessagingTestCase
       }, "Producer").start();
 
       Message m2 = topicConsumer.receive();
+      
+      if (log.isTraceEnabled()) log.trace("m1:" + m1 + ", m2:" + m2) ;
+      
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
    }
 
+   
+   
    public void testReceiveNoWaitOnTopic() throws Exception
    {
       consumerConnection.start();
@@ -757,6 +764,7 @@ public class MessageConsumerTest extends MessagingTestCase
       Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess1.createProducer(topic);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
 
       MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
 
@@ -793,7 +801,12 @@ public class MessageConsumerTest extends MessagingTestCase
       Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       //Re-subscribe to the subscription
+      
+      log.trace("Resubscribing");
+      
       MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
+      
+      
 
       conn2.start();
 
@@ -808,6 +821,8 @@ public class MessageConsumerTest extends MessagingTestCase
          count++;
       }
 
+      log.trace("Received " + count  + " messages");
+      
       assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE1, count);
 
       sess2.unsubscribe("mySubscription");

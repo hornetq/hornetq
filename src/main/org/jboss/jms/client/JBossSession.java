@@ -16,6 +16,7 @@ import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.server.container.JMSAdvisor;
 
+import javax.jms.InvalidDestinationException;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
@@ -189,6 +190,10 @@ class JBossSession
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
+     if (d == null)
+     {
+        throw new InvalidDestinationException("Cannot create a consumer with a null destination");
+     }
      ConsumerDelegate consumerDelegate =
            sessionDelegate.createConsumerDelegate(d, null, false, null);
      return new JBossMessageConsumer(consumerDelegate, false);
@@ -196,6 +201,10 @@ class JBossSession
 
   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
   {
+     if (d == null)
+     {
+        throw new InvalidDestinationException("Cannot create a consumer with a null destination");
+     }
 	  ConsumerDelegate consumerDelegate =
         sessionDelegate.createConsumerDelegate(d, messageSelector, false, null);
      return new JBossMessageConsumer(consumerDelegate, false);
@@ -206,6 +215,10 @@ class JBossSession
                                          boolean noLocal)
          throws JMSException
    {
+      if (d == null)
+      {
+         throw new InvalidDestinationException("Cannot create a consumer with a null destination");
+      }
       ConsumerDelegate consumerDelegate =
          sessionDelegate.createConsumerDelegate(d, messageSelector, true, null);
       return new JBossMessageConsumer(consumerDelegate, noLocal);
@@ -238,8 +251,12 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
+      if (topic == null)
+      {
+         throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
+      }
       ConsumerDelegate consumerDelegate =
-            sessionDelegate.createConsumerDelegate(topic, null, true, name);
+            sessionDelegate.createConsumerDelegate(topic, null, false, name);
       return new JBossMessageConsumer(consumerDelegate, false);
    }
 
@@ -254,6 +271,14 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
+      if (topic == null)
+      {
+         throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
+      }
+      if ("".equals(messageSelector))
+      {
+         messageSelector = null;
+      }
       ConsumerDelegate consumerDelegate =
          sessionDelegate.createConsumerDelegate(topic, messageSelector, noLocal, name);
       return new JBossMessageConsumer(consumerDelegate, noLocal);
@@ -266,6 +291,10 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
       }
+      if (queue == null)
+      {
+         throw new InvalidDestinationException("Cannot create a browser with a null queue");
+      }
       return createBrowser(queue, null);
    }
 
@@ -275,6 +304,14 @@ class JBossSession
       if (sessionType == TYPE_TOPIC_SESSION)
       {
          throw new IllegalStateException("Cannot create a browser on a TopicSession");
+      }
+      if (queue == null)
+      {
+         throw new InvalidDestinationException("Cannot create a browser with a null queue");
+      }
+      if ("".equals(messageSelector))
+      {
+         messageSelector = null;
       }
       BrowserDelegate delegate = this.sessionDelegate.createBrowserDelegate(queue, messageSelector);
       return new JBossQueueBrowser(queue, messageSelector, delegate);

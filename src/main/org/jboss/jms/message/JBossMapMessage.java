@@ -52,6 +52,12 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       content = new HashMap();
    }
+   
+   public JBossMapMessage(JBossMapMessage other)
+   {
+      super(other);
+      content = new HashMap(other.content);
+   }
 
    // Public --------------------------------------------------------
 
@@ -424,6 +430,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       content = new HashMap();
       super.clearBody();
+   }
+   
+   public JBossMessage doClone()
+   {
+      return new JBossMapMessage(this);
    }
 
    // Externalizable implementation ---------------------------------

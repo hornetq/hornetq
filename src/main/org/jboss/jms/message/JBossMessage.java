@@ -111,10 +111,20 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    {
       super(other);
       this.destination = other.destination;
+      this.replyToDestination = other.replyToDestination;
       this.type = other.type;
       this.delegate = other.delegate;
       this.messageReadWrite = other.messageReadWrite;
       this.properties = new HashMap(other.properties);
+      this.isCorrelationIDBytes = other.isCorrelationIDBytes;
+      this.correlationID = other.correlationID;
+      if (this.isCorrelationIDBytes)
+      {
+         this.correlationIDBytes = new byte[other.correlationIDBytes.length];
+         System.arraycopy(other.correlationIDBytes, 0, this.correlationIDBytes, 0, other.correlationIDBytes.length);
+      }
+      this.connectionID = other.connectionID;
+      this.priority = other.priority;
    }
 
    // javax.jmx.Message implementation ------------------------------
@@ -150,6 +160,10 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
    {
+      if (correlationID == null || correlationID.length == 0)
+      {
+         throw new JMSException("Please specify a non-zero length byte[]");
+      }
       correlationIDBytes = correlationID;
       isCorrelationIDBytes = true;
    }
@@ -534,14 +548,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
-   public String toString()
-   {
-      StringBuffer sb = new StringBuffer("JBossMessage[");
-      sb.append("ID=");
-      sb.append(messageID);
-      sb.append("]");
-      return sb.toString();
-   }
+   
 
    public void setSessionDelegate(SessionDelegate sd)
    {
@@ -558,10 +565,12 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       this.messageReadWrite = readWrite;
    }
 
-   public JBossMessage getReceivedObject()
+   
+   public JBossMessage doClone()
    {
-      return this;
+      return new JBossMessage(this);
    }
+   
    
    public String getConnectionID()
    {
@@ -603,7 +612,11 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       {
          writeString(out, correlationID);
       }
+      writeString(out, connectionID);
+      out.writeInt(priority);
    }
+
+
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
@@ -633,6 +646,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       {
          correlationID = readString(in);
       }
+      connectionID = readString(in);
+      priority = in.readInt();
    }
 
    // Package protected ---------------------------------------------

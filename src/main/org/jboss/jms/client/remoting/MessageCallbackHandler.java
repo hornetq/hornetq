@@ -6,19 +6,19 @@
  */
 package org.jboss.jms.client.remoting;
 
-import org.jboss.remoting.InvokerCallbackHandler;
-import org.jboss.remoting.HandleCallbackException;
-import org.jboss.remoting.Callback;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.transport.Connector;
-import org.jboss.logging.Logger;
-import org.jboss.jms.util.JBossJMSException;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
-
-import javax.jms.MessageListener;
-import javax.jms.Message;
-import javax.jms.JMSException;
+import org.jboss.jms.util.JBossJMSException;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.Callback;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.HandleCallbackException;
+import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.transport.Connector;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 
@@ -102,7 +102,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
             JBossMessage m = (JBossMessage)messages.take();				
-            listener.onMessage(m.getReceivedObject());
+            listener.onMessage(m);
             if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
             delivered(m);
          }
@@ -214,7 +214,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             {
                if (timeout == 0)
                {
-                  if (log.isTraceEnabled()) { log.trace("receive with no timeout"); }
+                  if (log.isTraceEnabled()) log.trace("receive with no timeout"); 
+                    
                   m = ((JBossMessage)messages.take());
                   if (log.isTraceEnabled()) { log.trace("Got message:" + m); }
                }
@@ -260,7 +261,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             if (!m.isExpired())
             {
                if (log.isTraceEnabled()) { log.trace("Message is not expired"); }
-               return m.getReceivedObject();
+               return m;
             }
 
             log.debug("Message expired");

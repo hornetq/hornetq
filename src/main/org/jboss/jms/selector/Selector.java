@@ -13,6 +13,7 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.ServerConsumerDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;
@@ -35,6 +36,8 @@ public class Selector implements Filter
    
    /** The ISelectorParser implementation class */
    private static Class parserClass = SelectorParser.class;
+   
+   private static final Logger log = Logger.getLogger(Selector.class);
 
    public String selector;
 
@@ -78,9 +81,13 @@ public class Selector implements Filter
       }
       catch (Exception e)
       {
+         
+         if (log.isTraceEnabled()) 
+         {
+            log.trace("Invalid selector:" + sel);
+         }
          InvalidSelectorException exception =
-         new InvalidSelectorException("The selector is invalid: " + sel);
-         exception.setLinkedException(e);
+            new InvalidSelectorException("The selector is invalid: " + sel);         
          throw exception;
       }
    }

@@ -43,12 +43,15 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
    // Attributes ----------------------------------------------------
 
    protected ServerPeer serverPeer;
+   
+   protected String defaultClientID;
 
    // Constructors --------------------------------------------------
 
-   public ServerConnectionFactoryDelegate(ServerPeer serverPeer)
+   public ServerConnectionFactoryDelegate(ServerPeer serverPeer, String defaultClientID)
    {
       this.serverPeer = serverPeer;
+      this.defaultClientID = defaultClientID;
    }
 
    // ConnectionFactoryDelegate implementation ----------------------
@@ -73,7 +76,6 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
 
       ClientManager clientManager = serverPeer.getClientManager();
-      //String connectionID = clientManager.generateConnectionID();
 
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
@@ -89,11 +91,17 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
 
       // create the corresponding "server-side" ConnectionDelegate and register it with the
       // server peer's ClientManager
-      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer);
+      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer, defaultClientID);
       clientManager.putConnectionDelegate(scd.getConnectionID(), scd);
       
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,
                            scd.getConnectionID(), PayloadKey.AS_IS);
+      
+      if (defaultClientID != null)
+      {
+         metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID,
+               defaultClientID, PayloadKey.AS_IS);
+      }
 
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_META_DATA,
                            new JBossConnectionMetaData());

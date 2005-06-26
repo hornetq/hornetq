@@ -54,7 +54,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    private transient DataInputStream m;
 
-   private transient boolean deserialised;
+   //private transient boolean deserialised;
 
    // Constructor ---------------------------------------------------
 
@@ -78,6 +78,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    // Public --------------------------------------------------------
 
+   /*
    public JBossMessage getReceivedObject()
    {
       if (deserialised)
@@ -92,6 +93,12 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          //message after it was sent does not effect the received message
          return new JBossBytesMessage(this);
       }
+   }
+   */
+   
+   public JBossMessage doClone()
+   {
+      return new JBossBytesMessage(this);
    }
 
    // BytesMessage implementation -----------------------------------
@@ -650,7 +657,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          internalArray = new byte[length];
          in.readFully(internalArray);
       }
-      deserialised = true;
+      //deserialised = true;
    }
 
    // Package protected ---------------------------------------------

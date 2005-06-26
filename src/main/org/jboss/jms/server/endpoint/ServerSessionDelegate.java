@@ -213,7 +213,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       if (callbackHandler == null)
       {
-         throw new JBossJMSException("null callback handler");
+         throw new JMSException("null callback handler");
       }
       
       DurableSubscriptionHolder subscription = null;
@@ -230,12 +230,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          
          subscription = clientManager.getDurableSubscription(clientID, subscriptionName);
          
-         //FIXME - race condition here - can result in multiple subscribers of same subscription
-         
-         if (subscription != null && subscription.hasConsumer())
-         {
-            throw new JMSException("There is already an active subscriber for this durable subscription");
-         }
+         //FIXME - race condition here - can result in multiple subscribers of same subscription                  
          
          if (subscription == null)
          {
@@ -258,6 +253,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          new ServerConsumerDelegate(consumerID,
                                     subscriptionName == null ? destination : subscription.getQueue(),
                                     callbackHandler, this, selector, noLocal, subscription);
+      
+      //The connection may have already been started - so the consumer must be started
+      if (this.connectionEndpoint.started)
+      {
+         scd.setStarted(true);
+      }
       
       putConsumerDelegate(consumerID, scd);
       connectionEndpoint.receivers.put(consumerID, scd);
