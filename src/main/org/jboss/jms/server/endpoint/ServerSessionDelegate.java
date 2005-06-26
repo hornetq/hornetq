@@ -23,6 +23,7 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Queue;
 import javax.jms.Topic;
+import javax.jms.InvalidDestinationException;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
@@ -56,6 +57,8 @@ import org.jboss.remoting.InvokerCallbackHandler;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerSessionDelegate extends Lockable implements SessionDelegate
 {
@@ -229,9 +232,17 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          ClientManager clientManager = serverPeer.getClientManager();
          
          subscription = clientManager.getDurableSubscription(clientID, subscriptionName);
+
+         // TODO - this makes MessageConsumerTest.testDurableSubscriptionOnlyOneConsumer() fail
          
-         //FIXME - race condition here - can result in multiple subscribers of same subscription                  
-         
+//         if (subscription != null)
+//         {
+//            throw new javax.jms.IllegalStateException("There is already a '" + subscriptionName +
+//                                                      "' durable subscription!");
+//         }
+
+         //FIXME - race condition here - can result in multiple subscribers of same subscription
+
          if (subscription == null)
          {
             if (!(destination instanceof LocalTopic))
@@ -245,7 +256,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
             //start it
             destination.add(subscription.getQueue());
          }
-         
+
          subscription.setHasConsumer(true);
       }
       
@@ -377,6 +388,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	public BrowserDelegate createBrowserDelegate(Destination jmsDestination, String messageSelector)
    	throws JMSException
 	{
+
+      if (jmsDestination == null)
+      {
+         throw new InvalidDestinationException("null destination");
+      }
+
 	   // look-up destination
 	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
 	  
