@@ -17,6 +17,7 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.InvalidDestinationException;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -27,8 +28,11 @@ import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
- * 
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class QueueBrowserTest extends MessagingTestCase
 {
@@ -45,7 +49,10 @@ public class QueueBrowserTest extends MessagingTestCase
 	protected JBossConnectionFactory cf;
 	protected Queue queue;
 	protected Topic topic;
-	
+   protected Connection connection;
+   protected Session session;
+   protected MessageProducer producer;
+
 	// Constructors --------------------------------------------------
 	
 	public QueueBrowserTest(String name)
@@ -67,44 +74,55 @@ public class QueueBrowserTest extends MessagingTestCase
 		
 		ServerManagement.deployTopic("Topic");
 		topic = (Topic)initialContext.lookup("/topic/Topic");
+
+      connection = cf.createConnection();
+      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      producer = session.createProducer(queue);
 	}
 	
 	public void tearDown() throws Exception
 	{
+      connection.stop();
+      connection = null;
 		ServerManagement.stopInVMServer();
-		//connection.stop();
-		//connection = null;
 		super.tearDown();
 	}
 	
 	// Public --------------------------------------------------------
-	
-	
+
+
+   public void testCreateBrowserOnNullDestination() throws Exception
+   {
+      try
+      {
+         session.createBrowser(null);
+         fail("should throw exception");
+      }
+      catch(InvalidDestinationException e)
+      {
+         // OK
+      }
+   }
+
 	public void testBrowse() throws Exception
 	{
 		
 		log.trace("Starting testBrowse()");						
 		
-		Connection conn = cf.createConnection();      
-		Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		
-		MessageProducer mp = sess.createProducer(queue);
-		
-		
-		
+
 		final int numMessages = 100;
 		
 		for (int i = 0; i < numMessages; i++)
 		{
-			Message m = sess.createMessage();
-			mp.send(m);
+			Message m = session.createMessage();
+			producer.send(m);
 		}
 		
 		log.trace("Sent messages");
 		
 		
 		
-		QueueBrowser browser = sess.createBrowser(queue);
+		QueueBrowser browser = session.createBrowser(queue);
 		
 		assertEquals(browser.getQueue(), queue);
 		
@@ -115,22 +133,22 @@ public class QueueBrowserTest extends MessagingTestCase
 		int count = 0;
 		while (en.hasMoreElements())
 		{
-			Message m = (Message)en.nextElement();			 
+			en.nextElement();
 			count++;
 		}
 		
 		assertEquals(count, numMessages);
 		
-		MessageConsumer mc = sess.createConsumer(queue);
+		MessageConsumer mc = session.createConsumer(queue);
 		
-		conn.start();
+		connection.start();
 		
 		for (int i = 0; i < numMessages; i++)
 		{
-			Message m = mc.receive();
+			mc.receive();
 		}
 		
-		browser = sess.createBrowser(queue);
+		browser = session.createBrowser(queue);
 		en = browser.getEnumeration();
 		
 		
@@ -143,8 +161,6 @@ public class QueueBrowserTest extends MessagingTestCase
 		}
 		
 		log.trace("Received " + count + " messages");
-		
-		conn.close();
 	}
 	
 	
@@ -152,23 +168,18 @@ public class QueueBrowserTest extends MessagingTestCase
 	public void testBrowseWithSelector() throws Exception
 	{
 
-		Connection conn = cf.createConnection();      
-		Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		
-		MessageProducer mp = sess.createProducer(queue);
-						
 		final int numMessages = 100;
 		
 		for (int i = 0; i < numMessages; i++)
 		{
-			Message m = sess.createMessage();
+			Message m = session.createMessage();
 			m.setIntProperty("test_counter", i+1);
-			mp.send(m);
+			producer.send(m);
 		}
 		
 		log.trace("Sent messages");
 		
-		QueueBrowser browser = sess.createBrowser(queue, "test_counter > 30");
+		QueueBrowser browser = session.createBrowser(queue, "test_counter > 30");
 		
 		Enumeration en = browser.getEnumeration();
 		int count = 0;
@@ -180,7 +191,6 @@ public class QueueBrowserTest extends MessagingTestCase
 			count++;
 		}
 		assertEquals(70, count);
-		
 	}
 	
 	
@@ -191,6 +201,5 @@ public class QueueBrowserTest extends MessagingTestCase
 	// Private -------------------------------------------------------
 	
 	// Inner classes -------------------------------------------------
-	
 }
 
