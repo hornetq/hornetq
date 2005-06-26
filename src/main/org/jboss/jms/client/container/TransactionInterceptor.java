@@ -59,11 +59,11 @@ public class TransactionInterceptor implements Interceptor, Serializable
       
          String methodName = mi.getMethod().getName();
          
-         if (log.isTraceEnabled()) log.trace("In TransactionInterceptor: method is " + methodName);
+         if (log.isTraceEnabled()) { log.trace("In TransactionInterceptor: method is " + methodName); }
          
 			if ("createConnectionDelegate".equals(methodName))
 			{
-				if (log.isTraceEnabled()) log.trace("creating resource manager");
+				if (log.isTraceEnabled()) { log.trace("creating resource manager"); }
 				//Create new ResourceManager and add to meta-data for invocation handler
 				//for connection
 				ConnectionDelegate connectionDelegate = (ConnectionDelegate)invocation.invokeNext();
@@ -74,7 +74,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
 			}			
 			else if ("createSessionDelegate".equals(methodName))
          {
-            if (log.isTraceEnabled()) log.trace("createSessionDelegate");
+            if (log.isTraceEnabled()) { log.trace("createSessionDelegate"); }
             
             SessionDelegate sd = (SessionDelegate)invocation.invokeNext();
             
@@ -82,14 +82,14 @@ public class TransactionInterceptor implements Interceptor, Serializable
             
             Boolean transacted = (Boolean)mi.getArguments()[0];
             
-				if (log.isTraceEnabled()) log.trace("Transacted: " + transacted);
+				if (log.isTraceEnabled()) { log.trace("Transacted: " + transacted); }
             
             if (transacted == null)
                throw new IllegalStateException("Cannot find transacted argument");
 
             if (transacted.booleanValue())
             {
-					if (log.isTraceEnabled()) log.trace("Session is transacted");
+					if (log.isTraceEnabled()) { log.trace("Session is transacted"); }
                
                //Session has been created and is transacted so we start a tx               
                
@@ -100,22 +100,20 @@ public class TransactionInterceptor implements Interceptor, Serializable
 					
                Object Xid = rm.createLocalTx();
                
-					if (log.isTraceEnabled()) log.trace("Created tx");
+					if (log.isTraceEnabled()) { log.trace("Created tx"); }
                
                //And set it on the meta-data of the returned delegate's invocation handler
                JMSInvocationHandler sessionHandler = getHandler(sd);               
                setMetaData(sessionHandler, JMSAdvisor.XID, Xid);               
                
-					if (log.isTraceEnabled()) log.trace("Added Xid to meta-data");
+					if (log.isTraceEnabled()) { log.trace("Added Xid to meta-data"); }
             }
             
             return sd;
          }         
          else if ("commit".equals(methodName))
          {
-            JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
-            
-				if (log.isTraceEnabled()) log.trace("commit");
+				if (log.isTraceEnabled()) { log.trace("commit"); }
 				
             Object Xid = getMetaData(mi, JMSAdvisor.XID);                
             if (Xid == null)
@@ -131,10 +129,9 @@ public class TransactionInterceptor implements Interceptor, Serializable
          }
          else if ("rollback".equals(methodName))
          {
-            if (log.isTraceEnabled()) log.trace("rollback");
-            JMSInvocationHandler handler = ((JMSMethodInvocation)invocation).getHandler();
-    
-            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);               
+            if (log.isTraceEnabled()) { log.trace("rollback"); }
+
+            Object Xid = mi.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
             if (Xid == null)
             {
                log.error("Attempt to rollback a non-transacted session");
@@ -152,7 +149,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
          }
          else if ("send".equals(methodName))
          {
-            if (log.isTraceEnabled()) log.trace("send"); 
+            if (log.isTraceEnabled()) { log.trace("send"); }
 
             JMSInvocationHandler sessionInvocationHandler = getHandler(invocation).getParent();
 
@@ -162,7 +159,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
             if (Xid != null)
             {
                //Session is transacted - so we add message to tx instead of sending now
-               if (log.isTraceEnabled())  log.trace("Session is transacted, storing mesage until commit");
+               if (log.isTraceEnabled()) { log.trace("Session is transacted, storing mesage until commit"); }
                Message m = (Message)mi.getArguments()[1];
 					ResourceManager rm = (ResourceManager)getHandler(invocation).getParent().getParent().getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.RESOURCE_MANAGER);
 					rm.addMessage(Xid, m);
@@ -177,7 +174,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
          }
          else if ("acknowledge".equals(methodName))
 			{
-				if (log.isTraceEnabled()) log.trace("acknowledge");
+				if (log.isTraceEnabled()) { log.trace("acknowledge"); }
 				
 				Object Xid = mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
 				
