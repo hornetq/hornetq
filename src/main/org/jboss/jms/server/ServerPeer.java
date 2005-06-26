@@ -33,7 +33,6 @@ import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -414,9 +413,9 @@ public class ServerPeer
                            locator,
                            PayloadKey.AS_IS);
       metadata.addMetaData(InvokerInterceptor.REMOTING,
-            InvokerInterceptor.INVOKER_LOCATOR,
-            locator,
-            PayloadKey.AS_IS);
+                           InvokerInterceptor.INVOKER_LOCATOR,
+                           locator,
+                           PayloadKey.AS_IS);
       metadata.addMetaData(InvokerInterceptor.REMOTING,
                            InvokerInterceptor.SUBSYSTEM,
                            "JMS",

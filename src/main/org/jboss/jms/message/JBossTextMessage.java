@@ -12,7 +12,6 @@ import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.client.container.TransactionInterceptor;
 import org.jboss.logging.Logger;
 
 /**
@@ -84,11 +83,11 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       super.readExternal(in);
       
-      if (log.isTraceEnabled()) log.trace("in readExternal");
+      if (log.isTraceEnabled()) { log.trace("in readExternal"); }
       
       byte type = in.readByte();
       
-      if (log.isTraceEnabled()) log.trace("type is:" + type);
+      if (log.isTraceEnabled()) { log.trace("type is:" + type); }
 
       if (type == NULL)
       {
@@ -149,7 +148,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       super.writeExternal(out);
       
-      if (log.isTraceEnabled()) log.trace("in writeExternal");
+      if (log.isTraceEnabled()) { log.trace("in writeExternal"); }
 
       if (content == null)
       {
