@@ -548,8 +548,6 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
-   
-
    public void setSessionDelegate(SessionDelegate sd)
    {
       this.delegate = sd;
@@ -580,6 +578,15 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    public void setConnectionID(String connectionID)
    {
       this.connectionID = connectionID;
+   }
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("JBossMessage[");
+      sb.append("ID=");
+      sb.append(messageID);
+      sb.append("]");
+      return sb.toString();
    }
 
    // Externalizable implementation ---------------------------------
