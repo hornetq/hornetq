@@ -564,7 +564,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    }
 
    
-   public JBossMessage doClone()
+   public JBossMessage doClone() throws JMSException
    {
       return new JBossMessage(this);
    }

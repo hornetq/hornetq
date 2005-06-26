@@ -22,6 +22,7 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 import org.jboss.logging.Logger;
+import org.jboss.jms.util.JBossJMSException;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -65,6 +66,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    }
 
    protected JBossBytesMessage(JBossBytesMessage other)
+         throws JMSException
    {
       super(other);
       if (other.internalArray != null)
@@ -72,11 +74,23 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          this.internalArray = new byte[other.internalArray.length];
          System.arraycopy(other.internalArray, 0, this.internalArray, 0, other.internalArray.length);
       }
+
+      // if the message is not reseted, is essential to clone ostream too
+      this.ostream = new ByteArrayOutputStream(other.ostream.size());
+      try
+      {
+         this.ostream.write(other.ostream.toByteArray());
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("Failed to clone BytesMessage's ostream", e);
+      }
+      p = new DataOutputStream(this.ostream);
    }
 
    // Public --------------------------------------------------------
 
-   public JBossMessage doClone()
+   public JBossMessage doClone() throws JMSException
    {
       return new JBossBytesMessage(this);
    }
@@ -540,10 +554,13 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       {
          if (messageReadWrite)
          {
-            if (log.isTraceEnabled())  log.trace("Flushing ostream to array");
+            if (log.isTraceEnabled())  { log.trace("Flushing ostream to array"); }
+
             p.flush();
             internalArray = ostream.toByteArray();
-            if (log.isTraceEnabled()) log.trace("Array is now: " + internalArray);
+
+            if (log.isTraceEnabled()) { log.trace("Array is now: " + internalArray); }
+
             ostream.close();
          }
          ostream = null;
@@ -657,12 +674,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          throw new MessageNotReadableException("readByte while the buffer is writeonly");
       }
 
-      //We have just received/reset() the message, and the client is trying to
+      // We have just received/reset() the message, and the client is trying to
       // read it
       if (istream == null || m == null)
       {
-         if (log.isTraceEnabled())
-            log.trace("internalArray:" + internalArray);
+         if (log.isTraceEnabled()) {  log.trace("internalArray:" + internalArray); }
          istream = new ByteArrayInputStream(internalArray);
          m = new DataInputStream(istream);
       }
