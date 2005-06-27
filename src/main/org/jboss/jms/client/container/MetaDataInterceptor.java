@@ -17,6 +17,7 @@ import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
 import javax.jms.Destination;
+import javax.jms.Message;
 import java.io.Serializable;
 
 /**
@@ -89,7 +90,7 @@ public class MetaDataInterceptor implements Interceptor, Serializable
          else if ("send".equals(methodName))
          {
             Destination destination = (Destination)args[0];
-            JBossMessage m = (JBossMessage)args[1];
+            Message m = (Message)args[1];
             int deliveryMode = ((Integer)args[2]).intValue();
             int priority = ((Integer)args[3]).intValue();
             long timeToLive = ((Long)args[4]).longValue();
@@ -165,16 +166,19 @@ public class MetaDataInterceptor implements Interceptor, Serializable
                ((JBossBytesMessage)m).reset();
             }
 
-            m.setPropertiesReadWrite(false);
+            // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
+            // a message whose implementation is not one of its own.
 
-            // Section 3.9 of JMS 1.1 spec states:
-            // "After sending a message, a client may retain and modify it without affecting the
-            //  message that has been sent. The same message object may be sent multiple times."
-            // So we clone the message, but after we modify all significant fields
-            JBossMessage clone = m.doClone();
+            // JMS 1.1 Sect. 3.9: After sending a message, a client may retain and modify it without
+            // affecting the message that has been sent. The same message object may be sent
+            // multiple times.
 
-            // send the clone down the stack
-            args[1] = clone;
+            JBossMessage copy = JBossMessage.copy(m);
+
+            copy.setPropertiesReadWrite(false);
+
+            // send the copy down the stack
+            args[1] = copy;
          }
       }
 

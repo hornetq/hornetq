@@ -61,14 +61,29 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    {
       super(other);
       this.isByteArray = other.isByteArray;
-      this.objectBytes = new byte[other.objectBytes.length];
-      System.arraycopy(other.objectBytes, 0, this.objectBytes, 0, other.objectBytes.length);
+      if (other.objectBytes != null)
+      {
+         this.objectBytes = new byte[other.objectBytes.length];
+         System.arraycopy(other.objectBytes, 0, this.objectBytes, 0, other.objectBytes.length);
+      }
+   }
+
+   /**
+    * A copy constructor for non-JBoss Messaging JMS ObjectMessages.
+    */
+   protected JBossObjectMessage(ObjectMessage foreign) throws JMSException
+   {
+      super(foreign);
+
+      Serializable object = foreign.getObject();
+      if (object != null)
+      {
+         setObject(object);
+      }
    }
 
    // Public --------------------------------------------------------
    
-   
-
    // ObjectMessage implementation ----------------------------------
 
    public void setObject(Serializable object) throws JMSException

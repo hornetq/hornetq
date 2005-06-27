@@ -20,6 +20,7 @@ import javax.jms.StreamMessage;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
  * This class implements javax.jms.StreamMessage.
@@ -73,25 +74,16 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       this.offset = other.offset;
    }
 
-   // Public --------------------------------------------------------
-
-   /*
-   public JBossMessage getReceivedObject()
+   /**
+    * A copy constructor for non-JBoss Messaging JMS StreamMessages.
+    */
+   protected JBossStreamMessage(StreamMessage foreign) throws JMSException
    {
-      if (deserialised)
-      {
-         //If the object has been created from serialization then we just return it
-         return this;
-      }
-      else
-      {
-         //Otherwise we clone the object.
-         //This is because it's a requirement for a StreamMessage that changing the sent
-         //message after it was sent does not effect the received message
-         return new JBossStreamMessage(this);
-      }
+      super(foreign);
+      throw new NotYetImplementedException();
    }
-   */
+
+   // Public --------------------------------------------------------
 
    // StreamMessage implementation ----------------------------------
 

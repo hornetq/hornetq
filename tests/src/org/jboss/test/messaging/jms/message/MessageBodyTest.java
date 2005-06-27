@@ -128,7 +128,7 @@ public class MessageBodyTest extends MessagingTestCase
       m.writeUTF(myString);
       m.writeBytes(myBytes);
       m.writeBytes(myBytes, 2, 3);
-      
+
 
       m.writeObject(new Boolean(myBool));
       m.writeObject(new Byte(myByte));
@@ -260,7 +260,7 @@ public class MessageBodyTest extends MessagingTestCase
       queueProducer.send(queue, m);
 
       BytesMessage m2 = (BytesMessage) queueConsumer.receive(2000);
-      
+
       assertNotNull(m2);
 
       assertEquals(myBool, m2.readBoolean());
@@ -278,12 +278,12 @@ public class MessageBodyTest extends MessagingTestCase
       assertEquals(6, ret);
 
       assertByteArraysEqual(myBytes, bytes);
-      
+
       byte[] bytes2 = new byte[3];
       ret = m2.readBytes(bytes2);
-      
+
       assertEquals(3, ret);
-      
+
       assertEquals(myBytes[2], bytes2[0]);
       assertEquals(myBytes[3], bytes2[1]);
       assertEquals(myBytes[4], bytes2[2]);
@@ -499,7 +499,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
 
       long bodyLength = m2.getBodyLength();
-      
+
       assertEquals(161, bodyLength);
 
       m2.reset();
@@ -1180,6 +1180,8 @@ public class MessageBodyTest extends MessagingTestCase
 
       TestSerializable obj4 = (TestSerializable) m4.getObject();
 
+      assertNotNull(obj4);
+
    }
 
    public void testStreamMessage() throws Exception
@@ -1210,8 +1212,8 @@ public class MessageBodyTest extends MessagingTestCase
       m.writeString(myString);
       m.writeBytes(myBytes);
       m.writeBytes(myBytes, 2, 3);
-      
-         
+
+
 
       m.writeObject(new Boolean(myBool));
       m.writeObject(new Byte(myByte));
@@ -1302,7 +1304,7 @@ public class MessageBodyTest extends MessagingTestCase
       queueProducer.send(queue, m);
 
       StreamMessage m2 = (StreamMessage) queueConsumer.receive(2000);
-     
+
       assertEquals(myBool, m2.readBoolean());
       assertEquals(myByte, m2.readByte());
       assertEquals(myShort, m2.readShort());
@@ -1318,19 +1320,19 @@ public class MessageBodyTest extends MessagingTestCase
       assertEquals(6, ret);
 
       assertByteArraysEqual(myBytes, bytes);
-      
+
       ret = m2.readBytes(bytes);
       assertEquals(-1, ret);
-      
+
       byte[] bytes2 = new byte[3];
       ret = m2.readBytes(bytes2);
-      
+
       assertEquals(3, ret);
-      
+
       assertEquals(myBytes[2], bytes2[0]);
       assertEquals(myBytes[3], bytes2[1]);
       assertEquals(myBytes[4], bytes2[2]);
-      
+
       ret = m2.readBytes(bytes2);
       assertEquals(-1, ret);
 
@@ -1564,29 +1566,29 @@ public class MessageBodyTest extends MessagingTestCase
       assertFalse(m == m2);
 
    }
-   
+
    public void testTextMessage() throws Exception
    {
       TextMessage m = queueProducerSession.createTextMessage();
-      
+
       //Arbitrary string with some Chinese characters to make sure UTF encoding is ok
       String myString = "wwiuhdiuwhdwuhdwuhduqwhdiuwhdiuhwed8u29837482787\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
-      
+
       m.setText(myString);
-      
+
       queueProducer.send(queue, m);
-      
+
       TextMessage m2 = (TextMessage)queueConsumer.receive(2000);
-      
+
       assertEquals(myString, m2.getText());
-      
+
       m = queueProducerSession.createTextMessage(myString);
       queueProducer.send(queue, m);
-      
+
       m2 = (TextMessage)queueConsumer.receive(2000);
-      
+
       assertEquals(myString, m2.getText());
-      
+
       try
       {
          m2.setText("Should be read-only");
@@ -1594,11 +1596,11 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch(MessageNotWriteableException e)
       {}
-      
+
       m2.clearBody();
       assertNull(m2.getText());
       m2.setText("Now it is read-write");
-      
+
 
    }
 

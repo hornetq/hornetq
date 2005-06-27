@@ -9,16 +9,16 @@ package org.jboss.test.messaging.tools;
 import javax.jms.Message;
 import javax.jms.JMSException;
 import javax.jms.Destination;
+import javax.jms.DeliveryMode;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
 
 /**
- * Used for testing only.
+ * Foreign message implementation. Used for testing only.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -61,31 +61,49 @@ public class MessageImpl implements Message
       this.timestamp = timestamp;
    }
 
+   //
+   // TODO Is this really the spec?
+   //
 
-   private byte[] correlationID;
+   private byte[] correlationIDBytes;
+   private String correlationIDString;
+   private boolean isCorrelationIDBytes;
+
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      return correlationID;
+      if (!isCorrelationIDBytes)
+      {
+         throw new JMSException("CorrelationID is a String for this message");
+      }
+      return correlationIDBytes;
    }
-
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
    {
-      this.correlationID = correlationID;
+      if (correlationID == null || correlationID.length == 0)
+      {
+         throw new JMSException("Please specify a non-zero length byte[]");
+      }
+      correlationIDBytes = correlationID;
+      isCorrelationIDBytes = true;
    }
-
 
    public void setJMSCorrelationID(String correlationID) throws JMSException
    {
-      this.correlationID = correlationID.getBytes();
+      this.correlationIDString = correlationID;
+      isCorrelationIDBytes = false;
    }
-
 
    public String getJMSCorrelationID() throws JMSException
    {
-      return new String(correlationID);
+      if (isCorrelationIDBytes)
+      {
+         throw new JMSException("CorrelationID is a byte[] for this message");
+      }
+      return correlationIDString;
    }
+
 
    private Destination replyTo;
 
@@ -115,7 +133,7 @@ public class MessageImpl implements Message
    }
 
 
-   private int deliveryMode;
+   private int deliveryMode = DeliveryMode.PERSISTENT;
 
    public int getJMSDeliveryMode() throws JMSException
    {

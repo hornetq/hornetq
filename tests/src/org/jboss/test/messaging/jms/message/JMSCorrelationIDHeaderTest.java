@@ -8,7 +8,6 @@ package org.jboss.test.messaging.jms.message;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.TemporaryQueue;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>

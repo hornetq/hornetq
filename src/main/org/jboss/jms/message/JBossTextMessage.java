@@ -52,6 +52,19 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       this.content = other.content;
    }
 
+   /**
+    * A copy constructor for non-JBoss Messaging JMS TextMessages.
+    */
+   protected JBossTextMessage(TextMessage foreign) throws JMSException
+   {
+      super(foreign);
+      String text = foreign.getText();
+      if (text != null)
+      {
+         setText(text);
+      }
+   }
+
    // Public --------------------------------------------------------
 
    // TextMessage implementation ------------------------------------

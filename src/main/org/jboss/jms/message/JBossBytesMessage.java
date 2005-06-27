@@ -23,6 +23,7 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -65,8 +66,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       p = new DataOutputStream(ostream);
    }
 
-   protected JBossBytesMessage(JBossBytesMessage other)
-         throws JMSException
+   protected JBossBytesMessage(JBossBytesMessage other) throws JMSException
    {
       super(other);
       if (other.internalArray != null)
@@ -75,7 +75,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          System.arraycopy(other.internalArray, 0, this.internalArray, 0, other.internalArray.length);
       }
 
-      // if the message is not reseted, is essential to clone ostream too
+      // if the message is not reset, is essential to clone ostream too
       if (ostream != null)
       {
          this.ostream = new ByteArrayOutputStream(other.ostream.size());
@@ -89,6 +89,15 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          }
          p = new DataOutputStream(this.ostream);
       }
+   }
+
+   /**
+    * A copy constructor for non-JBoss Messaging JMS byte messages.
+    */
+   protected JBossBytesMessage(BytesMessage foreign) throws JMSException
+   {
+      super(foreign);
+      throw new NotYetImplementedException();
    }
 
    // Public --------------------------------------------------------

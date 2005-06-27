@@ -18,8 +18,8 @@ import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
 
-import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
  * This class implements javax.jms.MapMessage
@@ -38,8 +38,6 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    private static final long serialVersionUID = -8018832209056373908L;
 
-   private static final Logger log = Logger.getLogger(JBossMapMessage.class);
-
    // Attributes ----------------------------------------------------
 
    protected Map content;
@@ -57,6 +55,15 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       super(other);
       content = new HashMap(other.content);
+   }
+
+   /**
+    * A copy constructor for non-JBoss Messaging JMS map messages.
+    */
+   protected JBossMapMessage(MapMessage foreign) throws JMSException
+   {
+      super(foreign);
+      throw new NotYetImplementedException();
    }
 
    // Public --------------------------------------------------------

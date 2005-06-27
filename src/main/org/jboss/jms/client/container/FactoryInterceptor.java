@@ -17,9 +17,6 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.destination.JBossTemporaryQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.delegate.ConnectionDelegate;
 
 /**
  * Constructs various things that can be created entirely or partially on the client.

@@ -126,20 +126,17 @@ public class MessageProducerTest extends MessagingTestCase
    }
 
 
-   public void testSendInvalidMessage() throws Exception
+   public void testSendForeingMessage() throws Exception
    {
       // send a message that is not created by the session
 
-      Message m = new MessageImpl();
+      consumerConnection.start();
 
-      try
-      {
-         topicProducer.send(m);
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
+      Message m = new MessageImpl();
+      queueProducer.send(m);
+
+      Message rec = queueConsumer.receive();
+      assertEquals(m.getJMSMessageID(), rec.getJMSMessageID());
    }
 
 
