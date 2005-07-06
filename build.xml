@@ -18,31 +18,6 @@
 
 <project default="main" name="JBoss/Messaging">
 
-   <!-- Version overrides. Use these local ones for the release, instead of JBoss global version.
-        TODO review this when integrating with JBoss build
-   -->
-
-   <property name="version.major" value="1"/>
-   <property name="version.minor" value="0"/>
-   <property name="version.revision" value="0"/>
-   <property name="version.tag" value="alpha-pr1"/>
-   <property name="version.name" value=""/>
-   <!-- This must be set to the CVS tag for any release -->
-   <!-- <property name="version.cvstag" value="HEAD"/> -->
-
-   <!-- Manifest version info -->
-   <property name="specification.title" value="JBoss Messaging"/>
-   <property name="specification.version" value="${version.major}.${version.minor}.${version.revision}"/>
-   <property name="specification.vendor" value="JBoss (http://www.jboss.org/)"/>
-
-   <property name="implementation.title" value="JBoss Messaging"/>
-   <property name="implementation.url" value="http://www.jboss.org/"/>
-   <property name="implementation.version"
-      value="${version.major}.${version.minor}.${version.revision}${version.tag} (build: CVSTag=${version.cvstag} date=${build.id})"/>
-   <property name="implementation.vendor" value="JBoss Inc."/>
-   <property name="implementation.vendor.id" value="${implementation.url}"/>
-
-
   <!-- ================================================================== -->
   <!-- Setup                                                              -->
   <!-- ================================================================== -->
@@ -88,10 +63,33 @@
     <!-- Basic Configuration -->
     <!-- =================== -->
 
+     <property name="messaging.version.major" value="1"/>
+     <property name="messaging.version.minor" value="0"/>
+     <property name="messaging.version.revision" value="0"/>
+     <property name="messaging.version.tag" value="alpha-pr1"/>
+     <property name="messaging.version.name" value=""/>
+     <!-- This must be set to the CVS tag for any release -->
+     <!-- <property name="messaging.version.cvstag" value="HEAD"/> -->
+
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
      <property name="module.Name" value="JBoss Messaging"/>
-     <property name="module.version" value="${version.major}.${version.minor}.${version.revision}${version.tag}"/>
+     <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}${messaging.version.tag}"/>
+
+
+     <!-- Manifest version info -->
+     <property name="messaging.specification.title" value="${module.Name}"/>
+     <property name="messaging.specification.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}"/>
+     <property name="messaging.specification.vendor" value="JBoss (http://www.jboss.org/)"/>
+
+     <property name="messaging.implementation.title" value="${module.Name}"/>
+     <property name="messaging.implementation.url" value="http://www.jboss.org/"/>
+     <property name="messaging.implementation.version"
+        value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}${messaging.version.tag} (build: CVSTag=${messaging.version.cvstag} date=${build.id})"/>
+     <property name="messaging.implementation.vendor" value="JBoss Inc."/>
+     <property name="messaging.implementation.vendor.id" value="${implementation.url}"/>
+
+
 
 
     <!-- ========= -->

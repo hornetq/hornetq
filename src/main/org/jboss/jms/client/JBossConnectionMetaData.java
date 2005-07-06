@@ -52,12 +52,12 @@ public class JBossConnectionMetaData implements Serializable, ConnectionMetaData
 
 
     public String getJMSProviderName() throws JMSException {
-        return "jboss.org";
+        return "JBoss Messaging";
     }
 
  
     public String getProviderVersion() throws JMSException {        
-        return "1.0.0 alpha";
+        return "1.0.0 alpha PR1";
     }
 
 
