@@ -546,7 +546,7 @@
    </target>
 
    <target name="source-zip" depends="source">
-      <zip destfile="${release.output}/JBossMessaging--${module.version}-src.zip"
+      <zip destfile="${release.output}/JBossMessaging-${module.version}-src.zip"
          basedir="${release.output}/src"/>
    </target>
    
