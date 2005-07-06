@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JBoss Messaging Release Notes</title>
+</head>
+<body>
+<h1><br>
+JBoss Messaging 1.0.0alpha-pr1 Release Notes</h1>
+July 5, 2005<br>
+<br>
+$Revision$<br>
+<br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="text-align: left;"><span style="font-weight: bold;">Note</span>:
+The current JBoss Messaging distribution is an <span
+ style="font-style: italic;">preview </span><span
+ style="font-style: italic;">alpha </span><span
+ style="font-style: italic;">release. </span>We strongly advise
+against using it in a production environment.<br>
+<br>
+</div>
+<br>
+<h2>Overview</h2>
+This notes document the first preview release of JBoss Messaging. JBoss
+Messaging is a JMS 1.1 compliant JMS provider, based on a completely
+new design, which recycles a
+limited number of JBossMQ well-designed sub-systems and replaces
+everything else. The production release will show improvements in three
+areas:<br>
+<ul>
+  <li>&nbsp;Increased performance under high load. The JBoss Messaging
+internals are based on an asynchronous channel
+architecture, which reduces the number of synchronization bottlenecks
+and&nbsp; maximize the throughput of the system.</li>
+  <li>Better high availability/load balancing features. JBossMQ is
+essentially a singleton (hub and spoke server architecture).
+Some HA features have been later bolted on it, but it lacks in-memory
+replication of NON_PERSISTENT messages, distributed/replicated
+destinations and transparent fail-over. JBoss Messaging will add these
+features.<br>
+  </li>
+  <li>Better modular architecture. There is a clear distinction between
+the reliable distributed messaging
+core and the JMS facade. The implementation uses JBoss AOP and an
+interceptor architecture to implement the JMS Facade. That would allow
+advanced configurations, where behavior can be shifted back and forth
+from client to server, with direct applications on thinner or thicker
+clients and serverless JMS. <br>
+  </li>
+</ul>
+The current release has been tested with
+JBoss 4.0.2 and JBoss 5.0.0alpha.<br>
+<br>
+<h2>Contents</h2>
+The JBoss Messaging release bundle includes the following files and
+directories:<br>
+<ul>
+  <li><span style="font-family: monospace;">jboss-messaging.sar</span>
+- the deployable JBoss service archive that contains JBoss Messaging
+and its dependencies. For instructions on how to deploy the service, go
+to the "Installation" section.<br>
+  </li>
+  <li><span style="font-family: monospace;">src</span> - the expanded
+JBoss Messaging source code. Note that JBoss Messaging cannot be built
+using exclusively this source snapshot, which is provided here for
+reference only. If you wan to build JBoss Messaging from source, go to
+the "Building JBoss Messaging from sources" section. <br>
+  </li>
+  <li><span style="font-family: monospace;">JBossMessaging-1.0.0alpha-pr1-src.zip</span>
+- the zipped <span style="font-family: monospace;">src</span>
+directory.<br>
+  </li>
+  <li><span style="font-family: monospace;">examples </span>- a
+collection of simple JMS examples that should run out of the box and
+help you validate the installation.<br>
+    <br>
+    <br>
+  </li>
+</ul>
+<h2>Installation</h2>
+Deploy the JBoss Messaging by copying the service archive <span
+ style="font-family: monospace;">jboss-messaging.sar </span>into the
+deployment directory of a JBoss 4.0.2 instance. In case that you run
+the default configuration, the deployment directory is <span
+ style="font-family: monospace;">$JBOSS_HOME/server/default/deploy.<br>
+<br>
+</span>A successful deployment generates logging output similar to:<br>
+<br>
+<table style="width: 90%; text-align: left; margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);"><span
+ style="font-family: monospace;"><br>
+20:19:30,875 INFO&nbsp;
+[AspectDeployer] Deployed AOP:
+jar:file:/C:/jboss-4.0.2/server/default/tmp/deploy/tmp49925jboss-messaging.sar!/jms-aop.xml</span><br
+ style="font-family: monospace;">
+      <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">20:19:30,921
+INFO&nbsp; [SocketServerInvoker] Invoker started for locator:
+InvokerLocator
+[socket://192.168.1.3:4447/?marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&amp;<br>
+dataTyp</span><span style="font-family: monospace;">e=invocation&amp;unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]</span><br
+ style="font-family: monospace;">
+      <span style="font-family: monospace;">20:19:32,000 INFO&nbsp;
+[ServerPeer] JMS ServerPeer (id=0) started<br>
+      <br style="font-family: monospace;">
+      </span><span style="color: rgb(255, 0, 0);"></span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<span style="font-family: monospace;"></span><span
+ style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(0, 0, 0); font-weight: bold;"> Note: </span><span
+ style="color: rgb(0, 0, 0);">Deploying JBoss Messaging has as a side
+effect the fact that previous JBossMQ JNDI bindings such as
+/ConnectionFactory, will be overwritten. In order to start using
+JBossMQ again, you either need to re-deploy it, or </span></span><span
+ style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">delete
+jboss-messaging.sar from the server's deploy directory and </span></span><span
+ style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">restart
+the server instance.<br>
+<br>
+<br>
+</span></span>You can use a number of simple JMS examples that are
+provided
+with the release to validate the deployment. Each example has its own
+<span style="font-family: monospace;">readme.html</span> file that
+contains instructions on how to run it. The
+readme files and the source code are available under the <span
+ style="font-family: monospace;">examples</span> directory.<br>
+<br>
+<h2>Building JBoss Messaging from source</h2>
+In order to build this version of JBoss Messaging from source, you will
+need to check out the whole JBoss AS source tree from the anonymous
+JBoss CVS. Instructions on how to do this are available at <a
+ href="http://wiki.jboss.org/wiki/Wiki.jsp?page=CVSRepository">http://wiki.jboss.org/wiki/Wiki.jsp?page=CVSRepository</a>.
+A condensed version of the whole procedure is provided below:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">cvs
+co -r JBossMessaging_1_0_0_alpha_PR1 jboss-head</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">cd jboss-head</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">./build/build.sh</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">cd jms</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">./build sar-scoped</span><br>
+</div>
+<br>
+This will generate a <span style="font-family: monospace;">jboss-messaging.sar</span>
+service archive in <span style="font-family: monospace;">output/lib</span>.<br>
+<h2>Limitations</h2>
+This is the first release in a long (we hope) series of releases. This
+is also an alpha and a preview release, coming straight from our code
+editors. We don't expect it to be perfect, not even complete, but we
+see it more as an
+intermediate step towards the perfect release that will come ... soon.
+However, it is complete enough so you can have an idea on the
+overall architecture and sub-systems. It's <span class="postbody">85.61%
+JMS 1.1 compliant, which means that it passed 85.61% of the Sun
+Microsystem's CTS. Some of the known major limitations are:<br>
+</span><br>
+- Support for PERSISTENT messages is not complete. <br>
+- A JCA Adapter is not available.<br>
+- Support for high availability and load balancing is complete. The
+base architecture has the wiring for distributed/replicated
+destinations, but it is not active yet.<br>
+<br>
+<h2>JBoss Messaging Links</h2>
+JBoss Messaging home page: <a
+ href="http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging">http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging</a><br>
+JBoss Messaging project roadmap: <a
+ href="http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel">http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel</a><br>
+JBoss Messaging design forum: <a
+ href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153">http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153</a><br>
+JBoss Messaging CVS: <a
+ href="http://anoncvs.forge.jboss.com:8080/viewrep/JBoss/jboss-jms">http://anoncvs.forge.jboss.com:8080/viewrep/JBoss/jboss-jms</a><br>
+<br>
+<hr style="width: 100%; height: 2px;">
+</body>
+</html>

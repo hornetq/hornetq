@@ -33,6 +33,13 @@
       <type>java.lang.String</type>
    </attribute>
 
+   <attribute access="read-write" getMethod="getConnector" setMethod="setConnector">
+      <description>The ObjectName of the Connector used by this ServerPeer</description>
+      <name>Connector</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+
 
    <!-- Managed operations -->
 

@@ -30,6 +30,26 @@
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="1.0.0"/>
 
+   <!-- ==================== -->
+   <!-- Local path overrides -->
+   <!-- ==================== -->
+
+    <!--
+        Sometimes I need to locally patch a library and use the local version (src/resources),
+        until the change makes it to thridpary. This is how you can locally override a library.
+        To use the thirdparty library, just comment out the path definition below.
+    -->
+
+   <path id="jboss.remoting.classpath">
+       <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
+   </path>
+
+   <!--
+   <path id="jgroups.jgroups.classpath">
+      <pathelement path="${module.root}/../src/resources/jgroups-core.jar"/>
+   </path>
+   -->
+
    <!-- ========= -->
    <!-- Libraries -->
    <!-- ========= -->
@@ -41,9 +61,7 @@
       <path refid="javassist.classpath"/>
       <path refid="trove.classpath"/>
       <path refid="dom4j.dom4j.classpath"/>
-      <!-- I temporarily use a newer version of JGroups, not available in the thirdparty dir -->
-      <!-- <path refid="jgroups.jgroups.classpath"/> -->
-      <pathelement path="${module.root}/../src/resources/jgroups-core.jar"/>
+      <path refid="jgroups.jgroups.classpath"/>
       <path refid="apache.commons.classpath"/>
       <path refid="gnu.regexp.classpath"/>
       <path refid="sun.servlet.classpath"/>
@@ -60,9 +78,7 @@
       <path refid="jboss.j2se.classpath"/>
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.mbeans.classpath"/>
-      <!-- Temporarily I use the "patched" jboss-remoting.jar from src/resources -->
-      <!-- <path refid="jboss.remoting.classpath"/> -->
-      <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
+      <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.aop.classpath"/>
    </path>
 
@@ -241,6 +257,11 @@
    </target>
 
    <target name="clobber" depends="clean"/>
+
+   <target name="display-path">
+      <pathconvert refid="dependentmodule.classpath" targetos="unix" property="path.representation"/>
+      <echo message="${path.representation}"/>
+   </target>
 
 </project>
 

@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JBoss Messaging Example - JMS Queue</title>
+</head>
+<body>
+<br>
+<h1>JMS Queue Example</h1>
+$Revision$
+<h2>Overview</h2>
+<br>
+This example creates a JMS Connection to a JBoss Messaging instance
+and uses it to create a session and a message producer, which sends a
+message to a queue. The first connection is closed, and a second
+connection is created and used to create a message consumer that reads
+a single message from the queue. The example is considered successful
+if the message consumer receives without any error the message that was
+sent by the producer. <br>
+<br>
+This example relies on access to a running JBoss Messaging instance.
+For more details on how to deploy JBoss Messaging within an existing
+JBoss installation, please refer
+to the "Installation" paragraph from the release documentation.<br>
+<br>
+<br>
+<h2>Running the example</h2>
+1. Set up the JBOSS_HOME environment variable to point to the JBoss
+instance you deployed JBoss Messaging into. For example, if you
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.2\server\default\deploy,</span>
+then your JBOSS_HOME value should be <span
+ style="font-family: monospace;">C:\jboss-4.0.2<br>
+<br>
+</span><br>
+2. Go to the example's home directory<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">cd
+.. \examples\queue</span><br>
+</div>
+<br>
+3. Run the example:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">ant</span>
+<br>
+<br>
+<br>
+</div>
+The output of a successful run should be similar to:<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <div style="margin-left: 40px;"><br>
+      </div>
+$ ant<br>
+Buildfile: build.xml<br>
+      <br>
+init:<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
+      <br>
+compile:<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
+      <br>
+run:<br>
+&nbsp;&nbsp;&nbsp; [unjar] Expanding:
+C:\jboss-4.0.2\server\default\deploy\jboss-messaging.sar
+into C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Queue /messaging/queue/testQueue
+deployed<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was sent successfully to
+the queue<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] 20:44:21,406 INFO&nbsp; @main
+[SocketServerInvoker] Invoker
+started for locator: InvokerLocator [socket://127.0.0.1:5000/]<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
+Messaging version 1.0.0alpha-sp1 (1.0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Queue /messaging/queue/testQueue
+undeployed<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example executed correctly.<br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 5 seconds<br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>

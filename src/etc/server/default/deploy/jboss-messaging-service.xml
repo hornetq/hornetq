@@ -8,6 +8,60 @@
 
 <server>
 
+   <!--
+   <loader-repository>jboss.messaging:name=ScopedLoaderRepository
+       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
+   </loader-repository>
+   -->
+
+   <!--
+   <mbean code="org.jboss.aop.deployment.AspectManagerService"
+      name="jboss.messaging:service=AspectManager">
+   </mbean>
+
+   <mbean code="org.jboss.aop.deployment.AspectDeployer"
+      name="jboss.messaging:service=AspectDeployer">
+   </mbean>
+   -->
+
+   <!-- JBoss 5 has a remoting connector already deployed. For JBoss 4, I need to deploy it. -->
+   <!--
+   <mbean code="org.jboss.remoting.transport.Connector"
+          xmbean-dd="org/jboss/remoting/transport/Connector.xml"
+          name="jboss.messaging:service=Connector,transport=socket"
+          display-name="Socket transport Connector">
+      <attribute name="Configuration">
+         <config>
+            <invoker transport="socket">
+               <attribute name="dataType" isParam="true">invocation</attribute>
+               <attribute name="marshaller" isParam="true">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>
+               <attribute name="unmarshaller" isParam="true">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>
+               <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
+               <attribute name="serverBindPort">4447</attribute>
+            </invoker>
+            <handlers>
+               <handler subsystem="placeholder">org.jboss.jms.client.remoting.ServerInvocationHandlerImpl</handler>
+            </handlers>
+         </config>
+      </attribute>
+      <depends>jboss.messaging:service=NetworkRegistry</depends>
+      <depends>jboss.messaging:service=AspectDeployer</depends>
+   </mbean>
+
+   <mbean code="org.jboss.remoting.network.NetworkRegistry"
+          name="jboss.messaging:service=NetworkRegistry"/>
+   -->
+
+   <!--
+   <mbean code="org.jboss.jms.tools.AspectLoader"
+      name="jboss.messaging:service=AspectLoader"
+      xmbean-dd="xmdesc/AspectLoader-xmbean.xml">
+      <depends>jboss.messaging:service=AspectDeployer</depends>
+      <depends optional-attribute-name="MainDeployer">jboss.system:service=MainDeployer</depends>
+   </mbean>
+   -->
+
+
    <mbean code="org.jboss.jms.server.ServerPeer"
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml">
@@ -17,9 +71,10 @@
          <arg type="java.lang.String" value="0" />
       </constructor>
 
-      <depends>jboss.remoting:service=Connector,transport=socket</depends>
-
+      <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
+      <!--
+      <depends>jboss.messaging:service=AspectLoader</depends>
+      -->
    </mbean>
-
 
 </server>

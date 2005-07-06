@@ -18,6 +18,31 @@
 
 <project default="main" name="JBoss/Messaging">
 
+   <!-- Version overrides. Use these local ones for the release, instead of JBoss global version.
+        TODO review this when integrating with JBoss build
+   -->
+
+   <property name="version.major" value="1"/>
+   <property name="version.minor" value="0"/>
+   <property name="version.revision" value="0"/>
+   <property name="version.tag" value="alpha-pr1"/>
+   <property name="version.name" value=""/>
+   <!-- This must be set to the CVS tag for any release -->
+   <!-- <property name="version.cvstag" value="HEAD"/> -->
+
+   <!-- Manifest version info -->
+   <property name="specification.title" value="JBoss Messaging"/>
+   <property name="specification.version" value="${version.major}.${version.minor}.${version.revision}"/>
+   <property name="specification.vendor" value="JBoss (http://www.jboss.org/)"/>
+
+   <property name="implementation.title" value="JBoss Messaging"/>
+   <property name="implementation.url" value="http://www.jboss.org/"/>
+   <property name="implementation.version"
+      value="${version.major}.${version.minor}.${version.revision}${version.tag} (build: CVSTag=${version.cvstag} date=${build.id})"/>
+   <property name="implementation.vendor" value="JBoss Inc."/>
+   <property name="implementation.vendor.id" value="${implementation.url}"/>
+
+
   <!-- ================================================================== -->
   <!-- Setup                                                              -->
   <!-- ================================================================== -->
@@ -30,6 +55,7 @@
    -->
 
   &buildmagic;
+
 
 
   <!-- ================================================================== -->
@@ -62,10 +88,11 @@
     <!-- Basic Configuration -->
     <!-- =================== -->
 
-    <!-- Module name(s) & version -->
-    <property name="module.name" value="messaging"/>
-    <property name="module.Name" value="JBoss Messaging"/>
-    <property name="module.version" value="5.0.0"/>
+     <!-- Module name(s) & version -->
+     <property name="module.name" value="messaging"/>
+     <property name="module.Name" value="JBoss Messaging"/>
+     <property name="module.version" value="${version.major}.${version.minor}.${version.revision}${version.tag}"/>
+
 
     <!-- ========= -->
     <!-- Libraries -->
@@ -78,17 +105,9 @@
     <path id="library.classpath">
        <path refid="oswego.concurrent.classpath"/>
        <path refid="javassist.classpath"/>
-
-       <!-- Temporarily I use the "patched" JGroups from src/resources -->
-       <!-- <path refid="jgroups.jgroups.classpath"/> -->
-       <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
-
+       <path refid="jgroups.jgroups.classpath"/>
        <path refid="junit.junit.classpath"/>
-
        <path refid="gnu.regexp.classpath"/>
-
-
-
     </path>
 
     <!-- ======= -->
@@ -99,9 +118,7 @@
     <path id="dependentmodule.classpath">
       <path refid="jboss.common.classpath"/>
       <path refid="jboss.j2ee.classpath"/>
-       <!-- Temporarily I use the "patched" jboss-remoting.jar from src/resources -->
-      <!-- <path refid="jboss.remoting.classpath"/> -->
-      <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
+      <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.aspects.classpath"/>
       <path refid="jboss.j2se.classpath"/>
@@ -174,6 +191,36 @@
     <property name="junit.timeout" value="240000"/> <!-- 4 minutes -->
     <property name="junit.batchtest.todir" value="${build.reports}"/>
     <property name="junit.jvm.options" value="-Ddummy"/>
+
+     <!-- ==================== -->
+     <!-- Local path overrides -->
+     <!-- ==================== -->
+
+     <!--
+         Sometimes I need to locally patch a library and use the local version (src/resources),
+         until the change makes it to thridpary. This is how you can locally override a library.
+         To use the thirdparty library, just uncoment the standard definition of the "common.."
+         propery and comment out the localized definitions below.
+      -->
+
+     <!-- JBoss Remoting -->
+
+     <!--
+     <property name="current.jboss.remoting.lib" value="${jboss.remoting.lib}"/>
+      -->
+     <property name="current.jboss.remoting.lib" value="${module.root}/src/resources"/>
+     <path id="jboss.remoting.classpath">
+        <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
+     </path>
+
+     <!-- JGroups -->
+
+     <!--
+     <path id="jgroups.jgroups.classpath">
+     <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
+     </path>
+     -->
+
   </target>
 
 
@@ -389,28 +436,91 @@
           description="Show this help message."
 	  depends="_buildmagic:help:standard"/>
 
+   <target name="display-path" depends="init">
+      <pathconvert refid="dependentmodule.classpath" targetos="unix" property="path.representation"/>
+      <echo message="${path.representation}"/>
+   </target>
 
-   <!-- CTS tasks -->
+   <!-- Messaging-specific tasks -->
 
    <property environment="ENV"/>
 
-   <target name="sar" depends="compile">
+   <!-- Release tasks -->
+
+   <target name="sar-structure" depends="compile">
 
       <mkdir dir="${build.lib}"/>
-
       <mkdir dir="${build.classes}/META-INF"/>
       <mkdir dir="${build.classes}/xmdesc"/>
-      
-      <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml" 
+
+      <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
          tofile="${build.classes}/META-INF/jboss-service.xml"/>
-
       <copy todir="${build.classes}/xmdesc">
-         <fileset dir="${source.etc}/xmdesc">
-            <include name="*.xml"/>
-         </fileset>
+         <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
       </copy>
-
       <copy file="${source.etc}/jms-aop.xml" todir="${build.classes}"/>
+   </target>
+
+   <!-- Create a non-scoped sar that relies on dependencies from default/lib -->
+   <target name="sar" depends="sar-structure">
+      <jar jarfile="${build.lib}/jboss-${module.name}.sar"
+         manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}">
+            <include name="**"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <!-- Create a scoped sar ready to be deployed under a JBoss 4 (and JBoss 5) instance -->
+   <target name="sar-scoped" depends="sar-structure">
+
+      <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!"
+         unless="current.jboss.remoting.lib"/>
+
+      <!-- copy dependencies that are not available, are obsolete or need to be scoped in JBoss 4 -->
+
+      <copy file="${jboss.aop.lib}/jboss-aop.jar" todir="${build.classes}"/>
+      <copy file="${jboss.aspects.lib}/jboss-aspect-library.jar" todir="${build.classes}"/>
+      <copy file="${current.jboss.remoting.lib}/jboss-remoting.jar" todir="${build.classes}"/>
+      <!-- copy jboss.jar because I need InvocationMarsahller both on the server and on the client-side -->
+      <copy file="${jboss.server.lib}/jboss.jar" todir="${build.classes}"/>
+
+      <!-- enable scoping -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <!-- <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*jboss.jar\x22/\x3e)([ \t\n\r]*)\x2d-\x3e"/> -->
+         <substitution expression="\2"/>
+      </replaceregexp>
+
+      <!-- enable the deployment of the scoped AOP manager/deployer -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.aop.deployment.AspectManagerService.+AspectDeployer\x22\x3e[ \t\n\r]*\x3c/mbean\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
+
+      <!-- enable the deployment of the remoting Connector and NeworkRegistry -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.remoting.transport.Connector.+NetworkRegistry\x22/\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
+
+      <!-- enable the deployment of the AspectLoader -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.jms.tools.AspectLoader.+MainDeployer[ \t]*\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
+
+      <!-- change Connector dependency -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml">
+         <regexp pattern="jboss.remoting:service=Connector,transport=socket"/>
+         <substitution expression="jboss.messaging:service=Connector,transport=socket"/>
+      </replaceregexp>
+
+      <!-- enable AspectLoader dependency -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cdepends\x3e[ \t]*jboss.messaging:service=AspectLoader[ \t]*\x3c/depends\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
 
       <jar jarfile="${build.lib}/jboss-${module.name}.sar"
          manifest="${build.etc}/default.mf">
@@ -420,15 +530,66 @@
       </jar>
    </target>
 
+   <target name="release-structure" depends="init">
+      <property name="release.output"
+         value="${module.output}/release/JBossMessaging-${module.version}"/>
+      <mkdir dir="${release.output}/src"/>
+      <mkdir dir="${release.output}/examples"/>
+   </target>
+
+   <target name="source" depends="release-structure">
+      <copy todir="${release.output}/src">
+         <fileset dir="${source.java}">
+            <exclude name="**/CVS"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="source-zip" depends="source">
+      <zip destfile="${release.output}/JBossMessaging--${module.version}-src.zip"
+         basedir="${release.output}/src"/>
+   </target>
+   
+   <target name="examples" depends="release-structure">
+
+      <!-- Make sure examples compile -->
+      <ant dir="./docs/examples/queue" target="compile"/>
+      <ant dir="./docs/examples/queue" target="clean"/>
+
+      <copy todir="${release.output}/examples">
+         <fileset dir="./docs/examples">
+            <exclude name="mdb"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="release-bundle"
+      depends="release-structure, sar-scoped, source, source-zip, examples">
+
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.sar"/>
+
+      <zip destfile="${build.lib}/JBossMessaging-${module.version}.zip"
+         basedir="${module.output}/release"/>
+      <echo message="Release bundle JBossMessaging--${module.version}.zip done"/>
+   </target>
+
+   <!-- CTS deployment/undeployment -->
 
    <target name="deploy" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
          todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
    </target>
 
-
    <target name="undeploy" depends="init">
       <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
    </target>
 
+   <target name="test">
+   </target>
+
 </project>
+
+
+
+
+

@@ -46,7 +46,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #
@@ -76,9 +76,16 @@
 #
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageTest
-TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageBodyTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageBodyTest
 
 
+reldir=`dirname $0`
+
+#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
+REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
+
+JGROUPS_LIB=$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar
+#JGROUPS_LIB=$reldir/../resources/jgroups-core.jar
 
 
 
@@ -111,24 +118,16 @@ while [ "$1" != "" ]; do
     shift
 done
 
-#Temporarily use a newer JGroups version, not available in the thirdparty dir
-#$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar${SEP}\
-
-#Temporarily I use the "patched" jboss-remoting.jar from src/resources
-#$reldir/../../../remoting/output/lib/jboss-remoting.jar${SEP}\
-
-
-reldir=`dirname $0` 
 java $JAVA_OPTS -cp \
 $reldir/../../tests/etc${SEP}\
 $reldir/../../src/etc${SEP}\
 $reldir/../../tests/output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
+${REMOTING_LIB}${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
-$reldir/../resources/jboss-remoting.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
@@ -140,6 +139,6 @@ $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/dom4j-dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
-$reldir/../resources/jgroups-core.jar${SEP}\
+${JGROUPS_LIB}${SEP}\
  junit.textui.TestRunner $TARGET_CLASS
 

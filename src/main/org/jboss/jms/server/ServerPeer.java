@@ -84,6 +84,9 @@ public class ServerPeer
 
    protected String serverPeerID;
    protected InvokerLocator locator;
+   protected ObjectName connector;
+
+
    protected ClientManager clientManager;
    protected DestinationManagerImpl destinationManager;
    protected Map connFactoryDelegates;
@@ -114,17 +117,20 @@ public class ServerPeer
    // Constructors --------------------------------------------------
 
 
-   public ServerPeer(String serverPeerID)
+   public ServerPeer(String serverPeerID) throws Exception
    {
       this.serverPeerID = serverPeerID;
       this.connFactoryDelegates = new HashMap();
+
+      // the default value to use, unless the JMX attribute is modified
+      connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
    }
 
    /**
     * @param jndiEnvironment - map containing JNDI properties. Useful for testing. Passing null
     *        means the server peer uses default JNDI properties.
     */
-   public ServerPeer(String serverPeerID, Hashtable jndiEnvironment)
+   public ServerPeer(String serverPeerID, Hashtable jndiEnvironment) throws Exception
    {
       this(serverPeerID);
       this.jndiEnvironment = jndiEnvironment;
@@ -172,7 +178,7 @@ public class ServerPeer
       
       started = true;
 
-      log.debug(this + " started");
+      log.info("JMS " + this + " started");
    }
    
   
@@ -194,7 +200,7 @@ public class ServerPeer
       
       started = false;
 
-      log.debug(this + " stopped");
+      log.info("JMS " + this + " stopped");
 
    }
 
@@ -235,6 +241,17 @@ public class ServerPeer
          return null;
       }
       return locator.getLocatorURI();
+   }
+
+
+   public ObjectName getConnector()
+   {
+      return connector;
+   }
+
+   public void setConnector(ObjectName on)
+   {
+      connector = on;
    }
 
 
@@ -324,9 +341,9 @@ public class ServerPeer
    public String toString()
    {
       StringBuffer sb = new StringBuffer();
-      sb.append("ServerPeer[id=");
+      sb.append("ServerPeer (id=");
       sb.append(getServerPeerID());
-      sb.append("]");
+      sb.append(")");
       return sb.toString();
    }
 
@@ -455,14 +472,14 @@ public class ServerPeer
 
    private void initializeRemoting() throws Exception
    {
-      ObjectName on = new ObjectName("jboss.remoting:service=Connector,transport=socket");
-      String s = (String)mbeanServer.invoke(on, "getInvokerLocator", new Object[0], new String[0]);
+      String s = (String)mbeanServer.invoke(connector, "getInvokerLocator",
+                                            new Object[0], new String[0]);
       locator = new InvokerLocator(s);
 
       log.debug("LocatorURI: " + getLocatorURI());
 
       // add the JMS subsystem
-      mbeanServer.invoke(on, "addInvocationHandler",
+      mbeanServer.invoke(connector, "addInvocationHandler",
                          new Object[] {"JMS", new JMSServerInvocationHandler()},
                          new String[] {"java.lang.String",
                                        "org.jboss.remoting.ServerInvocationHandler"});

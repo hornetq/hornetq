@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+
+
+<mbean>
+   <class>org.jboss.jms.tools.AspectLoader</class>
+
+
+   <!-- Managed attributes -->
+
+
+   <attribute access="write-only" setMethod="setMainDeployer">
+      <name>MainDeployer</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>
+
+</mbean>

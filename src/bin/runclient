@@ -3,6 +3,11 @@
 # Interactive command line JMS client.
 #
 
+reldir=`dirname $0`
+
+#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
+REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
+
 cygwin=false;
 case "`uname`" in
     CYGWIN*)
@@ -27,11 +32,11 @@ while [ "$1" != "" ]; do
     shift
 done
 
-reldir=`dirname $0`
 java $JAVA_OPTS -cp \
 $reldir/../../src/etc${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../src/resources/clester.jar${SEP}\
+${REMOTING_LIB}${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
@@ -39,7 +44,6 @@ $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
 $reldir/../../../aspects/output/lib/jboss-aspect-library.jar${SEP}\
-$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar \

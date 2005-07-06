@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+   To run the example, set JBOSS_HOME and run ant (with no parameters)
+
+   $Id$
+
+ -->
+
+<project name="QueueExample" default="run" >
+
+   <property environment="ENV"/>
+   <property name="build.output" value="./output"/>
+   <property name="messaging.sar" value="${ENV.JBOSS_HOME}/server/default/deploy/jboss-messaging.sar"/>
+
+
+   <path id="compilation.classpath">
+      <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
+   </path>
+
+   <path id="execution.classpath">
+      <pathelement path="./etc"/>
+      <pathelement path="${build.output}"/>
+      <fileset dir="${build.output}" includes="*.jar"/>
+      <fileset file="${messaging.sar}"/>
+      <fileset dir="${ENV.JBOSS_HOME}/client" includes="*.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/server/default/lib/javax.servlet.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/lib/commons-httpclient.jar"/>
+   </path>
+
+   <target name="init">
+      <fail message="The example needs JBOSS_HOME to run!" unless="ENV.JBOSS_HOME"/>
+      <mkdir dir="${build.output}"/>
+   </target>
+
+
+   <target name="compile" depends="init">
+      <javac destdir="${build.output}">
+         <src path="./src"/>
+         <classpath refid="compilation.classpath"/>
+      </javac>
+   </target>
+   
+
+   <target name="run" depends="compile">
+
+      <!-- extract jboss-remoting.jar, jboss.jar from jboss-messaging.sar and store it locally -->
+      <unjar src="${messaging.sar}"
+         dest="${build.output}">
+         <patternset>
+            <include name="jboss-remoting.jar"/>
+            <include name="jboss.jar"/>
+            <include name="jboss-aop.jar"/>
+         </patternset>
+      </unjar>
+
+      <java classname="org.jboss.example.jms.queue.QueueExample"
+         classpathref="execution.classpath" fork="yes">
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
+         -->
+      </java>
+   </target>
+
+
+   <target name="clean">
+      <delete dir="${build.output}" quiet="true"/>
+   </target>
+
+</project>
+
