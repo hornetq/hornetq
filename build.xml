@@ -571,7 +571,7 @@
 
       <zip destfile="${build.lib}/JBossMessaging-${module.version}.zip"
          basedir="${module.output}/release"/>
-      <echo message="Release bundle JBossMessaging--${module.version}.zip done"/>
+      <echo message="Release bundle JBossMessaging-${module.version}.zip done"/>
    </target>
 
    <!-- CTS deployment/undeployment -->
