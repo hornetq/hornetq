@@ -1,0 +1,11 @@
+<project name="jms-component-info">
+   <component id="jms"
+              module="jboss-jms"
+              version="5.0-SNAPSHOT"
+   >
+      <artifact id="jboss-jms.jar"/>
+      <export>
+         <include input="jboss-jms.jar"/>
+      </export>
+   </component>
+</project>
