@@ -370,12 +370,6 @@
    <!--      </attribute>-->
    <!--   </mbean>-->
 
-    <!-- MBean service to provide access to remoting client. -->
-    <mbean code="org.jboss.remoting.ClientInvokerAdapter"
-           xmbean-dd="org/jboss/remoting/ClientInvokerAdapter.xml"
-           name="jboss.remoting:service=InterceptorAdapter">
-    </mbean>
-
    <!-- ==================================================================== -->
    <!-- Monitoring and Management                                            -->
    <!-- ==================================================================== -->
