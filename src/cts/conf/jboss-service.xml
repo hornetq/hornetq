@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!-- $Id$ -->
 
 <!-- ===================================================================== -->
@@ -12,7 +13,6 @@
      attribute.
     -->
    <classpath codebase="${jboss.server.lib.url:lib}" archives="*"/>
-
 
    <!-- ==================================================================== -->
    <!-- JSR-77 Single JBoss Server Management Domain                         -->
@@ -474,7 +474,6 @@
         deploy/JMS/
         ...
       -->
-
       <attribute name="RecursiveSearch">True</attribute>
 
    </mbean>
