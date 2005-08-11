@@ -175,7 +175,7 @@
     <path id="xdoclet.task.classpath">
       <path refid="javac.classpath"/>
       <path refid="apache.commons.classpath"/>
-      <fileset dir="${project.thirdparty}/xdoclet-xdoclet/lib">
+      <fileset dir="${xdoclet.xdoclet.lib}">
         <include name="**/*.jar"/>
       </fileset>
     </path>
