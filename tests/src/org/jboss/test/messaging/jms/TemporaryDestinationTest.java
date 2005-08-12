@@ -149,6 +149,8 @@ public class TemporaryDestinationTest extends MessagingTestCase
       
       assertEquals(messageText, m2.getText());
       
+      consumer.close();
+      
       tempQueue.delete();
       
       try

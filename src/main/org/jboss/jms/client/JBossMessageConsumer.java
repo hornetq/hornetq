@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.client;
 
+import java.io.Serializable;
+
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 
@@ -23,7 +25,7 @@ import javax.jms.MessageListener;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
+class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber, Serializable
 {
    // Constants -----------------------------------------------------  
 

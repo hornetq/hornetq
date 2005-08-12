@@ -16,9 +16,13 @@ import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.Message;
+import javax.jms.StreamMessage;
+
 import java.io.Serializable;
+
 
 /**
  * Interceptor that wraps any Exception into a JMSException.
@@ -140,7 +144,8 @@ public class MetaDataInterceptor implements Interceptor, Serializable
 
             if (timeToLive == 0)
             {
-               m.setJMSExpiration(Long.MAX_VALUE);
+               //Zero implies never expires
+               m.setJMSExpiration(0);
             }
             else
             {
@@ -152,20 +157,33 @@ public class MetaDataInterceptor implements Interceptor, Serializable
             {
                destination = (Destination)metaData.
                      getMetaData(JMSAdvisor.JMS, JMSAdvisor.DESTINATION);
+               
+               if (destination == null)
+               {
+                  throw new UnsupportedOperationException("Destination not specified");
+               }
 
                if (log.isTraceEnabled()) { log.trace("Using producer's default destination: " + destination); }
             }
-
-            m.setJMSDestination(destination);
-
-            // TODO - this probably doesn't belong here - move it when I reshufle the interceptors
-
-            if (m instanceof JBossBytesMessage)
+            else
             {
-               if (log.isTraceEnabled()) { log.trace("Calling reset()"); }
-               ((JBossBytesMessage)m).reset();
+               //If a default destination was already specified then this must be same destination as that
+               //specified in the arguments
+               Destination defaultDestination = (Destination)metaData.getMetaData(JMSAdvisor.JMS, JMSAdvisor.DESTINATION);
+               
+               if (defaultDestination != null)
+               {
+                  if (!defaultDestination.equals(destination))
+                  {
+                     throw new UnsupportedOperationException("Where a default destination is specified for the sender " +
+                                                             "and a destination is specified in the arguments to the " +
+                                                             "send, these destinations must be equal");
+                  }
+               }
             }
 
+            m.setJMSDestination(destination);
+            
             // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
             // a message whose implementation is not one of its own.
 
@@ -174,8 +192,8 @@ public class MetaDataInterceptor implements Interceptor, Serializable
             // multiple times.
 
             JBossMessage copy = JBossMessage.copy(m);
-
-            copy.setPropertiesReadWrite(false);
+            
+            copy.afterSend();                                  
 
             // send the copy down the stack
             args[1] = copy;

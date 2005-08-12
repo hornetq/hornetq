@@ -59,7 +59,7 @@ public class JMSExpirationHeaderTest extends MessageTest
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
-      assertEquals(Long.MAX_VALUE, queueConsumer.receive().getJMSExpiration());
+      assertEquals(0, queueConsumer.receive().getJMSExpiration());
    }
 
 

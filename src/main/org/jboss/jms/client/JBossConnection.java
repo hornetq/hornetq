@@ -42,8 +42,10 @@ import java.io.Serializable;
  */
 public class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
-    XAConnection, XAQueueConnection, XATopicConnection
+    XAConnection, XAQueueConnection, XATopicConnection, Serializable
 {
+
+   
    // Constants -----------------------------------------------------
    static final int TYPE_GENERIC_CONNECTION = 0;
    static final int TYPE_QUEUE_CONNECTION = 1;
@@ -223,7 +225,7 @@ public class JBossConnection implements
                                                 boolean isXA, int type) throws JMSException
    {
       SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode);
-      return new JBossSession(this.delegate, sessionDelegate, isXA,
+      return new JBossSession(sessionDelegate, isXA,
                               type, transacted, acknowledgeMode);
    }
 

@@ -47,6 +47,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    protected boolean isByteArray = false;
 
    protected byte[] objectBytes = null;
+   
+   protected boolean bodyReadOnly = false;
 
    // Static --------------------------------------------------------
 
@@ -60,6 +62,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public JBossObjectMessage(JBossObjectMessage other)
    {
       super(other);
+      this.bodyReadOnly = other.bodyReadOnly;
       this.isByteArray = other.isByteArray;
       if (other.objectBytes != null)
       {
@@ -80,6 +83,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       {
          setObject(object);
       }
+      
    }
 
    // Public --------------------------------------------------------
@@ -88,7 +92,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    public void setObject(Serializable object) throws JMSException
    {
-      if (!messageReadWrite)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("setObject");
       }
@@ -181,6 +185,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public void clearBody() throws JMSException
    {
       objectBytes = null;
+      bodyReadOnly = false;
       super.clearBody();
    }
    
@@ -188,12 +193,22 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    {
       return new JBossObjectMessage(this);
    }
+   
+   /** Do any other stuff required to be done after sending the message */
+   public void afterSend() throws JMSException
+   {      
+      super.afterSend();
+      
+      //Message body must be made read-only
+      bodyReadOnly = true;
+   }
 
    // Externalizable implementation ---------------------------------
 
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
+      out.writeBoolean(bodyReadOnly);
       out.writeBoolean(isByteArray);
       if (objectBytes == null)
       {
@@ -209,6 +224,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
+      bodyReadOnly = in.readBoolean();
       isByteArray = in.readBoolean();
       int length = in.readInt();
       if (length < 0)

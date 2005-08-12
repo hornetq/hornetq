@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.client;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -15,6 +16,7 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 
 import javax.jms.InvalidDestinationException;
 import javax.jms.QueueReceiver;
@@ -56,35 +58,35 @@ import java.io.Serializable;
  * 
  * $Id$
  */
-class JBossSession
-      implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
+class JBossSession implements
+   Session, XASession, QueueSession, XAQueueSession,
+   TopicSession, XATopicSession, Serializable
 {
    // Constants -----------------------------------------------------
    static final int TYPE_GENERIC_SESSION = 0;
    static final int TYPE_QUEUE_SESSION = 1;
    static final int TYPE_TOPIC_SESSION = 2;
+   
+   private static final Logger log = Logger.getLogger(JBossSession.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
    protected SessionDelegate sessionDelegate;
-   protected ConnectionDelegate connectionDelegate;
    protected boolean isXA;
    protected int sessionType;
    protected int acknowledgeMode;
 
    // Constructors --------------------------------------------------
 
-   public JBossSession(ConnectionDelegate connectionDelegate,
-                       SessionDelegate sessionDelegate,
+   public JBossSession(SessionDelegate sessionDelegate,
                        boolean isXA,
                        int sessionType,
                        boolean transacted,
                        int acknowledgeMode) throws JMSException
    {
-      this.sessionDelegate = sessionDelegate;
-      this.connectionDelegate = connectionDelegate;
+      this.sessionDelegate = sessionDelegate;      
       this.isXA = isXA;
       this.sessionType = sessionType;
       sessionDelegate.addMetaData(JMSAdvisor.TRANSACTED, transacted ? Boolean.TRUE : Boolean.FALSE);
@@ -201,6 +203,8 @@ class JBossSession
 
   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
   {
+     if (log.isTraceEnabled()) { log.trace("Attempting to create consumer for destination:" + d +
+           ", messageSelector: " + messageSelector); }
      if (d == null)
      {
         throw new InvalidDestinationException("Cannot create a consumer with a null destination");
@@ -215,12 +219,15 @@ class JBossSession
                                          boolean noLocal)
          throws JMSException
    {
+      if (log.isTraceEnabled()) { log.trace("Attempting to create consumer for destination:" + d +
+            ", messageSelector: " + messageSelector + ", noLocal: " + noLocal); }
+      
       if (d == null)
       {
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
       ConsumerDelegate consumerDelegate =
-         sessionDelegate.createConsumerDelegate(d, messageSelector, true, null);
+         sessionDelegate.createConsumerDelegate(d, messageSelector, noLocal, null);
       return new JBossMessageConsumer(consumerDelegate, noLocal);
    }
 
@@ -324,8 +331,8 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a temp. queue using a TopicSession");
       }
-      JBossTemporaryQueue queue = new JBossTemporaryQueue(connectionDelegate);
-      connectionDelegate.addTemporaryDestination(queue);
+      JBossTemporaryQueue queue = new JBossTemporaryQueue(sessionDelegate);
+      sessionDelegate.addTemporaryDestination(queue);
       return queue;
    }
 
@@ -336,8 +343,8 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
       }
-      JBossTemporaryTopic topic = new JBossTemporaryTopic(connectionDelegate);
-      connectionDelegate.addTemporaryDestination(topic);
+      JBossTemporaryTopic topic = new JBossTemporaryTopic(sessionDelegate);
+      sessionDelegate.addTemporaryDestination(topic);
       return topic;
    }
 
@@ -348,7 +355,7 @@ class JBossSession
       {
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
-      connectionDelegate.unsubscribe(name);
+      sessionDelegate.unsubscribe(name);
    }
    
    // XASession implementation

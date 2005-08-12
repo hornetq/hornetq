@@ -78,6 +78,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    protected String clientID;
    
+   //We keep a map of receivers to prevent us to recurse through the attached session
+   //in order to find the ServerConsumerDelegate so we can ack the message
    protected Map receivers;
    
     
@@ -280,47 +282,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
    }
    
-   public void addTemporaryDestination(Destination dest) throws JMSException
-   {
-      JBossDestination d = (JBossDestination)dest;
-      if (!d.isTemporary())
-      {
-         throw new JMSException("Destination:" + dest + " is not a temporary destination");
-      }
-      this.temporaryDestinations.add(dest);
-      serverPeer.getDestinationManager().addTemporaryDestination(dest);
-   }
-   
-   public void deleteTemporaryDestination(Destination dest) throws JMSException
-   {
-      JBossDestination d = (JBossDestination)dest;
-      
-      if (!d.isTemporary())
-      {
-         throw new JMSException("Destination:" + dest + " is not a temporary destination");
-      }
-      
-      serverPeer.getDestinationManager().removeTemporaryDestination(dest);
-      this.temporaryDestinations.remove(dest);
-   }
-   
-   public void unsubscribe(String subscriptionName) throws JMSException
-   {
-      if (subscriptionName == null)
-      {
-         throw new InvalidDestinationException("Destination is null");
-      }
-      DurableSubscriptionHolder subscription = this.serverPeer.getClientManager().
-            removeDurableSubscription(this.clientID, subscriptionName);
-
-      if (subscription == null)
-      {
-         throw new InvalidDestinationException("Cannot find durable subscription with name " +
-            subscriptionName + " to unsubscribe");
-      }
-      subscription.getTopic().remove(subscription.getQueue().getReceiverID());
-      
-   }
 
    public Serializable getConnectionID()
    {

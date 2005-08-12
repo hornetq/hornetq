@@ -50,6 +50,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    protected int offset;
 
    protected int size;
+   
+   protected boolean bodyWriteOnly = true;
 
    //protected transient boolean deserialised;
 
@@ -72,15 +74,35 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       this.position = other.position;
       this.size = other.size;
       this.offset = other.offset;
+      this.bodyWriteOnly = other.bodyWriteOnly;
    }
 
    /**
     * A copy constructor for non-JBoss Messaging JMS StreamMessages.
+    * FIXME - Perhaps this shouldn't be done in a copy constructor since
+    * it changes the state of the copied object (calls reset)
+    * which is intrusive and perhapas not appropriate for a copy constructor
     */
    protected JBossStreamMessage(StreamMessage foreign) throws JMSException
    {
       super(foreign);
-      throw new NotYetImplementedException();
+      content = new ArrayList();
+      position = 0;
+      size = 0;
+      offset = 0;
+      foreign.reset();
+      try
+      {
+         while (true)
+         {
+            Object obj = foreign.readObject();
+            this.writeObject(obj);
+         }
+      }
+      catch (MessageEOFException e)
+      {
+         //Ignore
+      }
    }
 
    // Public --------------------------------------------------------
@@ -89,7 +111,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public boolean readBoolean() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
 
       try
@@ -122,7 +144,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public byte readByte() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
 
       try
@@ -153,7 +175,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public short readShort() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -189,7 +211,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public char readChar() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -214,7 +236,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public int readInt() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -255,7 +277,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public long readLong() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -301,7 +323,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public float readFloat() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -332,7 +354,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public double readDouble() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -368,7 +390,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public String readString() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -436,7 +458,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public int readBytes(byte[] value) throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -489,7 +511,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public Object readObject() throws JMSException
    {
-      if (messageReadWrite)
+      if (bodyWriteOnly)
          throw new MessageNotReadableException("The message body is writeonly");
       try
       {
@@ -507,63 +529,63 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void writeBoolean(boolean value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(Primitives.valueOf(value));
    }
 
    public void writeByte(byte value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Byte(value));
    }
 
    public void writeShort(short value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Short(value));
    }
 
    public void writeChar(char value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Character(value));
    }
 
    public void writeInt(int value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Integer(value));
    }
 
    public void writeLong(long value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Long(value));
    }
 
    public void writeFloat(float value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Float(value));
    }
 
    public void writeDouble(double value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(new Double(value));
    }
 
    public void writeString(String value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       if (value == null)
          content.add(null);
@@ -573,14 +595,14 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void writeBytes(byte[] value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       content.add(value.clone());
    }
 
    public void writeBytes(byte[] value, int offset, int length) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
 
       if (offset + length > value.length)
@@ -594,7 +616,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void writeObject(Object value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!bodyWriteOnly)
          throw new MessageNotWriteableException("The message body is readonly");
       if (value == null)
          content.add(null);
@@ -624,7 +646,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void reset() throws JMSException
    {
-      messageReadWrite = false;
+      bodyWriteOnly = false;
       position = 0;
       size = content.size();
       offset = 0;
@@ -638,6 +660,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       position = 0;
       offset = 0;
       size = 0;
+      bodyWriteOnly = true;
 
       super.clearBody();
    }
@@ -645,6 +668,15 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public JBossMessage doClone()
    {
       return new JBossStreamMessage(this);
+   }
+   
+   /** Do any other stuff required to be done after sending the message */
+   public void afterSend() throws JMSException
+   {      
+      super.afterSend();
+      
+      //Message must be reset after sending
+      reset();
    }
 
    // Externalizable implementation ---------------------------------
@@ -654,11 +686,11 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       try
       {
          super.readExternal(in);
+         bodyWriteOnly = in.readBoolean();
          content = (ArrayList) in.readObject();
          position = in.readInt();
          offset = in.readInt();
          size = in.readInt();
-         //deserialised = true;
       }
       catch (ClassNotFoundException e)
       {
@@ -670,6 +702,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
+      out.writeBoolean(bodyWriteOnly);
       out.writeObject(content);
       out.writeInt(position);
       out.writeInt(offset);

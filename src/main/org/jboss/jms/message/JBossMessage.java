@@ -74,7 +74,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    }
 
    /**
-    * The metod creates a physical copy of a given message, which can be a foreign JMS message or
+    * The method creates a physical copy of a given message, which can be a foreign JMS message or
     * a native JBoss Messaging message. Returns a JBossByteMessage for a ByteMessage,
     * a JBossMapMessage for a MapMessage, a JBossObjectMessage for an ObjectMessage,
     * a JBossStreamMessage for a StreamMessage, a JBossTextMessage for a TextMessage and
@@ -129,7 +129,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    // the delegate is set only on incoming messages, but we make it transient nonetheless
    protected transient SessionDelegate delegate;
 
-   protected boolean messageReadWrite = true;
+   protected boolean propertiesWritable = true;
 
    protected Map properties; 
    
@@ -166,7 +166,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       this.replyToDestination = other.replyToDestination;
       this.type = other.type;
       this.delegate = other.delegate;
-      this.messageReadWrite = other.messageReadWrite;
+      //this.messageWritable = other.messageWritable;
+      this.propertiesWritable = other.propertiesWritable;
       this.properties = new HashMap(other.properties);
       this.isCorrelationIDBytes = other.isCorrelationIDBytes;
       this.correlationID = other.correlationID;
@@ -219,6 +220,13 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
          boolean found = false;
 
          String name = (String)props.nextElement();
+         
+         Object prop = foreign.getObjectProperty(name);
+         this.setObjectProperty(name, prop);
+         
+         /*
+          * 
+          Commented out by Tim - I think there's a much simpler way to do this
 
          String stringProperty = null;
          try
@@ -384,6 +392,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
          }
 
          throw new javax.jms.IllegalStateException("Cannot identify property " + name);
+         
+         */
       }
    }
 
@@ -538,6 +548,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
    public void clearProperties() throws JMSException
    {
       properties.clear();
+      propertiesWritable = true;
    }
 
    public void acknowledge() throws JMSException
@@ -550,7 +561,8 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void clearBody() throws JMSException
    {
-      this.messageReadWrite = true;
+      //this.messageWritable = true;
+      //this.bodyWritable = true;
    }
 
    public boolean propertyExists(String name) throws JMSException
@@ -710,7 +722,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setBooleanProperty(String name, boolean value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Boolean b = Primitives.valueOf(value);
       checkProperty(name, b);
@@ -719,7 +731,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setByteProperty(String name, byte value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Byte b = new Byte(value);
       checkProperty(name, b);
@@ -728,7 +740,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setShortProperty(String name, short value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Short s = new Short(value);
       checkProperty(name, s);
@@ -737,7 +749,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setIntProperty(String name, int value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Integer i = new Integer(value);
       checkProperty(name, i);
@@ -746,7 +758,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setLongProperty(String name, long value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Long l = new Long(value);
       checkProperty(name, l);
@@ -755,7 +767,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setFloatProperty(String name, float value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Float f = new Float(value);
       checkProperty(name, f);
@@ -764,7 +776,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setDoubleProperty(String name, double value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       Double d = new Double(value);
       checkProperty(name, d);
@@ -773,7 +785,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setStringProperty(String name, String value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
          throw new MessageNotWriteableException("Properties are read-only");
       checkProperty(name, value);
       this.properties.put(name, value);
@@ -781,7 +793,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public void setObjectProperty(String name, Object value) throws JMSException
    {
-      if (!messageReadWrite)
+      if (!propertiesWritable)
       {
          throw new MessageNotWriteableException("Properties are read-only");
       }
@@ -842,9 +854,10 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       return properties;
    }
 
-   public void setPropertiesReadWrite(boolean readWrite)
-   {
-      this.messageReadWrite = readWrite;
+   /** Do any other stuff required to be done after sending the message */
+   public void afterSend() throws JMSException
+   {      
+      this.propertiesWritable = false;
    }
 
    
@@ -882,7 +895,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       out.writeObject(destination);
       out.writeObject(replyToDestination);
       writeString(out, type);
-      out.writeBoolean(messageReadWrite); //do we really need to write this??
+      out.writeBoolean(propertiesWritable);
 
       writeMap(out, properties);
       
@@ -916,7 +929,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       destination = (Destination) in.readObject();
       replyToDestination = (Destination) in.readObject();
       type = readString(in);
-      messageReadWrite = in.readBoolean();
+      propertiesWritable = in.readBoolean();
       properties = readMap(in);
       
       isCorrelationIDBytes = in.readBoolean();
@@ -964,13 +977,14 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       if (reservedIdentifiers.contains(name))
          throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
 
-      if (name.regionMatches(false, 0, "JMSX", 0, 4))
+      if (name.regionMatches(false, 0, "JMSX", 0, 4) &&
+            !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"))
       {
-         throw new JMSException("Illegal property name: " + name);
-      }
-     
-      
+         throw new JMSException("Only JMSXGroupId and JMSXGroupSeq are supported");
+      }           
    }
+   
+
 
    // Protected -----------------------------------------------------
 

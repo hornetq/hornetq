@@ -198,7 +198,7 @@
            description="Runs a single test, specified by its FQ class name via 'test.classname'">
 
       <fail unless="test.classname"
-            message="To run a single test, use: ./build.sh test -Dtest.clasname=org.package.MyTest"/>
+            message="To run a single test, use: ./build.sh test -Dtest.classname=org.package.MyTest"/>
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -244,8 +244,8 @@
             />
       </junitreport>
    </target>
-	
-	
+
+
    <target name="performance-tests"/>
 
    <target name="functional-tests" depends="tests"/>

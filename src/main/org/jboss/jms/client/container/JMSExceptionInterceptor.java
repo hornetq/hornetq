@@ -71,11 +71,18 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
          {
             log.error("The cause of the JMSException: ", cause);
          }
+         e.fillInStackTrace();
          throw e;
+      }
+      catch (UnsupportedOperationException e)
+      {
+         //These must be propagated to the client
+         e.fillInStackTrace();
+         throw e;         
       }
       catch (RuntimeException e)
       {         
-         if (log.isTraceEnabled()) { log.trace("Caught RuntimeException:" + e); }
+         log.error("Caught RuntimeException", e);
          JMSException ex = new javax.jms.IllegalStateException(e.getMessage());
          ex.setLinkedException(e);
          throw ex; 

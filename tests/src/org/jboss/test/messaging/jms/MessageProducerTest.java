@@ -95,13 +95,15 @@ public class MessageProducerTest extends MessagingTestCase
    }
 
    
-   /* Test sending to destination where the Destination is specified in the send */
+   /* Test sending via anonymous producer */
    public void testSendDestination() throws Exception
    {
 
       final Message m1 = producerSession.createMessage();
 
       consumerConnection.start();
+      
+      final MessageProducer anonProducer = producerSession.createProducer(null);
 
       new Thread(new Runnable()
       {
@@ -111,7 +113,7 @@ public class MessageProducerTest extends MessagingTestCase
             {
                // this is needed to make sure the main thread has enough time to block
                Thread.sleep(1000);
-               topicProducer.send(topic2, m1);
+               anonProducer.send(topic2, m1);
             }
             catch(Exception e)
             {

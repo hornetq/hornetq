@@ -35,8 +35,9 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    // Attributes ----------------------------------------------------
 
    protected String content;
+   
+   protected boolean bodyReadOnly = false;
 
-   //private final static int chunkSize = 16384;
 
    // Static --------------------------------------------------------
 
@@ -50,6 +51,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       super(other);
       this.content = other.content;
+      this.bodyReadOnly = other.bodyReadOnly;
    }
 
    /**
@@ -63,6 +65,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       {
          setText(text);
       }
+ 
    }
 
    // Public --------------------------------------------------------
@@ -71,7 +74,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    public void setText(String string) throws JMSException
    {
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Cannot set the content; message is read-only");
 
       content = string;
@@ -87,7 +90,17 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    public void clearBody() throws JMSException
    {
       content = null;
+      bodyReadOnly = false;
       super.clearBody();
+   }
+   
+   /** Do any other stuff required to be done after sending the message */
+   public void afterSend() throws JMSException
+   {      
+      super.afterSend();
+      
+      //Message body must be made read-only
+      bodyReadOnly = true;
    }
 
    // Externalizable implementation ---------------------------------
@@ -97,6 +110,8 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super.readExternal(in);
       
       if (log.isTraceEnabled()) { log.trace("in readExternal"); }
+      
+      bodyReadOnly = in.readBoolean();
       
       byte type = in.readByte();
       
@@ -162,6 +177,8 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super.writeExternal(out);
       
       if (log.isTraceEnabled()) { log.trace("in writeExternal"); }
+      
+      out.writeBoolean(bodyReadOnly);
 
       if (content == null)
       {

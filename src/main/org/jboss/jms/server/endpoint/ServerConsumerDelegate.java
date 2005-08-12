@@ -21,6 +21,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -55,6 +56,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    protected DurableSubscriptionHolder subscription;
 	
    protected PooledExecutor threadPool;
+   
 
    // Constructors --------------------------------------------------
 
@@ -66,7 +68,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
                                  DurableSubscriptionHolder subscription)
       throws InvalidSelectorException
    {
-      if (log.isTraceEnabled()) log.trace("Creating ServerConsumerDelegate:" + id);
+      if (log.isTraceEnabled()) log.trace("Creating ServerConsumerDelegate:" + id + ", noLocal:" + noLocal);
       this.id = id;
       this.destination = destination;
       this.sessionEndpoint = sessionEndpoint;
@@ -118,9 +120,11 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    public boolean accept(Routable r)
    {
       boolean accept = true;
+      if (log.isTraceEnabled()) log.trace("Should message be accepted? Is there a message selector? " +
+            (messageSelector != null));
+            
       if (messageSelector != null)
       {
-         if (log.isTraceEnabled()) log.trace("There's a message selector");
          accept = messageSelector.accept(r);
          if (log.isTraceEnabled())
          {
@@ -131,24 +135,22 @@ public class ServerConsumerDelegate implements Receiver, Closeable
                log.trace("TEST property is:" + prop);
             }
             catch (Exception e)
-            {
-               
+            {              
             }
-            
          }
       }
+      if (log.isTraceEnabled()) log.trace("noLocal is " + this.noLocal);
       if (accept)
       {
          if (noLocal)
          {
-            if (log.isTraceEnabled()) log.trace("noLocal is true");
             String conId =
                ((JBossMessage)r).getConnectionID();
             if (log.isTraceEnabled()) { log.trace("Message connection id is:" + conId); }
             if (conId != null)
             {
                if (log.isTraceEnabled()) { log.trace("Current connection connection id is:" + sessionEndpoint.connectionEndpoint.connectionID); }
-               accept = conId.equals(sessionEndpoint.connectionEndpoint.connectionID);
+               accept = !conId.equals(sessionEndpoint.connectionEndpoint.connectionID);
                if (log.isTraceEnabled()) { log.trace("accepting?" + accept); }
             }
          }
@@ -161,7 +163,6 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
    public void closing() throws JMSException
    {
-      
    }
 
    public void close() throws JMSException
@@ -169,10 +170,6 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       if (log.isTraceEnabled()) log.trace("Close() on ServerConsumerDelegate:" + this.id);
 		this.setStarted(false);
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
-      if (subscription != null)
-      {
-         subscription.setHasConsumer(false);
-      }
       this.sessionEndpoint.consumers.remove(id);
    }
    
@@ -189,7 +186,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       }
       else
       {
-         if (log.isTraceEnabled()) log.trace("Attempting to remove receiver");
+         if (log.isTraceEnabled()) log.trace("Attempting to remove receiver from destination:" + destination);
          Receiver removed = destination.remove(id);
          if (log.isTraceEnabled()) log.trace("Removed receiver:" + removed);
       }

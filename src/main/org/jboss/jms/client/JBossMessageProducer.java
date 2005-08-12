@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.client;
 
+import java.io.Serializable;
+
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.logging.Logger;
@@ -27,7 +29,7 @@ import javax.jms.QueueSender;
  *
  * $Id$
  */
-class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
+class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher, Serializable
 {
    // Constants -----------------------------------------------------
 
@@ -125,7 +127,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    public void send(Message message) throws JMSException
    {
       // by default the message never expires
-      send(message, -1, -1, Long.MIN_VALUE);
+      send(message, -1, -1, 0);
    }
    
    /**
@@ -139,7 +141,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    
    public void send(Destination destination, Message message) throws JMSException
    {      
-      send(destination, message, -1, -1, Long.MIN_VALUE);
+      send(destination, message, -1, -1, 0);
    }
 
    public void send(Destination destination,

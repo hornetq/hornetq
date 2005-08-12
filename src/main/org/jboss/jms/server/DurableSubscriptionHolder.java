@@ -32,13 +32,13 @@ public class DurableSubscriptionHolder implements Serializable
    private String name;
    private LocalQueue queue;
    private LocalTopic topic;
-   private boolean hasConsumer;
+   private String selector;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public DurableSubscriptionHolder(String name, LocalTopic topic, LocalQueue queue)
+   public DurableSubscriptionHolder(String name, LocalTopic topic, LocalQueue queue, String selector)
    {
       this.name = name;
       this.queue = queue;
@@ -63,16 +63,11 @@ public class DurableSubscriptionHolder implements Serializable
       return name;
    }
    
-   public synchronized boolean hasConsumer()
+   public String getSelector()
    {
-      return hasConsumer;
+      return selector;
    }
    
-   public synchronized void setHasConsumer(boolean hasConsumer)
-   {
-      if (log.isTraceEnabled()) log.trace("setHasConsumer:" + hasConsumer);
-      this.hasConsumer = hasConsumer;
-   }
 
    // Interface XXX implementation ----------------------------------
    

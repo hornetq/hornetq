@@ -9,7 +9,7 @@ package org.jboss.jms.destination;
 import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.util.id.GUID;
 
 
@@ -27,13 +27,14 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
       
    // Attributes ----------------------------------------------------
    
-   private transient ConnectionDelegate delegate;
+   private transient SessionDelegate delegate;
+   
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public JBossTemporaryQueue(ConnectionDelegate delegate)
+   public JBossTemporaryQueue(SessionDelegate delegate)
    {
       super(new GUID().toString());
       this.delegate = delegate;

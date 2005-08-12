@@ -10,6 +10,7 @@ import javax.jms.JMSException;
 import javax.jms.TemporaryTopic;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.util.id.GUID;
 
 /**
@@ -26,13 +27,13 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       
    // Attributes ----------------------------------------------------
    
-   private transient ConnectionDelegate delegate;
+   private transient SessionDelegate delegate;
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public JBossTemporaryTopic(ConnectionDelegate delegate)
+   public JBossTemporaryTopic(SessionDelegate delegate)
    {
       super(new GUID().toString());
       this.delegate = delegate;

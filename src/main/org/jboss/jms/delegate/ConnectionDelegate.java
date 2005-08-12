@@ -39,18 +39,5 @@ public interface ConnectionDelegate extends Closeable, MetaDataRepository
   
 	public void sendTransaction(TxInfo tx) throws JMSException;
 
-   public void addTemporaryDestination(Destination destination) throws JMSException;
-   
-   public void deleteTemporaryDestination(Destination destination) throws JMSException;
-   
-   /**
-    * Unsubscribe the client represented by this connection from the durable subscription
-    * specified by subscriptionName
-    * 
-    * @param subscriptionName the Name of the durable subscription to unsubscribe from
-    * @throws JMSException if the unsubscribe fails
-    */
-   public void unsubscribe(String subscriptionName) throws JMSException;
-
    public Serializable getConnectionID();
 }

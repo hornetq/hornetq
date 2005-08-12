@@ -98,4 +98,23 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
     * Tell the server to redeliver any un-acked messages.	
     */
 	public void redeliver() throws JMSException;
+   
+   /**
+    * Add a temporary destination.
+    */
+   public void addTemporaryDestination(Destination destination) throws JMSException;
+   
+   /**
+    * Delete a temporary destination
+    */
+   public void deleteTemporaryDestination(Destination destination) throws JMSException;
+   
+   /**
+    * Unsubscribe the client from the durable subscription
+    * specified by subscriptionName
+    * 
+    * @param subscriptionName the Name of the durable subscription to unsubscribe from
+    * @throws JMSException if the unsubscribe fails
+    */
+   public void unsubscribe(String subscriptionName) throws JMSException;
 }

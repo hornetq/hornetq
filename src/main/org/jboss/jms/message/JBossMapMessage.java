@@ -41,6 +41,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    // Attributes ----------------------------------------------------
 
    protected Map content;
+   
+   //A Map message can either be in read-only or read-write mode
+   //Note this is different from other message types e.g. BytesMessage which
+   //can be either in read-only or write-only mode
+   protected boolean bodyReadOnly = false;
 
    // Static --------------------------------------------------------
 
@@ -55,6 +60,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       super(other);
       content = new HashMap(other.content);
+      bodyReadOnly = other.bodyReadOnly;
    }
 
    /**
@@ -63,17 +69,26 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    protected JBossMapMessage(MapMessage foreign) throws JMSException
    {
       super(foreign);
-      throw new NotYetImplementedException();
+      content = new HashMap();
+      Enumeration names = foreign.getMapNames();
+      while (names.hasMoreElements())
+      {
+         String name = (String)names.nextElement();
+         Object obj = foreign.getObject(name);
+         this.setObject(name, obj);
+      }
    }
 
    // Public --------------------------------------------------------
+   
+
 
    // MapMessage implementation -------------------------------------
 
    public void setBoolean(String name, boolean value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, Primitives.valueOf(value));
@@ -83,7 +98,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setByte(String name, byte value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Byte(value));
@@ -93,7 +108,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setShort(String name, short value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Short(value));
@@ -103,7 +118,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setChar(String name, char value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Character(value));
@@ -113,7 +128,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setInt(String name, int value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Integer(value));
@@ -123,7 +138,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setLong(String name, long value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Long(value));
@@ -133,7 +148,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setFloat(String name, float value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Float(value));
@@ -143,7 +158,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setDouble(String name, double value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, new Double(value));
@@ -153,7 +168,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setString(String name, String value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, value);
@@ -163,7 +178,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setBytes(String name, byte[] value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       content.put(name, value.clone());
@@ -173,7 +188,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setBytes(String name, byte[] value, int offset, int length) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       if (offset + length > value.length)
@@ -189,7 +204,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setObject(String name, Object value) throws JMSException
    {
       checkName(name);
-      if (!messageReadWrite)
+      if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       if (value instanceof Boolean)
@@ -436,6 +451,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void clearBody() throws JMSException
    {
       content = new HashMap();
+      bodyReadOnly = false;
       super.clearBody();
    }
    
@@ -443,21 +459,30 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       return new JBossMapMessage(this);
    }
+   
+   /** Do any other stuff required to be done after sending the message */
+   public void afterSend() throws JMSException
+   {      
+      super.afterSend();
+      
+      //Message body must be made read-only
+      bodyReadOnly = true;
+   }
 
    // Externalizable implementation ---------------------------------
 
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
+      out.writeBoolean(bodyReadOnly);
       writeMap(out, content);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-
+      bodyReadOnly = in.readBoolean();
       content = readMap(in);
-
    }
 
    // Package protected ---------------------------------------------

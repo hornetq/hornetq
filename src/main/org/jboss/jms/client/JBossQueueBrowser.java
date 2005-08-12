@@ -10,6 +10,7 @@ import javax.jms.QueueBrowser;
 import javax.jms.Queue;
 import javax.jms.JMSException;
 
+import java.io.Serializable;
 import java.util.Enumeration;
 
 import org.jboss.jms.delegate.BrowserDelegate;
@@ -17,7 +18,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  */
-class JBossQueueBrowser implements QueueBrowser
+class JBossQueueBrowser implements QueueBrowser, Serializable
 {
    private BrowserDelegate delegate;
    private Queue queue;
