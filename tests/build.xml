@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+   <!ENTITY libraries SYSTEM "../../tools/etc/buildmagic/libraries.ent">
+   <!ENTITY modules SYSTEM "../../tools/etc/buildmagic/modules.ent">
+]>
 
 <!-- ====================================================================== -->
 <!--                                                                        -->
@@ -18,8 +22,7 @@
    <dirname property="project.root" file="${remote.root}"/>
 
    <import file="../../tools/etc/buildmagic/build-common.xml"/>
-   <import file="../../tools/etc/buildmagic/libraries.xml"/>
-   <import file="../../tools/etc/buildmagic/modules.xml"/>
+
 
    <!-- ================================================================== -->
    <!-- Configuration                                                      -->
@@ -53,6 +56,7 @@
    <!-- ========= -->
    <!-- Libraries -->
    <!-- ========= -->
+   &libraries;
    <!-- The combined library classpath -->
    <path id="library.classpath">
       <path refid="apache.log4j.classpath"/>
@@ -70,6 +74,7 @@
    <!-- ======= -->
    <!-- Modules -->
    <!-- ======= -->
+   &modules;
    <!-- The combined dependent module classpath -->
    <path id="dependentmodule.classpath">
       <path refid="jboss.common.classpath"/>
