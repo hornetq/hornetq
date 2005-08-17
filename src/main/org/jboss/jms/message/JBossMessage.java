@@ -217,16 +217,16 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
       for(Enumeration props = foreign.getPropertyNames(); props.hasMoreElements(); )
       {
-         boolean found = false;
-
          String name = (String)props.nextElement();
          
          Object prop = foreign.getObjectProperty(name);
          this.setObjectProperty(name, prop);
          
          /*
-          * 
+          *
           Commented out by Tim - I think there's a much simpler way to do this
+
+         boolean found = false;
 
          String stringProperty = null;
          try
@@ -392,7 +392,7 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
          }
 
          throw new javax.jms.IllegalStateException("Cannot identify property " + name);
-         
+
          */
       }
    }

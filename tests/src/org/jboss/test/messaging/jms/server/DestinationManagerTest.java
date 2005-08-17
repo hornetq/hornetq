@@ -8,7 +8,6 @@ package org.jboss.test.messaging.jms.server;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.InVMInitialContextFactory;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.DestinationManagerImpl;
 
@@ -48,10 +47,9 @@ public class DestinationManagerTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      initialContext = new InitialContext();
 
-      destinationManager =
-      ServerManagement.getServerWrapper().getServerPeer().getDestinationManager();
+      destinationManager = ServerManagement.getServerPeer().getDestinationManager();
 
    }
 

@@ -4,11 +4,13 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.util;
+package org.jboss.messaging.tools.jndi;
 
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.NamingEnumeration;
+import javax.naming.Binding;
 import java.util.StringTokenizer;
 
 /**
@@ -50,6 +52,22 @@ public class JNDIUtil
          crtContext = crtContext.createSubcontext(tok);
       }
       return crtContext;
+   }
+
+
+   public static void tearDownRecursively(Context c) throws Exception
+   {
+      for(NamingEnumeration ne = c.listBindings(""); ne.hasMore(); )
+      {
+         Binding b = (Binding)ne.next();
+         String name = b.getName();
+         Object object = b.getObject();
+         if (object instanceof Context)
+         {
+            tearDownRecursively((Context)object);
+         }
+         c.unbind(name);
+      }
    }
 
    // Attributes ----------------------------------------------------

@@ -21,9 +21,10 @@ import javax.jms.InvalidDestinationException;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 
 
 

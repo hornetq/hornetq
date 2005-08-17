@@ -4,10 +4,9 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.util;
+package org.jboss.messaging.tools.jndi;
 
 import org.jboss.logging.Logger;
-import org.jboss.jms.util.InVMContext;
 
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.NamingException;
@@ -36,9 +35,10 @@ public class InVMInitialContextFactory implements InitialContextFactory
    public static Hashtable getJNDIEnvironment()
    {
       Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial", "org.jboss.jms.util.InVMInitialContextFactory");
-      env.put("java.naming.provider.url", "irrelevant");
-      env.put("java.naming.factory.url.pkgs", "irrelevant");
+      env.put("java.naming.factory.initial",
+              "org.jboss.messaging.tools.jndi.InVMInitialContextFactory");
+      env.put("java.naming.provider.url", "");
+      env.put("java.naming.factory.url.pkgs", "");
       return env;
    }
 

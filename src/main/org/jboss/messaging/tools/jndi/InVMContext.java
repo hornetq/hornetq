@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.util;
+package org.jboss.messaging.tools.jndi;
 
 import org.jboss.messaging.util.NotYetImplementedException;
 
@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -37,6 +38,8 @@ public class InVMContext implements Context
    // Attributes ----------------------------------------------------
 
    protected Map map;
+   protected NameParser parser = new InVMNameParser();
+
 
    // Constructors --------------------------------------------------
 
@@ -220,13 +223,13 @@ public class InVMContext implements Context
 
    public NameParser getNameParser(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      return getNameParser(name.toString());
    }
 
 
    public NameParser getNameParser(String name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      return parser;
    }
 
 
@@ -262,7 +265,6 @@ public class InVMContext implements Context
 
    public void close() throws NamingException
    {
-      throw new NotYetImplementedException();
    }
 
 

@@ -12,14 +12,11 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
-import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.StreamMessage;
 
 import java.io.Serializable;
 

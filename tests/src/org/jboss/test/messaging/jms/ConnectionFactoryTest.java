@@ -8,7 +8,7 @@ package org.jboss.test.messaging.jms;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;

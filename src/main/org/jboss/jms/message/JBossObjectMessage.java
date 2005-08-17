@@ -33,6 +33,8 @@ import org.jboss.util.Classes;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 {

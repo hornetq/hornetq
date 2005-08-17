@@ -9,7 +9,8 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 
 import javax.naming.InitialContext;
 import javax.jms.Connection;

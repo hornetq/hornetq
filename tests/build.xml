@@ -33,19 +33,16 @@
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="1.0.0"/>
 
-   <!-- ==================== -->
-   <!-- Local path overrides -->
-   <!-- ==================== -->
+   <!-- ========= -->
+   <!-- Libraries -->
+   <!-- ========= -->
+   &libraries;
 
-    <!--
-        Sometimes I need to locally patch a library and use the local version (src/resources),
-        until the change makes it to thridpary. This is how you can locally override a library.
-        To use the thirdparty library, just comment out the path definition below.
-    -->
-
-   <path id="jboss.remoting.classpath">
-       <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
-   </path>
+   <!--
+       Sometimes I need to locally patch a library and use the local version (src/resources),
+       until the change makes it to thridpary. This is how you can locally override a library.
+       To use the thirdparty library, just comment out the path definition below.
+   -->
 
    <!--
    <path id="jgroups.jgroups.classpath">
@@ -53,10 +50,6 @@
    </path>
    -->
 
-   <!-- ========= -->
-   <!-- Libraries -->
-   <!-- ========= -->
-   &libraries;
    <!-- The combined library classpath -->
    <path id="library.classpath">
       <path refid="apache.log4j.classpath"/>
@@ -75,6 +68,17 @@
    <!-- Modules -->
    <!-- ======= -->
    &modules;
+
+   <!--
+       Sometimes I need to locally patch a library and use the local version (src/resources),
+       until the change makes it to thridpary. This is how you can locally override a library.
+       To use the thirdparty library, just comment out the path definition below.
+   -->
+
+   <path id="jboss.remoting.classpath">
+       <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
+   </path>
+
    <!-- The combined dependent module classpath -->
    <path id="dependentmodule.classpath">
       <path refid="jboss.common.classpath"/>
@@ -85,6 +89,9 @@
       <path refid="jboss.mbeans.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.aop.classpath"/>
+
+      <path refid="jboss.system.classpath"/>
+      <path refid="jboss.transaction.classpath"/>
    </path>
 
    <!-- ===== -->

@@ -8,7 +8,6 @@ package org.jboss.jms.server;
 
 import java.io.Serializable;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.LocalQueue;
 import org.jboss.messaging.core.local.LocalTopic;
 
@@ -18,12 +17,12 @@ import org.jboss.messaging.core.local.LocalTopic;
  *
  * @author <a href="tim.l.fox@gmail.com">Tim Fox/a>
  * @version $Revision$
+ *
+ * $Id$
  */
 public class DurableSubscriptionHolder implements Serializable
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(DurableSubscriptionHolder.class);
    
    private static final long serialVersionUID = 6572385758103922254L;
    
@@ -43,6 +42,7 @@ public class DurableSubscriptionHolder implements Serializable
       this.name = name;
       this.queue = queue;
       this.topic = topic;
+      this.selector = selector;
    }
 
    // Public --------------------------------------------------------

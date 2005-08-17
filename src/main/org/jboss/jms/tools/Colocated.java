@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.tools;
 
-import org.jboss.jms.util.InVMInitialContextFactory;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
+import org.jboss.messaging.tools.jmx.ServiceContainer;
+import org.jboss.jms.server.ServerPeer;
 
 
 /**
@@ -30,16 +30,18 @@ public class Colocated extends Client
 
    // Attributes ----------------------------------------------------
 
-   private ServerWrapper server;
+   private ServiceContainer sc;
+   private ServerPeer serverPeer;
 
    // Constructors --------------------------------------------------
 
    public Colocated() throws Exception
    {
-      super(InVMInitialContextFactory.getJNDIEnvironment());
-      server = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment(),
-                                 TransactionManagerImpl.getInstance());
-      server.start();
+      sc = new ServiceContainer("transaction,remoting", null);
+      sc.start();
+
+      serverPeer = new ServerPeer("ServerPeer0");
+      serverPeer.start();
 
       deployTopic("T");
       log.info("Topic messaging/topics/T deployed");
@@ -49,12 +51,19 @@ public class Colocated extends Client
 
    public void deployTopic(String name) throws Exception
    {
-      server.deployTopic(name);
+      serverPeer.getDestinationManager().createTopic(name, null);
    }
 
    public void deployQueue(String name) throws Exception
    {
-      server.deployQueue(name);
+      serverPeer.getDestinationManager().createQueue(name, null);
+   }
+
+   public void exit() throws Exception
+   {
+      serverPeer.stop();
+      sc.stop();
+      System.exit(0);
    }
 
    // Package protected ---------------------------------------------

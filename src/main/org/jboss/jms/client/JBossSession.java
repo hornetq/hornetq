@@ -8,7 +8,6 @@ package org.jboss.jms.client;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
@@ -16,7 +15,6 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 
 import javax.jms.InvalidDestinationException;
 import javax.jms.QueueReceiver;

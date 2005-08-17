@@ -69,7 +69,7 @@
      <property name="messaging.version.tag" value="alpha-pr1"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <!-- <property name="messaging.version.cvstag" value="HEAD"/> -->
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR1"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
@@ -121,6 +121,13 @@
       <path refid="jboss.aspects.classpath"/>
       <path refid="jboss.j2se.classpath"/>
       <path refid="jboss.system.classpath"/>
+
+       <!-- these are only required to compile test support -->
+       <path refid="jboss.server.classpath"/>
+       <path refid="jboss.jca.classpath"/>
+       <path refid="jboss.transaction.classpath"/>
+       <path location="./src/resources/hsqldb.jar"/>
+
     </path>
 
     <!-- ===== -->

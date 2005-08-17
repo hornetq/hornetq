@@ -15,12 +15,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.MessageImpl;
 import org.jboss.test.messaging.tools.TextMessageImpl;
 import org.jboss.test.messaging.tools.ObjectMessageImpl;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 
 import javax.jms.Connection;
 import javax.jms.Message;

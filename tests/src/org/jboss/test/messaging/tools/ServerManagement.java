@@ -6,15 +6,18 @@
  */
 package org.jboss.test.messaging.tools;
 
-import org.jboss.jms.tools.ServerWrapper;
-import org.jboss.jms.util.InVMInitialContextFactory;
-import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
+import org.jboss.messaging.tools.jmx.ServiceContainer;
+import org.jboss.messaging.tools.jmx.RemotingJMXWrapper;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.remoting.transport.Connector;
 
 import javax.transaction.TransactionManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerManagement
 {
@@ -22,66 +25,89 @@ public class ServerManagement
 
    // Static --------------------------------------------------------
 
-   private static ServerWrapper serverWrapper;
+   private static ServiceContainer sc;
+   private static ServerPeer serverPeer;
 
-   /**
-    * By default, the server uses a singleton
-    * org.jboss.messaging.core.util.transaction.TransactionManagerImpl.
-    */
    public synchronized static void startInVMServer() throws Exception
    {
-      startInVMServer(TransactionManagerImpl.getInstance());
+      startInVMServer("transaction,remoting", null);
    }
 
    public synchronized static void startInVMServer(TransactionManager tm) throws Exception
    {
-      if (serverWrapper != null)
+      startInVMServer("transaction,remoting", tm);
+   }
+
+   public synchronized static void startInVMServer(String config) throws Exception
+   {
+      startInVMServer(config, null);
+   }
+
+   /**
+    * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
+    *        If null, the default JBoss TransactionManager implementation will be used.
+    */
+   public synchronized static void startInVMServer(String config, TransactionManager tm)
+         throws Exception
+   {
+      if (sc != null)
       {
          throw new Exception("server already started!");
       }
-      serverWrapper = new ServerWrapper(InVMInitialContextFactory.getJNDIEnvironment(), tm);
-      serverWrapper.start();
+      sc = new ServiceContainer(config, tm);
+      sc.start();
+      serverPeer = new ServerPeer("ServerPeer0");
+      serverPeer.start();
    }
+
 
 
    public synchronized static void stopInVMServer() throws Exception
    {
-      if (serverWrapper == null)
+      if (sc == null)
       {
          return;
       }
-      serverWrapper.stop();
-      serverWrapper = null;
+      serverPeer.stop();
+      serverPeer = null;
+      sc.stop();
+      sc = null;
+   }
+
+   public static ServerPeer getServerPeer() throws Exception
+   {
+      return serverPeer;
+   }
+
+   public static Connector getConnector() throws Exception
+   {
+      RemotingJMXWrapper remoting =
+            (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
+      return remoting.getConnector();
    }
 
    public static void deployTopic(String name) throws Exception
    {
       insureStarted();
-      serverWrapper.deployTopic(name);
+      serverPeer.getDestinationManager().createTopic(name);
    }
 
    public static void undeployTopic(String name) throws Exception
    {
       insureStarted();
-      serverWrapper.undeployTopic(name);
+      serverPeer.getDestinationManager().destroyTopic(name);
    }
 
    public static void deployQueue(String name) throws Exception
    {
       insureStarted();
-      serverWrapper.deployQueue(name);
+      serverPeer.getDestinationManager().createQueue(name);
    }
 
    public static void undeployQueue(String name) throws Exception
    {
       insureStarted();
-      serverWrapper.undeployQueue(name);
-   }
-
-   public static ServerWrapper getServerWrapper() throws Exception
-   {
-      insureStarted();
-      return serverWrapper;
+      serverPeer.getDestinationManager().destroyQueue(name);
    }
 
    // Attributes ----------------------------------------------------
@@ -98,7 +124,7 @@ public class ServerManagement
 
    private static void insureStarted() throws Exception
    {
-      if (serverWrapper == null)
+      if (sc == null)
       {
          throw new Exception("The server has not been started!");
       }

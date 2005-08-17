@@ -14,7 +14,7 @@ import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jms.util.JNDIUtil;
+import org.jboss.messaging.tools.jndi.JNDIUtil;
 import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.DomainDefinition;
 import org.jboss.aop.AspectManager;
@@ -41,7 +41,6 @@ import javax.management.ObjectName;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -90,8 +89,6 @@ public class ServerPeer
    protected ClientManager clientManager;
    protected DestinationManagerImpl destinationManager;
    protected Map connFactoryDelegates;
-   protected Hashtable jndiEnvironment;
-   protected InitialContext initialContext;
    protected MBeanServer mbeanServer;
 
    protected boolean started;
@@ -124,16 +121,6 @@ public class ServerPeer
 
       // the default value to use, unless the JMX attribute is modified
       connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
-   }
-
-   /**
-    * @param jndiEnvironment - map containing JNDI properties. Useful for testing. Passing null
-    *        means the server peer uses default JNDI properties.
-    */
-   public ServerPeer(String serverPeerID, Hashtable jndiEnvironment) throws Exception
-   {
-      this(serverPeerID);
-      this.jndiEnvironment = jndiEnvironment;
       started = false;
    }
 
@@ -156,8 +143,6 @@ public class ServerPeer
       }
 
       log.debug(this + " starting");
-
-      initialContext = new InitialContext(jndiEnvironment);
 
       mbeanServer = findMBeanServer();
       transactionManager = findTransactionManager();
@@ -349,11 +334,6 @@ public class ServerPeer
 
    // Package protected ---------------------------------------------
 
-   Hashtable getJNDIEnvironment()
-   {
-      return jndiEnvironment;
-   }
-
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
@@ -493,38 +473,35 @@ public class ServerPeer
    private TransactionManager findTransactionManager() throws Exception
    {
       TransactionManager tm = null;
+      InitialContext ic = new InitialContext();
       try
       {
-         tm = (TransactionManager)initialContext.lookup("java:/TransactionManager");
+         tm = (TransactionManager)ic.lookup("java:/TransactionManager");
       }
       catch(NameNotFoundException e)
       {}
 
-//      if (tm == null)
-//      {
-//         tm = TransactionManagerImpl.getInstance();
-//         log.warn("Cannot find a transaction manager, using an internal implementation!");
-//      }
-
       log.debug("TransactionManager: " + tm);
+
+      ic.close();
       return tm;
    }
 
 
-   private void setupConnectionFactories()
-      throws Exception
+   private void setupConnectionFactories() throws Exception
    {
 
       ConnectionFactory cf = setupConnectionFactory(null);
-      initialContext.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
-      initialContext.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
+      InitialContext ic = new InitialContext();
+      ic.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
+      ic.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
       
       //And now the connection factories and links as required by the TCK 
       //See section 4.4.15 of the TCK user guide.
       //FIXME - this is a hack. It should be removed once a better way to manage
       //connection factories is implemented
       
-      Context jmsContext = JNDIUtil.createContext(initialContext, "jms");
+      Context jmsContext = JNDIUtil.createContext(ic, "jms");
       jmsContext.rebind("QueueConnectionFactory", cf);
       jmsContext.rebind("TopicConnectionFactory", cf);
       
@@ -535,7 +512,9 @@ public class ServerPeer
       jmsContext.rebind("DURABLE_BMT_XCONNECTION_FACTORY", setupConnectionFactory("cts4"));
       jmsContext.rebind("DURABLE_CMT_XCONNECTION_FACTORY", setupConnectionFactory("cts5"));
       jmsContext.rebind("DURABLE_CMT_TXNS_XCONNECTION_FACTORY", setupConnectionFactory("cts6"));
-    
+
+      ic.close();
+
    }
    
    private ConnectionFactory setupConnectionFactory(String clientID)
@@ -551,19 +530,23 @@ public class ServerPeer
    private void tearDownConnectionFactories()
       throws Exception
    {
-      
+
+      InitialContext ic = new InitialContext();
+
+
+      //TODO
       //FIXME - this is a hack. It should be removed once a better way to manage
       //connection factories is implemented
-      initialContext.unbind("jms/DURABLE_SUB_CONNECTION_FACTORY");
-      initialContext.unbind("jms/MDBTACCESSTEST_FACTORY");
-      initialContext.unbind("jms/DURABLE_BMT_CONNECTION_FACTORY");
-      initialContext.unbind("jms/DURABLE_CMT_CONNECTION_FACTORY");
-      initialContext.unbind("jms/DURABLE_BMT_XCONNECTION_FACTORY");
-      initialContext.unbind("jms/DURABLE_CMT_XCONNECTION_FACTORY");
-      initialContext.unbind("jms/DURABLE_CMT_TXNS_XCONNECTION_FACTORY");
+      ic.unbind("jms/DURABLE_SUB_CONNECTION_FACTORY");
+      ic.unbind("jms/MDBTACCESSTEST_FACTORY");
+      ic.unbind("jms/DURABLE_BMT_CONNECTION_FACTORY");
+      ic.unbind("jms/DURABLE_CMT_CONNECTION_FACTORY");
+      ic.unbind("jms/DURABLE_BMT_XCONNECTION_FACTORY");
+      ic.unbind("jms/DURABLE_CMT_XCONNECTION_FACTORY");
+      ic.unbind("jms/DURABLE_CMT_TXNS_XCONNECTION_FACTORY");
       
-      initialContext.unbind(CONNECTION_FACTORY_JNDI_NAME);
-      initialContext.unbind(XACONNECTION_FACTORY_JNDI_NAME);
+      ic.unbind(CONNECTION_FACTORY_JNDI_NAME);
+      ic.unbind(XACONNECTION_FACTORY_JNDI_NAME);
      
    }
    

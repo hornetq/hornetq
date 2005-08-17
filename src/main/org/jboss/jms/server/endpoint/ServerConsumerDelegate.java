@@ -21,7 +21,6 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.remoting.InvokerCallbackHandler;
-import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -36,6 +35,8 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerConsumerDelegate implements Receiver, Closeable
 {
@@ -120,8 +121,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    public boolean accept(Routable r)
    {
       boolean accept = true;
-      if (log.isTraceEnabled()) log.trace("Should message be accepted? Is there a message selector? " +
-            (messageSelector != null));
+      if (log.isTraceEnabled()) { log.trace("Should message be accepted? Is there a message selector? " + (messageSelector != null)); }
             
       if (messageSelector != null)
       {

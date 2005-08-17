@@ -17,6 +17,8 @@ import javax.jms.JMSException;
  * Connection metadata
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ *
+ * $Id$
  */
 public class JBossConnectionMetaData implements Serializable, ConnectionMetaData {
    

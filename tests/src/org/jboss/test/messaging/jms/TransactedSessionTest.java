@@ -9,7 +9,7 @@ package org.jboss.test.messaging.jms;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 
 import javax.naming.InitialContext;
@@ -73,7 +73,7 @@ public class TransactedSessionTest extends MessagingTestCase
       ServerManagement.stopInVMServer();
 
       // start the server without a transaction manager
-      ServerManagement.startInVMServer(null);
+      ServerManagement.startInVMServer("remoting");
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");
@@ -107,7 +107,7 @@ public class TransactedSessionTest extends MessagingTestCase
 
       // start the server with a broken manager
       TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.BROKEN);
-      ServerManagement.startInVMServer();
+      ServerManagement.startInVMServer(TransactionManagerImpl.getInstance());
       initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");

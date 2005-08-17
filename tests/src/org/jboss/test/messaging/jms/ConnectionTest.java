@@ -8,7 +8,7 @@ package org.jboss.test.messaging.jms;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.client.JBossConnection;
 
@@ -200,7 +200,7 @@ public class ConnectionTest extends MessagingTestCase
       Connection connection = cf.createConnection();
       Serializable connectionID = ((JBossConnection)connection).getConnectionID();
 
-      ServerConnectionDelegate d = ServerManagement.getServerWrapper().getServerPeer().
+      ServerConnectionDelegate d = ServerManagement.getServerPeer().
             getClientManager().getConnectionDelegate(connectionID);
 
       assertFalse(d.isStarted());

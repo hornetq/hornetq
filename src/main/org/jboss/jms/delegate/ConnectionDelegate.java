@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.delegate;
 
-import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 

@@ -11,7 +11,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.jms.util.JNDIUtil;
+import org.jboss.messaging.tools.jndi.JNDIUtil;
 import org.jboss.messaging.core.local.AbstractDestination;
 
 import javax.naming.Context;
@@ -55,7 +55,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
    public DestinationManagerImpl(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
-      initialContext = new InitialContext(serverPeer.getJNDIEnvironment());
+      initialContext = new InitialContext();
       coreDestinationManager = new CoreDestinationManager(this);
       queueNameToJNDI = new HashMap();
       topicNameToJNDI = new HashMap();

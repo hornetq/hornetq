@@ -8,7 +8,7 @@ package org.jboss.test.messaging.jms;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.remoting.ServerInvoker;
@@ -126,7 +126,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testRemotingInternals() throws Exception
    {
-      Connector serverConnector = ServerManagement.getServerWrapper().getConnector();
+      Connector serverConnector = ServerManagement.getConnector();
       ServerInvoker serverInvoker = serverConnector.getServerInvoker();
       JMSServerInvocationHandler invocationHandler =
             (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
@@ -524,7 +524,7 @@ public class MessageConsumerTest extends MessagingTestCase
       // the message is buffered on the client, but not delivered yet
 
       // redeliver using core's internal API
-      AbstractDestination coreQueue = ServerManagement.getServerWrapper().getServerPeer().
+      AbstractDestination coreQueue = ServerManagement.getServerPeer().
             getDestinationManager().getCoreDestination(queue);
 
       assertFalse(coreQueue.deliver());

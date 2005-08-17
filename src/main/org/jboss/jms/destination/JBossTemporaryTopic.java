@@ -9,7 +9,6 @@ package org.jboss.jms.destination;
 import javax.jms.JMSException;
 import javax.jms.TemporaryTopic;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.util.id.GUID;
 

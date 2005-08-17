@@ -19,7 +19,6 @@ import javax.jms.MessageListener;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.naming.InitialContext;
-import java.util.Hashtable;
 
 /**
  * An interactive command-line JMS client. Allows you to look-up a ConnectionFactory and
@@ -44,25 +43,10 @@ public class Client
    private MessageProducer producer;
    private MessageConsumer consumer;
 
-   private InitialContext initialContext;
-
    // Constructors --------------------------------------------------
 
-   /**
-    * Uses default jndi properties (jndi.properties file)
-    */
    public Client() throws Exception
    {
-      this(null);
-   }
-
-   /**
-    * @param jndiEnvironment - Contains jndi properties. Null means using default properties
-    *        (jndi.properties file)
-    */
-   public Client(Hashtable jndiEnvironment) throws Exception
-   {
-      initialContext = new InitialContext(jndiEnvironment);
    }
 
    // Public --------------------------------------------------------
@@ -77,8 +61,9 @@ public class Client
 
       if (connectionFactory == null)
       {
-         connectionFactory =
-         (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         InitialContext ic = new InitialContext();
+         connectionFactory = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         ic.close();
       }
    }
 
@@ -88,7 +73,10 @@ public class Client
     */
    public Destination lookupDestination(String destination) throws Exception
    {
-      return (Destination)initialContext.lookup(destination);
+      InitialContext ic = new InitialContext();
+      Destination d = (Destination)ic.lookup(destination);
+      ic.close();
+      return d;
    }
 
 

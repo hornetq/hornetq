@@ -52,6 +52,8 @@ $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
 $reldir/../../../thirdparty/dom4j-dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
+$reldir/../../../system/output/lib/jboss-system.jar${SEP}\
+$reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar \
 org.clester.Main org.jboss.jms.tools.Colocated
 

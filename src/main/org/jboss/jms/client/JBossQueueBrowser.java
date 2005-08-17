@@ -17,6 +17,8 @@ import org.jboss.jms.delegate.BrowserDelegate;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ *
+ * $Id$
  */
 class JBossQueueBrowser implements QueueBrowser, Serializable
 {

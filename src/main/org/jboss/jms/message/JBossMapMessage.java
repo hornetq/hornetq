@@ -19,7 +19,6 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
 
 import org.jboss.util.Primitives;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
  * This class implements javax.jms.MapMessage
@@ -31,6 +30,8 @@ import org.jboss.messaging.util.NotYetImplementedException;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * 
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossMapMessage extends JBossMessage implements MapMessage
 {

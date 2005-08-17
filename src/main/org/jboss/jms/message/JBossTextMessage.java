@@ -23,6 +23,8 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * 
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossTextMessage extends JBossMessage implements TextMessage
 {

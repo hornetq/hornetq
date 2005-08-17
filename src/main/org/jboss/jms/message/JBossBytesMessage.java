@@ -23,7 +23,6 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 
 
@@ -37,6 +36,8 @@ import org.jboss.messaging.util.NotYetImplementedException;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * 
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossBytesMessage extends JBossMessage implements BytesMessage, Externalizable
 {

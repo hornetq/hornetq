@@ -20,7 +20,6 @@ import javax.jms.StreamMessage;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 /**
  * This class implements javax.jms.StreamMessage.
@@ -32,6 +31,8 @@ import org.jboss.messaging.util.NotYetImplementedException;
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * 
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossStreamMessage extends JBossMessage implements StreamMessage
 {

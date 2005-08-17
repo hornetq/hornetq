@@ -24,6 +24,8 @@ import javax.jms.MessageListener;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber, Serializable
 {
