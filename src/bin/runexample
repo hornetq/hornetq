@@ -1,0 +1,68 @@
+#!/bin/sh
+
+#
+# The classpath builder for org.jboss.messaging.tools.jmx.Example
+#
+
+reldir=`dirname $0`
+
+#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
+REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
+
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+if [ $cygwin = true ]; then
+    SEP=";"
+else
+    SEP=":"
+fi
+
+#for i in `ls $JBOSS_HOME/client/*.jar`; do
+#	JBOSS_CLASSPATH=$i${SEP}$JBOSS_CLASSPATH
+#done
+
+while [ "$1" != "" ]; do
+    if [ "$1" = "-debug" ]; then
+        if [ $cygwin = false ]; then
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
+        else
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"
+        fi
+    fi
+    shift
+done
+
+java $JAVA_OPTS -cp \
+$reldir/../../tests/etc${SEP}\
+$reldir/../../src/etc${SEP}\
+$reldir/../../tests/output/classes${SEP}\
+$reldir/../../output/classes${SEP}\
+${REMOTING_LIB}${SEP}\
+$reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
+$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
+$reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
+$reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
+$reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
+$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
+$reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
+$reldir/../../../thirdparty/junit-junit/lib/junit.jar${SEP}\
+$reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
+$reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
+$reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
+$reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
+$reldir/../../../thirdparty/dom4j-dom4j/lib/dom4j.jar${SEP}\
+$reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
+$reldir/../../../common/output/lib/jboss-common.jar${SEP}\
+$reldir/../../../system/output/lib/jboss-system.jar${SEP}\
+$reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
+$reldir/../../src/resources/hsqldb.jar${SEP}\
+$reldir/../../../server/output/lib/jboss.jar${SEP}\
+$reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
+$reldir/../../../connector/output/lib/jboss-local-jdbc.jar${SEP}\
+$reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
+ org.jboss.messaging.tools.jmx.Example

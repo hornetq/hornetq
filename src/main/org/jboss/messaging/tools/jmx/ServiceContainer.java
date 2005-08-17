@@ -107,6 +107,11 @@ public class ServiceContainer
 
    private List toUnbindAtExit;
 
+   public ServiceContainer(String config) throws Exception
+   {
+      this(config, null);
+   }
+
    /**
     * @param config - A comma separated list of services to be started. Available services:
     *        transaction, jca, database, remoting.  Example: "transaction,database,remoting"
