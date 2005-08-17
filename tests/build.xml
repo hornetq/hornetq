@@ -75,9 +75,11 @@
        To use the thirdparty library, just comment out the path definition below.
    -->
 
+   <!--
    <path id="jboss.remoting.classpath">
        <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
    </path>
+   -->
 
    <!-- The combined dependent module classpath -->
    <path id="dependentmodule.classpath">

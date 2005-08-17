@@ -15,7 +15,7 @@ import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerSessionDelegate;
 import org.jboss.jms.server.endpoint.ServerProducerDelegate;
 import org.jboss.jms.server.endpoint.ServerConsumerDelegate;
-import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;

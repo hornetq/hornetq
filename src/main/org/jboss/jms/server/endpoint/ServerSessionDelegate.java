@@ -52,7 +52,7 @@ import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.messaging.core.local.LocalQueue;
 import org.jboss.messaging.core.local.LocalTopic;
 import org.jboss.messaging.core.util.Lockable;
-import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
 /**

@@ -14,10 +14,10 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Callback;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.HandleCallbackException;
-import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.transport.Connector;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;

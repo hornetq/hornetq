@@ -9,13 +9,15 @@ package org.jboss.jms.client.remoting;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import javax.management.MBeanServer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerInvocationHandlerImpl implements ServerInvocationHandler
 {

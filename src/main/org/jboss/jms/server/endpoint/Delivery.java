@@ -6,8 +6,8 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import org.jboss.remoting.InvokerCallbackHandler;
-import org.jboss.remoting.Callback;
+import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.messaging.core.Routable;
 import org.jboss.logging.Logger;
 

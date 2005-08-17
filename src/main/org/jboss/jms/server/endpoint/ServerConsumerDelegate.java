@@ -20,7 +20,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.remoting.InvokerCallbackHandler;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 

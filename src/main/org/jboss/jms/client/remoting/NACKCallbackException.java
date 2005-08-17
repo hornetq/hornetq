@@ -6,11 +6,13 @@
  */
 package org.jboss.jms.client.remoting;
 
-import org.jboss.remoting.HandleCallbackException;
+import org.jboss.remoting.callback.HandleCallbackException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class NACKCallbackException extends HandleCallbackException
 {
