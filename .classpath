@@ -16,6 +16,10 @@
 	<classpathentry kind="src" path="/j2se"/>
 	<classpathentry kind="src" path="/aspects"/>
 	<classpathentry kind="lib" path="/thirdparty/gnu-regexp/lib/gnu-regexp.jar"/>
-	<classpathentry kind="lib" path="src/resources/jboss-remoting.jar"/>
+	<classpathentry kind="lib" path="/thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/server"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/connector"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
+	<classpathentry kind="lib" path="/thirdparty/hsqldb-hsqldb/lib/hsqldb.jar"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
