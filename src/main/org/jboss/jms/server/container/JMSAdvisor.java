@@ -8,6 +8,7 @@ package org.jboss.jms.server.container;
 
 import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.AspectManager;
+import org.jboss.aop.ClassAdvisorImpl;
 import org.jboss.jms.server.ServerPeer;
 
 /**
@@ -16,7 +17,7 @@ import org.jboss.jms.server.ServerPeer;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSAdvisor extends ClassAdvisor
+public class JMSAdvisor extends ClassAdvisorImpl
 {
    // Constants -----------------------------------------------------
 

@@ -100,7 +100,7 @@ public class ServerPeer
    protected ClassAdvisor consumerAdvisor;
 	protected ClassAdvisor browserAdvisor;
    protected ClassAdvisor genericAdvisor;
-   
+
 
    protected PooledExecutor threadPool;
 
@@ -151,7 +151,7 @@ public class ServerPeer
       destinationManager = new DestinationManagerImpl(this);
       messageStore = new MessageStoreImpl("MessageStore");
       acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
-            
+
       threadPool = new PooledExecutor();
 
       initializeRemoting();
@@ -160,13 +160,13 @@ public class ServerPeer
       mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
 
       setupConnectionFactories();
-      
+
       started = true;
 
       log.info("JMS " + this + " started");
    }
-   
-  
+
+
 
    public synchronized void stop() throws Exception
    {
@@ -181,8 +181,8 @@ public class ServerPeer
 
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
-      
-      
+
+
       started = false;
 
       log.info("JMS " + this + " stopped");
@@ -290,7 +290,7 @@ public class ServerPeer
    {
       return producerAdvisor;
    }
-   
+
    public ClassAdvisor getBrowserAdvisor()
    {
       return browserAdvisor;
@@ -335,7 +335,7 @@ public class ServerPeer
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    private static String[] domainNames = { "ServerConnectionFactoryDelegate",
@@ -358,7 +358,9 @@ public class ServerPeer
          {
             throw new RuntimeException("Domain " + domainNames[i] + " not found");
          }
-         advisors[i] = new JMSAdvisor(domainNames[i], domainDefinition.getManager(), this);
+
+         //TODO Use AOPManager interface once that has stabilized
+         advisors[i] = new JMSAdvisor(domainNames[i], (AspectManager)domainDefinition.getManager(), this);
          Class c = Class.forName("org.jboss.jms.server.endpoint." + domainNames[i]);
          advisors[i].attachClass(c);
 
@@ -369,7 +371,7 @@ public class ServerPeer
       connAdvisor = advisors[1];
       sessionAdvisor = advisors[2];
       producerAdvisor = advisors[3];
-		consumerAdvisor = advisors[4];		
+		consumerAdvisor = advisors[4];
       browserAdvisor = advisors[5];
       genericAdvisor = advisors[6];
    }
@@ -418,24 +420,24 @@ public class ServerPeer
                            "JMS",
                            PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_FACTORY_ID, connFactoryID, PayloadKey.AS_IS);
-            
+
       h.getMetaData().mergeIn(metadata);
 
-      // TODO 
+      // TODO
       ClassLoader loader = getClass().getClassLoader();
       Class[] interfaces = new Class[] { ConnectionFactoryDelegate.class };
       return Proxy.newProxyInstance(loader, interfaces, h);
    }
 
-   
+
    /**
     * @return - may return null if it doesn't find a "jboss" MBeanServer.
     */
    private MBeanServer findMBeanServer()
    {
       System.setProperty("jmx.invoke.getters", "true");
-      
-      
+
+
       MBeanServer result = null;
       ArrayList l = MBeanServerFactory.findMBeanServer(null);
       for(Iterator i = l.iterator(); i.hasNext(); )
@@ -495,16 +497,16 @@ public class ServerPeer
       InitialContext ic = new InitialContext();
       ic.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
       ic.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
-      
-      //And now the connection factories and links as required by the TCK 
+
+      //And now the connection factories and links as required by the TCK
       //See section 4.4.15 of the TCK user guide.
       //FIXME - this is a hack. It should be removed once a better way to manage
       //connection factories is implemented
-      
+
       Context jmsContext = JNDIUtil.createContext(ic, "jms");
       jmsContext.rebind("QueueConnectionFactory", cf);
       jmsContext.rebind("TopicConnectionFactory", cf);
-      
+
       jmsContext.rebind("DURABLE_SUB_CONNECTION_FACTORY", setupConnectionFactory("cts"));
       jmsContext.rebind("MDBTACCESSTEST_FACTORY", setupConnectionFactory("cts1"));
       jmsContext.rebind("DURABLE_BMT_CONNECTION_FACTORY", setupConnectionFactory("cts2"));
@@ -516,17 +518,17 @@ public class ServerPeer
       ic.close();
 
    }
-   
+
    private ConnectionFactory setupConnectionFactory(String clientID)
       throws Exception
    {
       String connFactoryID = genConnFactoryID();
       ServerConnectionFactoryDelegate serverDelegate = new ServerConnectionFactoryDelegate(this, clientID);
-      this.connFactoryDelegates.put(connFactoryID, serverDelegate);      
+      this.connFactoryDelegates.put(connFactoryID, serverDelegate);
       ConnectionFactory clientDelegate = createConnectionFactory(connFactoryID);
       return clientDelegate;
    }
-   
+
    private void tearDownConnectionFactories()
       throws Exception
    {
@@ -544,21 +546,21 @@ public class ServerPeer
       ic.unbind("jms/DURABLE_BMT_XCONNECTION_FACTORY");
       ic.unbind("jms/DURABLE_CMT_XCONNECTION_FACTORY");
       ic.unbind("jms/DURABLE_CMT_TXNS_XCONNECTION_FACTORY");
-      
+
       ic.unbind(CONNECTION_FACTORY_JNDI_NAME);
       ic.unbind(XACONNECTION_FACTORY_JNDI_NAME);
-     
+
    }
-   
- 
-   
+
+
+
    private synchronized String genConnFactoryID()
    {
       return "CONNFACTORY" + connFactoryIDSequence++;
    }
-   
 
-   
+
+
 
    // Inner classes -------------------------------------------------
 }
