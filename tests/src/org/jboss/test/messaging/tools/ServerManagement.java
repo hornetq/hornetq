@@ -102,19 +102,7 @@ public class ServerManagement
 
    public static void deployTopic(String name) throws Exception
    {
-      insureStarted();
-      if (!isRemote)
-      {
-         
-         serverPeer.getDestinationManager().createTopic(name);
-      }
-      else
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
-         
-         rmiAdaptor.invoke(on, "createTopic",
-               new Object[] {name}, new String[] { "java.lang.String" });
-      }
+      deployTopic(name, null);
    }
    
    public static void deployTopic(String name, String jndiName) throws Exception
@@ -123,14 +111,15 @@ public class ServerManagement
       if (!isRemote)
       {
          
-         serverPeer.getDestinationManager().createTopic(name);
+         serverPeer.getDestinationManager().createTopic(name, jndiName);
       }
       else
       {
          ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
          
          rmiAdaptor.invoke(on, "createTopic",
-               new Object[] {name, jndiName}, new String[] { "java.lang.String" , "java.lang.String"});
+               new Object[] {name, jndiName}, new String[] { "java.lang.String" ,
+                                                             "java.lang.String"});
       }
    }
 
@@ -153,19 +142,7 @@ public class ServerManagement
 
    public static void deployQueue(String name) throws Exception
    {
-      insureStarted();
-      if (!isRemote)
-      {
-    
-         serverPeer.getDestinationManager().createQueue(name);
-      }
-      else
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
-         
-         rmiAdaptor.invoke(on, "createQueue",
-               new Object[] {name}, new String[] { "java.lang.String" });
-      }
+      deployQueue(name, null);
    }
    
    public static void deployQueue(String name, String jndiName) throws Exception
@@ -174,7 +151,7 @@ public class ServerManagement
       if (!isRemote)
       {
     
-         serverPeer.getDestinationManager().createQueue(name);
+         serverPeer.getDestinationManager().createQueue(name, jndiName);
       }
       else
       {

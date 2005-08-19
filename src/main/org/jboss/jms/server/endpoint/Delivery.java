@@ -17,6 +17,8 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 class Delivery extends Callback implements Runnable
 {

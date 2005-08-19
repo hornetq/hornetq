@@ -59,6 +59,7 @@ public class DestinationManager extends ServiceMBeanSupport implements Destinati
    public DestinationManager(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
+      //TODO close this inital context when DestinationManager stops
       initialContext = new InitialContext();
       coreDestinationManager = new CoreDestinationManager(this);
       queueNameToJNDI = new HashMap();
@@ -67,6 +68,11 @@ public class DestinationManager extends ServiceMBeanSupport implements Destinati
 
    // DestinationManager implementation -----------------------------
 
+
+   public void createQueue(String name) throws Exception
+   {
+      createDestination(true, name, null);
+   }
 
    public void createQueue(String name, String jndiName) throws Exception
    {
@@ -78,6 +84,11 @@ public class DestinationManager extends ServiceMBeanSupport implements Destinati
       removeDestination(true, name);
    }
 
+   public void createTopic(String name) throws Exception
+   {
+      createDestination(false, name, null);
+   }
+
    public void createTopic(String name, String jndiName) throws Exception
    {
       createDestination(false, name, jndiName);
@@ -87,17 +98,6 @@ public class DestinationManager extends ServiceMBeanSupport implements Destinati
    {
       removeDestination(false, name);
    }
-
-   public void createQueue(String name) throws Exception
-   {
-      createDestination(true, name, null);
-   }
-
-   public void createTopic(String name) throws Exception
-   {
-      createDestination(false, name, null);
-   }
-
 
    // Public --------------------------------------------------------
 

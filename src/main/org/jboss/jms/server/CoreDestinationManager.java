@@ -24,6 +24,8 @@ import java.util.HashMap;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 class CoreDestinationManager
 {

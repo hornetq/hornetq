@@ -17,6 +17,8 @@ import java.io.ObjectOutput;
  * be passed to the server for processing.
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox </a>
+ *
+ * $Id$
  */
 public class AckInfo implements Externalizable
 {

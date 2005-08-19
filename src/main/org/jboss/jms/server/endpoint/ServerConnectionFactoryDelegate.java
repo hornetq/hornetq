@@ -33,6 +33,8 @@ import javax.jms.JMSSecurityException;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegate
 {
