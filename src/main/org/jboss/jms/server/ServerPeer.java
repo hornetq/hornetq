@@ -145,7 +145,7 @@ public class ServerPeer
          return;
       }
 
-      if (log.isTraceEnabled()) { log.trace(this + " starting"); }
+      log.debug(this + " starting");
 
       mbeanServer = findMBeanServer();
       transactionManager = findTransactionManager();
