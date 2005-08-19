@@ -12,7 +12,9 @@
    <loader-repository>jboss.messaging:name=ScopedLoaderRepository
        <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
    </loader-repository>
+   -->
 
+   <!--
    <mbean code="org.jboss.aop.deployment.AspectManagerService"
       name="jboss.messaging:service=AspectManager">
    </mbean>
@@ -48,7 +50,9 @@
 
    <mbean code="org.jboss.remoting.network.NetworkRegistry"
           name="jboss.messaging:service=NetworkRegistry"/>
+   -->
 
+   <!--
    <mbean code="org.jboss.jms.tools.AspectLoader"
       name="jboss.messaging:service=AspectLoader"
       xmbean-dd="xmdesc/AspectLoader-xmbean.xml">
