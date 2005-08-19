@@ -6,19 +6,14 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-import org.jboss.jms.client.JBossConnection;
+import java.io.Serializable;
 
-
-import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
@@ -27,8 +22,12 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
-import java.io.Serializable;
-import javax.jms.IllegalStateException;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
@@ -62,7 +61,7 @@ public class ConnectionTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployTopic("Topic");
       topic = (Destination)initialContext.lookup("/topic/Topic");
@@ -195,8 +194,15 @@ public class ConnectionTest extends MessagingTestCase
    }
 
 
+   /*
+    * 
+    
+    
+    Commented out since this test cannot be run remotely
+    
    public void testStartStop() throws Exception
    {
+      
       Connection connection = cf.createConnection();
       Serializable connectionID = ((JBossConnection)connection).getConnectionID();
 
@@ -216,6 +222,7 @@ public class ConnectionTest extends MessagingTestCase
       connection.close();
    }
 
+*/
 
    /* Tests for closing connection
     * ============================

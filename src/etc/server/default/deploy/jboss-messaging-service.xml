@@ -12,9 +12,7 @@
    <loader-repository>jboss.messaging:name=ScopedLoaderRepository
        <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
    </loader-repository>
-   -->
 
-   <!--
    <mbean code="org.jboss.aop.deployment.AspectManagerService"
       name="jboss.messaging:service=AspectManager">
    </mbean>
@@ -50,9 +48,7 @@
 
    <mbean code="org.jboss.remoting.network.NetworkRegistry"
           name="jboss.messaging:service=NetworkRegistry"/>
-   -->
 
-   <!--
    <mbean code="org.jboss.jms.tools.AspectLoader"
       name="jboss.messaging:service=AspectLoader"
       xmbean-dd="xmdesc/AspectLoader-xmbean.xml">
@@ -61,20 +57,109 @@
    </mbean>
    -->
 
+	<!-- The JMS Security Manager -->
+	<mbean code="org.jboss.jms.security.SecurityManager" name="jboss.messaging:service=SecurityManager">
+		<attribute name="DefaultSecurityConfig">
+			<security>
+				<role name="guest" read="true" write="true" create="true"/>
+			</security>
+		</attribute>
+		<attribute name="SecurityDomain">java:/jaas/jbossmessaging</attribute>    
+	</mbean>
 
+   <!-- The Server Peer -->
    <mbean code="org.jboss.jms.server.ServerPeer"
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml">
-
       <constructor>
          <!-- serverPeerID -->
          <arg type="java.lang.String" value="0" />
       </constructor>
-
       <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
       <!--
       <depends>jboss.messaging:service=AspectLoader</depends>
       -->
+      <depends optional-attribute-name="SecurityManagerON">jboss.messaging:service=SecurityManager</depends>
+   </mbean>
+   
+   
+   <!-- Test destinations -->
+      
+   <mbean code="org.jboss.jms.server.jmx.Topic"
+      name="jboss.messaging.destination:service=Topic,name=testTopic">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
+      <attribute name="SecurityConf">
+         <security>
+            <role name="guest" read="true" write="true"/>
+            <role name="publisher" read="true" write="true" create="false"/>
+            <role name="durpublisher" read="true" write="true" create="true"/>
+         </security>
+      </attribute>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.jmx.Topic"
+      name="jboss.messaging.destination:service=Topic,name=securedTopic">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
+      <attribute name="SecurityConf">
+         <security>
+            <role name="publisher" read="true" write="true" create="false"/>
+         </security>
+      </attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.jmx.Topic"
+      name="jboss.messaging.destination:service=Topic,name=testDurableTopic">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
+      <attribute name="SecurityConf">
+         <security>
+            <role name="guest" read="true" write="true"/>
+            <role name="publisher" read="true" write="true" create="false"/>
+            <role name="durpublisher" read="true" write="true" create="true"/>
+         </security>
+      </attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=testQueue">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
+      <attribute name="SecurityConf">
+         <security>
+            <role name="guest" read="true" write="true"/>
+            <role name="publisher" read="true" write="true" create="false"/>
+            <role name="noacc" read="false" write="false" create="false"/>
+         </security>
+      </attribute>
+   </mbean>
+     
+   <!-- Example queues -->   
+   
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=A">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=B">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=C">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=D">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>   
+
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=ex">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
 </server>

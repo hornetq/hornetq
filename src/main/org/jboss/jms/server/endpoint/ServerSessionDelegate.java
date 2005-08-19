@@ -41,7 +41,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.destination.JBossDestination;
@@ -110,7 +110,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    {
 
       // look-up destination
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination destination = null;
      
       if (jmsDestination != null)
@@ -194,7 +194,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
       
       // look-up destination
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      DestinationManager dm = serverPeer.getDestinationManager();
     
       AbstractDestination destination = dm.getCoreDestination(jmsDestination);
      
@@ -377,7 +377,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    public Queue createQueue(String name) throws JMSException
    {
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination coreDestination = dm.getCoreDestination(true, name);
 
       if (coreDestination == null)
@@ -395,7 +395,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    public Topic createTopic(String name) throws JMSException
    {
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      DestinationManager dm = serverPeer.getDestinationManager();
       AbstractDestination coreDestination = dm.getCoreDestination(false, name);
 
       if (coreDestination == null)
@@ -451,7 +451,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
 
 	   // look-up destination
-	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
+	   DestinationManager dm = serverPeer.getDestinationManager();
 	  
       AbstractDestination destination = dm.getCoreDestination(jmsDestination);
 	

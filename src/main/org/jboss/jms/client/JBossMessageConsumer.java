@@ -28,8 +28,10 @@ import javax.jms.MessageListener;
  * $Id$
  */
 class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber, Serializable
-{
+{   
    // Constants -----------------------------------------------------  
+   
+   private static final long serialVersionUID = -8776908463975467851L;
 
    // Static --------------------------------------------------------
 

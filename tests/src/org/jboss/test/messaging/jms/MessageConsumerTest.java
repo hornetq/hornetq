@@ -6,34 +6,30 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.transport.Connector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.Session;
 import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.JMSException;
 import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.Queue;
 import javax.jms.TopicSubscriber;
-import javax.jms.QueueReceiver;
 import javax.naming.InitialContext;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Collection;
+
+import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -76,7 +72,7 @@ public class MessageConsumerTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployQueue("Queue");
 
-      InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       topic = (Topic)ic.lookup("/topic/Topic");
       queue = (Queue)ic.lookup("/queue/Queue");
@@ -123,7 +119,7 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    
    
-
+/*
    public void testRemotingInternals() throws Exception
    {
       Connector serverConnector = ServerManagement.getConnector();
@@ -145,7 +141,7 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(2, listeners.size());
 
    }
-
+*/
 
    public void testGetSelector() throws Exception
    {
@@ -511,6 +507,9 @@ public class MessageConsumerTest extends MessagingTestCase
    //
    // Redelivery tests
    //
+   
+   /* Commented out since this test assumes the server is in VM
+   
    public void testRedelivery() throws Exception
    {
 
@@ -539,7 +538,7 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
 
-
+*/
 
    //
    // MessageListener tests

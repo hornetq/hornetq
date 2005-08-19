@@ -41,11 +41,11 @@ class CoreDestinationManager
    // <name - AbstractDestination>
    protected Map topicMap;
 
-   protected DestinationManagerImpl destinationManager;
+   protected DestinationManager destinationManager;
 
    // Constructors --------------------------------------------------
 
-   CoreDestinationManager(DestinationManagerImpl destinationManager) throws Exception
+   CoreDestinationManager(DestinationManager destinationManager) throws Exception
    {
       queueMap = new HashMap();
       topicMap = new HashMap();

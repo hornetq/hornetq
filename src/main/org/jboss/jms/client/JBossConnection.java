@@ -44,9 +44,10 @@ public class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
     XAConnection, XAQueueConnection, XATopicConnection, Serializable
 {
-
    
    // Constants -----------------------------------------------------
+   private static final long serialVersionUID = -3715868654823177898L;
+   
    static final int TYPE_GENERIC_CONNECTION = 0;
    static final int TYPE_QUEUE_CONNECTION = 1;
    static final int TYPE_TOPIC_CONNECTION = 2;

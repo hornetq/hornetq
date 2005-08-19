@@ -6,18 +6,17 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-
-import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -48,14 +47,12 @@ public class AcknowledgmentTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf =
             (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-
-      
+      queue = (Destination)initialContext.lookup("/queue/Queue"); 
    }
 
    public void tearDown() throws Exception

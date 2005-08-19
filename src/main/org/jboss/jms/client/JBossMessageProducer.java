@@ -32,9 +32,11 @@ import javax.jms.QueueSender;
 class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher, Serializable
 {
    // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
    
+   private static final long serialVersionUID = 1080736785725023015L;
+
+   // Static --------------------------------------------------------      
+
    private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
    
    // Attributes ----------------------------------------------------

@@ -25,6 +25,8 @@ import org.jboss.logging.Logger;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
+import javax.jms.JMSSecurityException;
+
 /**
  * Creates ConnectionFactoryDelegate instances. Instances of this class are constructed only on the
  * server.
@@ -57,12 +59,18 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
    // ConnectionFactoryDelegate implementation ----------------------
 
    public ConnectionDelegate createConnectionDelegate()
+      throws JMSSecurityException
    {
       return createConnectionDelegate(null, null);
    }
 
    public ConnectionDelegate createConnectionDelegate(String username, String password)
+      throws JMSSecurityException
    {
+      if (log.isTraceEnabled()) { log.trace("Creating a new connection with username=" + username); }
+      
+      //authenticate the user
+      serverPeer.getSecurityManager().authenticate(username, password);
 
       // create the ConnectionDelegate dynamic proxy
       ConnectionDelegate cd = null;
@@ -91,7 +99,7 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
 
       // create the corresponding "server-side" ConnectionDelegate and register it with the
       // server peer's ClientManager
-      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer, defaultClientID);
+      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer, defaultClientID, username, password);
       clientManager.putConnectionDelegate(scd.getConnectionID(), scd);
       
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,

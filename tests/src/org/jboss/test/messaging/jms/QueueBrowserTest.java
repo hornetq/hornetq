@@ -10,6 +10,7 @@ package org.jboss.test.messaging.jms;
 import java.util.Enumeration;
 
 import javax.jms.Connection;
+import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -17,14 +18,11 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.InvalidDestinationException;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 
 
 
@@ -65,9 +63,10 @@ public class QueueBrowserTest extends MessagingTestCase
 	
 	public void setUp() throws Exception
 	{
+
 		super.setUp();
 		ServerManagement.startInVMServer();
-		initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+		initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 		cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 		
 		ServerManagement.deployQueue("Queue");
@@ -79,6 +78,7 @@ public class QueueBrowserTest extends MessagingTestCase
       connection = cf.createConnection();
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       producer = session.createProducer(queue);
+    
 	}
 	
 	public void tearDown() throws Exception

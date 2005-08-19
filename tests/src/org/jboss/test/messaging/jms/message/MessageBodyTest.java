@@ -27,7 +27,6 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -70,7 +69,7 @@ public class MessageBodyTest extends MessagingTestCase
       ServerManagement.startInVMServer();
       ServerManagement.deployQueue("Queue");
 
-      InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
       queue = (Destination) ic.lookup("/queue/Queue");
 

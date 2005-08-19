@@ -9,7 +9,7 @@ package org.jboss.test.messaging.jms.server;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.DestinationManager;
 
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -32,7 +32,6 @@ public class DestinationManagerTest extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected InitialContext initialContext;
-   protected DestinationManager destinationManager;
 
    // Constructors --------------------------------------------------
 
@@ -47,23 +46,23 @@ public class DestinationManagerTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext();
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
-      destinationManager = ServerManagement.getServerPeer().getDestinationManager();
+      //destinationManager = ServerManagement.getServerPeer().getDestinationManager();
 
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.stopInVMServer();
-      destinationManager = null;
+      //destinationManager = null;
       super.tearDown();
    }
 
    public void testCreateQueue() throws Exception
    {
       String name = "testQueue";
-      destinationManager.createQueue(name, null);
+      this.createQueue(name, null);
 
       Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
@@ -73,7 +72,7 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testCreateTopic() throws Exception
    {
       String name = "testQueue";
-      destinationManager.createTopic(name, null);
+      this.createTopic(name, null);
 
       Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
@@ -84,7 +83,7 @@ public class DestinationManagerTest extends MessagingTestCase
    {
       String name = "testQueue";
       String jndiName = "/a/b/c/testQueue2";
-      destinationManager.createQueue(name, jndiName);
+      this.createQueue(name, jndiName);
 
       Queue q = (Queue)initialContext.lookup(jndiName);
       assertEquals(name, q.getQueueName());
@@ -94,7 +93,7 @@ public class DestinationManagerTest extends MessagingTestCase
    {
       String name = "testQueue";
       String jndiName = "testQueue";
-      destinationManager.createQueue(name, jndiName);
+      this.createQueue(name, jndiName);
 
       Queue q = (Queue)initialContext.lookup(jndiName);
       assertEquals(name, q.getQueueName());
@@ -105,7 +104,7 @@ public class DestinationManagerTest extends MessagingTestCase
    {
       String name = "testTopic";
       String jndiName = "/a/b/c/testTopic2";
-      destinationManager.createTopic(name, jndiName);
+      this.createTopic(name, jndiName);
 
       Topic t = (Topic)initialContext.lookup(jndiName);
       assertEquals(name, t.getTopicName());
@@ -114,11 +113,11 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testCreateDuplicateQueue() throws Exception
    {
       String name = "testQueue";
-      destinationManager.createQueue(name, null);
+      this.createQueue(name, null);
 
       try
       {
-         destinationManager.createQueue(name, null);
+         this.createQueue(name, null);
          fail("should have thrown exception");
       }
       catch(JMSException e)
@@ -130,11 +129,11 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testCreateDuplicateTopic() throws Exception
    {
       String name = "testTopic";
-      destinationManager.createTopic(name, null);
+      this.createTopic(name, null);
 
       try
       {
-         destinationManager.createTopic(name, null);
+         this.createTopic(name, null);
          fail("should have thrown exception");
       }
       catch(JMSException e)
@@ -146,11 +145,11 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testCreateDuplicateQueueDifferentJNDIName() throws Exception
    {
       String name = "testQueue";
-      destinationManager.createQueue(name, null);
+      this.createQueue(name, null);
 
       try
       {
-         destinationManager.createQueue(name, "x/y/z/testQueueA");
+         this.createQueue(name, "x/y/z/testQueueA");
 
          fail("should have thrown exception");
       }
@@ -163,11 +162,11 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testCreateDuplicateTopicDifferentJNDIName() throws Exception
    {
       String name = "testTopic";
-      destinationManager.createTopic(name, null);
+      this.createTopic(name, null);
 
       try
       {
-         destinationManager.createTopic(name, "x/y/z/testTopicA");
+         this.createTopic(name, "x/y/z/testTopicA");
          fail("should have thrown exception");
       }
       catch(JMSException e)
@@ -180,8 +179,8 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testCreateQueueAndTopicWithTheSameName() throws Exception
    {
       String name = "SomeName";
-      destinationManager.createQueue(name, null);
-      destinationManager.createTopic(name, null);
+      this.createQueue(name, null);
+      this.createTopic(name, null);
 
       Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
       Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
@@ -192,27 +191,27 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testDestroyInexistentQueue() throws Exception
    {
-      destinationManager.destroyQueue("there is not such a queue");
+      this.destroyQueue("there is not such a queue");
    }
 
    public void testDestroyInexistentTopic() throws Exception
    {
-      destinationManager.destroyTopic("there is not such a topic");
+      this.destroyTopic("there is not such a topic");
    }
 
 
    public void testDestroyQueue() throws Exception
    {
       String name = "testQueue";
-      destinationManager.createQueue(name, null);
+      this.createQueue(name, null);
 
       Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
 
-      destinationManager.destroyQueue(name);
+      this.destroyQueue(name);
 
-      assertNull(((DestinationManagerImpl)destinationManager).getCoreDestination(q));
+      //assertNull(((DestinationManager)destinationManager).getCoreDestination(q));
 
       try
       {
@@ -228,15 +227,15 @@ public class DestinationManagerTest extends MessagingTestCase
    public void testDestroyTopic() throws Exception
    {
       String name = "testTopic";
-      destinationManager.createTopic(name, null);
+      this.createTopic(name, null);
 
       Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
 
-      destinationManager.destroyTopic(name);
+      this.destroyTopic(name);
 
-      assertNull(((DestinationManagerImpl)destinationManager).getCoreDestination(t));
+      //assertNull(((DestinationManager)destinationManager).getCoreDestination(t));
 
       try
       {
@@ -257,6 +256,30 @@ public class DestinationManagerTest extends MessagingTestCase
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   
+   private void createQueue(String name, String jndiName)
+      throws Exception
+   {
+      ServerManagement.deployQueue(name, jndiName);
+   }
+   
+   private void createTopic(String name, String jndiName)
+      throws Exception
+   {
+      ServerManagement.deployTopic(name, jndiName);
+   }
+   
+   private void destroyQueue(String name)
+      throws Exception
+   {
+      ServerManagement.undeployQueue(name);
+   }
+   
+   private void destroyTopic(String name)
+      throws Exception
+   {
+      ServerManagement.undeployTopic(name);
+   }
    
    // Inner classes -------------------------------------------------   
 }

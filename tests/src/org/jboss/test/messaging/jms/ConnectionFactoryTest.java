@@ -6,15 +6,14 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
+
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -43,7 +42,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
    }
 
    public void tearDown() throws Exception

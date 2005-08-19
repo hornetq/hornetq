@@ -38,8 +38,18 @@
       <name>Connector</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-
-
+   
+   <attribute access="read-only" getMethod="getServerPeer">
+      <description>Get a reference to the ServerPeer object</description>
+      <name>ServerPeer</name>
+      <type>org.jboss.jms.server.ServerPeer</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getSecurityManagerON" setMethod="setSecurityManagerON">
+      <description>The ObjectName of the SecurityManager used by this ServerPeer</description>
+      <name>SecurityManagerON</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
 
    <!-- Managed operations -->
 
@@ -62,26 +72,5 @@
       <description>JBoss Service lifecycle operation</description>
       <name>destroy</name>
    </operation>
-
-   <operation>
-      <description>Create a JMS Queue</description>
-      <name>createQueue</name>
-      <parameter>
-         <description>The queue name</description>
-         <name>name</name>
-         <type>java.lang.String</type>
-      </parameter>
-   </operation>
-
-   <operation>
-      <description>Create a JMS Topic</description>
-      <name>createTopic</name>
-      <parameter>
-         <description>The topic name</description>
-         <name>name</name>
-         <type>java.lang.String</type>
-      </parameter>
-   </operation>
-
 
 </mbean>

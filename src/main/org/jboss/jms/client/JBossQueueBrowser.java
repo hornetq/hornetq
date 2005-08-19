@@ -21,7 +21,9 @@ import org.jboss.jms.delegate.BrowserDelegate;
  * $Id$
  */
 class JBossQueueBrowser implements QueueBrowser, Serializable
-{
+{   
+   private static final long serialVersionUID = 4245650830082712281L;
+   
    private BrowserDelegate delegate;
    private Queue queue;
    private String messageSelector; 

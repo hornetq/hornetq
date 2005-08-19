@@ -21,11 +21,13 @@ import org.jboss.logging.Logger;
 class Delivery extends Callback implements Runnable
 {
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = 8375144805659344430L;
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
+   
    protected transient Logger log;
    protected transient InvokerCallbackHandler callbackHandler;
 

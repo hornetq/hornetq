@@ -6,40 +6,38 @@
  */
 package org.jboss.test.messaging.jms.message;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Arrays;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.MessageImpl;
-import org.jboss.test.messaging.tools.TextMessageImpl;
-import org.jboss.test.messaging.tools.ObjectMessageImpl;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageNotWriteableException;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.destination.JBossQueue;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
-import javax.jms.Session;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.MapMessage;
-import javax.jms.ObjectMessage;
-import javax.jms.TextMessage;
-import javax.jms.StreamMessage;
-import javax.naming.InitialContext;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.MessageImpl;
+import org.jboss.test.messaging.tools.ObjectMessageImpl;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.TextMessageImpl;
 
 /**
  * Base class for all tests concerning message headers, properties, etc.
@@ -78,7 +76,7 @@ public class MessageTest extends MessagingTestCase
       ServerManagement.startInVMServer();
       ServerManagement.deployQueue("Queue");
 
-      InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       queue = (Destination)ic.lookup("/queue/Queue");
 

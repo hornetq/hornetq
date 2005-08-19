@@ -7,6 +7,8 @@
 package org.jboss.test.messaging;
 
 import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.ServerManagement;
+
 import junit.framework.TestCase;
 
 /**
@@ -37,6 +39,7 @@ public class MessagingTestCase extends TestCase
    protected void setUp() throws Exception
    {
       log.info("========= Start test: " + getName());
+      ServerManagement.setRemote(true);
    }
 
    protected void tearDown() throws Exception

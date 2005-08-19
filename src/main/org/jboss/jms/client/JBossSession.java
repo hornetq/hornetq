@@ -59,15 +59,18 @@ import java.io.Serializable;
 class JBossSession implements
    Session, XASession, QueueSession, XAQueueSession,
    TopicSession, XATopicSession, Serializable
-{
+{   
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = 2235942510476264909L;
+   
    static final int TYPE_GENERIC_SESSION = 0;
    static final int TYPE_QUEUE_SESSION = 1;
    static final int TYPE_TOPIC_SESSION = 2;
-   
-   private static final Logger log = Logger.getLogger(JBossSession.class);
 
    // Static --------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(JBossSession.class);
    
    // Attributes ----------------------------------------------------
 

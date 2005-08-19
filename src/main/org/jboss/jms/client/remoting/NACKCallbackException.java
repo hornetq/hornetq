@@ -17,6 +17,8 @@ import org.jboss.remoting.callback.HandleCallbackException;
 public class NACKCallbackException extends HandleCallbackException
 {
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = 5529946441447208850L;
 
    // Static --------------------------------------------------------
    

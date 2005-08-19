@@ -24,6 +24,8 @@ public class JBossConnectionMetaData implements Serializable, ConnectionMetaData
    
    // Constants -----------------------------------------------------
    
+   private static final long serialVersionUID = 327633302671160939L;
+   
    // Static --------------------------------------------------------
       
    // Attributes ----------------------------------------------------

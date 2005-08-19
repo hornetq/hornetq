@@ -21,10 +21,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -56,7 +54,7 @@ public class QueueRequestorTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");

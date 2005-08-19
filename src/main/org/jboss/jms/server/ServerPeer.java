@@ -8,6 +8,7 @@ package org.jboss.jms.server;
 
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.security.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -84,10 +85,12 @@ public class ServerPeer
    protected String serverPeerID;
    protected InvokerLocator locator;
    protected ObjectName connector;
+   protected ObjectName securityManagerON;
 
 
    protected ClientManager clientManager;
-   protected DestinationManagerImpl destinationManager;
+   protected DestinationManager destinationManager;
+   protected SecurityManager securityManager;
    protected Map connFactoryDelegates;
    protected MBeanServer mbeanServer;
 
@@ -142,22 +145,27 @@ public class ServerPeer
          return;
       }
 
-      log.debug(this + " starting");
+      if (log.isTraceEnabled()) { log.trace(this + " starting"); }
 
       mbeanServer = findMBeanServer();
       transactionManager = findTransactionManager();
 
       clientManager = new ClientManager(this);
-      destinationManager = new DestinationManagerImpl(this);
+      destinationManager = new DestinationManager(this);
       messageStore = new MessageStoreImpl("MessageStore");
       acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
-
       threadPool = new PooledExecutor();
 
       initializeRemoting();
       initializeAdvisors();
 
       mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
+      
+      //Get reference to SecurityManager
+      securityManager = (SecurityManager)
+         mbeanServer.getAttribute(securityManagerON, "SecurityManager");
+      
+      if (log.isTraceEnabled()) { log.trace("Got reference to securitymanager:" + securityManager); }
 
       setupConnectionFactories();
 
@@ -193,16 +201,10 @@ public class ServerPeer
    {
       log.debug(this + " destroyed");
    }
-
-
-   public void createQueue(String name) throws Exception
+   
+   public ServerPeer getServerPeer()
    {
-      destinationManager.createQueue(name, null);
-   }
-
-   public void createTopic(String name) throws Exception
-   {
-      destinationManager.createTopic(name, null);
+      return this;
    }
 
 
@@ -238,6 +240,16 @@ public class ServerPeer
    {
       connector = on;
    }
+   
+   public ObjectName getSecurityManagerON()
+   {
+      return securityManagerON;
+   }
+   
+   public void setSecurityManagerON(ObjectName on)
+   {
+      securityManagerON = on;
+   }
 
 
    //
@@ -259,9 +271,14 @@ public class ServerPeer
       return clientManager;
    }
 
-   public DestinationManagerImpl getDestinationManager()
+   public DestinationManager getDestinationManager()
    {
       return destinationManager;
+   }
+   
+   public SecurityManager getSecurityManager()
+   {
+      return securityManager;
    }
 
    public ConnectionFactoryDelegate getConnectionFactoryDelegate(String connectionFactoryID)

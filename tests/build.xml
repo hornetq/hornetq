@@ -94,6 +94,8 @@
 
       <path refid="jboss.system.classpath"/>
       <path refid="jboss.transaction.classpath"/>
+      <path refid="jboss.naming.classpath"/>
+      <path refid="jboss.server.classpath"/>
    </path>
 
    <!-- ===== -->
@@ -113,6 +115,7 @@
       <path refid="library.classpath"/>
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/../src/etc"/>
+      <pathelement path="C:\\dev\\jboss-head\\jms\\src\\etc"/>
    </path>
 
 
@@ -156,8 +159,8 @@
       the values specified below.
    -->
    <property name="junit.printsummary" value="true"/>
-   <property name="junit.haltonerror" value="true"/>
-   <property name="junit.haltonfailure" value="true"/>
+   <property name="junit.haltonerror" value="false"/>
+   <property name="junit.haltonfailure" value="false"/>
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value=""/>
@@ -166,11 +169,11 @@
    <property name="junit.jvm.options" value=""/>
    <property name="junit.formatter.usefile" value="true"/>
    <property name="junit.batchtest.todir" value="${build.tests.reports}"/>
-   <property name="junit.batchtest.haltonerror" value="true"/>
-   <property name="junit.batchtest.haltonfailure" value="true"/>
+   <property name="junit.batchtest.haltonerror" value="false"/>
+   <property name="junit.batchtest.haltonfailure" value="false"/>
    <property name="junit.batchtest.fork" value="true"/>
-   <property name="junit.test.haltonfailure" value="true"/>
-   <property name="junit.test.haltonerror" value="true"/>
+   <property name="junit.test.haltonfailure" value="false"/>
+   <property name="junit.test.haltonerror" value="false"/>
 
    <target name="prepare-testdirs"
            description="Prepares the directory structure required by a test run">
@@ -213,6 +216,8 @@
 
       <fail unless="test.classname"
             message="To run a single test, use: ./build.sh test -Dtest.classname=org.package.MyTest"/>
+
+            <echo>Module root is:${module.root}</echo>
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"

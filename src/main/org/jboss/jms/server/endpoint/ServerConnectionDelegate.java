@@ -33,7 +33,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TxInfo;
@@ -81,10 +81,14 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    //in order to find the ServerConsumerDelegate so we can ack the message
    protected Map receivers;
    
+   protected String username;
+   
+   protected String password;
+   
     
    // Constructors --------------------------------------------------
    
-   public ServerConnectionDelegate(ServerPeer serverPeer, String clientID)
+   public ServerConnectionDelegate(ServerPeer serverPeer, String clientID, String username, String password)
    {
       this.serverPeer = serverPeer;
       sessionIDCounter = 0;
@@ -94,6 +98,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       connectionID = new GUID().toString();
       receivers = new ConcurrentReaderHashMap();
       this.clientID = clientID;
+      this.username = username;
+      this.password = password;
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -188,7 +194,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       if (log.isTraceEnabled()) { log.trace("In ServerConnectionDelegate.close()"); }
       
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      DestinationManager dm = serverPeer.getDestinationManager();
       Iterator iter = this.temporaryDestinations.iterator();
       while (iter.hasNext())
       {
@@ -319,6 +325,16 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    // Public --------------------------------------------------------
    
+   public String getUsername()
+   {
+      return username;
+   }
+   
+   public String getPassword()
+   {
+      return password;
+   }
+   
    public ServerSessionDelegate putSessionDelegate(String sessionID, ServerSessionDelegate d)
    {
       synchronized(sessions)
@@ -354,7 +370,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
     
       AbstractDestination coreDestination = null;
 
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      DestinationManager dm = serverPeer.getDestinationManager();
       coreDestination = dm.getCoreDestination(jmsDestination);
       
       if (coreDestination == null)

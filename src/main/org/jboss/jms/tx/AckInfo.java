@@ -33,6 +33,10 @@ public class AckInfo implements Externalizable
    
    // Constructors --------------------------------------------------
    
+   public AckInfo()
+   {      
+   }
+   
    public AckInfo(String messageID, String receiverID)
    {
       this.messageID = messageID;

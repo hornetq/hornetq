@@ -6,21 +6,19 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.MessageImpl;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
-
 import javax.jms.Connection;
-import javax.jms.Session;
 import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.DeliveryMode;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 import javax.naming.InitialContext;
+
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.MessageImpl;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -56,6 +54,7 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
+
       super.setUp();
 
       ServerManagement.startInVMServer();
@@ -63,7 +62,7 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic2");
       ServerManagement.deployQueue("Queue");
 
-      InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       topic = (Destination)ic.lookup("/topic/Topic");
       topic2 = (Destination)ic.lookup("/topic/Topic2");
@@ -81,11 +80,11 @@ public class MessageProducerTest extends MessagingTestCase
 
       queueProducer = producerSession.createProducer(queue);
       queueConsumer = consumerSession.createConsumer(queue);
-
    }
 
    public void tearDown() throws Exception
    {
+
       producerConnection.close();
       consumerConnection.close();
 
@@ -93,13 +92,13 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.stopInVMServer();
 
       super.tearDown();
+   
    }
 
    
    /* Test sending via anonymous producer */
    public void testSendDestination() throws Exception
    {
-
       final Message m1 = producerSession.createMessage();
 
       consumerConnection.start();
@@ -126,10 +125,13 @@ public class MessageProducerTest extends MessagingTestCase
       Message m2 = topicConsumer2.receive(3000);
       assertNotNull(m2);
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+      
+      log.debug("ending test");
+      
    }
 
 
-   public void testSendForeingMessage() throws Exception
+   public void testSendForeignMessage() throws Exception
    {
       // send a message that is not created by the session
 

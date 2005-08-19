@@ -50,7 +50,7 @@ public class TransactedSessionTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.startInVMServer();
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("Queue");
@@ -70,6 +70,14 @@ public class TransactedSessionTest extends MessagingTestCase
    
    public void testSendNoTransactionManager() throws Exception
    {
+      
+      
+      /*
+       * 
+       * 
+       
+       This test cannot work remotely so commented out
+      
       ServerManagement.stopInVMServer();
 
       // start the server without a transaction manager
@@ -98,9 +106,18 @@ public class TransactedSessionTest extends MessagingTestCase
       {
          // OK
       }
+      
+      */
+      
    }
 
-
+/*
+ * 
+ 
+ 
+    This test cannot work remotely so commented out
+    
+    
    public void testSendBrokenTransactionManager() throws Exception
    {
       ServerManagement.stopInVMServer();
@@ -165,6 +182,8 @@ public class TransactedSessionTest extends MessagingTestCase
 
       conn.close();
    }
+   
+   
 
    
    /**

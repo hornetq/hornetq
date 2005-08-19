@@ -6,11 +6,18 @@
  */
 package org.jboss.test.messaging.tools;
 
+import java.util.Hashtable;
+
 import org.jboss.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.tools.jmx.RemotingJMXWrapper;
+import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
+import org.jboss.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
 import org.jboss.remoting.transport.Connector;
 
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
 /**
@@ -27,20 +34,27 @@ public class ServerManagement
 
    private static ServiceContainer sc;
    private static ServerPeer serverPeer;
+   private static boolean isRemote;
+   private static RMIAdaptor rmiAdaptor;
+   
+   public static void setRemote(boolean remote)
+   {
+      isRemote = remote;
+   }
 
    public synchronized static void startInVMServer() throws Exception
    {
-      startInVMServer("transaction,remoting", null);
+      if (!isRemote) startInVMServer("transaction,remoting", null);
    }
 
    public synchronized static void startInVMServer(TransactionManager tm) throws Exception
    {
-      startInVMServer("transaction,remoting", tm);
+      if (!isRemote) startInVMServer("transaction,remoting", tm);
    }
 
    public synchronized static void startInVMServer(String config) throws Exception
    {
-      startInVMServer(config, null);
+      if (!isRemote) startInVMServer(config, null);
    }
 
    /**
@@ -89,27 +103,118 @@ public class ServerManagement
    public static void deployTopic(String name) throws Exception
    {
       insureStarted();
-      serverPeer.getDestinationManager().createTopic(name);
+      if (!isRemote)
+      {
+         
+         serverPeer.getDestinationManager().createTopic(name);
+      }
+      else
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
+         
+         rmiAdaptor.invoke(on, "createTopic",
+               new Object[] {name}, new String[] { "java.lang.String" });
+      }
+   }
+   
+   public static void deployTopic(String name, String jndiName) throws Exception
+   {
+      insureStarted();
+      if (!isRemote)
+      {
+         
+         serverPeer.getDestinationManager().createTopic(name);
+      }
+      else
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
+         
+         rmiAdaptor.invoke(on, "createTopic",
+               new Object[] {name, jndiName}, new String[] { "java.lang.String" , "java.lang.String"});
+      }
    }
 
    public static void undeployTopic(String name) throws Exception
    {
       insureStarted();
-      serverPeer.getDestinationManager().destroyTopic(name);
+      if (!isRemote)
+      {
+         
+         serverPeer.getDestinationManager().destroyTopic(name);
+      }
+      else
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
+         
+         rmiAdaptor.invoke(on, "destroyTopic",
+               new Object[] {name}, new String[] { "java.lang.String" });
+      }
    }
 
    public static void deployQueue(String name) throws Exception
    {
       insureStarted();
-      serverPeer.getDestinationManager().createQueue(name);
+      if (!isRemote)
+      {
+    
+         serverPeer.getDestinationManager().createQueue(name);
+      }
+      else
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
+         
+         rmiAdaptor.invoke(on, "createQueue",
+               new Object[] {name}, new String[] { "java.lang.String" });
+      }
+   }
+   
+   public static void deployQueue(String name, String jndiName) throws Exception
+   {
+      insureStarted();
+      if (!isRemote)
+      {
+    
+         serverPeer.getDestinationManager().createQueue(name);
+      }
+      else
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
+         
+         rmiAdaptor.invoke(on, "createQueue",
+               new Object[] {name, jndiName}, new String[] { "java.lang.String" , "java.lang.String"});
+      }
    }
 
    public static void undeployQueue(String name) throws Exception
    {
       insureStarted();
-      serverPeer.getDestinationManager().destroyQueue(name);
+      if (!isRemote)
+      {
+       
+         serverPeer.getDestinationManager().destroyQueue(name);
+      }
+      else
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
+         
+         rmiAdaptor.invoke(on, "destroyQueue",
+               new Object[] {name}, new String[] { "java.lang.String" });
+      }
    }
 
+   public static Hashtable getJNDIEnvironment()
+   {
+      if (isRemote)
+      {
+         return RemoteInitialContextFactory.getJNDIEnvironment();
+      }
+      else
+      {
+         return InVMInitialContextFactory.getJNDIEnvironment();
+      }
+   }
+   
+   
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -124,10 +229,30 @@ public class ServerManagement
 
    private static void insureStarted() throws Exception
    {
-      if (sc == null)
+      if (isRemote)
       {
-         throw new Exception("The server has not been started!");
+         if (rmiAdaptor == null)
+         {
+            setupRemoteJMX();
+         }
       }
+      else
+      {
+         if (sc == null)
+         {
+            throw new Exception("The server has not been started!");
+         }
+      }
+   }
+   
+   private static void setupRemoteJMX() throws Exception
+   {
+      InitialContext ic = new InitialContext(RemoteInitialContextFactory.getJNDIEnvironment());
+      
+      rmiAdaptor = (RMIAdaptor) ic.lookup("jmx/invoker/RMIAdaptor");
+      
+     
+      
    }
 
    // Inner classes -------------------------------------------------
