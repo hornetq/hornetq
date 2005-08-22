@@ -6,7 +6,7 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.aop.MethodJoinPoint;
+import org.jboss.aop.MethodInfo;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.advice.Interceptor;
 
@@ -28,7 +28,7 @@ public class JMSMethodInvocation extends MethodInvocation
    {                                                                         
    }
 
-   public JMSMethodInvocation(MethodJoinPoint info, Interceptor[] interceptors, JMSInvocationHandler handler)
+   public JMSMethodInvocation(MethodInfo info, Interceptor[] interceptors, JMSInvocationHandler handler)
    {
       super(info, interceptors);
       this.handler = handler;
