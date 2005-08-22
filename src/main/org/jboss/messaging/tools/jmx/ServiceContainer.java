@@ -37,6 +37,7 @@ import javax.naming.Context;
 import javax.naming.spi.NamingManager;
 
 import org.hsqldb.Server;
+import org.hsqldb.persist.HsqlProperties;
 
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -104,6 +105,7 @@ public class ServiceContainer
    private boolean database;
    private boolean jca;
    private boolean remoting;
+   private boolean aspects;
 
    private List toUnbindAtExit;
 
@@ -114,7 +116,7 @@ public class ServiceContainer
 
    /**
     * @param config - A comma separated list of services to be started. Available services:
-    *        transaction, jca, database, remoting.  Example: "transaction,database,remoting"
+    *        transaction, jca, database, remoting, aspects.  Example: "transaction,database,remoting"
     * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
     *        If null, the default JBoss TransactionManager implementation will be used.
     */
@@ -172,16 +174,22 @@ public class ServiceContainer
          startRemoting();
       }
 
-      loadAspects();
+      if (aspects)
+      {
+         loadAspects();
+      }
       loadJNDIContexts();
 
-      System.out.println("ServiceContainer started");
+      log.info("ServiceContainer started");
    }
 
    public void stop() throws Exception
    {
       unloadJNDIContexts();
-      unloadAspects();
+      if (aspects)
+      {
+         unloadAspects();
+      }
 
       stopService(REMOTING_OBJECT_NAME);
       stopService(WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
@@ -204,7 +212,7 @@ public class ServiceContainer
       {
          System.setProperty("java.naming.factory.initial", jndiNamingFactory);
       }
-      System.out.println("ServiceContainer stopped");
+      log.info("ServiceContainer stopped");
    }
 
    public DataSource getDataSource()
@@ -275,16 +283,22 @@ public class ServiceContainer
       mbeanServer.unregisterMBean(SERVICE_CONTROLLER_OBJECT_NAME);
    }
 
+
    private void startInVMDatabase() throws Exception
    {
-      String[] args =
-            {
-               "-database.0", "mem:test",
-               "-dbname.0", "memtest",
-               "-trace", "false",
-            };
+      HsqlProperties props = new HsqlProperties();
+      props.setProperty("server.database.0", "mem:test");
+      props.setProperty("server.dbname.0", "memtest");
+      props.setProperty("server.trace", "false");
+      props.setProperty("server.silent", "true");
+      props.setProperty("server.no_system_exit", "true");
 
-      Server.main(args);
+      Server server = new Server();
+      server.setLogWriter(null);
+      server.setProperties(props);
+      server.start();
+
+
       log.info("started the database");
    }
 
@@ -448,6 +462,10 @@ public class ServiceContainer
          else if ("remoting".equals(tok))
          {
             remoting = true;
+         }
+         else if ("aspects".equals(tok))
+         {
+            aspects = true;
          }
       }
    }
