@@ -23,7 +23,7 @@ import org.jboss.messaging.tools.jndi.JNDIUtil;
 import org.jboss.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.aop.AspectXmlLoader;
-import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.DestinationManagerImpl;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -83,7 +83,7 @@ public class ServiceContainer
          MANAGED_CONNECTION_POOL_OBJECT_NAME =
          new ObjectName("jboss.jca:name=DefaultDS,service=ManagedConnectionPool");
          WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME =
-         new ObjectName("jboss.jca:=DefaultDS,service=DataSourceBinding");
+         new ObjectName("jboss.jca:name=DefaultDS,service=DataSourceBinding");
          REMOTING_OBJECT_NAME =
          new ObjectName("jboss.remoting:service=Connector,transport=socket");
       }
@@ -106,6 +106,7 @@ public class ServiceContainer
    private boolean jca;
    private boolean remoting;
    private boolean aspects;
+   private boolean security;
 
    private List toUnbindAtExit;
 
@@ -178,6 +179,12 @@ public class ServiceContainer
       {
          loadAspects();
       }
+      
+      if (security)
+      {
+         startSecurityManager();
+      }
+      
       loadJNDIContexts();
 
       log.info("ServiceContainer started");
@@ -204,6 +211,12 @@ public class ServiceContainer
       }
       stopServiceController();
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
+      
+      if (security)
+      {
+         initialContext.unbind(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+      }
+      
       initialContext.close();
 
       cleanJNDI();
@@ -233,8 +246,8 @@ public class ServiceContainer
 
    private void loadJNDIContexts() throws Exception
    {
-      String[] names = {DestinationManager.DEFAULT_QUEUE_CONTEXT,
-                        DestinationManager.DEFAULT_TOPIC_CONTEXT};
+      String[] names = {DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT,
+                        DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT};
 
       for (int i = 0; i < names.length; i++)
       {
@@ -418,6 +431,14 @@ public class ServiceContainer
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
       log.info("started " + REMOTING_OBJECT_NAME);
    }
+   
+   private void startSecurityManager() throws Exception
+   {
+      MockJBossSecurityManager sm = new MockJBossSecurityManager();
+      this.initialContext.bind(MockJBossSecurityManager.TEST_SECURITY_DOMAIN, sm);
+      
+      log.info("Started JBoss Mock Security Manager");
+   }
 
    private void stopService(ObjectName target) throws Exception
    {
@@ -466,6 +487,10 @@ public class ServiceContainer
          else if ("aspects".equals(tok))
          {
             aspects = true;
+         }
+         else if ("security".equals(tok))
+         {
+            security = true;
          }
       }
    }

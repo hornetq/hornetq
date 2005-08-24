@@ -6,8 +6,10 @@
  */
 package org.jboss.test.messaging.tools;
 
+import java.io.StringReader;
 import java.util.Hashtable;
 
+import org.jboss.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.messaging.tools.jndi.InVMInitialContextFactory;
@@ -15,10 +17,15 @@ import org.jboss.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
 import org.jboss.remoting.transport.Connector;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -70,8 +77,21 @@ public class ServerManagement
       }
       sc = new ServiceContainer(config, tm);
       sc.start();
-      serverPeer = new ServerPeer("ServerPeer0");
+      serverPeer = new ServerPeer("ServerPeer0");      
+      serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+      final String defaultSecurityConfig = 
+         "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+      serverPeer.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
       serverPeer.start();
+   }
+   
+   private static Element toElement(String s)
+      throws Exception
+   {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder parser = factory.newDocumentBuilder();
+      Document doc = parser.parse(new InputSource(new StringReader(s)));
+      return doc.getDocumentElement();
    }
 
 

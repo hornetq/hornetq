@@ -45,11 +45,18 @@
       <type>org.jboss.jms.server.ServerPeer</type>
    </attribute>
    
-   <attribute access="read-write" getMethod="getSecurityManagerON" setMethod="setSecurityManagerON">
-      <description>The ObjectName of the SecurityManager used by this ServerPeer</description>
-      <name>SecurityManagerON</name>
-      <type>javax.management.ObjectName</type>
+   
+   <attribute access="read-write" getMethod="getSecurityDomain" setMethod="setSecurityDomain">
+      <description>The Security Domain to be used by the Server Peer</description>
+      <name>SecurityDomain</name>
+      <type>java.lang.String</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getDefaultSecurityConfig" setMethod="setDefaultSecurityConfig">
+      <description>The Ssecurity config to use when the destination does not supply any</description>
+      <name>DefaultSecurityConfig</name>
+      <type>org.w3c.dom.Element</type>
+   </attribute>   
 
    <!-- Managed operations -->
 
@@ -71,6 +78,19 @@
    <operation>
       <description>JBoss Service lifecycle operation</description>
       <name>destroy</name>
+   </operation>
+   
+   <operation>
+      <description>Set the security config for a destination</description>
+      <name>setSecurityConfig</name>
+      <parameter>
+         <name>destinationName</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>securityConfig</name>
+         <type>org.w3c.dom.Element</type>
+      </parameter>
    </operation>
 
 </mbean>

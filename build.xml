@@ -217,7 +217,7 @@
         <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
      </path>
      -->
-     
+
 
      <!-- JGroups -->
 
@@ -555,7 +555,7 @@
       <zip destfile="${release.output}/JBossMessaging-${module.version}-src.zip"
          basedir="${release.output}/src"/>
    </target>
-   
+
    <target name="examples" depends="release-structure">
 
       <!-- Make sure examples compile -->
@@ -582,13 +582,22 @@
 
    <!-- CTS deployment/undeployment -->
 
-   <target name="deploy" depends="sar">
+   <target name="deploycts" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
          todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
    </target>
 
-   <target name="undeploy" depends="init">
+   <target name="undeploycts" depends="init">
       <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
+   </target>
+
+	<target name="deploy" depends="sar">
+      <copy file="${build.lib}/jboss-${module.name}.sar"
+         todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+   </target>
+
+   <target name="undeploy" depends="init">
+      <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
    </target>
 
    <target name="test">

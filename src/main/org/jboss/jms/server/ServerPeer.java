@@ -8,7 +8,7 @@ package org.jboss.jms.server;
 
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.security.SecurityManager;
+import org.jboss.jms.server.security.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -29,6 +29,7 @@ import org.jboss.messaging.core.AcknowledgmentStore;
 import org.jboss.messaging.core.util.MessageStoreImpl;
 import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
 import org.jboss.logging.Logger;
+import org.w3c.dom.Element;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
@@ -87,11 +88,11 @@ public class ServerPeer
    protected String serverPeerID;
    protected InvokerLocator locator;
    protected ObjectName connector;
-   protected ObjectName securityManagerON;
+   //protected ObjectName securityManagerON;
 
 
    protected ClientManager clientManager;
-   protected DestinationManager destinationManager;
+   protected DestinationManagerImpl destinationManager;
    protected SecurityManager securityManager;
    protected Map connFactoryDelegates;
    protected MBeanServer mbeanServer;
@@ -126,6 +127,7 @@ public class ServerPeer
 
       // the default value to use, unless the JMX attribute is modified
       connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
+      securityManager = new SecurityManager();
       started = false;
    }
 
@@ -153,7 +155,7 @@ public class ServerPeer
       transactionManager = findTransactionManager();
 
       clientManager = new ClientManager(this);
-      destinationManager = new DestinationManager(this);
+      destinationManager = new DestinationManagerImpl(this);
       messageStore = new MessageStoreImpl("MessageStore");
       acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
       threadPool = new PooledExecutor();
@@ -163,12 +165,8 @@ public class ServerPeer
 
       mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
       
-      //Get reference to SecurityManager
-      securityManager = (SecurityManager)
-         mbeanServer.getAttribute(securityManagerON, "SecurityManager");
+      securityManager.init();
       
-      if (log.isTraceEnabled()) { log.trace("Got reference to securitymanager:" + securityManager); }
-
       setupConnectionFactories();
 
       started = true;
@@ -243,16 +241,33 @@ public class ServerPeer
       connector = on;
    }
    
-   public ObjectName getSecurityManagerON()
+   public void setSecurityDomain(String securityDomain)
    {
-      return securityManagerON;
+      securityManager.setSecurityDomain(securityDomain);
    }
    
-   public void setSecurityManagerON(ObjectName on)
+   public String getSecurityDomain()
    {
-      securityManagerON = on;
+      return securityManager.getSecurityDomain();
    }
 
+   public void setDefaultSecurityConfig(Element conf)
+      throws Exception
+   {
+      securityManager.setDefaultSecurityConfig(conf);
+   }
+   
+   public Element getDefaultSecurityConfig()
+   {
+      return securityManager.getDefaultSecurityConfig();
+   }
+   
+   public void setSecurityConfig(String dest, Element conf)
+      throws Exception
+   {
+      securityManager.setSecurityConfig(dest, conf);
+   }
+   
 
    //
    // end of JMX attributes
@@ -273,7 +288,7 @@ public class ServerPeer
       return clientManager;
    }
 
-   public DestinationManager getDestinationManager()
+   public DestinationManagerImpl getDestinationManager()
    {
       return destinationManager;
    }

@@ -61,7 +61,8 @@ public class SessionTest extends MessagingTestCase
    {
       super.setUp();                  
       
-      ServerManagement.startInVMServer();
+      ServerManagement.setRemote(false);
+      ServerManagement.startInVMServer("remoting,aspects,security");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       

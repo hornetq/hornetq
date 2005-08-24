@@ -6,6 +6,8 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.io.StringReader;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -19,10 +21,15 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /**
  * 
@@ -54,77 +61,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *   </application-policy>
  *   
  *   
- * The following queues and topics should be in jboss-messaging-service.xml:
- * 
- *  <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=testTopic">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
-      <attribute name="SecurityConf">
-         <security>
-            <role name="guest" read="true" write="true"/>
-            <role name="publisher" read="true" write="true" create="false"/>
-            <role name="durpublisher" read="true" write="true" create="true"/>
-         </security>
-      </attribute>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=securedTopic">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
-      <attribute name="SecurityConf">
-         <security>
-            <role name="publisher" read="true" write="true" create="false"/>
-         </security>
-      </attribute>
-   </mbean>
-
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=testDurableTopic">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
-      <attribute name="SecurityConf">
-         <security>
-            <role name="guest" read="true" write="true"/>
-            <role name="publisher" read="true" write="true" create="false"/>
-            <role name="durpublisher" read="true" write="true" create="true"/>
-         </security>
-      </attribute>
-   </mbean>
-
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=testQueue">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="SecurityManager">jboss.messaging:service=SecurityManager</depends>
-      <attribute name="SecurityConf">
-         <security>
-            <role name="guest" read="true" write="true"/>
-            <role name="publisher" read="true" write="true" create="false"/>
-            <role name="noacc" read="false" write="false" create="false"/>
-         </security>
-      </attribute>
-   </mbean>
-     
-     
-   The following user and role information should be in the HSQLDB database:
-   
-   INSERT INTO JMS_USERS (USERID, PASSWD) VALUES ('guest', 'guest')
-   INSERT INTO JMS_USERS (USERID, PASSWD) VALUES ('j2ee', 'j2ee')
-   INSERT INTO JMS_USERS (USERID, PASSWD, CLIENTID) VALUES ('john', 'needle', 'DurableSubscriberExample')
-   INSERT INTO JMS_USERS (USERID, PASSWD) VALUES ('nobody', 'nobody')
-   INSERT INTO JMS_USERS (USERID, PASSWD) VALUES ('dynsub', 'dynsub')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('guest','guest')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('j2ee','guest')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('john','guest')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('subscriber','john')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('publisher','john')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('publisher','dynsub')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('durpublisher','john')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('durpublisher','dynsub')
-   INSERT INTO JMS_ROLES (ROLEID, USERID) VALUES ('noacc','nobody')
-   
-   This should be done by the StateManager on start-up
  * 
  * 
  * @version <tt>$Revision$</tt>
@@ -137,54 +73,62 @@ public class SecurityTest extends MessagingTestCase
    protected static final String TEST_QUEUE = "queue/testQueue";
    protected static final String TEST_TOPIC = "topic/testTopic";
    protected static final String SECURED_TOPIC = "topic/securedTopic";
+   protected static final String UNSECURED_TOPIC = "topic/unsecuredTopic";
    
    protected ConnectionFactory cf;
    protected Queue testQueue;
    protected Topic testTopic;
    protected Topic securedTopic;
+   protected Topic unsecuredTopic;
    
    // Constructors --------------------------------------------------
-
+   
    public SecurityTest(String name)
    {
       super(name);
    }
-
+   
    // TestCase overrides -------------------------------------------
-
+   
    protected void setUp() throws Exception
    {
+      super.setUp();
+      ServerManagement.setRemote(false);
+      ServerManagement.startInVMServer("remoting,aspects,security");
       
-      try
-      {
-         
-         log.info("========= Start test: " + getName());
-         
-         ServerManagement.setRemote(true);
-         
-         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-         
-         cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-         
-         testQueue = (Queue)ic.lookup("/queue/testQueue");
-         testTopic = (Topic)ic.lookup("/topic/testTopic");
-         securedTopic = (Topic)ic.lookup("/topic/securedTopic");
-         
-         log.info("Got connection factory:" + cf);
-         
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      setupDestinations();
       
+      final String defaultSecurityConfig = 
+         "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+      ServerManagement.getServerPeer().setDefaultSecurityConfig(toElement(defaultSecurityConfig));
+ 
+      log.info("========= Start test: " + getName());
+      
+      
+      
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      testQueue = (Queue)ic.lookup("/queue/testQueue");
+      testTopic = (Topic)ic.lookup("/topic/testTopic");
+      securedTopic = (Topic)ic.lookup("/topic/securedTopic");
+      unsecuredTopic = (Topic)ic.lookup("/topic/unsecuredTopic");
+      
+      log.info("Got connection factory:" + cf);
+     
    }
    
    protected void tearDown() throws Exception
    {
       log.info("========== Stop test: " + getName());
+      ServerManagement.undeployQueue("testQueue");
+      ServerManagement.undeployQueue("testTopic");
+      ServerManagement.undeployTopic("securedTopic");
+      ServerManagement.undeployTopic("unsecuredTopic");
+      ServerManagement.stopInVMServer();
    }
-
+   
    
    // Constructors --------------------------------------------------
    
@@ -241,7 +185,7 @@ public class SecurityTest extends MessagingTestCase
       
       log.trace("namedSucceeded:" + namedSucceeded + ", anonSucceeded:" + anonSucceeded);
       return namedSucceeded || anonSucceeded;
-     
+      
    }
    
    private boolean canCreateDurableSub(Connection conn, Topic topic, String subName) throws Exception
@@ -269,6 +213,7 @@ public class SecurityTest extends MessagingTestCase
     */
    public void testLoginNoUserNoPassword() throws Exception
    {
+
       Connection conn1 = null;
       Connection conn2 = null;
       try
@@ -638,25 +583,25 @@ public class SecurityTest extends MessagingTestCase
     */
    
    /*
-   
-   This test will not work until client id is automatically preconfigured into
-   connection for specific user
-   
-   public void testValidDurableSubscriptionCreationPreConf() throws Exception
-   {
-      Connection conn = null;
-      try
-      {
-         conn = cf.createConnection("john", "needle");        
-         assertTrue(this.canCreateDurableSub(conn, testTopic, "sub2"));
-      }          
-      finally
-      {
-         if (conn != null) conn.close();
-      }
-   }
-   
-   */
+    
+    This test will not work until client id is automatically preconfigured into
+    connection for specific user
+    
+    public void testValidDurableSubscriptionCreationPreConf() throws Exception
+    {
+    Connection conn = null;
+    try
+    {
+    conn = cf.createConnection("john", "needle");        
+    assertTrue(this.canCreateDurableSub(conn, testTopic, "sub2"));
+    }          
+    finally
+    {
+    if (conn != null) conn.close();
+    }
+    }
+    
+    */
    
    /*
     * Test invalid durable subscription creation for connection preconfigured with client id
@@ -664,24 +609,24 @@ public class SecurityTest extends MessagingTestCase
    
    
    /*
-   
-   This test will not work until client id is automatically preconfigured into
-   connection for specific user
-   public void testInvalidDurableSubscriptionCreationPreConf() throws Exception
-   {
-      Connection conn = null;
-      try
-      {
-         conn = cf.createConnection("john", "needle");        
-         assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub3"));
-      }    
-      finally
-      {
-         if (conn != null) conn.close();
-      }
-   }
-   
-   */
+    
+    This test will not work until client id is automatically preconfigured into
+    connection for specific user
+    public void testInvalidDurableSubscriptionCreationPreConf() throws Exception
+    {
+    Connection conn = null;
+    try
+    {
+    conn = cf.createConnection("john", "needle");        
+    assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub3"));
+    }    
+    finally
+    {
+    if (conn != null) conn.close();
+    }
+    }
+    
+    */
    
    
    /*
@@ -708,7 +653,7 @@ public class SecurityTest extends MessagingTestCase
    /*
     * Test invalid durable subscription creation for connection not preconfigured with client id
     */
-
+   
    
    public void testInvalidDurableSubscriptionCreationNotPreConf() throws Exception
    {
@@ -718,24 +663,100 @@ public class SecurityTest extends MessagingTestCase
          conn = cf.createConnection("dynsub", "dynsub");       
          conn.setClientID("myID2");
          assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub5"));
-      }    
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
+      }         
       finally
       {
          if (conn != null) conn.close();
       }
    }
    
-   
-   
-   
-   
-   // Protected -----------------------------------------------------
-   
-   
+   public void testDefaultSecurityValid() throws Exception
+   {
+      Connection conn = null;
+      try
+      {        
+         conn = cf.createConnection("john", "needle");       
+         conn.setClientID("myID5");
+         assertTrue(this.canReadDestination(conn, unsecuredTopic));
+         assertTrue(this.canWriteDestination(conn, unsecuredTopic));
+         assertTrue(this.canCreateDurableSub(conn, unsecuredTopic, "subxyz"));
+      }         
+      finally
+      {
+         if (conn != null) conn.close();
+      }
    }
+   
+   public void testDefaultSecurityInvalid() throws Exception
+   {
+      Connection conn = null;
+      try
+      {        
+         conn = cf.createConnection("nobody", "nobody");       
+         conn.setClientID("myID6");
+         assertFalse(this.canReadDestination(conn, unsecuredTopic));
+         assertFalse(this.canWriteDestination(conn, unsecuredTopic));
+         assertFalse(this.canCreateDurableSub(conn, unsecuredTopic, "subabc"));
+      }          
+      finally
+      {
+         if (conn != null) conn.close();
+      }
+   }
+  
+   
+   /* Setup all the destinations needed for the tests.
+    * We need the following destinations:
+    * 
+    *
+    * 
+    */
+   private void setupDestinations() throws Exception
+   {
+      ServerManagement.deployQueue("testQueue");
+            
+      final String testQueueConf = 
+         "<security>" +
+            "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
+            "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
+            "<role name=\"noacc\" read=\"false\" write=\"false\" create=\"false\"/>" +
+         "</security>";
+                     
+      ServerManagement.getServerPeer().setSecurityConfig("testQueue", toElement(testQueueConf));
+      
+      ServerManagement.deployTopic("testTopic");
+            
+      final String testTopicConf = 
+         "<security>" +
+            "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
+            "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
+            "<role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>" +
+         "</security>";
+                     
+      ServerManagement.getServerPeer().setSecurityConfig("testTopic", toElement(testTopicConf));
+      
+      ServerManagement.deployTopic("securedTopic");
+      
+      final String testSecuredTopicConf = 
+         "<security>" +         
+            "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
+         "</security>";
+                     
+      ServerManagement.getServerPeer().setSecurityConfig("testSecuredTopic", toElement(testSecuredTopicConf));
+      
+      ServerManagement.deployTopic("unsecuredTopic");
+      
+   }
+   
+   private Element toElement(String s)
+      throws Exception
+   {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder parser = factory.newDocumentBuilder();
+      Document doc = parser.parse(new InputSource(new StringReader(s)));
+      return doc.getDocumentElement();
+   }
+   
+}
 
 

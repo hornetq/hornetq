@@ -6,8 +6,6 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
@@ -24,8 +22,6 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -60,7 +56,8 @@ public class ConnectionTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.startInVMServer();
+      ServerManagement.setRemote(false);
+      ServerManagement.startInVMServer("remoting,aspects,security");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployTopic("Topic");

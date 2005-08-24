@@ -33,7 +33,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TxInfo;
@@ -194,7 +194,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       if (log.isTraceEnabled()) { log.trace("In ServerConnectionDelegate.close()"); }
       
-      DestinationManager dm = serverPeer.getDestinationManager();
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
       Iterator iter = this.temporaryDestinations.iterator();
       while (iter.hasNext())
       {
@@ -370,7 +370,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
     
       AbstractDestination coreDestination = null;
 
-      DestinationManager dm = serverPeer.getDestinationManager();
+      DestinationManagerImpl dm = serverPeer.getDestinationManager();
       coreDestination = dm.getCoreDestination(jmsDestination);
       
       if (coreDestination == null)

@@ -9,7 +9,6 @@ package org.jboss.jms.server.jmx;
 import javax.jms.IllegalStateException;
 import javax.management.ObjectName;
 
-import org.jboss.jms.security.SecurityManager;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
@@ -26,13 +25,13 @@ public class DestinationMBeanSupport extends ServiceMBeanSupport implements Dest
 
    protected ObjectName serverPeer;
    
-   protected ObjectName securityManager;
-   
    protected String jndiName;
    
-   protected Element securityConf;
+   protected Element securityConfig;
    
    protected String destinationName;
+   
+   protected ObjectName destinationManager;
    
    
    public ObjectName getServerPeer()
@@ -55,19 +54,16 @@ public class DestinationMBeanSupport extends ServiceMBeanSupport implements Dest
       return jndiName;
    }
    
-   public void setSecurityConf(Element securityConf)
+   public void setSecurityConfig(Element securityConf)
    {
-      this.securityConf = securityConf;
+      this.securityConfig= securityConf;
    }
    
-
-   public void setSecurityManager(ObjectName securityManager)
-   {
-      this.securityManager = securityManager;
-   }
    
-   public void startService() throws Exception
+   public void startService() throws Exception     
    {
+      destinationManager = new ObjectName("jboss.messaging:service=DestinationManager");
+      
       if (serviceName != null)
       {
          destinationName = serviceName.getKeyProperty("name");
@@ -78,19 +74,12 @@ public class DestinationMBeanSupport extends ServiceMBeanSupport implements Dest
          throw new IllegalStateException("QueueName was not set");
       }
             
-      if (log.isTraceEnabled()) { log.trace("starting service, securityManager=" + securityManager); }
-      
-      //securityManager can be null
-      
-      if (securityManager != null)
+      if (securityConfig != null)
       {
-         
-         //Get ref to the SecurityManager
-         SecurityManager sm = (SecurityManager)
-            server.getAttribute(securityManager, "SecurityManager");
-         
-         //Inform the sm about the security conf for the destination
-         sm.setSecurityConf(destinationName, securityConf);
+         server.invoke(serverPeer, "setSecurityConfig",
+               new Object[] {destinationName, securityConfig},
+               new String[] {"java.lang.String", "org.w3c.dom.Element"}); 
+      
       }
    }
 }

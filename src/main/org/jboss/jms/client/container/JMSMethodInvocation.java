@@ -7,8 +7,8 @@
 package org.jboss.jms.client.container;
 
 import org.jboss.aop.MethodInfo;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.MethodInvocation;
 
 /**
  * Sub-class of MethodInvocation that allows the InvocationHandler to be retrieved

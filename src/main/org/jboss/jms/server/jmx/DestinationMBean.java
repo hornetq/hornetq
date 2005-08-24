@@ -27,9 +27,8 @@ public interface DestinationMBean extends ServiceMBean
 
    String getJNDIName();
    
-   void setSecurityConf(Element securityConf);
+   void setSecurityConfig(Element securityConf);
    
-   public void setSecurityManager(ObjectName securityManager);
    
    /*
    

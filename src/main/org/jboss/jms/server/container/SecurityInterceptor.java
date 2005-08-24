@@ -11,15 +11,14 @@ import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
-import javax.security.auth.Subject;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.security.SecurityManager;
-import org.jboss.jms.security.SecurityMetadata;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.jms.server.security.SecurityManager;
+import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
 
 /**
@@ -151,14 +150,14 @@ public class SecurityInterceptor implements Interceptor
       }
       
       //Authenticate
-      Subject s = securityManager.authenticate(conn.getUsername(), conn.getPassword());
+      securityManager.authenticate(conn.getUsername(), conn.getPassword());
       
       //Authorize
       Set principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() : 
                        checkType == CheckType.WRITE ? securityMetadata.getWritePrincipals() :
                        securityMetadata.getCreatePrincipals();
                        
-      if (!securityManager.authorize(s, principals))
+      if (!securityManager.authorize(conn.getUsername(), principals))
       {
          String msg = "User: " + conn.getUsername() + 
             " is not authorized to " +

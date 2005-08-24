@@ -6,233 +6,48 @@
  */
 package org.jboss.jms.server;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.tools.jndi.JNDIUtil;
-import org.jboss.system.ServiceMBeanSupport;
-
 /**
- * Manages destinations. Manages JNDI mapping and delegates core destination management to a
- * CoreDestinationManager.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class DestinationManager extends ServiceMBeanSupport implements DestinationManagerMBean
+public interface DestinationManager
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(DestinationManager.class);
-   
    public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
    public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
-   
-   // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
 
-   protected ServerPeer serverPeer;
-   protected Context initialContext;
-   protected CoreDestinationManager coreDestinationManager;
+   /**
+    * Creates and binds in JNDI a queue. The queue name is unique per JMS provider instance.
+    *
+    * @param name - the queue name.
+    * @param jndiName - the JNDI name to bind the newly created queue to. If null, the queue
+    *        will be bound in JNDI under the default context using the specified queue name.
+    *
+    * @throws Exception
+    */
+   public void createQueue(String name, String jndiName) throws Exception;
 
-   // < name - JNDI name>
-   protected Map queueNameToJNDI;
-   protected Map topicNameToJNDI;
+   /**
+    * Removes the queue both from JNDI and DestinationManager.
+    */
+   public void destroyQueue(String name) throws Exception;
 
+   /**
+    * Creates and binds in JNDI a topic. The topic name is unique per JMS provider instance.
+    *
+    * @param name - the topic name.
+    * @param jndiName - the JNDI name to bind the newly created topic to. If null, the topic
+    *        will be bound in JNDI under the default context using the specified topic name.
+    *
+    * @throws Exception
+    */
+   public void createTopic(String name, String jndiName) throws Exception;
 
-   // Constructors --------------------------------------------------
-
-   public DestinationManager(ServerPeer serverPeer) throws Exception
-   {
-      this.serverPeer = serverPeer;
-      //TODO close this inital context when DestinationManager stops
-      initialContext = new InitialContext();
-      coreDestinationManager = new CoreDestinationManager(this);
-      queueNameToJNDI = new HashMap();
-      topicNameToJNDI = new HashMap();
-   }
-
-   // DestinationManager implementation -----------------------------
-
-
-   public void createQueue(String name) throws Exception
-   {
-      createDestination(true, name, null);
-   }
-
-   public void createQueue(String name, String jndiName) throws Exception
-   {
-      createDestination(true, name, jndiName);
-   }
-
-   public void destroyQueue(String name) throws Exception
-   {
-      removeDestination(true, name);
-   }
-
-   public void createTopic(String name) throws Exception
-   {
-      createDestination(false, name, null);
-   }
-
-   public void createTopic(String name, String jndiName) throws Exception
-   {
-      createDestination(false, name, jndiName);
-   }
-
-   public void destroyTopic(String name) throws Exception
-   {
-      removeDestination(false, name);
-   }
-
-   // Public --------------------------------------------------------
-
-   ServerPeer getServerPeer()
-   {
-      return serverPeer;
-   }
-   
-   public DestinationManager getDestinationManager()
-   {
-      return this;
-   }
-
-   public void addTemporaryDestination(Destination jmsDestination) throws JMSException
-   {
-      coreDestinationManager.addCoreDestination(jmsDestination);
-   }
-
-   public void removeTemporaryDestination(Destination jmsDestination)
-   {
-      JBossDestination d = (JBossDestination)jmsDestination;
-      boolean isQueue = d.isQueue();
-      String name = d.getName();
-      coreDestinationManager.removeCoreDestination(isQueue, name);
-   }
-
-   public AbstractDestination getCoreDestination(Destination jmsDestination) throws JMSException
-   {
-      JBossDestination d = (JBossDestination)jmsDestination;
-      boolean isQueue = d.isQueue();
-      String name = d.getName();
-      return getCoreDestination(isQueue, name);
-   }
-
-   public AbstractDestination getCoreDestination(boolean isQueue, String name) throws JMSException
-   {
-      return coreDestinationManager.getCoreDestination(isQueue, name);
-   }
+   /**
+    * Removes the topic both from JNDI and DestinationManager.
+    */
+   public void destroyTopic(String name) throws Exception;
 
 
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private void createDestination(boolean isQueue, String name, String jndiName) throws Exception
-   {
-      String parentContext;
-      String jndiNameInContext;
-
-      if (jndiName == null)
-      {
-         parentContext = (isQueue ? DEFAULT_QUEUE_CONTEXT : DEFAULT_TOPIC_CONTEXT);
-         jndiNameInContext = name;
-         jndiName = parentContext + "/" + jndiNameInContext;
-      }
-      else
-      {
-         // TODO more solid parsing + test cases
-         int sepIndex = jndiName.lastIndexOf('/');
-         if (sepIndex == -1)
-         {
-            parentContext = "";
-         }
-         else
-         {
-            parentContext = jndiName.substring(0, sepIndex);
-         }
-         jndiNameInContext = jndiName.substring(sepIndex + 1);
-      }
-
-      try
-      {
-         initialContext.lookup(jndiName);
-         
-         //Already exists - remove it - this allows the dest to be updated with any
-         //new values
-         this.removeDestination(isQueue, name);
-            
-      }
-      catch(NameNotFoundException e)
-      {
-         // OK
-      }
-
-      Destination jmsDestination = isQueue ?
-                                   (Destination) new JBossQueue(name) :
-                                   (Destination) new JBossTopic(name);
-
-      coreDestinationManager.addCoreDestination(jmsDestination);
-
-      try
-      {
-         Context c = JNDIUtil.createContext(initialContext, parentContext);
-         c.rebind(jndiNameInContext, jmsDestination);
-         if (isQueue)
-         {
-            queueNameToJNDI.put(name, jndiName);
-         }
-         else
-         {
-            topicNameToJNDI.put(name, jndiName);
-         }
-      }
-      catch(Exception e)
-      {
-         coreDestinationManager.removeCoreDestination(isQueue, name);
-         throw e;
-      }
-
-      log.info((isQueue ? "Queue" : "Topic") + " " + name +
-               " created and bound in JNDI as " + jndiName );
-   }
-
-
-   private void removeDestination(boolean isQueue, String name) throws Exception
-   {
-
-      coreDestinationManager.removeCoreDestination(isQueue, name);
-      String jndiName = null;
-      if (isQueue)
-      {
-         jndiName = (String)queueNameToJNDI.remove(name);
-      }
-      else
-      {
-         jndiName = (String)topicNameToJNDI.remove(name);
-      }
-      if (jndiName == null)
-      {
-         return;
-      }
-      initialContext.unbind(jndiName);
-   }
-
-   // Inner classes -------------------------------------------------
 }

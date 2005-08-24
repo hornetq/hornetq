@@ -115,7 +115,6 @@
       <path refid="library.classpath"/>
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/../src/etc"/>
-      <pathelement path="C:\\dev\\jboss-head\\jms\\src\\etc"/>
    </path>
 
 

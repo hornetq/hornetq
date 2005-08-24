@@ -27,7 +27,6 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.core.local.AbstractDestination;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -68,7 +67,8 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer();
+      ServerManagement.setRemote(false);
+      ServerManagement.startInVMServer("remoting,aspects,security");
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployQueue("Queue");
 

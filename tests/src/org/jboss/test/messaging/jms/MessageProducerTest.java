@@ -57,7 +57,8 @@ public class MessageProducerTest extends MessagingTestCase
 
       super.setUp();
 
-      ServerManagement.startInVMServer();
+      ServerManagement.setRemote(false);
+      ServerManagement.startInVMServer("remoting,aspects,security");
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployTopic("Topic2");
       ServerManagement.deployQueue("Queue");

@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.security;
+package org.jboss.jms.server.security;
 
 import java.util.Set;
 import java.util.HashSet;

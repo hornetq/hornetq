@@ -9,15 +9,15 @@ package org.jboss.jms.client.container;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.jboss.aop.MethodInfo;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.MethodHashing;
-
-import org.jboss.aop.MethodInfo;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 
 

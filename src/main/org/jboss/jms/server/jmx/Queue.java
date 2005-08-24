@@ -7,7 +7,6 @@
 
 package org.jboss.jms.server.jmx;
 
-import org.jboss.logging.Logger;
 
 /**
  * Implementation of QueueMBean
@@ -22,38 +21,37 @@ import org.jboss.logging.Logger;
  * 
  * @version    $Revision$
  */
-public class Topic
-   extends DestinationMBeanSupport
-   implements TopicMBean
+public class Queue extends DestinationMBeanSupport
+   implements QueueMBean 
 {
    
-   private static final Logger log = Logger.getLogger(Topic.class);
-   
-   public String getTopicName()
+   public String getQueueName()
    {
       return destinationName;
    }
-
+   
+   public void setQueueName(String queueName)
+   {
+      destinationName = queueName;
+   }
 
    public void startService() throws Exception
    {
       super.startService();            
       
-      server.invoke(destinationManager, "createTopic",
+      server.invoke(destinationManager, "createQueue",
             new Object[] {destinationName, jndiName},
             new String[] {"java.lang.String", "java.lang.String"}); 
       
-      log.info("Topic:" + destinationName + " started");
+      log.info("Queue:" + destinationName + " started");
    }
    
    public void stopService() throws Exception
    {
-      server.invoke(destinationManager, "destroyTopic",
+      server.invoke(destinationManager, "destroyQueue",
             new Object[] {destinationName},
             new String[] {"java.lang.String"});
-      
-      log.info("Topic:" + destinationName + " stopped");
+      log.info("Queue:" + destinationName + " stopped");
    }
    
-
-}
+ }

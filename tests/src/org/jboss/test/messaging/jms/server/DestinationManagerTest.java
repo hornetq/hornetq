@@ -6,16 +6,15 @@
  */
 package org.jboss.test.messaging.jms.server;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.DestinationManager;
-
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Topic;
-import javax.jms.JMSException;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+
+import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -45,7 +44,8 @@ public class DestinationManagerTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.startInVMServer();
+      ServerManagement.setRemote(false);
+      ServerManagement.startInVMServer("transaction,remoting,aspects,security");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       //destinationManager = ServerManagement.getServerPeer().getDestinationManager();
@@ -64,7 +64,7 @@ public class DestinationManagerTest extends MessagingTestCase
       String name = "testQueue";
       this.createQueue(name, null);
 
-      Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Queue q = (Queue)initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
    }
@@ -74,7 +74,7 @@ public class DestinationManagerTest extends MessagingTestCase
       String name = "testQueue";
       this.createTopic(name, null);
 
-      Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
    }
@@ -182,8 +182,8 @@ public class DestinationManagerTest extends MessagingTestCase
       this.createQueue(name, null);
       this.createTopic(name, null);
 
-      Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
-      Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      Queue q = (Queue)initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
       assertEquals(name, t.getTopicName());
@@ -205,7 +205,7 @@ public class DestinationManagerTest extends MessagingTestCase
       String name = "testQueue";
       this.createQueue(name, null);
 
-      Queue q = (Queue)initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Queue q = (Queue)initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
 
@@ -215,7 +215,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       try
       {
-         Object o = initialContext.lookup(DestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+         Object o = initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
          fail("should have thrown exception, but got " + o);
       }
       catch(NameNotFoundException e)
@@ -229,7 +229,7 @@ public class DestinationManagerTest extends MessagingTestCase
       String name = "testTopic";
       this.createTopic(name, null);
 
-      Topic t = (Topic)initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
 
@@ -239,7 +239,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       try
       {
-         Object o = initialContext.lookup(DestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+         Object o = initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
          fail("should have thrown exception but got " + o);
       }
       catch(NameNotFoundException e)
