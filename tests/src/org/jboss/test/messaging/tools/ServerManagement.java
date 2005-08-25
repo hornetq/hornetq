@@ -51,12 +51,12 @@ public class ServerManagement
 
    public synchronized static void startInVMServer() throws Exception
    {
-      if (!isRemote) startInVMServer("transaction,remoting", null);
+      if (!isRemote) startInVMServer("transaction, remoting, aop, security", null);
    }
 
    public synchronized static void startInVMServer(TransactionManager tm) throws Exception
    {
-      if (!isRemote) startInVMServer("transaction,remoting", tm);
+      if (!isRemote) startInVMServer("transaction, remoting, aop, security", tm);
    }
 
    public synchronized static void startInVMServer(String config) throws Exception

@@ -34,6 +34,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * Tests for different types of message
  *
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * $Id$
  */
 public class MessageBodyTest extends MessagingTestCase
 {

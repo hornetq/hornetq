@@ -24,14 +24,14 @@ import org.jboss.security.SubjectSecurityManager;
 import org.w3c.dom.Element;
 
 /**
- * A security manager for JMS.
- * Mainly delegates to the JaasSecurityManager but also stores security information for
- * destinations
+ * A security manager for JMS. Mainly delegates to the JaasSecurityManager but also stores security
+ * information for destinations.
  *
  * @author Peter Antman
  * @author Scott.Stark@jboss.org
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
+ * $Id$
  */
 public class SecurityManager
 {
@@ -60,29 +60,41 @@ public class SecurityManager
    // Public --------------------------------------------------------
    
    public void init() throws NamingException
-   {     
+   {
       if (log.isTraceEnabled()) { log.trace("Creating SecurityManager"); }
+
       // Get the JBoss security manager from JNDI
-      InitialContext iniCtx = new InitialContext();
+      InitialContext ic = new InitialContext();
+
       try
       {
-         Object mgr = iniCtx.lookup(securityDomain);
-         
+         Object mgr = ic.lookup(securityDomain);
+
          if (log.isTraceEnabled()) { log.trace("JaasSecurityManager is: " + mgr); }
-         
+
          authMgr = (AuthenticationManager)mgr;
          realmMapping = (RealmMapping)mgr;
+
          log.info("JMS SecurityManager initialized");
       }
       catch (NamingException e)
       {
          // Apparently there is no security context, try adding java:/jaas
          log.warn("Failed to lookup securityDomain=" + securityDomain, e);
+
          if (securityDomain.startsWith("java:/jaas/") == false)
-            authMgr = (SubjectSecurityManager) iniCtx.lookup("java:/jaas/" + securityDomain);
+         {
+            authMgr = (SubjectSecurityManager)ic.lookup("java:/jaas/" + securityDomain);
+         }
          else
+         {
             throw e;
-      }      
+         }
+      }
+      finally
+      {
+         ic.close();
+      }
    }
       
    /**

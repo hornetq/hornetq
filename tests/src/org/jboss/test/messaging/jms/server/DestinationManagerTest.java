@@ -45,7 +45,7 @@ public class DestinationManagerTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("transaction,remoting,aspects,security");
+      ServerManagement.startInVMServer("transaction, remoting, aop, security");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       //destinationManager = ServerManagement.getServerPeer().getDestinationManager();

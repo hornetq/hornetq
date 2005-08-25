@@ -46,7 +46,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #
@@ -58,7 +58,7 @@ TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.QueueBrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
@@ -67,7 +67,7 @@ TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #
 # JMS Facade server
 #
-#TARGET_CLASS=org.jboss.test.messaging.jms.server.DestinationManagerTest
+TARGET_CLASS=org.jboss.test.messaging.jms.server.DestinationManagerTest
 
 
 
@@ -75,14 +75,15 @@ TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 # Message tests
 #
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
+TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSReplyToHeaderTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageBodyTest
 
 
 reldir=`dirname $0`
 
-#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
-REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
+REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
+#REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
 
 JGROUPS_LIB=$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar
 #JGROUPS_LIB=$reldir/../resources/jgroups-core.jar
@@ -141,5 +142,6 @@ $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../../../system/output/lib/jboss-system.jar${SEP}\
 $reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
+$reldir/../../../security/output/lib/jbosssx.jar${SEP}\
 ${JGROUPS_LIB}${SEP}\
  junit.textui.TestRunner $TARGET_CLASS

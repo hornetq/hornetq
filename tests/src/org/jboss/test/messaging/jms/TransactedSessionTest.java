@@ -48,7 +48,7 @@ public class TransactedSessionTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("transaction,remoting,aspects,security");
+      ServerManagement.startInVMServer("transaction, remoting, aop, security");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       

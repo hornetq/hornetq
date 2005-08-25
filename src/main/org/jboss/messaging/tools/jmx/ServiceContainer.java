@@ -105,7 +105,7 @@ public class ServiceContainer
    private boolean database;
    private boolean jca;
    private boolean remoting;
-   private boolean aspects;
+   private boolean aop;
    private boolean security;
 
    private List toUnbindAtExit;
@@ -117,7 +117,7 @@ public class ServiceContainer
 
    /**
     * @param config - A comma separated list of services to be started. Available services:
-    *        transaction, jca, database, remoting, aspects.  Example: "transaction,database,remoting"
+    *        transaction, jca, database, remoting, aop.  Example: "transaction,database,remoting"
     * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
     *        If null, the default JBoss TransactionManager implementation will be used.
     */
@@ -175,7 +175,7 @@ public class ServiceContainer
          startRemoting();
       }
 
-      if (aspects)
+      if (aop)
       {
          loadAspects();
       }
@@ -193,7 +193,8 @@ public class ServiceContainer
    public void stop() throws Exception
    {
       unloadJNDIContexts();
-      if (aspects)
+
+      if (aop)
       {
          unloadAspects();
       }
@@ -484,13 +485,17 @@ public class ServiceContainer
          {
             remoting = true;
          }
-         else if ("aspects".equals(tok))
+         else if ("aop".equals(tok))
          {
-            aspects = true;
+            aop = true;
          }
          else if ("security".equals(tok))
          {
             security = true;
+         }
+         else
+         {
+            throw new IllegalArgumentException("Unknown service: " + tok);
          }
       }
    }

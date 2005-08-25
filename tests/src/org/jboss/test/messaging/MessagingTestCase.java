@@ -17,6 +17,8 @@ import junit.framework.TestCase;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * 
+ * $Id$
  */
 public class MessagingTestCase extends TestCase
 {
@@ -39,7 +41,7 @@ public class MessagingTestCase extends TestCase
    protected void setUp() throws Exception
    {
       log.info("========= Start test: " + getName());
-      ServerManagement.setRemote(true);
+      ServerManagement.setRemote(false);
    }
 
    protected void tearDown() throws Exception

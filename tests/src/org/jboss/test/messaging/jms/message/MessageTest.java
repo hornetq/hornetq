@@ -74,7 +74,7 @@ public class MessageTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("remoting,aspects,security");
+      ServerManagement.startInVMServer("remoting, aop, security");
       ServerManagement.deployQueue("Queue");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
