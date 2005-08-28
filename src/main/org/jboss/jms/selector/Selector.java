@@ -27,6 +27,8 @@ import org.jboss.messaging.core.Routable;
  * @author     Scott.Stark@jboss.org
  * @author	   <a href="mailto:tim.l.fox@gmail.com">Tim Fox - port from JBoss 4</a>
  * @version    $Revision$
+ *
+ * $Id$
  */
 public class Selector implements Filter
 {

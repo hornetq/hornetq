@@ -9,10 +9,7 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.Lockable;
-import org.jboss.messaging.core.util.NonCommitted;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Acknowledgment;
-import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -232,14 +229,14 @@ public class AcknowledgmentCollector
       for(Iterator i = acks.iterator(); i.hasNext(); )
       {
          Object o = i.next();
-         if (o instanceof NonCommitted)
-         {
-            // TODO incomplete, does not support multiple transactions and isolation
-            nonCommitted.put(r, o);
-            continue;
-         }
-         Acknowledgment a = (Acknowledgment)i.next();
-         addNACK(r, a.getReceiverID());
+         // TODO - review core refactoring 2
+//         if (o instanceof NonCommitted)
+//         {
+//            nonCommitted.put(r, o);
+//            continue;
+//         }
+//         Acknowledgment a = (Acknowledgment)i.next();
+//         addNACK(r, a.getReceiverID());
       }
    }
 
@@ -268,7 +265,8 @@ public class AcknowledgmentCollector
          }
          if (ticket == null)
          {
-            ticket = new Ticket(new RoutableSupport(messageID));
+            // TODO - review core refactoring 2
+//            ticket = new Ticket(new RoutableSupport(messageID));
             s = new HashSet();
             acked.put(ticket, s);
          }
@@ -476,12 +474,13 @@ public class AcknowledgmentCollector
       for(Iterator i = nonCommitted.keySet().iterator(); i.hasNext();)
       {
          Routable r = (Routable)i.next();
-         NonCommitted nc = (NonCommitted)nonCommitted.get(r);
-         if (nc != null && nc.getTxID().equals(txID))
-         {
-            i.remove();
-            unacked.put(new Ticket(r), Collections.EMPTY_LIST);
-         }
+         // TODO - review core refactoring 2
+//         NonCommitted nc = (NonCommitted)nonCommitted.get(r);
+//         if (nc != null && nc.getTxID().equals(txID))
+//         {
+//            i.remove();
+//            unacked.put(new Ticket(r), Collections.EMPTY_LIST);
+//         }
       }
    }
 
@@ -490,11 +489,12 @@ public class AcknowledgmentCollector
       for(Iterator i = nonCommitted.keySet().iterator(); i.hasNext();)
       {
          Routable r = (Routable)i.next();
-         NonCommitted nc = (NonCommitted)nonCommitted.get(r);
-         if (nc != null && nc.getTxID().equals(txID))
-         {
-            i.remove();
-         }
+         // TODO - review core refactoring 2
+//         NonCommitted nc = (NonCommitted)nonCommitted.get(r);
+//         if (nc != null && nc.getTxID().equals(txID))
+//         {
+//            i.remove();
+//         }
       }
    }
 

@@ -6,7 +6,7 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.local.LocalQueue;
+
 
 
 /**
@@ -21,24 +21,24 @@ public class LocalQueueAsDistributorTest extends DistributorTest
    {
       super(name);
    }
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      // Create a LocalQueue to be tested by the superclass tests
-      distributor = new LocalQueue("LocalQueueID");
-   }
-
-   public void tearDown()throws Exception
-   {
-      distributor.clear();
-      distributor = null;
-      super.tearDown();
-   }
-
-   //
-   // This test also runs all DistributorTest's tests
-   //
+//
+//   public void setUp() throws Exception
+//   {
+//      super.setUp();
+//
+//      // Create a LocalQueue to be tested by the superclass tests
+//      distributor = new LocalQueue("LocalQueueID");
+//   }
+//
+//   public void tearDown()throws Exception
+//   {
+//      distributor.clear();
+//      distributor = null;
+//      super.tearDown();
+//   }
+//
+//   //
+//   // This test also runs all DistributorTest's tests
+//   //
 
 }

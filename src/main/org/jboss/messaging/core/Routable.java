@@ -1,74 +1,80 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
 import java.util.Set;
 
 /**
- * An atomic, self containted unit of data that flows through the system.
+ * An atomic, self containted unit of data that is being routed by the messaging system.
  *
- * It supports the concept of message header. Various messaging system components can attach or
- * remove headers to/from the Routable instances, primarily for message flow management purposes.
+ * Each routable maintains a set of headers. Various messaging components can attach or remove
+ * headers, primarily for message flow management purposes.
  *
  * @see org.jboss.messaging.core.Message
  * @see org.jboss.messaging.core.MessageReference
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface Routable extends Serializable
 {
-   public static final String REMOTE_ROUTABLE = "REMOTE_ROUTABLE";
-   // the value is a Serializable
-   public static final String REPLICATOR_ID = "REPLICATOR_ID";
-   // the value is a Serializable
-   public static final String REPLICATOR_INPUT_ID = "REPLICATOR_INPUT_ID";
+   static final String REMOTE_ROUTABLE = "REMOTE_ROUTABLE";
+   static final String REPLICATOR_ID = "REPLICATOR_ID";
+   static final String REPLICATOR_INPUT_ID = "REPLICATOR_INPUT_ID";
 
+   Serializable getMessageID();
 
    /**
-    * Returns the ID of the message represented by this Routable.
+    * If it is a Message instance, then it returns itself, otherwise it will return the Message
+    * corresponding to this MessageReference.
     */
-   public Serializable getMessageID();
+   Message getMessage();
+
+   boolean isReference();
 
    /**
-    * Returns true if the delivery is guaranteed for this Routable, false othewise.
+    * @return true if the delivery must be guaranteed for this routable, false othewise.
     */
-   public boolean isReliable();
+   boolean isReliable();
 
    /**
-    * Returns the time (in GMT milliseconds) at which this Routable expires and must be dissapear
-    * from the system. A zero value means this Routable never expires.
+    * @return the time (in GMT milliseconds) when this routable expires and must be removed
+    *         from the system. A zero value means this routable never expires.
     */
-   public long getExpiration();
+   long getExpiration();
 
-   public boolean isExpired();
+   boolean isExpired();
 
    /**
-    * Returns the time a Routable was handed off to the provider.
+    * @return the time (in GMT milliseconds) when this routable was delivered to the provider.
     */
-   public long getTimestamp();
+   long getTimestamp();
 
    /**
-    * True if the message was delivered at least once but not acknowledged.
+    * @return true if the delivery of this message had to be repeated at least once.
     */
-   public boolean isRedelivered();
+   boolean isRedelivered();
 
-   public void setRedelivered(boolean redelivered);
+   void setRedelivered(boolean redelivered);
 
    /**
-    * Associates the specified value with the specified header name. If the header map previously
-    * contained a mapping for this name, the old value is replaced by the specified value.
+    * Binds a header. If the header map previously contained a mapping for this name, the old value
+    * is replaced by the specified value.
     *
     * @return the value associated with the name or null if there is no mapping for the name. A null
     *         can also indicate that the header map previously associated null with the specified
     *         name.
     */
-   public Serializable putHeader(String name, Serializable value);
+   Serializable putHeader(String name, Serializable value);
 
    /**
     * Returns the value corresponding to the header name. Returns null if the map contains no
@@ -78,23 +84,23 @@ public interface Routable extends Serializable
     *
     * @return the value associated with the header, or null if there is no mapping for the header.
     */
-   public Serializable getHeader(String name);
+   Serializable getHeader(String name);
 
    /**
     * Removes the header.
     *
     * @return previous value associated with the header, or null if there was no mapping.
     */
-   public Serializable removeHeader(String name);
+   Serializable removeHeader(String name);
 
    /**
     * Returns true if the Routable contains the specified header.
     */
-   public boolean containsHeader(String name);
+   boolean containsHeader(String name);
 
    /**
-    * Returns a copy of the name set.
+    * Returns a copy of the header name set.
     */
-   public Set getHeaderNames();
+   Set getHeaderNames();
 
 }

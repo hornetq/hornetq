@@ -19,9 +19,9 @@ import javax.naming.NameNotFoundException;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.tools.jndi.JNDIUtil;
+import org.jboss.messaging.core.Channel;
 
 /**
  * Manages destinations. Manages JNDI mapping and delegates core destination management to a
@@ -124,7 +124,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       coreDestinationManager.removeCoreDestination(isQueue, name);
    }
 
-   public AbstractDestination getCoreDestination(Destination jmsDestination) throws JMSException
+   public Channel getCoreDestination(Destination jmsDestination) throws JMSException
    {
       JBossDestination d = (JBossDestination)jmsDestination;
       boolean isQueue = d.isQueue();
@@ -132,7 +132,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       return getCoreDestination(isQueue, name);
    }
 
-   public AbstractDestination getCoreDestination(boolean isQueue, String name) throws JMSException
+   public Channel getCoreDestination(boolean isQueue, String name) throws JMSException
    {
       return coreDestinationManager.getCoreDestination(isQueue, name);
    }

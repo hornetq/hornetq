@@ -12,6 +12,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
@@ -106,7 +107,7 @@ public class MetaDataInterceptor implements Interceptor, Serializable
                deliveryMode = ((Integer)metaData.
                      getMetaData(JMSAdvisor.JMS, JMSAdvisor.DELIVERY_MODE)).intValue();
 
-               if (log.isTraceEnabled()) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
+               if (log.isTraceEnabled()) { log.trace("Using producer's default delivery mode: " + ToString.deliveryMode(deliveryMode)); }
             }
             m.setJMSDeliveryMode(deliveryMode);
 

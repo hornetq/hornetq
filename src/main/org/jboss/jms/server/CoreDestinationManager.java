@@ -7,9 +7,9 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.local.LocalQueue;
-import org.jboss.messaging.core.local.LocalTopic;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Topic;
 import org.jboss.logging.Logger;
 
 import javax.jms.Destination;
@@ -57,7 +57,7 @@ class CoreDestinationManager
    // Public --------------------------------------------------------
 
    /**
-    * Returns the core abstract destination that corresponds to the given destination name.
+    * Returns the core destination that corresponds to the given destination name.
     *
     * @return the AbstractDestination instance or null if there isn't a mapping for the given
     *         destination.
@@ -65,18 +65,18 @@ class CoreDestinationManager
     * @exception JMSException - thrown if the JNDI destination cannot be mapped on a core
     *            destination.
     */
-   AbstractDestination getCoreDestination(boolean isQueue, String name) throws JMSException
+   Channel getCoreDestination(boolean isQueue, String name) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("getting core " + (isQueue ? "queue" : "topic")
                                             + " for " + name); }
 
       if (isQueue)
       {
-         return (AbstractDestination)queueMap.get(name);
+         return (Channel)queueMap.get(name);
       }
       else
       {
-         return (AbstractDestination)topicMap.get(name);
+         return (Channel)topicMap.get(name);
       }
    }
 
@@ -93,46 +93,46 @@ class CoreDestinationManager
       String name = d.getName();
       boolean isQueue = d.isQueue();
 
-      AbstractDestination ad = getCoreDestination(isQueue, name);
-      if (ad != null)
+      Channel c = getCoreDestination(isQueue, name);
+      if (c != null)
       {
          throw new JMSException("Destination " + jmsDestination + " already exists");
       }
 
-      ServerPeer serverPeer = destinationManager.getServerPeer();
+      ServerPeer sp = destinationManager.getServerPeer();
 
       // TODO I am using LocalQueues for the time being, switch to distributed Queues
       if (isQueue)
       {
-         ad = new LocalQueue(name);
-         queueMap.put(name, ad);
+         c = new Queue(name,
+                       sp.getMessageStore(),
+                       sp.getPersistenceManager(),
+                       sp.getTransactionManager());
+         queueMap.put(name, c);
       }
       else
       {
          // TODO I am using LocalTopics for the time being, switch to distributed Topics
-         ad = new LocalTopic(name);
-         topicMap.put(name, ad);
+         c = new Topic(name,
+                       sp.getMessageStore(),
+                       sp.getPersistenceManager(),
+                       sp.getTransactionManager());
+         topicMap.put(name, c);
       }
-
-      ad.setAcknowledgmentStore(serverPeer.getAcknowledgmentStore());
-      ad.setMessageStore(serverPeer.getMessageStore());
-
-      // make the destination transactional if there is a transaction manager available
-      ad.setTransactionManager(serverPeer.getTransactionManager());
    }
    
    /**
     * Remove an AbstractDestination.
     */
-   AbstractDestination removeCoreDestination(boolean isQueue, String name)
+   Channel removeCoreDestination(boolean isQueue, String name)
    {
       if (isQueue)
       {
-         return (AbstractDestination)queueMap.remove(name);
+         return (Channel)queueMap.remove(name);
       }
       else
       {
-         return (AbstractDestination)topicMap.remove(name);
+         return (Channel)topicMap.remove(name);
       }
    }
 

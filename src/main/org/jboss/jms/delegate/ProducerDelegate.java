@@ -7,8 +7,8 @@
 package org.jboss.jms.delegate;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.Destination;
+import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.MetaDataRepository;
@@ -24,7 +24,7 @@ public interface ProducerDelegate extends Closeable, MetaDataRepository
     *
     * @param destination - the destination to send the message to. If null, the message will be sent
     *        to the producer's default destination.
-    * @param m - the message to be sent.
+    * @param message - the message to be sent.
     * @param deliveryMode - the delivery mode to use when sending this message. Must be one of
     *        DeliveryMode.PERSISTENT or DeliveryMode.NON_PERSISTENT. If -1, the message will be sent
     *        using the producer's default delivery mode.
@@ -37,7 +37,7 @@ public interface ProducerDelegate extends Closeable, MetaDataRepository
     *
     * @throws JMSException
     */
-   public void send(Destination destination, Message m, int deliveryMode,
+   public void send(Destination destination, Message message, int deliveryMode,
                     int priority, long timeToLive) throws JMSException;
       
 }

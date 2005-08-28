@@ -23,20 +23,15 @@
    <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
+      <param name="File" value="C:/work/tmp/testlog.txt"/>
       <param name="Append" value="false"/>
-
-      <!-- Rollover at midnight each day -->
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-      <!-- Rollover at the top of each hour
-      <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
-      -->
+      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
-         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
-
+         <param name="ConversionPattern" value="%d %-5p @%t [%c] %m%n"/>
          <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
          <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
           -->
@@ -83,6 +78,32 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
+   <category name="org.jboss.jms.server">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
+   <category name="org.jboss.messaging.core">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
+   <category name="org.jboss.test.messaging">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
+
+
+
+   <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">
+      <priority value="WARN"/>
+   </category>
+
+   <category name="org.jboss.resource.connectionmanager.ConnectionFactoryBindingService">
+      <priority value="WARN"/>
+   </category>
+
+
+
+
 
    <!-- ======================= -->
    <!-- Setup the Root category -->
@@ -90,7 +111,9 @@
 
    <root>
       <appender-ref ref="CONSOLE"/>
-      <!-- <appender-ref ref="FILE"/> -->
+      <!--
+      <appender-ref ref="FILE"/>
+      -->
    </root>
 
 

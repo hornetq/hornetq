@@ -36,6 +36,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.MetaDataInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.MetaDataInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ConnectionInterceptor"/>
@@ -94,6 +95,7 @@
    <interceptor class="org.jboss.jms.server.container.InstanceInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.server.container.LogInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.server.container.SecurityInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.server.container.CachingInterceptor" scope="PER_VM"/>
 
    <stack name="ServerConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
@@ -115,13 +117,16 @@
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
       <interceptor-ref name="org.jboss.jms.server.container.SecurityInterceptor"/>
+      <!--
+      <interceptor-ref name="org.jboss.jms.server.container.CachingInterceptor"/>
+      -->
    </stack>
 
    <stack name="ServerConsumerStack">
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
    </stack>
-   
+
    <stack name="ServerBrowserStack">
       <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.server.container.InstanceInterceptor"/>
@@ -161,7 +166,7 @@
          <stack-ref name="ServerConsumerStack"/>
       </bind>
    </domain>
-   
+
    <domain name="ServerBrowserDelegate">
       <bind pointcut="execution(* *->*(..))">
          <stack-ref name="ServerBrowserStack"/>

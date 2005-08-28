@@ -9,6 +9,7 @@ package org.jboss.jms.message;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import javax.jms.TextMessage;
 
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
@@ -49,7 +50,7 @@ import org.jboss.util.Strings;
  *
  * $Id$
  */
-public class JBossMessage extends RoutableSupport implements javax.jms.Message
+public class JBossMessage extends MessageSupport implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
@@ -152,8 +153,20 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
    public JBossMessage(String messageID)
    {
+      this(messageID, false, 0, 0, null);
+   }
+
+   public JBossMessage(String messageID,
+                       boolean reliable,
+                       long expiration,
+                       long timestamp,
+                       Serializable payload)
+   {
       super(messageID);
-      reliable = false;
+      this.reliable = reliable;
+      this.expiration = expiration;
+      this.timestamp = timestamp;
+      this.payload = payload;
       redelivered = false;
       type = null;
       properties = new HashMap();
@@ -395,6 +408,13 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
 
          */
       }
+   }
+
+   // Routable implementation ---------------------------------------
+
+   public boolean isReference()
+   {
+      return false;
    }
 
    // javax.jmx.Message implementation ------------------------------
@@ -884,6 +904,13 @@ public class JBossMessage extends RoutableSupport implements javax.jms.Message
       sb.append(messageID);
       sb.append("]");
       return sb.toString();
+   }
+
+   // org.jboss.messaging.core.Message implementation ---------------
+
+   public Serializable getPayload()
+   {
+      return payload;
    }
 
    // Externalizable implementation ---------------------------------

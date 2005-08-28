@@ -8,8 +8,8 @@ package org.jboss.jms.server;
 
 import java.io.Serializable;
 
-import org.jboss.messaging.core.local.LocalQueue;
-import org.jboss.messaging.core.local.LocalTopic;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Topic;
 
 /**
  * 
@@ -29,15 +29,15 @@ public class DurableSubscriptionHolder implements Serializable
    // Attributes ----------------------------------------------------
    
    private String name;
-   private LocalQueue queue;
-   private LocalTopic topic;
+   private Queue queue;
+   private Topic topic;
    private String selector;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public DurableSubscriptionHolder(String name, LocalTopic topic, LocalQueue queue, String selector)
+   public DurableSubscriptionHolder(String name, Topic topic, Queue queue, String selector)
    {
       this.name = name;
       this.queue = queue;
@@ -48,12 +48,12 @@ public class DurableSubscriptionHolder implements Serializable
    // Public --------------------------------------------------------
    
 
-   public LocalQueue getQueue()
+   public Queue getQueue()
    {
       return queue;
    }
    
-   public LocalTopic getTopic()
+   public Topic getTopic()
    {
       return topic;
    }

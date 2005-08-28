@@ -67,17 +67,16 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    public void handleCallback(Callback callback) throws HandleCallbackException
    {
-      
+      if (log.isTraceEnabled()) { log.trace("receiving message " + callback.getParameter() + " from the remoting layer"); }
+
       Message m = (Message)callback.getParameter();
-      
-      if (log.isTraceEnabled()) { log.trace("receiving from server: " + m); }
       
       try
       {			
          JBossMessage jm = (JBossMessage)m;	
          jm.setSessionDelegate(sessionDelegate);
          messages.put(m);
-         if (log.isTraceEnabled()) { log.trace("message " + m + " accepted for delivery"); }
+         if (log.isTraceEnabled()) { log.trace("message " + m + " queued in the client delivery queue"); }
       }
       catch(InterruptedException e)
       {
@@ -203,8 +202,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       
       try
       {
-         if (log.isTraceEnabled()) { log.trace("receive, timeout = " + timeout + " ms"); }
-         
          receivingThread = Thread.currentThread();
          
          JBossMessage m = null;
@@ -214,19 +211,24 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             {
                if (timeout == 0)
                {
-                  if (log.isTraceEnabled()) log.trace("receive with no timeout"); 
+                  if (log.isTraceEnabled()) log.trace("receive with no timeout");
                     
                   m = ((JBossMessage)messages.take());
-                  if (log.isTraceEnabled()) { log.trace("Got message:" + m); }
+
+                  if (log.isTraceEnabled()) { log.trace("Got message: " + m); }
                }
                else if (timeout == -1)
                {
                   //ReceiveNoWait
-                  m = ((JBossMessage)messages.poll(0));                  
+                  if (log.isTraceEnabled()) { log.trace("receive noWait"); }
+
+                  m = ((JBossMessage)messages.poll(0));
                   return m;
                }
                else
                {
+                  if (log.isTraceEnabled()) { log.trace("receive timeout " + timeout + " ms"); }
+
                   m = ((JBossMessage)messages.poll(timeout));
                                     
                   if (m == null)
@@ -253,14 +255,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             if (log.isTraceEnabled()) { log.trace("Calling delivered()"); }
             
-            //Notify that the message has been delivered (not necessarily acknowledged though)
+            // notify that the message has been delivered (not necessarily acknowledged though)
+
             delivered(m);
-            
-            if (log.isTraceEnabled()) { log.trace("Called delivered()"); }
             
             if (!m.isExpired())
             {
-               if (log.isTraceEnabled()) { log.trace("Message is not expired"); }
+               if (log.isTraceEnabled()) { log.trace("Message is not expired, returning it to the caller"); }
                return m;
             }
 

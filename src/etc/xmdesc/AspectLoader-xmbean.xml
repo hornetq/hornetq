@@ -6,7 +6,7 @@
 
 
 <mbean>
-   <class>org.jboss.jms.tools.AspectLoader</class>
+   <class>org.jboss.jms.util.AspectLoader</class>
 
 
    <!-- Managed attributes -->

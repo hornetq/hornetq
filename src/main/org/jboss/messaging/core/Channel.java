@@ -1,117 +1,83 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core;
 
-import java.util.Set;
+import java.util.List;
 import java.io.Serializable;
 
 /**
- * A Channel is an abstraction that defines a message delivery mechanism that forwards a message
- * from a sender to one or more receivers.
+ * A Channel is a transactional, reliable message delivery mechanism that forwards a message from a
+ * sender to one or more receivers.
  *
- * <p>
- * A Channel configured to behave synchronously will always attempt synchronous delivery on the
- * entitled Receivers. If the Channel's handle() method returns with a positive acknowledgment,
- * this guarantees that each and every Receiver that was supposed to get the message actually got
- * and acknowledged it.
- * <p>
- * A Channel that is configured to be asynchronous acts as a middle man: if synchronous
- * (acknowledged) delivery is not immediately possible, the Channel may hold the message for a
- * while and attempt re-delivery.  When the asynchronous channel's handle() method returns with a
- * positive acknowledgment, this doesn't necessarily mean that all entitled Receivers got the
- * message and acknowledged for it. It only means that the Channel assumes the responsibility for
- * correct delivery.
- * <p>
- * Even in the case of an asynchronous Channel, the Channel implementors are encouraged to attempt
- * immediate synchronous delivery, and only if that is not possible, to store the message for
- * further re-delivery.
+ * The channel tries to deliver a message synchronously, if possible, and store the message for
+ * re-delivery if not.
  *
+ * A channel implementation may chose to be transactional, reliable or none of the above. A simple
+ * channel implementation may not able to accept messages/acknowledgments transactionally, and may
+ * not guarantee recoverability in case of failure. A <i>transactional</i> channel must be able to
+ * guarantee atomicity when accepting messages/acknowledgments. A <i>reliable</i> channel must be
+ * able to guarantee atomicity and recoverability in case of failure. However, reoverability is
+ * guaranteed only for reliable messages. For non-reliable message, the channel will do its best
+ * effort.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public interface Channel extends Receiver
+public interface Channel extends DeliveryObserver, Receiver, Distributor
 {
 
-   public static final boolean SYNCHRONOUS = true;
-   public static final boolean ASYNCHRONOUS = false;
+   Serializable getChannelID();
 
    /**
-    * Configure the message handling mode for this channel.
+    * @return true if the channel is able to atomically accept messages/acknowledgments. It doesn't
+    *         necesarily mean the channel is reliable, though.
     *
-    * <p>
-    * Switching the channel from asynchronous to synchronous mode will fail if the channel contains
-    * undelivered messages and the method invocation will return false.
+    * @see org.jboss.messaging.core.Channel#isReliable()
+    */
+   boolean isTransactional();
+
+   /**
+    * @return true if the channel is able to handle reliable messages and guarantee recoverability.
+    *         Recoverability is not guaranteed for non-reliable messages, even if the channel is
+    *         reliable. It implies transactionality.
     *
-    * @param b - true for synchronous delivery, false for asynchronous delivery.
+    * @see org.jboss.messaging.core.Channel#isTransactional()
+    */
+   boolean isReliable();
+
+   /**
+    * Specifies the behaviour of the channel in the situation in which it has no receivers.
     *
-    * @return true if the configuration attempt completed successfully, false otherwise.
+    * @return true if the channel stores undeliverable messages, for further delivery, false if it
+    *         acknowledges and discards them.
     */
-   public boolean setSynchronous(boolean b);
+   boolean isStoringUndeliverableMessages();
 
    /**
-    * @return true is the Channel was configured for synchronous handling.
+    * @return a List containing messages being held by the channel. The list includes messages in
+    *         process of being delivered and messages for which delivery hasn't been attempted yet.
     */
-   public boolean isSynchronous();
-
+   List browse();
 
    /**
-    * In a situation when it has no receivers (or existing receivers are broken), an asynchronous
-    * channel may choose to acknowledge the message and store it for further delivery (queue
-    * behavior), or just acknowledge it and discard it (topic behavior). The result of this method
-    * is irrelevant for a synchronous channel, since it doesn't store messages.
-    * @return
+    * @see Channel#browse()
     */
-   public boolean isStoringUndeliverableMessages();
+   List browse(Filter filter);
 
+   MessageStore getMessageStore();
 
    /**
-    * Attempt asynchronous delivery of messages being held by the Channel.
-    *
-    * @return false if there are still messages to be delivered after the call completes, true
-    *         otherwise. A deliver() invocation on an empty channel must return true.
+    * Initiates delivery of messages for which delivery hasn't been attempted yet.
     */
-   public boolean deliver();
+   void deliver();
 
-   /**
-    * @return true if the Channel holds at least one undelivered message, false otherwise.
-    *         Undelivered message is considered either a message whose delivery has been attempted
-    *         but it is currently NACKed or a message whose delivery has not been attempted at all.
-    */
-   public boolean hasMessages();
-
-   /**
-    * @return a Set containing the IDs of all undelivered messages. Undelivered message is
-    *         considered either a message whose delivery has been attempted but it is currently
-    *         NACKed or a message whose delivery has not been attempted at all. Could return an
-    *         empty Set but never null.
-    */
-   public Set getUndelivered();
-
-   /**
-    * TODO: define better the semantics of this method relative to getUndelivered()
-	 * @return a Set containing messages that haven't been delivered.
-    */
-   public Set browse();
-	
-	public Set browse(Filter filter);
-
-   /**
-    * Method to be used to send asynchronous positive acknowledgments.
-    */
-   public void acknowledge(Serializable messageID, Serializable receiverID);
-
-   public void setMessageStore(MessageStore store);
-
-   public MessageStore getMessageStore();
-
-   public void setAcknowledgmentStore(AcknowledgmentStore store);
-
-   public AcknowledgmentStore getAcknowledgmentStore();
+   void close();
 }
-
-

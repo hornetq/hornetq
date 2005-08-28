@@ -1,58 +1,48 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core;
 
 import java.util.Iterator;
-import java.io.Serializable;
 
 /**
  * An interface for Receiver management.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface Distributor
 {
+
+   boolean contains(Receiver receiver);
+
+   Iterator iterator();
+
    /**
-    * Add the receiver to this distributor. If the receiver is already associated with the
-    * distributor, the invocation must be a no-op  - the result of the latest handle() invocation
-    * on that receiver must not be affected.
+    * Add the receiver to this distributor.
     *
-    * @param receiver - the receiver to add.
-    *
-    * @return true if the Distributor did not already contain the specified receiver.
+    * @return true if the distributor did not already contain the specified receiver and the
+    *         receiver was added to the distributor, false otherwise.
     */
-   public boolean add(Receiver receiver);
-
-
-   public Receiver get(Serializable receiverID);
+   boolean add(Receiver receiver);
 
    /**
     * Remove the receiver from this distributor.
     *
-    * @return the removed receiver, or null if no such receiver exists.
+    * @return true if this distributor contained the specified receiver.
     */
-   public Receiver remove(Serializable receiverID);
-
-   public boolean contains(Serializable receiverID);
+   boolean remove(Receiver receiver);
 
    /**
-    * Returns an iterator containing the receiver IDs.
+    * Remove all receivers.
     */
-   public Iterator iterator();
-
-   /**
-    * Remove all receivers from this router.
-    */
-   public void clear();
-
+   void clear();
 
 }
-
-
-
-

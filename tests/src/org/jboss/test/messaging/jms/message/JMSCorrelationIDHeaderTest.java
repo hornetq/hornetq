@@ -12,6 +12,8 @@ import javax.jms.Message;
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JMSCorrelationIDHeaderTest extends MessageTest
 {

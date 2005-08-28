@@ -1,0 +1,259 @@
+/**
+ * JBoss, Home of Professional Open Source
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
+
+package org.jboss.test.messaging.core;
+
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.logging.Logger;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+/**
+ * A simple Receiver implementation that consumes undelivered by storing them internally. Used for
+ * testing. The receiver can be configured to immediately return a "done" delivery (ACKING),
+ * an "active" delivery (NACKING) undelivered, or throw unchecked exceptions.
+ *
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ */
+public class SimpleReceiver implements Receiver
+{
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(SimpleReceiver.class);
+
+   public static final String ACKING = "ACKING";
+   public static final String NACKING = "NACKING";
+   public static final String BROKEN = "BROKEN";
+
+   private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // <Object[2] { Routable, Delivery }>
+   private List messages;
+   private String state;
+   private String name;
+   private String futureState;
+   private int invocationsToFutureStateCount;
+   private Map waitingArea;
+
+   // Constructors --------------------------------------------------
+
+   public SimpleReceiver()
+   {
+      this(ACKING);
+   }
+
+   public SimpleReceiver(String name)
+   {
+      this(name, ACKING);
+   }
+
+   /**
+    *
+    * @param name
+    * @param state:
+    *        ACKING - the receiver returns synchronously a "done" delivery.
+    *        NACKING - the receiver returns an active delivery, and has the option of acking it later
+    *        BROKEN - throws exception
+    */
+   public SimpleReceiver(String name, String state)
+   {
+      checkValid(state);
+
+      this.name = name;
+      this.state = state;
+      messages = new ArrayList();
+      waitingArea = new HashMap();
+      waitingArea.put(INVOCATION_COUNT, new Integer(0));
+   }
+
+   // Receiver implementation ---------------------------------------
+
+   public Delivery handle(DeliveryObserver observer, Routable r)
+   {
+      try
+      {
+         if (r == null)
+         {
+            log.info("Receiver [" + name + "] is rejecting a null message");
+            return null;
+         }
+
+         if (BROKEN.equals(state))
+         {
+            throw new RuntimeException("THIS IS AN EXCEPTION THAT SIMULATES "+
+                                       "THE BEHAVIOUR OF A BROKEN RECEIVER");
+         }
+
+         boolean done = ACKING.equals(state) ? true : false;
+         log.info("Receiver [" + name + "] is " + (done ? "ACKing" : "NACKing") +  " message " + r);
+         Delivery delivery = new SimpleDelivery(observer, r, done);
+         messages.add(new Object[] {r, done ? null : delivery});
+         return delivery;
+      }
+      finally
+      {
+         synchronized(waitingArea)
+         {
+            if (futureState != null && --invocationsToFutureStateCount == 0)
+            {
+               state = futureState;
+               futureState = null;
+            }
+
+            Integer crt = (Integer)waitingArea.get(INVOCATION_COUNT);
+            waitingArea.put(INVOCATION_COUNT, new Integer(crt.intValue() + 1));
+            waitingArea.notifyAll();
+         }
+      }
+   }
+
+   // Public --------------------------------------------------------
+
+   public String getName()
+   {
+      return name;
+   }
+
+   public void clear()
+   {
+      messages.clear();
+   }
+
+   public List getMessages()
+   {
+      List l = new ArrayList();
+      for (Iterator i = messages.iterator(); i.hasNext(); )
+      {
+         Object[] o = (Object[])i.next();
+         l.add(o[0]);
+      }
+      return l;
+   }
+
+   /**
+    * Blocks until handle() is called for the specified number of times.
+    */
+   public void waitForHandleInvocations(int count)
+   {
+      synchronized(waitingArea)
+      {
+         while(true)
+         {
+            Integer invocations = (Integer)waitingArea.get(INVOCATION_COUNT);
+            if (invocations.intValue() == count)
+            {
+               return;
+            }
+            try
+            {
+               waitingArea.wait(1000);
+            }
+            catch(InterruptedException e)
+            {
+               log.debug(e);
+            }
+         }
+      }
+   }
+
+   public void resetInvocationCount()
+   {
+      synchronized(waitingArea)
+      {
+         waitingArea.put(INVOCATION_COUNT, new Integer(0));
+         waitingArea.notifyAll();
+      }
+   }
+
+   public void acknowledge(Routable r) throws Throwable
+   {
+      Object[] touple = null;
+      Delivery d = null;
+      for (Iterator i = messages.iterator(); i.hasNext(); )
+      {
+         Object[] o = (Object[])i.next();
+         if (o[0] == r)
+         {
+            d = (Delivery)o[1];
+            touple = o;
+            break;
+         }
+      }
+
+      if (touple == null)
+      {
+         throw new IllegalStateException("The message " + r + "hasn't been received yet!");
+      }
+
+      if (d == null)
+      {
+         throw new IllegalStateException("The message " + r +" has already been acknowledged!");
+      }
+
+      d.acknowledge();
+      touple[1] = null;
+   }
+
+   public void setState(String state)
+   {
+      checkValid(state);
+      this.state = state;
+   }
+
+   /**
+    * Sets the given state on the receiver, but only after "invocationCount" handle() invocations.
+    * The state changes <i>after</i> the last invocation.
+    */
+   public void setState(String state, int invocationCount)
+   {
+      checkValid(state);
+      futureState = state;
+      invocationsToFutureStateCount = invocationCount;
+   }
+
+   public String getState()
+   {
+      return state;
+   }
+
+   public String toString()
+   {
+      return "Receiver["+ name +"](" + state + ")";
+   }
+
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+
+   private static void checkValid(String state)
+   {
+      if (!ACKING.equals(state) && !NACKING.equals(state) && !BROKEN.equals(state))
+      {
+         throw new IllegalArgumentException("Unknown receiver state: " + state);
+      }
+   }
+
+   // Inner classes -------------------------------------------------
+}

@@ -27,6 +27,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class QueueRequestorTest extends MessagingTestCase
 {
@@ -54,7 +56,7 @@ public class QueueRequestorTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("remoting, aop, security");
+      ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.deployQueue("Queue");

@@ -7,11 +7,7 @@
 package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.distributed.Queue;
-import org.jboss.messaging.core.distributed.DistributedException;
-import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.JChannel;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -28,42 +24,47 @@ public class InvalidQueueTest extends MessagingTestCase
       super(name);
    }
 
-   // Protected -----------------------------------------------------
+//   // Protected -----------------------------------------------------
+//
+//   // Public --------------------------------------------------------
+//
+//   public void testNoRpcServer() throws Exception
+//   {
+//      JChannel channel = new JChannel();
+//      RpcDispatcher dispatcher = new RpcDispatcher(channel, null, null, null);
+//
+//      try
+//      {
+//         new Queue(dispatcher, "doesntmatter");
+//         fail("Should have thrown IllegalStateException");
+//      }
+//      catch(IllegalStateException e)
+//      {
+//         // OK
+//      }
+//   }
+//
+//   public void testConnectWithTheJChannelNotConnected() throws Exception
+//   {
+//      JChannel jChannel = new JChannel();
+//      RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, new RpcServer());
+//      assertFalse(jChannel.isConnected());
+//      Queue peerOne = new Queue(dispatcher, "doesntmatter");
+//
+//      try
+//      {
+//         peerOne.start();
+//         fail("Should have thrown DistributedException");
+//      }
+//      catch(DistributedException e)
+//      {
+//         // Ok
+//      }
+//   }
 
-   // Public --------------------------------------------------------
-
-   public void testNoRpcServer() throws Exception
+   public void testNoop()
    {
-      JChannel channel = new JChannel();
-      RpcDispatcher dispatcher = new RpcDispatcher(channel, null, null, null);
-
-      try
-      {
-         new Queue(dispatcher, "doesntmatter");
-         fail("Should have thrown IllegalStateException");
-      }
-      catch(IllegalStateException e)
-      {
-         // OK
-      }
    }
-
-   public void testConnectWithTheJChannelNotConnected() throws Exception
-   {
-      JChannel jChannel = new JChannel();
-      RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, new RpcServer());
-      assertFalse(jChannel.isConnected());
-      Queue peerOne = new Queue(dispatcher, "doesntmatter");
-
-      try
-      {
-         peerOne.start();
-         fail("Should have thrown DistributedException");
-      }
-      catch(DistributedException e)
-      {
-         // Ok
-      }
-   }
+   
 
 }

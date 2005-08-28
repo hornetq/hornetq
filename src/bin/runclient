@@ -47,7 +47,7 @@ $reldir/../../../aspects/output/lib/jboss-aspect-library.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar \
-org.clester.Main org.jboss.jms.tools.Client
+org.clester.Main org.jboss.test.messaging.tools.client.Client
 
 
 

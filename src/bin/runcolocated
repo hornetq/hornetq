@@ -55,7 +55,7 @@ $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../system/output/lib/jboss-system.jar${SEP}\
 $reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar \
-org.clester.Main org.jboss.jms.tools.Colocated
+org.clester.Main org.jboss.test.messaging.tools.client.Colocated
 
 
 

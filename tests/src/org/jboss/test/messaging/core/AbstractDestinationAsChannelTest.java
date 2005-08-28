@@ -6,8 +6,6 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.core.local.AbstractDestination;
 
 
 /**
@@ -16,54 +14,54 @@ import org.jboss.messaging.core.local.AbstractDestination;
  */
 public class AbstractDestinationAsChannelTest extends TransactionalChannelSupportTest
 {
-   // Attributes ----------------------------------------------------
-
-   protected AbstractDestination abstractDestination;
-
-   // Constructors --------------------------------------------------
-
+//   // Attributes ----------------------------------------------------
+//
+//   protected AbstractDestination abstractDestination;
+//
+//   // Constructors --------------------------------------------------
+//
    public AbstractDestinationAsChannelTest(String name)
    {
       super(name);
    }
 
-   public void setUp() throws Exception
-   {
-      abstractDestination = (AbstractDestination)channel;
-
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      abstractDestination = null;
-      super.tearDown();
-   }
-
-   public void testDeliveryAttemptTriggeredByAddingReceiver()
-   {
-      if (abstractDestination == null) { return; }
-
-      assertTrue(abstractDestination.setSynchronous(false));
-
-      assertTrue(abstractDestination.handle(new RoutableSupport("routableID1", false)));
-      assertTrue(abstractDestination.handle(new RoutableSupport("routableID2", false)));
-      assertTrue(abstractDestination.handle(new RoutableSupport("routableID3", false)));
-
-      assertEquals(3, abstractDestination.getUndelivered().size());
-
-      assertFalse(abstractDestination.deliver());
-      assertEquals(3, abstractDestination.getUndelivered().size());
-
-      // this should trigger asynchronous delivery attempt
-      abstractDestination.add(receiverOne);
-
-      assertFalse(abstractDestination.hasMessages());
-
-      assertEquals(3, receiverOne.getMessages().size());
-      assertTrue(receiverOne.contains("routableID1"));
-      assertTrue(receiverOne.contains("routableID2"));
-      assertTrue(receiverOne.contains("routableID3"));
-   }
+//   public void setUp() throws Exception
+//   {
+//      abstractDestination = (AbstractDestination)channel;
+//
+//      super.setUp();
+//   }
+//
+//   public void tearDown() throws Exception
+//   {
+//      abstractDestination = null;
+//      super.tearDown();
+//   }
+//
+//   public void testDeliveryAttemptTriggeredByAddingReceiver()
+//   {
+//      if (abstractDestination == null) { return; }
+//
+//      assertTrue(abstractDestination.setSynchronous(false));
+//
+//      assertTrue(abstractDestination.handle(new RoutableSupport("routableID1", false)));
+//      assertTrue(abstractDestination.handle(new RoutableSupport("routableID2", false)));
+//      assertTrue(abstractDestination.handle(new RoutableSupport("routableID3", false)));
+//
+//      assertEquals(3, abstractDestination.getUndelivered().size());
+//
+//      assertFalse(abstractDestination.deliver());
+//      assertEquals(3, abstractDestination.getUndelivered().size());
+//
+//      // this should trigger asynchronous delivery attempt
+//      abstractDestination.add(receiverOne);
+//
+//      assertFalse(abstractDestination.hasMessages());
+//
+//      assertEquals(3, receiverOne.getMessages().size());
+//      assertTrue(receiverOne.contains("routableID1"));
+//      assertTrue(receiverOne.contains("routableID2"));
+//      assertTrue(receiverOne.contains("routableID3"));
+//   }
 
 }

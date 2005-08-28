@@ -8,9 +8,7 @@ package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Acknowledgment;
 import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.AcknowledgmentImpl;
 
 import java.io.Serializable;
 
@@ -27,7 +25,8 @@ import java.io.Serializable;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class PipeOutput implements PipeOutputServerDelegate
+// TODO - review core refactoring 2
+public class PipeOutput // implements PipeOutputServerDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -58,13 +57,14 @@ public class PipeOutput implements PipeOutputServerDelegate
       return pipeID;
    }
 
-   public Acknowledgment handle(Routable m)
-   {
-      // Mark the message as being received from a remote endpoint
-      m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
-      boolean result = receiver.handle(m);
-      return new AcknowledgmentImpl(receiver.getReceiverID(), result);
-   }
+   // TODO - review core refactoring 2
+//   public Acknowledgment handle(Routable m)
+//   {
+//      // Mark the message as being received from a remote endpoint
+//      m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+//      boolean result = receiver.handle(m);
+//      return new AcknowledgmentImpl(receiver.getReceiverID(), result);
+//   }
 
    public Serializable getOutputID()
    {
@@ -72,7 +72,9 @@ public class PipeOutput implements PipeOutputServerDelegate
       {
          return null;
       }
-      return receiver.getReceiverID();      
+      // TODO - review core refactoring 2
+//      return receiver.getReceiverID();
+      return null;
    }
 
 
@@ -80,7 +82,9 @@ public class PipeOutput implements PipeOutputServerDelegate
 
    public boolean register(RpcServer rpcServer)
    {
-      return rpcServer.register(pipeID, this);
+      // TODO - review core refactoring 2
+//      return rpcServer.register(pipeID, this);
+      return false;
    }
 
    // TODO unregister myself from the rpcServer when I am decomissioned.

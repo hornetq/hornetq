@@ -96,7 +96,15 @@
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.naming.classpath"/>
       <path refid="jboss.server.classpath"/>
+
+      <!-- these are only required to compile test support -->
+      <path refid="jboss.jca.classpath"/>
+      <path location="../src/resources/hsqldb.jar"/>
+
    </path>
+
+
+
 
    <!-- ===== -->
    <!-- Tasks -->
@@ -114,6 +122,7 @@
    <path id="test.classpath">
       <path refid="library.classpath"/>
       <path refid="dependentmodule.classpath"/>
+      <pathelement path="${module.root}/etc"/>
       <pathelement path="${module.root}/../src/etc"/>
    </path>
 
@@ -202,7 +211,11 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
+
                <include name="**/messaging/**/*Test.class"/>
+               <!--
+               <include name="**/messaging/core/local/*Test.class"/>
+               -->
                <exclude name="**/messaging/**/performance/**"/>
             </fileset>
          </batchtest>

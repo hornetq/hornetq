@@ -15,12 +15,14 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.core.util.transaction.TransactionManagerImpl;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.tx.TransactionManagerImpl;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ *
+ * $Id$
  */
 public class TransactedSessionTest extends MessagingTestCase
 {
@@ -48,7 +50,7 @@ public class TransactedSessionTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("transaction, remoting, aop, security");
+      ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       

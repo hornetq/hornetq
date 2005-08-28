@@ -21,12 +21,12 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Contains the plumbing of a Routable.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class RoutableSupport implements Routable, Externalizable
+abstract class RoutableSupport implements Routable, Externalizable
 {
 
    // Constants -----------------------------------------------------

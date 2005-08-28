@@ -14,7 +14,6 @@ import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
@@ -94,7 +93,7 @@ public class SecurityTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("remoting, aop, security");
+      ServerManagement.startInVMServer("all");
       
       setupDestinations();
       
@@ -144,7 +143,7 @@ public class SecurityTest extends MessagingTestCase
       
       try
       {
-         MessageConsumer consumer = sess.createConsumer(dest);
+         sess.createConsumer(dest);
          return true;
       }
       catch (JMSSecurityException e)
@@ -162,7 +161,7 @@ public class SecurityTest extends MessagingTestCase
       boolean namedSucceeded = true;
       try
       {
-         MessageProducer producer = sess.createProducer(dest);         
+         sess.createProducer(dest);         
       }
       catch (JMSSecurityException e)
       {

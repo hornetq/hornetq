@@ -15,7 +15,7 @@ import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.messaging.tools.jndi.JNDIUtil;
+import org.jboss.jms.util.JNDIUtil;
 import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.DomainDefinition;
 import org.jboss.aop.AspectManager;
@@ -25,9 +25,9 @@ import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.AcknowledgmentStore;
-import org.jboss.messaging.core.util.MessageStoreImpl;
-import org.jboss.messaging.core.util.InMemoryAcknowledgmentStore;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
 import org.jboss.logging.Logger;
 import org.w3c.dom.Element;
 
@@ -110,10 +110,10 @@ public class ServerPeer
 
    protected PooledExecutor threadPool;
 
-   protected MessageStore messageStore;
-   protected AcknowledgmentStore acknowledgmentStore;
+   protected MessageStore ms;
 
-   protected TransactionManager transactionManager;
+   protected TransactionManager tm;
+   protected PersistenceManager pm;
 
    protected int connFactoryIDSequence;
 
@@ -152,12 +152,16 @@ public class ServerPeer
       log.debug(this + " starting");
 
       mbeanServer = findMBeanServer();
-      transactionManager = findTransactionManager();
+      tm = findTransactionManager();
+
+      // TODO: this should be configurable
+      pm = new HSQLDBPersistenceManager();
+
+      // TODO: is should be possible to share this with other peers
+      ms = new PersistentMessageStore(serverPeerID, pm, tm);
 
       clientManager = new ClientManager(this);
       destinationManager = new DestinationManagerImpl(this);
-      messageStore = new MessageStoreImpl("MessageStore");
-      acknowledgmentStore = new InMemoryAcknowledgmentStore("AcknowledgmentStore");
       threadPool = new PooledExecutor();
 
       initializeRemoting();
@@ -344,18 +348,19 @@ public class ServerPeer
 
    public MessageStore getMessageStore()
    {
-      return messageStore;
-   }
-
-   public AcknowledgmentStore getAcknowledgmentStore()
-   {
-      return acknowledgmentStore;
+      return ms;
    }
 
    public TransactionManager getTransactionManager()
    {
-      return transactionManager;
+      return tm;
    }
+
+   public PersistenceManager getPersistenceManager()
+   {
+      return pm;
+   }
+
 
    public String toString()
    {

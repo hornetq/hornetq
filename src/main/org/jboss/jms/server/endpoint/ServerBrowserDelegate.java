@@ -16,24 +16,26 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Routable;
 
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class ServerBrowserDelegate implements BrowserDelegate
 {
    private static final Logger log = Logger.getLogger(ServerBrowserDelegate.class);
 
-   private AbstractDestination destination;
-   private Iterator iterator;        
+   private Channel destination;
+   private Iterator iterator;
    private String messageSelector;
    private String browserID;
 	
-   ServerBrowserDelegate(String browserID,
-                         AbstractDestination destination,
-                         String messageSelector)
+   ServerBrowserDelegate(String browserID, Channel destination, String messageSelector)
       throws JMSException
    {     
       this.browserID = browserID;
@@ -70,8 +72,9 @@ public class ServerBrowserDelegate implements BrowserDelegate
       while (i < maxMessages)
       {
          if (iterator.hasNext())
-         {				
-            messages.add(iterator.next());
+         {
+            Message m = (Message)((Routable)iterator.next()).getMessage();
+            messages.add(m);
             i++;
          }
          else break;

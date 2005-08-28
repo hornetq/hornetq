@@ -67,7 +67,7 @@ public class MessageBodyTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer();
+      ServerManagement.startInVMServer("all");
       ServerManagement.deployQueue("Queue");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());

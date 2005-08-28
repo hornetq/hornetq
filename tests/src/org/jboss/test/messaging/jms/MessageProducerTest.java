@@ -8,21 +8,24 @@ package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.DeliveryMode;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.MessageImpl;
+import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class MessageProducerTest extends MessagingTestCase
 {
@@ -58,7 +61,7 @@ public class MessageProducerTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("remoting, aop, security");
+      ServerManagement.startInVMServer("all");
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployTopic("Topic2");
       ServerManagement.deployQueue("Queue");
@@ -96,7 +99,18 @@ public class MessageProducerTest extends MessagingTestCase
    
    }
 
-   
+
+   public void testSimpleSend() throws Exception
+   {
+      consumerConnection.start();
+      TextMessage m = producerSession.createTextMessage("test");
+      queueProducer.send(m);
+      TextMessage r = (TextMessage)queueConsumer.receive();
+      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+      assertEquals("test", r.getText());
+   }
+
+
    /* Test sending via anonymous producer */
    public void testSendDestination() throws Exception
    {
@@ -124,7 +138,6 @@ public class MessageProducerTest extends MessagingTestCase
       }, "Producer").start();
 
       Message m2 = topicConsumer2.receive(3000);
-      assertNotNull(m2);
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
       
       log.debug("ending test");
@@ -138,7 +151,7 @@ public class MessageProducerTest extends MessagingTestCase
 
       consumerConnection.start();
 
-      Message m = new MessageImpl();
+      Message m = new SimpleJMSMessage();
       queueProducer.send(m);
 
       Message rec = queueConsumer.receive();

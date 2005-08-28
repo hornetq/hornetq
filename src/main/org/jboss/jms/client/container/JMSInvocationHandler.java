@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.aop.MethodInfo;
+import org.jboss.aop.MethodJoinPoint;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
@@ -79,7 +79,7 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
 
       long hash = MethodHashing.calculateHash(method);
 
-      MethodInfo info = new MethodInfo();
+      MethodJoinPoint info = new MethodJoinPoint();
       info.hash = hash;
       info.advisedMethod = method;
       info.unadvisedMethod = method;

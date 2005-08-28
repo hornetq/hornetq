@@ -1,35 +1,38 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
 
 /**
- * A MessageStoreImpl is a reliable repository for messages. It physically stores reliable Messages
- * but it can also generate MessageReferences for unreliable messages, while keeping the original
- * Messages in memory.
+ * A message store is a transactional and reliable repository for messages. It physically stores
+ * reliable messages and generates references.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface MessageStore
 {
-   public Serializable getStoreID();
+   Serializable getStoreID();
+
+   boolean isReliable();
 
    /**
-    * Reliabily stores the Message. However, if the message is unreliable (does not need reliable
-    * storing), it caches in memory and returns a MessageReference nonetheless.
-    *
-    * @return the MessageReference.
+    * Store the message reliabily. However, if the message is unreliable (does not need
+    * recoverabilitity), it caches the message in memory and returns a reference.
     *
     * @exception Throwable - thrown in case of storage failure.
     */
-   public MessageReference store(Message m) throws Throwable;
+   MessageReference reference(Routable r) throws Throwable;
 
-   public Message retrieve(MessageReference r);
+   MessageReference getReference(Serializable messageID);
 
 }

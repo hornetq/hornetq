@@ -7,10 +7,7 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.AcknowledgmentImpl;
-import org.jboss.messaging.core.util.StateImpl;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.MultipleOutputChannelSupport;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
@@ -52,7 +49,8 @@ import java.util.HashSet;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Replicator extends MultipleOutputChannelSupport
+// TODO - review core refactoring 2
+public class Replicator // extends MultipleOutputChannelSupport
 {
    // Constants -----------------------------------------------------
 
@@ -90,17 +88,18 @@ public class Replicator extends MultipleOutputChannelSupport
     */
    public Replicator(RpcDispatcher dispatcher, Serializable replicatorID)
    {
-      Object serverObject = dispatcher.getServerObject();
-      if (!(serverObject instanceof RpcServer))
-      {
-         throw new IllegalStateException("The RpcDispatcher does not have an RpcServer installed");
-      }
-      rpcServer = (RpcServer)serverObject;
-      this.dispatcher = dispatcher;
-      this.replicatorID = replicatorID;
-      // I don't need the default localAcknoweldgmentStore. GC it
-      localAcknowledgmentStore = null;
-      started = false;
+      // TODO - review core refactoring 2
+//      Object serverObject = dispatcher.getServerObject();
+//      if (!(serverObject instanceof RpcServer))
+//      {
+//         throw new IllegalStateException("The RpcDispatcher does not have an RpcServer installed");
+//      }
+//      rpcServer = (RpcServer)serverObject;
+//      this.dispatcher = dispatcher;
+//      this.replicatorID = replicatorID;
+//      // I don't need the default localAcknoweldgmentStore. GC it
+//      localAcknowledgmentStore = null;
+//      started = false;
    }
 
    // Channel implementation ----------------------------------------
@@ -142,81 +141,83 @@ public class Replicator extends MultipleOutputChannelSupport
 
    public boolean handleNoTx(Routable r)
    {
-      lock();
-
-      try
-      {
-         if (!started)
-         {
-            log.warn("Cannot handle, replicator peer not started");
-            return false;
-         }
-
-         r.putHeader(Routable.REPLICATOR_ID, replicatorID);
-         r.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
-
-         Set view = topology.getView();
-         AcknowledgmentCollector.Ticket ticket = null;
-
-         collector.lock();
-         
-         try
-         {
-            try
-            {
-               dispatcher.getChannel().send(null, null, r);
-               if (log.isTraceEnabled()) { log.trace("sent " + r); }
-            }
-            catch(Throwable t)
-            {
-               log.error("Failed to send the message to the channel", t);
-               return false;
-            }
-
-            if (isSynchronous())
-            {
-               // optimization for a more efficient synchronous handling
-               ticket = collector.addNACK(r, view);
-            }
-            else
-            {
-               // store the messages and the NACKs in a reliable way
-               Set nacks = new HashSet();
-               for(Iterator i = view.iterator(); i.hasNext(); )
-               {
-                  // TODO if message storing fails for one output peer, the others remain in the
-                  //      store as garbage
-                  nacks.add(new AcknowledgmentImpl((Serializable)i.next(), false));
-               }
-               if (!updateAcknowledgments(r, new StateImpl(nacks)))
-               {
-                  return false;
-               }
-            }
-         }
-         finally
-         {
-            collector.unlock();
-         }
-
-         if (ticket == null)
-         {
-            // asynchronous handling
-            return true;
-         }
-
-         // only for synchronous handling
-         boolean synchronouslyAcked = ticket.waitForAcknowledgments(30000);
-         if (!synchronouslyAcked)
-         {
-            collector.clear();
-         }
-         return synchronouslyAcked;
-      }
-      finally
-      {
-         unlock();
-      }
+      // TODO - review core refactoring 2
+//      lock();
+//
+//      try
+//      {
+//         if (!started)
+//         {
+//            log.warn("Cannot handle, replicator peer not started");
+//            return false;
+//         }
+//
+//         r.putHeader(Routable.REPLICATOR_ID, replicatorID);
+//         r.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
+//
+//         Set view = topology.getView();
+//         AcknowledgmentCollector.Ticket ticket = null;
+//
+//         collector.lock();
+//
+//         try
+//         {
+//            try
+//            {
+//               dispatcher.getChannel().send(null, null, r);
+//               if (log.isTraceEnabled()) { log.trace("sent " + r); }
+//            }
+//            catch(Throwable t)
+//            {
+//               log.error("Failed to send the message to the channel", t);
+//               return false;
+//            }
+//
+//            if (isSynchronous())
+//            {
+//               // optimization for a more efficient synchronous handling
+//               ticket = collector.addNACK(r, view);
+//            }
+//            else
+//            {
+//               // store the messages and the NACKs in a reliable way
+//               Set nacks = new HashSet();
+//               for(Iterator i = view.iterator(); i.hasNext(); )
+//               {
+//                  // TODO if message storing fails for one output peer, the others remain in the
+//                  //      store as garbage
+//                  nacks.add(new AcknowledgmentImpl((Serializable)i.next(), false));
+//               }
+//               if (!updateAcknowledgments(r, new StateImpl(nacks)))
+//               {
+//                  return false;
+//               }
+//            }
+//         }
+//         finally
+//         {
+//            collector.unlock();
+//         }
+//
+//         if (ticket == null)
+//         {
+//            // asynchronous handling
+//            return true;
+//         }
+//
+//         // only for synchronous handling
+//         boolean synchronouslyAcked = ticket.waitForAcknowledgments(30000);
+//         if (!synchronouslyAcked)
+//         {
+//            collector.clear();
+//         }
+//         return synchronouslyAcked;
+//      }
+//      finally
+//      {
+//         unlock();
+//      }
+      return false;
    }
 
    /**
@@ -306,11 +307,12 @@ public class Replicator extends MultipleOutputChannelSupport
       }
       rpcServer.register(replicatorID, topology);
 
-      if (channelListener == null)
-      {
-         channelListener = new ChannelListenerImpl();
-         dispatcher.addChannelListener(channelListener);
-      }
+       // TODO - review core refactoring 2
+//      if (channelListener == null)
+//      {
+//         channelListener = new ChannelListenerImpl();
+//         dispatcher.addChannelListener(channelListener);
+//      }
       started = true;
    }
 

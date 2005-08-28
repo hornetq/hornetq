@@ -6,11 +6,10 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import java.io.Serializable;
 
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
-import javax.jms.Message;
+
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.message.JBossMessage;
@@ -19,10 +18,20 @@ import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.Message;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 
 
@@ -49,7 +58,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    // Attributes ----------------------------------------------------
 
    protected String id;
-   protected AbstractDestination destination;
+   protected Channel destination;
    protected ServerSessionDelegate sessionEndpoint;
    protected InvokerCallbackHandler callbackHandler;
    protected boolean noLocal;
@@ -57,11 +66,14 @@ public class ServerConsumerDelegate implements Receiver, Closeable
    protected DurableSubscriptionHolder subscription;
 	
    protected PooledExecutor threadPool;
-   
+
+   // <messageID-Delivery>
+   private Map deliveries;
+
 
    // Constructors --------------------------------------------------
 
-   public ServerConsumerDelegate(String id, AbstractDestination destination,
+   public ServerConsumerDelegate(String id, Channel destination,
                                  InvokerCallbackHandler callbackHandler,
                                  ServerSessionDelegate sessionEndpoint,
                                  String selector,
@@ -78,80 +90,75 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       this.noLocal = noLocal;
       if (selector != null)
       {
-         if (log.isTraceEnabled()) log.trace("Creating selector:" + selector);
+         if (log.isTraceEnabled()) log.trace("creating selector:" + selector);
          this.messageSelector = new Selector(selector);
-         if (log.isTraceEnabled()) log.trace("Created selector");
+         if (log.isTraceEnabled()) log.trace("created selector");
       }
       this.subscription = subscription;
+      deliveries = new HashMap();
    }
 
    // Receiver implementation ---------------------------------------
 
-   public Serializable getReceiverID()
-   {
-      return id;
-   }
-
-   public boolean handle(Routable r)
+   public Delivery handle(DeliveryObserver observer, Routable routable)
    {
       // deliver the message on a different thread than the core thread that brought it here
-      if (log.isTraceEnabled()) log.trace("handle ServerConsumerDelegate:" + this.id);
+      if (log.isTraceEnabled()) log.trace(this.id + " received " + routable);
+
+      Delivery delivery = null;
+
       try
       {
-         boolean sendMessage = this.accept(r);
-         
-         if (log.isTraceEnabled()) log.trace("Sending message?:" + sendMessage);
-         
-         if (sendMessage)
+         Message message = routable.getMessage();
+         if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
+
+         boolean accept = this.accept(message);
+
+         if (!accept)
          {
-            threadPool.execute(new Delivery(callbackHandler, r, log));
+            if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
+            return null;
          }
-  
+
+         delivery = new SimpleDelivery(observer, routable);
+         deliveries.put(routable.getMessageID(), delivery);
+
+         if (log.isTraceEnabled()) { log.trace("queueing the message " + message + " for delivery"); }
+         threadPool.execute(new DeliveryRunnable(callbackHandler, message, log));
       }
       catch(InterruptedException e)
       {
          log.warn("Interrupted asynchronous delivery", e);
       }
 
-      // always NACK the message; it will be asynchronously ACKED later
-      return false;
+      return delivery;
    }
    
    
    public boolean accept(Routable r)
    {
       boolean accept = true;
-      if (log.isTraceEnabled()) { log.trace("Should message be accepted? Is there a message selector? " + (messageSelector != null)); }
-            
       if (messageSelector != null)
       {
          accept = messageSelector.accept(r);
+
          if (log.isTraceEnabled())
          {
-            log.trace("Result of accept:" + accept);
-            try
-            {
-               String prop = ((Message)r).getStringProperty("TEST");
-               log.trace("TEST property is:" + prop);
-            }
-            catch (Exception e)
-            {              
-            }
+            log.trace("message selector accepts the message");
          }
       }
-      if (log.isTraceEnabled()) log.trace("noLocal is " + this.noLocal);
+
       if (accept)
       {
          if (noLocal)
          {
-            String conId =
-               ((JBossMessage)r).getConnectionID();
-            if (log.isTraceEnabled()) { log.trace("Message connection id is:" + conId); }
+            String conId = ((JBossMessage)r).getConnectionID();
+            if (log.isTraceEnabled()) { log.trace("message connection id: " + conId); }
             if (conId != null)
             {
-               if (log.isTraceEnabled()) { log.trace("Current connection connection id is:" + sessionEndpoint.connectionEndpoint.connectionID); }
+               if (log.isTraceEnabled()) { log.trace("current connection connection id: " + sessionEndpoint.connectionEndpoint.connectionID); }
                accept = !conId.equals(sessionEndpoint.connectionEndpoint.connectionID);
-               if (log.isTraceEnabled()) { log.trace("accepting?" + accept); }
+               if (log.isTraceEnabled()) { log.trace("accepting? " + accept); }
             }
          }
       }
@@ -163,11 +170,12 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
    public void closing() throws JMSException
    {
+      if (log.isTraceEnabled()) { log.trace(this.id + " closing"); }
    }
 
    public void close() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("Close() on ServerConsumerDelegate:" + this.id);
+      if (log.isTraceEnabled()) { log.trace(this.id + " close"); }
 		this.setStarted(false);
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
       this.sessionEndpoint.consumers.remove(id);
@@ -176,30 +184,87 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
    // Public --------------------------------------------------------
 
-   void setStarted(boolean s)
+   void setStarted(boolean start)
    {     
-      if (s)
+      if (start)
       {
-         if (log.isTraceEnabled()) log.trace("Attempting to add receiver");
+         if (log.isTraceEnabled()) log.trace("attempting to add receiver");
+
          boolean added = destination.add(this);
-         if (log.isTraceEnabled()) log.trace("Added receiver:" + this.id + ", success=" + added);
+         if (log.isTraceEnabled()) log.trace("added receiver: " + this.id + ", success=" + added);
       }
       else
       {
-         if (log.isTraceEnabled()) log.trace("Attempting to remove receiver from destination:" + destination);
-         Receiver removed = destination.remove(id);
-         if (log.isTraceEnabled()) log.trace("Removed receiver:" + removed);
+         if (log.isTraceEnabled()) log.trace("attempting to remove receiver from destination: " + destination);
+
+         boolean removed = destination.remove(this);
+         if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");
+
+         for(Iterator i = deliveries.keySet().iterator(); i.hasNext(); )
+         {
+            Object messageID = i.next();
+            Delivery d = (Delivery)deliveries.get(messageID);
+            try
+            {
+               d.cancel();
+            }
+            catch(Throwable t)
+            {
+               log.error("Cannot cancel delivery: " + d, t);
+            }
+            i.remove();
+         }
       }
    }
    
    void acknowledge(String messageID)
    {
-      //We acknowledge on the destination itself
-      destination.acknowledge(messageID, this.getReceiverID());
+      try
+      {
+         Delivery d = (Delivery)deliveries.get(messageID);
+         d.acknowledge();
+         deliveries.remove(messageID);
+      }
+      catch(Throwable t)
+      {
+         log.error("Message " + messageID + "cannot be acknowledged to the source");
+      }
    }
+
 
    // Package protected ---------------------------------------------
    
+   void redeliver() throws JMSException
+   {
+      // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
+      // TODO and some old deliveries may be lost
+
+      List old = new ArrayList();
+      synchronized(deliveries)
+      {
+
+         for(Iterator i = deliveries.keySet().iterator(); i.hasNext();)
+         {
+            old.add(deliveries.get(i.next()));
+            i.remove();
+         }
+      }
+
+      for(Iterator i = old.iterator(); i.hasNext();)
+      {
+         try
+         {
+            Delivery d = (Delivery)i.next();
+            d.redeliver(this);
+         }
+         catch(Throwable t)
+         {
+            String msg = "Failed to initiate redelivery";
+            log.error(msg, t);
+            throw new JMSException(msg);
+         }
+      }
+   }
 
    // Protected -----------------------------------------------------
 

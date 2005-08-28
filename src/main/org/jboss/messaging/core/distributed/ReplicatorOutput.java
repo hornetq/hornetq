@@ -130,31 +130,32 @@ public class ReplicatorOutput
             r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
             Serializable receiverID = null;
             boolean acked = false;
-            try
-            {
-               acked = receiver.handle(r);
-               receiverID = receiver.getReceiverID();
-            }
-            catch(Throwable t)
-            {
-               log.warn(this + "'s receiver is broken", t);
-               acked = false;
-            }
-            MessageAcknowledgment ack = new MessageAcknowledgment(jgroupsMessage.getSrc(),
-                                                                  inputPeerID, receiverID,
-                                                                  r.getMessageID(), acked);
-            while(true)
-            {
-               try
-               {
-                  acknowledgmentQueue.put(ack);
-                  break;
-               }
-               catch(InterruptedException e)
-               {
-                  log.warn("Thread interrupted while trying to put an acknowledgment in queue", e);
-               }
-            }
+            // TODO - review core refactoring 2
+//            try
+//            {
+//               acked = receiver.handle(r);
+//               receiverID = receiver.getReceiverID();
+//            }
+//            catch(Throwable t)
+//            {
+//               log.warn(this + "'s receiver is broken", t);
+//               acked = false;
+//            }
+//            MessageAcknowledgment ack = new MessageAcknowledgment(jgroupsMessage.getSrc(),
+//                                                                  inputPeerID, receiverID,
+//                                                                  r.getMessageID(), acked);
+//            while(true)
+//            {
+//               try
+//               {
+//                  acknowledgmentQueue.put(ack);
+//                  break;
+//               }
+//               catch(InterruptedException e)
+//               {
+//                  log.warn("Thread interrupted while trying to put an acknowledgment in queue", e);
+//               }
+//            }
             // do not forward the message to the delegate listener
             return;
          }
@@ -191,28 +192,29 @@ public class ReplicatorOutput
 
    public boolean handle(Routable m)
    {
-
-      // try to acquire the lock and if I am not able, immediately NACK. This is to avoid
-      // distributed dead-lock in a race condition with the acknowledgment method.
-      if (!lock(0))
-      {
-         return false;
-      }
-      try
-      {
-         // Mark the message as being received from a remote endpoint
-         m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
-         return receiver.handle(m);
-      }
-      catch(Throwable t)
-      {
-         log.error("The receiver connected to " + this + " is unable to handle the message: " + t);
-         return false;
-      }
-      finally
-      {
-         unlock();
-      }
+        // TODO - review core refactoring 2
+//      // try to acquire the lock and if I am not able, immediately NACK. This is to avoid
+//      // distributed dead-lock in a race condition with the acknowledgment method.
+//      if (!lock(0))
+//      {
+//         return false;
+//      }
+//      try
+//      {
+//         // Mark the message as being received from a remote endpoint
+//         m.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+//         return receiver.handle(m);
+//      }
+//      catch(Throwable t)
+//      {
+//         log.error("The receiver connected to " + this + " is unable to handle the message: " + t);
+//         return false;
+//      }
+//      finally
+//      {
+//         unlock();
+//      }
+      return false;
    }
 
 

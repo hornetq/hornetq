@@ -112,23 +112,17 @@
     <!-- Modules -->
     <!-- ======= -->
 
-    <!-- The combined dependent module classpath -->
-    <path id="dependentmodule.classpath">
-      <path refid="jboss.common.classpath"/>
-      <path refid="jboss.j2ee.classpath"/>
-      <path refid="jboss.remoting.classpath"/>
-      <path refid="jboss.aop.classpath"/>
-      <path refid="jboss.aspects.classpath"/>
-      <path refid="jboss.j2se.classpath"/>
-      <path refid="jboss.system.classpath"/>
-
-       <!-- these are only required to compile test support -->
-       <path refid="jboss.server.classpath"/>
-       <path refid="jboss.jca.classpath"/>
-       <path refid="jboss.transaction.classpath"/>
-       <path location="./src/resources/hsqldb.jar"/>
-
-    </path>
+     <!-- The combined dependent module classpath -->
+     <path id="dependentmodule.classpath">
+        <path refid="jboss.common.classpath"/>
+        <path refid="jboss.j2ee.classpath"/>
+        <path refid="jboss.remoting.classpath"/>
+        <path refid="jboss.aop.classpath"/>
+        <path refid="jboss.aspects.classpath"/>
+        <path refid="jboss.j2se.classpath"/>
+        <path refid="jboss.system.classpath"/>
+        <path refid="jboss.security.classpath"/>
+     </path>
 
     <!-- ===== -->
     <!-- Tasks -->

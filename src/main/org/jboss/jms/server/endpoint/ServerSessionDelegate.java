@@ -21,9 +21,8 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.jms.Queue;
-import javax.jms.Topic;
 import javax.jms.InvalidDestinationException;
+import javax.transaction.TransactionManager;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
@@ -48,10 +47,11 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.AbstractDestination;
-import org.jboss.messaging.core.local.LocalQueue;
-import org.jboss.messaging.core.local.LocalTopic;
 import org.jboss.messaging.core.util.Lockable;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.local.Queue;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
@@ -88,6 +88,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    private InvokerCallbackHandler callbackHandler;
 
+
    // Constructors --------------------------------------------------
 
    public ServerSessionDelegate(String sessionID, ServerConnectionDelegate connectionEndpoint,
@@ -111,7 +112,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      AbstractDestination destination = null;
+      Channel destination = null;
      
       if (jmsDestination != null)
       {
@@ -196,7 +197,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
     
-      AbstractDestination destination = dm.getCoreDestination(jmsDestination);
+      Channel destination = dm.getCoreDestination(jmsDestination);
      
       // create the MessageConsumer dynamic proxy
 
@@ -275,8 +276,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
             if (log.isTraceEnabled()) { log.trace("Selector has changed? " + selectorChanged); }
             
             //Has the Topic changed?               
-            boolean topicChanged =
-               (!subscription.getTopic().getReceiverID().equals(destination.getReceiverID()));
+            boolean topicChanged = subscription.getTopic() != destination;
             
             if (log.isTraceEnabled()) { log.trace("Topic has changed? " + topicChanged); }
            
@@ -292,23 +292,27 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                   throw new InvalidDestinationException("Cannot find durable subscription with name " +
                      subscriptionName + " to unsubscribe");
                }
-               subscription.getTopic().remove(subscription.getQueue().getReceiverID());
+
+               subscription.getTopic().remove(subscription.getQueue());
                subscription = null;
             }
          }
          
          if (subscription == null)
          {
-            if (!(destination instanceof LocalTopic))
+            if (!(destination instanceof org.jboss.messaging.core.local.Topic))
             {
-               throw new JMSException("Cannot only create a durable subscription on a topic");
+               throw new JMSException("Can only create a durable subscription on a topic");
             }
             
-            if (log.isTraceEnabled()) { log.trace("Creating new subscription"); }
+            if (log.isTraceEnabled()) { log.trace("Creating new durable subscription on topic " + destination); }
             
-            LocalTopic topic = (LocalTopic)destination;
+            Topic topic = (Topic)destination;
+
+            MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
+            TransactionManager tm = connectionEndpoint.getServerPeer().getTransactionManager();
             subscription = new DurableSubscriptionHolder(subscriptionName, topic,
-                                                         new LocalQueue(consumerID),
+                                                         new Queue(consumerID, ms, tm),
                                                          selector);
             clientManager.addDurableSubscription(clientID, subscriptionName, subscription);
             //start it
@@ -375,17 +379,17 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       throw new JBossJMSException("We don't create messages on the server");
    }
 
-   public Queue createQueue(String name) throws JMSException
+   public javax.jms.Queue createQueue(String name) throws JMSException
    {
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      AbstractDestination coreDestination = dm.getCoreDestination(true, name);
+      Channel coreDestination = dm.getCoreDestination(true, name);
 
       if (coreDestination == null)
       {
          throw new JMSException("There is no administratively defined queue with name:" + name);
       }
 
-      if (coreDestination instanceof LocalTopic)
+      if (coreDestination instanceof Topic)
       {
          throw new JMSException("A topic with the same name exists already");
       }
@@ -393,17 +397,17 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return new JBossQueue(name);
    }
 
-   public Topic createTopic(String name) throws JMSException
+   public javax.jms.Topic createTopic(String name) throws JMSException
    {
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      AbstractDestination coreDestination = dm.getCoreDestination(false, name);
+      Channel coreDestination = dm.getCoreDestination(false, name);
 
       if (coreDestination == null)
       {
          throw new JMSException("There is no administratively defined topic with name:" + name);
       }
 
-      if (coreDestination instanceof LocalQueue)
+      if (coreDestination instanceof Queue)
       {
          throw new JMSException("A queue with the same name exists already");
       }
@@ -453,7 +457,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	   // look-up destination
 	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
 	  
-      AbstractDestination destination = dm.getCoreDestination(jmsDestination);
+      Channel destination = dm.getCoreDestination(jmsDestination);
 	
 	   BrowserDelegate bd = null;
 	   Serializable oid = serverPeer.getBrowserAdvisor().getName();
@@ -516,12 +520,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	{
 		Iterator iter = this.consumers.values().iterator();
 		while (iter.hasNext())
-		{			
+		{
+          // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
 			ServerConsumerDelegate scd = (ServerConsumerDelegate)iter.next();
-			
-			//TODO we really need to be able to tell the destination to redeliver messages only for
-			//a specific receiver
-			scd.destination.deliver();
+         scd.redeliver();
 		}
 	}
 	
@@ -580,11 +582,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
       
-      //It is illegal to delete a temporary destination if there any active consumers
-      //on it
-      AbstractDestination abDest = serverPeer.getDestinationManager().getCoreDestination(dest);
+      //It is illegal to delete a temporary destination if there any active consumers on it
+      Channel c = serverPeer.getDestinationManager().getCoreDestination(dest);
       
-      if (abDest == null)
+      if (c == null)
       {
          throw new InvalidDestinationException("Destination:" + dest + " does not exist");         
       }
@@ -593,7 +594,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       while (iter.hasNext())
       {
          ServerConsumerDelegate scd = (ServerConsumerDelegate)iter.next();
-         if (abDest.contains(scd.getReceiverID()))
+         if (c.contains(scd))
          {
             throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
          }
@@ -617,7 +618,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          throw new InvalidDestinationException("Cannot find durable subscription with name " +
             subscriptionName + " to unsubscribe");
       }
-      subscription.getTopic().remove(subscription.getQueue().getReceiverID());
+      subscription.getTopic().remove(subscription.getQueue());
       
    }
 

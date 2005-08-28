@@ -8,6 +8,7 @@ package org.jboss.jms.server.endpoint;
 
 import org.jboss.logging.Logger;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.server.ServerPeer;
 
 import javax.jms.JMSException;
 import javax.jms.Destination;
@@ -65,8 +66,6 @@ public class ServerProducerDelegate implements ProducerDelegate
       // TODO destination, deliveryMode, priority, timeToLive are ignored.
       // TODO See "Delegate Implementation" thread http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
 
-      if (log.isTraceEnabled()) { log.trace("sending message " + m + " to the core"); }
-
       sessionEndpoint.connectionEndpoint.sendMessage(m);
    }
 
@@ -100,6 +99,16 @@ public class ServerProducerDelegate implements ProducerDelegate
    }
 
    // Public --------------------------------------------------------
+
+   public ServerSessionDelegate getSessionEndpoint()
+   {
+      return sessionEndpoint;
+   }
+
+   public ServerPeer getServerPeer()
+   {
+      return sessionEndpoint.getConnectionEndpoint().getServerPeer();
+   }
 
    // Package protected ---------------------------------------------
 

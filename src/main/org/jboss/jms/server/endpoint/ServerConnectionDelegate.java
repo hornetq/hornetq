@@ -39,8 +39,10 @@ import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TxInfo;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.AbstractDestination;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -367,37 +369,44 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          throw new IllegalStateException("JMSDestination header not set!");
       }
-    
-      AbstractDestination coreDestination = null;
+
+      Channel coreDestination = null;
 
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       coreDestination = dm.getCoreDestination(jmsDestination);
-      
+
       if (coreDestination == null)
       {
          throw new JMSException("Destination " + jmsDestination.getName() + " does not exist");
       }
-      
+
       //This allows the no-local consumers to filter out the messages that come from the
       //same connection
       //TODO Do we want to set this for ALL messages. Possibly an optimisation is possible here
       ((JBossMessage)m).setConnectionID(connectionID);
-      
-      boolean acked = coreDestination.handle((Routable)m);
-      if (log.isTraceEnabled()) log.trace("Acked:" + acked);
 
-      if (coreDestination.isTransactional() && isActiveTransaction())
+      Routable r = (Routable)m;
+      MessageReference ref = null;
+
+      try
       {
-         // for a transacted invocation, the return value is irrelevant
-         if (log.isTraceEnabled()) log.trace("Transacted so returning");
-         return;
+         // Reference (cache) the message
+         // TODO - this should be done in an interceptor
+
+         ref = serverPeer.getMessageStore().reference(r);
+      }
+      catch(Throwable t)
+      {
+         throw new JBossJMSException("Failed to cache the message", t);
       }
       
-      if (!acked)
+      if (log.isTraceEnabled()) { log.trace("sending " + ref + " to the core"); }
+
+      Delivery d = coreDestination.handle(null, ref);
+
+      // The core destination is supposed to acknowledge immediately. If not, there's a problem.
+      if (d == null || !d.isDone())
       {
-         // under normal circumstances, this shouldn't happen, since the destination
-         // is supposed to hold the message for redelivery
-         
          String msg = "The message was not acknowledged by destination " + coreDestination;
          log.error(msg);
          throw new JBossJMSException(msg);
@@ -447,25 +456,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          started = s;
       }
    }
-   
-   private boolean isActiveTransaction()
-   {
-      TransactionManager tm = serverPeer.getTransactionManager();
-      if (tm == null)
-      {
-         return false;
-      }
-      try
-      {
-         return tm.getTransaction() != null;
-      }
-      catch(Exception e)
-      {
-         log.debug("failed to access transaction manager", e);
-         return false;
-      }
-   }
-   
    
    // Inner classes -------------------------------------------------
 }

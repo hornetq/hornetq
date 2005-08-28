@@ -1,84 +1,137 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core.local;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.util.AcknowledgmentImpl;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.logging.Logger;
 
-import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
-import java.io.Serializable;
+import java.util.Iterator;
 
 /**
- * A Router that synchronously delivers the message to one and only one receiver.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * $Id$
  */
-public class PointToPointRouter extends AbstractRouter
+public class PointToPointRouter implements Router
 {
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(PointToPointRouter.class);
+
+   // Static --------------------------------------------------------
+   
    // Attributes ----------------------------------------------------
+
+   List receivers;
 
    // Constructors --------------------------------------------------
 
-   public PointToPointRouter(Serializable id)
+   public PointToPointRouter()
    {
-      super(id);
-      log = Logger.getLogger(PointToPointRouter.class);
+      receivers = new ArrayList();
    }
 
-   // AbstractRouter implementation ---------------------------------
+   // Router implementation -----------------------------------------
 
-
-   public Set handle(Routable r, Set receiverIDs)
+   public Set handle(DeliveryObserver observer, Routable routable)
    {
-      Set acks = new HashSet();
+      Set deliveries = new HashSet();
 
-      synchronized(this)
+      synchronized(receivers)
       {
-         for(Iterator i = iterator(receiverIDs); i.hasNext(); )
+         for(Iterator i = receivers.iterator(); i.hasNext(); )
          {
-            Serializable receiverID = (Serializable)i.next();
-            Receiver receiver = (Receiver)receivers.get(receiverID);
+            Receiver receiver = (Receiver)i.next();
+
             try
             {
-               if (log.isTraceEnabled()) { log.trace(this + " attempting to deliver to " + receiverID); }
+               Delivery d = receiver.handle(observer, routable);
 
-               boolean successful = receiver.handle(r);
-
-               if (log.isTraceEnabled()) { log.trace(this + ": receiver " + receiverID + (successful ? " ACKed" : " NACKed") + " the message"); }
-
-               acks.add(new AcknowledgmentImpl(receiverID, successful));
-               break;
+               if (d != null)
+               {
+                  // deliver to the first receiver that acknowledges
+                  deliveries.add(d);
+                  break;
+               }
             }
             catch(Throwable t)
             {
-               // broken receiver - log the exception and ignore the receiver
-               log.error("The receiver " + receiverID + " is broken", t);
+               // broken receiver - log the exception and ignore it
+               log.error("The receiver " + receiver + " is broken", t);
             }
          }
       }
-      return acks;
+      return deliveries;
    }
 
-   // Public -----------------------------------------------------------
-
-
-   public String toString()
+   public boolean add(Receiver r)
    {
-      StringBuffer sb = new StringBuffer("P2PRouter[");
-      sb.append(getRouterID());
-      sb.append("]");
-      return sb.toString();
+      synchronized(receivers)
+      {
+         if (receivers.contains(r))
+         {
+            return false;
+         }
+         receivers.add(r);
+      }
+      return true;
    }
 
-   // Private ----------------------------------------------------------
 
+   public boolean remove(Receiver r)
+   {
+      synchronized(receivers)
+      {
+         return receivers.remove(r);
+      }
+   }
+
+   public void clear()
+   {
+      synchronized(receivers)
+      {
+         receivers.clear();
+      }
+   }
+
+   public boolean contains(Receiver r)
+   {
+      synchronized(receivers)
+      {
+         return receivers.contains(r);
+      }
+   }
+
+   public Iterator iterator()
+   {
+      synchronized(receivers)
+      {
+         return receivers.iterator();
+      }
+   }
+
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
 }

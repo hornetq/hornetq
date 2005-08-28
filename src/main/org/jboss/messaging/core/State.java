@@ -1,63 +1,82 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core;
 
-import java.util.Set;
+import java.util.List;
 
 /**
- * Represents a routable's state. It could be a ChannelNACK or it could contain a combination of
- * Acknowledgments and NonCommitted.
+ * A channel's state.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * $Id$
  */
-public interface State
+interface State
 {
    /**
-    * Returns true if this state represents a Channel NACK: the message was not delivered to any
-    * receiver yet. Returns false if at least one receiver saw the message, and returned either a
-    * positive or a negative acknowledgment.
+    * @return true if the state is able to atomically store undelivered or accept deliveries.
+    *         It doesn't necesarily mean the state is reliable, though.
+    *
+    * @see org.jboss.messaging.core.State#isReliable()
     */
-   public boolean isChannelNACK();
+   boolean isTransactional();
 
    /**
-    * Returns the number of NACKs maintained by the current state. Does not count a Channel NACK.
+    * @return true if the state is able to store reliable undelivered. It implies transactionality.
+    *
+    * @see org.jboss.messaging.core.State#isTransactional()
     */
-   public int nackCount();
+   boolean isReliable();
 
    /**
-    * @return a Set of Acknowledgments or an empty set if there are no NACKs.
+    * Works transactionally in presence of a JTA transaction.
     */
-   public Set getNACK();
+   void add(Delivery d) throws Throwable;
 
    /**
-    * Returns the number of ACKs maintained by the current state.
+    * Works transactionally in presence of a JTA transaction.
     */
-   public int ackCount();
+   boolean remove(Delivery d) throws Throwable;
 
    /**
-    * @return a Set of Acknowledgments or an empty set if there are no ACKs.
+    * A list of routables in process of being delivered.
+    *
+    * @return a <i>copy</i> of the internal storage.
     */
-   public Set getACK();
+   List delivering(Filter filter);
 
    /**
-    * Returns the total number of stored acknowlegments (positive or negative). Does not include
-    * a Channel NACK.
+    * Works transactionally in presence of a JTA transaction.
     */
-   public int size();
+   void add(Routable routable) throws Throwable;
+
+   boolean remove(Routable routable);
 
    /**
-    * Returns the number of transactions this routable was not yet committed for.
+    * A list of routables that are currently NOT being delivered by the channel.
+    *
+    * @return a <i>copy</i> of the the internal storage.
     */
-   public int nonCommittedCount();
+   List undelivered(Filter filter);
 
    /**
-    * @return a Set of NonCommitted instances of an empty set if the state does not have any
-    *         NonCommited instances.
+    * @param filter - may be null, in which case no filter is applied.
+    *
+    * @return a List containing messages whose state is maintained by this State instance.
+    *         The list includes messages in process of being delivered and messages for which
+    *         delivery hasn't been attempted yet.
     */
-   public Set getNonCommitted();
+   List browse(Filter filter);
+
+   /**
+    * Clears unreliable state but not persisted state, so a recovery of the channel is possible
+    * TODO really?
+    */
+   void clear();
 }

@@ -34,10 +34,7 @@ import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.MessageImpl;
-import org.jboss.test.messaging.tools.ObjectMessageImpl;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.TextMessageImpl;
 
 /**
  * Base class for all tests concerning message headers, properties, etc.
@@ -45,6 +42,8 @@ import org.jboss.test.messaging.tools.TextMessageImpl;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class MessageTest extends MessagingTestCase
 {
@@ -73,8 +72,7 @@ public class MessageTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("remoting, aop, security");
+      ServerManagement.startInVMServer("all");
       ServerManagement.deployQueue("Queue");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
@@ -592,7 +590,7 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnForeignMessage() throws JMSException
    {
-      Message foreignMessage = new MessageImpl();
+      Message foreignMessage = new SimpleJMSMessage();
 
       JBossMessage copy = JBossMessage.copy(foreignMessage);
 
@@ -668,7 +666,7 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnForeignObjectMessage() throws JMSException
    {
-      ObjectMessage foreignObjectMessage = new ObjectMessageImpl();
+      ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
       JBossObjectMessage copy = (JBossObjectMessage)JBossMessage.copy(foreignObjectMessage);
 
@@ -717,7 +715,7 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnForeignTextMessage() throws JMSException
    {
-      TextMessage foreignTextMessage = new TextMessageImpl();
+      TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 
       JBossTextMessage copy = (JBossTextMessage)JBossMessage.copy(foreignTextMessage);
 

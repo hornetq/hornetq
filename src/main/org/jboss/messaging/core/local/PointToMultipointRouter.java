@@ -1,82 +1,135 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
+
 package org.jboss.messaging.core.local;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.util.AcknowledgmentImpl;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.logging.Logger;
 
-import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
-import java.io.Serializable;
+import java.util.Iterator;
 
 /**
- * A Router that synchronously delivers the Routable to all of its receivers. What will be actually
- * passed is the reference to the incoming Routable.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * $Id$
  */
-public class PointToMultipointRouter extends AbstractRouter
+public class PointToMultipointRouter implements Router
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(PointToMultipointRouter.class);
+
+   // Static --------------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+
+   List receivers;
+
    // Constructors --------------------------------------------------
 
-   public PointToMultipointRouter(Serializable id)
+   public PointToMultipointRouter()
    {
-      super(id);
-      log = Logger.getLogger(PointToPointRouter.class);
+      receivers = new ArrayList();
    }
 
-   // AbstractRouter implementation ---------------------------------
+   // Router implementation -----------------------------------------
 
-   public Set handle(Routable r, Set receiverIDs)
+   public Set handle(DeliveryObserver observer, Routable routable)
    {
+      Set deliveries = new HashSet();
 
-      Set acks = new HashSet();
-
-      synchronized(this)
+      synchronized(receivers)
       {
-         for(Iterator i = iterator(receiverIDs); i.hasNext(); )
+         for(Iterator i = receivers.iterator(); i.hasNext(); )
          {
-            Serializable receiverID = (Serializable)i.next();
-            Receiver receiver = (Receiver)receivers.get(receiverID);
+            Receiver receiver = (Receiver)i.next();
+
             try
             {
-               if (log.isTraceEnabled()) { log.trace(this + " attempting to deliver to " + receiverID); }
+               Delivery d = receiver.handle(observer, routable);
 
-               boolean successful = receiver.handle(r);
-
-               if (log.isTraceEnabled()) { log.trace(this + ": receiver " + receiverID + (successful ? " ACKed" : "NACKed") + " the message"); }
-
-               acks.add(new AcknowledgmentImpl(receiverID, successful));
+               if (d != null)
+               {
+                  deliveries.add(d);
+               }
             }
             catch(Throwable t)
             {
-               // broken receiver - log the exception and ignore the receiver
-               log.error("The receiver " + receiverID + " is broken", t);
+               // broken receiver - log the exception and ignore it
+               log.error("The receiver " + receiver + " is broken", t);
             }
          }
       }
-      return acks;
+      return deliveries;
    }
+
+   public boolean add(Receiver r)
+   {
+      synchronized(receivers)
+      {
+         if (receivers.contains(r))
+         {
+            return false;
+         }
+         receivers.add(r);
+      }
+      return true;
+   }
+
+
+   public boolean remove(Receiver r)
+   {
+      synchronized(receivers)
+      {
+         return receivers.remove(r);
+      }
+   }
+
+   public void clear()
+   {
+      synchronized(receivers)
+      {
+         receivers.clear();
+      }
+   }
+
+   public boolean contains(Receiver r)
+   {
+      synchronized(receivers)
+      {
+         return receivers.contains(r);
+      }
+   }
+
+   public Iterator iterator()
+   {
+      synchronized(receivers)
+      {
+         return receivers.iterator();
+      }
+   }
+
 
    // Public --------------------------------------------------------
 
-   public String toString()
-   {
-      StringBuffer sb = new StringBuffer("P2MRouter[");
-      sb.append(getRouterID());
-      sb.append("]");
-      return sb.toString();
-   }
-
-
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
 }

@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.local.LocalQueue;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.util.RpcServer;
 import org.jboss.messaging.core.util.RpcServerCall;
 import org.jboss.messaging.core.util.ServerResponse;
@@ -29,7 +27,7 @@ import java.util.Iterator;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class Queue extends LocalQueue implements QueueServerDelegate
+public class Queue implements QueueServerDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -64,21 +62,22 @@ public class Queue extends LocalQueue implements QueueServerDelegate
     */
    public Queue(RpcDispatcher dispatcher, Serializable distributedQueueID)
    {
-      super(distributedQueueID);
-      Object serverObject = dispatcher.getServerObject();
-      if (!(serverObject instanceof RpcServer))
-      {
-         throw new IllegalStateException("The RpcDispatcher does not have an RpcServer installed");
-      }
-      rpcServer = (RpcServer)serverObject;
-
-      this.dispatcher = dispatcher;
-      this.distributedQueueID = distributedQueueID;
-      this.peerID = "queuePeer"+getUniqueID().toString();
-      jChannel = dispatcher.getChannel();
-      started = false;
-      pipeID = distributedQueueID.toString() + "." + peerID.toString() + "-pipe" +
-               PipeOutput.getUniqueID().toString();
+      // TODO - review core refactoring 2
+//      super(distributedQueueID);
+//      Object serverObject = dispatcher.getServerObject();
+//      if (!(serverObject instanceof RpcServer))
+//      {
+//         throw new IllegalStateException("The RpcDispatcher does not have an RpcServer installed");
+//      }
+//      rpcServer = (RpcServer)serverObject;
+//
+//      this.dispatcher = dispatcher;
+//      this.distributedQueueID = distributedQueueID;
+//      this.peerID = "queuePeer"+getUniqueID().toString();
+//      jChannel = dispatcher.getChannel();
+//      started = false;
+//      pipeID = distributedQueueID.toString() + "." + peerID.toString() + "-pipe" +
+//               PipeOutput.getUniqueID().toString();
    }
 
 
@@ -158,12 +157,13 @@ public class Queue extends LocalQueue implements QueueServerDelegate
       //
       //
 
-      if (!rpcServer.registerUnique(pipeID, pipeOutput))
-      {
-         // the pipe output server delegate not unique under category
-         throw new IllegalStateException("The category " + pipeID +
-                                         "has already a server delegate registered");
-      }
+      // TODO - review core refactoring 2
+//      if (!rpcServer.registerUnique(pipeID, pipeOutput))
+//      {
+//         // the pipe output server delegate not unique under category
+//         throw new IllegalStateException("The category " + pipeID +
+//                                         "has already a server delegate registered");
+//      }
       rpcServer.register(distributedQueueID, this);
       started = true;
    }
@@ -201,14 +201,16 @@ public class Queue extends LocalQueue implements QueueServerDelegate
 
       // create a distributed pipe to the new peer; don't use this pipe yet, as its output is
       // not registered with the joining peer's RpcServer.
-      Pipe pipeToPeer =  new Pipe(Channel.SYNCHRONOUS, dispatcher,
+      Pipe pipeToPeer =  new Pipe(true, dispatcher,
                                   joiningPeerAddress, joiningPeerPipeID);
 
       // add it as a router's receiver
       // TODO what happens if this peer receives in this very moment a message to be
       // TODO delivered to the queue? Seding to the joining peer will fail, since its distributed
       // TODO pipe isn't completely functional yet. To add test case.
-      add(pipeToPeer);
+
+      // TODO - review core refactoring 2
+//      add(pipeToPeer);
 
       return new QueueJoinAcknowledgment(jChannel.getLocalAddress(), pipeID);
    }
@@ -237,9 +239,10 @@ public class Queue extends LocalQueue implements QueueServerDelegate
       // I will never receive an acknowledgment from myself, since my server objects are not
       // registered yet, so I can safely link to peer.
 
-      Pipe pipeToPeer = new Pipe(Channel.SYNCHRONOUS, dispatcher,
-                                 ack.getAddress(), ack.getPipeID());
-      add(pipeToPeer);
+      // TODO - review core refactoring 2
+//      Pipe pipeToPeer = new Pipe(true, dispatcher,
+//                                 ack.getAddress(), ack.getPipeID());
+//      add(pipeToPeer);
    }
 
    // Static --------------------------------------------------------

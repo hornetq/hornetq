@@ -7,8 +7,6 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.util.ServerDelegate;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Acknowledgment;
 
 import java.io.Serializable;
 
@@ -27,7 +25,8 @@ interface PipeOutputServerDelegate extends ServerDelegate
     *
     * @return the acknowledgement returned by the associated receiver.
     */
-   public Acknowledgment handle(Routable r);
+   // TODO - review core refactoring 2
+//   public Acknowledgment handle(Routable r);
 
 
    /**

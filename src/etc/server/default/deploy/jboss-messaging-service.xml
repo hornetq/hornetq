@@ -53,7 +53,7 @@
    -->
 
    <!--
-   <mbean code="org.jboss.jms.tools.AspectLoader"
+   <mbean code="org.jboss.jms.util.AspectLoader"
       name="jboss.messaging:service=AspectLoader"
       xmbean-dd="xmdesc/AspectLoader-xmbean.xml">
       <depends>jboss.messaging:service=AspectDeployer</depends>

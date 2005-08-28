@@ -35,6 +35,8 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class MessageConsumerTest extends MessagingTestCase
 {
@@ -68,7 +70,7 @@ public class MessageConsumerTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.setRemote(false);
-      ServerManagement.startInVMServer("remoting, aop, security");
+      ServerManagement.startInVMServer("all");
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployQueue("Queue");
 
@@ -117,8 +119,6 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
-   
-   
 /*
    public void testRemotingInternals() throws Exception
    {
@@ -507,9 +507,9 @@ public class MessageConsumerTest extends MessagingTestCase
    //
    // Redelivery tests
    //
-   
+
    /* Commented out since this test assumes the server is in VM
-   
+
    public void testRedelivery() throws Exception
    {
 
@@ -751,15 +751,12 @@ public class MessageConsumerTest extends MessagingTestCase
 
 
 
-
    /* This test will not work until JBMESSAGING-105 is fixed */
    public void testDurableSubscriptionReconnect() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
 
       Connection conn1 = cf.createConnection();
-
-
       conn1.setClientID(CLIENT_ID1);
 
 
@@ -781,18 +778,15 @@ public class MessageConsumerTest extends MessagingTestCase
          prod.send(topic, tm);
       }
 
-      final int NUM_TO_RECEIVE1 = 1;
+      final int NUM_TO_RECEIVE = 1;
 
-      for (int i = 0; i < NUM_TO_RECEIVE1; i++)
+      for (int i = 0; i < NUM_TO_RECEIVE; i++)
       {
-         TextMessage tm = (TextMessage)durable.receive(3000);
-         if (tm == null)
-         {
-            fail();
-         }
+         TextMessage tm = (TextMessage)durable.receive();
+         assertNotNull(tm);
       }
 
-      //Close the connection
+      // Close the connection
       conn1.close();
       conn1 = null;
 
@@ -802,13 +796,11 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      //Re-subscribe to the subscription
+      // Re-subscribe to the subscription
 
       log.trace("Resubscribing");
 
       MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
-
-
 
       conn2.start();
 
@@ -825,7 +817,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
       log.trace("Received " + count  + " messages");
 
-      assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE1, count);
+      assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE, count);
 
       sess2.unsubscribe("mySubscription");
 
