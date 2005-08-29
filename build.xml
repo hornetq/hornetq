@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project [
    <!ENTITY buildmagic SYSTEM "../tools/etc/buildmagic/buildmagic.ent">
-   <!ENTITY libraries SYSTEM "../tools/etc/buildmagic/libraries.ent">
+   <!ENTITY libraries SYSTEM "../thirdparty/libraries.ent">
    <!ENTITY modules SYSTEM "../tools/etc/buildmagic/modules.ent">
 ]>
 
@@ -14,7 +14,9 @@
 <!--                                                                        -->
 <!-- ====================================================================== -->
 
+
 <!-- $Id$ -->
+
 
 <project default="main" name="JBoss/Messaging">
 
