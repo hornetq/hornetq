@@ -10,29 +10,11 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import javax.jms.*;
 
 import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossObjectMessage;
-import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.jms.message.*;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -93,7 +75,6 @@ public class MessageTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      // TODO uncomment these
       producerConnection.close();
       consumerConnection.close();
 
@@ -597,61 +578,61 @@ public class MessageTest extends MessagingTestCase
       ensureEquivalent(foreignMessage, copy);
    }
 
-   //
-   // this test is commented out because ensureEquivalent(ByteMessage, ByteMessage) is not implemented
-   //
+   public void testCopyOnJBossBytesMessage() throws JMSException
+   {
+      BytesMessage jbossMessage = queueProducerSession.createBytesMessage();
+      for(int i = 0; i < 20; i++)
+      {
+         jbossMessage.writeByte((byte)i);
+      }
 
-//   public void testCopyOnJBossBytesMessage() throws JMSException
-//   {
-//      Message jbossMessage = queueProducerSession.createBytesMessage();
-//
-//      JBossBytesMessage copy = (JBossBytesMessage)JBossMessage.copy(jbossMessage);
-//
-//      ensureEquivalent((BytesMessage)jbossMessage, (BytesMessage)copy);
-//   }
+      JBossBytesMessage copy = (JBossBytesMessage)JBossMessage.copy(jbossMessage);
 
+      jbossMessage.reset();
+      copy.reset();
 
-   //
-   // this test is commented out because ensureEquivalent(ByteMessage, ByteMessage)
-   // is not implemented and the implementation of BytesMessageImpl is incomplete
-   //
-
-//   public void testCopyOnForeignBytesMessage() throws JMSException
-//   {
-//      BytesMessage foreignBytesMessage = new BytesMessageImpl();
-//
-//      JBossBytesMessage copy = (JBossBytesMessage)JBossMessage.copy(foreignBytesMessage);
-//
-//      ensureEquivalent((BytesMessage)foreignBytesMessage, (BytesMessage)copy);
-//   }
-
-   //
-   // this test is commented out because ensureEquivalent(MapMessage, MapMessage) is not implemented
-   //
-
-//   public void testCopyOnJBossMapMessage() throws JMSException
-//   {
-//      Message jbossMessage = queueProducerSession.createMapMessage();
-//
-//      JBossMapMessage copy = (JBossMapMessage)JBossMessage.copy(jbossMessage);
-//
-//      ensureEquivalent((MapMessage)jbossMessage, (MapMessage)copy);
-//   }
+      ensureEquivalent((BytesMessage)jbossMessage, (BytesMessage)copy);
+   }
 
 
-   //
-   // this test is commented out because ensureEquivalent(MapMessage, MapMessage)
-   // is not implemented and the implementation of MapMessageImpl is incomplete
-   //
+   public void testCopyOnForeignBytesMessage() throws JMSException
+   {
+      BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
+      for(int i = 0; i < 20; i++)
+      {
+         foreignBytesMessage.writeByte((byte)i);
+      }
 
-//   public void testCopyOnForeignMapMessage() throws JMSException
-//   {
-//      MapMessage foreignMapMessage = new MapMessageImpl();
-//
-//      JBossMapMessage copy = (JBossMapMessage)JBossMessage.copy(foreignMapMessage);
-//
-//      ensureEquivalent((MapMessage)foreignMapMessage, (MapMessage)copy);
-//   }
+      JBossBytesMessage copy = (JBossBytesMessage)JBossMessage.copy(foreignBytesMessage);
+
+      foreignBytesMessage.reset();
+      copy.reset();
+
+      ensureEquivalent((BytesMessage)foreignBytesMessage, (BytesMessage)copy);
+   }
+
+   public void testCopyOnJBossMapMessage() throws JMSException
+   {
+      MapMessage jbossMessage = queueProducerSession.createMapMessage();
+      jbossMessage.setInt("int", 1);
+      jbossMessage.setString("string", "test");
+
+      JBossMapMessage copy = (JBossMapMessage)JBossMessage.copy(jbossMessage);
+
+      ensureEquivalent((MapMessage)jbossMessage, (MapMessage)copy);
+   }
+
+
+   public void testCopyOnForeignMapMessage() throws JMSException
+   {
+      MapMessage foreignMapMessage = new SimpleJMSMapMessage();
+      foreignMapMessage.setInt("int", 1);
+      foreignMapMessage.setString("string", "test");
+
+      JBossMapMessage copy = (JBossMapMessage)JBossMessage.copy(foreignMapMessage);
+
+      ensureEquivalent((MapMessage)foreignMapMessage, (MapMessage)copy);
+   }
 
 
    public void testCopyOnJBossObjectMessage() throws JMSException
@@ -674,33 +655,30 @@ public class MessageTest extends MessagingTestCase
    }
 
 
-   //
-   // this test is commented out because ensureEquivalent(StreamMessage, StreamMessage) is not implemented
-   //
+   public void testCopyOnJBossStreamMessage() throws JMSException
+   {
+      StreamMessage jbossMessage = queueProducerSession.createStreamMessage();
+      jbossMessage.writeByte((byte)1);
+      jbossMessage.writeByte((byte)2);
+      jbossMessage.writeByte((byte)3);
 
-//   public void testCopyOnJBossStreamMessage() throws JMSException
-//   {
-//      Message jbossMessage = queueProducerSession.createStreamMessage();
-//
-//      JBossStreamMessage copy = (JBossStreamMessage)JBossMessage.copy(jbossMessage);
-//
-//      ensureEquivalent((StreamMessage)jbossMessage, (StreamMessage)copy);
-//   }
+      JBossStreamMessage copy = (JBossStreamMessage)JBossMessage.copy(jbossMessage);
+
+      ensureEquivalent((StreamMessage)jbossMessage, (StreamMessage)copy);
+   }
 
 
-   //
-   // this test is commented out because ensureEquivalent(StreamMessage, StreamMessage)
-   // is not implemented and the implementation of StreamMessageImpl is incomplete
-   //
+   public void testCopyOnForeignStreamMessage() throws JMSException
+   {
+      StreamMessage foreignStreamMessage = new SimpleJMSStreamMessage();
+      foreignStreamMessage.writeByte((byte)1);
+      foreignStreamMessage.writeByte((byte)2);
+      foreignStreamMessage.writeByte((byte)3);
 
-//   public void testCopyOnForeignStreamMessage() throws JMSException
-//   {
-//      StreamMessage foreignStreamMessage = new StreamMessageImpl();
-//
-//      JBossStreamMessage copy = (JBossStreamMessage)JBossMessage.copy(foreignStreamMessage);
-//
-//      ensureEquivalent((StreamMessage)foreignStreamMessage, (StreamMessage)copy);
-//   }
+      JBossStreamMessage copy = (JBossStreamMessage)JBossMessage.copy(foreignStreamMessage);
+
+      ensureEquivalent((StreamMessage)foreignStreamMessage, (StreamMessage)copy);
+   }
 
 
    public void testCopyOnJBossTextMessage() throws JMSException
@@ -974,13 +952,49 @@ public class MessageTest extends MessagingTestCase
    private void ensureEquivalent(BytesMessage m1, BytesMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
-      throw new NotYetImplementedException();
+
+      long len = m1.getBodyLength();
+      for(int i = 0; i < len; i++)
+      {
+         assertEquals(m1.readByte(), m2.readByte());
+      }
+
+      try
+      {
+         m1.readByte();
+         fail("should throw MessageEOFException");
+      }
+      catch(MessageEOFException e)
+      {
+         // OK
+      }
+
+      try
+      {
+         m2.readByte();
+         fail("should throw MessageEOFException");
+      }
+      catch(MessageEOFException e)
+      {
+         // OK
+      }
    }
 
    private void ensureEquivalent(MapMessage m1, MapMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
-      throw new NotYetImplementedException();
+
+      for(Enumeration e = m1.getMapNames(); e.hasMoreElements(); )
+      {
+         String name = (String)e.nextElement();
+         assertEquals(m1.getObject(name), m2.getObject(name));
+      }
+
+      for(Enumeration e = m2.getMapNames(); e.hasMoreElements(); )
+      {
+         String name = (String)e.nextElement();
+         assertEquals(m2.getObject(name), m1.getObject(name));
+      }
    }
 
    private void ensureEquivalent(ObjectMessage m1, ObjectMessage m2) throws JMSException
@@ -992,7 +1006,62 @@ public class MessageTest extends MessagingTestCase
    private void ensureEquivalent(StreamMessage m1, StreamMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
-      throw new NotYetImplementedException();
+
+      m1.reset();
+      m2.reset();
+      boolean m1eof = false, m2eof = false;
+      while(true)
+      {
+         byte b1, b2;
+         try
+         {
+            b1 = m1.readByte();
+         }
+         catch(MessageEOFException e)
+         {
+            m1eof = true;
+            break;
+         }
+
+         try
+         {
+            b2 = m2.readByte();
+         }
+         catch(MessageEOFException e)
+         {
+            m2eof = true;
+            break;
+         }
+
+         assertEquals(b1, b2);
+      }
+
+
+      if (m1eof)
+      {
+         try
+         {
+            m2.readByte();
+            fail("should throw MessageEOFException");
+         }
+         catch(MessageEOFException e)
+         {
+            // OK
+         }
+      }
+
+      if (m2eof)
+      {
+         try
+         {
+            m1.readByte();
+            fail("should throw MessageEOFException");
+         }
+         catch(MessageEOFException e)
+         {
+            // OK
+         }
+      }
    }
 
    private void ensureEquivalent(TextMessage m1, TextMessage m2) throws JMSException

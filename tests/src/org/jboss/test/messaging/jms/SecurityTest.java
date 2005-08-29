@@ -16,7 +16,6 @@ import javax.jms.JMSSecurityException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
@@ -373,7 +372,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection();
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.setClientID("myID");
          fail();
       }
@@ -472,7 +471,7 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("john", "needle");        
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         QueueBrowser browser = sess.createBrowser(testQueue);
+         sess.createBrowser(testQueue);
       }    
       finally
       {
@@ -490,8 +489,8 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("nobody", "nobody");        
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         QueueBrowser browser = sess.createBrowser(testQueue);
-         fail();
+         sess.createBrowser(testQueue);
+         fail("should throw JMSSecurityException");
       }    
       catch (JMSSecurityException e)
       {

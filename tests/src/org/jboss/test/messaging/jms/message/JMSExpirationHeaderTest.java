@@ -187,7 +187,10 @@ public class JMSExpirationHeaderTest extends MessageTest
          fail("Test failed by the sender thread. Watch for exception in logs");
       }
 
-      assertEquals(timeToWaitForReceive, effectiveReceiveTime);
+      log.trace("planned waiting time: " + timeToWaitForReceive +
+                " effective waiting time " + effectiveReceiveTime);
+      assertTrue(effectiveReceiveTime >= timeToWaitForReceive);
+      assertTrue(effectiveReceiveTime < timeToWaitForReceive * 1.01);
       assertNull(expectedMessage);
    }
 

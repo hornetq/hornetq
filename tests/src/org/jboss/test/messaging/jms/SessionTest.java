@@ -299,37 +299,27 @@ public class SessionTest extends MessagingTestCase
       assertFalse(tr1.exceptionThrown);
       assertNotNull(tr1.m);
    }
-   
-   // TODO: enable it after implementing JBossSession.getXAResource()
-   /*
-    public void testGetXAResource() throws Exception
-    {
-    Connection conn = cf.createConnection();      
-    Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-    
-    try
-    {
-    XAResource xaResource = ((XASession)sess).getXAResource();
-    fail("Should throw IllegalStateException");
-    }
-    catch (javax.jms.IllegalStateException e)
-    {}
-    conn.close();
-    }
-    */
-   
-   
-   // TODO: enable it after implementing JBossSession.getXAResource()
-// public void testGetXAResource2() throws Exception
-// {
-// XAConnection conn = cf.createXAConnection();
-// XASession sess = conn.createXASession();
-// 
-// XAResource xaRessource = sess.getXAResource();
-// conn.close();
-// }
-   
-   
+
+   public void testGetXAResource() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      ((XASession)sess).getXAResource();
+      conn.close();
+   }
+
+
+   public void testGetXAResource2() throws Exception
+   {
+      XAConnection conn = cf.createXAConnection();
+      XASession sess = conn.createXASession();
+
+      sess.getXAResource();
+      conn.close();
+   }
+
+
    public void testIllegalState() throws Exception
    {
       //IllegalStateException should be thrown if commit or rollback

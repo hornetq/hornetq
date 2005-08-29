@@ -6,10 +6,7 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -29,6 +26,10 @@ import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.remoting.transport.Connector;
+import org.jboss.remoting.ServerInvoker;
+import org.jboss.messaging.core.Channel;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -119,7 +120,6 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
-/*
    public void testRemotingInternals() throws Exception
    {
       Connector serverConnector = ServerManagement.getConnector();
@@ -141,7 +141,6 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(2, listeners.size());
 
    }
-*/
 
    public void testGetSelector() throws Exception
    {
@@ -505,42 +504,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
 
    //
-   // Redelivery tests
-   //
-
-   /* Commented out since this test assumes the server is in VM
-
-   public void testRedelivery() throws Exception
-   {
-
-      // start the consumer connection, so the consumer would buffer the message
-      consumerConnection.start();
-
-      // send a message to the queue
-      Message m = producerSession.createMessage();
-      queueProducer.send(m);
-
-      // the message is buffered on the client, but not delivered yet
-
-      // redeliver using core's internal API
-      AbstractDestination coreQueue = ServerManagement.getServerPeer().
-            getDestinationManager().getCoreDestination(queue);
-
-      assertFalse(coreQueue.deliver());
-
-      int count = 0;
-      while(queueConsumer.receiveNoWait() != null)
-      {
-         count++;
-      }
-
-      assertEquals(1, count);
-   }
-
-
-*/
-
-   //
    // MessageListener tests
    //
 
@@ -691,8 +654,7 @@ public class MessageConsumerTest extends MessagingTestCase
       assertTrue(!tr2.exceptionThrown);
       assertTrue(!tr3.exceptionThrown);
 
-      //TODO this test won't work until message selectors are implemented in core
-      //assertNull(tr1.m);
+      assertNull(tr1.m);
 
       assertNotNull(tr2.m);
       assertNotNull(tr3.m);
@@ -825,7 +787,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
    }
 
-/*
    public void testDurableSubscriptionReconnectDifferentClientID() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -944,7 +905,7 @@ public class MessageConsumerTest extends MessagingTestCase
       catch (JMSException e)
       {}
    }
-*/
+
 
 
    // Package protected ---------------------------------------------

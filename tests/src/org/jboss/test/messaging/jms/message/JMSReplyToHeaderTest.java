@@ -49,7 +49,7 @@ public class JMSReplyToHeaderTest extends MessageTest
       m.setJMSReplyTo(tempQ);
       
       queueProducer.send(m);
-      Message m2 = queueConsumer.receive();
+      queueConsumer.receive();
       assertEquals(tempQ, m.getJMSReplyTo());
    }
    

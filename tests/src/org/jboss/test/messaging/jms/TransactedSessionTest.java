@@ -6,12 +6,7 @@
  */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import javax.jms.*;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -69,89 +64,6 @@ public class TransactedSessionTest extends MessagingTestCase
    // Public --------------------------------------------------------
    
    
-   public void testSendNoTransactionManager() throws Exception
-   {
-      
-      
-      /*
-       * 
-       * 
-       
-       This test cannot work remotely so commented out
-      
-      ServerManagement.stopInVMServer();
-
-      // start the server without a transaction manager
-      ServerManagement.startInVMServer("remoting");
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-
-      Connection c = cf.createConnection();
-
-      Session s = c.createSession(true, -1);
-      MessageProducer p = s.createProducer(queue);
-
-      // send a message
-
-      Message m = s.createMessage();
-      p.send(m);
-
-      try
-      {
-         s.commit();
-         fail("should have thrown exception");
-      }
-      catch(JMSException e)
-      {
-         // OK
-      }
-      
-      */
-      
-   }
-
-/*
- * 
- 
- 
-    This test cannot work remotely so commented out
-    
-    
-   public void testSendBrokenTransactionManager() throws Exception
-   {
-      ServerManagement.stopInVMServer();
-
-      // start the server with a broken manager
-      TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.BROKEN);
-      ServerManagement.startInVMServer(TransactionManagerImpl.getInstance());
-      initialContext = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-
-      Connection c = cf.createConnection();
-
-      Session s = c.createSession(true, -1);
-      MessageProducer p = s.createProducer(queue);
-
-      // send a message
-
-      Message m = s.createMessage();
-      p.send(m);
-
-      try
-      {
-         s.commit();
-         fail("should have thrown exception");
-      }
-      catch(JMSException e)
-      {
-         // OK
-      }
-   }
-
    /**
     * Send some messages in transacted session. Don't commit.
     * Verify message are not received by consumer.

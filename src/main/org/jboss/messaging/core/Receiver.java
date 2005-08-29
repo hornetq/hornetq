@@ -27,6 +27,7 @@ public interface Receiver
     * @param observer - the component the delivery should be acknowledged to.
     * 
     * @see org.jboss.messaging.core.Delivery
+    * @see org.jboss.messaging.core.DeliveryObserver
     */
    Delivery handle(DeliveryObserver observer, Routable routable);
 
