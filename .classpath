@@ -8,7 +8,7 @@
 	<classpathentry kind="src" path="/common"/>
 	<classpathentry kind="src" path="/system"/>
 	<classpathentry kind="src" path="/aop"/>
-	<classpathentry kind="lib" path="/thirdparty/junit-junit/lib/junit.jar"/>
+	<classpathentry kind="lib" path="/thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/javassist/lib/javassist.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
