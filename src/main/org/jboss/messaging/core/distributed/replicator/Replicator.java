@@ -4,10 +4,12 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.util.RpcServer;
+import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.distributed.util.RpcServer;
+import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
@@ -274,7 +276,7 @@ public class Replicator // extends MultipleOutputChannelSupport
     * Lifecycle method. Connects the peer to the distributed replicator and starts the peer. The
     * underlying JChannel must be connected when this method is invoked.
     *
-    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer
+    * @exception org.jboss.messaging.core.distributed.DistributedException - a wrapper for exceptions thrown by the distributed layer
     *            (JGroups). The original exception, if any, is nested.
     */
    public synchronized void start() throws DistributedException

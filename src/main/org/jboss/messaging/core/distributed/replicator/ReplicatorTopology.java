@@ -4,12 +4,17 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.util.RpcServerCall;
+import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.util.ServerResponse;
+import org.jboss.messaging.core.distributed.util.ServerResponse;
+import org.jboss.messaging.core.distributed.util.RpcServerCall;
+import org.jboss.messaging.core.distributed.util.ServerResponse;
+import org.jboss.messaging.core.distributed.replicator.Replicator;
+import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
 

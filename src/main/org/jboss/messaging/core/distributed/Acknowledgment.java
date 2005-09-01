@@ -1,5 +1,5 @@
 /**
- * JBoss, the OpenSource J2EE WebOS
+ * JBoss, Home of Professional Open Source
  *
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
@@ -10,21 +10,20 @@ import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 
 import java.io.Serializable;
-import java.io.Externalizable;
 import java.io.ObjectOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.Externalizable;
 
 /**
- * An acknowledgement send by a peer that accepts a new peer into the distributed queue.
- *
- * <p>The acknowledgment contains the peer's JGroups address and the distributed pipe ID used by
- * the peer to receive incoming messages from the other peers.
+ * The acknowledgment returned by a peer accepting a new peer to join a distributed structure.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class QueueJoinAcknowledgment implements Externalizable
+public class Acknowledgment implements Externalizable
 {
    // Constants -----------------------------------------------------
 
@@ -40,14 +39,18 @@ public class QueueJoinAcknowledgment implements Externalizable
    /**
     * For externalization.
     */
-   public QueueJoinAcknowledgment()
+   public Acknowledgment()
    {
    }
 
-   public QueueJoinAcknowledgment(Address a, Serializable pid)
+   /**
+    * @param address - the address of acknowledging peer.
+    * @param pipeID - the id of the distributed pipe the acknowledging peer can be contacted at.
+    */
+   public Acknowledgment(Address address, Serializable pipeID)
    {
-      address = a;
-      pipeID = pid;
+      this.address = address;
+      this.pipeID = pipeID;
    }
 
    // Externalizable implementation ---------------------------------
@@ -65,6 +68,7 @@ public class QueueJoinAcknowledgment implements Externalizable
       pipeID = (Serializable)in.readObject();
    }
 
+
    // Public --------------------------------------------------------
 
    public Address getAddress()
@@ -77,10 +81,11 @@ public class QueueJoinAcknowledgment implements Externalizable
       return pipeID;
    }
 
+
    // Package protected ---------------------------------------------
-
+   
    // Protected -----------------------------------------------------
-
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

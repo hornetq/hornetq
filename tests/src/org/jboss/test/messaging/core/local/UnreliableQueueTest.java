@@ -31,10 +31,6 @@ public class UnreliableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private ServiceContainer sc;
-   private MessageStore ms;
-   private TransactionManager tm;
-
    // Constructors --------------------------------------------------
 
    public UnreliableQueueTest(String name)
@@ -46,27 +42,15 @@ public class UnreliableQueueTest extends QueueTestBase
 
    public void setUp() throws Exception
    {
-      sc = new ServiceContainer("transaction, jca, database");
-      sc.start();
-
-      InitialContext ic = new InitialContext();
-      tm = (TransactionManager)ic.lookup("java:/TransactionManager");
-      ic.close();
-
-      ms = new TransactionalMessageStore("store0", tm);
+      super.setUp();
 
       channel = new Queue("test", ms, tm);
-      super.setUp();
    }
 
    public void tearDown() throws Exception
    {
       channel.close();
       channel = null;
-
-      tm = null;
-
-      sc.stop();
 
       super.tearDown();
    }

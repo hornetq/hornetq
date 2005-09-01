@@ -6,18 +6,21 @@
  */
 
 
-package org.jboss.test.messaging.core.local;
+package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.core.local.base.TopicTestBase;
-import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
-public class UnreliableTopicTest extends TopicTestBase
+public class ReliableDistributedQueueTest extends DistributedQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -25,20 +28,26 @@ public class UnreliableTopicTest extends TopicTestBase
    
    // Attributes ----------------------------------------------------
 
+   private HSQLDBPersistenceManager pm;
+
    // Constructors --------------------------------------------------
 
-   public UnreliableTopicTest(String name)
+    public ReliableDistributedQueueTest(String name)
    {
       super(name);
    }
 
-   // ChannelTestBase overrides  ------------------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new Topic("test", ms, tm);
+      pm = new HSQLDBPersistenceManager();
+      ms = new PersistentMessageStore("persistent-message-store", pm, tm);
+
+      channel = new DistributedQueue("test", ms, pm, tm, dispatcher);
+      channelTwo = new DistributedQueue("test", msTwo, pm, tm, dispatcherTwo);
    }
 
    public void tearDown() throws Exception
@@ -46,20 +55,27 @@ public class UnreliableTopicTest extends TopicTestBase
       channel.close();
       channel = null;
 
+      channelTwo.close();
+      channelTwo = null;
+
+      pm.stop();
+      ms = null;
+
       super.tearDown();
    }
 
    public void crashChannel() throws Exception
    {
-      // doesn't matter
+      channel.close();
+      channel = null;
+
    }
 
    public void recoverChannel() throws Exception
    {
-      // doesn't matter
+      channel = new Queue("test", ms, pm, tm);
    }
 
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    

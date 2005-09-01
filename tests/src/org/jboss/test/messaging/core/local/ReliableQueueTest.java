@@ -11,12 +11,7 @@ package org.jboss.test.messaging.core.local;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-
-import javax.transaction.TransactionManager;
-import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,10 +27,7 @@ public class ReliableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private ServiceContainer sc;
    private HSQLDBPersistenceManager pm;
-   private MessageStore ms;
-   private TransactionManager tm;
 
    // Constructors --------------------------------------------------
 
@@ -48,19 +40,12 @@ public class ReliableQueueTest extends QueueTestBase
 
    public void setUp() throws Exception
    {
-      sc = new ServiceContainer("transaction, jca, database");
-      sc.start();
+      super.setUp();
 
       pm = new HSQLDBPersistenceManager();
-
-      ms = new PersistentMessageStore("store0", pm, tm);
-
-      InitialContext ic = new InitialContext();
-      tm = (TransactionManager)ic.lookup("java:/TransactionManager");
-      ic.close();
+      ms = new PersistentMessageStore("persistent-message-store", pm, tm);
 
       channel = new Queue("test", ms, pm, tm);
-      super.setUp();
    }
 
    public void tearDown() throws Exception
@@ -68,11 +53,8 @@ public class ReliableQueueTest extends QueueTestBase
       channel.close();
       channel = null;
 
-
-      tm = null;
-
       pm.stop();
-      sc.stop();
+      ms = null;
 
       super.tearDown();
    }

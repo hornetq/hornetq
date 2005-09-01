@@ -9,7 +9,6 @@
 package org.jboss.test.messaging.core.base;
 
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Routable;
@@ -17,7 +16,6 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.message.Factory;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.test.messaging.MessagingTestCase;
 
 import java.util.List;
 import java.util.Iterator;
@@ -27,15 +25,13 @@ import java.util.Iterator;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public abstract class ChannelTestBase extends MessagingTestCase
+public abstract class ChannelTestBase extends NoTestsChannelTestBase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected Channel channel;
 
    // Constructors --------------------------------------------------
 
@@ -55,7 +51,6 @@ public abstract class ChannelTestBase extends MessagingTestCase
    {
       super.tearDown();
    }
-
 
    // Distributor tests ---------------------------------------------
 

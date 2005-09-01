@@ -4,14 +4,18 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.util;
+package org.jboss.test.messaging.core.distributed.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.ServerDelegate;
-import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.util.ServerResponse;
-import org.jboss.messaging.core.util.ServerDelegateResponse;
+import org.jboss.messaging.core.distributed.util.RpcServer;
+import org.jboss.messaging.core.distributed.util.RpcServerCall;
+import org.jboss.messaging.core.distributed.util.ServerFacade;
+import org.jboss.messaging.core.distributed.util.RpcServerCall;
+import org.jboss.messaging.core.distributed.util.ServerFacade;
+import org.jboss.messaging.core.distributed.util.ServerResponse;
+import org.jboss.messaging.core.distributed.util.ServerResponse;
+import org.jboss.messaging.core.distributed.util.SubordinateServerResponse;
+import org.jboss.messaging.core.distributed.util.SubordinateServerResponse;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -82,7 +86,7 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testRegistration() throws Exception
    {
-      ServerObjectDelegate so = new ServerObjectDelegate();
+      Subordinate so = new Subordinate();
       assertTrue(rpcServer.register("someCategory", so));
       assertFalse(rpcServer.register("someCategory", so));
       Set s = rpcServer.get("someCategory");
@@ -92,10 +96,10 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testUniqueRegistration() throws Exception
    {
-      ServerObjectDelegate so = new ServerObjectDelegate();
+      Subordinate so = new Subordinate();
       assertTrue(rpcServer.registerUnique("someCategory", so));
       assertFalse(rpcServer.register("someCategory", so));
-      assertFalse(rpcServer.register("someCategory", new ServerObjectDelegate()));
+      assertFalse(rpcServer.register("someCategory", new Subordinate()));
       Set s = rpcServer.get("someCategory");
       assertEquals(1, s.size());
       assertTrue(so == s.iterator().next());
@@ -103,10 +107,10 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testEquivalentFollowedByUniqueRegistration() throws Exception
    {
-      ServerObjectDelegate so = new ServerObjectDelegate();
+      Subordinate so = new Subordinate();
       assertTrue(rpcServer.register("someCategory", so));
       assertTrue(rpcServer.unregister("someCategory", so));
-      so = new ServerObjectDelegate();
+      so = new Subordinate();
       assertTrue(rpcServer.registerUnique("someCategory", so));
       Set s = rpcServer.get("someCategory");
       assertEquals(1, s.size());
@@ -162,7 +166,7 @@ public class RpcServerTest extends MessagingTestCase
       ServerResponse r = (ServerResponse)c.iterator().next();
       assertEquals(jChannel.getLocalAddress(), r.getAddress());
       assertEquals("nosuchcategory", r.getCategory());
-      assertNull(r.getServerDelegateID());
+      assertNull(r.getSubordinateID());
       assertTrue(r.getInvocationResult() instanceof ClassNotFoundException);
 
       jChannel.close();
@@ -196,7 +200,7 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testNoSuchMethodName_Local() throws Exception
    {
-      assertTrue(rpcServer.register("someCategory", new ServerObjectDelegate("SIMPLE")));
+      assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
       Collection c =
             rpcServer.invoke("someCategory",
@@ -205,11 +209,11 @@ public class RpcServerTest extends MessagingTestCase
                              new String[] { "java.lang.Integer"});
 
       assertEquals(1, c.size());
-      ServerDelegateResponse r = (ServerDelegateResponse)c.iterator().next();
+      SubordinateServerResponse r = (SubordinateServerResponse)c.iterator().next();
       assertEquals("SIMPLE", r.getSubServerID());
       assertTrue(r.getInvocationResult() instanceof NoSuchMethodException);
 
-      assertTrue(rpcServer.register("someCategory", new ExtendedServerObjectDelegate("EXTENDED")));
+      assertTrue(rpcServer.register("someCategory", new ExtendedSubordinate("EXTENDED")));
 
       c = rpcServer.invoke("someCategory",
                            "extraMethod",
@@ -218,8 +222,8 @@ public class RpcServerTest extends MessagingTestCase
 
       assertEquals(2, c.size());
       Iterator i = c.iterator();
-      ServerDelegateResponse r1 = (ServerDelegateResponse)i.next();
-      ServerDelegateResponse r2 = (ServerDelegateResponse)i.next();
+      SubordinateServerResponse r1 = (SubordinateServerResponse)i.next();
+      SubordinateServerResponse r2 = (SubordinateServerResponse)i.next();
 
       if ("SIMPLE".equals(r1.getSubServerID()))
       {
@@ -243,7 +247,7 @@ public class RpcServerTest extends MessagingTestCase
       jChannel.connect("testGroup");
       assertTrue(jChannel.isConnected());
 
-      assertTrue(rpcServer.register("someCategory", new ServerObjectDelegate("SIMPLE")));
+      assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
       RpcServerCall call =
             new RpcServerCall("someCategory",
@@ -257,10 +261,10 @@ public class RpcServerTest extends MessagingTestCase
       ServerResponse r = (ServerResponse)c.iterator().next();
       assertEquals(jChannel.getLocalAddress(), r.getAddress());
       assertEquals("someCategory", r.getCategory());
-      assertEquals("SIMPLE", r.getServerDelegateID());
+      assertEquals("SIMPLE", r.getSubordinateID());
       assertTrue(r.getInvocationResult() instanceof NoSuchMethodException);
 
-      assertTrue(rpcServer.register("someCategory", new ExtendedServerObjectDelegate("EXTENDED")));
+      assertTrue(rpcServer.register("someCategory", new ExtendedSubordinate("EXTENDED")));
 
       c = call.remoteInvoke(dispatcher, 30000);
 
@@ -274,17 +278,17 @@ public class RpcServerTest extends MessagingTestCase
       assertEquals("someCategory", r1.getCategory());
       assertEquals("someCategory", r2.getCategory());
 
-      if ("SIMPLE".equals(r1.getServerDelegateID()))
+      if ("SIMPLE".equals(r1.getSubordinateID()))
       {
          assertTrue(r1.getInvocationResult() instanceof NoSuchMethodException);
-         assertEquals("EXTENDED", r2.getServerDelegateID());
+         assertEquals("EXTENDED", r2.getSubordinateID());
          assertEquals(new Integer(2), r2.getInvocationResult());
       }
       else
       {
-         assertEquals("SIMPLE", r2.getServerDelegateID());
+         assertEquals("SIMPLE", r2.getSubordinateID());
          assertTrue(r2.getInvocationResult() instanceof NoSuchMethodException);
-         assertEquals("EXTENDED", r1.getServerDelegateID());
+         assertEquals("EXTENDED", r1.getSubordinateID());
          assertEquals(new Integer(2), r1.getInvocationResult());
       }
 
@@ -293,7 +297,7 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testNoSuchMethodSignature_Local() throws Exception
    {
-      assertTrue(rpcServer.register("someCategory", new ServerObjectDelegate("SIMPLE")));
+      assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
       Collection c =
             rpcServer.invoke("someCategory",
@@ -302,7 +306,7 @@ public class RpcServerTest extends MessagingTestCase
                              new String[] { "java.lang.Float"});
 
       assertEquals(1, c.size());
-      ServerDelegateResponse r = (ServerDelegateResponse)c.iterator().next();
+      SubordinateServerResponse r = (SubordinateServerResponse)c.iterator().next();
       assertEquals("SIMPLE", r.getSubServerID());
       assertTrue(r.getInvocationResult() instanceof NoSuchMethodException);
    }
@@ -314,7 +318,7 @@ public class RpcServerTest extends MessagingTestCase
       jChannel.connect("testGroup");
       assertTrue(jChannel.isConnected());
 
-      assertTrue(rpcServer.register("someCategory", new ServerObjectDelegate("SIMPLE")));
+      assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
       RpcServerCall call =
             new RpcServerCall("someCategory",
@@ -328,7 +332,7 @@ public class RpcServerTest extends MessagingTestCase
       ServerResponse r = (ServerResponse)c.iterator().next();
       assertEquals(jChannel.getLocalAddress(), r.getAddress());
       assertEquals("someCategory", r.getCategory());
-      assertEquals("SIMPLE", r.getServerDelegateID());
+      assertEquals("SIMPLE", r.getSubordinateID());
       assertTrue(r.getInvocationResult() instanceof NoSuchMethodException);
 
       jChannel.close();
@@ -340,7 +344,7 @@ public class RpcServerTest extends MessagingTestCase
    {
       String id = "ONE";
       String state = "something";
-      ServerObjectDelegate so = new ServerObjectDelegate(id);
+      Subordinate so = new Subordinate(id);
 
       assertTrue(rpcServer.register("someCategory", so));
 
@@ -350,7 +354,7 @@ public class RpcServerTest extends MessagingTestCase
                                       new String[] { "java.lang.String" });
       assertEquals(state, so.getState());
       assertEquals(1, c.size());
-      ServerDelegateResponse r = (ServerDelegateResponse)c.iterator().next();
+      SubordinateServerResponse r = (SubordinateServerResponse)c.iterator().next();
       assertEquals("ONE", r.getSubServerID());
       assertEquals(state + "." + id, r.getInvocationResult());
    }
@@ -363,7 +367,7 @@ public class RpcServerTest extends MessagingTestCase
       assertTrue(jChannel.isConnected());
       String id = "ONE";
       String state = "something";
-      ServerObjectDelegate so = new ServerObjectDelegate(id);
+      Subordinate so = new Subordinate(id);
 
       assertTrue(rpcServer.register("someCategory", so));
 
@@ -380,7 +384,7 @@ public class RpcServerTest extends MessagingTestCase
       ServerResponse r = (ServerResponse)c.iterator().next();
       assertEquals(jChannel.getLocalAddress(), r.getAddress());
       assertEquals("someCategory", r.getCategory());
-      assertEquals("ONE", r.getServerDelegateID());
+      assertEquals("ONE", r.getSubordinateID());
       assertEquals(state + "." + id, r.getInvocationResult());
 
       jChannel.close();
@@ -390,8 +394,8 @@ public class RpcServerTest extends MessagingTestCase
    {
 
       String idOne = "ONE", idTwo = "TWO";
-      ServerObjectDelegate soOne = new ServerObjectDelegate(idOne);
-      ServerObjectDelegate soTwo = new ServerObjectDelegate(idTwo);
+      Subordinate soOne = new Subordinate(idOne);
+      Subordinate soTwo = new Subordinate(idTwo);
 
       assertTrue(rpcServer.register("someCategory", soOne));
       assertTrue(rpcServer.register("someCategory", soTwo));
@@ -407,8 +411,8 @@ public class RpcServerTest extends MessagingTestCase
       assertEquals(state, soTwo.getState());
       assertEquals(2, c.size());
       Iterator i = c.iterator();
-      ServerDelegateResponse r1 = (ServerDelegateResponse)i.next();
-      ServerDelegateResponse r2 = (ServerDelegateResponse)i.next();
+      SubordinateServerResponse r1 = (SubordinateServerResponse)i.next();
+      SubordinateServerResponse r2 = (SubordinateServerResponse)i.next();
 
       if ((state + "." + idOne).equals(r1.getInvocationResult()))
       {
@@ -429,8 +433,8 @@ public class RpcServerTest extends MessagingTestCase
       jChannel.connect("testGroup");
       assertTrue(jChannel.isConnected());
       String idOne = "ONE", idTwo = "TWO";
-      ServerObjectDelegate soOne = new ServerObjectDelegate(idOne);
-      ServerObjectDelegate soTwo = new ServerObjectDelegate(idTwo);
+      Subordinate soOne = new Subordinate(idOne);
+      Subordinate soTwo = new Subordinate(idTwo);
 
       assertTrue(rpcServer.register("someCategory", soOne));
       assertTrue(rpcServer.register("someCategory", soTwo));
@@ -469,17 +473,17 @@ public class RpcServerTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
 
-   public class ServerObjectDelegate implements ServerDelegate
+   public class Subordinate implements ServerFacade
    {
       private String state = null;
       private String id = null;
 
-      public ServerObjectDelegate()
+      public Subordinate()
       {
          this(null);
       }
 
-      public ServerObjectDelegate(String id)
+      public Subordinate(String id)
       {
          this.id = id;
       }
@@ -511,19 +515,19 @@ public class RpcServerTest extends MessagingTestCase
 
       public String toString()
       {
-         return "ServerObjectDelegate[id=" + id + ", state=" + state + "]";
+         return "Subordinate[id=" + id + ", state=" + state + "]";
       }
 
    }
 
-   public class ExtendedServerObjectDelegate extends ServerObjectDelegate
+   public class ExtendedSubordinate extends Subordinate
    {
-      public ExtendedServerObjectDelegate()
+      public ExtendedSubordinate()
       {
          this(null);
       }
 
-      public ExtendedServerObjectDelegate(String id)
+      public ExtendedSubordinate(String id)
       {
          super(id);
       }

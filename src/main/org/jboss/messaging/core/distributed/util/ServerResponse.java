@@ -4,9 +4,10 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.util;
+package org.jboss.messaging.core.distributed.util;
 
 import org.jgroups.Address;
+import org.jboss.messaging.core.distributed.util.RpcServer;
 
 import java.io.Serializable;
 
@@ -23,17 +24,17 @@ public class ServerResponse
 
    protected Address address;
    protected Serializable category;
-   protected Serializable serverDelegateID;
+   protected Serializable subordinateID;
    protected Object result;
 
    // Constructors --------------------------------------------------
 
    public ServerResponse(Address address, Serializable category,
-                         Serializable subServerID, Object result)
+                         Serializable subordinateID, Object result)
    {
       this.address = address;
       this.category = category;
-      this.serverDelegateID = subServerID;
+      this.subordinateID = subordinateID;
       this.result = result;
    }
 
@@ -52,9 +53,9 @@ public class ServerResponse
       return category;
    }
 
-   public Serializable getServerDelegateID()
+   public Serializable getSubordinateID()
    {
-      return serverDelegateID;
+      return subordinateID;
    }
 
 
@@ -73,7 +74,7 @@ public class ServerResponse
    public String toString()
    {
       StringBuffer sb = new StringBuffer();
-      sb.append(RpcServer.serverDelegateToString(address, category, serverDelegateID));
+      sb.append(RpcServer.subordinateToString(category, subordinateID, address));
       sb.append(" result: ");
       if (result == null)
       {

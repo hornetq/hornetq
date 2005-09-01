@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.util;
+package org.jboss.messaging.core.distributed.util;
 
 import org.jgroups.blocks.MethodCall;
 import org.jgroups.blocks.RpcDispatcher;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * extension of the MethodCall that offers built-in support for server category. It also offers
  * convenience methods to return results in a normalized format.
  * 
- * @see org.jboss.messaging.core.util.RpcServer
+ * @see org.jboss.messaging.core.distributed.util.RpcServer
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -123,7 +123,7 @@ public class RpcServerCall extends MethodCall
             Collection subServerResponses = (Collection)result;
             for(Iterator j = subServerResponses.iterator(); j.hasNext(); )
             {
-               ServerDelegateResponse ssr = (ServerDelegateResponse)j.next();
+               SubordinateServerResponse ssr = (SubordinateServerResponse)j.next();
                ServerResponse r = new ServerResponse(address,
                                                      serverCategory,
                                                      ssr.getSubServerID(),
@@ -175,7 +175,7 @@ public class RpcServerCall extends MethodCall
          throw new IllegalStateException("Expecting exactly one remote result, got " +
                                          results.size() + " instead");
       }
-      ServerDelegateResponse r = (ServerDelegateResponse)results.iterator().next();
+      SubordinateServerResponse r = (SubordinateServerResponse)results.iterator().next();
       Object ir = r.getInvocationResult();
       if (ir instanceof Exception)
       {

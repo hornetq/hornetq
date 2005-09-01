@@ -130,6 +130,8 @@ public class ServiceContainer
    /**
     * @param config - A comma separated list of services to be started. Available services:
     *        transaction, jca, database, remoting, aop.  Example: "transaction, database, remoting".
+    *        "all" will start every service available. A dash in front of a service name will
+    *        disable that service. Example "all,-aop".
     * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
     *        If null, the default JBoss TransactionManager implementation will be used.
     */
@@ -144,64 +146,73 @@ public class ServiceContainer
 
    public void start() throws Exception
    {
-      toUnbindAtExit.clear();
 
-      jndiNamingFactory = System.getProperty("java.naming.factory.initial");
-
-      //TODO: need to think more about this; if I don't do it, though, bind() fails because it tries to use "java.naming.provider.url"
       try
       {
-         NamingManager.setInitialContextFactoryBuilder(new InVMInitialContextFactoryBuilder());
-      }
-      catch(IllegalStateException e)
-      {
-         // OK
-      }
+         toUnbindAtExit.clear();
 
-      Hashtable t = InVMInitialContextFactory.getJNDIEnvironment();
-      System.setProperty("java.naming.factory.initial",
-                         (String)t.get("java.naming.factory.initial"));
+         jndiNamingFactory = System.getProperty("java.naming.factory.initial");
 
-      initialContext = new InitialContext();
+         //TODO: need to think more about this; if I don't do it, though, bind() fails because it tries to use "java.naming.provider.url"
+         try
+         {
+            NamingManager.setInitialContextFactoryBuilder(new InVMInitialContextFactoryBuilder());
+         }
+         catch(IllegalStateException e)
+         {
+            // OK
+         }
 
-      mbeanServer = MBeanServerFactory.createMBeanServer("jboss");
+         Hashtable t = InVMInitialContextFactory.getJNDIEnvironment();
+         System.setProperty("java.naming.factory.initial",
+                            (String)t.get("java.naming.factory.initial"));
 
-      startServiceController();
+         initialContext = new InitialContext();
 
-      if (database)
-      {
-         startInVMDatabase();
-      }
-      if (transaction)
-      {
-         startTransactionManager();
-      }
-      if (jca)
-      {
-         startManagedConnectionFactory();
-         startCachedConnectionManager();
-         startManagedConnectionPool();
-         startConnectionManager();
-         startWrapperDataSourceService();
-      }
-      if (remoting)
-      {
-         startRemoting();
-      }
+         mbeanServer = MBeanServerFactory.createMBeanServer("jboss");
 
-      if (aop)
-      {
-         loadAspects();
-      }
-      
-      if (security)
-      {
-         startSecurityManager();
-      }
-      
-      loadJNDIContexts();
+         startServiceController();
 
-      log.debug("ServiceContainer started");
+         if (database)
+         {
+            startInVMDatabase();
+         }
+         if (transaction)
+         {
+            startTransactionManager();
+         }
+         if (jca)
+         {
+            startManagedConnectionFactory();
+            startCachedConnectionManager();
+            startManagedConnectionPool();
+            startConnectionManager();
+            startWrapperDataSourceService();
+         }
+         if (remoting)
+         {
+            startRemoting();
+         }
+
+         if (aop)
+         {
+            loadAspects();
+         }
+
+         if (security)
+         {
+            startSecurityManager();
+         }
+
+         loadJNDIContexts();
+
+         log.debug("ServiceContainer started");
+      }
+      catch(Throwable e)
+      {
+         log.error("Failed to start ServiceContainer", e);
+         throw new Exception("Failed to start ServiceContainer");
+      }
    }
 
    public void stop() throws Exception
@@ -488,43 +499,74 @@ public class ServiceContainer
    private void parseConfig(String config)
    {
       config = config.toLowerCase();
-      if ("all".equals(config))
-      {
-         transaction = true;
-         database = true;
-         jca = true;
-         remoting = true;
-         aop = true;
-         security = true;
-         return;
-      }
-
       for (StringTokenizer st = new StringTokenizer(config, ", "); st.hasMoreTokens(); )
       {
          String tok = st.nextToken();
-         if ("transaction".equals(tok))
+         boolean minus = false;
+
+         if (tok.startsWith("-"))
+         {
+            tok = tok.substring(1);
+            minus = true;
+         }
+
+         if ("all".equals(tok))
          {
             transaction = true;
+            database = true;
+            jca = true;
+            remoting = true;
+            aop = true;
+            security = true;
+         }
+         else if ("transaction".equals(tok))
+         {
+            transaction = true;
+            if (minus)
+            {
+               transaction = false;
+            }
          }
          else if ("database".equals(tok))
          {
             database = true;
+            if (minus)
+            {
+               database = false;
+            }
          }
          else if ("jca".equals(tok))
          {
             jca = true;
+            if (minus)
+            {
+               jca = false;
+            }
          }
          else if ("remoting".equals(tok))
          {
             remoting = true;
+            if (minus)
+            {
+               remoting = false;
+            }
+
          }
          else if ("aop".equals(tok))
          {
             aop = true;
+            if (minus)
+            {
+               aop = false;
+            }
          }
          else if ("security".equals(tok))
          {
             security = true;
+            if (minus)
+            {
+               security = false;
+            }
          }
          else
          {

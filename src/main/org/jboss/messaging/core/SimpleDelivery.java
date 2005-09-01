@@ -8,16 +8,21 @@
 
 package org.jboss.messaging.core;
 
+import java.io.Serializable;
+
 /**
  * A simple Delivery implementation.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * 
  * $Id$
  */
-public class SimpleDelivery implements Delivery
+public class SimpleDelivery implements Delivery, Serializable
 {
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 4995034535739753957L;
 
    // Static --------------------------------------------------------
    

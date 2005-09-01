@@ -945,6 +945,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
       writeString(out, connectionID);
       out.writeInt(priority);
+      out.writeObject(payload);
    }
 
 
@@ -979,6 +980,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
       connectionID = readString(in);
       priority = in.readInt();
+      payload = (Serializable)in.readObject();
    }
 
    // Package protected ---------------------------------------------

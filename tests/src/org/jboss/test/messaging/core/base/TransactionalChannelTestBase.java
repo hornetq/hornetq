@@ -14,6 +14,7 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.message.TransactionalMessageStore;
 
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
@@ -58,7 +59,8 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
 
    // Attributes ----------------------------------------------------
 
-   private TransactionManager tm;
+   protected TransactionManager tm;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
@@ -71,15 +73,19 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
 
    public void setUp() throws Exception
    {
+      super.setUp();
+
       InitialContext ic = new InitialContext();
       tm = (TransactionManager)ic.lookup("java:/TransactionManager");
       ic.close();
 
-      super.setUp();
+      ms = new TransactionalMessageStore("message-store", tm);
+
    }
 
    public void tearDown() throws Exception
    {
+      ms = null;
       tm = null;
       super.tearDown();
    }

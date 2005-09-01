@@ -38,7 +38,7 @@
 
 
 #TARGET_CLASS=org.jboss.test.messaging.core.local.UnreliableQueueTest
-TARGET_CLASS=org.jboss.test.messaging.core.local.ReliableQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.ReliableQueueTest
 
 #
 # distributed core
@@ -54,6 +54,11 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.ReliableQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
+
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.UnreliableDistributedQueueTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueTest
+#TARGET_TEST=testJGroupsChannelNotConnected
+
 #
 # JMS Facade
 #
@@ -63,7 +68,7 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.ReliableQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
@@ -123,6 +128,10 @@ JGROUPS_LIB=$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar
 #JGROUPS_LIB=$reldir/../resources/jgroups-core.jar
 
 
+if [ "$TARGET_TEST" != "" ]; then
+   TARGET_TEST="-t $TARGET_TEST"
+fi
+
 
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
@@ -154,4 +163,4 @@ $reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
 ${JGROUPS_LIB}${SEP}\
- junit.textui.TestRunner $TARGET_CLASS
+ org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST

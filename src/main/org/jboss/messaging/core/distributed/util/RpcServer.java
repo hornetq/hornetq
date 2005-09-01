@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.util;
+package org.jboss.messaging.core.distributed.util;
 
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
@@ -60,7 +60,7 @@ public class RpcServer
     * @param args - the method's arguments.
     * @param signature - the method's signature. The array contains fully qualified class names.
     *
-    * @return a Collection containing ServerDelegateResponse instances. It always returns a
+    * @return a Collection containing SubordinateServerResponse instances. It always returns a
     *         Collection, an empty collection in the case that no servers were found, never null.
     *
     * @exception ClassNotFoundException if a fully qualified name specified in the method's
@@ -105,13 +105,13 @@ public class RpcServer
          Collection results = new ArrayList();
          for(Iterator i = equivalents.iterator(); i.hasNext(); )
          {
-            ServerDelegate serverDelegate = (ServerDelegate)i.next();
-            Serializable id = serverDelegate.getID();
+            ServerFacade subordinate = (ServerFacade)i.next();
+            Serializable id = subordinate.getID();
             try
             {
-               Method method = serverDelegate.getClass().getMethod(methodName, parameterTypes);
-               Object result = method.invoke(serverDelegate, args);
-               results.add(new ServerDelegateResponse(id, result));
+               Method method = subordinate.getClass().getMethod(methodName, parameterTypes);
+               Object result = method.invoke(subordinate, args);
+               results.add(new SubordinateServerResponse(id, result));
 
                if (log.isTraceEnabled())
                {
@@ -122,7 +122,7 @@ public class RpcServer
             catch(Throwable t)
             {
                log.debug("RpcServer invocation on category =" + category + ", delegate =" + id + "failed", t);
-               results.add(new ServerDelegateResponse(id, t));
+               results.add(new SubordinateServerResponse(id, t));
             }
          }
          return results;
@@ -138,7 +138,7 @@ public class RpcServer
     * the category, the call fails (returns false).
     *
     * @param category - the server category.
-    * @param serverDelegate - the server delegate object to be registered.
+    * @param subordinate - the server delegate object to be registered.
     * @return true if the server was sucessfully registered or false if an "equal" object was
     *         already registered under the specified server ID. The method returns false if an
     *         unique server delegate was already registered under the category.
@@ -146,9 +146,9 @@ public class RpcServer
     * @exception NullPointerException if trying to register a null instance.
     *
     */
-   public boolean register(Serializable category, ServerDelegate serverDelegate)
+   public boolean register(Serializable category, ServerFacade subordinate)
    {
-      if (serverDelegate == null)
+      if (subordinate == null)
       {
          throw new NullPointerException("null server delegate");
       }
@@ -165,10 +165,10 @@ public class RpcServer
                equivalents = new HashSet();
                servers.put(category, equivalents);
             }
-            result = equivalents.add(serverDelegate);
+            result = equivalents.add(subordinate);
          }
-         log.debug("register " + category + " -> " + serverDelegate.getID() + "[" +
-                   serverDelegate.getClass().getName() + "]: " + result);
+         log.debug("register " + category + " -> " + subordinate.getID() + "[" +
+                   subordinate.getClass().getName() + "]: " + result);
          return result;
       }
    }
@@ -181,15 +181,15 @@ public class RpcServer
     * (return false).
     *
     * @param category - the server category.
-    * @param serverDelegate - the server delegate object to be registered.
+    * @param subordinate - the server delegate object to be registered.
     * @return true if the server was sucessfully registered or false if a server delegate was
     *         already registered under the category.
     *
     * @exception NullPointerException if trying to register a null instance.
     */
-   public boolean registerUnique(Serializable category, ServerDelegate serverDelegate)
+   public boolean registerUnique(Serializable category, ServerFacade subordinate)
    {
-      if (serverDelegate == null)
+      if (subordinate == null)
       {
          throw new NullPointerException("null server delegate");
       }
@@ -200,11 +200,11 @@ public class RpcServer
          Object o = servers.get(category);
          if (o == null || (o instanceof Set) && (((Set)o)).isEmpty())
          {
-            servers.put(category, serverDelegate);
+            servers.put(category, subordinate);
             result = true;
          }
-         log.debug("registerUnique " + category + " -> " + serverDelegate.getID() + "[" +
-                   serverDelegate.getClass().getName() + "]: " + result);
+         log.debug("registerUnique " + category + " -> " + subordinate.getID() + "[" +
+                   subordinate.getClass().getName() + "]: " + result);
          return result;
       }
    }
@@ -213,7 +213,7 @@ public class RpcServer
     * @return true if the server delegate was sucessfully unregistered or false if the specified
     *         server delegate was not found under the specified category.
     */
-   public boolean unregister(Serializable category, ServerDelegate serverDelegate)
+   public boolean unregister(Serializable category, ServerFacade subordinate)
    {
       synchronized(servers)
       {
@@ -225,12 +225,12 @@ public class RpcServer
          if (o instanceof Set)
          {
             Set equivalents = (Set)o;
-            return equivalents.remove(serverDelegate);
+            return equivalents.remove(subordinate);
          }
          else
          {
-            // unique server delegate
-            if (o != serverDelegate)
+            // unique subordinate
+            if (o != subordinate)
             {
                return false;
             }
@@ -242,7 +242,7 @@ public class RpcServer
 
    /**
     * @param category - the server category.
-    * @return a Set of equivalent ServerDelegates, or an empty Set if no servers were registered
+    * @return a Set of equivalent server subordinates, or an empty Set if no servers were registered
     *         under that ID. If the server delegate was registered as unique, an one-element
     *         Set is returned.
     */
@@ -280,18 +280,14 @@ public class RpcServer
    /**
     * Helper method that returns a human readable label for a server delegate, to be used in logs.
     */
-   public static String serverDelegateToString(Address address, Serializable category,
-                                               Serializable serverDelegateID)
+   public static String subordinateToString(Serializable category, Serializable subordinateID,
+                                            Address address)
    {
       StringBuffer sb = new StringBuffer();
+      sb.append(category).append(":");
+      sb.append(subordinateID).append(":");
       sb.append(address);
-      sb.append('.');
-      sb.append(category);
-      if (serverDelegateID != null)
-      {
-         sb.append('.');
-         sb.append(serverDelegateID);
-      }
+      
       return sb.toString();
    }
 

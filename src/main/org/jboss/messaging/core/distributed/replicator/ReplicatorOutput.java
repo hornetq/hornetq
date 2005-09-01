@@ -4,11 +4,13 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.util.RpcServerCall;
-import org.jboss.messaging.core.util.RpcServer;
-import org.jboss.messaging.core.util.ServerResponse;
+import org.jboss.messaging.core.distributed.util.RpcServerCall;
+import org.jboss.messaging.core.distributed.util.RpcServer;
+import org.jboss.messaging.core.distributed.util.ServerResponse;
+import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
@@ -227,15 +229,16 @@ public class ReplicatorOutput
    {
       while(ackThreadActive)
       {
-         try
-         {
-            MessageAcknowledgment ack = (MessageAcknowledgment)acknowledgmentQueue.take();
-            acknowledge(ack);
-         }
-         catch(InterruptedException e)
-         {
-            log.debug("Thread interrupted while trying to take an acknowledgment from queue");
-         }
+         // TODO distributed core refactoring
+//         try
+//         {
+//            MessageAcknowledgment ack = (MessageAcknowledgment)acknowledgmentQueue.take();
+//            acknowledge(ack);
+//         }
+//         catch(InterruptedException e)
+//         {
+//            log.debug("Thread interrupted while trying to take an acknowledgment from queue");
+//         }
       }
    }
 
@@ -250,7 +253,7 @@ public class ReplicatorOutput
     * Lifecycle method. Connects the peer to the distributed replicator. The underlying JChannel
     * must be connected when this method is invoked.
     *
-    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer
+    * @exception org.jboss.messaging.core.distributed.DistributedException - a wrapper for exceptions thrown by the distributed layer
     *            (JGroups). The original exception, if any, is nested.
     */
    public void start() throws DistributedException
@@ -300,7 +303,7 @@ public class ReplicatorOutput
                if (result instanceof NoSuchMethodException)
                {
                   // OK, I called an output peer
-                  log.debug(response.getServerDelegateID() + " is an output peer");
+                  log.debug(response.getSubordinateID() + " is an output peer");
                }
                else if (result instanceof Throwable)
                {
@@ -311,9 +314,9 @@ public class ReplicatorOutput
          catch(Throwable t)
          {
             String msg = "One of the peers (" +
-                         RpcServer.serverDelegateToString(response.getAddress(),
-                                                          response.getCategory(),
-                                                          response.getServerDelegateID()) +
+                         RpcServer.subordinateToString(response.getCategory(),
+                                                       response.getSubordinateID(),
+                                                       response.getAddress()) +
                          ") prevented this peer (" + this + ") from joining the replicator";
             log.error(msg, t);
             throw new DistributedException(msg, t);
@@ -451,65 +454,66 @@ public class ReplicatorOutput
       return new Long(v);
    }
 
-   /**
-    * TODO incomplete implementation
-    *
-    * Positively or negatively acknowledge a message to the sender.
-    */
-   protected void acknowledge(MessageAcknowledgment ack)
-   {
-      // TODO VERY inefficient implementation
-      // TODO Sliding Window?
-
-      lock();
-
-      try
-      {
-         RpcServerCall call = new RpcServerCall(ack.getInputPeerID(),
-                                                "acknowledge",
-                                                new Object[] {ack.getMessageID(),
-                                                              peerID,
-                                                              ack.getReceiverID(),
-                                                              ack.isPositive()},
-                                                new String[] {"java.io.Serializable",
-                                                              "java.io.Serializable",
-                                                              "java.io.Serializable",
-                                                              "java.lang.Boolean"});
-
-         // TODO deal with the timeout
-         try
-         {
-            if (log.isTraceEnabled()) { log.trace("Calling remotely acknowledge() on " +
-                                                  ack.getSender() + "." + ack.getInputPeerID()); }
-
-            call.remoteInvoke(dispatcher, ack.getSender(), 30000);
-
-            if (log.isTraceEnabled()) { log.trace("sent " + ack); }
-         }
-         catch(Throwable t)
-         {
-            log.error("Failed to send acknowledgment", t);
-            // resubmit the acknowlegment to the queue
-            // TODO: find something better than that. Deal with Time to Live.
-            while(true)
-            {
-               try
-               {
-                  acknowledgmentQueue.put(ack);
-                  break;
-               }
-               catch(InterruptedException ie)
-               {
-                  log.warn("Thread interrupted while trying to put an acknowledgment in queue", ie);
-               }
-            }
-         }
-      }
-      finally
-      {
-         unlock();
-      }
-   }
+   // TODO distributed core refactoring
+//   /**
+//    * TODO incomplete implementation
+//    *
+//    * Positively or negatively acknowledge a message to the sender.
+//    */
+//   protected void acknowledge(MessageAcknowledgment ack)
+//   {
+//      // TODO VERY inefficient implementation
+//      // TODO Sliding Window?
+//
+//      lock();
+//
+//      try
+//      {
+//         RpcServerCall call = new RpcServerCall(ack.getInputPeerID(),
+//                                                "acknowledge",
+//                                                new Object[] {ack.getMessageID(),
+//                                                              peerID,
+//                                                              ack.getReceiverID(),
+//                                                              ack.isPositive()},
+//                                                new String[] {"java.io.Serializable",
+//                                                              "java.io.Serializable",
+//                                                              "java.io.Serializable",
+//                                                              "java.lang.Boolean"});
+//
+//         // TODO deal with the timeout
+//         try
+//         {
+//            if (log.isTraceEnabled()) { log.trace("Calling remotely acknowledge() on " +
+//                                                  ack.getSender() + "." + ack.getInputPeerID()); }
+//
+//            call.remoteInvoke(dispatcher, ack.getSender(), 30000);
+//
+//            if (log.isTraceEnabled()) { log.trace("sent " + ack); }
+//         }
+//         catch(Throwable t)
+//         {
+//            log.error("Failed to send acknowledgment", t);
+//            // resubmit the acknowlegment to the queue
+//            // TODO: find something better than that. Deal with Time to Live.
+//            while(true)
+//            {
+//               try
+//               {
+//                  acknowledgmentQueue.put(ack);
+//                  break;
+//               }
+//               catch(InterruptedException ie)
+//               {
+//                  log.warn("Thread interrupted while trying to put an acknowledgment in queue", ie);
+//               }
+//            }
+//         }
+//      }
+//      finally
+//      {
+//         unlock();
+//      }
+//   }
 
    protected Serializable generateMessageID()
    {

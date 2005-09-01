@@ -17,18 +17,26 @@ import java.io.ObjectInput;
 
 
 /**
- * Incapsulates the identity of a peer: its distributed component ID, its peer ID and also its
- * JGroups Address.
+ * Incapsulates the identity of a peer (distributed component ID, peer ID and JGroups address).
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class PeerIdentity implements Externalizable
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
+   public static String identityToString(Serializable distributedID,
+                                         Serializable peerID,
+                                         Address address)
+   {
+      return distributedID + ":" + peerID + ":" + address;
+   }
+
    // Attributes ----------------------------------------------------
 
    protected Serializable distributedID;
@@ -84,6 +92,12 @@ public class PeerIdentity implements Externalizable
    public Address getAddress()
    {
       return address;
+   }
+
+   public String toString()
+   {
+      return identityToString(distributedID, peerID, address);
+
    }
 
    // Package protected ---------------------------------------------

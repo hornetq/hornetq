@@ -4,9 +4,9 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.util.ServerDelegate;
+import org.jboss.messaging.core.distributed.util.ServerFacade;
 import org.jgroups.Address;
 
 import java.io.Serializable;
@@ -20,7 +20,7 @@ import java.util.Map;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-interface ReplicatorTopologyServerDelegate extends ServerDelegate
+interface ReplicatorTopologyServerDelegate extends ServerFacade
 {
    /**
     * Remote method invoked by an output peer on all input peers' topologies when joining the
