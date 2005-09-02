@@ -14,14 +14,17 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.jms.Queue;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.jms.Queue;
 import javax.jms.Topic;
+import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.client.Closeable;
 import org.jboss.jms.MetaDataRepository;
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.tx.ResourceManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -78,18 +81,15 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
          throws JMSException;
 
    /**
-    * Used to notify the session that a message was delivered on the client. The acknowledgment
-    * might not be immediate, though. The session decides when to acknowledge based on the
-    * acknowledgment mode.
-    */
-	public void delivered(String messageID, String receiverID)
-         throws JMSException;
-
-   /**
-    * Acknowledges a message back to the server (transactionally or not).
+    * Acknowledges a message back to the server (non transactionally).
     */
 	public void acknowledge(String messageID, String receiverID)
          throws JMSException;
+   
+   public void preDeliver(String messageID, String receiverID);
+   
+   public void postDeliver(String messageID, String receiverID);
+   
 
    /**
     * Acknowledges all messages received so far by this session.
@@ -119,4 +119,33 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
     * @throws JMSException if the unsubscribe fails
     */
    public void unsubscribe(String subscriptionName) throws JMSException;
+   
+   public XAResource getXAResource();
+   
+   public int getAcknowledgeMode();
+   
+   public boolean getTransacted();
+   
+   public void addAsfMessage(Message m, String receiverID);
+   
+   public MessageListener getMessageListener();
+   
+   public void setMessageListener(MessageListener listener);
+   
+   public void run();
+   
+   public void setAcknowledgeMode(int ackMode);
+   
+   public void setTransacted(boolean transacted);
+   
+   public void setXA(boolean XA);
+   
+   public boolean getXA();
+   
+   public void setXAResource(XAResource resource);
+   
+   public void setResourceManager(ResourceManager rm);
+   
+   public ResourceManager getResourceManager();
+   
 }

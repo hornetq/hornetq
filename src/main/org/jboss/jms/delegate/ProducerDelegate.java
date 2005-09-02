@@ -39,5 +39,30 @@ public interface ProducerDelegate extends Closeable, MetaDataRepository
     */
    public void send(Destination destination, Message message, int deliveryMode,
                     int priority, long timeToLive) throws JMSException;
+   
+
+   public void setDisableMessageID(boolean value) throws JMSException;
+   
+   public boolean getDisableMessageID() throws JMSException;
+   
+   public void setDisableMessageTimestamp(boolean value) throws JMSException;
+   
+   public boolean getDisableMessageTimestamp() throws JMSException;
+   
+   public void setDeliveryMode(int deliveryMode) throws JMSException;
+   
+   public int getDeliveryMode() throws JMSException;
+   
+   public void setPriority(int defaultPriority) throws JMSException;
+   
+   public int getPriority() throws JMSException;
+   
+   public void setTimeToLive(long timeToLive) throws JMSException;
+   
+   public long getTimeToLive() throws JMSException;
+   
+   public Destination getDestination() throws JMSException;
+   
+   public void setDestination(Destination dest);
       
 }

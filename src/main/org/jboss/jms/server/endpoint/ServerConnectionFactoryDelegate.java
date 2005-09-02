@@ -6,26 +6,25 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.ClientManager;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jms.client.JBossConnectionMetaData;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.aop.advice.AdviceStack;
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.AspectManager;
-import org.jboss.aop.Dispatcher;
-import org.jboss.aop.util.PayloadKey;
-import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.logging.Logger;
-
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
 import javax.jms.JMSSecurityException;
+
+import org.jboss.aop.AspectManager;
+import org.jboss.aop.Dispatcher;
+import org.jboss.aop.advice.AdviceStack;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.ClientManager;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.logging.Logger;
 
 /**
  * Creates ConnectionFactoryDelegate instances. Instances of this class are constructed only on the
@@ -107,14 +106,17 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,
                            scd.getConnectionID(), PayloadKey.AS_IS);
       
+      /*
       if (defaultClientID != null)
       {
          metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID,
                defaultClientID, PayloadKey.AS_IS);
       }
+      */
+      
 
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_META_DATA,
-                           new JBossConnectionMetaData());
+      //metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_META_DATA,
+      //                     new JBossConnectionMetaData());
 
       h.getMetaData().mergeIn(metadata);
 

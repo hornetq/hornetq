@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 
-
-
 /**
  * A Consumer endpoint. Lives on the boundary between Messaging Core and the JMS Facade.
  *
@@ -239,6 +237,8 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
       // TODO and some old deliveries may be lost
 
+      if (log.isTraceEnabled()) { log.trace("redeliver"); }
+      
       List old = new ArrayList();
       synchronized(deliveries)
       {
@@ -249,6 +249,8 @@ public class ServerConsumerDelegate implements Receiver, Closeable
             i.remove();
          }
       }
+      
+      if (log.isTraceEnabled()) { log.trace("There are " + old.size() + " deliveries to redeliver"); }
 
       for(Iterator i = old.iterator(); i.hasNext();)
       {

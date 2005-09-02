@@ -72,6 +72,10 @@ public class MessageConsumerTest extends MessagingTestCase
 
       ServerManagement.setRemote(false);
       ServerManagement.startInVMServer("all");
+      
+      ServerManagement.undeployTopic("Topic");
+      ServerManagement.undeployQueue("Queue");
+      
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployQueue("Queue");
 

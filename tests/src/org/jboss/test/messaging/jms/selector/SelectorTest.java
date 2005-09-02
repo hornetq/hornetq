@@ -55,6 +55,7 @@ public class SelectorTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.startInVMServer("all");
+      ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 
       InitialContext ic = new InitialContext();

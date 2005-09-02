@@ -14,10 +14,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.ServerSessionPool;
+import javax.jms.TransactionRolledBackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.aop.AspectManager;
@@ -26,17 +33,20 @@ import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
-import org.jboss.jms.tx.TxInfo;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.tx.TxState;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -87,7 +97,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    protected String password;
    
-    
+   /* Map of global Xids to local tx */
+   protected Map globalToLocalTxMap;
+   
+   
    // Constructors --------------------------------------------------
    
    public ServerConnectionDelegate(ServerPeer serverPeer, String clientID, String username, String password)
@@ -99,6 +112,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       started = false;
       connectionID = new GUID().toString();
       receivers = new ConcurrentReaderHashMap();
+      globalToLocalTxMap = new ConcurrentReaderHashMap();
       this.clientID = clientID;
       this.username = username;
       this.password = password;
@@ -106,7 +120,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    // ConnectionDelegate implementation -----------------------------
    
-   public SessionDelegate createSessionDelegate(boolean transacted, int acknowledgmentMode)
+   public SessionDelegate createSessionDelegate(boolean transacted,
+         int acknowledgmentMode,
+         boolean isXA)
    {
       // create the dynamic proxy that implements SessionDelegate
       SessionDelegate sd = null;
@@ -136,9 +152,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE,
-            new Integer(acknowledgmentMode), PayloadKey.AS_IS);
-
+      // metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE,
+      //      new Integer(acknowledgmentMode), PayloadKey.AS_IS);
+      
       h.getMetaData().mergeIn(metadata);
       
       // TODO 
@@ -163,8 +179,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return clientID;
    }
    
-   public void setClientID(String clientID)
-      throws IllegalStateException
+   public void setClientID(String clientID) throws IllegalStateException
    {
       if (log.isTraceEnabled()) { log.trace("setClientID:" + clientID); }
       if (this.clientID != null)
@@ -226,67 +241,109 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       throw new IllegalStateException("setExceptionListener is not handled on the server");
    }
    
-   
-   public void sendTransaction(TxInfo tx) throws JMSException
+   public JBossConnectionConsumer createConnectionConsumer(Destination dest,
+         String subscriptionName,
+         String messageSelector,
+         ServerSessionPool sessionPool,
+         int maxMessages) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("Received transaction from client"); }
-      if (log.isTraceEnabled()) { log.trace("There are " + tx.getMessages().size() + " messages to send " +	"and " + tx.getAcks().size() + " messages to ack"); }
-      
+      throw new IllegalStateException("createConnectionConsumer is not handled on the server");
+   }
+   
+
+   public void sendTransaction(TransactionRequest request) throws JMSException
+   {
       TransactionManager tm = serverPeer.getTransactionManager();
-      boolean committed = false;
+      
+      Transaction suspended = null;
+      Transaction tx = null;
+      
+      //FIXME! All this nasty suspend and resume shennanigans will disappear
+      //when we stop using a JTA transaction manager to manage tx state in the
+      //jms server
       
       try
       {
-         // start the transaction
-         tm.begin();
-         
-         Iterator iter = tx.getMessages().iterator();
-         while (iter.hasNext())
+         //There may be an AS tx already associated to the thread - we suspend it
+         suspended = tm.getTransaction();
+         if (suspended != null)
          {
-            Message m = (Message)iter.next();
-            sendMessage(m);
-            if (log.isTraceEnabled()) { log.trace("Sent message"); }
+            tm.suspend();
          }
-         
-         if (log.isTraceEnabled()) { log.trace("Done the sends"); }
-         
-         //Then ack the acks
-         iter = tx.getAcks().iterator();
-         while (iter.hasNext())
+                  
+         if (request.requestType == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
          {
-            AckInfo ack = (AckInfo)iter.next();
+            if (log.isTraceEnabled()) { log.trace("One phase commit request received"); }
             
-            acknowledge(ack.messageID, ack.receiverID);
-            
-            if (log.isTraceEnabled()) { log.trace("Acked message:" + ack.messageID); }
+            tm.begin();
+            tx = tm.getTransaction();
+            if (tx.getStatus() != javax.transaction.Status.STATUS_ACTIVE)
+            {
+               throw new IllegalStateException("Current tx is in state:" + tx.getStatus());
+            }
+            processTx(request.txInfo);
+            tx.commit();         
          }
-         
-         if (log.isTraceEnabled()) { log.trace("Done the acks"); }
-         
-         tm.commit();
-         committed = true;
+         else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_PREPARE_REQUEST)
+         {                        
+            if (log.isTraceEnabled()) { log.trace("Two phase commit prepare request received"); }        
+            tm.begin();
+            tx = tm.getTransaction();       
+            if (tx.getStatus() != javax.transaction.Status.STATUS_ACTIVE)
+            {
+               throw new IllegalStateException("Current tx is in state:" + tx.getStatus());
+            }
+            processTx(request.txInfo);
+            tm.suspend();
+            this.globalToLocalTxMap.put(request.xid, tx);                        
+         }
+         else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_COMMIT_REQUEST)
+         {   
+            if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
+            tx = (Transaction)this.globalToLocalTxMap.remove(request.xid);
+            tm.resume(tx);
+            if (tx == null)
+            {
+               final String msg = "Cannot find local tx for global tx:" + request.xid;
+               throw new IllegalStateException(msg);
+            }   
+            tx.commit();        
+         }
+         else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST)
+         {
+            if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
+            tx = (Transaction)this.globalToLocalTxMap.remove(request.xid);
+            tm.resume(tx);
+            if (tx == null)
+            {
+               final String msg = "Cannot find local tx for global tx:" + request.xid;
+               throw new IllegalStateException(msg);
+            }   
+            tx.rollback();         
+         }      
       }
       catch (Throwable t)
       {
-         String msg = "The server connection delegate failed to handle transaction";
-         log.error(msg, t);
-         throw new JBossJMSException(msg, t);
+         handleFailure(t, tx);
       }
       finally
       {
-         if (tm != null && !committed)
+         //Resume any previous transaction
+         if (suspended != null)
          {
             try
             {
-               tm.rollback();
+               if (log.isTraceEnabled()) { log.trace("Resuming suspended tx"); }
+               tm.resume(suspended);
             }
-            catch(Exception e)
+            catch (Throwable t)
             {
-               log.debug("Unable to rollback curent non-committed transaction", e);
+               handleFailure(t, tx);
             }
          }
       }
       
+      if (log.isTraceEnabled()) { log.trace("Request processed ok"); }
    }
    
 
@@ -294,37 +351,54 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       return connectionID;
    }
-
+   
    public Object getMetaData(Object attr)
    {
       // TODO - See "Delegate Implementation" thread
       // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
-
+      
       // NOOP
       log.warn("getMetaData(): NOT handled on the server-side");
       return null;
    }
-
+   
    public void addMetaData(Object attr, Object metaDataValue)
    {
       // TODO - See "Delegate Implementation" thread
       // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
-
+      
       // NOOP
       log.warn("addMetaData(): NOT handled on the server-side");
    }
-
+   
    public Object removeMetaData(Object attr)
    {
       // TODO - See "Delegate Implementation" thread
       // TODO   http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
-
+      
       // NOOP
       log.warn("removeMetaData(): NOT handled on the server-side");
       return null;
    }
-
-
+   
+   public ConnectionMetaData getConnectionMetaData()
+   {
+      log.warn("getConnectionMetaData(): NOT handled on the server-side");
+      return null;
+   }
+   
+   public void setResourceManager(ResourceManager rm)
+   {
+      log.warn("setResourceManager(): NOT handled on the server-side");
+   }
+   
+   public ResourceManager getResourceManager()
+   {
+      log.warn("getResourceManager(): NOT handled on the server-side");
+      return null;
+   }
+   
+   
    // Public --------------------------------------------------------
    
    public String getUsername()
@@ -369,41 +443,42 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          throw new IllegalStateException("JMSDestination header not set!");
       }
-
+      
       Channel coreDestination = null;
-
+      
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       coreDestination = dm.getCoreDestination(jmsDestination);
-
+      
       if (coreDestination == null)
       {
          throw new JMSException("Destination " + jmsDestination.getName() + " does not exist");
       }
-
+      
       //This allows the no-local consumers to filter out the messages that come from the
       //same connection
       //TODO Do we want to set this for ALL messages. Possibly an optimisation is possible here
       ((JBossMessage)m).setConnectionID(connectionID);
-
+      
       Routable r = (Routable)m;
       MessageReference ref = null;
-
+      
       try
       {
          // Reference (cache) the message
          // TODO - this should be done in an interceptor
-
+         
          ref = serverPeer.getMessageStore().reference(r);
       }
       catch(Throwable t)
       {
+         log.error("Failed to cache message", t);
          throw new JBossJMSException("Failed to cache the message", t);
       }
       
       if (log.isTraceEnabled()) { log.trace("sending " + ref + " to the core"); }
-
+      
       Delivery d = coreDestination.handle(null, ref);
-
+      
       // The core destination is supposed to acknowledge immediately. If not, there's a problem.
       if (d == null || !d.isDone())
       {
@@ -416,7 +491,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    void acknowledge(String messageID, String receiverID) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
-           
+      
       ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
       if (receiver == null)
       {
@@ -425,7 +500,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       receiver.acknowledge(messageID);
    }
    
-
+   
    // Protected -----------------------------------------------------
    
    /**
@@ -441,7 +516,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return connectionID + "-Session" + id;
    }
    
-  
+   
    // Private -------------------------------------------------------
    
    private void setStarted(boolean s)
@@ -455,6 +530,93 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          }
          started = s;
       }
+   }
+   
+   /*
+    private boolean isActiveTransaction()
+    {
+    TransactionManager tm = serverPeer.getTransactionManager();
+    if (tm == null)
+    {
+    return false;
+    }
+    try
+    {
+    return tm.getTransaction() != null;
+    }
+    catch(Exception e)
+    {
+    log.debug("failed to access transaction manager", e);
+    return false;
+    }
+    }
+    */
+   
+   /*
+    * Get a new tx, suspending any tx currently associated with the thread.
+    * this may be the case if the jms server is running inside the application server and
+    * sharing a transaction manager with other services.
+    */
+   private Transaction getNewTx() throws SystemException, NotSupportedException
+   {
+      TransactionManager tm = serverPeer.getTransactionManager();
+      Transaction suspended = tm.suspend();
+      if (log.isTraceEnabled()) { log.trace("Thread already has tx, suspending it"); }
+      tm.begin();
+      return suspended;
+   }
+   
+   private void handleFailure(Throwable t, Transaction tx)
+   throws JMSException
+   {
+      final String msg1 = "Exception caught in processing transaction";
+      log.error(msg1, t);
+      
+      log.info("Attempting to rollback");
+      try
+      {
+         tx.rollback();
+         Exception e = new TransactionRolledBackException("Failed to process transaction - so rolled it back");
+         e.setStackTrace(t.getStackTrace());
+         log.info("Rollback succeeded");
+      }
+      catch (Throwable t2)
+      {
+         final String msg2 = "Failed to rollback after failing to process tx";
+         log.error(msg2, t2);               
+         JMSException e = new IllegalStateException(msg2);
+         e.setStackTrace(t2.getStackTrace());
+         throw e;
+      }        
+   }
+   
+   private void processTx(TxState tx) throws JMSException
+   {
+      if (log.isTraceEnabled()) { log.trace("I have " + tx.messages.size() + " messages and " +
+         tx.acks.size() + " acks "); }
+      
+      Iterator iter = tx.messages.iterator();
+      while (iter.hasNext())
+      {
+         Message m = (Message)iter.next();
+         sendMessage(m);
+         if (log.isTraceEnabled()) { log.trace("Sent message"); }
+      }
+      
+      if (log.isTraceEnabled()) { log.trace("Done the sends"); }
+      
+      //Then ack the acks
+      iter = tx.acks.iterator();
+      while (iter.hasNext())
+      {
+         AckInfo ack = (AckInfo)iter.next();
+         
+         acknowledge(ack.messageID, ack.receiverID);
+         
+         if (log.isTraceEnabled()) { log.trace("Acked message:" + ack.messageID); }
+      }
+      
+      if (log.isTraceEnabled()) { log.trace("Done the acks"); }
    }
    
    // Inner classes -------------------------------------------------

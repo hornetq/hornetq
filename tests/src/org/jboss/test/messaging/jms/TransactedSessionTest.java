@@ -49,6 +49,7 @@ public class TransactedSessionTest extends MessagingTestCase
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
+      ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Destination)initialContext.lookup("/queue/Queue");
    }
@@ -269,10 +270,14 @@ public class TransactedSessionTest extends MessagingTestCase
          if (m == null) break;
          count++;
       }
+      
+      log.trace("Received " + count + " messages");
 
       assertEquals(NUM_MESSAGES, count);
 
       consumerSess.commit();
+      
+      log.trace("Committed session");
 
       conn.stop();
       consumer.close();
@@ -286,6 +291,8 @@ public class TransactedSessionTest extends MessagingTestCase
       conn.start();
 
       Message m = consumer.receive(2000);
+      
+      log.trace("Message is " + m);
 
       assertNull(m);
 

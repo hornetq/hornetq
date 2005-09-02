@@ -35,7 +35,7 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
    private final static long serialVersionUID = 1945932848345348326L;
 
    // Static --------------------------------------------------------
-
+ 
    // Attributes ----------------------------------------------------
 
    protected Interceptor[] interceptors;
@@ -95,47 +95,43 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
       return invocation.invokeNext();
    }
    
-   
-   //tim's stuff
-   
-   public JMSInvocationHandler getParent()
+   JMSInvocationHandler getParent()
    {
        return parent;
    }
    
-   public void setParent(JMSInvocationHandler parent)
+   void setParent(JMSInvocationHandler parent)
    {
       this.parent = parent;
    }
    
-   public Set getChildren()
+   Set getChildren()
    {
        return children;
    }
    
-   public void addChild(JMSInvocationHandler child)
+   void addChild(JMSInvocationHandler child)
    {
        children.add(child);
        child.setParent(this);
    }
    
-   public void removeChild(JMSInvocationHandler child)
+   void removeChild(JMSInvocationHandler child)
    {
        children.remove(child);
        child.setParent(null);
    }
    
-   public Object getDelegate()
+   Object getDelegate()
    {
        return delegate;
    }
    
-   public void setDelegate(Object proxy)
+   void setDelegate(Object proxy)
    {
        this.delegate = proxy;
    }
-	
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -143,5 +139,4 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

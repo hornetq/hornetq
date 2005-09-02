@@ -15,14 +15,16 @@ import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.jms.InvalidDestinationException;
 import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
@@ -37,21 +39,22 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.ClientManager;
-import org.jboss.jms.server.DurableSubscriptionHolder;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.DestinationManagerImpl;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.ClientManager;
+import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.DurableSubscriptionHolder;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.util.Lockable;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.util.Lockable;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
@@ -224,8 +227,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
 
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SELECTOR, selector, PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.DESTINATION, jmsDestination);
+      //metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SELECTOR, selector, PayloadKey.AS_IS);
+      //metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.DESTINATION, jmsDestination);
 
       h.getMetaData().mergeIn(metadata);
 
@@ -501,12 +504,15 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	}
 
 	
-	public void delivered(String messageID, String receiverID) throws JMSException
+	public void preDeliver(String messageID, String receiverID)
 	{
-		throw new JMSException("delivered is not handled on the server");
+		log.warn("predeliver is not handled on the server");
 	}
 	
-	
+   public void postDeliver(String messageID, String receiverID)
+   {
+      log.warn("postdeliver is not handled on the server");
+   }	
 	
 	public void acknowledgeSession() throws JMSException
 	{
@@ -518,6 +524,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	 */
 	public void redeliver() throws JMSException
 	{
+      if (log.isTraceEnabled()) { log.trace("redeliver"); }
 		Iterator iter = this.consumers.values().iterator();
 		while (iter.hasNext())
 		{
@@ -559,6 +566,43 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // NOOP
       log.warn("removeMetaData(): NOT handled on the server-side");
+      return null;
+   }
+   
+   public void setTransacted(boolean transacted)
+   {
+      log.warn("setTransacted(): NOT handled on the server-side");
+   }
+   
+   public void setAcknowledgeMode(int ackMode)
+   {
+      log.warn("setAcknowledgeMode(): NOT handled on the server-side");
+   }
+   
+   public boolean getXA()
+   {
+      log.warn("getXA(): NOT handled on the server-side");
+      return false;
+   }
+   
+   public void setXA(boolean xa)
+   {
+      log.warn("setXA(): NOT handled on the server-side");
+   }
+   
+   public void setXAResource(XAResource resource)
+   {
+      log.warn("setXAResource(): NOT handled on the server-side");
+   }
+   
+   public void setResourceManager(ResourceManager rm)
+   {
+      log.warn("setResourceManager(): NOT handled on the server-side");
+   }
+   
+   public ResourceManager getResourceManager()
+   {
+      log.warn("getResourceManager(): NOT handled on the server-side");
       return null;
    }
    
@@ -620,6 +664,45 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
       subscription.getTopic().remove(subscription.getQueue());
       
+   }
+   
+   public XAResource getXAResource()
+   {
+      log.warn("getXAResource should not be handled at the server endpoint");
+      return null;
+   }
+   
+   public int getAcknowledgeMode()
+   {
+      log.warn("getAcknowledgeMode should not be handled at the server endpoint");
+      return -1;
+   }
+   
+   public boolean getTransacted()
+   {
+      log.warn("getTransacted should not be handled at the server endpoint");
+      return false;
+   }
+   
+   public void addAsfMessage(Message m, String receiverID)
+   {
+      log.warn("addAsfMessage should not be handled at the server endpoint");
+   }
+   
+   public MessageListener getMessageListener()
+   {
+      log.warn("getMessageListener should not be handled at the server endpoint");
+      return null;
+   }
+   
+   public void setMessageListener(MessageListener listener)
+   {
+      log.warn("setMessageListener should not be handled at the server endpoint");
+   }
+   
+   public void run()
+   {
+      log.warn("run should not be handled at the server endpoint");
    }
 
    // Public --------------------------------------------------------

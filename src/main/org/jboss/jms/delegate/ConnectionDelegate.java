@@ -6,14 +6,19 @@
  */
 package org.jboss.jms.delegate;
 
+import java.io.Serializable;
+
+import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.ServerSessionPool;
 
-import org.jboss.jms.client.Closeable;
-import org.jboss.jms.tx.TxInfo;
 import org.jboss.jms.MetaDataRepository;
-
-import java.io.Serializable;
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.TransactionRequest;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -24,7 +29,9 @@ import java.io.Serializable;
  */
 public interface ConnectionDelegate extends Closeable, MetaDataRepository
 {
-   public SessionDelegate createSessionDelegate(boolean transacted, int acknowledgmentMode)
+   public SessionDelegate createSessionDelegate(boolean transacted,
+                                                int acknowledgmentMode,
+                                                boolean isXA)
           throws JMSException;
 
    public String getClientID() throws JMSException;
@@ -36,7 +43,18 @@ public interface ConnectionDelegate extends Closeable, MetaDataRepository
    public ExceptionListener getExceptionListener() throws JMSException;
    public void setExceptionListener(ExceptionListener listener) throws JMSException;
   
-	public void sendTransaction(TxInfo tx) throws JMSException;
+	public void sendTransaction(TransactionRequest request) throws JMSException;
 
    public Serializable getConnectionID();
+   
+   public ConnectionMetaData getConnectionMetaData() throws JMSException;
+   
+   public JBossConnectionConsumer createConnectionConsumer(Destination dest,
+                                                           String subscriptionName,
+                                                           String messageSelector,
+                                                           ServerSessionPool sessionPool,
+                                                           int maxMessages) throws JMSException;
+   
+   public void setResourceManager(ResourceManager rm);
+   public ResourceManager getResourceManager();
 }

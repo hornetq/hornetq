@@ -66,9 +66,11 @@ public class SessionTest extends MessagingTestCase
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
+      ServerManagement.undeployTopic("TestTopic");
       ServerManagement.deployTopic("TestTopic");
       topic = (Topic)initialContext.lookup("/topic/TestTopic");
       
+      ServerManagement.undeployQueue("TestQueue");
       ServerManagement.deployQueue("TestQueue");
       queue = (Queue)initialContext.lookup("/queue/TestQueue");
       
@@ -112,6 +114,8 @@ public class SessionTest extends MessagingTestCase
       sess.createConsumer(topic);
       conn.close();
    }
+   
+   
    
    public void testGetSession1() throws Exception
    {

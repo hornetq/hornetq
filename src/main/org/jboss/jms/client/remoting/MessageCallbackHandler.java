@@ -100,10 +100,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          try
          {
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
-            JBossMessage m = (JBossMessage)messages.take();				
+            JBossMessage m = (JBossMessage)messages.take();
+            preDeliver(m);            
             listener.onMessage(m);
             if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
-            delivered(m);
+            postDeliver(m);
          }
          catch(InterruptedException e)
          {
@@ -257,7 +258,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             // notify that the message has been delivered (not necessarily acknowledged though)
 
-            delivered(m);
+            preDeliver(m);
+            postDeliver(m);
             
             if (!m.isExpired())
             {
@@ -316,9 +318,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Private -------------------------------------------------------
    
-   public void delivered(Message m) throws JMSException
+   public void preDeliver(Message m) throws JMSException
    {
-      sessionDelegate.delivered(m.getJMSMessageID(), receiverID);
+      sessionDelegate.preDeliver(m.getJMSMessageID(), receiverID);
+   }
+   
+   public void postDeliver(Message m) throws JMSException
+   {
+      sessionDelegate.postDeliver(m.getJMSMessageID(), receiverID);
    }
    
    // Inner classes -------------------------------------------------

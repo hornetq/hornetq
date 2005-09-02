@@ -97,6 +97,72 @@ public class ServerProducerDelegate implements ProducerDelegate
       log.warn("removeMetaData(): NOT handled on the server-side");
       return null;
    }
+   
+   public void setDisableMessageID(boolean value) throws JMSException
+   {
+      log.warn("setDisableMessageID(): NOT handled on the server-side");
+   }
+   
+   public boolean getDisableMessageID() throws JMSException
+   {
+      log.warn("getDisableMessageID(): NOT handled on the server-side");
+      return false;
+   }
+   
+   public void setDisableMessageTimestamp(boolean value) throws JMSException
+   {
+      log.warn("setDisableMessageTimestamp(): NOT handled on the server-side");
+   }
+   
+   public boolean getDisableMessageTimestamp() throws JMSException
+   {
+      log.warn("getDisableMessageTimestamp(): NOT handled on the server-side");
+      return false;
+   }
+   
+   public void setDeliveryMode(int deliveryMode) throws JMSException
+   {
+      log.warn("setDeliveryMode(): NOT handled on the server-side");
+   }
+   
+   public int getDeliveryMode() throws JMSException
+   {
+      log.warn("getDeliveryMode(): NOT handled on the server-side");
+      return -1;
+   }
+   
+   public void setPriority(int defaultPriority) throws JMSException
+   {
+      log.warn("setPriority(): NOT handled on the server-side");   
+   }
+   
+   public int getPriority() throws JMSException
+   {
+      log.warn("getPriority(): NOT handled on the server-side"); 
+      return -1;
+   }
+   
+   public void setTimeToLive(long timeToLive) throws JMSException
+   {
+      log.warn("setTimeToLive(): NOT handled on the server-side");
+   }
+   
+   public long getTimeToLive() throws JMSException
+   {
+      log.warn("getTimeToLive(): NOT handled on the server-side");
+      return -1;
+   }
+   
+   public Destination getDestination() throws JMSException
+   {
+      log.warn("getDestination(): NOT handled on the server-side");
+      return null;
+   }
+   
+   public void setDestination(Destination d)
+   {
+      log.warn("setDestination(): NOT handled on the server-side");
+   }
 
    // Public --------------------------------------------------------
 

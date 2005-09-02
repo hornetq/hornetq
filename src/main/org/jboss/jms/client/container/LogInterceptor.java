@@ -6,11 +6,11 @@
  */
 package org.jboss.jms.client.container;
 
+import java.io.Serializable;
+
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.logging.Logger;
-
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -8,19 +8,17 @@ package org.jboss.jms.client;
 
 import java.io.Serializable;
 
-import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.logging.Logger;
-
-import javax.jms.MessageProducer;
-import javax.jms.JMSException;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.DeliveryMode;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.QueueSender;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
-import javax.jms.QueueSender;
+
+import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -48,14 +46,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    public JBossMessageProducer(ProducerDelegate delegate, Destination destination)
          throws JMSException
    {
-      this.delegate = delegate;
-      setDeliveryMode(DeliveryMode.PERSISTENT);
-      setDisableMessageTimestamp(false);
-      setPriority(4);
-      setTimeToLive(0l);
-      delegate.addMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED, Boolean.FALSE);
-      delegate.addMetaData(JMSAdvisor.DESTINATION, destination);
-
+      this.delegate = delegate;     
    }
    
    // MessageProducer implementation --------------------------------
@@ -65,59 +56,71 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
       log.warn("JBoss Messaging does not support disabling message ID generation");
 
       // this is to trigger IllegalStateException in case the producer is closed
-      delegate.addMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED, Boolean.FALSE);
+      //delegate.addMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED, Boolean.FALSE);
+      
+      delegate.setDisableMessageID(value);
    }
    
    public boolean getDisableMessageID() throws JMSException
    {
-      return ((Boolean)delegate.getMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED)).booleanValue();
+      //return ((Boolean)delegate.getMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED)).booleanValue();
+      return delegate.getDisableMessageID();
    }
    
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      Boolean b = value ? Boolean.TRUE : Boolean.FALSE;
-      delegate.addMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED, b);
+     // Boolean b = value ? Boolean.TRUE : Boolean.FALSE;
+    //  delegate.addMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED, b);
+      delegate.setDisableMessageTimestamp(value);
    }
    
    public boolean getDisableMessageTimestamp() throws JMSException
    {
-      return ((Boolean)delegate.
-            getMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED)).booleanValue();
+      //return ((Boolean)delegate.
+      //      getMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED)).booleanValue();
+      return delegate.getDisableMessageTimestamp();
    }
    
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      delegate.addMetaData(JMSAdvisor.DELIVERY_MODE, new Integer(deliveryMode));
+      //delegate.addMetaData(JMSAdvisor.DELIVERY_MODE, new Integer(deliveryMode));
+      delegate.setDeliveryMode(deliveryMode);
    }
    
    public int getDeliveryMode() throws JMSException
    {
-      return ((Integer)delegate.getMetaData(JMSAdvisor.DELIVERY_MODE)).intValue();
+      //return ((Integer)delegate.getMetaData(JMSAdvisor.DELIVERY_MODE)).intValue();
+      return delegate.getDeliveryMode();
    }
    
    public void setPriority(int defaultPriority) throws JMSException
    {
-      delegate.addMetaData(JMSAdvisor.PRIORITY, new Integer(defaultPriority));
+      //delegate.addMetaData(JMSAdvisor.PRIORITY, new Integer(defaultPriority));
+      delegate.setPriority(defaultPriority);
    }
    
    public int getPriority() throws JMSException
    {
-      return ((Integer)delegate.getMetaData(JMSAdvisor.PRIORITY)).intValue();
+      //return ((Integer)delegate.getMetaData(JMSAdvisor.PRIORITY)).intValue();
+      return delegate.getPriority();
    }
    
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      delegate.addMetaData(JMSAdvisor.TIME_TO_LIVE, new Long(timeToLive));
+      //delegate.addMetaData(JMSAdvisor.TIME_TO_LIVE, new Long(timeToLive));
+      delegate.setTimeToLive(timeToLive);
    }
    
    public long getTimeToLive() throws JMSException
    {
-      return ((Long)delegate.getMetaData(JMSAdvisor.TIME_TO_LIVE)).longValue();
+      //return ((Long)delegate.getMetaData(JMSAdvisor.TIME_TO_LIVE)).longValue();
+      return delegate.getTimeToLive();
    }
    
    public Destination getDestination() throws JMSException
    {
-      return (Destination)delegate.getMetaData(JMSAdvisor.DESTINATION);
+      //return (Destination)delegate.getMetaData(JMSAdvisor.DESTINATION);
+      return delegate.getDestination();
    }
    
    public void close() throws JMSException

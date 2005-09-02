@@ -1,0 +1,263 @@
+/*
+ * JBoss, the OpenSource J2EE webOS
+ * 
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.jms.client;
+
+import java.util.LinkedList;
+
+import javax.jms.ConnectionConsumer;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ServerSession;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.logging.Logger;
+
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+
+/**
+ * This class implements javax.jms.ConnectionConsumer
+ * 
+ * @author Hiram Chirino (Cojonudo14@hotmail.com)
+ * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ */
+public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
+{
+   // Constants -----------------------------------------------------
+
+   static Logger log = Logger.getLogger(JBossConnectionConsumer.class);
+
+   static boolean trace = log.isTraceEnabled();
+   
+   // Attributes ----------------------------------------------------
+   
+   protected ConsumerDelegate cons;
+   
+   protected SessionDelegate sess;
+   
+   protected String receiverID;
+   
+   /** The destination this consumer will receive messages from */
+   protected Destination destination;
+   
+   /** The ServerSessionPool that is implemented by the AS */
+   protected ServerSessionPool serverSessionPool;
+   
+   /** The maximum number of messages that a single session will be loaded with. */
+   protected int maxMessages;
+   
+   /** This queue will hold messages until they are dispatched to the
+   MessageListener */
+   //protected LinkedList queue = new LinkedList();
+   
+   /** Is the ConnectionConsumer closed? */
+   protected boolean closed = false;
+   
+   /** Whether we are waiting for a message */
+   //protected boolean waitingForMessage = false;
+   
+   /** The subscription info the consumer */
+   //Subscription subscription = new Subscription();
+   
+   /** The "listening" thread that gets messages from destination and queues
+   them for delivery to sessions */
+   protected Thread internalThread;
+   
+   /** The thread id */
+   protected int id;
+   
+   /** The thread id generator */
+   protected static SynchronizedInt threadId = new SynchronizedInt(0);
+   
+   // Static --------------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+
+   /**
+    * JBossConnectionConsumer constructor
+    * 
+    * @param connection the connection
+    * @param destination destination
+    * @param messageSelector the message selector
+    * @param serverSessionPool the server session pool
+    * @param maxMessages the maxmimum messages
+    * @exception JMSException for any error
+    */
+   public JBossConnectionConsumer(ConnectionDelegate conn, Destination dest, 
+                                  String subName, String messageSelector,
+                                  ServerSessionPool sessPool, int maxMessages) throws JMSException
+   {
+      trace = log.isTraceEnabled();
+      
+      //this.connection = conn;
+      this.destination = dest;
+      this.serverSessionPool = sessPool;
+      this.maxMessages = maxMessages;
+      if (this.maxMessages < 1)
+         this.maxMessages = 1;
+
+      //Create a consumer - we must create with CLIENT_ACKNOWLEDGE - they get must not get acked
+      //via this session!
+      sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
+      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName);
+      receiverID = cons.getReceiverID();
+
+      id = threadId.increment();
+      internalThread = new Thread(this, "Connection Consumer for dest " + destination + " id=" + id);
+      internalThread.start();
+
+      if (trace) { log.trace("New " + this); }
+   }
+   
+   // Public --------------------------------------------------------
+
+
+   // ConnectionConsumer implementation -----------------------------
+
+   public ServerSessionPool getServerSessionPool() throws JMSException
+   {
+      return serverSessionPool;
+   }
+
+   public void close() throws javax.jms.JMSException
+   {
+      if (trace) { log.trace("Closing " + this); }
+      
+      closed = true;
+      
+      //This will call the MessageConsumer cons to close too - which results
+      //in the receiver thread being interrupted.
+      sess.close();
+      
+      //wait for the run thread to finish
+      if (internalThread != null && !internalThread.equals(Thread.currentThread()))
+      {
+         try
+         {
+            if (trace)
+               log.trace("Joining thread " + this);
+            internalThread.join();
+         }
+         catch (InterruptedException e)
+         {
+            if (trace)
+               log.trace("Ignoring interrupting while joining thread " + this);
+         }
+      }
+      
+      if (trace) { log.trace("Closed: " + this); }
+   }
+   
+   // Runnable implementation ---------------------------------------
+
+   public void run()
+   {
+      if (trace) { log.trace("running connection consumer"); }
+      try
+      {
+         LinkedList queue = new LinkedList();
+         outer: while (true)
+         {
+            if (closed)
+            {
+               if (trace) { log.trace("Connection consumer is closed, breaking"); }
+               break outer;
+            }
+            if (queue.isEmpty())
+            {
+               //Remove up to maxMessages messages from the consumer         
+               for (int i = 0; i < maxMessages; i++)
+               {               
+                  //receiveNoWait
+                  if (trace) { log.trace("Attempting to get message with receiveNoWait"); }
+                  Message m = cons.receive(-1);
+                  if (m == null)
+                  {
+                     if (trace) { log.trace("Didn't get message"); }
+                     break;
+                  }
+                  if (trace) { log.trace("Got message, adding to queue"); }
+                  queue.addLast(m);
+               }
+               if (queue.isEmpty())
+               {
+                  //We didn't get any messages doing receiveNoWait, so let's wait
+                  //This returns if a message is received or 
+                  //by the consumer closing
+                  if (trace) { log.trace("Getting message with blocking receive"); }
+                  Message m = cons.receive(0);
+                  if (m != null)
+                  {
+                     if (trace) { log.trace("Got message, adding to queue"); }
+                     queue.addLast(m);
+                  }
+                  else
+                  {
+                     //The consumer must have closed
+                     if (trace) { log.trace("Blocking receive returned null, consumer must have closed"); }
+                     break outer;
+                  }
+               }
+            }
+            
+            if (!queue.isEmpty())
+            {
+               if (trace) { log.trace("I have " + queue.size() + " messages to send to session"); }
+               ServerSession serverSession = serverSessionPool.getServerSession();
+               JBossSession session = (JBossSession)serverSession.getSession();               
+               MessageListener listener = session.getMessageListener();               
+               if (listener == null)
+               {
+                  //Sanity check
+                  if (trace)
+                     log.trace("Session did not have a set MessageListener " + session + " " + this);
+               }
+               for (int i = 0; i < queue.size(); i++)
+               {
+                  session.addAsfMessage((Message) queue.get(i), receiverID);
+                  if (trace) { log.trace("Added message to session"); }
+               }
+
+               if (trace) { log.trace(" Starting the ServerSession=" + serverSession + " " + this); }
+               serverSession.start();
+               if (trace) { log.trace("ServerSession processed messages"); }
+               queue.clear();
+            }
+         } 
+      }
+      catch (Throwable t)
+      {
+         log.error("Caught Throwable in processing run()", t);
+         try
+         {
+            close();
+         }
+         catch (Throwable ignore)
+         {
+            if (trace) { log.trace("Ignoring error removing consumer from connection " + this, ignore); }
+         }
+         
+      }      
+   }   
+
+   // Object overrides ----------------------------------------------
+
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------
+}

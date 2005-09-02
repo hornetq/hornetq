@@ -10,25 +10,22 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.jms.Session;
 import javax.jms.IllegalStateException;
+import javax.jms.Session;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.logging.Logger;
 
-
 /**
+ * This interceptor handles JMS session related logic
  * 
- * This interceptor handles JMS session state.
+ * Important! There is one instance of this interceptor per instance of Session
+ * and Connection
  *
- * In particular it stores un-acknowledged message information for a particular JMS session.
- * There should be one instance of this interceptor per JMS session
- * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
  */
 public class SessionInterceptor implements Interceptor, Serializable
@@ -40,6 +37,16 @@ public class SessionInterceptor implements Interceptor, Serializable
    private static final Logger log = Logger.getLogger(SessionInterceptor.class);
    
    // Attributes ----------------------------------------------------
+   
+   protected int ackMode;
+   
+   protected boolean transacted;
+   
+   protected boolean XA;      //Hmmm... should really be in TransactionInterceptor
+   
+   //protected Object txID; 
+   
+   protected ArrayList unacked = new ArrayList();
 
    // Static --------------------------------------------------------
    
@@ -56,106 +63,159 @@ public class SessionInterceptor implements Interceptor, Serializable
 
    public Object invoke(Invocation invocation) throws Throwable
    {      
+      if (!(invocation instanceof MethodInvocation))
+      {
+         return invocation.invokeNext();
+      }
       
       MethodInvocation mi = (MethodInvocation)invocation;
-      
       String methodName = mi.getMethod().getName();
       
       if (log.isTraceEnabled()) log.trace("In SessionInterceptor: method is " + methodName);
       
-      if ("acknowledgeSession".equals(methodName))
+      if ("createSessionDelegate".equals(methodName))
+      {
+         if (log.isTraceEnabled()) { log.trace("Creating session delegate"); }
+         SessionDelegate sessionDelegate = (SessionDelegate)invocation.invokeNext();
+         boolean transacted = ((Boolean)mi.getArguments()[0]).booleanValue();
+         int ackMode = ((Integer)mi.getArguments()[1]).intValue();
+         boolean isXA = ((Boolean)mi.getArguments()[2]).booleanValue();
+         sessionDelegate.setTransacted(transacted);
+         sessionDelegate.setAcknowledgeMode(ackMode);
+         sessionDelegate.setXA(isXA);
+         if (log.isTraceEnabled()) { log.trace("XA?:" + isXA); }
+         return sessionDelegate;
+      }
+      else if ("acknowledgeSession".equals(methodName))
       {
          //Acknowledge all the messages received in this session
          if (log.isTraceEnabled()) { log.trace("acknowledgeSession called"); }
          
+         //SessionState state = getSessionState(mi);
+         
          //This only does anything if in client acknowledge mode
-         int acknowledgmentMode =
-            ((Integer)mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE)).intValue();
-         if (acknowledgmentMode != Session.CLIENT_ACKNOWLEDGE)
+         if (ackMode != Session.CLIENT_ACKNOWLEDGE)
          {
             return null;
-         }
-                        
-         Object Xid = mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
+         }                        
          
-         if (Xid != null)
+         if (transacted)
          {
             //Transacted session - so do nothing
             return null;
          }
          else
          {
-            ArrayList unacked = getUnacknowledged(invocation);
             if (log.isTraceEnabled()) 
                log.trace("I have " + unacked.size() + " messages in the session to ack");
             Iterator iter = unacked.iterator();
-            while (iter.hasNext())
+            try
             {
-               AckInfo ackInfo = (AckInfo)iter.next();
-               getDelegate(mi).acknowledge(ackInfo.messageID, ackInfo.receiverID);
+               while (iter.hasNext())
+               {
+                  AckInfo ackInfo = (AckInfo)iter.next();
+                  getDelegate(mi).acknowledge(ackInfo.messageID, ackInfo.receiverID);
+               }
             }
-            unacked.clear();
+            finally
+            {
+               unacked.clear();
+            }
             return null;
          }
       }     
-      else if ("delivered".equals(methodName))
+      else if ("postDeliver".equals(methodName))
       {     
          String messageID = (String)mi.getArguments()[0];
-         String receiverID = (String)mi.getArguments()[1];
+         String receiverID = (String)mi.getArguments()[1];         
          
-         int acknowledgmentMode =
-            ((Integer)mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE)).intValue();
+         //SessionState state = getSessionState(mi);
          
-         Object Xid = mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
+         if (log.isTraceEnabled()) { log.trace("Session ack mode is:" + ackMode); }
          
-         if (Xid != null)
+         if (transacted)
          {
-            //Session is transacted - we just pass the ack on to the TransactionInterceptor
-            if (log.isTraceEnabled()) log.trace("Session is transacted - passing ack on");
-            getDelegate(mi).acknowledge(messageID, receiverID);
+            if (log.isTraceEnabled()) log.trace("Session is transacted - doing nothing");
+            return null;
          }
-         else if (acknowledgmentMode == Session.AUTO_ACKNOWLEDGE)
+         else if (ackMode == Session.AUTO_ACKNOWLEDGE)
          {
             //Just acknowledge now
             if (log.isTraceEnabled()) log.trace("Auto-acking message");
             getDelegate(mi).acknowledge(messageID, receiverID);
          }
-         else if (acknowledgmentMode == Session.DUPS_OK_ACKNOWLEDGE)
+         else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
             //TODO Lazy acks - for now we ack individually
             if (log.isTraceEnabled()) log.trace("Lazy acking message");
             getDelegate(mi).acknowledge(messageID, receiverID);
          }
-         else if (acknowledgmentMode == Session.CLIENT_ACKNOWLEDGE)
+         else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
          {
             if (log.isTraceEnabled()) log.trace("Client acknowledge so storing in unacked msgs");
-            getUnacknowledged(invocation).add(new AckInfo(messageID, receiverID));
-            if (log.isTraceEnabled()) log.trace("There are now " + getUnacknowledged(invocation).size() + " messages");
-         }
-         
+            unacked.add(new AckInfo(messageID, receiverID));
+            if (log.isTraceEnabled())
+            {
+               log.trace("There are now " + unacked.size() + " messages");
+            }
+         }         
          return null;
       }
       else if ("close".equals(methodName))
       {
-         
-         getUnacknowledged(invocation).clear();
+         if (mi.getMethod().getDeclaringClass().equals(SessionDelegate.class))
+         {
+            //SessionState state = getSessionState(mi);
+            unacked.clear();
+         }
          
          //need to rollback
-         //getDelegate(mi).rollback();
-                           
+         //getDelegate(mi).rollback();                          
       }
       else if ("recover".equals(methodName))
       {
-         Object Xid = mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.XID);
-         if (Xid != null)
+         //SessionState state = getSessionState(mi);
+         if (log.isTraceEnabled()) { log.trace("recover called"); }
+         if (transacted)
          {
             throw new IllegalStateException("Cannot recover a transacted session");
          }
-         getUnacknowledged(invocation).clear();
+         unacked.clear();
          
-         //Tell the server to redeliver any un-acked messages        
+         //Tell the server to redeliver any un-acked messages
+         if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
          getDelegate(mi).redeliver();
          return null;         
+      }
+      else if ("getAcknowledgeMode".equals(methodName))
+      {
+         //SessionState state = getSessionState(mi);
+         return new Integer(ackMode);
+      }
+      else if ("getTransacted".equals(methodName))
+      {
+         //SessionState state = getSessionState(mi);
+         return new Boolean(transacted);
+      }
+      else if ("getXA".equals(methodName))
+      {
+         //SessionState state = getSessionState(mi);
+         return new Boolean(XA);
+      }
+      else if ("setAcknowledgeMode".equals(methodName))
+      {
+         this.ackMode = ((Integer)mi.getArguments()[0]).intValue();
+         return null;
+      }
+      else if ("setTransacted".equals(methodName))
+      {
+         this.transacted = ((Boolean)mi.getArguments()[0]).booleanValue();
+         return null;
+      }
+      else if ("setXA".equals(methodName))
+      {
+         this.XA = ((Boolean)mi.getArguments()[0]).booleanValue();
+         return null;
       }
       
       return invocation.invokeNext();
@@ -174,42 +234,16 @@ public class SessionInterceptor implements Interceptor, Serializable
       return ((JMSMethodInvocation)invocation).getHandler();
    }
    
+   
    private SessionDelegate getDelegate(Invocation invocation)
    {
       return (SessionDelegate)getHandler(invocation).getDelegate();
    }
    
-   private synchronized ArrayList getUnacknowledged(Invocation invocation)
-   {
-      if (log.isTraceEnabled()) log.trace("Getting unacknowledged messages");
-      
-      
-      //Sanity check - this will throw an exception if the invocation is not a SessionDelegate
-        getDelegate(invocation); 
-      
-      
-      //TODO If we have a lot of unacked messages building up for the session
-      //we need a better way to store them than just an ArrayList.
-      //We risk running out of memory otherwise
-      JMSInvocationHandler handler = getHandler(invocation);
-      ArrayList unacked =
-         (ArrayList)handler.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.UNACKED);
-      if (unacked == null)
-      {
-         if (log.isTraceEnabled()) log.trace("Creating new list");
-         unacked = new ArrayList();
-         handler.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.UNACKED, unacked);
-      }
-      return unacked;
-   }  
+   
    
    // Inner Classes -------------------------------------------------
    
-   
-
-	   		
-   
-	
 	
 }
 

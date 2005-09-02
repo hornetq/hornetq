@@ -133,7 +133,7 @@ public class JBossConnectionFactory implements
       throws JMSException
    {
       ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
-      return new JBossConnection(cd, isXA, type);
+      return new JBossConnection(cd, type);
    }
    
    

@@ -82,6 +82,7 @@
          <arg type="java.lang.String" value="0" />
       </constructor>
       <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <!--
       <depends>jboss.messaging:service=AspectLoader</depends>
       -->

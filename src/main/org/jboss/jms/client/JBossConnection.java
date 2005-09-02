@@ -6,22 +6,19 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.messaging.util.NotYetImplementedException;
+import java.io.Serializable;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionConsumer;
+import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.JMSException;
-import javax.jms.ConnectionMetaData;
-import javax.jms.ExceptionListener;
-import javax.jms.ConnectionConsumer;
-import javax.jms.Destination;
 import javax.jms.ServerSessionPool;
+import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
@@ -31,7 +28,9 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
-import java.io.Serializable;
+
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -57,22 +56,15 @@ public class JBossConnection implements
    // Attributes ----------------------------------------------------
 
    protected ConnectionDelegate delegate;
-   private boolean isXA;
    private int connectionType;   
 
    // Constructors --------------------------------------------------
 
-   public JBossConnection(ConnectionDelegate delegate, boolean isXA, int connectionType)
+   public JBossConnection(ConnectionDelegate delegate, int connectionType)
          throws JMSException
    {
       this.delegate = delegate;
-      this.isXA = isXA;
-      this.connectionType = connectionType;
-
-      // make sure CONNECTION_META_DATA is TRANSIENT, to avoid unnecessary network traffic
-      ConnectionMetaData connectionMetaData =
-            (ConnectionMetaData)delegate.removeMetaData(JMSAdvisor.CONNECTION_META_DATA);
-      delegate.addMetaData(JMSAdvisor.CONNECTION_META_DATA, connectionMetaData); // add as TRANSIENT
+      this.connectionType = connectionType;      
    }
 
    // Connection implementation -------------------------------------
@@ -94,7 +86,7 @@ public class JBossConnection implements
 
    public ConnectionMetaData getMetaData() throws JMSException
    {
-      return (ConnectionMetaData)delegate.getMetaData(JMSAdvisor.CONNECTION_META_DATA);
+      return delegate.getConnectionMetaData();
    }
 
    public ExceptionListener getExceptionListener() throws JMSException
@@ -130,7 +122,7 @@ public class JBossConnection implements
          int maxMessages)
          throws JMSException
    {
-      throw new NotYetImplementedException();
+      return delegate.createConnectionConsumer(destination, null, messageSelector, sessionPool, maxMessages);
    }
 
    public ConnectionConsumer createDurableConnectionConsumer(
@@ -147,7 +139,7 @@ public class JBossConnection implements
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
          throw new IllegalStateException(msg);
       }
-      throw new NotYetImplementedException();
+      return delegate.createConnectionConsumer(topic, subscriptionName, messageSelector, sessionPool, maxMessages);
    }
    
    // QueueConnection implementation ---------------------------------
@@ -163,7 +155,7 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
     {
-       throw new NotYetImplementedException();
+      return delegate.createConnectionConsumer(queue, null, messageSelector, sessionPool, maxMessages);
     }
    
    // TopicConnection implementation ---------------------------------
@@ -179,14 +171,13 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
    {
-       throw new NotYetImplementedException();
+      return delegate.createConnectionConsumer(topic, null, messageSelector, sessionPool, maxMessages);
    }
    
    // XAConnection implementation -------------------------------------
 
    public XASession createXASession() throws JMSException
-   {
-       if (!isXA) throw new JMSException("Not an XA connection");       
+   {      
        return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                     JBossSession.TYPE_GENERIC_SESSION);
    }
@@ -194,8 +185,7 @@ public class JBossConnection implements
    // XAQueueConnection implementation ---------------------------------
 
    public XAQueueSession createXAQueueSession() throws JMSException
-   {
-      if (!isXA) throw new JMSException("Not an XA connection");       
+   {       
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_QUEUE_SESSION);
 
@@ -204,15 +194,14 @@ public class JBossConnection implements
    // XATopicConnection implementation ---------------------------------
 
    public XATopicSession createXATopicSession() throws JMSException
-   {
-      if (!isXA) throw new JMSException("Not an XA connection");       
+   {      
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_TOPIC_SESSION);
 
    }
 
    // Public --------------------------------------------------------
-
+   
    public Serializable getConnectionID()
    {
       return delegate.getConnectionID();
@@ -225,9 +214,8 @@ public class JBossConnection implements
    protected JBossSession createSessionInternal(boolean transacted, int acknowledgeMode,
                                                 boolean isXA, int type) throws JMSException
    {
-      SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode);
-      return new JBossSession(sessionDelegate, isXA,
-                              type, transacted, acknowledgeMode);
+      SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
+      return new JBossSession(sessionDelegate, type);
    }
 
    // Private -------------------------------------------------------

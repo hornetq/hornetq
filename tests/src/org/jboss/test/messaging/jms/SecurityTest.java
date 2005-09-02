@@ -711,6 +711,7 @@ public class SecurityTest extends MessagingTestCase
     */
    private void setupDestinations() throws Exception
    {
+      ServerManagement.undeployQueue("testQueue");
       ServerManagement.deployQueue("testQueue");
             
       final String testQueueConf = 
@@ -722,6 +723,7 @@ public class SecurityTest extends MessagingTestCase
                      
       ServerManagement.getServerPeer().setSecurityConfig("testQueue", toElement(testQueueConf));
       
+      ServerManagement.undeployTopic("testTopic");
       ServerManagement.deployTopic("testTopic");
             
       final String testTopicConf = 
@@ -733,6 +735,7 @@ public class SecurityTest extends MessagingTestCase
                      
       ServerManagement.getServerPeer().setSecurityConfig("testTopic", toElement(testTopicConf));
       
+      ServerManagement.undeployTopic("securedTopic");
       ServerManagement.deployTopic("securedTopic");
       
       final String testSecuredTopicConf = 
@@ -742,6 +745,7 @@ public class SecurityTest extends MessagingTestCase
                      
       ServerManagement.getServerPeer().setSecurityConfig("testSecuredTopic", toElement(testSecuredTopicConf));
       
+      ServerManagement.undeployTopic("unsecuredTopic");
       ServerManagement.deployTopic("unsecuredTopic");
       
    }

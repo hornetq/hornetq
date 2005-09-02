@@ -47,7 +47,27 @@ public class ServerManagement
    
    public static void setRemote(boolean remote)
    {
-      isRemote = remote;
+      //isRemote = remote;
+      
+      String remoteVal = System.getProperty("remote");
+      if ("TRUE".equals(remoteVal))
+      {
+         isRemote = true;
+      }
+      if (isRemote)
+      {
+         System.out.println("Running remotely *******************************");
+      }
+      else
+      {
+         System.out.println("Running locally *********************************");
+      }
+      
+   }
+   
+   public static boolean isRemote()
+   {
+      return isRemote;
    }
 
    public synchronized static void startInVMServer() throws Exception

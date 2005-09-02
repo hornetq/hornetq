@@ -11,22 +11,25 @@
    <interceptor class="org.jboss.jms.client.container.LogInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.ObjectOverrideInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.ClosedInterceptor" scope="PER_CLASS"/>
-   <interceptor class="org.jboss.jms.client.container.HierarchyInterceptor" scope="PER_CLASS"/>
+   <interceptor class="org.jboss.jms.client.container.HierarchyInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.FactoryInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.jms.client.container.ConsumerInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ConsumerInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.InvokerInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.jms.client.container.ReceiverInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ReceiverInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.ConnectionInterceptor" scope="PER_CLASS"/>
-   <interceptor class="org.jboss.jms.client.container.TransactionInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.TransactionInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.BrowserInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.SessionInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.MetaDataInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ProducerInterceptor" scope="PER_CLASS"/>
+	<interceptor class="org.jboss.jms.client.container.AsfInterceptor" scope="PER_CLASS"/>
 
    <stack name="ConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/> 
+      <interceptor-ref name="org.jboss.jms.client.container.ConnectionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.HierarchyInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
@@ -40,8 +43,10 @@
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ConnectionInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.AsfInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.HierarchyInterceptor"/>    
       <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/>   
+      <interceptor-ref name="org.jboss.jms.client.container.SessionInterceptor"/> 
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
@@ -52,10 +57,12 @@
       <interceptor-ref name="org.jboss.jms.client.container.MetaDataInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.AsfInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.HierarchyInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.SessionInterceptor"/> 
+      <interceptor-ref name="org.jboss.jms.client.container.ProducerInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/>        
-      <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>      
+      <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>         
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>
 
@@ -64,6 +71,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.MetaDataInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ProducerInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
@@ -75,6 +83,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.MetaDataInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ReceiverInterceptor"/>            
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>
    </stack>

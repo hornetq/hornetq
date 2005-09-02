@@ -32,6 +32,9 @@
    <property name="module.name" value="jms"/>
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="1.0.0"/>
+   
+   
+   <property environment="ENV"/>
 
    <!-- ========= -->
    <!-- Libraries -->
@@ -118,6 +121,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
+   <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -199,6 +203,7 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
+         <sysproperty key="remote" value="TRUE"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -213,6 +218,41 @@
             <fileset dir="${build.tests.classes}">
 
                <include name="**/messaging/**/*Test.class"/>
+               <!--
+               <include name="**/messaging/core/local/*Test.class"/>
+               -->
+               <exclude name="**/messaging/**/performance/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+   
+   <target name="jmstests"
+           depends="tests-jar, prepare-testdirs"
+           description="Runs the jms tests only">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="remote" value="TRUE"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+         </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+
+               <include name="**/messaging/jms/*Test.class"/>
                <!--
                <include name="**/messaging/core/local/*Test.class"/>
                -->
@@ -238,6 +278,7 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
+         <sysproperty key="remote" value="TRUE"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -275,6 +316,20 @@
             />
       </junitreport>
    </target>
+   
+   <target name="jmsreport" depends="jmstests, compile-stylesheets">
+      <mkdir dir="${build.tests.reports}/html"/>
+
+      <junitreport todir="${build.tests.reports}">
+         <fileset dir="${build.tests.reports}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+            todir="${build.tests.reports}/html"
+            styledir="${build.tests.stylesheets}"
+            />
+      </junitreport>
+   </target>
 
 
    <target name="performance-tests"/>
@@ -292,6 +347,40 @@
    <target name="display-path">
       <pathconvert refid="dependentmodule.classpath" targetos="unix" property="path.representation"/>
       <echo message="${path.representation}"/>
+   </target>
+
+
+  <target name="tests-ejb-jar"
+           depends="compile"
+           description="Creates the ejb jar file containing the test ejb and mdb for testing jms from within a managed environment">
+
+      <mkdir dir="${build.tests.lib}"/>
+      <mkdir dir="${build.test.classes}/META-INF"/>
+
+      <copy file="${source.tests.java}/org/jboss/test/messaging/jms/managed/META-INF/jboss.xml"
+         tofile="${build.tests.classes}/META-INF/jboss.xml"/>
+      <copy file="${source.tests.java}/org/jboss/test/messaging/jms/managed/META-INF/ejb-jar.xml"
+         tofile="${build.tests.classes}/META-INF/ejb-jar.xml"/>
+
+      <!-- Build the tests ejb jar -->
+      <jar jarfile="${build.tests.lib}/${build.tests.ejbarchive}">
+         <fileset dir="${build.tests.classes}">
+            <include name="org/jboss/test/messaging/jms/managed/**"/>
+         </fileset>
+         <fileset dir="${build.tests.classes}">
+            <include name="META-INF/**"/>
+         </fileset>
+      </jar>
+   </target>
+   
+   
+     <target name="deployejb" depends="tests-ejb-jar">
+         <copy file="${build.tests.lib}/${build.tests.ejbarchive}"
+            todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+      </target>
+   
+      <target name="undeployejb">
+         <delete file="${ENV.JBOSS_HOME}/server/default/deploy/${build.tests.ejbarchive}"/>
    </target>
 
 </project>

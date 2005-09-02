@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 
@@ -344,24 +345,33 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
    public void start() throws Exception
    {
-      InitialContext ic = new InitialContext();
-      tm = (TransactionManager)ic.lookup("java:/TransactionManager");
-      ds = (DataSource)ic.lookup("java:/DefaultDS");
-      ic.close();
-
-      Connection conn = ds.getConnection();
-      String sql = null;
-
-      sql = "CREATE TABLE DELIVERIES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
-      conn.createStatement().executeUpdate(sql);
-      sql = "CREATE TABLE MESSAGE_REFERENCES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
-      conn.createStatement().executeUpdate(sql);
-      sql = "CREATE TABLE TRANSACTIONAL_MESSAGE_REFERENCES (CHANNELID VARCHAR, TXID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
-      conn.createStatement().executeUpdate(sql);
-      sql = "CREATE TABLE MESSAGES (MESSAGEID VARCHAR, RELIABLE BOOLEAN, EXPIRATION BIGINT, TIMESTAMP BIGINT, BODY OBJECT)";
-      conn.createStatement().executeUpdate(sql);
-
-      conn.close();
+      //FIXME - Sort this out so it doesn't assume the tables are already there!!!
+      try
+      {
+         InitialContext ic = new InitialContext();
+         tm = (TransactionManager)ic.lookup("java:/TransactionManager");
+         ds = (DataSource)ic.lookup("java:/DefaultDS");
+         ic.close();
+   
+         Connection conn = ds.getConnection();
+         String sql = null;
+   
+         sql = "CREATE TABLE DELIVERIES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
+         conn.createStatement().executeUpdate(sql);
+         sql = "CREATE TABLE MESSAGE_REFERENCES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
+         conn.createStatement().executeUpdate(sql);
+         sql = "CREATE TABLE TRANSACTIONAL_MESSAGE_REFERENCES (CHANNELID VARCHAR, TXID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
+         conn.createStatement().executeUpdate(sql);
+         sql = "CREATE TABLE MESSAGES (MESSAGEID VARCHAR, RELIABLE BOOLEAN, EXPIRATION BIGINT, TIMESTAMP BIGINT, BODY OBJECT)";
+         conn.createStatement().executeUpdate(sql);
+   
+         conn.close();
+      }
+      catch (SQLException e)
+      {
+         log.warn("Caught SQLException in starting persistence manager", e);
+      
+      }
    }
 
    public void stop() throws Exception

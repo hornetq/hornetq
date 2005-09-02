@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.delegate;
 
+import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
@@ -30,4 +31,20 @@ public interface ConsumerDelegate extends Closeable, MetaDataRepository
     * @throws JMSException
     */
    Message receive(long timeout) throws JMSException;
+   
+   Destination getDestination() throws JMSException;
+   
+   boolean getNoLocal() throws JMSException;
+   
+   String getMessageSelector() throws JMSException;
+   
+   String getReceiverID();
+   
+   void setDestination(Destination dest);
+   
+   void setNoLocal(boolean noLocal);
+   
+   void setMessageSelector(String selector);
+   
+   void setReceiverID(String receiverID);
 }

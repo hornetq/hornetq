@@ -66,6 +66,7 @@ public class ConnectionTest extends MessagingTestCase
       ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
       topic = (Destination)initialContext.lookup("/topic/Topic");
    }
@@ -121,7 +122,9 @@ public class ConnectionTest extends MessagingTestCase
       }
       catch (javax.jms.IllegalStateException e)
       {
+         log.trace("Caught exception ok");
       }
+      
       connection.close();
 
 
@@ -199,6 +202,12 @@ public class ConnectionTest extends MessagingTestCase
 
    public void testStartStop() throws Exception
    {
+      
+      if (ServerManagement.isRemote())
+      {
+         //This test doesn't make sense remotely
+         return;
+      }
 
       Connection connection = cf.createConnection();
       Serializable connectionID = ((JBossConnection)connection).getConnectionID();

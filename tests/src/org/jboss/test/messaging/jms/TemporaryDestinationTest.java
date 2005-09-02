@@ -62,6 +62,7 @@ public class TemporaryDestinationTest extends MessagingTestCase
       ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
       //topic = (Destination)initialContext.lookup("/topic/Topic");
 

@@ -6,48 +6,45 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.logging.Logger;
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.destination.JBossTemporaryQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.server.container.JMSAdvisor;
+import java.io.Serializable;
 
+import javax.jms.BytesMessage;
+import javax.jms.Destination;
+import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Destination;
-import javax.jms.MessageConsumer;
-import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
-import javax.jms.QueueBrowser;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
 import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
-import javax.jms.IllegalStateException;
-
-import java.io.Serializable;
+import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossTemporaryQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -75,23 +72,19 @@ class JBossSession implements
    // Attributes ----------------------------------------------------
 
    protected SessionDelegate sessionDelegate;
-   protected boolean isXA;
+  // protected boolean isXA;
    protected int sessionType;
-   protected int acknowledgeMode;
+  // protected int acknowledgeMode;
 
    // Constructors --------------------------------------------------
 
-   public JBossSession(SessionDelegate sessionDelegate,
-                       boolean isXA,
-                       int sessionType,
-                       boolean transacted,
-                       int acknowledgeMode) throws JMSException
+   public JBossSession(SessionDelegate sessionDelegate, int sessionType) throws JMSException
    {
       this.sessionDelegate = sessionDelegate;      
-      this.isXA = isXA;
+  //    this.isXA = isXA;
       this.sessionType = sessionType;
-      sessionDelegate.addMetaData(JMSAdvisor.TRANSACTED, transacted ? Boolean.TRUE : Boolean.FALSE);
-      this.acknowledgeMode = acknowledgeMode;
+    //  sessionDelegate.addMetaData(JMSAdvisor.TRANSACTED, transacted ? Boolean.TRUE : Boolean.FALSE);
+    //  this.acknowledgeMode = acknowledgeMode;
    }
 
    // Session implementation ----------------------------------------
@@ -138,12 +131,12 @@ class JBossSession implements
 
    public boolean getTransacted() throws JMSException
    {
-      return ((Boolean)sessionDelegate.getMetaData(JMSAdvisor.TRANSACTED)).booleanValue();
+      return sessionDelegate.getTransacted();
    }
 
    public int getAcknowledgeMode() throws JMSException
    {
-      return acknowledgeMode;
+      return sessionDelegate.getAcknowledgeMode();
    }
 
    public void commit() throws JMSException
@@ -169,20 +162,20 @@ class JBossSession implements
 
    public MessageListener getMessageListener() throws JMSException
    {
-      //TODO - This is optional - not required for basic JMS1.1 compliance
-      throw new NotYetImplementedException();
+      if (log.isTraceEnabled()) { log.trace("getMessageListener called"); }
+      return sessionDelegate.getMessageListener();
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      //TODO - This is optional - not required for basic JMS1.1 compliance
-      throw new NotYetImplementedException();
+      if (log.isTraceEnabled()) { log.trace("setMessageListener called with:" + listener); }
+      sessionDelegate.setMessageListener(listener);
    }
 
    public void run()
    {
-      //TODO - This is optional - not required for basic JMS1.1 compliance
-      throw new NotYetImplementedException();
+      if (log.isTraceEnabled()) { log.trace("run called"); }
+      sessionDelegate.run();
    }
 
    public MessageProducer createProducer(Destination d) throws JMSException
@@ -199,7 +192,7 @@ class JBossSession implements
      }
      ConsumerDelegate consumerDelegate =
            sessionDelegate.createConsumerDelegate(d, null, false, null);
-     return new JBossMessageConsumer(consumerDelegate, false);
+     return new JBossMessageConsumer(consumerDelegate);
   }
 
   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
@@ -212,7 +205,7 @@ class JBossSession implements
      }
 	  ConsumerDelegate consumerDelegate =
         sessionDelegate.createConsumerDelegate(d, messageSelector, false, null);
-     return new JBossMessageConsumer(consumerDelegate, false);
+     return new JBossMessageConsumer(consumerDelegate);
   }
 
    public MessageConsumer createConsumer(Destination d,
@@ -229,7 +222,7 @@ class JBossSession implements
       }
       ConsumerDelegate consumerDelegate =
          sessionDelegate.createConsumerDelegate(d, messageSelector, noLocal, null);
-      return new JBossMessageConsumer(consumerDelegate, noLocal);
+      return new JBossMessageConsumer(consumerDelegate);
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -265,7 +258,7 @@ class JBossSession implements
       }
       ConsumerDelegate consumerDelegate =
             sessionDelegate.createConsumerDelegate(topic, null, false, name);
-      return new JBossMessageConsumer(consumerDelegate, false);
+      return new JBossMessageConsumer(consumerDelegate);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
@@ -289,7 +282,7 @@ class JBossSession implements
       }
       ConsumerDelegate consumerDelegate =
          sessionDelegate.createConsumerDelegate(topic, messageSelector, noLocal, name);
-      return new JBossMessageConsumer(consumerDelegate, noLocal);
+      return new JBossMessageConsumer(consumerDelegate);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
@@ -362,18 +355,18 @@ class JBossSession implements
    // XASession implementation
    
    public Session getSession() throws JMSException
-   {
-      if (!isXA)
+   {      
+      if (!sessionDelegate.getXA())
       {
-         throw new IllegalStateException("Is not an XASession");
+         throw new IllegalStateException("Isn't an XASession");
       }
+      
       return this;
    }
   
    public XAResource getXAResource()
    {          
-      // TODO -  not required for basic JMS1.1 compliance
-      throw new NotYetImplementedException();
+      return sessionDelegate.getXAResource();
    }
    
    // QueueSession implementation
@@ -428,6 +421,15 @@ class JBossSession implements
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
+   
+   /*
+    * This method is used by the JBossConnectionConsumer to load up the session
+    * with messages to be processed by the session's run() method
+    */
+   void addAsfMessage(Message m, String receiverID)
+   {
+      sessionDelegate.addAsfMessage(m, receiverID);
+   }
       
    // Protected -----------------------------------------------------
 

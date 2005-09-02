@@ -23,6 +23,9 @@ import javax.jms.IllegalStateException;
  * An interceptor for checking closed state. It waits for other invocations to complete before
  * allowing the close. I.e. it performs the function of a "valve"
  * 
+ * Important! There should be *one instance* of this interceptor per instance of Connection,
+ * Session, MessageProducer, MessageConsumer or QueueBrowser
+ * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a> Adapted from the JBoss 4 version
  */
@@ -186,7 +189,7 @@ public class ClosedInterceptor
    {
       if (state != NOT_CLOSED)
       {
-         throw new IllegalStateException("Already closed");
+         throw new IllegalStateException("The object is closed");
       }
       ++inuseCount;
       

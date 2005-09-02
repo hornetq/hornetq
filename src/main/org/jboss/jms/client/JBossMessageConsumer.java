@@ -8,18 +8,16 @@ package org.jboss.jms.client;
 
 import java.io.Serializable;
 
-import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
-
 import javax.jms.JMSException;
-import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.Topic;
 import javax.jms.MessageConsumer;
-import javax.jms.QueueReceiver;
-import javax.jms.TopicSubscriber;
 import javax.jms.MessageListener;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
+
+import org.jboss.jms.delegate.ConsumerDelegate;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -41,22 +39,17 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(ConsumerDelegate delegate, boolean noLocal) throws JMSException
+   public JBossMessageConsumer(ConsumerDelegate delegate) throws JMSException
    {      
       this.delegate = delegate;
-
-      delegate.addMetaData(JMSAdvisor.NO_LOCAL, noLocal ? Boolean.TRUE : Boolean.FALSE);
-
-       // make sure DESTINATION is TRANSIENT, to avoid unnecessary network traffic
-      Destination d = (Destination)delegate.removeMetaData(JMSAdvisor.DESTINATION);
-      delegate.addMetaData(JMSAdvisor.DESTINATION, d); // add as TRANSIENT
    }
 
    // MessageConsumer implementation --------------------------------
 
    public String getMessageSelector() throws JMSException
    {
-      return (String)delegate.getMetaData(JMSAdvisor.SELECTOR);
+      //return (String)delegate.getMetaData(JMSAdvisor.SELECTOR);
+      return delegate.getMessageSelector();
    }
 
 
@@ -102,7 +95,7 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public Queue getQueue() throws JMSException
    {
-      return (Queue)delegate.getMetaData(JMSAdvisor.DESTINATION);
+      return (Queue)delegate.getDestination();
    }
 
    // TopicSubscriber implementation --------------------------------
@@ -110,13 +103,13 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public Topic getTopic() throws JMSException
    {
-      return (Topic)delegate.getMetaData(JMSAdvisor.DESTINATION);
+      return (Topic)delegate.getDestination();
    }
 
 
    public boolean getNoLocal() throws JMSException
    {
-      return ((Boolean)delegate.getMetaData(JMSAdvisor.NO_LOCAL)).booleanValue();
+      return delegate.getNoLocal();
    }
 
    // Public --------------------------------------------------------

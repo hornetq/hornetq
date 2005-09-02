@@ -42,6 +42,7 @@ import javax.management.ObjectName;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -155,7 +156,9 @@ public class ServerPeer
       tm = findTransactionManager();
 
       // TODO: this should be configurable
+      
       pm = new HSQLDBPersistenceManager();
+     
 
       // TODO: is should be possible to share this with other peers
       ms = new PersistentMessageStore(serverPeerID, pm, tm);
@@ -534,8 +537,17 @@ public class ServerPeer
 
       ConnectionFactory cf = setupConnectionFactory(null);
       InitialContext ic = new InitialContext();
+      
+      //Bind in both VM and global JNDI namespaces
+      
       ic.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
       ic.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
+      
+      ic.rebind("java:/" + CONNECTION_FACTORY_JNDI_NAME, cf);
+      ic.rebind("java:/" + XACONNECTION_FACTORY_JNDI_NAME, cf);
+      
+      log.info("Bound connection factory to jndi names: " + CONNECTION_FACTORY_JNDI_NAME + " and " +
+               XACONNECTION_FACTORY_JNDI_NAME);
 
       //And now the connection factories and links as required by the TCK
       //See section 4.4.15 of the TCK user guide.

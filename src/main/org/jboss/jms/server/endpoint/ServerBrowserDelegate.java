@@ -30,17 +30,14 @@ public class ServerBrowserDelegate implements BrowserDelegate
 {
    private static final Logger log = Logger.getLogger(ServerBrowserDelegate.class);
 
-   private Channel destination;
-   private Iterator iterator;
-   private String messageSelector;
-   private String browserID;
-	
+
+   private Iterator iterator;        
+
+
    ServerBrowserDelegate(String browserID, Channel destination, String messageSelector)
       throws JMSException
    {     
-      this.browserID = browserID;
-      this.messageSelector = messageSelector;    
-      this.destination = destination;
+
 		Filter filter = null;
 		if (messageSelector != null)
 		{	
