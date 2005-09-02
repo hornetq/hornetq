@@ -7,6 +7,7 @@
 package org.jboss.jms.server.container;
 
 import org.jboss.aop.AspectManager;
+import org.jboss.aop.ClassAdvisor;
 import org.jboss.jms.server.ServerPeer;
 
 /**
