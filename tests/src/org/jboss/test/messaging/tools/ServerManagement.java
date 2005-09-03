@@ -11,6 +11,7 @@ import java.util.Hashtable;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
+import org.jboss.logging.Logger;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
@@ -45,24 +46,50 @@ public class ServerManagement
    private static boolean isRemote;
    private static RMIAdaptor rmiAdaptor;
    
-   public static void setRemote(boolean remote)
+   private static Logger log = Logger.getLogger(ServerManagement.class);
+   
+   private static void initRemote()
    {
-      //isRemote = remote;
-      
       String remoteVal = System.getProperty("remote");
-      if ("TRUE".equals(remoteVal))
+      if ("true".equals(remoteVal))
       {
          isRemote = true;
       }
       if (isRemote)
       {
-         System.out.println("Running remotely *******************************");
+         log.info("*** Tests are running against remote instance");
       }
       else
       {
-         System.out.println("Running locally *********************************");
+         log.info("*** Tests are running in INVM container");
+      }      
+   }
+   
+   public static synchronized void init() throws Exception
+   {
+      initRemote();
+      if (!isRemote)
+      {
+         startInVMServer();
       }
-      
+   }
+   
+   public static void init(TransactionManager tm) throws Exception
+   {
+      initRemote();
+      if (!isRemote)
+      {
+         startInVMServer(tm);
+      }
+   }
+   
+   public static void init(String config) throws Exception
+   {
+      initRemote();
+      if (!isRemote)
+      {
+         startInVMServer(config);
+      }
    }
    
    public static boolean isRemote()
@@ -70,19 +97,19 @@ public class ServerManagement
       return isRemote;
    }
 
-   public synchronized static void startInVMServer() throws Exception
+   private static void startInVMServer() throws Exception
    {
-      if (!isRemote) startInVMServer("transaction, remoting, aop, security", null);
+      startInVMServer("transaction, remoting, aop, security", null);
    }
 
-   public synchronized static void startInVMServer(TransactionManager tm) throws Exception
+   private static void startInVMServer(TransactionManager tm) throws Exception
    {
-      if (!isRemote) startInVMServer("transaction, remoting, aop, security", tm);
+      startInVMServer("transaction, remoting, aop, security", tm);
    }
 
-   public synchronized static void startInVMServer(String config) throws Exception
+   private synchronized static void startInVMServer(String config) throws Exception
    {
-      if (!isRemote) startInVMServer(config, null);
+      startInVMServer(config, null);
    }
 
    /**
@@ -117,7 +144,7 @@ public class ServerManagement
 
 
 
-   public synchronized static void stopInVMServer() throws Exception
+   public synchronized static void deInit() throws Exception
    {
       if (sc == null)
       {
@@ -139,6 +166,37 @@ public class ServerManagement
       RemotingJMXWrapper remoting =
             (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
       return remoting.getConnector();
+   }
+   
+   public static void setSecurityConfig(String destName, Element config) throws Exception
+   {
+      if (isRemote)
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
+         
+         rmiAdaptor.invoke(on, "setSecurityConfig",
+               new Object[] {destName, config}, new String[] { "java.lang.String" ,
+                                                             "org.w3c.dom.Element"});
+      }
+      else
+      {
+         ServerManagement.getServerPeer().setSecurityConfig(destName, config);
+      }
+   }
+   
+   public static void setDefaultSecurityConfig(Element config) throws Exception
+   {
+      if (isRemote)
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
+         
+         rmiAdaptor.invoke(on, "setDefaultSecurityConfig",
+               new Object[] {config}, new String[] { "org.w3c.dom.Element"});
+      }
+      else
+      {
+         ServerManagement.getServerPeer().setDefaultSecurityConfig(config);
+      }
    }
 
    public static void deployTopic(String name) throws Exception

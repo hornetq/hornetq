@@ -12,7 +12,6 @@
 	<classpathentry kind="lib" path="/thirdparty/javassist/lib/javassist.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
-	<classpathentry kind="lib" path="src/resources/jgroups-core.jar"/>
 	<classpathentry kind="src" path="/j2se"/>
 	<classpathentry kind="src" path="/aspects"/>
 	<classpathentry kind="lib" path="/thirdparty/gnu-regexp/lib/gnu-regexp.jar"/>
@@ -21,5 +20,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/connector"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
 	<classpathentry kind="lib" path="src/resources/hsqldb.jar"/>
+	<classpathentry kind="lib" path="/thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>

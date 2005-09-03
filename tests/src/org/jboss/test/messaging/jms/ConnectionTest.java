@@ -62,7 +62,7 @@ public class ConnectionTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployTopic("Topic");
@@ -72,7 +72,7 @@ public class ConnectionTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
       super.tearDown();
    }
 

@@ -43,13 +43,13 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
    }
 
    public void tearDown() throws Exception
    {
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
       super.tearDown();
    }
 

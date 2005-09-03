@@ -67,7 +67,7 @@ public class MessageBodyTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 
@@ -94,7 +94,7 @@ public class MessageBodyTest extends MessagingTestCase
       consumerConnection.close();
 
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
 
       super.tearDown();
    }

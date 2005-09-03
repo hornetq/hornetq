@@ -91,13 +91,13 @@ public class SecurityTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       
       setupDestinations();
       
       final String defaultSecurityConfig = 
          "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      ServerManagement.getServerPeer().setDefaultSecurityConfig(toElement(defaultSecurityConfig));
+      ServerManagement.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
  
       log.info("========= Start test: " + getName());
       
@@ -123,7 +123,7 @@ public class SecurityTest extends MessagingTestCase
       ServerManagement.undeployQueue("testTopic");
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.undeployTopic("unsecuredTopic");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
    }
    
    
@@ -720,7 +720,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"noacc\" read=\"false\" write=\"false\" create=\"false\"/>" +
          "</security>";
                      
-      ServerManagement.getServerPeer().setSecurityConfig("testQueue", toElement(testQueueConf));
+      ServerManagement.setSecurityConfig("testQueue", toElement(testQueueConf));
       
       ServerManagement.undeployTopic("testTopic");
       ServerManagement.deployTopic("testTopic");
@@ -732,7 +732,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>" +
          "</security>";
                      
-      ServerManagement.getServerPeer().setSecurityConfig("testTopic", toElement(testTopicConf));
+      ServerManagement.setSecurityConfig("testTopic", toElement(testTopicConf));
       
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.deployTopic("securedTopic");
@@ -742,7 +742,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
          "</security>";
                      
-      ServerManagement.getServerPeer().setSecurityConfig("testSecuredTopic", toElement(testSecuredTopicConf));
+      ServerManagement.setSecurityConfig("testSecuredTopic", toElement(testSecuredTopicConf));
       
       ServerManagement.undeployTopic("unsecuredTopic");
       ServerManagement.deployTopic("unsecuredTopic");

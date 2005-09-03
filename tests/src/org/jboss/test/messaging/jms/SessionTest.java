@@ -61,7 +61,7 @@ public class SessionTest extends MessagingTestCase
    {
       super.setUp();                  
       
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -79,7 +79,7 @@ public class SessionTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
       super.tearDown();
    }
    

@@ -54,7 +54,7 @@ public class MessageTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 
@@ -80,7 +80,7 @@ public class MessageTest extends MessagingTestCase
       consumerConnection.close();
 
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
 
       super.tearDown();
    }

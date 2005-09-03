@@ -253,6 +253,37 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    }
 
 
+   public void removeAllMessageData(Serializable channelID) throws Exception
+   {
+      if (log.isTraceEnabled()) { log.trace("Removing all message data for channel: " + channelID); }
+
+      Connection conn = ds.getConnection();
+
+      final String sql1 = "DELETE FROM MESSAGES WHERE MESSAGEID IN" +
+            "(SELECT MESSAGEID FROM MESSAGE_REFERENCES WHERE CHANNELID='" + channelID + "')";
+      
+      final String sql2 = "DELETE FROM DELIVERIES WHERE " +
+         "CHANNELID = '" + channelID + "'";
+      
+      final String sql3 = "DELETE FROM MESSAGE_REFERENCES WHERE " +
+         "CHANNELID = '" + channelID + "'";
+
+
+
+      conn.createStatement().executeUpdate(sql1);
+      if (log.isTraceEnabled()) { log.trace(sql1); }
+      
+      conn.createStatement().executeUpdate(sql2);
+      if (log.isTraceEnabled()) { log.trace(sql2); }
+      
+      conn.createStatement().executeUpdate(sql3);
+      if (log.isTraceEnabled()) { log.trace(sql3); }
+      
+  
+      conn.close();
+
+   }
+   
    public boolean remove(Serializable channelID, MessageReference ref) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }

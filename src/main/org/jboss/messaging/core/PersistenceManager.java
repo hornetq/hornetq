@@ -69,5 +69,7 @@ public interface PersistenceManager
     * @exception Throwable - problem with the persistent storage.
     */
    Message retrieve(Serializable messageID) throws Throwable;
+   
+   void removeAllMessageData(Serializable channelID) throws Exception;
 
 }

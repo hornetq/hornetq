@@ -48,7 +48,7 @@ public class AcknowledgmentTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -61,7 +61,7 @@ public class AcknowledgmentTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
       super.tearDown();
    }
 

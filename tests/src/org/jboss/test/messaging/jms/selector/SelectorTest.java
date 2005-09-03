@@ -54,7 +54,7 @@ public class SelectorTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 
@@ -71,7 +71,7 @@ public class SelectorTest extends MessagingTestCase
    {
       conn.close();
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
       super.tearDown();
    }
 

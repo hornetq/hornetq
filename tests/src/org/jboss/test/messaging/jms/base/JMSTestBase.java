@@ -58,7 +58,7 @@ public class JMSTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       connFactory = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -85,7 +85,7 @@ public class JMSTestBase extends MessagingTestCase
       conn.close();
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
 
       super.tearDown();
    }

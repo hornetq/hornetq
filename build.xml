@@ -578,13 +578,13 @@
 
    <!-- CTS deployment/undeployment -->
 
-   <target name="deploycts" depends="sar">
+   <target name="deploydefault" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
-         todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
+         todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
    </target>
 
-   <target name="undeploycts" depends="init">
-      <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
+   <target name="undeploydefault" depends="init">
+      <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
    </target>
 
 	<target name="deploy" depends="sar">

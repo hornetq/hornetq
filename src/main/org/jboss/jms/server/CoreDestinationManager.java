@@ -126,6 +126,15 @@ class CoreDestinationManager
     */
    Channel removeCoreDestination(boolean isQueue, String name)
    {
+      ServerPeer sp = destinationManager.getServerPeer();
+      try
+      {
+         sp.getPersistenceManager().removeAllMessageData(name);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to remove message data", e);
+      }
       if (isQueue)
       {
          return (Channel)queueMap.remove(name);
@@ -134,6 +143,7 @@ class CoreDestinationManager
       {
          return (Channel)topicMap.remove(name);
       }
+      
    }
 
    // Package protected ---------------------------------------------

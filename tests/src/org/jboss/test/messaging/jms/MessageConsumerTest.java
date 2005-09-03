@@ -70,7 +70,7 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
@@ -114,7 +114,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
 
       super.tearDown();
    }
@@ -125,6 +125,8 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testRemotingInternals() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       Connector serverConnector = ServerManagement.getConnector();
       ServerInvoker serverInvoker = serverConnector.getServerInvoker();
       JMSServerInvocationHandler invocationHandler =

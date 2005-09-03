@@ -28,7 +28,7 @@ import org.jgroups.protocols.JMS;
 
 
 /**
- * An interceptor the Application Server Facilities for concurrent processing of a consumer's
+ * An interceptor that implements the Application Server Facilities for concurrent processing of a consumer's
  * messages.
  * 
  * @see JMS 1.1 spec. section 8.2

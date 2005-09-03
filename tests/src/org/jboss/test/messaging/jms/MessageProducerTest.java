@@ -60,7 +60,7 @@ public class MessageProducerTest extends MessagingTestCase
 
       super.setUp();
 
-      ServerManagement.startInVMServer("all");
+      ServerManagement.init("all");
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployTopic("Topic2");
       ServerManagement.undeployQueue("Queue");
@@ -95,7 +95,7 @@ public class MessageProducerTest extends MessagingTestCase
       consumerConnection.close();
 
       ServerManagement.undeployTopic("Topic");
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
 
       super.tearDown();
    

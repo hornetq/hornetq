@@ -121,7 +121,8 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
-   <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
+   <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
+   <property name="build.tests.remote" value="true"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -203,9 +204,7 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
-         <!--
-         <sysproperty key="remote" value="TRUE"/>
-         -->
+         <sysproperty key="remote" value="${build.tests.remoteorlocal}"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -241,7 +240,7 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
-         <sysproperty key="remote" value="TRUE"/>
+         <sysproperty key="remote" value="${build.tests.remote}"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -281,7 +280,7 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
-         <sysproperty key="remote" value="TRUE"/>
+         <sysproperty key="remote" value="${build.tests.remote}"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>

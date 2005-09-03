@@ -29,7 +29,7 @@ public class ManagedTest extends TestCase
    
    public void tearDown() throws Exception
    {
-      ServerManagement.stopInVMServer();
+      ServerManagement.deInit();
       super.tearDown();
    }
    
