@@ -30,6 +30,8 @@ import javax.jms.TextMessage;
 
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
@@ -55,6 +57,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 8341387096828690976L;
+
+   public static final int TYPE = 0;
 
    // Static --------------------------------------------------------
 
@@ -125,14 +129,14 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    
    protected Destination replyToDestination;
 
-   protected String type;
+   protected String jmsType;
 
    // the delegate is set only on incoming messages, but we make it transient nonetheless
    protected transient SessionDelegate delegate;
 
    protected boolean propertiesWritable = true;
 
-   protected Map properties; 
+   protected Map properties;
    
    protected boolean isCorrelationIDBytes;
    
@@ -153,23 +157,74 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public JBossMessage(String messageID)
    {
-      this(messageID, false, 0, 0, null);
+      this(messageID, false, 0, System.currentTimeMillis(),
+           null, null, null, 4, null, true, null, true, null, null);
    }
 
    public JBossMessage(String messageID,
                        boolean reliable,
                        long expiration,
                        long timestamp,
-                       Serializable payload)
+                       Map coreHeaders,
+                       Serializable payload,
+                       String jmsType,
+                       int priority,
+                       Object correlationID,
+                       boolean destinationIsQueue,
+                       String destination,
+                       boolean replyToIsQueue,
+                       String replyTo,
+                       Map jmsProperties)
    {
-      super(messageID);
-      this.reliable = reliable;
-      this.expiration = expiration;
-      this.timestamp = timestamp;
-      this.payload = payload;
+      super(messageID, reliable, expiration, timestamp, coreHeaders, payload);
+
+      this.jmsType = jmsType;
+      this.priority = priority;
+
+      if (correlationID instanceof byte[])
+      {
+         isCorrelationIDBytes = true;
+         correlationIDBytes = (byte[])correlationID;
+      }
+      else
+      {
+         this.correlationID = (String)correlationID;
+      }
+
+      if (destination != null)
+      {
+         if (destinationIsQueue)
+         {
+            this.destination = new JBossQueue(destination);
+         }
+         else
+         {
+            this.destination = new JBossTopic(destination);
+         }
+      }
+
+      if (replyTo != null)
+      {
+         if (replyToIsQueue)
+         {
+            this.replyToDestination = new JBossQueue(replyTo);
+         }
+         else
+         {
+            this.replyToDestination = new JBossTopic(replyTo);
+         }
+      }
+
+      if (jmsProperties == null)
+      {
+         properties = new HashMap();
+      }
+      else
+      {
+         properties = new HashMap(jmsProperties);
+      }
+
       redelivered = false;
-      type = null;
-      properties = new HashMap();
    }
 
    protected JBossMessage(JBossMessage other)
@@ -177,7 +232,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       super(other);
       this.destination = other.destination;
       this.replyToDestination = other.replyToDestination;
-      this.type = other.type;
+      this.jmsType = other.jmsType;
       this.delegate = other.delegate;
       //this.messageWritable = other.messageWritable;
       this.propertiesWritable = other.propertiesWritable;
@@ -532,7 +587,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
     */
    public String getJMSType() throws JMSException
    {
-      return type;
+      return jmsType;
    }
 
    /**
@@ -542,7 +597,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
     */
    public void setJMSType(String type) throws JMSException
    {
-      this.type = type;
+      this.jmsType = type;
    }
 
    public long getJMSExpiration() throws JMSException
@@ -864,11 +919,19 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
+   public int getType()
+   {
+      return JBossMessage.TYPE;
+   }
+
    public void setSessionDelegate(SessionDelegate sd)
    {
       this.delegate = sd;
    }
 
+   /**
+    * @return a reference of the internal JMS property map.
+    */
    public Map getJMSProperties()
    {
       return properties;
@@ -921,7 +984,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
       out.writeObject(destination);
       out.writeObject(replyToDestination);
-      writeString(out, type);
+      writeString(out, jmsType);
       out.writeBoolean(propertiesWritable);
 
       writeMap(out, properties);
@@ -956,7 +1019,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
       destination = (Destination) in.readObject();
       replyToDestination = (Destination) in.readObject();
-      type = readString(in);
+      jmsType = readString(in);
       propertiesWritable = in.readBoolean();
       properties = readMap(in);
       

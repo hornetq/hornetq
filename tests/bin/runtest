@@ -9,13 +9,6 @@
 # core utils
 #
 
-#TARGET_CLASS=org.jboss.test.messaging.util.MutableStateTest
-#TARGET_CLASS=org.jboss.test.messaging.util.StateImplTest
-
-#TARGET_CLASS=org.jboss.test.messaging.util.SingleChannelAcknowledgmentStoreTest
-#TARGET_CLASS=org.jboss.test.messaging.util.InMemoryAcknowledgmentStoreTest
-
-
 # local core
 #
 
@@ -70,7 +63,8 @@ TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueT
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
+TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
+#TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.selector.SelectorTest
 
@@ -87,8 +81,21 @@ TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueT
 #
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSReplyToHeaderTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSCorrelationIDHeaderTest
+#TARGET_TEST=testJMSDestination
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageBodyTest
+#TARGET_TEST=testStreamMessage
+
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.TextMessageTest
+#TARGET_TEST=testPersistentSend
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.MapMessageTest
+TARGET_CLASS=org.jboss.test.messaging.jms.message.BytesMessageTest
+TARGET_TEST=testPersistentSend
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.StreamMessageTest
+#TARGET_TEST=testNonPersistentSend
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.ObjectMessageTest
+
 
 
 reldir=`dirname $0`
@@ -146,12 +153,12 @@ $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
-$reldir/../../../thirdparty/junit-junit/lib/junit.jar${SEP}\
+$reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
 $reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
-$reldir/../../../thirdparty/dom4j-dom4j/lib/dom4j.jar${SEP}\
+$reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
 $reldir/../../../system/output/lib/jboss-system.jar${SEP}\

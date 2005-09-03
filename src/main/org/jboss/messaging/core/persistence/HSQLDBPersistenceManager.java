@@ -15,16 +15,23 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.StorageIdentifier;
 import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.logging.Logger;
+import org.jboss.jms.message.JBossMessage;
 
 import javax.sql.DataSource;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+import javax.jms.Destination;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.jms.JMSException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -304,17 +311,89 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public void store(Message m) throws Throwable
    {
       Connection conn = ds.getConnection();
-      String sql = "INSERT INTO MESSAGES VALUES ( ?, ?, ?, ?, ?)";
+
+      String sql = "INSERT INTO MESSAGES VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+
       PreparedStatement stat = conn.prepareStatement(sql);
       stat.setString(1, (String)m.getMessageID());
       stat.setBoolean(2, m.isReliable());
       stat.setLong(3, m.getExpiration());
       stat.setLong(4, m.getTimestamp());
-      stat.setObject(5, m.getPayload());
+      stat.setObject(5, ((MessageSupport)m).getHeaders());
+      stat.setObject(6, m.getPayload());
+
+      int type = -1;
+      String jmsType = null;
+      int priority = -1;
+      Object correlationID = null;
+      boolean destIsQueue = false;
+      String dest = null;
+      boolean replyToIsQueue = false;
+      String replyTo = null;
+      Map jmsProperties = null;
+
+      if (m instanceof JBossMessage)
+      {
+         JBossMessage jbm = (JBossMessage)m;
+         type = jbm.getType();
+         jmsType = jbm.getJMSType();
+         priority = jbm.getJMSPriority();
+
+         // TODO TODO_CORRID
+         try
+         {
+         correlationID = jbm.getJMSCorrelationID();
+         }
+         catch(JMSException e)
+         {
+            // is this exception really supposed to be thrown?
+            correlationID = jbm.getJMSCorrelationIDAsBytes();
+         }
+
+         Destination d = jbm.getJMSDestination();
+         if (d != null)
+         {
+            destIsQueue = d instanceof Queue;
+            if (destIsQueue)
+            {
+               dest = ((Queue)d).getQueueName();
+            }
+            else
+            {
+               dest = ((Topic)d).getTopicName();
+            }
+         }
+
+         Destination r = jbm.getJMSReplyTo();
+         if (r != null)
+         {
+            replyToIsQueue = r instanceof Queue;
+            if (replyToIsQueue)
+            {
+               replyTo = ((Queue)r).getQueueName();
+            }
+            else
+            {
+               replyTo = ((Topic)r).getTopicName();
+            }
+         }
+         jmsProperties = jbm.getJMSProperties();
+      }
+
+      stat.setInt(7, type);
+      stat.setString(8, jmsType);
+      stat.setInt(9, priority);
+      stat.setObject(10, correlationID);
+      stat.setBoolean(11, destIsQueue);
+      stat.setString(12, dest);
+      stat.setBoolean(13, replyToIsQueue);
+      stat.setString(14, replyTo);
+      stat.setObject(15, jmsProperties);
       stat.executeUpdate();
       if (log.isTraceEnabled()) { log.trace(stat); }
       conn.close();
    }
+
 
    public Message retrieve(Serializable messageID) throws Throwable
    {
@@ -322,18 +401,44 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Message m = null;
       Connection conn = ds.getConnection();
 
-      String sql = "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, BODY FROM MESSAGES WHERE " +
-                   "MESSAGEID = '" + messageID + "'";
+      String sql = "SELECT " +
+                   "MESSAGEID, " +
+                   "RELIABLE, " +
+                   "EXPIRATION, " +
+                   "TIMESTAMP, " +
+                   "COREHEADERS, " +
+                   "PAYLOAD, " +
+                   "TYPE, " +
+                   "JMSTYPE, " +
+                   "PRIORITY, " +
+                   "CORRELATIONID, " +
+                   "DESTINATIONISQUEUE, " +
+                   "DESTINATION, " +
+                   "REPLYTOISQUEUE, " +
+                   "REPLYTO, " +
+                   "JMSPROPERTIES " +
+                   "FROM MESSAGES WHERE MESSAGEID = '" + messageID + "'";
+
       ResultSet rs = conn.createStatement().executeQuery(sql);
       if (log.isTraceEnabled()) { log.trace(sql); }
+
       if (rs.next())
       {
-         String id = rs.getString("MESSAGEID");
-         boolean reliable = rs.getBoolean("RELIABLE");
-         long expiration = rs.getLong("EXPIRATION");
-         long timestamp = rs.getLong("TIMESTAMP");
-         Serializable body = (Serializable) rs.getObject("BODY");
-         m = Factory.createMessage(id, reliable, expiration, timestamp, body);
+         m = Factory.createMessage(rs.getString("MESSAGEID"),
+                                   rs.getBoolean("RELIABLE"),
+                                   rs.getLong("EXPIRATION"),
+                                   rs.getLong("TIMESTAMP"),
+                                   (Map)rs.getObject("COREHEADERS"),
+                                   (Serializable)rs.getObject("PAYLOAD"),
+                                   rs.getInt("TYPE"),
+                                   rs.getString("JMSTYPE"),
+                                   rs.getInt("PRIORITY"),
+                                   rs.getObject("CORRELATIONID"),
+                                   rs.getBoolean("DESTINATIONISQUEUE"),
+                                   rs.getString("DESTINATION"),
+                                   rs.getBoolean("REPLYTOISQUEUE"),
+                                   rs.getString("REPLYTO"),
+                                   (Map)rs.getObject("JMSPROPERTIES"));
       }
       conn.close();
       return m;
@@ -345,32 +450,84 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
    public void start() throws Exception
    {
-      //FIXME - Sort this out so it doesn't assume the tables are already there!!!
+      InitialContext ic = new InitialContext();
+      tm = (TransactionManager)ic.lookup("java:/TransactionManager");
+      ds = (DataSource)ic.lookup("java:/DefaultDS");
+      ic.close();
+
+      Connection conn = ds.getConnection();
+      String sql = null;
+
       try
       {
-         InitialContext ic = new InitialContext();
-         tm = (TransactionManager)ic.lookup("java:/TransactionManager");
-         ds = (DataSource)ic.lookup("java:/DefaultDS");
-         ic.close();
-   
-         Connection conn = ds.getConnection();
-         String sql = null;
-   
-         sql = "CREATE TABLE DELIVERIES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
-         conn.createStatement().executeUpdate(sql);
-         sql = "CREATE TABLE MESSAGE_REFERENCES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
-         conn.createStatement().executeUpdate(sql);
-         sql = "CREATE TABLE TRANSACTIONAL_MESSAGE_REFERENCES (CHANNELID VARCHAR, TXID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
-         conn.createStatement().executeUpdate(sql);
-         sql = "CREATE TABLE MESSAGES (MESSAGEID VARCHAR, RELIABLE BOOLEAN, EXPIRATION BIGINT, TIMESTAMP BIGINT, BODY OBJECT)";
-         conn.createStatement().executeUpdate(sql);
-   
+         sql = "SELECT MESSAGEID FROM DELIVERIES WHERE MESSAGEID='nosuchmessage'";
+         try
+         {
+            conn.createStatement().executeQuery(sql);
+         }
+         catch(SQLException e)
+         {
+            log.debug("Table DELIVERIES not found: " + e.getMessage() +". Creating table.");
+            sql = "CREATE TABLE DELIVERIES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
+            conn.createStatement().executeUpdate(sql);
+         }
+
+         sql = "SELECT MESSAGEID FROM MESSAGE_REFERENCES WHERE MESSAGEID='nosuchmessage'";
+         try
+         {
+            conn.createStatement().executeQuery(sql);
+         }
+         catch(SQLException e)
+         {
+            log.debug("Table MESSAGE_REFERENCES not found: " + e.getMessage() +". Creating table.");
+            sql = "CREATE TABLE MESSAGE_REFERENCES (CHANNELID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
+            conn.createStatement().executeUpdate(sql);
+         }
+
+         sql = "SELECT MESSAGEID FROM TRANSACTIONAL_MESSAGE_REFERENCES WHERE MESSAGEID='nosuchmessage'";
+         try
+         {
+            conn.createStatement().executeQuery(sql);
+         }
+         catch(SQLException e)
+         {
+            log.debug("Table TRANSACTIONAL_MESSAGE_REFERENCES not found: " + e.getMessage() +". Creating table.");
+            sql = "CREATE TABLE TRANSACTIONAL_MESSAGE_REFERENCES (CHANNELID VARCHAR, TXID VARCHAR, MESSAGEID VARCHAR, STOREID VARCHAR)";
+            conn.createStatement().executeUpdate(sql);
+         }
+
+         sql = "SELECT MESSAGEID FROM MESSAGES WHERE MESSAGEID='nosuchmessage'";
+         try
+         {
+            conn.createStatement().executeQuery(sql);
+         }
+         catch(SQLException e)
+         {
+            log.debug("Table MESSAGES not found: " + e.getMessage() +". Creating table.");
+            sql = "CREATE TABLE MESSAGES (" +
+                  "MESSAGEID VARCHAR, " +
+                  "RELIABLE BOOLEAN, " +
+                  "EXPIRATION BIGINT, " +
+                  "TIMESTAMP BIGINT, " +
+                  "COREHEADERS OBJECT, " +
+                  "PAYLOAD OBJECT, " +
+                  "TYPE INT, " +
+                  "JMSTYPE VARCHAR, " +
+                  "PRIORITY INT, " +
+                  "CORRELATIONID OBJECT, " +
+                  "DESTINATIONISQUEUE BOOLEAN, " +
+                  "DESTINATION VARCHAR, " +
+                  "REPLYTOISQUEUE BOOLEAN, " +
+                  "REPLYTO VARCHAR, " +
+                  "JMSPROPERTIES OBJECT) ";
+            conn.createStatement().executeUpdate(sql);
+         }
+
          conn.close();
       }
       catch (SQLException e)
       {
          log.warn("Caught SQLException in starting persistence manager", e);
-      
       }
    }
 

@@ -16,29 +16,32 @@ import java.util.Iterator;
 import java.lang.ref.SoftReference;
 
 /**
- * A simple MessageReference implementation.
+ * A MessageReference implementation that contains a soft reference to the message.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>1.1</tt>
+ * @version <tt>$Revision$</tt>
  */
-class SimpleMessageReference extends RoutableSupport implements MessageReference
+public class SoftMessageReference extends RoutableSupport implements MessageReference
 {
    // Attributes ----------------------------------------------------
 
+   // only used for testing
+   public static boolean keepSoftReference = true;
+
    protected transient MessageStoreSupport ms;
-   protected SoftReference softReference;
+   private SoftReference softReference;
 
    // Constructors --------------------------------------------------
 
    /**
     * Required by externalization.
     */
-   public SimpleMessageReference()
+   public SoftMessageReference()
    {
    }
 
-   SimpleMessageReference(Serializable messageID, boolean reliable,
-                          long expirationTime, MessageStoreSupport ms)
+   SoftMessageReference(Serializable messageID, boolean reliable,
+                        long expirationTime, MessageStoreSupport ms)
    {
       super(messageID, reliable, expirationTime);
 
@@ -50,7 +53,7 @@ class SimpleMessageReference extends RoutableSupport implements MessageReference
    /**
     * Creates a reference based on a given message.
     */
-   public SimpleMessageReference(Message m, MessageStoreSupport ms)
+   public SoftMessageReference(Message m, MessageStoreSupport ms)
    {
       this(m.getMessageID(), m.isReliable(), m.getExpiration(), ms);
 
@@ -60,7 +63,7 @@ class SimpleMessageReference extends RoutableSupport implements MessageReference
          putHeader(name, m.getHeader(name));
       }
 
-      softReference = new SoftReference(m);
+      refreshReference(m);
    }
 
    // Message implementation ----------------------------------------
@@ -83,6 +86,7 @@ class SimpleMessageReference extends RoutableSupport implements MessageReference
       if (m == null)
       {
          m = ms.retrieve(this);
+         refreshReference(m);
       }
       return m;
    }
@@ -97,11 +101,11 @@ class SimpleMessageReference extends RoutableSupport implements MessageReference
       {
          return true;
       }
-      if (!(o instanceof SimpleMessageReference))
+      if (!(o instanceof SoftMessageReference))
       {
          return false;
       }
-      SimpleMessageReference that = (SimpleMessageReference)o;
+      SoftMessageReference that = (SoftMessageReference)o;
       if (messageID == null)
       {
          return that.messageID == null;
@@ -127,7 +131,14 @@ class SimpleMessageReference extends RoutableSupport implements MessageReference
 
    void refreshReference(Message m)
    {
-      softReference = new SoftReference(m);
+      if (keepSoftReference)
+      {
+         softReference = new SoftReference(m);
+      }
+      else if (softReference == null)
+      {
+            softReference = new SoftReference(null);
+      }
    }
 
    // Protected -----------------------------------------------------

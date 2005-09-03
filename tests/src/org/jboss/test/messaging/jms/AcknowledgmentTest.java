@@ -48,7 +48,6 @@ public class AcknowledgmentTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.setRemote(true);
       ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
@@ -61,8 +60,8 @@ public class AcknowledgmentTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      ServerManagement.stopInVMServer();
       ServerManagement.undeployQueue("Queue");
+      ServerManagement.stopInVMServer();
       super.tearDown();
    }
 
@@ -84,7 +83,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
 
-		final int NUM_MESSAGES = 1;
+		final int NUM_MESSAGES = 20;
 
 		//Send some messages
 		for (int i = 0; i < NUM_MESSAGES; i++)
@@ -151,7 +150,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
 		
-		final int NUM_MESSAGES = 1;
+		final int NUM_MESSAGES = 20;
 		
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
@@ -195,252 +194,252 @@ public class AcknowledgmentTest extends MessagingTestCase
    }
 	
 
-//
-//	/**
-//	 * Send some messages, acknowledge them once after all have been received verify they are not
-//    * resent after recovery
-//	 */
-//	public void testBulkClientAcknowledge() throws Exception
-//   {
-//
-//		Connection conn = cf.createConnection();
-//
-//		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-//		MessageProducer producer = producerSess.createProducer(queue);
-//
-//		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-//		MessageConsumer consumer = consumerSess.createConsumer(queue);
-//		conn.start();
-//
-//		final int NUM_MESSAGES = 20;
-//
-//		//Send some messages
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			Message m = producerSess.createMessage();
-//			producer.send(m);
-//		}
-//
-//		log.trace("Sent messages");
-//
-//		Message m = null;
-//		int count = 0;
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			m = consumer.receive(500);
-//			if (m == null) break;
-//			count++;
-//		}
-//
-//		assertNotNull(m);
-//
-//		m.acknowledge();
-//
-//		log.trace("Received " + count +  " messages");
-//
-//		assertEquals(count, NUM_MESSAGES);
-//
-//		consumerSess.recover();
-//
-//		log.trace("Session recover called");
-//
-//		m = consumer.receive(2000);
-//
-//		log.trace("Message is:" + m);
-//
-//		assertNull(m);
-//
-//		conn.close();
-//
-//   }
-//
-//
-//
-//	/**
-//	 * Send some messages, acknowledge some of them, and verify that the others are resent after
-//    * delivery
-//	 */
-//	public void testPartialClientAcknowledge() throws Exception
-//   {
-//
-//		Connection conn = cf.createConnection();
-//
-//		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-//		MessageProducer producer = producerSess.createProducer(queue);
-//
-//		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-//		MessageConsumer consumer = consumerSess.createConsumer(queue);
-//		conn.start();
-//
-//		final int NUM_MESSAGES = 20;
-//		final int ACKED_MESSAGES = 11;
-//
-//		//Send some messages
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			Message m = producerSess.createMessage();
-//			producer.send(m);
-//		}
-//
-//		log.trace("Sent messages");
-//
-//		int count = 0;
-//
-//		Message m = null;
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			m = consumer.receive(500);
-//			if (m == null)
-//         {
-//            break;
-//         }
-//			if (count == ACKED_MESSAGES -1)
-//         {
-//            m.acknowledge();
-//         }
-//			count++;
-//		}
-//
-//		assertNotNull(m);
-//
-//		log.trace("Received " + count +  " messages");
-//
-//		assertEquals(count, NUM_MESSAGES);
-//
-//		consumerSess.recover();
-//
-//		log.trace("Session recover called");
-//
-//		count = 0;
-//		while (true)
-//		{
-//			m = consumer.receive(500);
-//			if (m == null) break;
-//			count++;
-//		}
-//
-//		assertEquals(count, NUM_MESSAGES - ACKED_MESSAGES);
-//
-//		conn.close();
-//
-//   }
-//
-//
-//
-//	/*
-//	 * Send some messages, consume them and verify the messages are not sent upon recovery
-//	 *
-//	 */
-//	public void testAutoAcknowledge() throws Exception
-//   {
-//
-//		Connection conn = cf.createConnection();
-//
-//		Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//		MessageProducer producer = producerSess.createProducer(queue);
-//
-//		Session consumerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//		MessageConsumer consumer = consumerSess.createConsumer(queue);
-//		conn.start();
-//
-//		final int NUM_MESSAGES = 20;
-//
-//		//Send some messages
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			Message m = producerSess.createMessage();
-//			producer.send(m);
-//		}
-//
-//		log.trace("Sent messages");
-//
-//		int count = 0;
-//
-//		Message m = null;
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			m = consumer.receive(500);
-//			if (m == null) break;
-//			count++;
-//		}
-//
-//		assertNotNull(m);
-//
-//		log.trace("Received " + count +  " messages");
-//
-//		assertEquals(count, NUM_MESSAGES);
-//
-//		consumerSess.recover();
-//
-//		log.trace("Session recover called");
-//
-//		m = consumer.receive(2000);
-//
-//		log.trace("Message is:" + m);
-//
-//		assertNull(m);
-//
-//		conn.close();
-//
-//   }
-//
-//
-//	/*
-//	 * Send some messages, consume them and verify the messages are not sent upon recovery
-//	 *
-//	 */
-//	public void testLazyAcknowledge() throws Exception
-//   {
-//
-//		Connection conn = cf.createConnection();
-//
-//		Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-//		MessageProducer producer = producerSess.createProducer(queue);
-//
-//		Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-//		MessageConsumer consumer = consumerSess.createConsumer(queue);
-//		conn.start();
-//
-//		final int NUM_MESSAGES = 20;
-//
-//		//Send some messages
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			Message m = producerSess.createMessage();
-//			producer.send(m);
-//		}
-//
-//		log.trace("Sent messages");
-//
-//		int count = 0;
-//
-//		Message m = null;
-//		for (int i = 0; i < NUM_MESSAGES; i++)
-//		{
-//			m = consumer.receive(500);
-//			if (m == null) break;
-//			count++;
-//		}
-//
-//		assertNotNull(m);
-//
-//		log.trace("Received " + count +  " messages");
-//
-//		assertEquals(count, NUM_MESSAGES);
-//
-//		consumerSess.recover();
-//
-//		log.trace("Session recover called");
-//
-//		m = consumer.receive(2000);
-//
-//		log.trace("Message is:" + m);
-//
-//		assertNull(m);
-//
-//		conn.close();
-//
-//   }
+
+	/**
+	 * Send some messages, acknowledge them once after all have been received verify they are not
+    * resent after recovery
+	 */
+	public void testBulkClientAcknowledge() throws Exception
+   {
+
+		Connection conn = cf.createConnection();
+
+		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+		MessageProducer producer = producerSess.createProducer(queue);
+
+		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+		MessageConsumer consumer = consumerSess.createConsumer(queue);
+		conn.start();
+
+		final int NUM_MESSAGES = 20;
+
+		//Send some messages
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			Message m = producerSess.createMessage();
+			producer.send(m);
+		}
+
+		log.trace("Sent messages");
+
+		Message m = null;
+		int count = 0;
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			m = consumer.receive(500);
+			if (m == null) break;
+			count++;
+		}
+
+		assertNotNull(m);
+
+		m.acknowledge();
+
+		log.trace("Received " + count +  " messages");
+
+		assertEquals(count, NUM_MESSAGES);
+
+		consumerSess.recover();
+
+		log.trace("Session recover called");
+
+		m = consumer.receive(2000);
+
+		log.trace("Message is:" + m);
+
+		assertNull(m);
+
+		conn.close();
+
+   }
+
+
+
+	/**
+	 * Send some messages, acknowledge some of them, and verify that the others are resent after
+    * delivery
+	 */
+	public void testPartialClientAcknowledge() throws Exception
+   {
+
+		Connection conn = cf.createConnection();
+
+		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+		MessageProducer producer = producerSess.createProducer(queue);
+
+		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+		MessageConsumer consumer = consumerSess.createConsumer(queue);
+		conn.start();
+
+		final int NUM_MESSAGES = 20;
+		final int ACKED_MESSAGES = 11;
+
+		//Send some messages
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			Message m = producerSess.createMessage();
+			producer.send(m);
+		}
+
+		log.trace("Sent messages");
+
+		int count = 0;
+
+		Message m = null;
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			m = consumer.receive(500);
+			if (m == null)
+         {
+            break;
+         }
+			if (count == ACKED_MESSAGES -1)
+         {
+            m.acknowledge();
+         }
+			count++;
+		}
+
+		assertNotNull(m);
+
+		log.trace("Received " + count +  " messages");
+
+		assertEquals(count, NUM_MESSAGES);
+
+		consumerSess.recover();
+
+		log.trace("Session recover called");
+
+		count = 0;
+		while (true)
+		{
+			m = consumer.receive(500);
+			if (m == null) break;
+			count++;
+		}
+
+		assertEquals(count, NUM_MESSAGES - ACKED_MESSAGES);
+
+		conn.close();
+
+   }
+
+
+
+	/*
+	 * Send some messages, consume them and verify the messages are not sent upon recovery
+	 *
+	 */
+	public void testAutoAcknowledge() throws Exception
+   {
+
+		Connection conn = cf.createConnection();
+
+		Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		MessageProducer producer = producerSess.createProducer(queue);
+
+		Session consumerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		MessageConsumer consumer = consumerSess.createConsumer(queue);
+		conn.start();
+
+		final int NUM_MESSAGES = 20;
+
+		//Send some messages
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			Message m = producerSess.createMessage();
+			producer.send(m);
+		}
+
+		log.trace("Sent messages");
+
+		int count = 0;
+
+		Message m = null;
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			m = consumer.receive(500);
+			if (m == null) break;
+			count++;
+		}
+
+		assertNotNull(m);
+
+		log.trace("Received " + count +  " messages");
+
+		assertEquals(count, NUM_MESSAGES);
+
+		consumerSess.recover();
+
+		log.trace("Session recover called");
+
+		m = consumer.receive(2000);
+
+		log.trace("Message is:" + m);
+
+		assertNull(m);
+
+		conn.close();
+
+   }
+
+
+	/*
+	 * Send some messages, consume them and verify the messages are not sent upon recovery
+	 *
+	 */
+	public void testLazyAcknowledge() throws Exception
+   {
+
+		Connection conn = cf.createConnection();
+
+		Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+		MessageProducer producer = producerSess.createProducer(queue);
+
+		Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+		MessageConsumer consumer = consumerSess.createConsumer(queue);
+		conn.start();
+
+		final int NUM_MESSAGES = 20;
+
+		//Send some messages
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			Message m = producerSess.createMessage();
+			producer.send(m);
+		}
+
+		log.trace("Sent messages");
+
+		int count = 0;
+
+		Message m = null;
+		for (int i = 0; i < NUM_MESSAGES; i++)
+		{
+			m = consumer.receive(500);
+			if (m == null) break;
+			count++;
+		}
+
+		assertNotNull(m);
+
+		log.trace("Received " + count +  " messages");
+
+		assertEquals(count, NUM_MESSAGES);
+
+		consumerSess.recover();
+
+		log.trace("Session recover called");
+
+		m = consumer.receive(2000);
+
+		log.trace("Message is:" + m);
+
+		assertNull(m);
+
+		conn.close();
+
+   }
    
    // Package protected ---------------------------------------------
    

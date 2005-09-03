@@ -15,6 +15,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.MessageFormatException;
@@ -31,6 +32,7 @@ import org.jboss.util.Classes;
  *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * @version $Revision$
  *
@@ -44,12 +46,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    private static final Logger log = Logger.getLogger(JBossObjectMessage.class);
 
+   public static final int TYPE = 3;
+
    // Attributes ----------------------------------------------------
 
    protected boolean isByteArray = false;
 
-   protected byte[] objectBytes = null;
-   
    protected boolean bodyReadOnly = false;
 
    // Static --------------------------------------------------------
@@ -58,18 +60,39 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    
    public JBossObjectMessage()
    {
-      
    }
-   
+
+   public JBossObjectMessage(String messageID,
+                             boolean reliable,
+                             long expiration,
+                             long timestamp,
+                             Map coreHeaders,
+                             Serializable payload,
+                             String jmsType,
+                             int priority,
+                             Object correlationID,
+                             boolean destinationIsQueue,
+                             String destination,
+                             boolean replyToIsQueue,
+                             String replyTo,
+                             Map jmsProperties)
+   {
+      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
+            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
+            replyTo, jmsProperties);
+   }
+
+
    public JBossObjectMessage(JBossObjectMessage other)
    {
       super(other);
       this.bodyReadOnly = other.bodyReadOnly;
       this.isByteArray = other.isByteArray;
-      if (other.objectBytes != null)
+      if (other.payload != null)
       {
-         this.objectBytes = new byte[other.objectBytes.length];
-         System.arraycopy(other.objectBytes, 0, this.objectBytes, 0, other.objectBytes.length);
+         this.payload = new byte[((byte[])other.payload).length];
+         System.arraycopy((byte[])other.payload, 0, (byte[])this.payload, 0,
+                          ((byte[])other.payload).length);
       }
    }
 
@@ -89,7 +112,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    }
 
    // Public --------------------------------------------------------
-   
+
+   public int getType()
+   {
+      return JBossObjectMessage.TYPE;
+   }
+
    // ObjectMessage implementation ----------------------------------
 
    public void setObject(Serializable object) throws JMSException
@@ -100,7 +128,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       }
       if (object == null)
       {
-         objectBytes = null;
+         payload = null;
          return;
       }
       try
@@ -109,8 +137,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          {
             //cheat for byte arrays
             isByteArray = true;
-            objectBytes = new byte[((byte[]) object).length];
-            System.arraycopy(object, 0, objectBytes, 0, objectBytes.length);
+            payload = new byte[((byte[]) object).length];
+            System.arraycopy(object, 0, payload, 0, ((byte[])payload).length);
          }
          else
          {
@@ -118,7 +146,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
             ObjectOutputStream objectOut = new ObjectOutputStream(byteArray);
             objectOut.writeObject(object);
-            objectBytes = byteArray.toByteArray();
+            payload = byteArray.toByteArray();
             objectOut.close();
          }
       }
@@ -135,12 +163,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       Serializable retVal = null;
       try
       {
-         if (null != objectBytes)
+         if (null != payload)
          {
             if (isByteArray)
             {
-               retVal = new byte[objectBytes.length];
-               System.arraycopy(objectBytes, 0, retVal, 0, objectBytes.length);
+               retVal = new byte[((byte[])payload).length];
+               System.arraycopy(payload, 0, retVal, 0, ((byte[])payload).length);
             }
             else
             {
@@ -160,12 +188,14 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
                      super(is);
                   }
 
-                  protected Class resolveClass(ObjectStreamClass v) throws IOException, ClassNotFoundException
+                  protected Class resolveClass(ObjectStreamClass v)
+                        throws IOException, ClassNotFoundException
                   {
                      return Classes.loadClass(v.getName());
                   }
                }
-               ObjectInputStream input = new ObjectInputStreamExt(new ByteArrayInputStream(objectBytes));
+               ObjectInputStream input =
+                     new ObjectInputStreamExt(new ByteArrayInputStream((byte[])payload));
                retVal = (Serializable) input.readObject();
                input.close();
             }
@@ -186,7 +216,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    public void clearBody() throws JMSException
    {
-      objectBytes = null;
+      payload = null;
       bodyReadOnly = false;
       super.clearBody();
    }
@@ -212,14 +242,14 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super.writeExternal(out);
       out.writeBoolean(bodyReadOnly);
       out.writeBoolean(isByteArray);
-      if (objectBytes == null)
+      if (payload == null)
       {
          out.writeInt(-1);
       }
       else
       {
-         out.writeInt(objectBytes.length);
-         out.write(objectBytes);
+         out.writeInt(((byte[])payload).length);
+         out.write((byte[])payload);
       }
    }
 
@@ -231,12 +261,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       int length = in.readInt();
       if (length < 0)
       {
-         objectBytes = null;
+         payload = null;
       }
       else
       {
-         objectBytes = new byte[length];
-         in.readFully(objectBytes);
+         payload = new byte[length];
+         in.readFully((byte[])payload);
       }
    }
 

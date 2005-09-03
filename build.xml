@@ -589,11 +589,11 @@
 
 	<target name="deploy" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
-         todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+         todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
    </target>
 
    <target name="undeploy" depends="init">
-      <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
+      <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
    </target>
 
    <target name="test">

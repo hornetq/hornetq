@@ -15,7 +15,6 @@ import javax.security.auth.Subject;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
-import org.jboss.security.SecurityAssociation;
 
 /* Mock Security manager for testing JMS security.
  * 
@@ -25,7 +24,7 @@ import org.jboss.security.SecurityAssociation;
  */
 public class MockJBossSecurityManager implements AuthenticationManager, RealmMapping
 {
-   public static final String TEST_SECURITY_DOMAIN = "jbossmessaging-securitydomain";
+   public static final String TEST_SECURITY_DOMAIN = "messaging-securitydomain";
    
    private static final Logger log = Logger.getLogger(MockJBossSecurityManager.class);
    

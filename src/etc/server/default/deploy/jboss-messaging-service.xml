@@ -69,7 +69,7 @@
 				<role name="guest" read="true" write="true" create="true"/>
 			</security>
 		</attribute>
-		<attribute name="SecurityDomain">java:/jaas/jbossmessaging</attribute>    
+		<attribute name="SecurityDomain">java:/jaas/messaging</attribute>
 	</mbean>
    -->
 
@@ -86,7 +86,7 @@
       <!--
       <depends>jboss.messaging:service=AspectLoader</depends>
       -->
-      <attribute name="SecurityDomain">java:/jaas/jbossmessaging</attribute>
+      <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
 			<security>
 				<role name="guest" read="true" write="true" create="true"/>

@@ -46,7 +46,7 @@ import org.xml.sax.InputSource;
  * jboss-messaging.sar has been deployed to JBoss
  * login-config.xml should have an application-policy as follows:
  * 
- *   <application-policy name="jbossmessaging">
+ *   <application-policy name="messaging">
  *    <authentication>
  *     <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
  *       flag="required">
@@ -91,7 +91,6 @@ public class SecurityTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.setRemote(false);
       ServerManagement.startInVMServer("all");
       
       setupDestinations();

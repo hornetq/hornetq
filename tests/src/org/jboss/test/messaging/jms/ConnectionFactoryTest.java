@@ -43,7 +43,6 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.setRemote(false);
       ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
    }

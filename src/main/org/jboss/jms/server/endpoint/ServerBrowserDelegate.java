@@ -54,7 +54,10 @@ public class ServerBrowserDelegate implements BrowserDelegate
    
    public Message nextMessage()
    {
-      return (Message)iterator.next();
+      Routable r = (Routable)iterator.next();
+
+      if (log.isTraceEnabled()) { log.trace("returning the message corresponding to " + r); }
+      return (Message)r.getMessage();
    }
    
    

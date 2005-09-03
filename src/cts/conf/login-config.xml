@@ -130,6 +130,15 @@ $Revision$
     </authentication>
   </application-policy>
 
+   <application-policy name="messaging">
+      <authentication>
+         <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule" flag="required">
+            <module-option name="usersProperties">messaging-users.properties</module-option>
+            <module-option name="rolesProperties">messaging-roles.properties</module-option>
+         </login-module>
+      </authentication>
+   </application-policy>
+
   <!-- The default login configuration used by any security domain that
   does not have a application-policy entry with a matching name
   -->

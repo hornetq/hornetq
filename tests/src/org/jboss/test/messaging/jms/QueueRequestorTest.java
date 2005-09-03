@@ -55,7 +55,6 @@ public class QueueRequestorTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.setRemote(false);
       ServerManagement.startInVMServer("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");

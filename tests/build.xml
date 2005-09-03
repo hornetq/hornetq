@@ -203,7 +203,9 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
+         <!--
          <sysproperty key="remote" value="TRUE"/>
+         -->
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -221,6 +223,7 @@
                <!--
                <include name="**/messaging/core/local/*Test.class"/>
                -->
+               <exclude name="**/messaging/**/performance/**"/>
                <exclude name="**/messaging/**/performance/**"/>
             </fileset>
          </batchtest>

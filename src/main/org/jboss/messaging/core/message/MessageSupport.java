@@ -9,6 +9,7 @@ package org.jboss.messaging.core.message;
 import org.jboss.messaging.core.Message;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * A simple Message implementation.
@@ -61,10 +62,23 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       this(messageID, reliable, timeToLive, null);
    }
 
-   public MessageSupport(Serializable messageID, boolean reliable, long timeToLive,
+   public MessageSupport(Serializable messageID,
+                         boolean reliable,
+                         long timeToLive,
                          Serializable payload)
    {
       super(messageID, reliable, timeToLive);
+      this.payload = payload;
+   }
+
+   public MessageSupport(Serializable messageID,
+                         boolean reliable,
+                         long expiration,
+                         long timestamp,
+                         Map headers,
+                         Serializable payload)
+   {
+      super(messageID, reliable, expiration, timestamp, headers);
       this.payload = payload;
    }
 
@@ -112,6 +126,15 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       }
       return messageID.equals(that.messageID);
    }
+
+   /**
+    * @return a reference of the internal header map.
+    */
+   public Map getHeaders()
+   {
+      return headers;
+   }
+
 
    public int hashCode()
    {

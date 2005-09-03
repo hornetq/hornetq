@@ -71,7 +71,7 @@ abstract class MessageStoreSupport implements MessageStore
       }
 
       messages.put(r.getMessageID(), r);
-      return new SimpleMessageReference((Message)r, this);
+      return new SoftMessageReference((Message)r, this);
    }
 
    public MessageReference getReference(Serializable messageID)
@@ -81,7 +81,7 @@ abstract class MessageStoreSupport implements MessageStore
       {
          return null;
       }
-      return new SimpleMessageReference((Message)m, this);
+      return new SoftMessageReference((Message)m, this);
    }
 
    // Public --------------------------------------------------------
@@ -101,7 +101,7 @@ abstract class MessageStoreSupport implements MessageStore
          return (Message)r;
       }
 
-      SimpleMessageReference ref = (SimpleMessageReference)r;
+      SoftMessageReference ref = (SoftMessageReference)r;
       if (!ref.getStoreID().equals(storeID))
       {
          throw new IllegalStateException("This reference is maintained by another store (" +

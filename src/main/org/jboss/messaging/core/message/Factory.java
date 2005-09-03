@@ -10,8 +10,14 @@ package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossStreamMessage;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a> 
@@ -24,26 +30,84 @@ public class Factory
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    public static Message createMessage(Serializable messageID,
                                        boolean reliable, 
                                        long expiration, 
                                        long timestamp,
-                                       Serializable body)
+                                       Map coreHeaders,
+                                       Serializable payload,
+                                       int type,
+                                       String jmsType,
+                                       int priority,
+                                       Object correlationID,
+                                       boolean destinationIsQueue,
+                                       String destination,
+                                       boolean replyToIsQueue,
+                                       String replyTo,
+                                       Map jmsProperties)
+
    {
-      return new JBossMessage((String)messageID, reliable, expiration, timestamp, body);
+
+      Message m = null;
+
+      if (type == JBossMessage.TYPE)
+      {
+         m = new JBossMessage((String)messageID, reliable, expiration, timestamp, coreHeaders,
+                              payload, jmsType, priority, correlationID, destinationIsQueue,
+                              destination, replyToIsQueue, replyTo, jmsProperties);
+      }
+      else if (type == JBossObjectMessage.TYPE)
+      {
+         m = new JBossObjectMessage((String)messageID, reliable, expiration, timestamp, coreHeaders,
+                                    payload, jmsType, priority, correlationID, destinationIsQueue,
+                                    destination, replyToIsQueue, replyTo, jmsProperties);
+      }
+      else if (type == JBossTextMessage.TYPE)
+      {
+         m = new JBossTextMessage((String)messageID, reliable, expiration, timestamp, coreHeaders,
+                                  payload, jmsType, priority, correlationID, destinationIsQueue,
+                                  destination, replyToIsQueue, replyTo, jmsProperties);
+      }
+      else if (type == JBossBytesMessage.TYPE)
+      {
+         m = new JBossBytesMessage((String)messageID, reliable, expiration, timestamp, coreHeaders,
+                                   payload, jmsType, priority, correlationID, destinationIsQueue,
+                                   destination, replyToIsQueue, replyTo, jmsProperties);
+      }
+      else if (type == JBossMapMessage.TYPE)
+      {
+         m = new JBossMapMessage((String)messageID, reliable, expiration, timestamp, coreHeaders,
+                                 payload, jmsType, priority, correlationID, destinationIsQueue,
+                                 destination, replyToIsQueue, replyTo, jmsProperties);
+      }
+      else if (type == JBossStreamMessage.TYPE)
+      {
+         m = new JBossStreamMessage((String)messageID, reliable, expiration, timestamp, coreHeaders,
+                                    payload, jmsType, priority, correlationID, destinationIsQueue,
+                                    destination, replyToIsQueue, replyTo, jmsProperties);
+      }
+      else
+      {
+         throw new IllegalArgumentException("Unknown message type: " + type);
+      }
+
+      return m;
+
    }
    
    public static Message createMessage(Serializable messageID)
    {
-      return createMessage(messageID, false, 0, 0, null);
+      return createMessage(messageID, false, 0, 0, null, null,
+                           JBossMessage.TYPE, null, 4, null, true, null, true, null, null);
    }
    
    public static Message createMessage(Serializable messageID,
                                        boolean reliable, 
-                                       Serializable body)
+                                       Serializable payload)
    {
-      return createMessage(messageID, reliable, 0, 0, body);
+      return createMessage(messageID, reliable, 0, 0, null, payload,
+                           JBossMessage.TYPE, null, 4, null, true, null, true, null, null);
    }
 
 

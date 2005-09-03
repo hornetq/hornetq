@@ -8,6 +8,7 @@ package org.jboss.jms.message;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import org.jboss.util.Primitives;
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * @version $Revision$
  *
@@ -39,10 +41,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    private static final long serialVersionUID = -8018832209056373908L;
 
+   public static final int TYPE = 2;
+
+
    // Attributes ----------------------------------------------------
 
-   protected Map content;
-   
    //A Map message can either be in read-only or read-write mode
    //Note this is different from other message types e.g. BytesMessage which
    //can be either in read-only or write-only mode
@@ -54,13 +57,33 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    public JBossMapMessage()
    {
-      content = new HashMap();
+      payload = new HashMap();
    }
-   
+
+   public JBossMapMessage(String messageID,
+                          boolean reliable,
+                          long expiration,
+                          long timestamp,
+                          Map coreHeaders,
+                          Serializable payload,
+                          String jmsType,
+                          int priority,
+                          Object correlationID,
+                          boolean destinationIsQueue,
+                          String destination,
+                          boolean replyToIsQueue,
+                          String replyTo,
+                          Map jmsProperties)
+   {
+      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
+            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
+            replyTo, jmsProperties);
+   }
+
    public JBossMapMessage(JBossMapMessage other)
    {
       super(other);
-      content = new HashMap(other.content);
+      payload = new HashMap((Map)other.payload);
       bodyReadOnly = other.bodyReadOnly;
    }
 
@@ -70,7 +93,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    protected JBossMapMessage(MapMessage foreign) throws JMSException
    {
       super(foreign);
-      content = new HashMap();
+      payload = new HashMap();
       Enumeration names = foreign.getMapNames();
       while (names.hasMoreElements())
       {
@@ -81,7 +104,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    }
 
    // Public --------------------------------------------------------
-   
+
+   public int getType()
+   {
+      return JBossMapMessage.TYPE;
+   }
 
 
    // MapMessage implementation -------------------------------------
@@ -90,9 +117,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       checkName(name);
       if (bodyReadOnly)
+      {
          throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
 
-      content.put(name, Primitives.valueOf(value));
+      ((Map)payload).put(name, Primitives.valueOf(value));
 
    }
 
@@ -102,7 +131,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Byte(value));
+      ((Map)payload).put(name, new Byte(value));
 
    }
 
@@ -112,7 +141,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Short(value));
+      ((Map)payload).put(name, new Short(value));
 
    }
 
@@ -122,7 +151,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Character(value));
+      ((Map)payload).put(name, new Character(value));
 
    }
 
@@ -132,7 +161,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Integer(value));
+      ((Map)payload).put(name, new Integer(value));
 
    }
 
@@ -142,7 +171,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Long(value));
+      ((Map)payload).put(name, new Long(value));
 
    }
 
@@ -152,7 +181,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Float(value));
+      ((Map)payload).put(name, new Float(value));
 
    }
 
@@ -162,7 +191,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, new Double(value));
+      ((Map)payload).put(name, new Double(value));
 
    }
 
@@ -172,7 +201,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, value);
+      ((Map)payload).put(name, value);
 
    }
 
@@ -182,7 +211,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
-      content.put(name, value.clone());
+      ((Map)payload).put(name, value.clone());
 
    }
 
@@ -198,7 +227,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       for (int i = 0; i < length; i++)
          temp[i] = value[i + offset];
 
-      content.put(name, temp);
+      ((Map)payload).put(name, temp);
 
    }
 
@@ -209,25 +238,25 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          throw new MessageNotWriteableException("Message is ReadOnly !");
 
       if (value instanceof Boolean)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Byte)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Short)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Character)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Integer)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Long)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Float)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof Double)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof String)
-         content.put(name, value);
+         ((Map)payload).put(name, value);
       else if (value instanceof byte[])
-         content.put(name, ((byte[]) value).clone());
+         ((Map)payload).put(name, ((byte[]) value).clone());
       else
          throw new MessageFormatException("Invalid object type.");
 
@@ -237,7 +266,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Boolean.valueOf(null).booleanValue();
@@ -254,7 +283,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Byte.parseByte(null);
@@ -271,7 +300,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Short.parseShort(null);
@@ -290,7 +319,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          throw new NullPointerException("Invalid conversion");
@@ -305,7 +334,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Integer.parseInt(null);
@@ -326,7 +355,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Long.parseLong(null);
@@ -349,7 +378,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Float.parseFloat(null);
@@ -366,7 +395,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return Double.parseDouble(null);
@@ -385,7 +414,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return null;
@@ -416,7 +445,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = content.get(name);
+      value = ((Map)payload).get(name);
 
       if (value == null)
          return null;
@@ -429,21 +458,21 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public Object getObject(String name) throws JMSException
    {
 
-      return content.get(name);
+      return ((Map)payload).get(name);
 
    }
 
    public Enumeration getMapNames() throws JMSException
    {
 
-      return Collections.enumeration(new HashMap(content).keySet());
+      return Collections.enumeration(new HashMap(((Map)payload)).keySet());
 
    }
 
    public boolean itemExists(String name) throws JMSException
    {
 
-      return content.containsKey(name);
+      return ((Map)payload).containsKey(name);
 
    }
 
@@ -451,7 +480,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    public void clearBody() throws JMSException
    {
-      content = new HashMap();
+      payload = new HashMap();
       bodyReadOnly = false;
       super.clearBody();
    }
@@ -476,14 +505,14 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       super.writeExternal(out);
       out.writeBoolean(bodyReadOnly);
-      writeMap(out, content);
+      writeMap(out, ((Map)payload));
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
       bodyReadOnly = in.readBoolean();
-      content = readMap(in);
+      payload = (Serializable)readMap(in);
    }
 
    // Package protected ---------------------------------------------

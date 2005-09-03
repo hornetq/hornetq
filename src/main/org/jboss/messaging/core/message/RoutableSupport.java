@@ -91,11 +91,31 @@ abstract class RoutableSupport implements Routable, Externalizable
 
    public RoutableSupport(Serializable messageID, boolean reliable, long timeToLive)
    {
+      this(messageID,
+           reliable,
+           timeToLive == Long.MAX_VALUE ? 0 : System.currentTimeMillis() + timeToLive,
+           System.currentTimeMillis(),
+           null);
+   }
+
+   public RoutableSupport(Serializable messageID,
+                          boolean reliable, 
+                          long expiration, 
+                          long timestamp,
+                          Map headers)
+   {
       this.messageID = messageID;
       this.reliable = reliable;
-      timestamp = System.currentTimeMillis();
-      expiration = timeToLive == Long.MAX_VALUE ? 0 : timestamp + timeToLive;
-      headers = new HashMap();
+      this.expiration = expiration;
+      this.timestamp = timestamp;
+      if (headers == null)
+      {
+         this.headers = new HashMap();
+      }
+      else
+      {
+         this.headers = new HashMap(headers);
+      }
    }
    
    protected RoutableSupport(RoutableSupport other)

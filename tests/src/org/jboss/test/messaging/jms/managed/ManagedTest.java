@@ -20,7 +20,6 @@ public class ManagedTest extends TestCase
    {
       super.setUp();                  
       
-      ServerManagement.setRemote(true);
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       
       

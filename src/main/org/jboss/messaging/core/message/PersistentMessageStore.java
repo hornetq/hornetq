@@ -63,7 +63,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       if (log.isTraceEnabled()) { log.trace("Persisting message " + r); }
 
       pm.store((Message)r);
-      return new SimpleMessageReference((Message)r, this);
+      return new SoftMessageReference((Message)r, this);
    }
 
    public MessageReference getReference(Serializable messageID)
@@ -89,7 +89,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       {
          return null;
       }
-      return new SimpleMessageReference((Message)m, this);
+      return new SoftMessageReference((Message)m, this);
    }
 
 
@@ -118,7 +118,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
          return super.retrieve(r);
       }
 
-      SimpleMessageReference ref = (SimpleMessageReference)r;
+      SoftMessageReference ref = (SoftMessageReference)r;
       if (!ref.getStoreID().equals(getStoreID()))
       {
          throw new IllegalStateException("This reference is maintained by another store (" +

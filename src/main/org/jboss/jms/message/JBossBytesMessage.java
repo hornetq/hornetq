@@ -14,6 +14,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -34,6 +36,7 @@ import org.jboss.jms.util.JBossJMSException;
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * @version $Revision$
  *
@@ -47,10 +50,10 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
 
+   public static final int TYPE = 1;
+
    // Attributes ----------------------------------------------------
 
-   protected byte[] internalArray;
-   
    //Message body can either be write-only or read-only, bodyWriteOnly = false means the body is-read only
    protected boolean bodyWriteOnly = true;
 
@@ -66,10 +69,33 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public JBossBytesMessage()
    {
-      if (log.isTraceEnabled())
-         log.trace("Creating new JBossBytesMessage");
+      if (log.isTraceEnabled()) { log.trace("Creating new JBossBytesMessage"); }
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
+   }
+
+   public JBossBytesMessage(String messageID,
+                            boolean reliable,
+                            long expiration,
+                            long timestamp,
+                            Map coreHeaders,
+                            Serializable payload,
+                            String jmsType,
+                            int priority,
+                            Object correlationID,
+                            boolean destinationIsQueue,
+                            String destination,
+                            boolean replyToIsQueue,
+                            String replyTo,
+                            Map jmsProperties)
+   {
+      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
+            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
+            replyTo, jmsProperties);
+
+      ostream = new ByteArrayOutputStream();
+      p = new DataOutputStream(ostream);
+      bodyWriteOnly = false;
    }
 
    protected JBossBytesMessage(JBossBytesMessage other) throws JMSException
@@ -80,11 +106,12 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       
       bodyWriteOnly = other.bodyWriteOnly;
       
-      if (other.internalArray != null)
+      if (other.payload != null)
       {
          if (log.isTraceEnabled()) { log.trace("There's an internal array"); }
-         this.internalArray = new byte[other.internalArray.length];
-         System.arraycopy(other.internalArray, 0, this.internalArray, 0, other.internalArray.length);
+         this.payload = new byte[((byte[])other.payload).length];
+         System.arraycopy((byte[])other.payload, 0, (byte[])this.payload, 0,
+                          ((byte[])other.payload).length);
       }
 
       // if the message is not reset, is essential to clone ostream too
@@ -134,6 +161,12 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    }
 
    // Public --------------------------------------------------------
+
+   public int getType()
+   {
+      return JBossBytesMessage.TYPE;
+   }
+
 
    public JBossMessage doClone() throws JMSException
    {
@@ -604,9 +637,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
             if (log.isTraceEnabled())  { log.trace("Flushing ostream to array"); }
 
             p.flush();
-            internalArray = ostream.toByteArray();
+            payload = ostream.toByteArray();
 
-            if (log.isTraceEnabled()) { log.trace("Array is now: " + internalArray); }
+            if (log.isTraceEnabled()) { log.trace("Array is now: " + payload); }
 
             ostream.close();
          }
@@ -649,7 +682,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
-      internalArray = null;
+      payload = null;
       istream = null;
       m = null;
       
@@ -670,7 +703,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    public long getBodyLength() throws JMSException
    {
       checkRead();
-      return internalArray.length;
+      return ((byte[])payload).length;
    }
 
    // Externalizable implementation ---------------------------------
@@ -686,7 +719,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       else
       {
-         arrayToSend = internalArray;
+         arrayToSend = (byte[])payload;
       }
       super.writeExternal(out);
       out.writeBoolean(bodyWriteOnly);
@@ -708,12 +741,12 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       int length = in.readInt();
       if (length < 0)
       {
-         internalArray = null;
+         payload = null;
       }
       else
       {
-         internalArray = new byte[length];
-         in.readFully(internalArray);
+         payload = new byte[length];
+         in.readFully((byte[])payload);
       }
    }
 
@@ -739,8 +772,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       // read it
       if (istream == null || m == null)
       {
-         if (log.isTraceEnabled()) {  log.trace("internalArray:" + internalArray); }
-         istream = new ByteArrayInputStream(internalArray);
+         if (log.isTraceEnabled()) {  log.trace("internalArray:" + payload); }
+         istream = new ByteArrayInputStream((byte[])payload);
          m = new DataInputStream(istream);
       }
    }

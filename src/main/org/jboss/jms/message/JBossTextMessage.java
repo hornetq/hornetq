@@ -8,6 +8,8 @@ package org.jboss.jms.message;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
@@ -21,6 +23,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * @version $Revision$
  *
@@ -34,10 +37,10 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    
    private static final Logger log = Logger.getLogger(JBossTextMessage.class);
 
+   public static final int TYPE = 5;
+
    // Attributes ----------------------------------------------------
 
-   protected String content;
-   
    protected boolean bodyReadOnly = false;
 
 
@@ -48,11 +51,31 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    public JBossTextMessage()
    {
    }
-   
+
+   public JBossTextMessage(String messageID,
+                           boolean reliable,
+                           long expiration,
+                           long timestamp,
+                           Map coreHeaders,
+                           Serializable payload,
+                           String jmsType,
+                           int priority,
+                           Object correlationID,
+                           boolean destinationIsQueue,
+                           String destination,
+                           boolean replyToIsQueue,
+                           String replyTo,
+                           Map jmsProperties)
+   {
+      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
+            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
+            replyTo, jmsProperties);
+   }
+
    public JBossTextMessage(JBossTextMessage other)
    {
       super(other);
-      this.content = other.content;
+      this.payload = other.payload;
       this.bodyReadOnly = other.bodyReadOnly;
    }
 
@@ -72,6 +95,11 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Public --------------------------------------------------------
 
+   public int getType()
+   {
+      return JBossTextMessage.TYPE;
+   }
+
    // TextMessage implementation ------------------------------------
 
    public void setText(String string) throws JMSException
@@ -79,19 +107,19 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       if (bodyReadOnly)
          throw new MessageNotWriteableException("Cannot set the content; message is read-only");
 
-      content = string;
+      payload = string;
    }
 
    public String getText() throws JMSException
    {
-      return content;
+      return (String)payload;
    }
 
    // JBossMessage overrides ----------------------------------------
 
    public void clearBody() throws JMSException
    {
-      content = null;
+      payload = null;
       bodyReadOnly = false;
       super.clearBody();
    }
@@ -121,11 +149,11 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
       if (type == NULL)
       {
-         content = null;
+         payload = null;
       }
       else
       {
-         content = in.readUTF();
+         payload = in.readUTF();
 
          /*
           
@@ -182,14 +210,14 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       
       out.writeBoolean(bodyReadOnly);
 
-      if (content == null)
+      if (payload == null)
       {
          out.writeByte(NULL);
       }
       else
       {
          out.write(STRING);
-         out.writeUTF(content);
+         out.writeUTF((String)payload);
 
          /*
           
