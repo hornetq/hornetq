@@ -49,7 +49,7 @@
 
 
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.UnreliableDistributedQueueTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueTest
 #TARGET_TEST=testJGroupsChannelNotConnected
 
 #
@@ -60,10 +60,11 @@ TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueT
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
+TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
-TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.selector.SelectorTest
@@ -90,8 +91,8 @@ TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.TextMessageTest
 #TARGET_TEST=testPersistentSend
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MapMessageTest
-TARGET_CLASS=org.jboss.test.messaging.jms.message.BytesMessageTest
-TARGET_TEST=testPersistentSend
+#TARGET_CLASS=org.jboss.test.messaging.jms.message.BytesMessageTest
+#TARGET_TEST=testPersistentSend
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.StreamMessageTest
 #TARGET_TEST=testNonPersistentSend
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.ObjectMessageTest

@@ -678,7 +678,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return -1;
    }
    
-   public boolean getTransacted()
+   public boolean getTransacted() throws JMSException
    {
       log.warn("getTransacted should not be handled at the server endpoint");
       return false;

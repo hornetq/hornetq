@@ -122,21 +122,21 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
    
    public XAResource getXAResource();
    
-   public int getAcknowledgeMode();
+   public int getAcknowledgeMode() throws JMSException;
    
-   public boolean getTransacted();
+   public boolean getTransacted() throws JMSException;
    
    public void addAsfMessage(Message m, String receiverID);
    
-   public MessageListener getMessageListener();
+   public MessageListener getMessageListener() throws JMSException;
    
-   public void setMessageListener(MessageListener listener);
+   public void setMessageListener(MessageListener listener) throws JMSException;
    
    public void run();
    
-   public void setAcknowledgeMode(int ackMode);
+   public void setAcknowledgeMode(int ackMode) throws JMSException;
    
-   public void setTransacted(boolean transacted);
+   public void setTransacted(boolean transacted) throws JMSException;
    
    public void setXA(boolean XA);
    

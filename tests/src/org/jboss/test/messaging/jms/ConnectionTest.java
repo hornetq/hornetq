@@ -31,6 +31,9 @@ import java.io.Serializable;
 
 
 /**
+ * Connection tests. Contains all connection tests, except tests relating to closing a connection,
+ * which go to ConnectionClosedTest.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -78,6 +81,10 @@ public class ConnectionTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
+   
+   //
+   // Note: All tests related to closing a Connection should go to ConnectionClosedTest
+   //
 
    public void testGetClientID() throws Exception
    {
@@ -182,23 +189,6 @@ public class ConnectionTest extends MessagingTestCase
 
    }
 
-   public void testGetMetadataOnClosedConnection() throws Exception
-   {
-      Connection connection = cf.createConnection();
-      connection.close();
-
-      try
-      {
-         connection.getMetaData();
-         fail("should throw exception");
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
-   }
-
-
    public void testStartStop() throws Exception
    {
       
@@ -225,151 +215,6 @@ public class ConnectionTest extends MessagingTestCase
       assertFalse(d.isStarted());
 
       connection.close();
-   }
-
-   /* Tests for closing connection
-    * ============================
-    */
-
-
-   /* Simple close */
-   public void testClose1() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      conn.close();
-   }
-
-   /* Close twice - second close should do nothing */
-   public void testClose2() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      conn.close();
-      conn.close();
-   }
-
-   /*
-    * A close terminates all pending message receives on the connection’s session’s
-    * consumers. The receives may return with a message or null depending on
-    * whether or not there was a message available at the time of the close.
-    */
-   public void testClose3() throws Exception
-   {
-      Connection conn = cf.createConnection();
-
-      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      conn.start();
-
-      final MessageConsumer consumer = session.createConsumer(topic);
-
-      class TestRunnable implements Runnable
-      {
-         public String failed;
-
-         public void run()
-         {
-            try
-            {
-               long start = System.currentTimeMillis();
-               Message m = consumer.receive(2100);
-               if (System.currentTimeMillis() - start >= 2000)
-               {
-                  //It timed out
-                  failed = "Timed out";
-               }
-               else
-               {
-                  if (m != null)
-                  {
-                     failed = "Message Not null";
-                  }
-               }
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-               failed = e.getMessage();
-            }
-         }
-      }
-
-      TestRunnable runnable = new TestRunnable();
-      Thread t = new Thread(runnable);
-      t.start();
-
-      Thread.sleep(1000);
-
-      conn.close();
-
-      t.join();
-
-      if (runnable.failed != null)
-      {
-         fail(runnable.failed);
-      }
-
-   }
-
-   /* Shouldn't be able to create a session after connection is closed
-    */
-   public void testClose4() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      conn.close();
-
-      try
-      {
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         fail("Did not throw javax.jms.IllegalStateException");
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-
-      }
-   }
-
-   /* Test that close() hierarchically closes all child objects */
-   public void testClose5() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      sess.createConsumer(topic);
-      MessageProducer producer = sess.createProducer(topic);
-
-      Message m = sess.createMessage();
-
-
-      conn.close();
-
-      /* If the session is closed then any method invocation apart from close()
-       * will throw an IllegalStateException
-       */
-      try
-      {
-         sess.createMessage();
-         fail("Session is not closed");
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-
-
-      /* If the producer is closed then any method invocation apart from close()
-       * will throw an IllegalStateException
-       */
-
-      try
-      {
-         producer.send(m);
-         fail("Producer is not closed");
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-
-      //TODO Consumer and browser
-
    }
 
    /* Test creation of QueueSession */
