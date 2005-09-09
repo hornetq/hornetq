@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<controller>
+   
+   
+   <config name='config1'>
+      
+      <slave>
+         <slave-locator>socket://localhost:1234</slave-locator>
+         
+         <sender-job>
+            
+            <jms-server-url>jnp://localhost:1099</jms-server-url>
+            <num-connections>1</num-connections>
+            <num-sessions>1</num-sessions>
+            <ramp-delay>0</ramp-delay>
+            <destination-jndi-name>queue/testQueue</destination-jndi-name>
+            <transacted>false</transacted>
+            <transaction-size>0</transaction-size>
+            <anonymous-producer>false</anonymous-producer>
+            <message-size>1024</message-size>
+            <message-type>javax.jms.BytesMessage</message-type>
+            <delivery-mode>1</delivery-mode> <!-- 1 = non-persistent, 2 = persistent -->
+
+         </sender-job>
+      
+      </slave>
+      
+      <slave>
+         <slave-locator>socket://localhost:1235</slave-locator>
+         
+         <receiver-job>
+            
+            <jms-server-url>jnp://localhost:1099</jms-server-url>
+            <num-connections>1</num-connections>
+            <num-sessions>1</num-sessions>
+            <ramp-delay>0</ramp-delay>
+            <destination-jndi-name>queue/testQueue</destination-jndi-name>
+            <transacted>false</transacted>
+            <transaction-size>0</transaction-size>
+            <!-- auto=1, client=2, dups_ok=3, session_transacted=0 -->
+            <acknowledgement-mode>1</acknowledgement-mode>
+            <durable-subscription-name></durable-subscription-name>
+            <message-selector></message-selector>
+            <no-local>false</no-local>
+            <use-listener>false</use-listener>
+
+         </receiver-job>
+      
+      </slave>
+      
+      
+   </config>
+
+
+
+   <test name="test1">
+      
+      <config>config1</config>
+      
+      <duration>20000</duration>
+      
+
+   </test>
+      
+   
+   
+</controller>
