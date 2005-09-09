@@ -18,6 +18,8 @@ import javax.jms.Session;
  */
 public class MessageMessageFactory extends AbstractMessageFactory
 {
+   private static final long serialVersionUID = 2067915341101651125L;
+
    public Message getMessage(Session sess, int size) throws JMSException
    {
       Message m = sess.createMessage();

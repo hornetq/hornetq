@@ -8,19 +8,14 @@ package org.jboss.test.messaging.jms.perf;
 
 import java.io.Serializable;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface MessageFactory extends Serializable
+public interface ServerRequest extends Serializable
 {
-   Message getMessage(Session sess, int size) throws JMSException;
- 
-   
+   Object execute(JobStore store);
+    
 }

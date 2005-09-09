@@ -8,19 +8,22 @@ package org.jboss.test.messaging.jms.perf;
 
 import java.io.Serializable;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface MessageFactory extends Serializable
+public class RunData implements Serializable, ResultSource
 {
-   Message getMessage(Session sess, int size) throws JMSException;
- 
+   private static final long serialVersionUID = -8826202501525635283L;
+
+   public String jobName;
    
+   public double currentTP;   
+   
+   public void getResults(ResultPersistor persistor)
+   {
+      persistor.addValue("tp", currentTP);
+   }
 }

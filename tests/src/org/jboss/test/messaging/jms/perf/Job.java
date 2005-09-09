@@ -6,21 +6,21 @@
  */
 package org.jboss.test.messaging.jms.perf;
 
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface MessageFactory extends Serializable
+public interface Job extends Runnable 
 {
-   Message getMessage(Session sess, int size) throws JMSException;
- 
+   String getName();
    
+   RunData getData();
+   
+   void stop();
+   
+   void setTP(double tp);
+   
+   void getResults(ResultPersistor persistor);
 }

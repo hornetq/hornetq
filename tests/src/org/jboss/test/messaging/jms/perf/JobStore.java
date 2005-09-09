@@ -6,11 +6,7 @@
  */
 package org.jboss.test.messaging.jms.perf;
 
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
+import java.util.List;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -18,9 +14,11 @@ import javax.jms.Session;
  *
  * $Id$
  */
-public interface MessageFactory extends Serializable
+public interface JobStore
 {
-   Message getMessage(Session sess, int size) throws JMSException;
- 
-   
+   void addJob(Job test);
+
+   void removeJob(Job test);
+  
+   List getJobs();
 }

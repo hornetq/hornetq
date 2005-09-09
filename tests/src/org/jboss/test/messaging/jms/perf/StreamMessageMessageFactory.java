@@ -19,7 +19,8 @@ import javax.jms.StreamMessage;
  */
 public class StreamMessageMessageFactory extends AbstractMessageFactory
 {
- 
+   private static final long serialVersionUID = -5188777779031562013L;
+
    public Message getMessage(Session sess, int size) throws JMSException
    {
       StreamMessage m = sess.createStreamMessage();

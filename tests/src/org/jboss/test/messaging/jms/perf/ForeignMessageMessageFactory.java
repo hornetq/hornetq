@@ -24,6 +24,7 @@ import javax.jms.Session;
  */
 public class ForeignMessageMessageFactory extends AbstractMessageFactory
 {
+   private static final long serialVersionUID = -4148818964934832961L;
 
    public Message getMessage(Session sess, int size) throws JMSException
    {

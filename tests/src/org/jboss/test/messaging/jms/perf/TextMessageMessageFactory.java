@@ -20,6 +20,8 @@ import javax.jms.TextMessage;
  */
 public class TextMessageMessageFactory extends AbstractMessageFactory
 {
+   private static final long serialVersionUID = -6708553993263367407L;
+
    public Message getMessage(Session sess, int size) throws JMSException
    {
       byte[] bytes = getBytes(size);

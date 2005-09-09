@@ -6,21 +6,18 @@
  */
 package org.jboss.test.messaging.jms.perf;
 
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface MessageFactory extends Serializable
+public class DeploymentException extends Exception
 {
-   Message getMessage(Session sess, int size) throws JMSException;
- 
-   
+   private static final long serialVersionUID = -2051237190722275283L;
+
+   public DeploymentException(String s)
+   {
+      super(s);
+   }
 }

@@ -19,6 +19,8 @@ import javax.jms.Session;
  */
 public class MapMessageMessageFactory extends AbstractMessageFactory
 {
+   private static final long serialVersionUID = 4180086702224773753L;
+
    public Message getMessage(Session sess, int size) throws JMSException
    {
       MapMessage theMessage = sess.createMapMessage();

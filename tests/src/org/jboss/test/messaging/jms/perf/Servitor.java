@@ -12,7 +12,9 @@ package org.jboss.test.messaging.jms.perf;
  *
  * $Id$
  */
-public interface Failable extends Runnable
+public interface Servitor extends Runnable
 {
    boolean isFailed();
+   
+   void stop();
 }

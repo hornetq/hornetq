@@ -20,6 +20,7 @@ import javax.jms.Session;
  */
 public class BytesMessageMessageFactory extends AbstractMessageFactory
 {
+   private static final long serialVersionUID = 594068477879961702L;
 
    public Message getMessage(Session sess, int size) throws JMSException
    {
