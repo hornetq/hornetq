@@ -106,18 +106,6 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,
                            scd.getConnectionID(), PayloadKey.AS_IS);
       
-      /*
-      if (defaultClientID != null)
-      {
-         metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CLIENT_ID,
-               defaultClientID, PayloadKey.AS_IS);
-      }
-      */
-      
-
-      //metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_META_DATA,
-      //                     new JBossConnectionMetaData());
-
       h.getMetaData().mergeIn(metadata);
 
       // TODO

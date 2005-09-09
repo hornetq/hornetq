@@ -8,6 +8,7 @@ package org.jboss.jms.server.endpoint;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -71,8 +72,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    // Static --------------------------------------------------------
    
-   
-   
    // Attributes ----------------------------------------------------
    
    private int sessionIDCounter;
@@ -107,8 +106,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       this.serverPeer = serverPeer;
       sessionIDCounter = 0;
-      sessions = new HashMap();
-      temporaryDestinations = new HashSet();
+      sessions = new ConcurrentReaderHashMap();
+      temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
       started = false;
       connectionID = new GUID().toString();
       receivers = new ConcurrentReaderHashMap();
@@ -151,10 +150,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
             PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
-      
-      // metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.ACKNOWLEDGMENT_MODE,
-      //      new Integer(acknowledgmentMode), PayloadKey.AS_IS);
-      
+          
       h.getMetaData().mergeIn(metadata);
       
       // TODO 
@@ -219,9 +215,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       }
       this.temporaryDestinations = null;
       this.receivers = null;
-      
-      //TODO do we need to traverse the sessions and close them explicitly here?
-      //Or do we rely on the ClosedInterceptor to do this?
    }
    
    public void closing() throws JMSException
@@ -413,18 +406,12 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    public ServerSessionDelegate putSessionDelegate(String sessionID, ServerSessionDelegate d)
    {
-      synchronized(sessions)
-      {
-         return (ServerSessionDelegate)sessions.put(sessionID, d);
-      }
+      return (ServerSessionDelegate)sessions.put(sessionID, d);  
    }
    
    public ServerSessionDelegate getSessionDelegate(String sessionID)
    {
-      synchronized(sessions)
-      {
-         return (ServerSessionDelegate)sessions.get(sessionID);
-      }
+      return (ServerSessionDelegate)sessions.get(sessionID);
    }
    
    public ServerPeer getServerPeer()
@@ -532,42 +519,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       }
    }
    
-   /*
-    private boolean isActiveTransaction()
-    {
-    TransactionManager tm = serverPeer.getTransactionManager();
-    if (tm == null)
-    {
-    return false;
-    }
-    try
-    {
-    return tm.getTransaction() != null;
-    }
-    catch(Exception e)
-    {
-    log.debug("failed to access transaction manager", e);
-    return false;
-    }
-    }
-    */
-   
-   /*
-    * Get a new tx, suspending any tx currently associated with the thread.
-    * this may be the case if the jms server is running inside the application server and
-    * sharing a transaction manager with other services.
-    */
-   private Transaction getNewTx() throws SystemException, NotSupportedException
-   {
-      TransactionManager tm = serverPeer.getTransactionManager();
-      Transaction suspended = tm.suspend();
-      if (log.isTraceEnabled()) { log.trace("Thread already has tx, suspending it"); }
-      tm.begin();
-      return suspended;
-   }
-   
-   private void handleFailure(Throwable t, Transaction tx)
-   throws JMSException
+ 
+   private void handleFailure(Throwable t, Transaction tx) throws JMSException
    {
       final String msg1 = "Exception caught in processing transaction";
       log.error(msg1, t);

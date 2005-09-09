@@ -8,6 +8,7 @@ import junit.framework.TestCase;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 
 
 public class ManagedTest extends TestCase
@@ -18,9 +19,9 @@ public class ManagedTest extends TestCase
    
    public void setUp() throws Exception
    {
-      super.setUp();                  
+     // super.setUp();                  
       
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      initialContext = new InitialContext(RemoteInitialContextFactory.getJNDIEnvironment());
       
       
       log.debug("Done setup()");
@@ -29,8 +30,8 @@ public class ManagedTest extends TestCase
    
    public void tearDown() throws Exception
    {
-      ServerManagement.deInit();
-      super.tearDown();
+     // ServerManagement.deInit();
+     // super.tearDown();
    }
    
    

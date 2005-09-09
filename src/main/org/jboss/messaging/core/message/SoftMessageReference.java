@@ -26,7 +26,19 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
    // Attributes ----------------------------------------------------
 
    // only used for testing
-   public static boolean keepSoftReference = true;
+   
+   
+   /* FIXME
+    * Note I have set this to false for the following reason:
+    * 
+    * When we are using soft references, and the server is handling a lot of messages
+    * the memory eventually reaches max. available memory, then the server spends all it's time
+    * gc'ing the soft references, causing it to slow to a crawl.
+    * This was noticed in perf. testing and made the server unusable.
+    * Perhaps a LRU cache would be a better choice in this situation?
+    * -Tim
+    */
+   public static boolean keepSoftReference = false;
 
    protected transient MessageStoreSupport ms;
    private SoftReference softReference;

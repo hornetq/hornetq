@@ -12,6 +12,8 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.logging.Logger;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
@@ -49,8 +51,8 @@ class CoreDestinationManager
 
    CoreDestinationManager(DestinationManagerImpl destinationManager) throws Exception
    {
-      queueMap = new HashMap();
-      topicMap = new HashMap();
+      queueMap = new ConcurrentReaderHashMap();
+      topicMap = new ConcurrentReaderHashMap();
       this.destinationManager = destinationManager;
    }
 
@@ -130,6 +132,9 @@ class CoreDestinationManager
       try
       {
          sp.getPersistenceManager().removeAllMessageData(name);
+         
+         //FIXME - Also need to remove any message refs stored in memory for this destination
+         
       }
       catch (Exception e)
       {

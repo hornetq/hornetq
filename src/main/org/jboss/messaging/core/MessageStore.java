@@ -34,5 +34,7 @@ public interface MessageStore
    MessageReference reference(Routable r) throws Throwable;
 
    MessageReference getReference(Serializable messageID);
+   
+   void removeReference(Serializable messageID);
 
 }

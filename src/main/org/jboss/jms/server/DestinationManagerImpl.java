@@ -23,6 +23,8 @@ import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+
 /**
  * Manages destinations. Manages JNDI mapping and delegates core destination management to a
  * CoreDestinationManager.
@@ -62,8 +64,8 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       //TODO close this inital context when DestinationManager stops
       initialContext = new InitialContext();
       coreDestinationManager = new CoreDestinationManager(this);
-      queueNameToJNDI = new HashMap();
-      topicNameToJNDI = new HashMap();
+      queueNameToJNDI = new ConcurrentReaderHashMap();
+      topicNameToJNDI = new ConcurrentReaderHashMap();
    }
 
    // DestinationManager implementation -----------------------------
@@ -106,12 +108,14 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       return serverPeer;
    }
    
+   /*
    public DestinationManagerImpl getDestinationManager()
    {
       return this;
    }
+   */
 
-   public void addTemporaryDestination(Destination jmsDestination) throws JMSException
+   public synchronized void addTemporaryDestination(Destination jmsDestination) throws JMSException
    {
       coreDestinationManager.addCoreDestination(jmsDestination);
    }

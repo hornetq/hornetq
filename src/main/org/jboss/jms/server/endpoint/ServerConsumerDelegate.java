@@ -24,6 +24,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
@@ -94,6 +95,8 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       }
       this.subscription = subscription;
       deliveries = new HashMap();
+ 
+      
    }
 
    // Receiver implementation ---------------------------------------
@@ -123,6 +126,8 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
          if (log.isTraceEnabled()) { log.trace("queueing the message " + message + " for delivery"); }
          threadPool.execute(new DeliveryRunnable(callbackHandler, message, log));
+         
+         
       }
       catch(InterruptedException e)
       {
@@ -222,6 +227,15 @@ public class ServerConsumerDelegate implements Receiver, Closeable
          Delivery d = (Delivery)deliveries.get(messageID);
          d.acknowledge();
          deliveries.remove(messageID);
+         
+         //FIXME
+         //Previously message references were not being removed from the message store after the
+         //message had been delivered, causing a catastrophic memory leak and very quick server
+         //failure under load.
+         //This is a quick and dirty fix to remove the reference after delivery
+         //I imagine it could be integrated into core better
+         this.sessionEndpoint.connectionEndpoint.getServerPeer().getMessageStore().removeReference(messageID);
+         
       }
       catch(Throwable t)
       {

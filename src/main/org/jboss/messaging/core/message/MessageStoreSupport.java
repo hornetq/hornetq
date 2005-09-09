@@ -50,6 +50,11 @@ abstract class MessageStoreSupport implements MessageStore
    {
       return storeID;
    }
+   
+   public void removeReference(Serializable messageID)
+   {
+      messages.remove(messageID);
+   }
 
    public MessageReference reference(Routable r) throws Throwable
    {

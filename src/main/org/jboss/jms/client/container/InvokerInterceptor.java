@@ -6,8 +6,12 @@
  */
 package org.jboss.jms.client.container;
 
+import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.marshal.MarshalFactory;
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.InvocationResponse;
@@ -22,6 +26,8 @@ import java.io.Serializable;
 public class InvokerInterceptor implements Interceptor, Serializable
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(InvokerInterceptor.class);
 
    public static final InvokerInterceptor singleton = new InvokerInterceptor();
 
@@ -49,20 +55,33 @@ public class InvokerInterceptor implements Interceptor, Serializable
 
       if (client == null)
       {
+         //We shouldn't have to do this programmatically - it should pick it up from the params
+         //on the locator uri, but that doesn't seem to work
+         Marshaller marshaller = new org.jboss.invocation.unified.marshall.InvocationMarshaller();
+         UnMarshaller unmarshaller = new org.jboss.invocation.unified.marshall.InvocationUnMarshaller();
+         MarshalFactory.addMarshaller("invocation", marshaller, unmarshaller);
+         
+         
+         if (log.isTraceEnabled()) { log.trace("client is null"); }
          InvokerLocator locator = (InvokerLocator)invocation.getMetaData(REMOTING, INVOKER_LOCATOR);
          if (locator == null)
          {
             throw new RuntimeException("No InvokerLocator supplied.  Can't invoke remotely!");
          }
+         if (log.isTraceEnabled()) { log.trace("Locator is:" + locator); }
          String subsystem = (String)invocation.getMetaData(REMOTING, SUBSYSTEM);
          if (subsystem == null)
          {
             throw new RuntimeException("No subsystem supplied.  Can't invoke remotely!");
          }
+         if (log.isTraceEnabled()) { log.trace("Subsystem is:" + subsystem); }
          client = new Client(locator, subsystem);
+         if (log.isTraceEnabled()) { log.trace("Created client"); }
       }
 
+      if (log.isTraceEnabled()) { log.trace("Invoking server"); }
       InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
+      if (log.isTraceEnabled()) { log.trace("Invoked server"); }
       invocation.setResponseContextInfo(response.getContextInfo());
       return response.getResponse();
    }

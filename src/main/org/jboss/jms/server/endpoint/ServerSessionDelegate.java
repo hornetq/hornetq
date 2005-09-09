@@ -56,6 +56,7 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
 /**
@@ -227,9 +228,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID, consumerID, PayloadKey.AS_IS);
 
-      //metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SELECTOR, selector, PayloadKey.AS_IS);
-      //metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.DESTINATION, jmsDestination);
-
       h.getMetaData().mergeIn(metadata);
 
       // TODO
@@ -241,7 +239,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          throw new JMSException("null callback handler");
       }
-      
+               
       DurableSubscriptionHolder subscription = null;
       if (subscriptionName != null)
       {
@@ -678,7 +676,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return -1;
    }
    
-   public boolean getTransacted() throws JMSException
+   public boolean getTransacted()
    {
       log.warn("getTransacted should not be handled at the server endpoint");
       return false;
@@ -763,10 +761,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    /**
     * IoC
     */
+   
    public void setCallbackHandler(InvokerCallbackHandler callbackHandler)
    {
       this.callbackHandler = callbackHandler;
    }
+   
 
 
    // Package protected ---------------------------------------------
@@ -810,9 +810,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
     */
    protected synchronized String generateConsumerID()
    {
-      //if (log.isTraceEnabled()) { log.trace("consumerIDCounter:" + consumerIDCounter); }
-      //return "Consumer" + consumerIDCounter++;
-      
       return "Consumer" + new GUID().toString();
    }
 	

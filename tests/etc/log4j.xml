@@ -27,7 +27,9 @@
       <param name="Append" value="false"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+   <!--   <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>  -->
+     
+   <!-- <param name="Threshold" value="INFO"/>  -->
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -45,8 +47,8 @@
    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="Target" value="System.out"/>
-      <!-- <param name="Threshold" value="INFO"/> -->
-      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+       <param name="Threshold" value="INFO"/> 
+      <!-- <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>  -->
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -77,14 +79,7 @@
    <category name="org.jboss.jms.client">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
-
-   <category name="org.jboss.jms.server">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-
-   <category name="org.jboss.messaging.core">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
+   
 
    <category name="org.jboss.test.messaging">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>

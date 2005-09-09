@@ -124,6 +124,7 @@
         <path refid="jboss.j2se.classpath"/>
         <path refid="jboss.system.classpath"/>
         <path refid="jboss.security.classpath"/>
+        <path refid="jboss.server.classpath"/>
      </path>
 
     <!-- ===== -->

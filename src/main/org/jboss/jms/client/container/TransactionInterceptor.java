@@ -45,7 +45,9 @@ public class TransactionInterceptor implements Interceptor, Serializable
    
    protected JBossXAResource xaResource;
    
+   protected boolean transacted;
    
+   protected boolean XA;     
    
    //protected Object txID;
    
@@ -88,6 +90,8 @@ public class TransactionInterceptor implements Interceptor, Serializable
             log.trace("transacted:" + transacted + ", xa:" + isXA);
          }
          
+         sd.setTransacted(transacted);
+         sd.setXA(isXA);
          if (transacted)
          {            
             ResourceManager theRm = ((ConnectionDelegate)this.getDelegate(mi)).getResourceManager();
@@ -112,13 +116,13 @@ public class TransactionInterceptor implements Interceptor, Serializable
       {
          if (log.isTraceEnabled()) { log.trace("commit"); }
          
-         SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
+         //SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
          
-         if (!sessDelegate.getTransacted())
+         if (!this.transacted)
          {
             throw new IllegalStateException("Cannot commit a non-transacted session");
          }
-         if (sessDelegate.getXA())
+         if (this.XA)
          {
             throw new TransactionInProgressException("Cannot call commit on an XA session");
          }
@@ -141,11 +145,11 @@ public class TransactionInterceptor implements Interceptor, Serializable
          if (log.isTraceEnabled()) { log.trace("rollback"); }
          
          SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
-         if (!sessDelegate.getTransacted())
+         if (!this.transacted)
          {
             throw new IllegalStateException("Cannot rollback a non-transacted session");
          }
-         if (sessDelegate.getXA())
+         if (this.XA)
          {
             throw new TransactionInProgressException("Cannot call rollback on an XA session");
          }
@@ -198,8 +202,8 @@ public class TransactionInterceptor implements Interceptor, Serializable
       {
          if (log.isTraceEnabled()) { log.trace("predeliver"); }
          
-         SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
-         if (!sessDelegate.getTransacted())
+         //SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
+         if (!this.transacted)
          {
             //Not transacted - do nothing - ack will happen when delivered() is called
             if (log.isTraceEnabled()) { log.trace("Session is not transacted"); }
@@ -241,6 +245,28 @@ public class TransactionInterceptor implements Interceptor, Serializable
          this.rm = theRM;
          return null;
       }
+      else if ("getTransacted".equals(methodName))
+      {
+         //SessionState state = getSessionState(mi);
+         return new Boolean(transacted);
+      }
+      else if ("getXA".equals(methodName))
+      {
+         //SessionState state = getSessionState(mi);
+         return new Boolean(XA);
+      }
+      else if ("setTransacted".equals(methodName))
+      {
+         this.transacted = ((Boolean)mi.getArguments()[0]).booleanValue();
+         return null;
+      }
+      else if ("setXA".equals(methodName))
+      {
+         this.XA = ((Boolean)mi.getArguments()[0]).booleanValue();
+         return null;
+      }
+      
+      
       return invocation.invokeNext();            
    }
    
