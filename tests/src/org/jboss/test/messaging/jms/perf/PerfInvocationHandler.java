@@ -37,9 +37,9 @@ public class PerfInvocationHandler implements ServerInvocationHandler, JobStore
       tests.add(test);
    }
    
-   public void removeJob(Job test)
+   public void removeJobs()
    {
-      tests.remove(test);
+      tests.clear();
    }
    
    public List getJobs()

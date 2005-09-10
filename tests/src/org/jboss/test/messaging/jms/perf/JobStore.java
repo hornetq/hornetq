@@ -18,7 +18,7 @@ public interface JobStore
 {
    void addJob(Job test);
 
-   void removeJob(Job test);
+   void removeJobs();
   
    List getJobs();
 }

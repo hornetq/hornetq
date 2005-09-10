@@ -29,6 +29,8 @@ public class StopRequest implements ServerRequest
          job.stop();
       }
       
+      store.removeJobs();
+      
       return null;
    }
 }
