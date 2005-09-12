@@ -41,8 +41,8 @@
       <source id="main">
          <include component="oswego-concurrent"/>
          <include component="javassist"/>
-         <include component="javagroups-javagroups"/>
-         <include component="junit-junit"/>
+         <include component="jgroups"/>
+         <include component="junit"/>
          <include component="gnu-regexp"/>
          <include component="common"/>
          <include component="j2ee"/>
@@ -52,13 +52,15 @@
          <include component="j2se"/>
          <include component="system"/>
          <include input="sun-config-parser"/>
+         <include component="server"/>
+         <include component="security"/>
       </source>
 
       <!-- ============================================================ -->
       <!-- jboss-jms.jar                                             -->
       <!-- ============================================================ -->
 
-      <artifactdef artifact="jboss-common.jar">
+      <artifactdef artifact="jboss-messaging.jar">
          <include input="main">
             <include pattern="org/jboss/**"/>
          </include>

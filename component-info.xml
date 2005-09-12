@@ -3,9 +3,9 @@
               module="jboss-jms"
               version="5.0-SNAPSHOT"
    >
-      <artifact id="jboss-jms.jar"/>
+      <artifact id="jboss-messaging.jar"/>
       <export>
-         <include input="jboss-jms.jar"/>
+         <include input="jboss-messaging.jar"/>
       </export>
    </component>
 </project>
