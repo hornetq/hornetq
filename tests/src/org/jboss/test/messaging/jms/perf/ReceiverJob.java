@@ -78,11 +78,11 @@ public class ReceiverJob extends AbstractJob
    {  
       super.importXML(element);
       
-      this.ackMode = Integer.parseInt(getUniqueChildContent(element, "acknowledgement-mode"));
-      this.subName = getOptionalChildContent(element, "durable-subscription-name", null);
-      this.selector = getOptionalChildContent(element, "mesage-selector", null);
-      this.noLocal = getOptionalChildBooleanContent(element, "no-local", false);
-      this.asynch = getOptionalChildBooleanContent(element, "use-listener", false);
+      this.ackMode = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "acknowledgement-mode"));
+      this.subName = MetadataUtils.getOptionalChildContent(element, "durable-subscription-name", null);
+      this.selector = MetadataUtils.getOptionalChildContent(element, "mesage-selector", null);
+      this.noLocal = MetadataUtils.getOptionalChildBooleanContent(element, "no-local", false);
+      this.asynch = MetadataUtils.getOptionalChildBooleanContent(element, "use-listener", false);
       
       if (ackMode != Session.AUTO_ACKNOWLEDGE && ackMode != Session.CLIENT_ACKNOWLEDGE &&
             ackMode != Session.DUPS_OK_ACKNOWLEDGE && ackMode != Session.SESSION_TRANSACTED)

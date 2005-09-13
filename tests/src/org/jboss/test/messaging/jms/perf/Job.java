@@ -21,6 +21,5 @@ public interface Job extends Runnable
    void stop();
    
    void setTP(double tp);
-   
-   void getResults(ResultPersistor persistor);
+
 }

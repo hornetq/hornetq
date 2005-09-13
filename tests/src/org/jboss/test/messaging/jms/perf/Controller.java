@@ -106,7 +106,7 @@ public class Controller
       log.info("root element name is " + root.getNodeName());
       
       
-      Iterator iter = XMLLoadableSupport.getChildrenByTagName(root, "config");
+      Iterator iter = MetadataUtils.getChildrenByTagName(root, "config");
       
       while (iter.hasNext())
       {
@@ -115,7 +115,7 @@ public class Controller
          configs.put(config.getName(), config);
       }
       
-      iter = XMLLoadableSupport.getChildrenByTagName(root, "test");
+      iter = MetadataUtils.getChildrenByTagName(root, "test");
       
       while (iter.hasNext())
       {
@@ -185,7 +185,7 @@ public class Controller
                    Job job = (Job)iter3.next();
                    if (job.getName().equals(jobName))
                    {
-                      job.getResults(persistor);
+                      ((ResultSource)job).getResults(persistor);
                       break;
                    }
                 }

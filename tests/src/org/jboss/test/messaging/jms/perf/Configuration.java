@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class Configuration extends XMLLoadableSupport implements Serializable
+public class Configuration implements XMLLoadable, Serializable
 {
    private static final long serialVersionUID = -4447924453439700666L;
 
@@ -40,11 +40,11 @@ public class Configuration extends XMLLoadableSupport implements Serializable
    {
       log.info("Loading configuration");
       
-      name = getElementAttribute(e, "name");
+      name = MetadataUtils.getElementAttribute(e, "name");
       
       log.info("Name is " + name);
       
-      Iterator iter = getChildrenByTagName(e, "slave");
+      Iterator iter = MetadataUtils.getChildrenByTagName(e, "slave");
       
       while (iter.hasNext())
       {

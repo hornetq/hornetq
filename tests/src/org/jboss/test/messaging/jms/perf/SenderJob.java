@@ -74,9 +74,9 @@ public class SenderJob extends AbstractJob
    {  
       super.importXML(element);
       
-      this.anon = getOptionalChildBooleanContent(element, "anonymous-producer", false);
-      this.msgSize = Integer.parseInt(getUniqueChildContent(element, "message-size"));
-      String messageType = getUniqueChildContent(element, "message-type");
+      this.anon = MetadataUtils.getOptionalChildBooleanContent(element, "anonymous-producer", false);
+      this.msgSize = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "message-size"));
+      String messageType = MetadataUtils.getUniqueChildContent(element, "message-type");
       
       if ("javax.jms.Message".equals(messageType))
       {
@@ -111,7 +111,7 @@ public class SenderJob extends AbstractJob
          throw new DeploymentException("Invalid message type:" + messageType);
       }
       
-      this.deliveryMode = Integer.parseInt(getUniqueChildContent(element, "delivery-mode"));
+      this.deliveryMode = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "delivery-mode"));
       
       if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
       {

@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class Test extends XMLLoadableSupport
+public class Test implements XMLLoadable
 {
    private static final Logger log = Logger.getLogger(Test.class);   
    
@@ -49,15 +49,15 @@ public class Test extends XMLLoadableSupport
    {
       log.info("Loading test:" + el.getNodeName());
       
-      name = XMLLoadableSupport.getElementAttribute(el, "name");
+      name = MetadataUtils.getElementAttribute(el, "name");
       
       //name = XMLLoadableSupport.getElementAttribute(el, name);
       
       log.info("Test Name is " + name);
       
-      configName = getUniqueChildContent(el, "config"); 
+      configName = MetadataUtils.getUniqueChildContent(el, "config"); 
       
-      duration = Long.parseLong(getUniqueChildContent(el, "duration"));
+      duration = Long.parseLong(MetadataUtils.getUniqueChildContent(el, "duration"));
       
       log.info("config is" + configName);
 

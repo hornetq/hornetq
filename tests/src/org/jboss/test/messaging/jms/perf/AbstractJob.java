@@ -24,12 +24,9 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public abstract class AbstractJob extends XMLLoadableSupport implements Job, Serializable, ResultSource
+public abstract class AbstractJob implements XMLLoadable, Job, Serializable, ResultSource
 {
    private transient static final Logger log = Logger.getLogger(AbstractJob.class);
-   
-
-   
    
    protected int numConnections;
    
@@ -274,13 +271,13 @@ public abstract class AbstractJob extends XMLLoadableSupport implements Job, Ser
    
    public void importXML(Element element) throws DeploymentException
    {  
-      this.serverURL = getUniqueChildContent(element, "jms-server-url");
-      this.numConnections = Integer.parseInt(getUniqueChildContent(element, "num-connections"));
-      this.numSessions = Integer.parseInt(getUniqueChildContent(element, "num-sessions"));
-      this.rampDelay = Long.parseLong(getUniqueChildContent(element, "ramp-delay"));
-      this.destName = getUniqueChildContent(element, "destination-jndi-name");
-      this.transacted  = getOptionalChildBooleanContent(element, "transacted", false);
-      this.transactionSize  = Integer.parseInt(getOptionalChildContent(element, "transaction-size", "0"));
+      this.serverURL = MetadataUtils.getUniqueChildContent(element, "jms-server-url");
+      this.numConnections = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "num-connections"));
+      this.numSessions = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "num-sessions"));
+      this.rampDelay = Long.parseLong(MetadataUtils.getUniqueChildContent(element, "ramp-delay"));
+      this.destName = MetadataUtils.getUniqueChildContent(element, "destination-jndi-name");
+      this.transacted  = MetadataUtils.getOptionalChildBooleanContent(element, "transacted", false);
+      this.transactionSize  = Integer.parseInt(MetadataUtils.getOptionalChildContent(element, "transaction-size", "0"));
    }
    
 

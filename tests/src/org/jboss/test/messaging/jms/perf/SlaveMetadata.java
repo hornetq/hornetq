@@ -20,7 +20,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class SlaveMetadata extends XMLLoadableSupport implements Serializable
+public class SlaveMetadata implements XMLLoadable, Serializable
 {
    private static final long serialVersionUID = 4340448965188777968L;
 
@@ -46,8 +46,8 @@ public class SlaveMetadata extends XMLLoadableSupport implements Serializable
    
    public void importXML(Element element) throws DeploymentException
    {
-      slaveLocator = getUniqueChildContent(element, "slave-locator");
-      Iterator iter = getChildrenByTagName(element, "sender-job");
+      slaveLocator = MetadataUtils.getUniqueChildContent(element, "slave-locator");
+      Iterator iter = MetadataUtils.getChildrenByTagName(element, "sender-job");
       
       while (iter.hasNext())
       {
@@ -58,7 +58,7 @@ public class SlaveMetadata extends XMLLoadableSupport implements Serializable
          
       }
       
-      iter = getChildrenByTagName(element, "receiver-job");
+      iter = MetadataUtils.getChildrenByTagName(element, "receiver-job");
       
       while (iter.hasNext())
       {

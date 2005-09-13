@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
  *
  * $Id$
  */
-public abstract class XMLLoadableSupport implements XMLLoadable
+public abstract class MetadataUtils implements XMLLoadable
 {
    /**
     * Returns an iterator over the children of the given element with
