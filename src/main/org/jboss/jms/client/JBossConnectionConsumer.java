@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.client;
 
+import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 
 import javax.jms.ConnectionConsumer;
@@ -17,9 +18,12 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
+import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -36,9 +40,9 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 {
    // Constants -----------------------------------------------------
 
-   static Logger log = Logger.getLogger(JBossConnectionConsumer.class);
+   private static Logger log = Logger.getLogger(JBossConnectionConsumer.class);
 
-   static boolean trace = log.isTraceEnabled();
+   private static boolean trace = log.isTraceEnabled();
    
    // Attributes ----------------------------------------------------
    
@@ -57,19 +61,9 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    /** The maximum number of messages that a single session will be loaded with. */
    protected int maxMessages;
    
-   /** This queue will hold messages until they are dispatched to the
-   MessageListener */
-   //protected LinkedList queue = new LinkedList();
-   
    /** Is the ConnectionConsumer closed? */
    protected boolean closed = false;
-   
-   /** Whether we are waiting for a message */
-   //protected boolean waitingForMessage = false;
-   
-   /** The subscription info the consumer */
-   //Subscription subscription = new Subscription();
-   
+     
    /** The "listening" thread that gets messages from destination and queues
    them for delivery to sessions */
    protected Thread internalThread;
@@ -132,13 +126,22 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
    public void close() throws javax.jms.JMSException
    {
-      if (trace) { log.trace("Closing " + this); }
+      if (trace) { log.trace("ConnectionConsumer Closing " + this); }
       
       closed = true;
       
-      //This will call the MessageConsumer cons to close too - which results
-      //in the receiver thread being interrupted.
-      sess.close();
+      JMSInvocationHandler handler = (JMSInvocationHandler)Proxy.getInvocationHandler(cons);
+      
+      MessageCallbackHandler messageHandler =
+         (MessageCallbackHandler)handler.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
+      
+      //This causes any blocking receives to be interrupted. We do not close() the message consumer
+      //and wait for this to result in the messageCallbackhandler to be closed since it's possible
+      //the receiving session is still processing messges which would result in exceptions when
+      //acks are sent
+      messageHandler.close();
+      
+      if (trace) { log.trace("Closed message handler"); }
       
       //wait for the run thread to finish
       if (internalThread != null && !internalThread.equals(Thread.currentThread()))
@@ -174,6 +177,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                if (trace) { log.trace("Connection consumer is closed, breaking"); }
                break outer;
             }
+            
             if (queue.isEmpty())
             {
                //Remove up to maxMessages messages from the consumer         
@@ -234,7 +238,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                if (trace) { log.trace("ServerSession processed messages"); }
                queue.clear();
             }
-         } 
+         }
+         if (trace) { log.trace("ConnectionConsumer run() exiting"); }
       }
       catch (Throwable t)
       {
@@ -260,4 +265,5 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+  
 }

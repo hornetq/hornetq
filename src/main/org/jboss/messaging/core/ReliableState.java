@@ -135,6 +135,7 @@ class ReliableState extends TransactionalState
       MessageReference ref = ms.reference(r);
 
       Transaction tx = tm.getTransaction();
+      
 
       if (tx == null)
       {
@@ -223,6 +224,7 @@ class ReliableState extends TransactionalState
 
    protected void enableTransactedMessages(String txID) throws SystemException
    {
+      if (log.isTraceEnabled()) { log.trace("Enabling transacted messages"); }
       super.enableTransactedMessages(txID);
       pm.enableTransactedMessages(channelID, txID);
    }

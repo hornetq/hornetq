@@ -153,25 +153,27 @@ public class SecurityManager
          log.trace("Authenticating, username=" + user);
       }
       
-      SimplePrincipal principal = new SimplePrincipal(user);
-      char[] passwordChars = null;
-      if (password != null)
-         passwordChars = password.toCharArray();
-      Subject subject = new Subject();
+      return new Subject();
       
-      if (authMgr.isValid(principal, passwordChars, subject))
-      {
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-         if (trace)
-            log.trace("Username: " + user + " is authenticated");                  
-         return subject;
-      }
-      else
-      {
-         if (trace)
-            log.trace("User: " + user + " is NOT authenticated");
-         throw new JMSSecurityException("User: " + user + " is NOT authenticated");
-      }
+//      SimplePrincipal principal = new SimplePrincipal(user);
+//      char[] passwordChars = null;
+//      if (password != null)
+//         passwordChars = password.toCharArray();
+//      Subject subject = new Subject();
+//      
+//      if (authMgr.isValid(principal, passwordChars, subject))
+//      {
+//         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
+//         if (trace)
+//            log.trace("Username: " + user + " is authenticated");                  
+//         return subject;
+//      }
+//      else
+//      {
+//         if (trace)
+//            log.trace("User: " + user + " is NOT authenticated");
+//         throw new JMSSecurityException("User: " + user + " is NOT authenticated");
+//      }
    }
    
    /**
@@ -190,16 +192,17 @@ public class SecurityManager
                + " for rolePrincipals "
                + rolePrincipals.toString());
       
-      Principal principal = user == null ? null : new SimplePrincipal(user);
-      
-      boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
-           
-      if (log.isTraceEnabled())
-      {
-         log.trace("User is authorized? " + hasRole);
-      }
-    
-      return hasRole;
+//      Principal principal = user == null ? null : new SimplePrincipal(user);
+//      
+//      boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
+//           
+//      if (log.isTraceEnabled())
+//      {
+//         log.trace("User is authorized? " + hasRole);
+//      }
+//    
+//      return hasRole;
+      return true;
    }
    
    // SecurityManagerMBean implementation ----------------------------------

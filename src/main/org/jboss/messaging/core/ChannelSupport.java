@@ -116,6 +116,8 @@ abstract class ChannelSupport implements Channel
 
    public boolean add(Receiver r)
    {
+      if (log.isTraceEnabled()) { log.trace("Attempting to add receiver to channel"); }
+      
       boolean added = router.add(r);
       if (added)
       {
@@ -174,11 +176,14 @@ abstract class ChannelSupport implements Channel
 
    public void deliver()
    {
+      if (log.isTraceEnabled()){ log.trace("Attempting to deliver messages"); }
       List messages = state.undelivered(null);
+      if (log.isTraceEnabled()){ log.trace("There are " + messages.size() + " messages to deliver"); }
       for(Iterator i = messages.iterator(); i.hasNext(); )
       {
          Routable r = (Routable)i.next();
          state.remove(r);
+         if (log.isTraceEnabled()){ log.trace("Removed state for routable"); }
          handleNoTx(null, r);
       }
    }
@@ -238,9 +243,13 @@ abstract class ChannelSupport implements Channel
       if (deliveries.isEmpty())
       {
          // no receivers, receivers that don't accept the message or broken receivers
+         
+         if (log.isTraceEnabled()){ log.trace("No deliveries returned from handle - no receivers"); }
+         
          try
          {
             state.add(r);
+            if (log.isTraceEnabled()){ log.trace("Added state"); }
          }
          catch(Throwable t)
          {

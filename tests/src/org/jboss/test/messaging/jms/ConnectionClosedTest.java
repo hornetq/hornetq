@@ -55,6 +55,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       topic = (Topic)initialContext.lookup("/topic/Topic");
 
+      ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
    }

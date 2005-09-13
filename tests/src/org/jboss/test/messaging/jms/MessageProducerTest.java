@@ -111,6 +111,7 @@ public class MessageProducerTest extends MessagingTestCase
       assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
       assertEquals("test", r.getText());
    }
+   
 
 
    /* Test sending via anonymous producer */
@@ -371,6 +372,7 @@ public class MessageProducerTest extends MessagingTestCase
       }
    }
 
+   
 
 
 

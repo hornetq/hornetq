@@ -179,14 +179,17 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                                                   String subscriptionName)
 		throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("Attempting to create ServerConsumerDelegate with noLocal:" + noLocal); }
-      
       if ("".equals(selector))
       {
          selector = null;
       }
       
       JBossDestination d = (JBossDestination)jmsDestination;
+      
+      if (log.isTraceEnabled()) { log.trace("Creating ServerConsumerDelegate for dest:" + d.getName() + 
+            " selector:" + selector + " noLocal:" + noLocal + " subName:" + subscriptionName); }
+      
+      
       if (d.isTemporary())
       {
          //Can only create a consumer for a temporary destination on the same connection

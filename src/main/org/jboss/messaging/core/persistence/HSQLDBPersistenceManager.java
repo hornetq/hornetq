@@ -69,6 +69,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public void add(Serializable channelID, Delivery d) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+      
+      if (log.isTraceEnabled()) { log.trace("Adding delivery " + d + " to channel: "  + channelID);}
 
       Routable r = d.getRoutable();
 
@@ -92,6 +94,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public boolean remove(Serializable channelID, Delivery d) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+      
+      if (log.isTraceEnabled()) { log.trace("Removing delivery " + d + " from channel: "  + channelID);}
 
       Serializable messageID = d.getRoutable().getMessageID();
 
@@ -125,6 +129,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public List deliveries(Serializable channelID) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+      
+      if (log.isTraceEnabled()) { log.trace("listing deliveries for channel: " + channelID); }
 
       List result = new ArrayList();
 
@@ -134,12 +140,16 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       ResultSet rs = conn.createStatement().executeQuery(sql);
       if (log.isTraceEnabled()) { log.trace(sql); }
 
+      int count = 0;
       while (rs.next())
       {
          String id = rs.getString("MESSAGEID");
          String storeID = rs.getString("STOREID");
          result.add(new StorageIdentifier(id, storeID));
+         count++;
       }
+      
+      if (log.isTraceEnabled()) { log.trace("There are " + count + " deliveries"); }
 
       conn.close();
       return result;
@@ -149,6 +159,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public void add(Serializable channelID, MessageReference ref) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+      
+      if (log.isTraceEnabled()) { log.trace("Adding message ref " + ref + " to channel: "  + channelID);}
 
       Connection conn = ds.getConnection();
       String sql =
@@ -166,6 +178,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       try
       {
          if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+         
+         if (log.isTraceEnabled()) { log.trace("Adding transactional message ref " + ref + " to channel: "  + channelID);}
 
          Connection conn = ds.getConnection();
          String sql =
@@ -192,6 +206,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       try
       {
          if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+         
+         if (log.isTraceEnabled()) { log.trace("Enabling transacted messages for " + channelID); }
 
          Connection conn = ds.getConnection();
          Statement stat = conn.createStatement();
@@ -234,6 +250,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       try
       {
          if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+         
+         if (log.isTraceEnabled()) { log.trace("Dropping transacted messages for channel " + channelID); }
 
          Connection conn = ds.getConnection();
 
@@ -287,6 +305,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public boolean remove(Serializable channelID, MessageReference ref) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+      
+      if (log.isTraceEnabled()) { log.trace("Removing message ref " + ref + " from channel " + channelID); }
 
       Connection conn = ds.getConnection();
 
@@ -321,6 +341,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    public List messages(Serializable channelID) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
+      
+      if (log.isTraceEnabled()) { log.trace("Getting message references for channel " + channelID); }
 
       List result = new ArrayList();
       Connection conn = ds.getConnection();
@@ -329,12 +351,15 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                    "WHERE CHANNELID = '" + channelID + "'";
       ResultSet rs = conn.createStatement().executeQuery(sql);
       if (log.isTraceEnabled()) { log.trace(sql); }
+      int count = 0;
       while (rs.next())
       {
          String id = rs.getString("MESSAGEID");
          String storeID = rs.getString("STOREID");
          result.add(new StorageIdentifier(id, storeID));
+         count++;
       }
+      if (log.isTraceEnabled()) { log.trace("got " + count + " message refs"); }
       conn.close();
       return result;
    }

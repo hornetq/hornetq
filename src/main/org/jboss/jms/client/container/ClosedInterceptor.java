@@ -16,6 +16,9 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.logging.Logger;
+
 import javax.jms.IllegalStateException;
 
 
@@ -33,6 +36,8 @@ public class ClosedInterceptor
    implements Interceptor, Serializable
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ClosedInterceptor.class);
    
    private static final long serialVersionUID = 7564456983116742854L;
 
@@ -88,6 +93,7 @@ public class ClosedInterceptor
       }
       else if (isClose)
       {         
+         if (log.isTraceEnabled()) { log.trace("Closing..."); }
          if(checkCloseAlreadyDone())
          {
             return null;

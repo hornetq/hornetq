@@ -249,6 +249,7 @@ class TransactionalState extends StateSupport
 
    protected void enableTransactedMessages(String txID) throws SystemException
    {
+      if (log.isTraceEnabled()) { log.trace("Enabling transacted messages"); }
       List l = (List)transactedMessages.remove(txID);
       if (l == null)
       {
@@ -275,8 +276,32 @@ class TransactionalState extends StateSupport
 
    private void commit(String txID) throws SystemException
    {
+      if (log.isTraceEnabled()) { log.trace("Committing tx " + txID); }
       enableTransactedMessages(txID);
       channel.deliver();
+      
+      //FIXME ???
+      //I have added this for the following reason:
+      //Consider the following scenario:
+      //I send a persistent message in a transaction to a queue.
+      //There are no consumers attached to the queue.
+      //The transaction commits
+      //This results in an entry in the TRANSACTED_MESSAGE_REFERENCES table 
+      //but no entry in the MESSAGE_REFERENCES_TABLE
+      //since channel.deliver(above) saves the state when the message is not delivered.
+      //Then... at some time later, after the tx has completed, a consumer attaches to the
+      //queue. Deliver() is then called but because there is no entry in the message_references table
+      //then the message is not delivered.
+      //Hence I have added the following extra call to enableTransactedMessages to make sure any rows
+      //remaining in the TRANSACTED-MESSAGE_REFREENCES table get converted to MESSAGE_REFERENCES before
+      //the transaction completes.
+      //None of this seems very optimal and if you look in the logs there seem to be a lot of
+      //SQL activity just for one message. I imagine most of this can be optimised away.
+      //But for now, this seems to work.
+      //I have added a test to check for this scenario:
+      //MessageConsumerTest.testSendAndReceivePersistentDifferentConnections
+      
+      enableTransactedMessages(txID);
    }
 
    private void rollback(String txID) throws SystemException
@@ -316,6 +341,9 @@ class TransactionalState extends StateSupport
       {
          try
          {
+            
+            if (log.isTraceEnabled()) { log.trace("In AddMessageSynchronization.beforeCompletion()"); }
+            
             // this call is executed with the transaction context of the transaction
             // that is being committed
             Transaction crtTransaction = tm.getTransaction();

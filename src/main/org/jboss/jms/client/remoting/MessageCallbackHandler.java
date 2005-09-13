@@ -224,7 +224,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   if (log.isTraceEnabled()) { log.trace("receive noWait"); }
 
                   m = ((JBossMessage)messages.poll(0));
-                  return m;
+                 
+                  if (m == null)
+                  {
+                     if (log.isTraceEnabled()) { log.trace("No message available"); }
+                     return null;
+                  }
                }
                else
                {
@@ -258,6 +263,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             // notify that the message has been delivered (not necessarily acknowledged though)
 
+            receivingThread = null; // Crucial - in case thread is interrupted during pre or postDeliver
             preDeliver(m);
             postDeliver(m);
             
@@ -290,8 +296,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          return;
       }
       closed = true;
+      
+      if (log.isTraceEnabled()) { log.trace("Closing:" + this); }
+      
       if (receivingThread != null)
       {
+         if (log.isTraceEnabled()) { log.trace("Interrupting receiving thread:"); }
          receivingThread.interrupt();
       }
 

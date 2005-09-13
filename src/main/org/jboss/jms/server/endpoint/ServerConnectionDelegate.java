@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -98,7 +99,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    /* Map of global Xids to local tx */
    protected Map globalToLocalTxMap;
-   
    
    // Constructors --------------------------------------------------
    
@@ -419,7 +419,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return serverPeer;
    }
    
-   
    // Package protected ---------------------------------------------
    
    void sendMessage(Message m) throws JMSException
@@ -462,7 +461,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new JBossJMSException("Failed to cache the message", t);
       }
       
-      if (log.isTraceEnabled()) { log.trace("sending " + ref + " to the core"); }
+      if (log.isTraceEnabled()) { log.trace("sending " + ref + " to the core, destination: " + jmsDestination.getName()); }
       
       Delivery d = coreDestination.handle(null, ref);
       
@@ -478,6 +477,8 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    void acknowledge(String messageID, String receiverID) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
+      
+      
       
       ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
       if (receiver == null)
@@ -532,6 +533,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          Exception e = new TransactionRolledBackException("Failed to process transaction - so rolled it back");
          e.setStackTrace(t.getStackTrace());
          log.info("Rollback succeeded");
+         throw e;
       }
       catch (Throwable t2)
       {

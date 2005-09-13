@@ -176,8 +176,8 @@ public class ServerPeer
       destinationManager = new DestinationManagerImpl(this);
       
       //FIXME
-      //Important Note!
-      //===============
+      //Important Note
+      //==============
       //
       //This pooled executor controls how threads are allocated to deliver messges
       //to consumers.
@@ -207,7 +207,7 @@ public class ServerPeer
       //In our scenario this would never happen since messages aren't consumed on the client side until the
       //call to start the consumer returns which it never does. Hence we end up with a lock.
       //
-      //A better solution, IMHO would perhaps be to use a bounded buffer to guard against memory
+      //Another solution, IMHO would perhaps be to use a bounded buffer to guard against memory
       //exhaustion but make the delivery operation
       //asynchronous rather than synchronous as it currently is.
       //In this way, consumer.start() would trigger delivery but return immediately, allowing consumption
