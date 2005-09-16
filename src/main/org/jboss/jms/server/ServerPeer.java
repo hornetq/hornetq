@@ -6,55 +6,47 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.marshal.Marshaller;
-import org.jboss.remoting.marshal.UnMarshaller;
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.server.security.SecurityManager;
-import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jms.util.JNDIUtil;
-import org.jboss.aop.ClassAdvisor;
-import org.jboss.aop.DomainDefinition;
+import java.io.Serializable;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.jms.ConnectionFactory;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.transaction.TransactionManager;
+
 import org.jboss.aop.AspectManager;
+import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.Dispatcher;
-import org.jboss.aop.util.PayloadKey;
-import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.DomainDefinition;
 import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.metadata.SimpleMetaData;
+import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.jms.server.security.SecurityManager;
+import org.jboss.jms.util.JNDIUtil;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
-import org.jboss.logging.Logger;
+import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.naming.InitialContext;
-import javax.naming.Context;
-import javax.naming.NameNotFoundException;
-import javax.transaction.TransactionManager;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
-
-import java.io.Serializable;
-import java.lang.reflect.Proxy;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-
-import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 

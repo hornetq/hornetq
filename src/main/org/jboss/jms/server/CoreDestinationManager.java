@@ -6,19 +6,18 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.local.Topic;
-import org.jboss.logging.Logger;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
-import java.util.Map;
-import java.util.HashMap;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Topic;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * Manages access to destinations (local or distributed). There is a single CoreDestinationManager
@@ -121,6 +120,21 @@ class CoreDestinationManager
                        sp.getTransactionManager());
          topicMap.put(name, c);
       }
+      
+      //We also remove all message data here just in case there was any data left around in the database
+      //from a previous failure
+      try
+      {
+         sp.getPersistenceManager().removeAllMessageData(name);
+         
+         //FIXME - Also need to remove any message refs stored in memory for this destination
+         
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to remove message data", e);
+      }
+      
    }
    
    /**

@@ -327,13 +327,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       ServerConsumerDelegate scd =
          new ServerConsumerDelegate(consumerID,
                                     subscriptionName == null ? destination : subscription.getQueue(),
-                                    callbackHandler, this, selector, noLocal, subscription);
+                                    callbackHandler, this, selector, noLocal);
       
-      //The connection may have already been started - so the consumer must be started
-      if (this.connectionEndpoint.started)
-      {
-         scd.setStarted(true);
-      }
       
       putConsumerDelegate(consumerID, scd);
       connectionEndpoint.receivers.put(consumerID, scd);
@@ -664,6 +659,17 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
             subscriptionName + " to unsubscribe");
       }
       subscription.getTopic().remove(subscription.getQueue());
+      
+      try
+      {
+         this.serverPeer.getPersistenceManager().removeAllMessageData(subscription.getQueue().getChannelID());        
+      }
+      catch (Exception e)
+      {
+         final String msg = "Failed to remove message data for durable subscription";
+         log.error(msg, e);
+         throw new JMSException(msg);
+      }
       
    }
    

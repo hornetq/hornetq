@@ -16,22 +16,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
-import javax.jms.Message;
-import javax.jms.BytesMessage;
-import javax.jms.MapMessage;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.util.JBossJMSException;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
@@ -57,6 +58,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 8341387096828690976L;
+   
+   private static final Logger log = Logger.getLogger(JBossMessage.class);
 
    public static final int TYPE = 0;
 
@@ -79,23 +82,23 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    }
 
    /**
-    * The method creates a physical copy of a given message, which can be a foreign JMS message or
-    * a native JBoss Messaging message. Returns a JBossByteMessage for a ByteMessage,
+    * The method creates a physical copy of a given message, which is
+    * a native JBoss Messaging message or a foreign message. Returns a JBossByteMessage for a ByteMessage,
     * a JBossMapMessage for a MapMessage, a JBossObjectMessage for an ObjectMessage,
     * a JBossStreamMessage for a StreamMessage, a JBossTextMessage for a TextMessage and
     * a JBossMessage for a Message, if none of the above apply.
     */
    public static JBossMessage copy(Message m) throws JMSException
    {
-      if (m instanceof JBossMessage)
-      {
-         // more efficient than duplicating a foreign message
-         return ((JBossMessage)m).doClone();
-      }
+
+      if (log.isTraceEnabled()) { log.trace("Copying message"); }
 
       JBossMessage copy = null;
-
-      if (m instanceof BytesMessage)
+      if (m instanceof JBossMessage)
+      {
+         copy = ((JBossMessage)m).doClone();
+      }
+      else if (m instanceof BytesMessage)
       {
          copy = new JBossBytesMessage((BytesMessage)m);
       }
@@ -115,11 +118,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       {
          copy = new JBossTextMessage((TextMessage)m);
       }
-      else
+      else if (m instanceof Message)
       {
-         copy = new JBossMessage(m);
+         copy = new JBossMessage((Message)m);
       }
-
+     
       return copy;
    }
 
@@ -250,7 +253,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    /**
     * A copy constructor for non-JBoss Messaging JMS messages.
-    */
+    */   
    protected JBossMessage(Message foreign) throws JMSException
    {
       super(foreign.getJMSMessageID());
@@ -290,180 +293,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          Object prop = foreign.getObjectProperty(name);
          this.setObjectProperty(name, prop);
          
-         /*
-          *
-          Commented out by Tim - I think there's a much simpler way to do this
-
-         boolean found = false;
-
-         String stringProperty = null;
-         try
-         {
-            stringProperty = foreign.getStringProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a String
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setStringProperty(name, stringProperty);
-            continue;
-         }
-
-         boolean booleanProperty = false;
-         try
-         {
-            booleanProperty = foreign.getBooleanProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a boolean
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setBooleanProperty(name, booleanProperty);
-            continue;
-         }
-
-         byte byteProperty = 0;
-         try
-         {
-            byteProperty = foreign.getByteProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a byte
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setByteProperty(name, byteProperty);
-            continue;
-         }
-
-         short shortProperty = 0;
-         try
-         {
-            shortProperty = foreign.getShortProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a short
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setShortProperty(name, shortProperty);
-            continue;
-         }
-
-
-         int intProperty = 0;
-         try
-         {
-            intProperty = foreign.getIntProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a int
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setIntProperty(name, intProperty);
-            continue;
-         }
-
-
-         long longProperty = 0;
-         try
-         {
-            longProperty = foreign.getLongProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a long
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setLongProperty(name, longProperty);
-            continue;
-         }
-
-
-         float floatProperty = 0;
-         try
-         {
-            floatProperty = foreign.getFloatProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a float
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setFloatProperty(name, floatProperty);
-            continue;
-         }
-
-         double doubleProperty = 0;
-         try
-         {
-            doubleProperty = foreign.getDoubleProperty(name);
-            found = true;
-         }
-         catch(Exception e)
-         {
-            // not a double
-
-            // TODO: normally, here I should only catch JMSException, but because of bugs in TCK
-            // TODO: (implementation of MessageTestImpl), I only need to catch ClassCastException
-         }
-
-         if (found)
-         {
-            setDoubleProperty(name, doubleProperty);
-            continue;
-         }
-
-         throw new javax.jms.IllegalStateException("Cannot identify property " + name);
-
-         */
+        
       }
    }
+   
 
    // Routable implementation ---------------------------------------
 
@@ -919,6 +752,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
+   
    public int getType()
    {
       return JBossMessage.TYPE;
@@ -939,16 +773,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    /** Do any other stuff required to be done after sending the message */
    public void afterSend() throws JMSException
-   {      
+   {            
       this.propertiesWritable = false;
    }
 
-   
-   public JBossMessage doClone() throws JMSException
-   {
-      return new JBossMessage(this);
-   }
-   
    
    public String getConnectionID()
    {
@@ -967,6 +795,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       sb.append(messageID);
       sb.append("]");
       return sb.toString();
+   }
+   
+   public JBossMessage doClone() throws JMSException
+   {
+      return new JBossMessage(this);
    }
 
    // org.jboss.messaging.core.Message implementation ---------------

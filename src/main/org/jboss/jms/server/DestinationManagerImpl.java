@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.server;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Destination;

@@ -101,7 +101,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
             JBossMessage m = (JBossMessage)messages.take();
-            preDeliver(m);            
+            preDeliver(m);   
             listener.onMessage(m);
             if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
             postDeliver(m);

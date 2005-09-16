@@ -77,6 +77,8 @@ public class ProducerInterceptor implements Interceptor, Serializable
       String methodName = mi.getMethod().getName();
       Object[] args = mi.getArguments();
       
+      if (log.isTraceEnabled()) { log.trace("Method is " + methodName); }
+      
       if ("createProducerDelegate".equals(methodName))
       {
          if (log.isTraceEnabled()) { log.trace("Creating producer delegate"); }
@@ -180,8 +182,11 @@ public class ProducerInterceptor implements Interceptor, Serializable
          // affecting the message that has been sent. The same message object may be sent
          // multiple times.
 
-         JBossMessage copy = JBossMessage.copy(m);
+         if (log.isTraceEnabled()) { log.trace("Copying message"); }
          
+         JBossMessage copy = JBossMessage.copy(m);
+                 
+         if (log.isTraceEnabled()) { log.trace("Calling afterSend"); }
          copy.afterSend();                                  
 
          // send the copy down the stack

@@ -15,6 +15,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MapMessage;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
@@ -90,6 +91,15 @@ public class MessageBodyTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       // TODO uncomment these
+      
+      
+      //Drain the queue
+      while (true)
+      {
+         Message m = queueConsumer.receive(2000);
+         if (m == null) break;
+      }
+      
       producerConnection.close();
       consumerConnection.close();
 
@@ -98,6 +108,25 @@ public class MessageBodyTest extends MessagingTestCase
 
       super.tearDown();
    }
+   
+   public void testSMBodyReadable() throws Exception
+   {
+      byte bValue = 123;
+      StreamMessage sm = queueProducerSession.createStreamMessage();
+      sm.writeByte(bValue);
+      sm.setStringProperty("COM_SUN_JMS_TESTNAME", 
+                                    "xMessageEOFExceptionQTestforStreamMessage");
+      queueProducer.send(sm);
+      
+     
+      
+      
+      StreamMessage received = (StreamMessage)queueConsumer.receive(3000);
+      received.readByte();
+   }
+   
+   
+   
 
    public void testBytesMessage() throws Exception
    {

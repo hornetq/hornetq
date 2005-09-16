@@ -277,25 +277,19 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
       Connection conn = ds.getConnection();
 
-      final String sql1 = "DELETE FROM MESSAGES WHERE MESSAGEID IN" +
-            "(SELECT MESSAGEID FROM MESSAGE_REFERENCES WHERE CHANNELID='" + channelID + "')";
-      
-      final String sql2 = "DELETE FROM DELIVERIES WHERE " +
+
+      final String sql1 = "DELETE FROM DELIVERIES WHERE " +
          "CHANNELID = '" + channelID + "'";
       
-      final String sql3 = "DELETE FROM MESSAGE_REFERENCES WHERE " +
+      final String sql2 = "DELETE FROM MESSAGE_REFERENCES WHERE " +
          "CHANNELID = '" + channelID + "'";
 
-
-
+  
       conn.createStatement().executeUpdate(sql1);
       if (log.isTraceEnabled()) { log.trace(sql1); }
       
       conn.createStatement().executeUpdate(sql2);
       if (log.isTraceEnabled()) { log.trace(sql2); }
-      
-      conn.createStatement().executeUpdate(sql3);
-      if (log.isTraceEnabled()) { log.trace(sql3); }
       
   
       conn.close();
@@ -307,6 +301,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       if (log.isTraceEnabled()) { log.trace("Current transaction: " + currentTransactionToString()); }
       
       if (log.isTraceEnabled()) { log.trace("Removing message ref " + ref + " from channel " + channelID); }
+      
+      if (log.isTraceEnabled()) { log.trace("Removing message ref for message id " + ref.getMessageID()); }
 
       Connection conn = ds.getConnection();
 
@@ -376,7 +372,23 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       stat.setLong(3, m.getExpiration());
       stat.setLong(4, m.getTimestamp());
       stat.setObject(5, ((MessageSupport)m).getHeaders());
-      stat.setObject(6, m.getPayload());
+      //stat.setObject(6, m.getPayload());
+      
+      
+      /*
+       * FIXME - Tidy this up
+       * 
+       * I have changed this for now to serialize the whole message rather than just the payload.
+       * This is because the message contains hidden protected fields e.g. bodyWriteOnly which
+       * are part of it's state.
+       * This can probably be done in a more elegant way
+       * Just saving the payload and a few fields doesn't persist these fields
+       * so when they are read back, the state is wrong.
+       * This has been causing a lot of previouly passing TCK tests to fail.
+       * 
+       */
+      
+      stat.setObject(6, m);
 
       int type = -1;
       String jmsType = null;
@@ -480,6 +492,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
       if (rs.next())
       {
+         m = (Message)rs.getObject("PAYLOAD");
+         /*
          m = Factory.createMessage(rs.getString("MESSAGEID"),
                                    rs.getBoolean("RELIABLE"),
                                    rs.getLong("EXPIRATION"),
@@ -495,6 +509,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                                    rs.getBoolean("REPLYTOISQUEUE"),
                                    rs.getString("REPLYTO"),
                                    (Map)rs.getObject("JMSPROPERTIES"));
+           */                        
       }
       conn.close();
       return m;

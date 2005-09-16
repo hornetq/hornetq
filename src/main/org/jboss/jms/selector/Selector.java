@@ -89,6 +89,11 @@ public class Selector implements Filter
          throw exception;
       }
    }
+   
+   public String getExpression()
+   {
+      return selector;
+   }
 	
 	public synchronized boolean accept(Routable routable)
    {

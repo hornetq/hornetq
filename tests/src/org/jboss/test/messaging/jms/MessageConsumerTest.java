@@ -12,17 +12,21 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
 import javax.jms.Session;
+import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
@@ -56,6 +60,7 @@ public class MessageConsumerTest extends MessagingTestCase
    protected MessageConsumer topicConsumer, queueConsumer;
    protected Topic topic;
    protected Queue queue;
+   protected Queue queue2;
    protected ConnectionFactory cf;
 
    protected Thread worker1;
@@ -77,14 +82,17 @@ public class MessageConsumerTest extends MessagingTestCase
       
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployQueue("Queue2");
       
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployQueue("Queue");
+      ServerManagement.deployQueue("Queue2");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       topic = (Topic)ic.lookup("/topic/Topic");
       queue = (Queue)ic.lookup("/queue/Queue");
+      queue2 = (Queue)ic.lookup("/queue/Queue2");
 
       
       
@@ -107,6 +115,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
+    
       producerConnection.close();
       consumerConnection.close();
 
@@ -117,11 +126,22 @@ public class MessageConsumerTest extends MessagingTestCase
 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployQueue("Queue2");
+      
+      
       ServerManagement.deInit();
 
       super.tearDown();
    }
    
+   
+   
+   /* Test that an ack can be sent after the consumer that received the message has been closed.
+    * Acks are scoped per session.
+    * 
+    * FIXME
+    * Currently acks are scoped per consumer - causing this test to fail
+    */
    public void testAckAfterConsumerClosed() throws Exception
    {
       Connection connSend = null;
@@ -129,8 +149,6 @@ public class MessageConsumerTest extends MessagingTestCase
       
       try
       {
-         
-         log.trace("Running testSendAndReceivePersistentDifferentConnections");
          
          connSend = cf.createConnection();
          
@@ -202,7 +220,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          Message m = sessSend.createTextMessage("hello");
          
-         prod.send(queue, m);
+         prod.send(queue2, m);
          
          sessSend.commit();
          
@@ -212,7 +230,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          Session sessReceive = connReceive.createSession(true, Session.SESSION_TRANSACTED);
          
-         MessageConsumer cons = sessReceive.createConsumer(queue);
+         MessageConsumer cons = sessReceive.createConsumer(queue2);
          
          TextMessage m2 = (TextMessage)cons.receive(5000);
          
@@ -220,17 +238,18 @@ public class MessageConsumerTest extends MessagingTestCase
          
          assertEquals("hello", m2.getText());
          
-         cons.close();
-         
          sessReceive.commit();
          
+         cons.close();
+         
+                  
          connReceive = cf.createConnection();
          
          connReceive.start();
          
          sessReceive = connReceive.createSession(true, Session.SESSION_TRANSACTED);
          
-         cons = sessReceive.createConsumer(queue);
+         cons = sessReceive.createConsumer(queue2);
          
          TextMessage m3 = (TextMessage)cons.receive(5000);
          
@@ -811,203 +830,685 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       if (log.isTraceEnabled()) log.trace("testNoLocal");
 
-      Connection conn1 = cf.createConnection();
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageProducer producer1 = sess1.createProducer(topic);
-      producer1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageConsumer consumer1 = sess1.createConsumer(topic, null, true);
-
-      Connection conn2 = cf.createConnection();
-      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      assertEquals(Session.AUTO_ACKNOWLEDGE, sess2.getAcknowledgeMode());
-
-      MessageConsumer consumer2 = sess2.createConsumer(topic, null, true);
-
-      MessageConsumer consumer3 = sess2.createConsumer(topic, null, false);
-
-      //Consumer 1 should not get the message but consumers 2 and 3 should
-
-      conn1.start();
-      conn2.start();
-
-      class TestRunnable implements Runnable
+      Connection conn1 = null;
+      Connection conn2 = null;
+      
+      try
       {
-         boolean exceptionThrown;
-         public Message m;
-         MessageConsumer consumer;
-         TestRunnable(MessageConsumer consumer)
+      
+         conn1 = cf.createConnection();
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         MessageProducer producer1 = sess1.createProducer(topic);
+         producer1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         MessageConsumer consumer1 = sess1.createConsumer(topic, null, true);
+   
+         conn2 = cf.createConnection();
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         assertEquals(Session.AUTO_ACKNOWLEDGE, sess2.getAcknowledgeMode());
+   
+         MessageConsumer consumer2 = sess2.createConsumer(topic, null, true);
+   
+         MessageConsumer consumer3 = sess2.createConsumer(topic, null, false);
+   
+         //Consumer 1 should not get the message but consumers 2 and 3 should
+   
+         conn1.start();
+         conn2.start();
+   
+         class TestRunnable implements Runnable
          {
-            this.consumer = consumer;
+            boolean exceptionThrown;
+            public Message m;
+            MessageConsumer consumer;
+            TestRunnable(MessageConsumer consumer)
+            {
+               this.consumer = consumer;
+            }
+   
+            public void run()
+            {
+               try
+               {
+                  m = consumer.receive(3000);
+               }
+               catch (Exception e)
+               {
+                  exceptionThrown = true;
+               }
+            }
          }
-
-         public void run()
+   
+         TestRunnable tr1 = new TestRunnable(consumer1);
+         TestRunnable tr2 = new TestRunnable(consumer2);
+         TestRunnable tr3 = new TestRunnable(consumer3);
+   
+         Thread t1 = new Thread(tr1);
+         Thread t2 = new Thread(tr2);
+         Thread t3 = new Thread(tr3);
+   
+         t1.start();
+         t2.start();
+         t3.start();
+   
+         Message m2 = sess1.createTextMessage("Hello");
+         producer1.send(m2);
+   
+         t1.join();
+         t2.join();
+         t3.join();
+   
+         assertTrue(!tr1.exceptionThrown);
+         assertTrue(!tr2.exceptionThrown);
+         assertTrue(!tr3.exceptionThrown);
+   
+         assertNull(tr1.m);
+   
+         assertNotNull(tr2.m);
+         assertNotNull(tr3.m);
+         
+      }
+      finally
+      {      
+         if (conn1 != null)
          {
-            try
-            {
-               m = consumer.receive(3000);
-            }
-            catch (Exception e)
-            {
-               exceptionThrown = true;
-            }
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
          }
       }
-
-      TestRunnable tr1 = new TestRunnable(consumer1);
-      TestRunnable tr2 = new TestRunnable(consumer2);
-      TestRunnable tr3 = new TestRunnable(consumer3);
-
-      Thread t1 = new Thread(tr1);
-      Thread t2 = new Thread(tr2);
-      Thread t3 = new Thread(tr3);
-
-      t1.start();
-      t2.start();
-      t3.start();
-
-      Message m2 = sess1.createTextMessage("Hello");
-      producer1.send(m2);
-
-      t1.join();
-      t2.join();
-      t3.join();
-
-      assertTrue(!tr1.exceptionThrown);
-      assertTrue(!tr2.exceptionThrown);
-      assertTrue(!tr3.exceptionThrown);
-
-      assertNull(tr1.m);
-
-      assertNotNull(tr2.m);
-      assertNotNull(tr3.m);
-
-      conn1.close();
-      conn2.close();
 
    }
 
 
+   
+   
+   
+   
+   /* 
+    * 
+    * Also see JMS 1.1 Spec. 6.12
+    */
+   public void testTopicRedelivery() throws Exception
+   {
+      Connection conn1 = null;
+      
+      try
+      {
+         
+         conn1 = cf.createConnection();
+         conn1.start();
+   
+         //Create 2 non durable subscribers on topic
+         
+         Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         Session sess2 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         MessageConsumer cons1 = sess1.createConsumer(topic);
+         MessageConsumer cons2 = sess2.createConsumer(topic);
+         conn1.start();
+         
+         Session sess3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess3.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         TextMessage tm = sess3.createTextMessage("nurse!");
+         prod.send(tm);
+         
+         TextMessage tm1 = (TextMessage)cons1.receive(3000);
+         TextMessage tm2 = (TextMessage)cons2.receive(3000);
+         
+         assertNotNull(tm1);
+         assertNotNull(tm2);
+         assertEquals("nurse!", tm1.getText());
+         assertEquals("nurse!", tm2.getText());
+         
+         //acknowledge tm1
+         tm1.acknowledge();
+         
+         //tm2 has not been acknowledged
+         //so should be redelivered on session.recover
+         
+         sess2.recover();
+         
+         tm2 = (TextMessage)cons2.receive(3000);
+         assertNotNull(tm2);
+         assertEquals("nurse!", tm2.getText());
+         
+         
+         //but tm1 should not be redelivered
+         tm1 = (TextMessage)cons1.receive(3000);
+         assertNull(tm1);
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+      }
 
+   }
+   
+
+   /**
+      Topics shouldn't persist messages for non durable subscribers and redeliver them on reconnection
+      even if delivery mode of persistent is specified
+      See JMS spec. sec. 6.12
+   
+   */
+   public void testNoRedeliveryOnNonDurableSubscriber() throws Exception
+   {
+      Connection conn1 = null;
+      Connection conn2 = null;
+      
+      try
+      {
+         
+         conn1 = cf.createConnection();
+         conn1.start();
+   
+         Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageProducer prod = sess1.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+   
+         final int NUM_MESSAGES = 1;
+   
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess1.createTextMessage("helloxyz");
+            prod.send(topic, tm);
+         }
+         
+         //receive but don't ack
+         MessageConsumer cons = sess1.createConsumer(topic);
+         int count = 0;
+         while (true)
+         {
+            TextMessage tm = (TextMessage)cons.receive(1000);
+            if (tm == null) break;
+            assertEquals(tm.getText(), "helloxyz");
+            count++;
+         }
+         assertEquals(count, NUM_MESSAGES);
+         
+         conn1.close();
+         
+         conn2 = cf.createConnection();
+         conn2.start();
+         
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons2 = sess2.createConsumer(topic);
+         Message m = cons2.receive(2000);
+         assertNull(m);
+         
+         conn2.close();
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+
+      
+   }
+   
+   //Check messages have correct type after being resurrected from persistent storage
+   public void testPersistedMessageType() throws Exception
+   {
+
+      Connection theConn = null;
+      Connection theOtherConn = null;
+      
+      try
+      {
+      
+         theConn = cf.createConnection();
+         theConn.start();
+         
+         //Send some persistent messages to a queue with no receivers
+         Session sessSend = theConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer theProducer = sessSend.createProducer(queue2);
+         theProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+   
+         Message m = sessSend.createMessage();
+         m.setStringProperty("p1", "aardvark");
+         
+         BytesMessage bm = sessSend.createBytesMessage();
+         bm.writeObject("aardvark");
+         
+         MapMessage mm = sessSend.createMapMessage();
+         mm.setString("s1", "aardvark");
+         
+         ObjectMessage om = sessSend.createObjectMessage();
+         om.setObject("aardvark");
+         
+         StreamMessage sm = sessSend.createStreamMessage();
+         sm.writeString("aardvark");
+         
+         TextMessage tm = sessSend.createTextMessage("aardvark");
+        
+         
+         theProducer.send(m);
+         theProducer.send(bm);
+         theProducer.send(mm);
+         theProducer.send(om);
+         theProducer.send(sm);
+         theProducer.send(tm);
+         
+         theConn.close();
+         
+         
+         theOtherConn = cf.createConnection();
+         theOtherConn.start();
+         
+         Session sessReceive = theOtherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer theConsumer = sessReceive.createConsumer(queue2);
+         
+         Message m2 = theConsumer.receive(2000);
+         
+         log.trace("m2 is " + m2);
+         
+         assertNotNull(m2);
+         
+         
+         assertEquals("aardvark", m2.getStringProperty("p1"));
+         
+         BytesMessage bm2 = (BytesMessage)theConsumer.receive(2000);
+         assertEquals("aardvark", bm2.readUTF());
+         
+         MapMessage mm2 = (MapMessage)theConsumer.receive(2000);
+         assertEquals("aardvark", mm2.getString("s1"));
+         
+         ObjectMessage om2 = (ObjectMessage)theConsumer.receive(2000);
+         assertEquals("aardvark", (String)om2.getObject());
+         
+         StreamMessage sm2 = (StreamMessage)theConsumer.receive(2000);
+         assertEquals("aardvark", sm2.readString());
+      }
+      finally
+      {
+         if (theConn != null)
+         {
+            theConn.close();
+         }
+         if (theOtherConn != null)
+         {
+            theOtherConn.close();
+         }
+      }
+      
+
+   }
+   
+
+   
 
    public void testDurableSubscriptionSimple() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
 
-      Connection conn1 = cf.createConnection();
-
-
-      conn1.setClientID(CLIENT_ID1);
-
-
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sess1.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-      MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
-
-      conn1.start();
-
-      final int NUM_MESSAGES = 50;
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
+      Connection conn1 = null;
+      
+      try
       {
-         TextMessage tm = sess1.createTextMessage("hello");
-         prod.send(topic, tm);
-      }
-
-      int count = 0;
-      while (true)
-      {
-         TextMessage tm = (TextMessage)durable.receive(3000);
-         if (tm == null)
+      
+         conn1 = cf.createConnection();
+   
+   
+         conn1.setClientID(CLIENT_ID1);
+   
+   
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess1.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+   
+         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+   
+         conn1.start();
+   
+         final int NUM_MESSAGES = 50;
+   
+         for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            break;
+            TextMessage tm = sess1.createTextMessage("hello");
+            prod.send(topic, tm);
          }
-         count++;
+   
+         int count = 0;
+         while (true)
+         {
+            TextMessage tm = (TextMessage)durable.receive(3000);
+            if (tm == null)
+            {
+               break;
+            }
+            count++;
+         }
+   
+         assertEquals(NUM_MESSAGES, count);
+   
+         sess1.unsubscribe("mySubscription");
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
       }
 
-      assertEquals(NUM_MESSAGES, count);
-
-      sess1.unsubscribe("mySubscription");
-
-      conn1.close();
    }
 
+   
+   public void testDurableSubscriptionMultipleSubscriptions() throws Exception
+   {
+      final String CLIENT_ID1 = "test-client-id1";
 
+      Connection conn1 = null;
+      Connection conn2 = null;
+      
+      try
+      {
+         
+         conn1 = cf.createConnection();
+   
+         conn1.setClientID(CLIENT_ID1);
+   
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         MessageConsumer durable1 = sess1.createDurableSubscriber(topic, "mySubscription1");
+         MessageConsumer durable2 = sess1.createDurableSubscriber(topic, "mySubscription2");
+               
+         conn1.close();
+         
+         
+         
+         conn2 = cf.createConnection();
+         conn2.setClientID(CLIENT_ID1);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = sess2.createProducer(topic);
+         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+   
+         final int NUM_MESSAGES = 50;
+    
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess2.createTextMessage("hello");
+            producer.send(tm);
+         }
+         
+         sess2.unsubscribe("mySubscription1");
+         
+         conn2.close();
+         
+         
+         
+         
+         Connection conn3 = cf.createConnection();
+         conn3.setClientID(CLIENT_ID1);
+         conn3.start();
+         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer durable3 = sess3.createDurableSubscriber(topic, "mySubscription2");
+         
+         int count = 0;
+         while (true)
+         {
+            TextMessage tm = (TextMessage)durable3.receive(1000);
+            if (tm == null)
+            {
+               break;
+            }
+            assertEquals("hello", tm.getText());
+            count++;
+         }
+         
+         assertEquals(NUM_MESSAGES, count);
+         
+         MessageConsumer durable4 = sess3.createDurableSubscriber(topic, "mySubscription1");
+         
+         Message m = durable4.receive(1000);
+         assertNull(m);
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   
 
-   /* This test will not work until JBMESSAGING-105 is fixed */
+   public void testDurableSubscriptionDataRemaining() throws Exception
+   {
+      final String CLIENT_ID1 = "test-client-id1";
+      
+      Connection conn1 = null;
+      Connection conn2 = null;
+      Connection conn3 = null;
+      Connection conn4 = null;
+      Connection conn5 = null;
+      Connection conn6 = null;
+
+      try
+      {
+         
+         //Create a durable subscriber on one connection and close it
+         conn1 = cf.createConnection();
+         conn1.setClientID(CLIENT_ID1);
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");      
+         conn1.close();
+         
+         
+         //Send some messages on another connection and close it
+         conn2 = cf.createConnection();
+         conn2.setClientID(CLIENT_ID1);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod2 = sess2.createProducer(topic); 
+         prod2.setDeliveryMode(DeliveryMode.PERSISTENT);
+         final int NUM_MESSAGES = 10;
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess2.createTextMessage("hello");
+            prod2.send(topic, tm);
+         }
+         conn2.close();
+         
+         //Receive the messages on another connection
+         conn3 = cf.createConnection();      
+         conn3.setClientID(CLIENT_ID1);
+         conn3.start();
+         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         durable = sess3.createDurableSubscriber(topic, "mySubscription");
+         int count = 0;
+         while (true)
+         {
+            TextMessage tm = (TextMessage)durable.receive(1000);
+            if (tm == null)
+            {
+               break;
+            }
+            assertEquals("hello", tm.getText());
+            count++;
+         }
+         assertEquals(NUM_MESSAGES, count);
+         conn3.close();
+         
+         //Try and receive them again
+         conn4 = cf.createConnection();
+         conn4.setClientID(CLIENT_ID1);
+         conn4.start();
+         Session sess4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         durable = sess4.createDurableSubscriber(topic, "mySubscription");
+   
+         TextMessage tm = (TextMessage)durable.receive(1000);
+         assertNull(tm);
+         conn4.close();
+         
+         //Send some more messages and unsubscribe
+         conn5 = cf.createConnection();
+         conn5.setClientID(CLIENT_ID1);
+         conn5.start();
+         Session sess5 = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod5 = sess5.createProducer(topic); 
+         prod5.setDeliveryMode(DeliveryMode.PERSISTENT);      
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm2 = sess5.createTextMessage("hello");
+            prod5.send(topic, tm2);
+         }
+         sess5.unsubscribe("mySubscription");
+         conn5.close();
+         
+         //Resubscribe with the same name
+         conn6 = cf.createConnection();
+         conn6.setClientID(CLIENT_ID1);
+         conn6.start();
+         Session sess6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         durable = sess6.createDurableSubscriber(topic, "mySubscription");
+   
+         TextMessage tm3 = (TextMessage)durable.receive(1000);
+         assertNull(tm);
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
+         if (conn4 != null)
+         {
+            conn4.close();
+         }
+         if (conn5 != null)
+         {
+            conn5.close();
+         }
+         if (conn6 != null)
+         {
+            conn6.close();
+         }
+      }
+      
+   }
+   
+   
    public void testDurableSubscriptionReconnect() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
 
-      Connection conn1 = cf.createConnection();
-      conn1.setClientID(CLIENT_ID1);
-
-
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sess1.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-
-      MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
-
-      conn1.start();
-
-      final int NUM_MESSAGES = 2;
-
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
+      Connection conn1 = null;
+      Connection conn2 = null;
+      
+      try
       {
-         TextMessage tm = sess1.createTextMessage("hello");
-         prod.send(topic, tm);
-      }
-
-      final int NUM_TO_RECEIVE = 1;
-
-      for (int i = 0; i < NUM_TO_RECEIVE; i++)
-      {
-         TextMessage tm = (TextMessage)durable.receive();
-         assertNotNull(tm);
-      }
-
-      // Close the connection
-      conn1.close();
-      conn1 = null;
-
-      Connection conn2 = cf.createConnection();
-
-      conn2.setClientID(CLIENT_ID1);
-
-      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      // Re-subscribe to the subscription
-
-      log.trace("Resubscribing");
-
-      MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
-
-      conn2.start();
-
-      int count = 0;
-      while (true)
-      {
-         TextMessage tm = (TextMessage)durable2.receive(3000);
-         if (tm == null)
+      
+         conn1 = cf.createConnection();
+         conn1.setClientID(CLIENT_ID1);
+   
+   
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess1.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+   
+   
+         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+   
+         conn1.start();
+   
+         final int NUM_MESSAGES = 2;
+   
+   
+         for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            break;
+            TextMessage tm = sess1.createTextMessage("hello");
+            prod.send(topic, tm);
          }
-         count++;
+   
+         final int NUM_TO_RECEIVE = 1;
+   
+         for (int i = 0; i < NUM_TO_RECEIVE; i++)
+         {
+            TextMessage tm = (TextMessage)durable.receive();
+            assertNotNull(tm);
+         }
+   
+         // Close the connection
+         conn1.close();
+         conn1 = null;
+   
+         conn2 = cf.createConnection();
+   
+         conn2.setClientID(CLIENT_ID1);
+   
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         // Re-subscribe to the subscription
+   
+         log.trace("Resubscribing");
+   
+         MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
+   
+         conn2.start();
+   
+         int count = 0;
+         while (true)
+         {
+            TextMessage tm = (TextMessage)durable2.receive(3000);
+            if (tm == null)
+            {
+               break;
+            }
+            count++;
+         }
+   
+         log.trace("Received " + count  + " messages");
+   
+         assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE, count);
+   
+         sess2.unsubscribe("mySubscription");
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
       }
 
-      log.trace("Received " + count  + " messages");
-
-      assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE, count);
-
-      sess2.unsubscribe("mySubscription");
-
-      conn2.close();
 
    }
 
@@ -1016,71 +1517,87 @@ public class MessageConsumerTest extends MessagingTestCase
       final String CLIENT_ID1 = "test-client-id1";
       final String CLIENT_ID2 = "test-client-id2";
 
-      Connection conn1 = cf.createConnection();
-
-
-      conn1.setClientID(CLIENT_ID1);
-
-
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sess1.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-      MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
-
-      conn1.start();
-
-      final int NUM_MESSAGES = 50;
-
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
+      Connection conn1 = null;
+      Connection conn2 = null;
+      
+      try
       {
-         TextMessage tm = sess1.createTextMessage("hello");
-         prod.send(topic, tm);
-      }
-
-      final int NUM_TO_RECEIVE1 = 22;
-
-      for (int i = 0; i < NUM_TO_RECEIVE1; i++)
-      {
-         TextMessage tm = (TextMessage)durable.receive(3000);
-         if (tm == null)
+         
+         conn1 = cf.createConnection();
+   
+   
+         conn1.setClientID(CLIENT_ID1);
+   
+   
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess1.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+   
+         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+   
+         conn1.start();
+   
+         final int NUM_MESSAGES = 50;
+   
+   
+         for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            fail();
+            TextMessage tm = sess1.createTextMessage("hello");
+            prod.send(topic, tm);
+         }
+   
+         final int NUM_TO_RECEIVE1 = 22;
+   
+         for (int i = 0; i < NUM_TO_RECEIVE1; i++)
+         {
+            TextMessage tm = (TextMessage)durable.receive(3000);
+            if (tm == null)
+            {
+               fail();
+            }
+         }
+   
+         //Close the connection
+         conn1.close();
+         conn1 = null;
+   
+         conn2 = cf.createConnection();
+   
+         conn2.setClientID(CLIENT_ID2);
+   
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         //Re-subscribe to the subscription
+         MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
+   
+         conn2.start();
+   
+         int count = 0;
+         while (true)
+         {
+            TextMessage tm = (TextMessage)durable2.receive(3000);
+            if (tm == null)
+            {
+               break;
+            }
+            count++;
+         }
+   
+         assertEquals(0, count);
+   
+         sess2.unsubscribe("mySubscription");
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
          }
       }
-
-      //Close the connection
-      conn1.close();
-      conn1 = null;
-
-      Connection conn2 = cf.createConnection();
-
-      conn2.setClientID(CLIENT_ID2);
-
-      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      //Re-subscribe to the subscription
-      MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
-
-      conn2.start();
-
-      int count = 0;
-      while (true)
-      {
-         TextMessage tm = (TextMessage)durable2.receive(3000);
-         if (tm == null)
-         {
-            break;
-         }
-         count++;
-      }
-
-      assertEquals(0, count);
-
-      sess2.unsubscribe("mySubscription");
-
-      conn2.close();
 
    }
 
@@ -1090,19 +1607,32 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       final String CLIENT_ID1 = "test-client-id1";
 
-      Connection conn1 = cf.createConnection();
-
-      conn1.setClientID(CLIENT_ID1);
-
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
+      Connection conn1 = null;
+      
       try
       {
-         sess1.unsubscribe("non-existent subscription");
-         fail();
+         conn1 = cf.createConnection();
+      
+   
+         conn1.setClientID(CLIENT_ID1);
+   
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         try
+         {
+            sess1.unsubscribe("non-existent subscription");
+            fail();
+         }
+         catch (JMSException e)
+         {
+         }
       }
-      catch (JMSException e)
+      finally
       {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
       }
    }
 
@@ -1115,19 +1645,33 @@ public class MessageConsumerTest extends MessagingTestCase
       //This assumes we are not setting it in the connection factory which
       //is currently true but may change in the future
 
-      Connection conn1 = cf.createConnection();
-
-      assertNull(conn1.getClientID());
-
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
+      Connection conn1 = null;
+      
       try
       {
-         sess1.createDurableSubscriber(topic, "mySubscription");
-         fail();
+      
+         conn1 = cf.createConnection();
+   
+         assertNull(conn1.getClientID());
+   
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         try
+         {
+            sess1.createDurableSubscriber(topic, "mySubscription");
+            fail();
+         }
+         catch (JMSException e)
+         {}
+      
       }
-      catch (JMSException e)
-      {}
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+      }
    }
 
 

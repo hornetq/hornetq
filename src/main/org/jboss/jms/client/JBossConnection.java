@@ -214,6 +214,10 @@ public class JBossConnection implements
    protected JBossSession createSessionInternal(boolean transacted, int acknowledgeMode,
                                                 boolean isXA, int type) throws JMSException
    {
+      if (transacted)
+      {
+         acknowledgeMode = Session.SESSION_TRANSACTED;
+      }
       SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
       return new JBossSession(sessionDelegate, type);
    }

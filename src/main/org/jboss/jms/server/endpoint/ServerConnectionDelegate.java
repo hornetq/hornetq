@@ -9,14 +9,13 @@ package org.jboss.jms.server.endpoint;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
@@ -24,8 +23,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ServerSessionPool;
 import javax.jms.TransactionRolledBackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -53,8 +50,8 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Routable;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -422,7 +419,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    // Package protected ---------------------------------------------
    
    void sendMessage(Message m) throws JMSException
-   {
+   { 
       //The JMSDestination header must already have been set for each message
       JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
       if (jmsDestination == null)

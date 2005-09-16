@@ -64,9 +64,18 @@ abstract class StateSupport implements State
 
    public void add(Routable r) throws Throwable
    {
+      
       if (r.isReliable())
       {
-         throw new IllegalStateException("Cannot reliably hold a reliable message");
+         //throw new IllegalStateException("Cannot reliably hold a reliable message");
+         
+         //FIXME-
+         //In the case of a persistent message being sent to a topic then the normal semantics of
+         //persistent are lost. This is why I commented out the above exception throw.
+         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
+         //so they can be redelivered for the lifetime of the non durable subscriber
+         //See Jms 1.1 spec. 6.12
+                 
       }
       messages.add(r);
    }

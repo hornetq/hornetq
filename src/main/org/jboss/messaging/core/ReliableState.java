@@ -140,6 +140,7 @@ class ReliableState extends TransactionalState
       if (tx == null)
       {
          // no active transaction, handle the message non-transactionally
+         if (log.isTraceEnabled()) { log.trace("Peristing message ref for message id:" + ref.getMessageID()); }
          pm.add(channelID, ref);
          return;
       }
@@ -176,6 +177,7 @@ class ReliableState extends TransactionalState
       List undelivered = super.undelivered(filter);
       try
       {
+         if (log.isTraceEnabled()) { log.trace("Getting persistent messages for channel: " + channelID); }
          List persisted = pm.messages(channelID);
          for(Iterator i = persisted.iterator(); i.hasNext(); )
          {
@@ -189,7 +191,13 @@ class ReliableState extends TransactionalState
             }
 
             // TODO filtering could be probably pushed to the database
+            if (log.isTraceEnabled()) { log.trace("Looking for reference for message id " + id.messageID); }
             MessageReference ref = ms.getReference(id.messageID);
+            
+            if (ref == null)
+            {
+               log.warn("Could not find reference for message");
+            }
 
             // TODO very inefficient. Get rid of this when a reference will be able to fully support headers/properties
             Message m = ref.getMessage();

@@ -80,6 +80,10 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
    
+   <category name="org.jboss.jms.message">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
 
    <category name="org.jboss.test.messaging">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>

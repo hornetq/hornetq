@@ -81,6 +81,76 @@ public class ConnectionClosedTest extends MessagingTestCase
       conn.close();
       conn.close();
    }
+   
+   /** See TCK test: topicconntests.connNotStartedTopicTest */
+   public void testCannotReceiveMessageOnClosedConnection() throws Exception
+   {
+      TopicConnection conn1 = ((TopicConnectionFactory)cf).createTopicConnection();
+      TopicConnection conn2 = ((TopicConnectionFactory)cf).createTopicConnection();
+      
+      TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      TopicSession sess2 = conn2.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      TopicSubscriber sub1 = sess1.createSubscriber(topic);
+      
+      TopicSubscriber sub2 = sess2.createSubscriber(topic);
+      
+      conn1.start();
+      
+      Connection conn3 = cf.createConnection();
+      
+      Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sess3.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      final int NUM_MESSAGES = 10;
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         TextMessage tm = sess3.createTextMessage("hello");
+         prod.send(tm);
+      }
+      
+      int count = 0;
+      while (true)
+      {
+         TextMessage tm = (TextMessage)sub1.receive(2000);
+         if (tm == null)
+         {
+            break;
+         }
+         assertEquals("hello", tm.getText());
+         count++;
+      }
+      assertEquals(NUM_MESSAGES, count);
+      
+      Message m = sub2.receive(2000);
+      
+      assertNull(m);
+      
+      conn2.start();
+      
+      count = 0;
+      while (true)
+      {
+         TextMessage tm = (TextMessage)sub2.receive(2000);
+         if (tm == null)
+         {
+            break;
+         }
+         assertEquals("hello", tm.getText());
+         count++;
+      }
+      assertEquals(NUM_MESSAGES, count);
+      
+      conn1.close();
+      
+      conn2.close();
+      
+      conn3.close();
+      
+   }
 
    /**
     * A close terminates all pending message receives on the connection’s session’s  consumers. The

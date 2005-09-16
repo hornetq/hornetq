@@ -81,7 +81,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    }
 
    // DeliveryObserver overrides ------------------------------------
-
+   
    public void acknowledge(Delivery d)
    {
       try

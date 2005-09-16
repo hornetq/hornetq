@@ -101,6 +101,43 @@ public class MessageProducerTest extends MessagingTestCase
    
    }
 
+   public void testPersistentSendToTopic() throws Exception
+   {
+      consumerConnection.start();
+      
+      final TextMessage m1 = producerSession.createTextMessage("test");
+      
+      Thread t = 
+      
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               // this is needed to make sure the main thread has enough time to block
+               Thread.sleep(1000);
+               topicProducer.send(m1);
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+            }
+         }
+      }, "Producer");
+      
+      t.start();
+      
+      
+      TextMessage m2 = (TextMessage)topicConsumer.receive(5000);
+      assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
+      assertEquals("test", m2.getText());
+      
+      
+      t.join();
+      
+   }
+   
 
    public void testSimpleSend() throws Exception
    {

@@ -76,9 +76,19 @@ class TransactionalState extends StateSupport
    public void add(Delivery d) throws Throwable
    {
       Routable r = d.getRoutable();
+      
+      
       if (r.isReliable())
       {
-         throw new IllegalStateException("Cannot reliably carry out a reliable message delivery");
+         //throw new IllegalStateException("Cannot reliably carry out a reliable message delivery");
+         
+			//FIXME-
+         //In the case of a persistent message being sent to a topic then the normal semantics of
+         //persistent are lost. This is why I commented out the above exception throw.
+         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
+         //so they can be redelivered for the lifetime of the non durable subscriber
+         //See Jms 1.1 spec. 6.12
+         
       }
 
       if (d instanceof CompositeDelivery)
@@ -100,7 +110,16 @@ class TransactionalState extends StateSupport
       Routable r = d.getRoutable();
       if (r.isReliable())
       {
-         throw new IllegalStateException("Cannot forget a reliable message delivery at this level");
+         //throw new IllegalStateException("Cannot forget a reliable message delivery at this level");
+         
+         //FIXME-
+         //In the case of a persistent message being sent to a topic then the normal semantics of
+         //persistent are lost. This is why I commented out the above exception throw.
+         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
+         //so they can be redelivered for the lifetime of the non durable subscriber.
+         //Hence removal is ok here, even for a persistent message in the case of a topic
+         //See Jms 1.1 spec. 6.12
+         
       }
 
       if (d instanceof CompositeDelivery)
@@ -149,8 +168,15 @@ class TransactionalState extends StateSupport
 
       if (r.isReliable())
       {
-         tx.setRollbackOnly();
-         throw new IllegalStateException("Cannot reliably hold a transactional reliable message");
+         //tx.setRollbackOnly();
+         //throw new IllegalStateException("Cannot reliably hold a transactional reliable message");
+         
+         //FIXME-
+         //In the case of a persistent message being sent to a topic then the normal semantics of
+         //persistent are lost. This is why I commented out the above exception throw.
+         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
+         //so they can be redelivered for the lifetime of the non durable subscriber
+         //See Jms 1.1 spec. 6.12
       }
 
       String txID = registerAddMessageSynchronization(tx);

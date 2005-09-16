@@ -6,15 +6,18 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
-
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.io.Serializable;
+
+import javax.jms.JMSException;
+
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.logging.Logger;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * Manages client connections. There is a single ClientManager instance for each server peer.
@@ -27,6 +30,9 @@ import java.io.Serializable;
 public class ClientManager
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ClientManager.class);
+
 
    // Static --------------------------------------------------------
 
@@ -84,10 +90,22 @@ public class ClientManager
    
    public DurableSubscriptionHolder removeDurableSubscription(String clientID,
                                                               String subscriptionName)
+      throws JMSException
    {
+      if (clientID == null)
+      {
+         throw new JMSException("Client ID must be set for connection!");
+      }
+      
       Map subs = (Map)subscriptions.get(clientID);
       
-      if (subs == null) return null;
+      if (subs == null)
+      {
+         return null;
+      }
+                 
+      
+      if (log.isTraceEnabled()) { log.trace("Removing durable sub: " + subscriptionName); }
       
       DurableSubscriptionHolder removed = (DurableSubscriptionHolder)subs.remove(subscriptionName);
       

@@ -98,6 +98,18 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
       if (m == null)
       {
          m = ms.retrieve(this);
+         
+         //FIXME
+         //Hmmmm... if the same message is being delivered to, say, 2 receivers
+         //on a topic, and only one of them recovers then the redelivered flag
+         //should be set for only one of them.
+         //Doing this sets it for the whole message!!
+         
+         if (this.isRedelivered())
+         {
+            m.setRedelivered(true);
+         }
+         
          refreshReference(m);
       }
       return m;

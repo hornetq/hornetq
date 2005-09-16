@@ -6,6 +6,7 @@
  */
 package org.jboss.test.messaging.jms.message;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -558,13 +559,43 @@ public class MessageTest extends MessagingTestCase
 
 
 
+   public void testSendReceiveForeignMessage() throws JMSException
+   {
+      
+      log.trace("Starting da test");
+      
+      SimpleJMSMessage foreignMessage = new SimpleJMSMessage();
+      
+      foreignMessage.setStringProperty("animal", "aardvark");
+      
+      //foreign messages don't have to be serializable
+      assertFalse(foreignMessage instanceof Serializable);
+      
+      log.trace("Sending message");
+      
+      queueProducer.send(foreignMessage);
+      
+      log.trace("Sent message");
+
+      Message m2 = queueConsumer.receive(3000);
+      log.trace("The message is " + m2);
+      
+      assertNotNull(m2);
+      
+      assertEquals("aardvark", m2.getStringProperty("animal"));
+      
+      log.trace("Received message");
+
+      log.trace("Done that test");
+   }
+
    public void testCopyOnJBossMessage() throws JMSException
    {
       Message jbossMessage = queueProducerSession.createMessage();
 
       configureMessage(jbossMessage);
 
-      JBossMessage copy = JBossMessage.copy(jbossMessage);
+      JBossMessage copy = JBossMessage.copy((JBossMessage)jbossMessage);
 
       ensureEquivalent(jbossMessage, copy);
    }
@@ -578,6 +609,7 @@ public class MessageTest extends MessagingTestCase
 
       ensureEquivalent(foreignMessage, copy);
    }
+   
 
    public void testCopyOnJBossBytesMessage() throws JMSException
    {
@@ -587,7 +619,7 @@ public class MessageTest extends MessagingTestCase
          jbossMessage.writeByte((byte)i);
       }
 
-      JBossBytesMessage copy = (JBossBytesMessage)JBossMessage.copy(jbossMessage);
+      JBossBytesMessage copy = (JBossBytesMessage)JBossMessage.copy((JBossMessage)jbossMessage);
 
       jbossMessage.reset();
       copy.reset();
@@ -618,7 +650,7 @@ public class MessageTest extends MessagingTestCase
       jbossMessage.setInt("int", 1);
       jbossMessage.setString("string", "test");
 
-      JBossMapMessage copy = (JBossMapMessage)JBossMessage.copy(jbossMessage);
+      JBossMapMessage copy = (JBossMapMessage)JBossMessage.copy((JBossMessage)jbossMessage);
 
       ensureEquivalent((MapMessage)jbossMessage, (MapMessage)copy);
    }
@@ -640,7 +672,7 @@ public class MessageTest extends MessagingTestCase
    {
       Message jbossMessage = queueProducerSession.createObjectMessage();
 
-      JBossObjectMessage copy = (JBossObjectMessage)JBossMessage.copy(jbossMessage);
+      JBossObjectMessage copy = (JBossObjectMessage)JBossMessage.copy((JBossMessage)jbossMessage);
 
       ensureEquivalent((ObjectMessage)jbossMessage, (ObjectMessage)copy);
    }
@@ -663,7 +695,7 @@ public class MessageTest extends MessagingTestCase
       jbossMessage.writeByte((byte)2);
       jbossMessage.writeByte((byte)3);
 
-      JBossStreamMessage copy = (JBossStreamMessage)JBossMessage.copy(jbossMessage);
+      JBossStreamMessage copy = (JBossStreamMessage)JBossMessage.copy((JBossMessage)jbossMessage);
 
       ensureEquivalent((StreamMessage)jbossMessage, (StreamMessage)copy);
    }
@@ -686,7 +718,7 @@ public class MessageTest extends MessagingTestCase
    {
       Message jbossMessage = queueProducerSession.createTextMessage();
 
-      JBossTextMessage copy = (JBossTextMessage)JBossMessage.copy(jbossMessage);
+      JBossTextMessage copy = (JBossTextMessage)JBossMessage.copy((JBossMessage)jbossMessage);
 
       ensureEquivalent((TextMessage)jbossMessage, (TextMessage)copy);
    }

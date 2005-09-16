@@ -48,7 +48,31 @@ public class Topic extends TransactionalChannelSupport
 
    public Topic(String name, MessageStore ms, PersistenceManager pm, TransactionManager tm)
    {
-      super(name, ms, pm, tm);
+      super(name, ms, null, tm);
+     
+      /*
+       * 
+       * 
+       FIXME - I don't get it - why would a topic ever be created with a persistence manager?
+       If it has a pm then any non delivered persistent messages will get persisted
+       Topics aren't supposed to persist unacked msgs. - Tim
+        
+       See: 
+       
+       JMS 1.1 Spec 6.12:
+       
+       Unacknowledged messages of a nondurable subscriber should be able to be
+      recovered for the lifetime of that nondurable subscriber. When a nondurable
+      subscriber terminates, messages waiting for it will likely be dropped whether
+      or not they have been acknowledged.
+      Only durable subscriptions are reliably able to recover unacknowledged
+      messages.
+      Sending a message to a topic with a delivery mode of PERSISTENT does not
+      alter this model of recovery and redelivery. To ensure delivery, a TopicSubscriber
+      should establish a durable subscription.
+
+       */
+      
       router = new PointToMultipointRouter();
    }
 

@@ -38,6 +38,7 @@ abstract class ChannelSupport implements Channel
    protected State state;
    protected TransactionManager tm;
    protected MessageStore ms;
+  // protected Filter selector;
 
 
    // Constructors --------------------------------------------------
@@ -47,6 +48,7 @@ abstract class ChannelSupport implements Channel
                             PersistenceManager pm,
                             TransactionManager tm)
    {
+      if (log.isTraceEnabled()) { log.trace("Creating ChannelSupport: " + channelID + " reliable?" + (pm != null)); }
       this.channelID = channelID;
       this.ms = ms;
       this.tm = tm;
@@ -74,6 +76,7 @@ abstract class ChannelSupport implements Channel
    {
       acknowledgeNoTx(d);
    }
+   
 
    public boolean cancel(Delivery d) throws Throwable
    {
@@ -95,12 +98,19 @@ abstract class ChannelSupport implements Channel
       if (log.isTraceEnabled()) { log.trace(this + " redelivery request for delivery " + old + " by receiver " + r); }
 
       // TODO must be done atomically
-
+   
       if (state.remove(old))
       {
          if (log.isTraceEnabled()) { log.trace(this + "old delivery was active, canceled it"); }
+         
+         Routable routable = old.getRoutable();
+         
+         //FIXME - What if the message is only redelivered for one particular
+         //receiver - won't this set it globally?
+         if (log.isTraceEnabled()) { log.trace("Setting redelivered to true"); }
+         routable.setRedelivered(true);
 
-         Delivery newd = r.handle(this, old.getRoutable());
+         Delivery newd = r.handle(this, routable);
 
          if (newd == null || newd.isDone())
          {
@@ -110,13 +120,14 @@ abstract class ChannelSupport implements Channel
          // TODO race condition: what if the receiver acknowledges right here v ?
          state.add(newd);
       }
+  
    }
 
    // Distributor implementation ------------------------------------
 
    public boolean add(Receiver r)
    {
-      if (log.isTraceEnabled()) { log.trace("Attempting to add receiver to channel"); }
+      if (log.isTraceEnabled()) { log.trace("Attempting to add receiver to channel"); }           
       
       boolean added = router.add(r);
       if (added)
@@ -237,6 +248,7 @@ abstract class ChannelSupport implements Channel
       {
          return null;
       }
+    
 
       Set deliveries = router.handle(this, r);
 

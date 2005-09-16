@@ -12,14 +12,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.jms.IllegalStateException;
+
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.logging.Logger;
-
-import javax.jms.IllegalStateException;
 
 
 /**

@@ -10,6 +10,8 @@ import javax.jms.Message;
 import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.DeliveryMode;
+
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +37,20 @@ public class SimpleJMSMessage implements Message
 
    // Message implementation ----------------------------------------
 
+   private String hiddenPrivateField;
+   
    private String messageID;
 
+   public String getHiddenPrivateField()
+   {
+      return hiddenPrivateField;
+   }
+   
+   public void setHiddenPrivateField(String f)
+   {
+      hiddenPrivateField = f;
+   }
+   
    public String getJMSMessageID() throws JMSException
    {
       return messageID;
