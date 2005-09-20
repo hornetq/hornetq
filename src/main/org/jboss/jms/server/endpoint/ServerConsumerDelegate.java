@@ -60,6 +60,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    protected PooledExecutor threadPool;
    
    protected boolean started;
+   
+   protected boolean disconnected = false;
 
    // <messageID-Delivery>
    private Map deliveries;
@@ -201,7 +203,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    {
       if (log.isTraceEnabled()) { log.trace(this.id + " close"); }
 
-      remove();
+      //On close we only disconnect the consumer from the Channel we don't actually remove it
+      //This is because it may still contain deliveries that may well be acknowledged
+      //after the consumer has closed.
+      //This is perfectly valid.
+      disconnect();
    }
    
    void setStarted(boolean s)
@@ -243,6 +249,12 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Public --------------------------------------------------------
 
+
+
+   // Package protected ---------------------------------------------
+   
+
+   /** Actually remove the consumer and clear up any deliveries it may have */
    void remove()
    {
       if (log.isTraceEnabled()) log.trace("attempting to remove receiver from destination: " + destination);
@@ -262,15 +274,32 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          i.remove();
       }
       
-      boolean removed = destination.remove(this);
-      
-      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");
-      
+      if (!disconnected)
+      {
+         disconnect();
+      }
       
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
-      this.sessionEndpoint.consumers.remove(id);
+      //this.sessionEndpoint.consumers.remove(id);
       
-   }   
+   }  
+   
+   /**
+    * Disconnect this consumer from the Channel that feeds it.
+    * This method does not clear up any deliveries
+    *
+    */
+   void disconnect()
+   {
+      boolean removed = destination.remove(this);
+      
+      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");         
+      
+      if (removed)
+      {
+         disconnected = true;
+      }
+   }
    
    void acknowledge(String messageID)
    {
@@ -294,9 +323,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          log.error("Message " + messageID + "cannot be acknowledged to the source");
       }
    }
-
-
-   // Package protected ---------------------------------------------
    
    void redeliver() throws JMSException
    {

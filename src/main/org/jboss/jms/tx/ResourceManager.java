@@ -322,6 +322,7 @@ public class ResourceManager
    
    public TxState getTx(Object xid)
    {
+      if (log.isTraceEnabled()) { log.trace("Getting tx for tx id:" + xid); }
       TxState tx = (TxState) transactions.get(xid);      
       return tx;
    }

@@ -214,6 +214,11 @@ public class TransactionInterceptor implements Interceptor, Serializable
             String messageID = (String)mi.getArguments()[0];
             String receiverID = (String)mi.getArguments()[1];
             
+            if (log.isTraceEnabled())
+            {
+               log.trace("XAresource: " + xaResource);
+            }
+            
             rm.addAck(xaResource.getCurrentTxID(), new AckInfo(messageID, receiverID));
             
             return null;

@@ -89,7 +89,7 @@ public class MessageConsumerTest extends MessagingTestCase
       ServerManagement.deployQueue("Queue2");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("jms/QueueConnectionFactory");
       topic = (Topic)ic.lookup("/topic/Topic");
       queue = (Queue)ic.lookup("/queue/Queue");
       queue2 = (Queue)ic.lookup("/queue/Queue2");
@@ -154,15 +154,15 @@ public class MessageConsumerTest extends MessagingTestCase
          
          connSend.start();
          
-         Session sessSend = connSend.createSession(true, Session.AUTO_ACKNOWLEDGE);
+         Session sessSend = connSend.createSession(true, Session.SESSION_TRANSACTED);
          
-         MessageProducer prod = sessSend.createProducer(null);
+         MessageProducer prod = sessSend.createProducer(queue2);
          
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
          
          Message m = sessSend.createTextMessage("hello");
          
-         prod.send(queue, m);
+         prod.send(m);
          
          sessSend.commit();
          
@@ -172,7 +172,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          Session sessReceive = connReceive.createSession(true, Session.SESSION_TRANSACTED);
          
-         MessageConsumer cons = sessReceive.createConsumer(queue);
+         MessageConsumer cons = sessReceive.createConsumer(queue2);
          
          TextMessage m2 = (TextMessage)cons.receive(5000);
          

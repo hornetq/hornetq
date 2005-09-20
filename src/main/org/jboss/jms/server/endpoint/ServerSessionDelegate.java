@@ -418,7 +418,15 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    {
       if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.close()");
     
-      //The traversal of the children is done in the ClosedInterceptor
+      synchronized(consumers)
+      {
+         for(Iterator i = consumers.values().iterator(); i.hasNext(); )
+         {
+            ((ServerConsumerDelegate)i.next()).remove();
+
+         }
+      }
+      
    }
    
    public void closing() throws JMSException

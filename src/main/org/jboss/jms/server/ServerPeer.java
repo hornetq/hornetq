@@ -19,6 +19,7 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.LinkRef;
 import javax.naming.NameNotFoundException;
 import javax.transaction.TransactionManager;
 
@@ -609,6 +610,8 @@ public class ServerPeer
       jmsContext.rebind("DURABLE_BMT_XCONNECTION_FACTORY", setupConnectionFactory("cts4"));
       jmsContext.rebind("DURABLE_CMT_XCONNECTION_FACTORY", setupConnectionFactory("cts5"));
       jmsContext.rebind("DURABLE_CMT_TXNS_XCONNECTION_FACTORY", setupConnectionFactory("cts6"));
+      
+      
 
       ic.close();
 

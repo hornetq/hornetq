@@ -65,7 +65,15 @@ public class JBossXAResource implements XAResource
    
    public void setCurrentTxID(Object currentTxID)
    {
+      if (log.isTraceEnabled()) { log.trace("Setting current tx id to " + currentTxID); }
+      if (log.isTraceEnabled()) { log.trace("XAresource is: " + this); }
       this.currentTxID = currentTxID;
+   }
+   
+   //debug only
+   public ResourceManager getRM()
+   {
+      return rm;
    }
    
    // XAResource implementation -------------------------------------
@@ -190,8 +198,7 @@ public class JBossXAResource implements XAResource
                }
                else
                {                  
-                  setCurrentTransactionId(rm.startTx(xid));
-                  if (log.isTraceEnabled()) { log.trace("Setting current tx on session state as:" + xid); }
+                  setCurrentTransactionId(rm.startTx(xid));                 
                }
                break;
             case TMJOIN :
