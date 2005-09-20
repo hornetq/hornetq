@@ -21,13 +21,7 @@ import org.jboss.jms.client.Closeable;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.*;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -44,7 +38,7 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  *
  * $Id$
  */
-public class ServerConsumerDelegate implements Receiver, Closeable
+public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 {
    // Constants -----------------------------------------------------
 
@@ -110,7 +104,19 @@ public class ServerConsumerDelegate implements Receiver, Closeable
       try
       {
          Message message = routable.getMessage();
-            
+
+         try
+         {
+            message = JBossMessage.copy((javax.jms.Message)message);
+         }
+         catch(JMSException e)
+         {
+            // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
+            String msg = "Cannot make a copy of the message";
+            log.error(msg, e);
+            throw new IllegalStateException(msg);
+         }
+
          if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
 
          boolean accept = this.accept(message);
@@ -126,9 +132,9 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
          synchronized (waiting)
          {
-            
+
             if (started)
-            {         
+            {
                if (log.isTraceEnabled()) { log.trace("queueing the message " + message + " for delivery"); }
                threadPool.execute(new DeliveryRunnable(callbackHandler, message, log));
             }
@@ -141,7 +147,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
                waiting.addLast(message);
             }
          }
-                  
+
       }
       catch(InterruptedException e)
       {
@@ -150,7 +156,8 @@ public class ServerConsumerDelegate implements Receiver, Closeable
 
       return delivery;
    }
-   
+
+   // Filter implementation -----------------------------------------
    
    public boolean accept(Routable r)
    {
@@ -279,7 +286,7 @@ public class ServerConsumerDelegate implements Receiver, Closeable
          //failure under load.
          //This is a quick and dirty fix to remove the reference after delivery
          //I imagine it could be integrated into core better
-         this.sessionEndpoint.connectionEndpoint.getServerPeer().getMessageStore().removeReference(messageID);
+         //this.sessionEndpoint.connectionEndpoint.getServerPeer().getMessageStore().removeReference(messageID);
          
       }
       catch(Throwable t)

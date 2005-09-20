@@ -62,7 +62,8 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_TEST=testTopicRedelivery
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
