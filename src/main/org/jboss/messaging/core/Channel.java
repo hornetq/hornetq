@@ -15,14 +15,14 @@ import java.io.Serializable;
  * A Channel is a transactional, reliable message delivery mechanism that forwards a message from a
  * sender to one or more receivers.
  *
- * The channel tries to deliver a message synchronously, if possible, and store the message for
- * re-delivery if not.
+ * The channel tries to deliver a message synchronously, if possible, and stores the message for
+ * re-delivery if synchronous delivery is not possible.
  *
  * A channel implementation may chose to be transactional, reliable or none of the above. A simple
  * channel implementation may not able to accept messages/acknowledgments transactionally, and may
  * not guarantee recoverability in case of failure. A <i>transactional</i> channel must be able to
  * guarantee atomicity when accepting messages/acknowledgments. A <i>reliable</i> channel must be
- * able to guarantee atomicity and recoverability in case of failure. However, reoverability is
+ * able to guarantee atomicity and recoverability in case of failure. However, recoverability is
  * guaranteed only for reliable messages. For non-reliable message, the channel will do its best
  * effort.
  *
