@@ -76,8 +76,7 @@ class TransactionalState extends StateSupport
    public void add(Delivery d) throws Throwable
    {
       Routable r = d.getRoutable();
-      
-      
+
       if (r.isReliable())
       {
          //throw new IllegalStateException("Cannot reliably carry out a reliable message delivery");
@@ -96,6 +95,14 @@ class TransactionalState extends StateSupport
          // TODO break CompositeDelivery in components and add them individually
          throw new NotYetImplementedException("Don't know to handle composite deliveries");
       }
+
+      // TODO This is a kludge, this should change when I start using a non-JTA-related API
+      if (r.isRedelivered())
+      {
+         super.add(d);
+         return;
+      }
+
 
       Transaction tx = tm.getTransaction();
       if (tx == null)

@@ -55,7 +55,10 @@ abstract class StateSupport implements State
       return false;
    }
 
-   // There are no non-transactional delivery additions, so no add(Delivery d) here
+   public void add(Delivery d) throws Throwable
+   {
+      deliveries.add(d);
+   }
 
    public boolean remove(Delivery d) throws Throwable
    {
