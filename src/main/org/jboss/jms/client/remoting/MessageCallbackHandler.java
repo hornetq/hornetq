@@ -50,6 +50,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    protected MessageListener listener;
    protected Thread listenerThread;
+   
+   protected boolean isConnectionConsumer;
+   
    private int listenerThreadCount = 0;
    
    private volatile boolean closed;
@@ -58,10 +61,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Constructors --------------------------------------------------
 
-   public MessageCallbackHandler()
+   public MessageCallbackHandler(boolean isCC)
    {
-      this.messages = new BoundedBuffer(capacity);	
-   }
+      this.messages = new BoundedBuffer(capacity);
+      this.isConnectionConsumer = isCC;   }
 
    // InvokerCallbackHandler implementation -------------------------
    
@@ -74,7 +77,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       try
       {			
          JBossMessage jm = (JBossMessage)m;	
-         jm.setSessionDelegate(sessionDelegate);
+         //if this is the handler for a connection consumer we don't want to set the session delegate
+         //since this is only used for client acknowledgement which is illegal for a session
+         //used for an MDB
+         if (!this.isConnectionConsumer)
+         {
+            jm.setSessionDelegate(sessionDelegate);
+         }
          messages.put(m);
          if (log.isTraceEnabled()) { log.trace("message " + m + " queued in the client delivery queue"); }
       }
@@ -330,12 +339,22 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    public void preDeliver(Message m) throws JMSException
    {
-      sessionDelegate.preDeliver(m.getJMSMessageID(), receiverID);
+      //If this is the callback-handler for a connection consumer we don't want
+      //to acknowledge or add anything to the tx for this session
+      if (!this.isConnectionConsumer)
+      {
+         sessionDelegate.preDeliver(m.getJMSMessageID(), receiverID);
+      }
    }
    
    public void postDeliver(Message m) throws JMSException
    {
-      sessionDelegate.postDeliver(m.getJMSMessageID(), receiverID);
+      //If this is the callback-handler for a connection consumer we don't want
+      //to acknowledge or add anything to the tx for this session
+      if (!this.isConnectionConsumer)
+      {
+         sessionDelegate.postDeliver(m.getJMSMessageID(), receiverID);
+      }
    }
    
    // Inner classes -------------------------------------------------

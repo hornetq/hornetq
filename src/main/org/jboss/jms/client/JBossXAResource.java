@@ -6,10 +6,12 @@
 
 package org.jboss.jms.client;
 
+import javax.jms.JMSException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
 import org.jboss.logging.Logger;
@@ -35,7 +37,7 @@ public class JBossXAResource implements XAResource
    // Attributes ----------------------------------------------------
 
    private ResourceManager rm;
-   //private SessionState session;
+   private SessionDelegate session;
    
    private Object currentTxID;
    
@@ -48,12 +50,12 @@ public class JBossXAResource implements XAResource
     *
     * @param session the session
     */
-   public JBossXAResource(ResourceManager rm)
+   public JBossXAResource(ResourceManager rm, SessionDelegate session)
    {
       trace = log.isTraceEnabled();
       
       this.rm = rm;
-      //this.session = session;
+      this.session = session;            
    }
    
    // Public --------------------------------------------------------
@@ -156,6 +158,17 @@ public class JBossXAResource implements XAResource
          log.trace("Rollback xid=" + xid + " " + this);
 
       rm.rollback(xid);
+           
+      try
+      {
+         String asfReceiverID = session.getAsfReceiverID();
+         session.redeliver(asfReceiverID);
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to initiate redelivery");
+         throw new XAException(XAException.XAER_RMERR);
+      }
 
    }
 
@@ -242,7 +255,8 @@ public class JBossXAResource implements XAResource
       // Don't unset the xid if it has previously been suspended
       // The session could have been recycled
       if (xid.equals(this.currentTxID))
-         this.currentTxID = null;
+         this.currentTxID = rm.createLocalTx();
+
    }
    
    // Inner classes -------------------------------------------------

@@ -104,7 +104,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       //Create a consumer - we must create with CLIENT_ACKNOWLEDGE - they get must not get acked
       //via this session!
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
-      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName);
+      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
       receiverID = cons.getReceiverID();
 
       id = threadId.increment();

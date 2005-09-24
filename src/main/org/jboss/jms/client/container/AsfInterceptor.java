@@ -55,6 +55,9 @@ public class AsfInterceptor
    //The Session listener - the distinguished message listener
    protected MessageListener sessionListener;
    
+   //The id of the receiver we're receiving the messages from
+   protected String receiverID;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -115,12 +118,17 @@ public class AsfInterceptor
       {
          if (log.isTraceEnabled()) { log.trace("addAsfMessage"); }
          
-         //Invoked from Sessin
+         //Invoked from Session
          
          //Load the session with a message to be processed during a subsequent call to run()
          
          Message m = (Message)mi.getArguments()[0];
-         String receiverID = (String)mi.getArguments()[1];
+         String theReceiverID = (String)mi.getArguments()[1];
+         if (this.receiverID != null && this.receiverID != theReceiverID)
+         {
+            throw new IllegalStateException("Cannot receive messages from more than one receiver");
+         }
+         this.receiverID = theReceiverID;
          
          if (m == null)
          {
@@ -160,6 +168,11 @@ public class AsfInterceptor
             }
          }
          return null;
+      }
+      else if ("getAsfReceiverID".equals(methodName))
+      {
+         if (log.isTraceEnabled()) { log.trace("getAsfReceiverID:" + this.receiverID); }
+         return this.receiverID;
       }
       return invocation.invokeNext();
                

@@ -76,8 +76,12 @@
    </category>
 
 
-   <category name="org.jboss.jms.client">
+   <category name="org.jboss.jms">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   
+      <category name="org.jboss.messaging">
+         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
    
    <category name="org.jboss.jms.message">

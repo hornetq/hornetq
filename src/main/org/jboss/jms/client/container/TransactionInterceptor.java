@@ -98,7 +98,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
             
             if (log.isTraceEnabled()) { log.trace("Transacted so creating XAResource"); }
             
-            JBossXAResource theResource = new JBossXAResource(theRm);
+            JBossXAResource theResource = new JBossXAResource(theRm, sd);
                         
             //Create a local tx                     										
             Object Xid = theRm.createLocalTx();
@@ -166,7 +166,10 @@ public class TransactionInterceptor implements Interceptor, Serializable
          } 
          
          //Rollback causes redelivery of messages
-         sessDelegate.redeliver();
+         String asfReceiverID = sessDelegate.getAsfReceiverID();
+         if (log.isTraceEnabled()) { log.trace("asfReceiverID is:" + asfReceiverID); }
+         if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
+         sessDelegate.redeliver(asfReceiverID);
          return null;				
       }
       else if ("send".equals(methodName))
@@ -187,8 +190,16 @@ public class TransactionInterceptor implements Interceptor, Serializable
          {
             //Session is transacted - so we add message to tx instead of sending now
             
+            Object txID = jbXAResource.getCurrentTxID();
+            
+            if (txID == null)
+            {
+               boolean isXA = sessDelegate.getXA();
+               throw new IllegalStateException("Attempt to send message in tx, but txId is null, XA?" + isXA);
+            }
+            
             Message m = (Message)mi.getArguments()[1];			
-            theRM.addMessage(jbXAResource.getCurrentTxID(), m);
+            theRM.addMessage(txID, m);
             
             //And we don't invoke any further interceptors in the stack
             return null;               
@@ -219,7 +230,14 @@ public class TransactionInterceptor implements Interceptor, Serializable
                log.trace("XAresource: " + xaResource);
             }
             
-            rm.addAck(xaResource.getCurrentTxID(), new AckInfo(messageID, receiverID));
+            Object txID = xaResource.getCurrentTxID();
+            
+            if (txID == null)
+            {
+               throw new IllegalStateException("Attempt to send message in tx, but txId is null, XA?" + this.XA);
+            }
+            
+            rm.addAck(txID, new AckInfo(messageID, receiverID));
             
             return null;
          }

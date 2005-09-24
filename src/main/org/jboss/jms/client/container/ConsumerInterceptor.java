@@ -101,8 +101,10 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             InvokerLocator callbackServerLocator = callbackServer.getLocator();
             log.debug("Callback server listening on " + callbackServerLocator);
 
+            boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
+            
 
-            MessageCallbackHandler msgHandler = new MessageCallbackHandler();
+            MessageCallbackHandler msgHandler = new MessageCallbackHandler(isCC);
 
 
             Client client = new Client(serverLocator, subsystem);
@@ -123,6 +125,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             JMSConsumerInvocationHandler ih =
                   (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerDelegate);
 
+            
             ih.setMessageHandler(msgHandler);
             
             Destination theDest = ((Destination)mi.getArguments()[0]);

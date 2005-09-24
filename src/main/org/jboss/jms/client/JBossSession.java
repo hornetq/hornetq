@@ -191,7 +191,7 @@ class JBossSession implements
         throw new InvalidDestinationException("Cannot create a consumer with a null destination");
      }
      ConsumerDelegate consumerDelegate =
-           sessionDelegate.createConsumerDelegate(d, null, false, null);
+           sessionDelegate.createConsumerDelegate(d, null, false, null, false);
      return new JBossMessageConsumer(consumerDelegate);
   }
 
@@ -204,7 +204,7 @@ class JBossSession implements
         throw new InvalidDestinationException("Cannot create a consumer with a null destination");
      }
 	  ConsumerDelegate consumerDelegate =
-        sessionDelegate.createConsumerDelegate(d, messageSelector, false, null);
+        sessionDelegate.createConsumerDelegate(d, messageSelector, false, null, false);
      return new JBossMessageConsumer(consumerDelegate);
   }
 
@@ -221,7 +221,7 @@ class JBossSession implements
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
       ConsumerDelegate consumerDelegate =
-         sessionDelegate.createConsumerDelegate(d, messageSelector, noLocal, null);
+         sessionDelegate.createConsumerDelegate(d, messageSelector, noLocal, null, false);
       return new JBossMessageConsumer(consumerDelegate);
    }
 
@@ -257,7 +257,7 @@ class JBossSession implements
          throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
       }
       ConsumerDelegate consumerDelegate =
-            sessionDelegate.createConsumerDelegate(topic, null, false, name);
+            sessionDelegate.createConsumerDelegate(topic, null, false, name, false);
       return new JBossMessageConsumer(consumerDelegate);
    }
 
@@ -281,7 +281,7 @@ class JBossSession implements
          messageSelector = null;
       }
       ConsumerDelegate consumerDelegate =
-         sessionDelegate.createConsumerDelegate(topic, messageSelector, noLocal, name);
+         sessionDelegate.createConsumerDelegate(topic, messageSelector, noLocal, name, false);
       return new JBossMessageConsumer(consumerDelegate);
    }
 

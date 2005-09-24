@@ -16,6 +16,8 @@ import java.util.Map;
 
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.message.JBossMessage;
@@ -344,18 +346,84 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       
       if (log.isTraceEnabled()) { log.trace("There are " + old.size() + " deliveries to redeliver"); }
 
-      for(Iterator i = old.iterator(); i.hasNext();)
+      
+      
+      
+      //FIXME - Hmmmmm.....
+      //Currently the core requires a transaction to be running for doing redelivery
+      //I don't see why this is necessary-
+      //We shouldn't need to do redelivery in a tx
+      TransactionManager mgr = this.sessionEndpoint.serverPeer.getTransactionManager();
+      
+      Transaction txOld;
+      try
       {
+         txOld = mgr.suspend();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to suspend tx");
+         throw new IllegalStateException("Failed to suspend tx");
+      }
+      
+      
+      try
+      {
+         mgr.begin();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to start tx", e);
+         throw new IllegalStateException("Failed to start tx");
+      }
+      
+      try
+      {
+         
+         for(Iterator i = old.iterator(); i.hasNext();)
+         {
+            try
+            {
+               Delivery d = (Delivery)i.next();
+               d.redeliver(this);
+            }
+            catch(Throwable t)
+            {
+               String msg = "Failed to initiate redelivery";
+               log.error(msg, t);
+               throw new JMSException(msg);
+            }
+         }
+         
+         mgr.commit();
+         
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to redeliver", t);
          try
          {
-            Delivery d = (Delivery)i.next();
-            d.redeliver(this);
+            mgr.rollback();
          }
-         catch(Throwable t)
+         catch (Throwable t2)
          {
-            String msg = "Failed to initiate redelivery";
-            log.error(msg, t);
-            throw new JMSException(msg);
+            log.error("Failed to rollback", t2);
+            throw new IllegalStateException("Failed to rollback");
+         }
+      }
+      finally
+      {
+         if (txOld != null)
+         {
+            try
+            {
+               mgr.resume(txOld);
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to resume tx", e);
+               throw new IllegalStateException("Failed to resume tx");
+            }
          }
       }
       

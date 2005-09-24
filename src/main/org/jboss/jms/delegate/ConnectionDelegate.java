@@ -57,4 +57,9 @@ public interface ConnectionDelegate extends Closeable, MetaDataRepository
    
    public void setResourceManager(ResourceManager rm);
    public ResourceManager getResourceManager();
+   
+   /**
+    *  Redeliver messages for connection consumer
+    */
+  //                    public void redeliver();
 }

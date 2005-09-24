@@ -120,6 +120,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          int acknowledgmentMode,
          boolean isXA)
    {
+      if (log.isTraceEnabled())
+      {
+         log.trace("Creating session, transacted: " + transacted + " ackMode: " + acknowledgmentMode + " Xa:" + isXA); 
+      }
+      
       // create the dynamic proxy that implements SessionDelegate
       SessionDelegate sd = null;
       Serializable oid = serverPeer.getSessionAdvisor().getName();
@@ -483,6 +488,16 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new IllegalStateException("Cannot find receiver:" + receiverID);
       }
       receiver.acknowledge(messageID);
+   }
+   
+   void redeliverForConnectionConsumer(String receiverID) throws JMSException
+   {
+      ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
+      if (receiver == null)
+      {
+         throw new IllegalStateException("Cannot find receiver:" + receiverID);
+      }
+      receiver.redeliver();
    }
    
    

@@ -115,6 +115,8 @@
       <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
          <fileset dir="${messaging.home}/src/cts/deploy">
             <include name="properties-service.xml"/>
+            <include name="tckfactories-ds.xml"/>            
+            <include name="jms-ds.xml"/>
          </fileset>
       </copy>
 

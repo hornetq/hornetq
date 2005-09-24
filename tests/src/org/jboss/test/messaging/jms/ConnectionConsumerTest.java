@@ -71,6 +71,8 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
+      ServerManagement.undeployQueue("Queue");
+     // ServerManagement.deployQueue("Queue");
       ServerManagement.deInit();
       super.tearDown();
    }
@@ -121,7 +123,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          //Wait for messages
          
-        listener.waitForLatch(10000);
+         listener.waitForLatch(10000);
          
          if (listener.getMsgsReceived() != NUM_MESSAGES)
          {
@@ -142,8 +144,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          connConsumer.close();
          connConsumer = null;
          
-         
-         
+    
       }
       finally 
       {
@@ -152,6 +153,111 @@ public class ConnectionConsumerTest extends MessagingTestCase
       }
    }
    
+   
+   public void testRedelivery() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      final int NUM_MESSAGES = 10;
+      
+      Connection connConsumer = null;
+      
+      Connection connProducer = null;
+      
+      try
+      {
+         connConsumer = cf.createConnection();        
+         
+         connConsumer.start();
+                  
+         Session sessCons = connConsumer.createSession(true, Session.SESSION_TRANSACTED);
+         
+         SimpleMessageListener listener = new SimpleMessageListener(NUM_MESSAGES);
+         
+         sessCons.setMessageListener(listener);
+         
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+         
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
+         
+         log.trace("Started connection consumer");
+         
+         connProducer = cf.createConnection();
+            
+         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessProd.createProducer(queue);
+            
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage m = sessProd.createTextMessage("testing testing");
+            prod.send(m);
+         }
+         
+         log.trace("Sent messages");
+         
+         //Wait for messages
+         
+         listener.waitForLatch(10000);
+         
+         if (listener.getMsgsReceived() != NUM_MESSAGES)
+         {
+            fail("Didn't receive all messages");
+         }
+         
+         if (listener.failed)
+         {
+            fail ("Didn't receive correct messages");
+         }
+         
+         log.trace("Received all messages");
+         
+         
+         // Now rollback the session
+         // This is what the app server would do if an unchecked exception is thrown
+         // or the tx is marked for rollback
+         
+
+         //the messages should be redelivered since they have not been acked
+                 
+         listener = new SimpleMessageListener(NUM_MESSAGES);
+         sessCons.setMessageListener(listener);
+         
+ 
+         sessCons.rollback();
+     
+         listener.waitForLatch(10000);
+         
+         log.trace("Messages received in recovery:" + listener.getMsgsReceived());
+         
+         if (listener.getMsgsReceived() != NUM_MESSAGES)
+         {
+            fail("Didn't receive all messages in redelivery");
+         }
+         
+         if (listener.failed)
+         {
+            fail ("Didn't receive correct messages in redelivery");
+         }
+         
+         log.trace("Received all messages in redelivery");
+         
+         sessCons.commit();
+         
+         cc.close();
+         
+         connProducer.close();
+         connProducer = null;
+         connConsumer.close();
+         connConsumer = null;
+         
+    
+      }
+      finally 
+      {
+         if (connConsumer != null) connConsumer.close();
+         if (connConsumer != null) connProducer.close();
+      }
+   }
    
    
 
@@ -251,12 +357,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
          latch.attempt(timeout);
       }
       
-      public void onMessage(Message message)
+      public synchronized void onMessage(Message message)
       {
          try
          {
+    
             
-            log.trace("Received message");
+            log.trace("Received message " + this);
             
             TextMessage tm = (TextMessage)message;
             
@@ -266,6 +373,8 @@ public class ConnectionConsumerTest extends MessagingTestCase
             }
             
             incMsgsReceived();
+            
+            
             
          }
          catch (Exception e)

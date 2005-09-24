@@ -158,7 +158,11 @@ public class SessionInterceptor implements Interceptor, Serializable
          
          //Tell the server to redeliver any un-acked messages
          if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
-         getDelegate(mi).redeliver();
+         SessionDelegate del = getDelegate(mi);
+         String asfReceiverID = del.getAsfReceiverID();
+         
+         if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
+         del.redeliver(asfReceiverID);
          return null;         
       }
       else if ("getAcknowledgeMode".equals(methodName))

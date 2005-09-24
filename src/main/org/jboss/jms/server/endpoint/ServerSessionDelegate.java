@@ -176,7 +176,8 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	public ConsumerDelegate createConsumerDelegate(Destination jmsDestination,
                                                   String selector,
                                                   boolean noLocal,
-                                                  String subscriptionName)
+                                                  String subscriptionName,
+                                                  boolean isCC)
 		throws JMSException
    {
       if ("".equals(selector))
@@ -522,13 +523,32 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	{
 		throw new JMSException("acknowledgeSession is not handled on the server");
 	}
+   
+   public String getAsfReceiverID()
+   {
+      log.warn("getAsfReceiverID is not handled on the server");
+      return null;
+   }
 	
 	/**
 	 * Redeliver all unacked messages for the session
 	 */
-	public void redeliver() throws JMSException
+	public void redeliver(String asfReceiverID) throws JMSException
 	{
-      if (log.isTraceEnabled()) { log.trace("redeliver"); }
+      if (log.isTraceEnabled()) { log.trace("redelivering messages for session"); }
+      
+      if (asfReceiverID != null)
+      {
+         //This means the session is doing work from a connection consumer
+         //In this case we don't want to redeliver the messages in the 
+         //sessions consumers, but instead redeliver the messages from the
+         //connection consumers receiver
+         if (log.isTraceEnabled()) { log.trace("Redelivering the connectionconsumer's messages"); }
+               
+         this.connectionEndpoint.redeliverForConnectionConsumer(asfReceiverID);
+                  
+      }
+      
 		Iterator iter = this.consumers.values().iterator();
 		while (iter.hasNext())
 		{

@@ -583,23 +583,27 @@ public class ServerPeer
       ConnectionFactory cf = setupConnectionFactory(null);
       InitialContext ic = new InitialContext();
       
-      //Bind in both VM and global JNDI namespaces
-      
+      //Bind in global JNDI namespace      
       ic.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
       ic.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
       
-      ic.rebind("java:/" + CONNECTION_FACTORY_JNDI_NAME, cf);
-      ic.rebind("java:/" + XACONNECTION_FACTORY_JNDI_NAME, cf);
-      
-      log.info("Bound connection factory to jndi names: " + CONNECTION_FACTORY_JNDI_NAME + " and " +
-               XACONNECTION_FACTORY_JNDI_NAME);
-
       //And now the connection factories and links as required by the TCK
       //See section 4.4.15 of the TCK user guide.
-      //FIXME - this is a hack. It should be removed once a better way to manage
-      //connection factories is implemented
+      //FIXME - these should be removed when connection factories are deployable via mbeans
 
-      Context jmsContext = JNDIUtil.createContext(ic, "jms");
+      Context jmsContext = null;
+      try
+      {
+         jmsContext = (Context)ic.lookup("jms");
+      }
+      catch (Exception ignore)
+      {         
+      }
+      if (jmsContext == null)
+      {
+         jmsContext = ic.createSubcontext("jms");
+      }
+      
       jmsContext.rebind("QueueConnectionFactory", cf);
       jmsContext.rebind("TopicConnectionFactory", cf);
 
@@ -610,7 +614,6 @@ public class ServerPeer
       jmsContext.rebind("DURABLE_BMT_XCONNECTION_FACTORY", setupConnectionFactory("cts4"));
       jmsContext.rebind("DURABLE_CMT_XCONNECTION_FACTORY", setupConnectionFactory("cts5"));
       jmsContext.rebind("DURABLE_CMT_TXNS_XCONNECTION_FACTORY", setupConnectionFactory("cts6"));
-      
       
 
       ic.close();

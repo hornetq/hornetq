@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connection-factories>
+
+
+   
+   
+   <tx-connection-factory>
+      <jndi-name>TopicConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>org.jboss.resource.adapter.jms.JmsConnectionFactory</connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <application-managed-security/>
+   </tx-connection-factory>
+   
+   <!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/TopicConnectionFactory">
+      <attribute name="JndiName">jms/TopicConnectionFactory</attribute>
+      <attribute name="RemoteJndiName">TopicConnectionFactory</attribute>
+      <attribute name="LocalJndiName">java:/TopicConnectionFactory</attribute>
+   </mbean>
+   -->
+
+
+
+
+
+   <tx-connection-factory>
+      <jndi-name>QueueConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>org.jboss.resource.adapter.jms.JmsConnectionFactory</connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Queue</config-property>
+      <application-managed-security/>
+   </tx-connection-factory>   
+   <!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/QueueConnectionFactory">
+      <attribute name="JndiName">jms/QueueConnectionFactory</attribute>
+      <attribute name="RemoteJndiName">QueueConnectionFactory</attribute>
+      <attribute name="LocalJndiName">java:/QueueConnectionFactory</attribute>
+   </mbean>
+   -->
+
+
+
+
+   <tx-connection-factory>
+      <jndi-name>DurableSubConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>org.jboss.resource.adapter.jms.JmsConnectionFactory</connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <config-property name="ClientID" type="java.lang.String">cts</config-property>
+      <application-managed-security/>
+   </tx-connection-factory>   
+   <!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/DURABLE_SUB_CONNECTION_FACTORY">
+      <attribute name="JndiName">jms/DURABLE_SUB_CONNECTION_FACTORY</attribute>
+      <attribute name="RemoteJndiName">DurableSubConnectionFactory</attribute>
+      <attribute name="LocalJndiName">java:/DurableSubConnectionFactory</attribute>
+   </mbean>
+   -->
+   
+   
+   
+   
+   
+   
+
+
+   <tx-connection-factory>
+      <jndi-name>MDBTAccessConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>org.jboss.resource.adapter.jms.JmsConnectionFactory</connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <config-property name="ClientID" type="java.lang.String">cts1</config-property>
+      <application-managed-security/>
+   </tx-connection-factory>   
+   <!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/MDBTACCESSTEST_FACTORY">
+      <attribute name="JndiName">jms/MDBTACCESSTEST_FACTORY</attribute>
+      <attribute name="RemoteJndiName">MDBTAccessConnectionFactory</attribute>
+      <attribute name="LocalJndiName">java:/MDBTAccessConnectionFactory</attribute>
+   </mbean>
+   -->
+   
+   
+   
+
+
+   <tx-connection-factory>
+      <jndi-name>DurableBMTConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>org.jboss.resource.adapter.jms.JmsConnectionFactory</connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <config-property name="ClientID" type="java.lang.String">cts2</config-property>
+      <application-managed-security/>
+   </tx-connection-factory>   
+   <!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/DURABLE_BMT_CONNECTION_FACTORY">
+      <attribute name="JndiName">jms/DURABLE_BMT_CONNECTION_FACTORY</attribute>
+      <attribute name="RemoteJndiName">DurableBMTConnectionFactory</attribute>
+      <attribute name="LocalJndiName">java:/DurableBMTConnectionFactory</attribute>
+   </mbean>
+   -->
+   
+   
+   
+   
+
+
+   <tx-connection-factory>
+      <jndi-name>DurableCMTConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>org.jboss.resource.adapter.jms.JmsConnectionFactory</connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <config-property name="ClientID" type="java.lang.String">cts3</config-property>
+      <application-managed-security/>
+   </tx-connection-factory>   
+   <!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/DURABLE_CMT_CONNECTION_FACTORY">
+      <attribute name="JndiName">jms/DURABLE_CMT_CONNECTION_FACTORY</attribute>
+      <attribute name="RemoteJndiName">DurableCMTConnectionFactory</attribute>
+      <attribute name="LocalJndiName">java:/DurableCMTConnectionFactory</attribute>
+   </mbean>
+   -->
+   
+   
+<!--
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/DURABLE_BMT_XCONNECTION_FACTORY">
+      <attribute name="JndiName">jms/DURABLE_BMT_XCONNECTION_FACTORY</attribute>
+      <attribute name="RemoteJndiName">DurableBMTXXAConnectionFactory</attribute>
+      <attribute name="LocalJndiName">DurableBMTXXAConnectionFactory</attribute>
+   </mbean>
+   
+   
+   
+   
+
+
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/DURABLE_CMT_XCONNECTION_FACTORY">
+      <attribute name="JndiName">jms/DURABLE_CMT_XCONNECTION_FACTORY</attribute>
+      <attribute name="RemoteJndiName">DurableCMTXXAConnectionFactory</attribute>
+      <attribute name="LocalJndiName">DurableCMTXXAConnectionFactory</attribute>
+   </mbean>
+   
+   
+
+
+   <mbean code="org.jboss.naming.LinkRefPairService"
+          name="jboss.jmx:alias=jms/DURABLE_CMT_TXNS_XCONNECTION_FACTORY">
+      <attribute name="JndiName">jms/DURABLE_CMT_TXNS_XCONNECTION_FACTORY</attribute>
+      <attribute name="RemoteJndiName">DurableCMTTXNSXXAConnectionFactory</attribute>
+      <attribute name="LocalJndiName">DurableCMTTXNSXXAConnectionFactory</attribute>
+   </mbean>
+-->
+
+</connection-factories>

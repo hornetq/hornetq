@@ -38,7 +38,8 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
    public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
 
    public ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
-                                                  boolean noLocal, String subscriptionName)
+                                                  boolean noLocal, String subscriptionName,
+                                                  boolean connectionConsumer)
          throws JMSException;
 
    public Message createMessage() throws JMSException;
@@ -99,7 +100,7 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
    /**
     * Redeliver any un-acked messages.	
     */
-	public void redeliver() throws JMSException;
+	public void redeliver(String receiverID) throws JMSException;
    
    /**
     * Add a temporary destination.
@@ -147,5 +148,7 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
    public void setResourceManager(ResourceManager rm);
    
    public ResourceManager getResourceManager();
+   
+   public String getAsfReceiverID();
    
 }
