@@ -30,7 +30,8 @@
       <attribute name="JMSService">jboss.mq:service=DestinationManager</attribute>
       <attribute name="JNDIService">jboss:service=Naming</attribute>
       <attribute name="JTAService">jboss:service=TransactionManager</attribute>
-      <attribute name="UserTransactionService">jboss:service=DistributedTransactionManager</attribute>
+     <attribute name="UserTransactionService">jboss:service=DistributedTransactionManager</attribute>
+    <!--  <attribute name="UserTransactionService">jboss:service=ClientUserTransaction</attribute> -->
       <attribute name="RMI_IIOPService">jboss:service=CorbaORB</attribute>
    </mbean>
 
@@ -202,6 +203,43 @@
       <depends optional-attribute-name="XidFactory">jboss:service=XidFactory</depends>
       <!-- depends optional-attribute-name="RecoveryLogger" proxy-type="org.jboss.tm.recovery.RecoveryLoggerInstance">jboss:service=RecoveryLogger</depends-->
    </mbean>
+   
+     <mbean code="org.jboss.tm.usertx.server.ClientUserTransactionService"
+       name="jboss:service=ClientUserTransaction"
+       xmbean-dd="resource:xmdesc/ClientUserTransaction-xmbean.xml">
+       <depends>
+         <mbean code="org.jboss.invocation.jrmp.server.JRMPProxyFactory"
+           name="jboss:service=proxyFactory,target=ClientUserTransactionFactory">
+           <attribute name="InvokerName">jboss:service=invoker,type=jrmp</attribute>
+           <attribute name="TargetName">jboss:service=ClientUserTransaction</attribute>
+           <attribute name="JndiName">UserTransactionSessionFactory</attribute>
+           <attribute name="ExportedInterface">org.jboss.tm.usertx.interfaces.UserTransactionSessionFactory</attribute>
+           <attribute name="ClientInterceptors">
+             <interceptors>
+               <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>
+               <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>
+             </interceptors>
+           </attribute>
+           <depends>jboss:service=invoker,type=jrmp</depends>
+         </mbean>
+       </depends>
+       <depends optional-attribute-name="TxProxyName">
+         <mbean code="org.jboss.invocation.jrmp.server.JRMPProxyFactory"
+           name="jboss:service=proxyFactory,target=ClientUserTransaction">
+           <attribute name="InvokerName">jboss:service=invoker,type=jrmp</attribute>
+           <attribute name="TargetName">jboss:service=ClientUserTransaction</attribute>
+           <attribute name="JndiName"></attribute>
+           <attribute name="ExportedInterface">org.jboss.tm.usertx.interfaces.UserTransactionSession</attribute>
+           <attribute name="ClientInterceptors">
+             <interceptors>
+               <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>
+               <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>
+             </interceptors>
+           </attribute>
+           <depends>jboss:service=invoker,type=jrmp</depends>
+         </mbean>
+       </depends>
+  </mbean>
 
    <!-- ==================================================================== -->
    <!-- Invokers to the JMX node                                             -->
