@@ -81,6 +81,43 @@ public class TemporaryDestinationTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
    
+   public void testTemp() throws Exception
+   {
+      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+      
+      MessageProducer producer = producerSession.createProducer(tempTopic);
+      
+      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
+      
+      connection.start();
+      
+      final String messageText = "This is a message";
+      
+      Message m = producerSession.createTextMessage(messageText);
+      
+      producer.send(m);
+      
+      TextMessage m2 = (TextMessage)consumer.receive(2000);
+      
+      assertNotNull(m2);
+      
+      assertEquals(messageText, m2.getText());
+      
+      try
+      {
+         tempTopic.delete();
+         fail();
+      }
+      catch (JMSException e)
+      {
+         //Can't delete temp dest if there are open consumers
+      }
+            
+      consumer.close();
+      tempTopic.delete();
+      
+      
+   }
    
    
    public void testTemporaryQueueBasic() throws Exception

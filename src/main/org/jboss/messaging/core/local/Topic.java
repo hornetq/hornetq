@@ -8,6 +8,16 @@
 
 package org.jboss.messaging.core.local;
 
+import java.util.Iterator;
+import java.util.Set;
+
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.TransactionalChannelSupport;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.MessageStore;
@@ -21,7 +31,7 @@ import javax.transaction.TransactionManager;
  * 
  * $Id$
  */
-public class Topic extends TransactionalChannelSupport
+public class Topic implements Receiver, Distributor
 {
    // Constants -----------------------------------------------------
 
@@ -29,65 +39,47 @@ public class Topic extends TransactionalChannelSupport
    
    // Attributes ----------------------------------------------------
    
+   protected Router router;
+   
    // Constructors --------------------------------------------------
 
-   public Topic(String name, MessageStore ms)
-   {
-      this(name, ms, null, null);
-   }
-
-   public Topic(String name, MessageStore ms, TransactionManager tm)
-   {
-      this(name, ms, null, tm);
-   }
-
-   public Topic(String name, MessageStore ms, PersistenceManager pm)
-   {
-      this(name, ms, pm, null);
-   }
-
-   public Topic(String name, MessageStore ms, PersistenceManager pm, TransactionManager tm)
-   {
-      super(name, ms, null, tm);
-     
-      /*
-       * 
-       * 
-       FIXME - I don't get it - why would a topic ever be created with a persistence manager?
-       If it has a pm then any non delivered persistent messages will get persisted
-       Topics aren't supposed to persist unacked msgs. - Tim
-        
-       See: 
-       
-       JMS 1.1 Spec 6.12:
-       
-       Unacknowledged messages of a nondurable subscriber should be able to be
-      recovered for the lifetime of that nondurable subscriber. When a nondurable
-      subscriber terminates, messages waiting for it will likely be dropped whether
-      or not they have been acknowledged.
-      Only durable subscriptions are reliably able to recover unacknowledged
-      messages.
-      Sending a message to a topic with a delivery mode of PERSISTENT does not
-      alter this model of recovery and redelivery. To ensure delivery, a TopicSubscriber
-      should establish a durable subscription.
-
-       */
-      
+   public Topic(String name)
+   {      
       router = new PointToMultipointRouter();
    }
 
-   // Channel implementation ----------------------------------------
-
-   public boolean isStoringUndeliverableMessages()
+   // Public --------------------------------------------------------
+   
+   public Delivery handle(DeliveryObserver sender, Routable r)
    {
-      return false;
+      router.handle(sender, r);
+      return new SimpleDelivery(true);
    }
 
-   // Public --------------------------------------------------------
 
-   public String toString()
+   public boolean add(Receiver receiver)
    {
-      return "CoreTopic[" + getChannelID() + "]";
+      return router.add(receiver);
+   }
+
+   public void clear()
+   {
+      router.clear();
+   }
+
+   public boolean contains(Receiver receiver)
+   {
+      return router.contains(receiver);
+   }
+
+   public Iterator iterator()
+   {
+      return router.iterator();
+   }
+
+   public boolean remove(Receiver receiver)
+   {
+      return router.remove(receiver);
    }
 
    // Package protected ---------------------------------------------

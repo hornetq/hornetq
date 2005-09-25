@@ -60,7 +60,9 @@ public class XATest extends MessagingTestCase
       ServerManagement.init("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      tm = ServerManagement.getServerPeer().getTransactionManager();
+      
+      
+      if (!ServerManagement.isRemote()) tm = ServerManagement.getServerPeer().getTransactionManager();
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");

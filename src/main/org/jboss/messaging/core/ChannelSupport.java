@@ -37,6 +37,7 @@ abstract class ChannelSupport implements Channel
    protected Router router;
    protected State state;
    protected TransactionManager tm;
+   protected PersistenceManager pm;
    protected MessageStore ms;
   // protected Filter selector;
 
@@ -52,6 +53,7 @@ abstract class ChannelSupport implements Channel
       this.channelID = channelID;
       this.ms = ms;
       this.tm = tm;
+      this.pm = pm;
       if (pm == null)
       {
          state = new TransactionalState(this, tm);

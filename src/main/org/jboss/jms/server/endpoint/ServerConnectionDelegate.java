@@ -50,7 +50,9 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.util.id.GUID;
 
@@ -432,7 +434,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          throw new IllegalStateException("JMSDestination header not set!");
       }
       
-      Channel coreDestination = null;
+      Distributor coreDestination = null;
       
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       coreDestination = dm.getCoreDestination(jmsDestination);
@@ -465,7 +467,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
       if (log.isTraceEnabled()) { log.trace("sending " + ref + " to the core, destination: " + jmsDestination.getName()); }
       
-      Delivery d = coreDestination.handle(null, ref);
+      Delivery d = ((Receiver)coreDestination).handle(null, ref);
       
       // The core destination is supposed to acknowledge immediately. If not, there's a problem.
       if (d == null || !d.isDone())

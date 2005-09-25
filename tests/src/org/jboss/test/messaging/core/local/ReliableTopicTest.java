@@ -45,7 +45,8 @@ public class ReliableTopicTest extends TopicTestBase
       pm = new HSQLDBPersistenceManager();
       ms = new PersistentMessageStore("persistent-message-store", pm, tm);
 
-      channel = new Topic("test", ms, pm, tm);
+      //channel = new Topic("test", ms, pm, tm);
+      //channel = new Topic("test");
    }
 
    public void tearDown() throws Exception
@@ -68,7 +69,7 @@ public class ReliableTopicTest extends TopicTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Topic("test", ms, pm, tm);
+     // channel = new Topic("test");
    }
 
    // Public --------------------------------------------------------

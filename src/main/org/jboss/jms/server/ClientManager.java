@@ -16,6 +16,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.local.DurableSubscription;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -70,14 +71,14 @@ public class ClientManager
       return subs != null ? new HashSet(subs.values()) : Collections.EMPTY_SET;
    }
    
-   public DurableSubscriptionHolder getDurableSubscription(String clientID, String subscriptionName)
+   public DurableSubscription getDurableSubscription(String clientID, String subscriptionName)
    {
       Map subs = (Map)subscriptions.get(clientID);
-      return subs == null ? null : (DurableSubscriptionHolder)subs.get(subscriptionName);
+      return subs == null ? null : (DurableSubscription)subs.get(subscriptionName);
    }
    
    public void addDurableSubscription(String clientID, String subscriptionName,
-                                      DurableSubscriptionHolder subscription)
+         DurableSubscription subscription)
    {
       Map subs = (Map)subscriptions.get(clientID);
       if (subs == null)
@@ -88,7 +89,7 @@ public class ClientManager
       subs.put(subscriptionName, subscription);
    }
    
-   public DurableSubscriptionHolder removeDurableSubscription(String clientID,
+   public DurableSubscription removeDurableSubscription(String clientID,
                                                               String subscriptionName)
       throws JMSException
    {
@@ -107,7 +108,7 @@ public class ClientManager
       
       if (log.isTraceEnabled()) { log.trace("Removing durable sub: " + subscriptionName); }
       
-      DurableSubscriptionHolder removed = (DurableSubscriptionHolder)subs.remove(subscriptionName);
+      DurableSubscription removed = (DurableSubscription)subs.remove(subscriptionName);
       
       if (subs.size() == 0)
       {

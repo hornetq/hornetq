@@ -14,6 +14,8 @@ import javax.jms.JMSException;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 
@@ -66,18 +68,18 @@ class CoreDestinationManager
     * @exception JMSException - thrown if the JNDI destination cannot be mapped on a core
     *            destination.
     */
-   Channel getCoreDestination(boolean isQueue, String name) throws JMSException
+   Distributor getCoreDestination(boolean isQueue, String name) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("getting core " + (isQueue ? "queue" : "topic")
                                             + " for " + name); }
 
       if (isQueue)
       {
-         return (Channel)queueMap.get(name);
+         return (Distributor)queueMap.get(name);
       }
       else
       {
-         return (Channel)topicMap.get(name);
+         return (Distributor)topicMap.get(name);
       }
    }
 
@@ -94,7 +96,7 @@ class CoreDestinationManager
       String name = d.getName();
       boolean isQueue = d.isQueue();
 
-      Channel c = getCoreDestination(isQueue, name);
+      Distributor c = getCoreDestination(isQueue, name);
       if (c != null)
       {
          throw new JMSException("Destination " + jmsDestination + " already exists");
@@ -114,10 +116,7 @@ class CoreDestinationManager
       else
       {
          // TODO I am using LocalTopics for the time being, switch to distributed Topics
-         c = new Topic(name,
-                       sp.getMessageStore(),
-                       sp.getPersistenceManager(),
-                       sp.getTransactionManager());
+         c = new Topic(name);
          topicMap.put(name, c);
       }
       
@@ -140,7 +139,7 @@ class CoreDestinationManager
    /**
     * Remove an AbstractDestination.
     */
-   Channel removeCoreDestination(boolean isQueue, String name)
+   Distributor removeCoreDestination(boolean isQueue, String name)
    {
       ServerPeer sp = destinationManager.getServerPeer();
       try
@@ -156,11 +155,11 @@ class CoreDestinationManager
       }
       if (isQueue)
       {
-         return (Channel)queueMap.remove(name);
+         return (Distributor)queueMap.remove(name);
       }
       else
       {
-         return (Channel)topicMap.remove(name);
+         return (Distributor)topicMap.remove(name);
       }
       
    }

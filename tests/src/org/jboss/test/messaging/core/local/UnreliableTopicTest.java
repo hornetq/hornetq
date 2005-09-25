@@ -38,7 +38,7 @@ public class UnreliableTopicTest extends TopicTestBase
    {
       super.setUp();
 
-      channel = new Topic("test", ms, tm);
+     // channel = new Topic("test", ms, tm);
    }
 
    public void tearDown() throws Exception

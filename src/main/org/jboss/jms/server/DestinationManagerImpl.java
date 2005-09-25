@@ -21,6 +21,8 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.Receiver;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -127,7 +129,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       coreDestinationManager.removeCoreDestination(isQueue, name);
    }
 
-   public Channel getCoreDestination(Destination jmsDestination) throws JMSException
+   public Distributor getCoreDestination(Destination jmsDestination) throws JMSException
    {
       JBossDestination d = (JBossDestination)jmsDestination;
       boolean isQueue = d.isQueue();
@@ -135,7 +137,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       return getCoreDestination(isQueue, name);
    }
 
-   public Channel getCoreDestination(boolean isQueue, String name) throws JMSException
+   public Distributor getCoreDestination(boolean isQueue, String name) throws JMSException
    {
       return coreDestinationManager.getCoreDestination(isQueue, name);
    }

@@ -24,6 +24,7 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.local.Subscription;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -90,7 +91,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          this.messageSelector = new Selector(selector);
          if (log.isTraceEnabled()) log.trace("created selector");
       }
-     // this.subscription = subscription;
+      //this.subscription = subscription;
       deliveries = new HashMap();
       started = sessionEndpoint.connectionEndpoint.started;
       destination.add(this);
@@ -257,7 +258,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    
 
    /** Actually remove the consumer and clear up any deliveries it may have */
-   void remove()
+   void remove() throws JMSException
    {
       if (log.isTraceEnabled()) log.trace("attempting to remove receiver from destination: " + destination);
  
@@ -282,7 +283,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       }
       
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
-      //this.sessionEndpoint.consumers.remove(id);
+      
+      if (this.destination instanceof Subscription)
+      {
+         ((Subscription)destination).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
+      }
       
    }  
    

@@ -1016,6 +1016,8 @@ public class MessageConsumerTest extends MessagingTestCase
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
    
          final int NUM_MESSAGES = 1;
+         
+         MessageConsumer cons = sess1.createConsumer(topic);
    
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -1024,7 +1026,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
          
          //receive but don't ack
-         MessageConsumer cons = sess1.createConsumer(topic);
+
          int count = 0;
          while (true)
          {
@@ -1033,7 +1035,7 @@ public class MessageConsumerTest extends MessagingTestCase
             assertEquals(tm.getText(), "helloxyz");
             count++;
          }
-         assertEquals(count, NUM_MESSAGES);
+         assertEquals(NUM_MESSAGES, count);
          
          conn1.close();
          

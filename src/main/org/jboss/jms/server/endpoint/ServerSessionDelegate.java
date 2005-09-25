@@ -15,6 +15,7 @@ import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -51,8 +52,13 @@ import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
@@ -116,7 +122,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      Channel destination = null;
+      Distributor destination = null;
      
       if (jmsDestination != null)
       {
@@ -205,7 +211,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
     
-      Channel destination = dm.getCoreDestination(jmsDestination);
+      Distributor destination = dm.getCoreDestination(jmsDestination);
      
       // create the MessageConsumer dynamic proxy
 
@@ -243,94 +249,107 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          throw new JMSException("null callback handler");
       }
-               
-      DurableSubscriptionHolder subscription = null;
-      if (subscriptionName != null)
+      
+      Subscription subscription = null;
+      if (d.isTopic())
       {
-         String clientID = connectionEndpoint.getClientID();
-         if (clientID == null)
-         {
-            throw new JMSException("Cannot create durable subscriber without having set client ID");
-         }
-                  
-         //It's a durable subscription - have we already got one with that name?
-         ClientManager clientManager = serverPeer.getClientManager();
-                    
-         subscription = clientManager.getDurableSubscription(clientID, subscriptionName);                        
-         
-         if (subscription != null)
-         {
-            
-            if (log.isTraceEnabled()) { log.trace("Subscription with name " + subscriptionName +
-                                       " already exists"); }                        
-                                    
-            /* From javax.jms.Session Javadoc:
-             * 
-             * A client can change an existing durable subscription by creating a durable
-             * TopicSubscriber with the same name and a new topic and/or message selector.
-             * Changing a durable subscriber is equivalent to unsubscribing (deleting)
-             * the old one and creating a new one.
-             */
+         MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
+         TransactionManager tm = connectionEndpoint.getServerPeer().getTransactionManager();
+         PersistenceManager pm = connectionEndpoint.getServerPeer().getPersistenceManager();
+         Topic topic = (Topic)destination;
 
-            //Has the selector changed?
-            boolean selectorChanged = (selector == null && subscription.getSelector() != null) ||
-                      (subscription.getSelector() == null && selector != null) ||
-                      (subscription.getSelector() != null && selector != null && 
-                       !subscription.getSelector().equals(selector));
-            
-            if (log.isTraceEnabled()) { log.trace("Selector has changed? " + selectorChanged); }
-            
-            //Has the Topic changed?               
-            boolean topicChanged = subscription.getTopic() != destination;
-            
-            if (log.isTraceEnabled()) { log.trace("Topic has changed? " + topicChanged); }
-           
-            if (selectorChanged || topicChanged)
+         if (subscriptionName != null)
+         {
+            //Look-up the durable subscription
+         
+            String clientID = connectionEndpoint.getClientID();
+            if (clientID == null)
             {
-               if (log.isTraceEnabled()) { log.trace("Changed so deleting old subscription"); }
+               throw new JMSException("Cannot create durable subscriber without having set client ID");
+            }
+                     
+            //It's a durable subscription - have we already got one with that name?
+            ClientManager clientManager = serverPeer.getClientManager();
+                       
+            subscription = clientManager.getDurableSubscription(clientID, subscriptionName);                        
+         
+            if (subscription != null)
+            {
                
-               DurableSubscriptionHolder removed = this.serverPeer.getClientManager().
-                  removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+               if (log.isTraceEnabled()) { log.trace("Subscription with name " + subscriptionName +
+                                          " already exists"); }                        
+                                       
+               /* From javax.jms.Session Javadoc:
+                * 
+                * A client can change an existing durable subscription by creating a durable
+                * TopicSubscriber with the same name and a new topic and/or message selector.
+                * Changing a durable subscriber is equivalent to unsubscribing (deleting)
+                * the old one and creating a new one.
+                */
 
-               if (removed == null)
+               //Has the selector changed?
+               boolean selectorChanged = (selector == null && subscription.getSelector() != null) ||
+                         (subscription.getSelector() == null && selector != null) ||
+                         (subscription.getSelector() != null && selector != null && 
+                          !subscription.getSelector().equals(selector));
+            
+               if (log.isTraceEnabled()) { log.trace("Selector has changed? " + selectorChanged); }
+               
+               //Has the Topic changed?               
+               boolean topicChanged = subscription.getTopic() != destination;
+               
+               if (log.isTraceEnabled()) { log.trace("Topic has changed? " + topicChanged); }
+              
+               if (selectorChanged || topicChanged)
                {
-                  throw new InvalidDestinationException("Cannot find durable subscription with name " +
-                     subscriptionName + " to unsubscribe");
+                  if (log.isTraceEnabled()) { log.trace("Changed so deleting old subscription"); }
+                  
+                  DurableSubscription removed = this.serverPeer.getClientManager().
+                     removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+   
+                  if (removed == null)
+                  {
+                     throw new InvalidDestinationException("Cannot find durable subscription with name " +
+                        subscriptionName + " to unsubscribe");
+                  }
+   
+                  subscription.unsubscribe();
+                  subscription = null;
                }
-
-               subscription.getTopic().remove(subscription.getQueue());
-               subscription = null;
             }
-         }
          
-         if (subscription == null)
-         {
-            if (!(destination instanceof org.jboss.messaging.core.local.Topic))
+         
+            if (subscription == null)
             {
-               throw new JMSException("Can only create a durable subscription on a topic");
+               //Create a new durable subscription
+                        
+               if (log.isTraceEnabled()) { log.trace("Creating new durable subscription on topic " + destination); }
+             
+               subscription = new DurableSubscription(subscriptionName, topic, selector, ms, pm, tm);
+                  
+               clientManager.addDurableSubscription(clientID, subscriptionName, (DurableSubscription)subscription);
             }
+         } //durable sub
+         else
+         {
+            //Non durable subscription
             
-            if (log.isTraceEnabled()) { log.trace("Creating new durable subscription on topic " + destination); }
+            if (log.isTraceEnabled()) { log.trace("Creating new non-durable subscription on topic " + destination); }
             
-            Topic topic = (Topic)destination;
-
-            MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
-            TransactionManager tm = connectionEndpoint.getServerPeer().getTransactionManager();
-            subscription = new DurableSubscriptionHolder(subscriptionName, topic,
-                                                         new Queue(consumerID, ms, tm),
-                                                         selector);
-            clientManager.addDurableSubscription(clientID, subscriptionName, subscription);
-            //start it
-            destination.add(subscription.getQueue());
+            subscription = new Subscription(topic, selector, ms, tm);    
          }
-      }
+      } 
       
       ServerConsumerDelegate scd =
          new ServerConsumerDelegate(consumerID,
-                                    subscriptionName == null ? destination : subscription.getQueue(),
+                                    subscription == null ? (Channel)destination : subscription,
                                     callbackHandler, this, selector, noLocal);
       
-      
+      if (subscription != null)
+      {
+         subscription.subscribe();
+      }
+            
       putConsumerDelegate(consumerID, scd);
       connectionEndpoint.receivers.put(consumerID, scd);
 
@@ -339,7 +358,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return delegate;
    }
 
-   public Message createMessage() throws JBossJMSException
+   public Message createMessage() throws JMSException
    {
       throw new JBossJMSException("We don't create messages on the server");
    }
@@ -382,7 +401,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    public javax.jms.Queue createQueue(String name) throws JMSException
    {
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      Channel coreDestination = dm.getCoreDestination(true, name);
+      Distributor coreDestination = dm.getCoreDestination(true, name);
 
       if (coreDestination == null)
       {
@@ -400,7 +419,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    public javax.jms.Topic createTopic(String name) throws JMSException
    {
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      Channel coreDestination = dm.getCoreDestination(false, name);
+      Distributor coreDestination = dm.getCoreDestination(false, name);
 
       if (coreDestination == null)
       {
@@ -415,7 +434,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return new JBossTopic(name);
    }
 
-   public void close() throws JBossJMSException
+   public void close() throws JMSException
    {
       if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.close()");
     
@@ -465,7 +484,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	   // look-up destination
 	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
 	  
-      Channel destination = dm.getCoreDestination(jmsDestination);
+      Distributor destination = dm.getCoreDestination(jmsDestination);
+      
+      if (!(destination instanceof Queue))
+      {
+         throw new IllegalStateException("Cannot browse a topic");
+      }
 	
 	   BrowserDelegate bd = null;
 	   Serializable oid = serverPeer.getBrowserAdvisor().getName();
@@ -502,7 +526,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	   // create the corresponding "server-side" BrowserDelegate and register it with this
 	   // BrowserDelegate instance
 	   ServerBrowserDelegate sbd =
-	         new ServerBrowserDelegate(browserID, destination, messageSelector);
+	         new ServerBrowserDelegate(browserID, (Channel)destination, messageSelector);
 	   putBrowserDelegate(browserID, sbd);
 	
 	   return bd;
@@ -651,20 +675,31 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       }
       
       //It is illegal to delete a temporary destination if there any active consumers on it
-      Channel c = serverPeer.getDestinationManager().getCoreDestination(dest);
+      Distributor destination = serverPeer.getDestinationManager().getCoreDestination(dest);
       
-      if (c == null)
+      if (destination == null)
       {
          throw new InvalidDestinationException("Destination:" + dest + " does not exist");         
       }
       
-      Iterator iter = this.connectionEndpoint.receivers.values().iterator();
-      while (iter.hasNext())
+   
+      if (destination instanceof Queue)
       {
-         ServerConsumerDelegate scd = (ServerConsumerDelegate)iter.next();
-         if (c.contains(scd))
+         if (destination.iterator().hasNext())
          {
             throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
+         }
+      }
+      else if (destination instanceof Topic)
+      {
+         Iterator iter = destination.iterator();
+         while (iter.hasNext())
+         {
+            Subscription sub = (Subscription)iter.next();
+            if (sub.iterator().hasNext())
+            {
+               throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
+            }
          }
       }
       
@@ -678,7 +713,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          throw new InvalidDestinationException("Destination is null");
       }
-      DurableSubscriptionHolder subscription = this.serverPeer.getClientManager().
+      DurableSubscription subscription = this.serverPeer.getClientManager().
             removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
 
       if (subscription == null)
@@ -686,17 +721,17 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          throw new InvalidDestinationException("Cannot find durable subscription with name " +
             subscriptionName + " to unsubscribe");
       }
-      subscription.getTopic().remove(subscription.getQueue());
+      
+      subscription.unsubscribe();
       
       try
       {
-         this.serverPeer.getPersistenceManager().removeAllMessageData(subscription.getQueue().getChannelID());        
+         this.serverPeer.getPersistenceManager().removeAllMessageData(subscription.getChannelID());
       }
       catch (Exception e)
       {
-         final String msg = "Failed to remove message data for durable subscription";
-         log.error(msg, e);
-         throw new JMSException(msg);
+         log.error("Failed to remove message data", e);
+         throw new IllegalStateException("Failed to remove message data");
       }
       
    }

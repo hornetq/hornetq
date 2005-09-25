@@ -1,0 +1,64 @@
+/*
+ * JBoss, the OpenSource J2EE webOS
+ * 
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+/*
+ * JBoss, the OpenSource J2EE webOS
+ * 
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.messaging.core.local;
+
+import java.io.Serializable;
+
+import javax.jms.JMSException;
+import javax.transaction.TransactionManager;
+
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.PersistenceManager;
+
+public class DurableSubscription extends Subscription
+{
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+   
+   protected String subName;
+   
+   // Constructors --------------------------------------------------
+
+   public DurableSubscription(String subName, Topic topic, String selector, MessageStore ms, PersistenceManager pm, TransactionManager tm)
+   {
+      super(topic, selector, ms, pm, tm);
+      this.subName = subName;
+   }
+   
+
+   // Channel implementation ----------------------------------------
+
+   public boolean isStoringUndeliverableMessages()
+   {
+      return true;
+   }
+
+   // Public --------------------------------------------------------
+   
+   public void closeConsumer(PersistenceManager pm) throws JMSException
+   {
+      //do nothing - this is durable
+   }
+
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
+}
+
