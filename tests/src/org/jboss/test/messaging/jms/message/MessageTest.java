@@ -37,11 +37,16 @@ public class MessageTest extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected Destination queue;
+   protected Destination topic;
    protected Connection producerConnection, consumerConnection;
    protected Session queueProducerSession, queueConsumerSession;
    protected MessageProducer queueProducer;
    protected MessageConsumer queueConsumer;
-
+   protected Session topicProducerSession, topicConsumerSession;
+   protected MessageProducer topicProducer;
+   protected MessageConsumer topicConsumer;
+   
+   
    // Constructors --------------------------------------------------
 
    public MessageTest(String name)
@@ -58,10 +63,14 @@ public class MessageTest extends MessagingTestCase
       ServerManagement.init("all");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
+      
+      ServerManagement.undeployTopic("Topic");
+      ServerManagement.deployTopic("Topic");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       queue = (Destination)ic.lookup("/queue/Queue");
+      topic = (Destination)ic.lookup("/topic/Topic");
 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
@@ -71,6 +80,12 @@ public class MessageTest extends MessagingTestCase
 
       queueProducer = queueProducerSession.createProducer(queue);
       queueConsumer = queueConsumerSession.createConsumer(queue);
+      
+      topicProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      topicConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      topicProducer = topicProducerSession.createProducer(topic);
+      topicConsumer = topicConsumerSession.createConsumer(topic);
 
       consumerConnection.start();
    }
@@ -85,6 +100,81 @@ public class MessageTest extends MessagingTestCase
 
       super.tearDown();
    }
+   
+   public void messageOrderTestQueue() throws Exception
+   {
+      final int NUM_MESSAGES = 10;
+      
+      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = queueProducerSession.createMessage();
+         m.setIntProperty("count", i);
+         queueProducer.send(m);
+      }
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = queueConsumer.receive(3000);
+         assertNotNull(m);
+         int count = m.getIntProperty("count");
+         assertEquals(i, count);
+      }
+      
+      queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = queueProducerSession.createMessage();
+         m.setIntProperty("count2", i);
+         queueProducer.send(m);
+      }
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = queueConsumer.receive(3000);
+         assertNotNull(m);
+         int count = m.getIntProperty("count2");
+         assertEquals(i, count);
+      }
+   }
+   
+   public void messageOrderTestTopic() throws Exception
+   {
+      final int NUM_MESSAGES = 10;
+      
+      topicProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = topicProducerSession.createMessage();
+         m.setIntProperty("count", i);
+         topicProducer.send(m);
+      }
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = topicConsumer.receive(3000);
+         assertNotNull(m);
+         int count = m.getIntProperty("count");
+         assertEquals(i, count);
+      }
+      
+      topicProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = topicProducerSession.createMessage();
+         m.setIntProperty("count2", i);
+         topicProducer.send(m);
+      }
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = topicConsumer.receive(3000);
+         assertNotNull(m);
+         int count = m.getIntProperty("count2");
+         assertEquals(i, count);
+      }
+   }
+   
 
    public void testProperties() throws Exception
    {

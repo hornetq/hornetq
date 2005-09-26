@@ -124,7 +124,7 @@
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
    <property name="perf.tests.archive" value="perfrunner.jar"/>
-   <property name="build.tests.remote" value="true"/>
+   <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>

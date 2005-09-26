@@ -40,7 +40,6 @@ public class TemporaryDestinationTest extends MessagingTestCase
    protected InitialContext initialContext;
    
    protected ConnectionFactory cf;
-   //protected Destination topic;
 
    protected Connection connection;
 
