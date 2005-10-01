@@ -34,8 +34,18 @@
   <!-- ==================================================================== -->
 
   <!-- CTS system properties -->
+  
   <mbean code="org.jboss.varia.property.SystemPropertiesService"
     name="jboss:type=Service,name=SystemProperties">
+    
+        <attribute name="Properties">
+    
+          my.project.property=This is the value of my property
+          my.project.anotherProperty=This is the value of my other property
+    
+    </attribute>
+    
+    <!--
     <attribute name="Properties" replace="false">
       vendor.javax.security.jacc.policy.provider=org.jboss.security.jacc.DelegatingPolicy
       vendor.javax.security.jacc.PolicyConfigurationFactory.provider=org.jboss.security.jacc.JBossPolicyConfigurationFactory
@@ -51,5 +61,8 @@
       jaxr-ebxml.security.storepass=ebxmlrr
       jaxr-ebxml.security.keypass=ebxmlrr
     </attribute>
+    -->
+    
   </mbean>
+  
 </server>

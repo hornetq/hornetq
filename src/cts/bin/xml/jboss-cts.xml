@@ -38,31 +38,57 @@
 
 
       <echo message="Creating server configuration directory: ${jboss.home}/server/cts-messaging"/>
+      <delete dir="${jboss.home}/server/cts-messaging"/>
       <mkdir dir="${jboss.home}/server/cts-messaging"/>
 
 
       <echo message="Creating server configuration based on default"/>
       <copy todir="${jboss.home}/server/cts-messaging" overwrite="true">
          <fileset dir="${jboss.home}/server/default">
-            <exclude name="data/**"/>
+          
+          
+          
+          <exclude name="data/**"/> 
             <exclude name="log/**"/>
             <exclude name="tmp/**"/>
             <exclude name="work/**"/>
+            
+            
             <!-- Exclude uneccessary deployments -->
+            
+            
+            
             <exclude name="deploy/bsh-deployer.xml"/>
             <exclude name="deploy/cache-invalidation-service.xml"/>
+            
+            
             <exclude name="deploy/http-invoker.sar/**"/>
+            
+            
             <exclude name="deploy/jboss-ha-local-jdbc.rar"/>
             <exclude name="deploy/jboss-ha-xa-jdbc.rar"/>
             <exclude name="deploy/jboss-hibernate.deployer"/>
+            
+            
+            
             <exclude name="deploy/jboss-ws4ee.sar/**"/>
+            
+            
             <exclude name="deploy/jms/**"/>
+            
+            
+            
             <exclude name="deploy/mail-ra.rar"/>
             <exclude name="deploy/mail-service.xml"/>
+            
+            
             <exclude name="deploy/management/**"/>
             <exclude name="deploy/monitoring-service.xml"/>
+            
+            
             <exclude name="deploy/schedule-manager-service.xml"/>
             <exclude name="deploy/scheduler-service.xml"/>
+            
             <exclude name="lib/autonumber-plugin.jar"/>
             <exclude name="lib/bcel.jar"/>
             <exclude name="lib/bindingservice-plugin.jar"/>
@@ -73,12 +99,15 @@
             <exclude name="lib/mail-plugin.jar"/>
             <exclude name="lib/mail.jar"/>
             <exclude name="lib/scheduler*"/>
+            
+            
+            
             <exclude name="lib/jboss-messaging.jar"/>
          </fileset>
       </copy>
 
 
-      <echo message="Using thridparty jboss-remoting.jar ..."/>
+      <echo message="Using thirdparty jboss-remoting.jar ..."/>
       <!--
       <echo message="Copying locally patched jboss-remoting.jar from ${messaging.home}/src/resources/"/>
       <copy todir="${jboss.home}/server/cts-messaging/lib"
@@ -86,6 +115,8 @@
             overwrite="true">
       </copy>
       -->
+
+
 
       <echo message="Copying customized configurations from ${messaging.home}/src/cts/conf"/>
       <copy todir="${jboss.home}/server/cts-messaging/conf" overwrite="true">
@@ -96,6 +127,7 @@
       <echo message="Copying extra services from TS_HOME/jboss/deploy"/>
       <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
          <fileset dir="${ts.home}/jboss/deploy">
+         
             <include name="pointbase-ds.xml"/>
             <include name="ROOT.war/**"/>
          </fileset>
@@ -111,14 +143,35 @@
       </copy>
 
 
+
       <echo message="Copying extra services from ${messaging.home}/src/cts/deploy"/>
       <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
          <fileset dir="${messaging.home}/src/cts/deploy">
-            <include name="properties-service.xml"/>
+            
+         <include name="properties-service.xml"/>
+                
             <include name="tckfactories-ds.xml"/>            
+  
             <include name="jms-ds.xml"/>
+    
+            <include name="jms-ra.rar"/>
+  
+            <include name="hsqldb-ds.xml"/>
+            
+            <exclude name="jbossweb-tomcat55.sar"/>
+   
          </fileset>
+         
       </copy>
+      
+      <echo message="Copying tomcat config"/>
+      <copy todir="${jboss.home}/server/cts-messaging/deploy/jbossweb-tomcat55.sar" overwrite="true">
+               <fileset dir="${messaging.home}/src/cts/deploy/jbossweb-tomcat55.sar"/>
+                  
+      </copy>
+      
+      
+
 
 
       <echo message="Copying extra libraries from TS_HOME/lib"/>

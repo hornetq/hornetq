@@ -30,8 +30,8 @@
       <attribute name="JMSService">jboss.mq:service=DestinationManager</attribute>
       <attribute name="JNDIService">jboss:service=Naming</attribute>
       <attribute name="JTAService">jboss:service=TransactionManager</attribute>
-     <attribute name="UserTransactionService">jboss:service=DistributedTransactionManager</attribute>
-    <!--  <attribute name="UserTransactionService">jboss:service=ClientUserTransaction</attribute> -->
+    <!--  <attribute name="UserTransactionService">jboss:service=DistributedTransactionManager</attribute> -->
+     <attribute name="UserTransactionService">jboss:service=ClientUserTransaction</attribute>
       <attribute name="RMI_IIOPService">jboss:service=CorbaORB</attribute>
    </mbean>
 

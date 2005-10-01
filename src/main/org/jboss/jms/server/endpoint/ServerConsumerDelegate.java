@@ -95,6 +95,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       deliveries = new HashMap();
       started = sessionEndpoint.connectionEndpoint.started;
       destination.add(this);
+
    }
 
    // Receiver implementation ---------------------------------------
