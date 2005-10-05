@@ -203,23 +203,24 @@ public class TransactedSessionTest extends MessagingTestCase
          assertNotNull(rm1);
          assertEquals("hello1", rm1.getText());
          
-         //rollback should cause redelivery of messages
+         //rollback should cause redelivery of messages not acked
          sess.rollback();
                  
          TextMessage rm2 = (TextMessage)cons1.receive(2000);
          assertNotNull(rm2);
-         assertEquals("hello2", rm2.getText());
+         assertEquals("hello1", rm2.getText());
          
          TextMessage rm3 = (TextMessage)cons1.receive(2000);
          assertNotNull(rm3);
-         assertEquals("hello3", rm3.getText());
+         assertEquals("hello2", rm3.getText());
          
+         TextMessage rm4 = (TextMessage)cons1.receive(2000);
+         assertNotNull(rm4);
+         assertEquals("hello3", rm4.getText());
          
          //This last step is important - there shouldn't be any more messages to receive
-         //what we might find is that messages are still hanging around in the messagecallbackhandler
-         //so we actually get hello2, hello3, hello2, hello3 i.e. duplicates
-         TextMessage rm4 = (TextMessage)cons1.receive(2000);
-         assertNull(rm4);        
+         TextMessage rm5 = (TextMessage)cons1.receive(2000);
+         assertNull(rm5);        
          
          
       }
@@ -234,6 +235,71 @@ public class TransactedSessionTest extends MessagingTestCase
    }
    
    public void testRedel4() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {
+      
+         conn = cf.createConnection();
+         conn.start();
+         
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageProducer prod = sess.createProducer(queue);
+         TextMessage tm1 = sess.createTextMessage("hello1");
+         TextMessage tm2 = sess.createTextMessage("hello2");
+         TextMessage tm3 = sess.createTextMessage("hello3");
+         prod.send(tm1);
+         prod.send(tm2);
+         prod.send(tm3);
+         sess.commit();
+         
+         MessageConsumer cons1 = sess.createConsumer(queue);
+         
+         TextMessage rm1 = (TextMessage)cons1.receive(2000);
+         assertNotNull(rm1);
+         assertEquals("hello1", rm1.getText());
+         
+         cons1.close();
+         
+         MessageConsumer cons2 = sess.createConsumer(queue);
+         
+         //rollback should cause redelivery of messages
+         
+         //in this case redelivery occurs to a different receiver
+         
+         sess.rollback();
+                 
+         TextMessage rm2 = (TextMessage)cons2.receive(2000);
+         assertNotNull(rm2);
+         assertEquals("hello1", rm2.getText());
+         
+         TextMessage rm3 = (TextMessage)cons2.receive(2000);
+         assertNotNull(rm3);
+         assertEquals("hello2", rm3.getText());
+         
+         TextMessage rm4 = (TextMessage)cons2.receive(2000);
+         assertNotNull(rm4);
+         assertEquals("hello3", rm4.getText());
+         
+         //This last step is important - there shouldn't be any more messages to receive
+         TextMessage rm5 = (TextMessage)cons2.receive(2000);
+         assertNull(rm5);            
+         
+         
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+      
+   }
+   
+   
+   public void testRedel5() throws Exception
    {
       Connection conn = null;
       
@@ -263,18 +329,20 @@ public class TransactedSessionTest extends MessagingTestCase
                  
          TextMessage rm2 = (TextMessage)cons1.receive(2000);
          assertNotNull(rm2);
-         assertEquals("hello2", rm2.getText());
+         assertEquals("hello1", rm2.getText());
          
          TextMessage rm3 = (TextMessage)cons1.receive(2000);
          assertNotNull(rm3);
-         assertEquals("hello3", rm3.getText());
+         assertEquals("hello2", rm3.getText());
+         
+         TextMessage rm4 = (TextMessage)cons1.receive(2000);
+         assertNotNull(rm4);
+         assertEquals("hello3", rm4.getText());
          
          
          //This last step is important - there shouldn't be any more messages to receive
-         //what we might find is that messages are still hanging around in the messagecallbackhandler
-         //so we actually get hello2, hello3, hello2, hello3
-         TextMessage rm4 = (TextMessage)cons1.receive(2000);
-         assertNull(rm4);        
+         TextMessage rm5 = (TextMessage)cons1.receive(2000);
+         assertNull(rm5);        
          
          
       }
@@ -288,6 +356,67 @@ public class TransactedSessionTest extends MessagingTestCase
       
    }
    
+   
+   public void testRedel6() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {
+      
+         conn = cf.createConnection();
+         conn.start();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess.createProducer(queue);
+         TextMessage tm1 = sess.createTextMessage("hello1");
+         TextMessage tm2 = sess.createTextMessage("hello2");
+         TextMessage tm3 = sess.createTextMessage("hello3");
+         prod.send(tm1);
+         prod.send(tm2);
+         prod.send(tm3);
+         
+         MessageConsumer cons1 = sess.createConsumer(queue);
+         
+         TextMessage rm1 = (TextMessage)cons1.receive(2000);
+         assertNotNull(rm1);
+         assertEquals("hello1", rm1.getText());
+         
+         cons1.close();
+         
+         MessageConsumer cons2 = sess.createConsumer(queue);
+         
+         //redeliver
+         sess.recover();
+                 
+         TextMessage rm2 = (TextMessage)cons2.receive(2000);
+         assertNotNull(rm2);
+         assertEquals("hello1", rm2.getText());
+         
+         TextMessage rm3 = (TextMessage)cons2.receive(2000);
+         assertNotNull(rm3);
+         assertEquals("hello2", rm3.getText());
+         
+         TextMessage rm4 = (TextMessage)cons2.receive(2000);
+         assertNotNull(rm4);
+         assertEquals("hello3", rm4.getText());
+         
+         
+         //This last step is important - there shouldn't be any more messages to receive
+         TextMessage rm5 = (TextMessage)cons2.receive(2000);
+         assertNull(rm5);        
+         
+         
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+      
+   }
    
 //   
 //   
