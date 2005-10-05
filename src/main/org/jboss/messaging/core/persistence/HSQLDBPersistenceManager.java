@@ -14,7 +14,6 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.StorageIdentifier;
-import org.jboss.messaging.core.message.Factory;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.logging.Logger;
 import org.jboss.jms.message.JBossMessage;
@@ -347,15 +346,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                    "WHERE CHANNELID = '" + channelID + "'";
       ResultSet rs = conn.createStatement().executeQuery(sql);
       if (log.isTraceEnabled()) { log.trace(sql); }
-      int count = 0;
       while (rs.next())
       {
          String id = rs.getString("MESSAGEID");
          String storeID = rs.getString("STOREID");
          result.add(new StorageIdentifier(id, storeID));
-         count++;
       }
-      if (log.isTraceEnabled()) { log.trace("got " + count + " message refs"); }
+      if (log.isTraceEnabled()) { log.trace("got " + result.size() + " message refs"); }
       conn.close();
       return result;
    }

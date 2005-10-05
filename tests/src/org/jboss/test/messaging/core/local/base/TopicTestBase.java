@@ -8,11 +8,13 @@
 
 package org.jboss.test.messaging.core.local.base;
 
-import org.jboss.test.messaging.core.base.TransactionalChannelTestBase;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.message.Factory;
 
 import java.util.List;
@@ -22,14 +24,17 @@ import java.util.List;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public abstract class TopicTestBase extends TransactionalChannelTestBase
+public abstract class TopicTestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
+
+   // TODO here I should have a Destination base class so I won't have to cast it to Distributor
+   protected Receiver topic;
+
    // Constructors --------------------------------------------------
    
    public TopicTestBase(String name)
@@ -54,10 +59,10 @@ public abstract class TopicTestBase extends TransactionalChannelTestBase
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
-      channel.add(r1);
-      channel.add(r2);
+      ((Distributor)topic).add(r1);
+      ((Distributor)topic).add(r2);
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"));
+      Delivery d = topic.handle(observer, Factory.createMessage("message0", false, "payload"));
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
@@ -78,10 +83,10 @@ public abstract class TopicTestBase extends TransactionalChannelTestBase
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
-      assertTrue(channel.add(r1));
-      assertTrue(channel.add(r2));
+      assertTrue(((Distributor)topic).add(r1));
+      assertTrue(((Distributor)topic).add(r2));
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", true, "payload"));
+      Delivery d = topic.handle(observer, Factory.createMessage("message0", true, "payload"));
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();

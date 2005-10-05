@@ -97,7 +97,7 @@ public class SimpleDelivery implements Delivery, Serializable
 
    public String toString()
    {
-      return "delivery[" + routable + "](" + (isDone() ? "done" : "active" ) + ")"; 
+      return "Delivery[" + routable + "](" + (isDone() ? "done" : "active" ) + ")"; 
    }
 
    // Package protected ---------------------------------------------

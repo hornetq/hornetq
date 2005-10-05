@@ -23,7 +23,7 @@
    <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <param name="File" value="C:/dev/jboss-head/jms/tests/etc/jms.log"/>
+      <param name="File" value="./jms.log"/>
       <param name="Append" value="false"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
@@ -77,16 +77,26 @@
 
 
    <category name="org.jboss.jms">
+      <!--
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      -->
+      <priority value="DEBUG"/>
+   </category>
+
+   <category name="org.jboss.jms.server.endpoint">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
-   
-      <category name="org.jboss.messaging">
-         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+
+
+   <category name="org.jboss.messaging">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
-   
+
+   <!--
    <category name="org.jboss.jms.message">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
+   -->
 
 
    <category name="org.jboss.test.messaging">

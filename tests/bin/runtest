@@ -32,6 +32,7 @@
 
 #TARGET_CLASS=org.jboss.test.messaging.core.local.UnreliableQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.ReliableQueueTest
+TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 
 #
 # distributed core
@@ -49,6 +50,7 @@
 
 
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.UnreliableDistributedQueueTest
+#TARGET_TEST=testUnreliableChannelReliableMessageNACKingReceiver
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueTest
 #TARGET_TEST=testJGroupsChannelNotConnected
 
@@ -60,10 +62,10 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testTopicRedelivery
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_TEST=testClosedConsumer
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
@@ -133,7 +135,7 @@ done
 REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 #REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
 
-JGROUPS_LIB=$reldir/../../../thirdparty/javagroups-javagroups/lib/jgroups.jar
+JGROUPS_LIB=$reldir/../../../thirdparty/jgroups/lib/jgroups.jar
 #JGROUPS_LIB=$reldir/../resources/jgroups-core.jar
 
 
@@ -154,7 +156,7 @@ $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
-$reldir/../../../thirdparty/apache-commons/lib/commons-logging.jar${SEP}\
+$reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\

@@ -68,7 +68,7 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
    public ConnectionDelegate createConnectionDelegate(String username, String password)
       throws JMSSecurityException
    {
-      if (log.isTraceEnabled()) { log.trace("Creating a new connection with username=" + username); }
+      log.debug("Creating a new connection with username=" + username);
       
       //authenticate the user
       serverPeer.getSecurityManager().authenticate(username, password);

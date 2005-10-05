@@ -79,15 +79,7 @@ class TransactionalState extends StateSupport
 
       if (r.isReliable())
       {
-         //throw new IllegalStateException("Cannot reliably carry out a reliable message delivery");
-         
-			//FIXME-
-         //In the case of a persistent message being sent to a topic then the normal semantics of
-         //persistent are lost. This is why I commented out the above exception throw.
-         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
-         //so they can be redelivered for the lifetime of the non durable subscriber
-         //See Jms 1.1 spec. 6.12
-         
+         throw new IllegalStateException("Cannot reliably carry out a reliable message delivery");
       }
 
       if (d instanceof CompositeDelivery)
@@ -109,24 +101,19 @@ class TransactionalState extends StateSupport
       {
          throw new IllegalStateException("No active transaction");
       }
+
+      if (log.isTraceEnabled()) { log.trace("adding " + d + " transactionally"); }
+
       registerAddDeliverySynchronization(tx, d);
    }
 
    public boolean remove(Delivery d) throws Throwable
    {
+
       Routable r = d.getRoutable();
       if (r.isReliable())
       {
-         //throw new IllegalStateException("Cannot forget a reliable message delivery at this level");
-         
-         //FIXME-
-         //In the case of a persistent message being sent to a topic then the normal semantics of
-         //persistent are lost. This is why I commented out the above exception throw.
-         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
-         //so they can be redelivered for the lifetime of the non durable subscriber.
-         //Hence removal is ok here, even for a persistent message in the case of a topic
-         //See Jms 1.1 spec. 6.12
-         
+         throw new IllegalStateException("Cannot forget a reliable message delivery at this level");
       }
 
       if (d instanceof CompositeDelivery)
@@ -139,6 +126,9 @@ class TransactionalState extends StateSupport
       {
          return super.remove(d);
       }
+
+      if (log.isTraceEnabled()) { log.trace("removing " + d + " transactionally"); }
+
       registerRemoveDeliverySynchronization(tx, d);
       return true;
    }
@@ -175,15 +165,8 @@ class TransactionalState extends StateSupport
 
       if (r.isReliable())
       {
-         //tx.setRollbackOnly();
-         //throw new IllegalStateException("Cannot reliably hold a transactional reliable message");
-         
-         //FIXME-
-         //In the case of a persistent message being sent to a topic then the normal semantics of
-         //persistent are lost. This is why I commented out the above exception throw.
-         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
-         //so they can be redelivered for the lifetime of the non durable subscriber
-         //See Jms 1.1 spec. 6.12
+         tx.setRollbackOnly();
+         throw new IllegalStateException("Cannot reliably hold a transactional reliable message");
       }
 
       String txID = registerAddMessageSynchronization(tx);
@@ -194,6 +177,9 @@ class TransactionalState extends StateSupport
          l = new ArrayList();
          transactedMessages.put(txID, l);
       }
+
+      if (log.isTraceEnabled()) { log.trace("adding " + r + " transactionally"); }
+
       l.add(r);
    }
 
@@ -276,7 +262,10 @@ class TransactionalState extends StateSupport
             }
             removeDeliverySynchronizations.put(tx, sync);
          }
+
          sync.add(d);
+
+         if (log.isTraceEnabled()) { log.trace("added remove synchronization"); }
       }
    }
 
@@ -360,6 +349,10 @@ class TransactionalState extends StateSupport
 
    private class AddMessageSynchronization implements Synchronization
    {
+
+      private final Logger log = Logger.getLogger(AddMessageSynchronization.class);
+
+
       // the channel-specific ID that identifies the transaction this Synchronization is attached to
       private String txID;
 
@@ -375,7 +368,7 @@ class TransactionalState extends StateSupport
          try
          {
             
-            if (log.isTraceEnabled()) { log.trace("In AddMessageSynchronization.beforeCompletion()"); }
+            if (log.isTraceEnabled()) { log.trace("beforeCompletion()"); }
             
             // this call is executed with the transaction context of the transaction
             // that is being committed
@@ -430,6 +423,8 @@ class TransactionalState extends StateSupport
    private class AddDeliverySynchronization implements Synchronization
    {
 
+      private final Logger log = Logger.getLogger(AddDeliverySynchronization.class);
+
       private List txDeliveries;
 
       // Constructors --------------------------------------------------
@@ -443,6 +438,9 @@ class TransactionalState extends StateSupport
 
       public void beforeCompletion()
       {
+
+         if (log.isTraceEnabled()) { log.trace("beforeCompletion()"); }
+
          try
          {
             Transaction crtTransaction = tm.getTransaction();
@@ -478,6 +476,8 @@ class TransactionalState extends StateSupport
    private class RemoveDeliverySynchronization implements Synchronization
    {
 
+      private final Logger log = Logger.getLogger(RemoveDeliverySynchronization.class);
+
       private List toRemove;
 
       // Constructors --------------------------------------------------
@@ -491,6 +491,8 @@ class TransactionalState extends StateSupport
 
       public void beforeCompletion()
       {
+         if (log.isTraceEnabled()) { log.trace("beforeCompletion"); }
+
          try
          {
             Transaction crtTransaction = tm.getTransaction();
@@ -500,6 +502,8 @@ class TransactionalState extends StateSupport
                toRemove = null;
                return;
             }
+
+            if (log.isTraceEnabled()) { log.trace("removing " + toRemove.size() + " deliveries"); }
 
             // remove all deliveries
             deliveries.removeAll(toRemove);
@@ -512,6 +516,7 @@ class TransactionalState extends StateSupport
 
       public void afterCompletion(int status)
       {
+         if (log.isTraceEnabled()) { log.trace("afterCompletion(" + status + ")"); }
       }
 
       // Public --------------------------------------------------------

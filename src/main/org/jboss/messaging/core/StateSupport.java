@@ -9,6 +9,8 @@
 package org.jboss.messaging.core;
 
 
+import org.jboss.logging.Logger;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,6 +25,8 @@ import java.util.Iterator;
 abstract class StateSupport implements State
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(StateSupport.class);
 
    // Static --------------------------------------------------------
    
@@ -57,34 +61,34 @@ abstract class StateSupport implements State
 
    public void add(Delivery d) throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace("adding " + d); }
+
       deliveries.add(d);
    }
 
    public boolean remove(Delivery d) throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace("removing " + d); }
+
       return deliveries.remove(d);
    }
 
    public void add(Routable r) throws Throwable
    {
-      
       if (r.isReliable())
       {
-         //throw new IllegalStateException("Cannot reliably hold a reliable message");
-         
-         //FIXME-
-         //In the case of a persistent message being sent to a topic then the normal semantics of
-         //persistent are lost. This is why I commented out the above exception throw.
-         //Topics need to be able to store undelivered persistent messages in memory (not persisted)
-         //so they can be redelivered for the lifetime of the non durable subscriber
-         //See Jms 1.1 spec. 6.12
-                 
+         throw new IllegalStateException("Cannot reliably hold a reliable message");
       }
+
+      if (log.isTraceEnabled()) { log.trace("adding " + r); }
+
       messages.add(r);
    }
 
    public boolean remove(Routable r)
    {
+      if (log.isTraceEnabled()) { log.trace("removing " + r); }
+
       return messages.remove(r);
    }
 

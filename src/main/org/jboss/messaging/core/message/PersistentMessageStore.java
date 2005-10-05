@@ -57,7 +57,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       {
          if (log.isTraceEnabled())
          {
-            log.trace("Routable is ref? " + r.isReference() + " is reliable? " + r.isReliable()); 
+            log.trace("Routable " + r + " is " + (r.isReliable() ? "" : "un" ) + "reliable " + ( r.isReference() ? "reference" : "message")); 
          }
          return super.reference(r);
       }
@@ -81,7 +81,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       
       if (ref != null)
       {        
-         if (log.isTraceEnabled()) { log.trace("Retreived it from memory cache"); }
+         if (log.isTraceEnabled()) { log.trace("Retrieved it from memory cache"); }
          return ref;
       }
 
@@ -90,7 +90,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       try
       {
          m = pm.retrieve(messageID);
-         if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage"); }
+         if (log.isTraceEnabled()) { log.trace("Retrieved it from persistent storage"); }
       }
       catch(Throwable t)
       {

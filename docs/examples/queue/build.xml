@@ -17,6 +17,7 @@
 
    <path id="compilation.classpath">
       <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2se.jar"/>
    </path>
 
    <path id="execution.classpath">

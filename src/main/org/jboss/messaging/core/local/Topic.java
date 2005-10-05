@@ -9,7 +9,6 @@
 package org.jboss.messaging.core.local;
 
 import java.util.Iterator;
-import java.util.Set;
 
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
@@ -18,11 +17,6 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.TransactionalChannelSupport;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.MessageStore;
-
-import javax.transaction.TransactionManager;
 
 
 /**

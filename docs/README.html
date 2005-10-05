@@ -7,8 +7,8 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.0alpha-PR1 Release Notes</h1>
-July 5, 2005<br>
+JBoss Messaging 1.0.0alpha-PR2 Release Notes</h1>
+Oct 5, 2005<br>
 <br>
 $Revision$<br>
 <br>
@@ -24,7 +24,7 @@ against using it in a production environment.<br>
 </div>
 <br>
 <h2>Overview</h2>
-This notes document the first preview release of JBoss Messaging. In
+This notes document the second preview release of JBoss Messaging. In
 its production release, JBoss
 Messaging will be a JMS 1.1 compliant JMS provider, based on a
 completely
@@ -53,12 +53,14 @@ from client to server, with direct applications on thinner or thicker
 clients and serverless JMS. <br>
   </li>
 </ul>
-<span style="font-style: italic;">The current preview release has a
-significantly reduced feature set. For a highlight of the current
+<span style="font-style: italic;">The current release passes all
+relevant JMS TCK tests. However, it still has a series a limitations
+that prevents it from being used in a production envrionment. For a
+highlight of the current
 release limitations, go to the "Limitations" section.</span><br>
 <br>
 The current release has been tested with
-JBoss 4.0.2 and JBoss 5.0.0alpha.<br>
+JBoss 5.0.0alpha.<br>
 <br>
 <h2>Contents</h2>
 The JBoss Messaging release bundle includes the following files and
@@ -76,7 +78,7 @@ reference only. If you wan to build JBoss Messaging from source, follow
 the instructions from the "Building JBoss Messaging from sources"
 section.<br>
   </li>
-  <li><span style="font-family: monospace;">JBossMessaging-1.0.0alpha-pr1-src.zip</span>
+  <li><span style="font-family: monospace;">JBossMessaging-1.0.0alpha-pr2-src.zip</span>
 - the zipped <span style="font-family: monospace;">src</span>
 directory.<br>
   </li>
@@ -84,65 +86,8 @@ directory.<br>
 collection of simple JMS examples that should run out of the box and
 help you validate the installation.<br>
     <br>
-    <br>
   </li>
 </ul>
-<h2>Installation</h2>
-Deploy the JBoss Messaging by copying the service archive <span
- style="font-family: monospace;">jboss-messaging.sar </span>into the
-deployment directory of a JBoss 4.0.2 instance. In case that you run
-the default configuration, the deployment directory is <span
- style="font-family: monospace;">$JBOSS_HOME/server/default/deploy.<br>
-<br>
-</span>A successful deployment generates logging output similar to:<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(204, 204, 204);"><span
- style="font-family: monospace;"><br>
-20:19:30,875 INFO&nbsp;
-[AspectDeployer] Deployed AOP:
-jar:file:/C:/jboss-4.0.2/server/default/tmp/deploy/tmp49925jboss-messaging.sar!/jms-aop.xml</span><br
- style="font-family: monospace;">
-      <span style="font-family: monospace;"></span><span
- style="font-family: monospace;">20:19:30,921
-INFO&nbsp; [SocketServerInvoker] Invoker started for locator:
-InvokerLocator
-[socket://192.168.1.3:4447/?marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&amp;<br>
-dataTyp</span><span style="font-family: monospace;">e=invocation&amp;unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]</span><br
- style="font-family: monospace;">
-      <span style="font-family: monospace;">20:19:32,000 INFO&nbsp;
-[ServerPeer] JMS ServerPeer (id=0) started<br>
-      <br style="font-family: monospace;">
-      </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<br>
-<span style="font-family: monospace;"></span><span
- style="color: rgb(255, 0, 0);"><span
- style="color: rgb(0, 0, 0); font-weight: bold;"> Note: </span><span
- style="color: rgb(0, 0, 0);">Deploying JBoss Messaging has as a side
-effect the fact that previous JBossMQ JNDI bindings such as
-/ConnectionFactory, will be overwritten. In order to start using
-JBossMQ again, you either need to either re-deploy JBossMQ, or </span></span><span
- style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">delete
-jboss-messaging.sar from the server's deploy directory and </span></span><span
- style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">restart
-the server instance.<br>
-<br>
-<br>
-</span></span>You can use a number of simple JMS examples that are
-provided
-with the release to validate the deployment. Each example has its own <span
- style="font-family: monospace;">README.html</span> file that
-contains instructions on how to run it. The
-readme files and the source code are available under the <span
- style="font-family: monospace;">examples</span> directory.<br>
 <br>
 <h2>Building JBoss Messaging from source</h2>
 In order to build this version of JBoss Messaging from source, you will
@@ -152,7 +97,7 @@ JBoss CVS. Instructions on how to do this are available at <a
 A condensed version of the whole procedure is provided below:<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cvs
-co -r JBossMessaging_1_0_0_alpha_PR1 jboss-head</span><br
+co -r JBossMessaging_1_0_0_alpha_PR2 jboss-head</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">cd jboss-head</span><br
  style="font-family: monospace;">
@@ -166,21 +111,14 @@ co -r JBossMessaging_1_0_0_alpha_PR1 jboss-head</span><br
 This will generate a <span style="font-family: monospace;">jboss-messaging.sar</span>
 service archive in <span style="font-family: monospace;">output/lib</span>.<br>
 <h2>Limitations</h2>
-This is the first release in a long (we hope) series of releases. This
-is also an alpha and a preview release, coming straight from our
-editors. We don't expect it to be perfect, not even complete, but we
-see it more as an
-intermediate step towards the perfect release that will come ... soon.
-However, it is complete enough so you can get an idea about the
-overall architecture and sub-systems. It's <span class="postbody">85.61%
-JMS 1.1 compliant, which means that it passed 85.61% of the Sun
-Microsystem's CTS. Some of the known major limitations are:<br>
+This release is still an alpha and a preview release. I<span
+ class="postbody">t passed 100% of the Sun
+Microsystem's CTS relevant tests. However its current limitations
+prevents it from being used in production. Some of the known major
+limitations are:<br>
 </span><br>
-- Support for PERSISTENT messages is not complete. <br>
-- A JCA Adapter is not available.<br>
-- Support for high availability and load balancing is not complete. The
-base architecture has the wiring for distributed/replicated
-destinations, but it is not active yet.<br>
+- Support for high availability and load balancing is not complete.<br>
+- No reliable performance data<br>
 <br>
 <h2>JBoss Messaging Links</h2>
 JBoss Messaging home page: <a
@@ -195,51 +133,77 @@ JBoss Messaging CVS: <a
 <br>
 <h2>JIRA Release Notes<br>
 </h2>
-<h3>Release Notes - JBoss Messaging - Version 1.0.0 alpha PR1
-(non-clustered) </h3>
-<h4 style="margin-left: 40px;">Feature Request</h4>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-5">JBMESSAGING-5</a>]
-- Implement a JMX management interface for ServerPeer</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-51">JBMESSAGING-51</a>]
-- JMSCorrelationID</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-52">JBMESSAGING-52</a>]
-- JMSReplyTo</li>
+<h3>Release Notes - JBoss Messaging - Version 1.0.0 alpha PR2
+(clustered) </h3>
+<h2>Feature Request</h2>
+<ul>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-74">JBMESSAGING-74</a>]
+- AcknowledgmentStore implementation</li>
 </ul>
-<h4 style="margin-left: 40px;">Task</h4>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-15">JBMESSAGING-15</a>]
-- Router implementation</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-34">JBMESSAGING-34</a>]
-- JBossSession</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-35">JBMESSAGING-35</a>]
-- TemporaryQueue/TemporaryTopic</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-36">JBMESSAGING-36</a>]
-- JBossMessageProducer</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-37">JBMESSAGING-37</a>]
-- JBossMessageConsumer</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-38">JBMESSAGING-38</a>]
-- QueueBrowser</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-46">JBMESSAGING-46</a>]
-- Change MessageCallbackHandler depending on JBREM-93</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-58">JBMESSAGING-58</a>]
-- JBoss Messaging 1.0.0 Alpha PR1 Non-Clustered</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-60">JBMESSAGING-60</a>]
-- Implement all Message types</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-61">JBMESSAGING-61</a>]
-- Complete message header field set support</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-62">JBMESSAGING-62</a>]
-- Message properties support</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-63">JBMESSAGING-63</a>]
-- Message acknowledgment</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-64">JBMESSAGING-64</a>]
-- Message Selectors</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-69">JBMESSAGING-69</a>]
-- Durable Subscriptions</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-71">JBMESSAGING-71</a>]
-- Queue/Topic Requestors</li>
+<h2>Bug</h2>
+<ul>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-101">JBMESSAGING-101</a>]
+- Subscribers with noLocal=true receive local messages</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-102">JBMESSAGING-102</a>]
+- Stopped non-durable topic subscribers do not receive messages when
+restarted</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-103">JBMESSAGING-103</a>]
+- Existing durable subscription cannot be changed</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-104">JBMESSAGING-104</a>]
+- Durable subscriber re-activation invalid</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-105">JBMESSAGING-105</a>]
+- Routing logic does not allow message to be redelivered to different
+queue receiver</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-106">JBMESSAGING-106</a>]
+- JMSExpiration header incorrectly set</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-107">JBMESSAGING-107</a>]
+- Not able to set JMSXGroupId and JMSXGroupSeq</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-108">JBMESSAGING-108</a>]
+- JBossConnectionMetadata.getJMSXPropertyNames not returning correct
+values</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-109">JBMESSAGING-109</a>]
+- JBossBytesMessage copy constructor from a foreign BytesMessage is not
+yet implemented</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-110">JBMESSAGING-110</a>]
+- JBossMapMessage copy constructor from a foreign MapMessage is not yet
+implemented</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-111">JBMESSAGING-111</a>]
+- JBossStreamMessage copy constructor from a foreign StreamMessage is
+not yet implemented</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-112">JBMESSAGING-112</a>]
+- Temporary Destination can be deleted when it has open message consumer</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-113">JBMESSAGING-113</a>]
+- Able to create consumer for temporary queue from different connection</li>
 </ul>
-<br>
+<h2>Task</h2>
+<ul>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-12">JBMESSAGING-12</a>]
+- Insure ReceiverID uniqueness</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-17">JBMESSAGING-17</a>]
+- Replicator</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-44">JBMESSAGING-44</a>]
+- Update JGroups reference</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-49">JBMESSAGING-49</a>]
+- JBoss Messaging 1.0.0 Alpha PR2 (Clustered)</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-65">JBMESSAGING-65</a>]
+- Selector support in core</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-67">JBMESSAGING-67</a>]
+- JCA Support</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-70">JBMESSAGING-70</a>]
+- Transactional support for the AcknowledgmentStore</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-72">JBMESSAGING-72</a>]
+- Administered objects deployment</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-73">JBMESSAGING-73</a>]
+- Security Integration</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-76">JBMESSAGING-76</a>]
+- Channel implementation</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-99">JBMESSAGING-99</a>]
+- Review shared data structures in JMS facade for thread safety</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-118">JBMESSAGING-118</a>]
+- Implement security for JMS container</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-119">JBMESSAGING-119</a>]
+- TCK 100% pass rate</li>
+</ul>
 <hr style="width: 100%; height: 2px;">
 </body>
 </html>

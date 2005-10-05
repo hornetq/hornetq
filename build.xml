@@ -68,10 +68,10 @@
      <property name="messaging.version.major" value="1"/>
      <property name="messaging.version.minor" value="0"/>
      <property name="messaging.version.revision" value="0"/>
-     <property name="messaging.version.tag" value="alpha-pr1"/>
+     <property name="messaging.version.tag" value="alpha-pr2"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR1"/>
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR2"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
@@ -509,7 +509,7 @@
 
       <!-- enable the deployment of the AspectLoader -->
       <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.jms.tools.AspectLoader.+MainDeployer[ \t]*\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.jms.util.AspectLoader.+MainDeployer[ \t]*\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)([ \t\n\r]*)\x2d-\x3e"/>
          <substitution expression="\2"/>
       </replaceregexp>
 

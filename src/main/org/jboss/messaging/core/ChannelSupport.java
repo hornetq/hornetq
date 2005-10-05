@@ -50,6 +50,7 @@ abstract class ChannelSupport implements Channel
                             TransactionManager tm)
    {
       if (log.isTraceEnabled()) { log.trace("Creating ChannelSupport: " + channelID + " reliable?" + (pm != null)); }
+
       this.channelID = channelID;
       this.ms = ms;
       this.tm = tm;
@@ -129,7 +130,7 @@ abstract class ChannelSupport implements Channel
 
    public boolean add(Receiver r)
    {
-      if (log.isTraceEnabled()) { log.trace("Attempting to add receiver to channel"); }           
+      if (log.isTraceEnabled()) { log.trace("Attempting to add receiver to channel[" + getChannelID() + "]: " + r); }
       
       boolean added = router.add(r);
       if (added)
@@ -189,14 +190,18 @@ abstract class ChannelSupport implements Channel
 
    public void deliver()
    {
-      if (log.isTraceEnabled()){ log.trace("Attempting to deliver messages"); }
+      if (log.isTraceEnabled()){ log.trace("attempting to deliver messages"); }
+
       List messages = state.undelivered(null);
-      if (log.isTraceEnabled()){ log.trace("There are " + messages.size() + " messages to deliver"); }
+      if (log.isTraceEnabled()){ log.trace("there are " + messages.size() + " messages to deliver"); }
       for(Iterator i = messages.iterator(); i.hasNext(); )
       {
          Routable r = (Routable)i.next();
+
          state.remove(r);
-         if (log.isTraceEnabled()){ log.trace("Removed state for routable"); }
+         // TODO: if I crash now I could lose a persisent message
+         if (log.isTraceEnabled()){ log.trace("removed " + r + " from state"); }
+         
          handleNoTx(null, r);
       }
    }
@@ -246,6 +251,8 @@ abstract class ChannelSupport implements Channel
    {
       checkClosed();
 
+      if (log.isTraceEnabled()){ log.trace("handling non transactionally " + r); }
+
       if (r == null)
       {
          return null;
@@ -258,12 +265,12 @@ abstract class ChannelSupport implements Channel
       {
          // no receivers, receivers that don't accept the message or broken receivers
          
-         if (log.isTraceEnabled()){ log.trace("No deliveries returned from handle - no receivers"); }
+         if (log.isTraceEnabled()){ log.trace("No deliveries returned for message; there are no receivers"); }
          
          try
          {
             state.add(r);
-            if (log.isTraceEnabled()){ log.trace("Added state"); }
+            if (log.isTraceEnabled()){ log.trace("Added " + r + " to state"); }
          }
          catch(Throwable t)
          {
@@ -341,6 +348,9 @@ abstract class ChannelSupport implements Channel
    private void acknowledgeNoTx(Delivery d)
    {
       checkClosed();
+
+      if (log.isTraceEnabled()){ log.trace("acknowledging non transactionally " + d); }
+
       try
       {
          if (state.remove(d))

@@ -193,7 +193,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       
       JBossDestination d = (JBossDestination)jmsDestination;
       
-      if (log.isTraceEnabled()) { log.trace("Creating ServerConsumerDelegate for dest:" + d.getName() + 
+      if (log.isTraceEnabled()) { log.trace("creating ServerConsumerDelegate for dest:" + d.getName() +
             " selector:" + selector + " noLocal:" + noLocal + " subName:" + subscriptionName); }
       
       

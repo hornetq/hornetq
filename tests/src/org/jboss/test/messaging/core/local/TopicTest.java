@@ -17,7 +17,7 @@ import org.jboss.messaging.core.local.Topic;
  * 
  * $Id$
  */
-public class UnreliableTopicTest extends TopicTestBase
+public class TopicTest extends TopicTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -27,7 +27,7 @@ public class UnreliableTopicTest extends TopicTestBase
 
    // Constructors --------------------------------------------------
 
-   public UnreliableTopicTest(String name)
+   public TopicTest(String name)
    {
       super(name);
    }
@@ -38,14 +38,12 @@ public class UnreliableTopicTest extends TopicTestBase
    {
       super.setUp();
 
-     // channel = new Topic("test", ms, tm);
+     topic = new Topic("test");
    }
 
    public void tearDown() throws Exception
    {
-      channel.close();
-      channel = null;
-
+      topic = null;
       super.tearDown();
    }
 

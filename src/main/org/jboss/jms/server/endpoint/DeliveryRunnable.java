@@ -26,20 +26,20 @@ class DeliveryRunnable extends Callback implements Runnable
    
    private static final long serialVersionUID = 8375144805659344430L;
 
+   private static final Logger log = Logger.getLogger(DeliveryRunnable.class);
+
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
-   protected transient Logger log;
    protected transient InvokerCallbackHandler callbackHandler;
 
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(InvokerCallbackHandler callbackHandler, Message m, Logger log)
+   public DeliveryRunnable(InvokerCallbackHandler callbackHandler, Message m)
    {
       super(m);
       this.callbackHandler = callbackHandler;
-      this.log = log;
    }
 
    // Runnable implementation ---------------------------------------
@@ -48,7 +48,7 @@ class DeliveryRunnable extends Callback implements Runnable
    {
       try
       {
-         if (log.isTraceEnabled()) { log.trace("handing the message " + this.getCallbackHandleObject() + " over to the remoting layer"); }
+         if (log.isTraceEnabled()) { log.trace("handing the message " + this.getCallbackObject() + " over to the remoting layer"); }
          callbackHandler.handleCallback(this);
       }
       catch(Throwable t)

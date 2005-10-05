@@ -61,6 +61,8 @@ public class PointToPointRouter implements Router
             {
                Delivery d = receiver.handle(observer, routable);
 
+               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
+
                if (d != null)
                {
                   // deliver to the first receiver that acknowledges

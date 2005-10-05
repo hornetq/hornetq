@@ -78,7 +78,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
                                  String selector, boolean noLocal)
       throws InvalidSelectorException
    {
-      if (log.isTraceEnabled()) log.trace("Creating ServerConsumerDelegate:" + id);
+      log.debug("creating ServerConsumerDelegate[" + id + "]");
+
       this.id = id;
       this.destination = destination;
       this.sessionEndpoint = sessionEndpoint;
@@ -103,9 +104,13 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    public Delivery handle(DeliveryObserver observer, Routable routable)
    {
       // deliver the message on a different thread than the core thread that brought it here
-     
-      
+
       Delivery delivery = null;
+
+//      if (!deliveries.isEmpty())
+//      {
+//         return null;
+//      }
 
       try
       {
@@ -141,15 +146,15 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
             if (started)
             {
-               if (log.isTraceEnabled()) { log.trace("queueing the message " + message + " for delivery"); }
-               threadPool.execute(new DeliveryRunnable(callbackHandler, message, log));
+               if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
+               threadPool.execute(new DeliveryRunnable(callbackHandler, message));
             }
             else
             {
                //The consumer is closed so we store the message for later
                //See test ConnectionClosedTest.testCannotReceiveMessageOnClosedConnection
                //for why we do this
-               if (log.isTraceEnabled()) { log.trace("Adding message to the waiting list"); }
+               if (log.isTraceEnabled()) { log.trace("Adding message " + message + " to the waiting list"); }
                waiting.addLast(message);
             }
          }
@@ -226,7 +231,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          {
             if (!waiting.isEmpty())
             {
-               if (log.isTraceEnabled()) { log.trace("There are " + waiting.size() + " waiting messages to deliver"); }
+               if (log.isTraceEnabled()) { log.trace("there are " + waiting.size() + " waiting messages to deliver"); }
                
                int n = waiting.size();
                for (int i = 0; i < n; i++)
@@ -238,7 +243,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
                   if (log.isTraceEnabled()) { log.trace("queueing the message " + m + " for delivery"); }
                   try
                   {
-                     threadPool.execute(new DeliveryRunnable(callbackHandler, m, log));
+                     threadPool.execute(new DeliveryRunnable(callbackHandler, m));
                   }
                   catch (InterruptedException e)
                   {
@@ -253,6 +258,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Public --------------------------------------------------------
 
+   public String toString()
+   {
+      return "ServerConsumerDelegate[" + id + "]";
+   }
+
 
 
    // Package protected ---------------------------------------------
@@ -261,7 +271,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    /** Actually remove the consumer and clear up any deliveries it may have */
    void remove() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("attempting to remove receiver from destination: " + destination);
+      if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + destination);
  
       for(Iterator i = deliveries.keySet().iterator(); i.hasNext(); )
       {
@@ -311,19 +321,13 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    
    void acknowledge(String messageID)
    {
+      if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
+
       try
       {        
          Delivery d = (Delivery)deliveries.get(messageID);
          d.acknowledge();
          deliveries.remove(messageID);
-         
-         //FIXME
-         //Previously message references were not being removed from the message store after the
-         //message had been delivered, causing a catastrophic memory leak and very quick server
-         //failure under load.
-         //This is a quick and dirty fix to remove the reference after delivery
-         //I imagine it could be integrated into core better
-         //this.sessionEndpoint.connectionEndpoint.getServerPeer().getMessageStore().removeReference(messageID);
          
       }
       catch(Throwable t)

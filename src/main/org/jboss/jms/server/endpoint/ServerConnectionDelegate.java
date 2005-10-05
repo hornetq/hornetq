@@ -124,7 +124,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       if (log.isTraceEnabled())
       {
-         log.trace("Creating session, transacted: " + transacted + " ackMode: " + acknowledgmentMode + " Xa:" + isXA); 
+         log.trace("creating session, transacted: " + transacted + " ackMode: " + acknowledgmentMode + " Xa:" + isXA);
       }
       
       // create the dynamic proxy that implements SessionDelegate
@@ -298,13 +298,18 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          {   
             if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
             tx = (Transaction)this.globalToLocalTxMap.remove(request.xid);
+
+            if (log.isTraceEnabled()) { log.trace("resuming " + tx); }
             tm.resume(tx);
+
             if (tx == null)
             {
                final String msg = "Cannot find local tx for global tx:" + request.xid;
                throw new IllegalStateException(msg);
-            }   
-            tx.commit();        
+            }
+
+            if (log.isTraceEnabled()) { log.trace("committing " + tx); }
+            tx.commit();
          }
          else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST)
          {
@@ -481,9 +486,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    void acknowledge(String messageID, String receiverID) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
-      
-      
-      
+
       ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
       if (receiver == null)
       {
@@ -561,8 +564,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    private void processTx(TxState tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("I have " + tx.messages.size() + " messages and " +
-         tx.acks.size() + " acks "); }
+      if (log.isTraceEnabled()) { log.trace("I have " + tx.messages.size() + " messages and " + tx.acks.size() + " acks "); }
       
       Iterator iter = tx.messages.iterator();
       while (iter.hasNext())

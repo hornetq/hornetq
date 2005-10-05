@@ -105,6 +105,7 @@ public class MessageConsumerTest extends MessagingTestCase
       topicProducer = producerSession.createProducer(topic);
       topicProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       topicConsumer = consumerSession.createConsumer(topic);
+
       queueProducer = producerSession.createProducer(queue);
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueConsumer = consumerSession.createConsumer(queue);
@@ -138,9 +139,6 @@ public class MessageConsumerTest extends MessagingTestCase
    
    /* Test that an ack can be sent after the consumer that received the message has been closed.
     * Acks are scoped per session.
-    * 
-    * FIXME
-    * Currently acks are scoped per consumer - causing this test to fail
     */
    public void testAckAfterConsumerClosed() throws Exception
    {
@@ -197,7 +195,79 @@ public class MessageConsumerTest extends MessagingTestCase
          if (connReceive != null) connReceive.close();
       }
    }
-   
+
+
+    public void testClientAcknowledgmentOnClosedConsumer() throws Exception
+    {
+       // create my consumer from scratch
+       consumerConnection.close();
+
+       TextMessage tm = producerSession.createTextMessage();
+
+       tm.setText("One");
+       queueProducer.send(tm);
+
+
+       consumerConnection = cf.createConnection();
+       consumerSession = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+       queueConsumer = consumerSession.createConsumer(queue);
+
+       consumerConnection.start();
+
+       TextMessage m =  (TextMessage)queueConsumer.receive(3000);
+       assertEquals(m.getText(), "One");
+
+       queueConsumer.close();
+
+       m.acknowledge();
+
+
+       try
+       {
+          queueConsumer.receive();
+          fail("should throw exception");
+       }
+       catch(javax.jms.IllegalStateException e)
+       {
+          // OK
+       }
+    }
+
+
+    public void testClosedConsumer() throws Exception
+    {
+       // create my consumer from scratch
+       consumerConnection.close();
+
+       TextMessage tm = producerSession.createTextMessage();
+
+       tm.setText("One");
+       queueProducer.send(tm);
+
+       tm.setText("Two");
+       queueProducer.send(tm);
+
+       consumerConnection = cf.createConnection();
+       consumerSession = consumerConnection.createSession(true, -1);
+       queueConsumer = consumerSession.createConsumer(queue);
+
+       consumerConnection.start();
+
+       TextMessage m =  (TextMessage)queueConsumer.receive(3000);
+       assertEquals(m.getText(), "One");
+
+       queueConsumer.close();
+       consumerSession.commit();
+
+       // I expect that "Two" is still in the queue
+
+       MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
+       m =  (TextMessage)queueConsumer2.receive(3000);
+       assertEquals(m.getText(), "Two");
+
+       consumerConnection.close();
+    }
+
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
    {
       Connection connSend = null;
@@ -824,6 +894,86 @@ public class MessageConsumerTest extends MessagingTestCase
       }
    }
 
+   //
+   // Multiple consumers
+   //
+
+   public void testTwoConsumersNonTransacted() throws Exception
+   {
+
+      consumerSession.close();
+
+      TextMessage tm = producerSession.createTextMessage();
+      tm.setText("One");
+      queueProducer.send(tm);
+      tm.setText("Two");
+      queueProducer.send(tm);
+
+      // recreate the connection and receive the first message
+      consumerConnection = cf.createConnection();
+      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      queueConsumer = consumerSession.createConsumer(queue);
+      consumerConnection.start();
+
+      TextMessage m = (TextMessage)queueConsumer.receive(2000);
+      assertEquals("One", m.getText());
+
+      consumerConnection.close();
+
+      // recreate the connection and receive the second message
+      consumerConnection = cf.createConnection();
+      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      queueConsumer = consumerSession.createConsumer(queue);
+      consumerConnection.start();
+
+      m = (TextMessage)queueConsumer.receive(2000);
+      assertEquals("Two", m.getText());
+
+      consumerConnection.close();
+   }
+
+   public void testTwoConsumersTransacted() throws Exception
+   {
+
+      consumerSession.close();
+
+      TextMessage tm = producerSession.createTextMessage();
+      tm.setText("One");
+      queueProducer.send(tm);
+      tm.setText("Two");
+      queueProducer.send(tm);
+
+      // recreate the connection and receive the first message
+      consumerConnection = cf.createConnection();
+      consumerSession = consumerConnection.createSession(true, -1);
+      queueConsumer = consumerSession.createConsumer(queue);
+      consumerConnection.start();
+
+      TextMessage m = (TextMessage)queueConsumer.receive(2000);
+      assertEquals("One", m.getText());
+
+      consumerSession.commit();
+      consumerConnection.close();
+
+      // recreate the connection and receive the second message
+      consumerConnection = cf.createConnection();
+      consumerSession = consumerConnection.createSession(true, -1);
+      queueConsumer = consumerSession.createConsumer(queue);
+      consumerConnection.start();
+
+      m = (TextMessage)queueConsumer.receive(2000);
+      assertEquals("Two", m.getText());
+
+      consumerConnection.close();
+   }
+
+
+
+
+   //
+   // NoLocal
+   //
+
 
 
    public void testNoLocal() throws Exception
@@ -1391,7 +1541,7 @@ public class MessageConsumerTest extends MessagingTestCase
          durable = sess6.createDurableSubscriber(topic, "mySubscription");
    
          TextMessage tm3 = (TextMessage)durable.receive(1000);
-         assertNull(tm);
+         assertNull(tm3);
       }
       finally
       {

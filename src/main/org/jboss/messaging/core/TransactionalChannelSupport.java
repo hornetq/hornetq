@@ -93,6 +93,8 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
             return;
          }
 
+         if (log.isTraceEnabled()){ log.trace("acknowledging transactionally " + d); }
+
          try
          {
             // handle transactionally
