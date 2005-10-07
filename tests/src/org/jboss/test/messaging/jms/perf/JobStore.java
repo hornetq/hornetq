@@ -6,6 +6,7 @@
  */
 package org.jboss.test.messaging.jms.perf;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -20,5 +21,7 @@ public interface JobStore
 
    void removeJobs();
   
-   List getJobs();
+   Collection getJobs();
+   
+   Job getJob(String jobName);
 }

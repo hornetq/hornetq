@@ -14,12 +14,30 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Message;
 import org.jboss.logging.Logger;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+
 import java.util.Map;
 import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 
 /**
+ * 
+ * This message store dishes out WeakMessageReference instances, which contain WeakReferences to
+ * Message instances.
+ * This means the message can removed from the message store and gc'd without the MessageReference realeasing it's
+ * reference.
+ * Messages can be removed when, say, memory gets low (TODO)
+ * Messages and message refs are also automatically removed when the MessageReference instance is
+ * garbage collected by hooking into the MessageReferences finalizer.
+ * This means any non referenced messages are automatically removed from the message store
+ * (and the disc if they are persistent)
+ * TODO - do spillover onto disc at low memory by reusing jboss mq message cache.
+ * 
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
@@ -33,6 +51,7 @@ abstract class MessageStoreSupport implements MessageStore
    
    // Attributes ----------------------------------------------------
 
+   private Map messageRefs;
    private Map messages;
    private Serializable storeID;
 
@@ -40,7 +59,9 @@ abstract class MessageStoreSupport implements MessageStore
 
    public MessageStoreSupport(Serializable storeID)
    {
-      messages = new HashMap();
+ 
+      messageRefs = new ConcurrentReaderHashMap();
+      messages = new ConcurrentReaderHashMap();
       this.storeID = storeID;
    }
 
@@ -51,11 +72,7 @@ abstract class MessageStoreSupport implements MessageStore
       return storeID;
    }
    
-   public void removeReference(Serializable messageID)
-   {
-      messages.remove(messageID);
-   }
-
+   
    public MessageReference reference(Routable r) throws Throwable
    {
 
@@ -67,27 +84,46 @@ abstract class MessageStoreSupport implements MessageStore
             throw new IllegalStateException("This reference is already maintained by another " +
                                             "store (" + ref.getStoreID() + ")");
          }
+         if (log.isTraceEnabled()) { log.trace("It's already a reference"); }
          return ref;
       }
 
-      if (r.isReliable())
+//      if (r.isReliable())
+//      {
+//         throw new IllegalStateException("Cannot safely store a reliable message!");
+//      }
+      
+      if (log.isTraceEnabled()) { log.trace("Referencing message with id: " + r.getMessageID()); }
+      
+      //Is it already here?
+      MessageReference ref = null;
+      synchronized (this)
       {
-         throw new IllegalStateException("Cannot safely store a reliable message!");
+         ref = getReferenceInternal(r.getMessageID());
+         if (ref == null)
+         {    
+            messages.remove(r.getMessageID());
+            ref = new WeakMessageReference((Message)r, this);
+            messageRefs.put(r.getMessageID(), new WeakReference(ref));
+            messages.put(r.getMessageID(), r);
+            if (log.isTraceEnabled()) { log.trace("Added message and ref to cache:" + r.getMessageID()); }
+         }
       }
-
-      messages.put(r.getMessageID(), r);
-      return new SoftMessageReference((Message)r, this);
+      
+      return ref;
    }
 
-   public MessageReference getReference(Serializable messageID)
+   public MessageReference getReference(Serializable messageID) throws Throwable
    {
-      Message m = (Message)messages.get(messageID);
-      if (m == null)
+      MessageReference ref = getReferenceInternal(messageID);
+      if (ref == null)
       {
-         return null;
+         throw new IllegalStateException("Cannot find message in store, id=" + messageID);
       }
-      return new SoftMessageReference((Message)m, this);
+      return ref;
    }
+   
+   
 
    // Public --------------------------------------------------------
 
@@ -95,35 +131,39 @@ abstract class MessageStoreSupport implements MessageStore
 
    // Protected -----------------------------------------------------
 
-   /**
-    * Only called by MessageReference implementations whose Message soft reference have expired.
-    * Has as a side efect the refreshing of the soft reference.
-    */
-   protected Message retrieve(Routable r)
+   protected Message retrieve(Serializable messageID)
    {
-      if (!r.isReference())
-      {
-         return (Message)r;
-      }
-
-      SoftMessageReference ref = (SoftMessageReference)r;
-      if (!ref.getStoreID().equals(storeID))
-      {
-         throw new IllegalStateException("This reference is maintained by another store (" +
-                                         ref.getStoreID() + ")");
-      }
-
-      Message m = (Message)messages.get(r.getMessageID());
-
-      if (log.isTraceEnabled()) { log.trace("dereferenced message: " + m); }
-
-      // refresh the soft reference
-      ref.refreshReference(m);
-
-      return m;
+      //TODO - Actually we should really implement all of this properly based on the JBossMQ
+      //Message Cache
+      return null;
    }
+   
+   public void remove(MessageReference ref) throws Throwable
+   {
+      //Nothing is reference the message reference any more
+      //so we can remove it and the message from the maps
+      if (log.isTraceEnabled())
+      {
+         log.trace("Removing message " + ref.getMessageID() + " from in memory cache");
+      }
+      
+      synchronized (this)
+      {
+         messageRefs.remove(ref.getMessageID());
+         messages.remove(ref.getMessageID());       
+      }
+   }
+   
 
+   protected MessageReference getReferenceInternal(Serializable messageID)
+   {
+      WeakReference ref = (WeakReference)messageRefs.get(messageID);
+      return ref == null ? null : (MessageReference)ref.get();
+   }
+   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   
+   
+     
 }

@@ -34,6 +34,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
@@ -242,6 +243,10 @@ public class ServerPeer
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
 
+      
+      mbeanServer.invoke(connector, "removeInvocationHandler",
+                         new Object[] {"JMS"},
+                         new String[] {"java.lang.String"});
 
       started = false;
 
@@ -493,16 +498,16 @@ public class ServerPeer
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
                            locator,
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
                            locator,
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.SUBSYSTEM,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_FACTORY_ID, connFactoryID, PayloadKey.AS_IS);

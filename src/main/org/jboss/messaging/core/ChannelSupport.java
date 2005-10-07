@@ -91,8 +91,8 @@ abstract class ChannelSupport implements Channel
 
       if (log.isTraceEnabled()) { log.trace(this + " canceled delivery " + d); }
 
-      state.add(d.getRoutable());
-      if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getRoutable() + " as undelivered"); }
+      state.add(d.getReference());
+      if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
       return true;
    }
 
@@ -106,14 +106,14 @@ abstract class ChannelSupport implements Channel
       {
          if (log.isTraceEnabled()) { log.trace(this + "old delivery was active, canceled it"); }
          
-         Routable routable = old.getRoutable();
+         MessageReference ref = old.getReference();
          
          //FIXME - What if the message is only redelivered for one particular
          //receiver - won't this set it globally?
          if (log.isTraceEnabled()) { log.trace("Setting redelivered to true"); }
-         routable.setRedelivered(true);
+         ref.setRedelivered(true);
 
-         Delivery newd = r.handle(this, routable);
+         Delivery newd = r.handle(this, ref);
 
          if (newd == null || newd.isDone())
          {
@@ -196,7 +196,8 @@ abstract class ChannelSupport implements Channel
       if (log.isTraceEnabled()){ log.trace("there are " + messages.size() + " messages to deliver"); }
       for(Iterator i = messages.iterator(); i.hasNext(); )
       {
-         Routable r = (Routable)i.next();
+
+         MessageReference r = (MessageReference)i.next();
 
          state.remove(r);
          // TODO: if I crash now I could lose a persisent message
@@ -232,6 +233,39 @@ abstract class ChannelSupport implements Channel
    
    // Protected -----------------------------------------------------
    
+   protected MessageReference ref(Routable r)
+   {
+      MessageReference ref = null;
+      
+      if (r.isReference())
+      {
+         return (MessageReference)r;
+      }
+      else
+      {
+         //Convert to reference
+         try
+         {
+            ref = ms.reference(r);
+            return ref;
+         }
+         catch (Throwable t)
+         {
+            try
+            {
+               log.error("Failed to reference routable", t);
+               tm.rollback();             
+            }
+            catch(SystemException e)
+            {
+               log.error(this + " failed to rollback state transaction", e);
+               
+            }
+            return null;
+         }
+      }
+   }
+   
    // Private -------------------------------------------------------
 
    private void checkClosed()
@@ -250,16 +284,16 @@ abstract class ChannelSupport implements Channel
    private Delivery handleNoTx(DeliveryObserver sender, Routable r)
    {
       checkClosed();
-
       if (log.isTraceEnabled()){ log.trace("handling non transactionally " + r); }
 
       if (r == null)
       {
          return null;
       }
-    
+      
+      MessageReference ref = ref(r);
 
-      Set deliveries = router.handle(this, r);
+      Set deliveries = router.handle(this, ref);
 
       if (deliveries.isEmpty())
       {
@@ -269,8 +303,9 @@ abstract class ChannelSupport implements Channel
          
          try
          {
-            state.add(r);
-            if (log.isTraceEnabled()){ log.trace("Added " + r + " to state"); }
+            state.add(ref);
+            if (log.isTraceEnabled()){ log.trace("Added state"); }
+
          }
          catch(Throwable t)
          {
@@ -288,7 +323,7 @@ abstract class ChannelSupport implements Channel
          {
             crtTx = tm.suspend();
 
-            tm.begin();
+            //tm.begin();
             for (Iterator i = deliveries.iterator(); i.hasNext(); )
             {
                Delivery d = (Delivery)i.next();
@@ -297,20 +332,11 @@ abstract class ChannelSupport implements Channel
                   state.add(d);
                }
             }
-            tm.commit();
+           // tm.commit();
          }
          catch(Throwable t)
          {
             log.error(this + " cannot manage delivery, passing responsibility to the sender", t);
-
-            try
-            {
-               tm.rollback();
-            }
-            catch(SystemException e)
-            {
-               log.error(this + " failed to rollback state transaction", e);
-            }
 
             // cannot manage this delivery, pass the responsibility to the sender
             // cannot split delivery, because in case of crash, the message must be recoverable

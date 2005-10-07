@@ -12,6 +12,7 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
@@ -36,6 +37,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
 import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
@@ -148,12 +150,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
                            serverPeer.getLocator(),
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.SUBSYSTEM,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
       // TODO: Is this really necessary? Can't I just use the producerID?
@@ -225,12 +227,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       SimpleMetaData metadata = new SimpleMetaData();
 
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, serverPeer.getConsumerAdvisor().getName(), PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
                            serverPeer.getLocator(),
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.SUBSYSTEM,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
       // TODO: Is this really necessary? Can't I just use the consumerID?
@@ -504,12 +506,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	
 	   SimpleMetaData metadata = new SimpleMetaData();      
 	   metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-	   metadata.addMetaData(InvokerInterceptor.REMOTING,
-	                        InvokerInterceptor.INVOKER_LOCATOR,
+	   metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
 	                        serverPeer.getLocator(),
 	                        PayloadKey.AS_IS);
-	   metadata.addMetaData(InvokerInterceptor.REMOTING,
-	                        InvokerInterceptor.SUBSYSTEM,
+	   metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.SUBSYSTEM,
 	                        "JMS",
 	                        PayloadKey.AS_IS);
 	  
@@ -554,12 +556,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return null;
    }
 	
-	/**
-	 * Redeliver all unacked messages for the session
-	 */
+
 	public void redeliver(String asfReceiverID) throws JMSException
 	{
-      if (log.isTraceEnabled()) { log.trace("redelivering messages for session"); }
+      if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
       
       if (asfReceiverID != null)
       {
@@ -579,7 +579,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
           // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
 			ServerConsumerDelegate scd = (ServerConsumerDelegate)iter.next();
          scd.redeliver();
-		}
+		}     
 	}
 	
 	public void acknowledge(String messageID, String receiverID)
@@ -652,7 +652,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    {
       log.warn("getResourceManager(): NOT handled on the server-side");
       return null;
-   }
+   }   
    
    public void addTemporaryDestination(Destination dest) throws JMSException
    {

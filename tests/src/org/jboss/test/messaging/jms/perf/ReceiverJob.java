@@ -131,10 +131,9 @@ public class ReceiverJob extends AbstractJob
                   count++;
                }
                
-               if (count != 0 && count % 10 == 0)
+               if (count != 0 && count % COUNT_GRANULARITY == 0)
                {
-                  updateTotalCount(10);
-                  count = 0;
+                  updateTotalCount(COUNT_GRANULARITY);                 
                }
                
                              
@@ -152,7 +151,7 @@ public class ReceiverJob extends AbstractJob
                }
             }
                         
-            updateTotalCount(count);
+            updateTotalCount(count % COUNT_GRANULARITY);
             
          }
          catch (Exception e)

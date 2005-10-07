@@ -71,14 +71,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       
       if (log.isTraceEnabled()) { log.trace("Adding delivery " + d + " to channel: "  + channelID);}
 
-      Routable r = d.getRoutable();
 
-      if (!r.isReference())
-      {
-         throw new IllegalStateException("Delivery must contain a message reference");
-      }
-
-      MessageReference ref = (MessageReference)r;
+      MessageReference ref = d.getReference();
 
       Connection conn = ds.getConnection();
       String sql =
@@ -96,7 +90,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       
       if (log.isTraceEnabled()) { log.trace("Removing delivery " + d + " from channel: "  + channelID);}
 
-      Serializable messageID = d.getRoutable().getMessageID();
+      Serializable messageID = d.getReference().getMessageID();
 
       Connection conn = ds.getConnection();
 
@@ -116,7 +110,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
       sql = "DELETE FROM DELIVERIES WHERE " +
             "CHANNELID = '" + channelID + "' AND " +
-            "MESSAGEID = '" + d.getRoutable().getMessageID() + "'";
+            "MESSAGEID = '" + d.getReference().getMessageID() + "'";
 
       conn.createStatement().executeUpdate(sql);
       if (log.isTraceEnabled()) { log.trace(sql); }
@@ -355,6 +349,30 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       if (log.isTraceEnabled()) { log.trace("got " + result.size() + " message refs"); }
       conn.close();
       return result;
+   }
+   
+   public void remove(String messageID) throws Throwable
+   {
+      Connection conn = null;
+      PreparedStatement stat = null;
+      
+      try
+      {
+         conn = ds.getConnection();
+   
+         String sql = "DELETE FROM MESSAGES WHERE MESSAGEID=?";
+   
+         stat = conn.prepareStatement(sql);
+         stat.setString(1, messageID);
+         
+         stat.executeUpdate();
+      }
+      finally
+      {
+         if (stat != null) stat.close();
+         if (conn != null) conn.close();
+      }
+
    }
 
    public void store(Message m) throws Throwable

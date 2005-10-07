@@ -198,6 +198,21 @@ public class ServerManagement
          ServerManagement.getServerPeer().setDefaultSecurityConfig(config);
       }
    }
+   
+   public static Element getDefaultSecurityConfig() throws Exception
+   {
+      if (isRemote)
+      {
+         ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
+         
+         return (Element)rmiAdaptor.invoke(on, "getDefaultSecurityConfig",
+               new Object[] {}, new String[] {});
+      }
+      else
+      {
+         return ServerManagement.getServerPeer().getDefaultSecurityConfig();
+      }
+   }
 
    public static void deployTopic(String name) throws Exception
    {

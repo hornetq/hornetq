@@ -68,6 +68,8 @@ public abstract class AbstractJob implements XMLLoadable, Job, Serializable, Res
    
    protected double throughput;
    
+   protected static final int COUNT_GRANULARITY = 10;
+   
    
    public void getResults(ResultPersistor persistor)
    {
@@ -188,10 +190,7 @@ public abstract class AbstractJob implements XMLLoadable, Job, Serializable, Res
    
    protected abstract class AbstractServitor implements Runnable, Servitor
    {
-      protected void doThrottle()
-      {
-         //TODO
-      }
+     
    }
    
   
@@ -211,7 +210,7 @@ public abstract class AbstractJob implements XMLLoadable, Job, Serializable, Res
    {
       long now = System.currentTimeMillis();
       
-      if (now - lastTime > 1000)
+      if (now - lastTime > 500)
       {     
          throughput = ((double)(1000 * (totalCount - lastCount))) / (now - lastTime);
          
@@ -219,7 +218,13 @@ public abstract class AbstractJob implements XMLLoadable, Job, Serializable, Res
          
          lastTime = now;
       }
+      
+      log.info("Throughput is now:" + throughput);
    }
+   
+  
+   
+   
    
    protected synchronized int getTotalCount()
    {

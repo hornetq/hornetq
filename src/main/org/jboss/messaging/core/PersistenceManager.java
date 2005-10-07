@@ -62,6 +62,8 @@ public interface PersistenceManager
 
 
    void store(Message m) throws Throwable;
+   
+   void remove(String messageID) throws Throwable;
 
    /**
     * @return null if no such message is found.

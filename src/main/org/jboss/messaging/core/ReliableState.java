@@ -64,12 +64,12 @@ class ReliableState extends TransactionalState
    public void add(Delivery d) throws Throwable
    {
 
-      if (!d.getRoutable().isReliable())
+      if (!d.getReference().isReliable())
       {
          super.add(d);
          return;
       }
-
+      
       if (d instanceof CompositeDelivery)
       {
          // TODO break CompositeDelivery in components and add them individually
@@ -82,7 +82,7 @@ class ReliableState extends TransactionalState
 
    public boolean remove(Delivery d) throws Throwable
    {
-      if (!d.getRoutable().isReliable())
+      if (!d.getReference().isReliable())
       {
          return super.remove(d);
       }
@@ -122,17 +122,15 @@ class ReliableState extends TransactionalState
    }
 
 
-   public void add(Routable r) throws Throwable
+   public void add(MessageReference ref) throws Throwable
    {
-      if (!r.isReliable())
+      if (!ref.isReliable())
       {
-         super.add(r);
+         super.add(ref);
          return;
       }
 
       // reliable message
-
-      MessageReference ref = ms.reference(r);
 
       Transaction tx = tm.getTransaction();
       
@@ -150,18 +148,16 @@ class ReliableState extends TransactionalState
       pm.add(channelID, txID, ref);
    }
 
-   public boolean remove(Routable r)
+   public boolean remove(MessageReference ref)
    {
-      if (!r.isReliable())
+      if (!ref.isReliable())
       {
-         return super.remove(r);
+         return super.remove(ref);
       }
 
       try
       {
          // reliable message
-         MessageReference ref = ms.reference(r);
-
          return pm.remove(channelID, ref);
       }
       catch(Throwable t)

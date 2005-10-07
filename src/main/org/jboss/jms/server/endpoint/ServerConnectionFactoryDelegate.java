@@ -19,6 +19,7 @@ import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ClientManager;
@@ -89,12 +90,12 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
                            serverPeer.getLocator(),
                            PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-                           InvokerInterceptor.SUBSYSTEM,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
 

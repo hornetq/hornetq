@@ -20,12 +20,17 @@ import javax.jms.QueueConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicConnection;
 import javax.jms.MessageConsumer;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.container.InvokerInterceptor;
+import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 
@@ -43,6 +48,10 @@ import java.io.Serializable;
 public class ConnectionTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
+   
+   
+   private static final Logger log = Logger.getLogger(ConnectionTest.class);
+
 
    // Static --------------------------------------------------------
    
@@ -248,9 +257,6 @@ public class ConnectionTest extends MessagingTestCase
    {
       Connection conn = cf.createConnection();
 
-      //TODO Simulate a problem with a connection and check the exception
-      //is received on the listener
-
       ExceptionListener listener1 = new MyExceptionListener();
 
       conn.setExceptionListener(listener1);
@@ -264,6 +270,51 @@ public class ConnectionTest extends MessagingTestCase
       conn.close();
 
    }
+   
+//   public void testExceptionListenerFail() throws Exception
+//   {
+//      if (!ServerManagement.isRemote()) return;
+//      
+//      Connection conn = cf.createConnection();
+//
+//      MyExceptionListener listener1 = new MyExceptionListener();
+//
+//      conn.setExceptionListener(listener1);
+//      
+//      
+//      RMIAdaptor rmiAdaptor = (RMIAdaptor) initialContext.lookup("jmx/invoker/RMIAdaptor");
+//      
+//      ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
+//      
+//      rmiAdaptor.invoke(on, "stop",
+//            new Object[] {}, new String[] {});
+//      
+//      try
+//      {
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//      }
+//      catch (Exception ignore)
+//      {}
+//      
+//
+//      Thread.sleep(10000);
+//      
+//      if (listener1.exceptionReceived == null)
+//      {
+//         fail();
+//      }
+//      else
+//      {
+//         log.trace("Received exception:", listener1.exceptionReceived.getLinkedException());
+//      }
+//
+//      try
+//      {
+//         conn.close();
+//      }
+//      catch (Exception e)
+//      {}
+//   }
 
 
    // Package protected ---------------------------------------------
@@ -274,11 +325,14 @@ public class ConnectionTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
 
-   private static class MyExceptionListener implements ExceptionListener
+   static class MyExceptionListener implements ExceptionListener
    {
+      JMSException exceptionReceived;
+      
       public void onException(JMSException exception)
       {
-
+         this.exceptionReceived = exception;
+         log.trace("Received exception");
       }
    }
    

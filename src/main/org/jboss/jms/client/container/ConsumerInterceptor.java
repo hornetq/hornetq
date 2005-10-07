@@ -81,7 +81,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             // register/unregister a callback handler that deal with callbacks sent by the server
 
             InvokerLocator serverLocator = (InvokerLocator)invocationMetaData.
-                  getMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.INVOKER_LOCATOR);
+                  getMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.INVOKER_LOCATOR);
 
             if (serverLocator == null)
             {
@@ -89,7 +89,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             }
 
             String subsystem = (String)invocationMetaData.
-                  getMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.SUBSYSTEM);
+                  getMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.SUBSYSTEM);
 
             if (subsystem == null)
             {
@@ -113,7 +113,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
 
             // Optimization: I've already created the client so I may as well pass it along to be
             //               used by the InvokerInterceptor too.
-            invocationMetaData.addMetaData(InvokerInterceptor.REMOTING, InvokerInterceptor.CLIENT,
+            invocationMetaData.addMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.CLIENT,
                                            client, PayloadKey.TRANSIENT);
 
             // I will need this on the server-side to create the ConsumerDelegate instance
@@ -134,7 +134,9 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             String theReceiverID = (String)ih.getMetaData().getMetaData(JMSAdvisor.JMS,
                   JMSAdvisor.CONSUMER_ID);
 
-				msgHandler.setSessionDelegate(getDelegate(invocation));
+            SessionDelegate del = getDelegate(invocation);
+            
+				msgHandler.setSessionDelegate(del);
 				msgHandler.setReceiverID(theReceiverID);
             msgHandler.setCallbackServer(callbackServer, client); // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
 

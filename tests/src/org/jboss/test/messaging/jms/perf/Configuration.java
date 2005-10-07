@@ -31,6 +31,7 @@ public class Configuration implements XMLLoadable, Serializable
    
    protected String name;
    
+
    public String getName()
    {
       return name;

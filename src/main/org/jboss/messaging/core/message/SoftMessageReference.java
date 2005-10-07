@@ -28,6 +28,10 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
    // only used for testing
    
    
+   /**
+    * THIS CLASS IS NO LONGER USED
+    */
+   
    /* FIXME
     * Note I have set this to false for the following reason:
     * 
@@ -116,7 +120,6 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
    }
 
 
-
    // Public --------------------------------------------------------
 
    public boolean equals(Object o)
@@ -161,7 +164,7 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
       }
       else if (softReference == null)
       {
-            softReference = new SoftReference(null);
+         softReference = new SoftReference(null);
       }
    }
 

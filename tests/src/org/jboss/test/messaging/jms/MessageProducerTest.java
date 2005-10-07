@@ -6,6 +6,9 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.util.Arrays;
+
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -23,6 +26,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -100,6 +104,10 @@ public class MessageProducerTest extends MessagingTestCase
       super.tearDown();
    
    }
+   
+   
+   
+   
 
    public void testPersistentSendToTopic() throws Exception
    {
@@ -144,7 +152,7 @@ public class MessageProducerTest extends MessagingTestCase
       consumerConnection.start();
       TextMessage m = producerSession.createTextMessage("test");
       queueProducer.send(m);
-      TextMessage r = (TextMessage)queueConsumer.receive();
+      TextMessage r = (TextMessage)queueConsumer.receive(3000);
       assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
       assertEquals("test", r.getText());
    }
@@ -194,7 +202,7 @@ public class MessageProducerTest extends MessagingTestCase
       Message m = new SimpleJMSMessage();
       queueProducer.send(m);
 
-      Message rec = queueConsumer.receive();
+      Message rec = queueConsumer.receive(3000);
       assertEquals(m.getJMSMessageID(), rec.getJMSMessageID());
    }
 
@@ -267,7 +275,7 @@ public class MessageProducerTest extends MessagingTestCase
       assertTrue(queueProducer.getDisableMessageTimestamp());
 
       queueProducer.send(producerSession.createMessage());
-      Message m = queueConsumer.receive();
+      Message m = queueConsumer.receive(3000);
 
       assertEquals(0l, m.getJMSTimestamp());
 
@@ -276,7 +284,7 @@ public class MessageProducerTest extends MessagingTestCase
 
       long t1 = System.currentTimeMillis();
       queueProducer.send(producerSession.createMessage());
-      m = queueConsumer.receive();
+      m = queueConsumer.receive(3000);
       long t2 = System.currentTimeMillis();
 
       long timestamp = m.getJMSTimestamp();

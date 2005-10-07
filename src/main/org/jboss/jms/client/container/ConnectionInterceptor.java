@@ -11,6 +11,7 @@ import java.io.Serializable;
 import javax.jms.ConnectionMetaData;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
@@ -19,6 +20,12 @@ import org.jboss.jms.client.JBossConnectionMetaData;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
+import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.marshal.MarshalFactory;
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 
 /**
  * Handles operations related to the connection
@@ -32,7 +39,7 @@ import org.jboss.logging.Logger;
  *
  * $Id$
  */
-public class ConnectionInterceptor implements Interceptor, Serializable
+public class ConnectionInterceptor implements Interceptor, Serializable, ConnectionListener
 {
    // Constants -----------------------------------------------------
 
@@ -133,6 +140,22 @@ public class ConnectionInterceptor implements Interceptor, Serializable
       {
          justCreated = false;
          exceptionListener = (ExceptionListener)mi.getArguments()[0];
+         
+         Client client = (Client)invocation.getMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.CLIENT);                  
+
+         if (client == null)
+         {
+            throw new java.lang.IllegalStateException("Cannot find remoting client");
+         }
+         
+         if (exceptionListener != null)
+         {
+            client.addConnectionListener(this);
+         }
+         else
+         {
+            client.removeConnectionListener(this);
+         }
          return null;
       }
       else if ("getConnectionMetaData".equals(methodName))
@@ -158,6 +181,36 @@ public class ConnectionInterceptor implements Interceptor, Serializable
       {
          return invocation.invokeNext();
       }
+   }
+   
+   // ConnectionListener implementation
+   
+   public void handlerConnectionException(Throwable t, Client c)
+   {
+      if (log.isTraceEnabled())
+      {
+         log.trace("Caught exception from connection", t);
+      }
+      if (exceptionListener != null)
+      {
+         
+         if (t instanceof Error)
+         {
+            log.error("Caught error on connection", t);
+         }
+         else
+         {
+            Exception e =(Exception)t;
+            JMSException j = new JMSException("Throwable received from underlying connection");
+            j.setLinkedException(e);
+            synchronized (exceptionListener)
+            {
+               exceptionListener.onException(j);
+            }
+         }
+         
+      }
+      
    }
 
    // Package protected ---------------------------------------------

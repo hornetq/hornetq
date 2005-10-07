@@ -90,6 +90,7 @@
       <attribute name="DefaultSecurityConfig">
 			<security>
 				<role name="guest" read="true" write="true" create="true"/>
+            <role name="j2ee" read="true" write="true" create="true"/>
 			</security>
 		</attribute>
    </mbean>

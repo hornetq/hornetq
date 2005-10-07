@@ -35,6 +35,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
+import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
@@ -60,6 +61,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -144,12 +146,12 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       SimpleMetaData metadata = new SimpleMetaData();
       // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
       metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-            InvokerInterceptor.INVOKER_LOCATOR,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.INVOKER_LOCATOR,
             serverPeer.getLocator(),
             PayloadKey.AS_IS);
-      metadata.addMetaData(InvokerInterceptor.REMOTING,
-            InvokerInterceptor.SUBSYSTEM,
+      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+            RemotingClientInterceptor.SUBSYSTEM,
             "JMS",
             PayloadKey.AS_IS);
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionID, PayloadKey.AS_IS);
@@ -432,6 +434,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    void sendMessage(Message m) throws JMSException
    { 
+
       //The JMSDestination header must already have been set for each message
       JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
       if (jmsDestination == null)
@@ -455,24 +458,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       ((JBossMessage)m).setConnectionID(connectionID);
       
       Routable r = (Routable)m;
-      MessageReference ref = null;
+    
+      if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core, destination: " + jmsDestination.getName()); }
       
-      try
-      {
-         // Reference (cache) the message
-         // TODO - this should be done in an interceptor
-         
-         ref = serverPeer.getMessageStore().reference(r);
-      }
-      catch(Throwable t)
-      {
-         log.error("Failed to cache message", t);
-         throw new JBossJMSException("Failed to cache the message", t);
-      }
-      
-      if (log.isTraceEnabled()) { log.trace("sending " + ref + " to the core, destination: " + jmsDestination.getName()); }
-      
-      Delivery d = ((Receiver)coreDestination).handle(null, ref);
+      Delivery d = ((Receiver)coreDestination).handle(null, r);
       
       // The core destination is supposed to acknowledge immediately. If not, there's a problem.
       if (d == null || !d.isDone())

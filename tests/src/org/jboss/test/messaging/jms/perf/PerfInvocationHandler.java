@@ -8,8 +8,11 @@
 package org.jboss.test.messaging.jms.perf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.MBeanServer;
 
@@ -29,22 +32,26 @@ public class PerfInvocationHandler implements ServerInvocationHandler, JobStore
 {
    private static final Logger log = Logger.getLogger(PerfInvocationHandler.class);
    
-   protected List tests = new ArrayList();
+   protected Map jobs  = new HashMap();
 
-
-   public void addJob(Job test)
+   public void addJob(Job job)
    {
-      tests.add(test);
+      jobs.put(job.getName(), job);
    }
    
    public void removeJobs()
    {
-      tests.clear();
+      jobs.clear();
    }
    
-   public List getJobs()
+   public Collection getJobs()
    {
-      return Collections.unmodifiableList(tests);
+      return Collections.unmodifiableCollection(jobs.values());
+   }
+   
+   public Job getJob(String jobName)
+   {
+      return (Job)jobs.get(jobName);
    }
    
    public Object invoke(InvocationRequest invocation) throws Throwable

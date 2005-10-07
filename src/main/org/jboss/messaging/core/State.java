@@ -54,9 +54,9 @@ interface State
    /**
     * Works transactionally in presence of a JTA transaction.
     */
-   void add(Routable routable) throws Throwable;
+   void add(MessageReference ref) throws Throwable;
 
-   boolean remove(Routable routable);
+   boolean remove(MessageReference ref);
 
    /**
     * A list of routables that are currently NOT being delivered by the channel.
@@ -79,4 +79,5 @@ interface State
     * TODO really?
     */
    void clear();
+   
 }

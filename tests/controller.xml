@@ -11,7 +11,7 @@
          <sender-job>
             
             <jms-server-url>jnp://localhost:1099</jms-server-url>
-            <num-connections>1</num-connections>
+            <num-connections>2</num-connections>
             <num-sessions>1</num-sessions>
             <ramp-delay>0</ramp-delay>
             <destination-jndi-name>queue/testQueue</destination-jndi-name>
@@ -26,6 +26,7 @@
       
       </slave>
       
+      <!--
       <slave>
          <slave-locator>socket://localhost:1235</slave-locator>
          
@@ -33,12 +34,12 @@
             
             <jms-server-url>jnp://localhost:1099</jms-server-url>
             <num-connections>1</num-connections>
-            <num-sessions>1</num-sessions>
+            <num-sessions>5</num-sessions>
             <ramp-delay>0</ramp-delay>
             <destination-jndi-name>queue/testQueue</destination-jndi-name>
             <transacted>false</transacted>
             <transaction-size>0</transaction-size>
-            <!-- auto=1, client=2, dups_ok=3, session_transacted=0 -->
+            
             <acknowledgement-mode>1</acknowledgement-mode>
             <durable-subscription-name></durable-subscription-name>
             <message-selector></message-selector>
@@ -48,6 +49,8 @@
          </receiver-job>
       
       </slave>
+      
+      -->
       
       
    </config>
@@ -59,6 +62,8 @@
       <config>config1</config>
       
       <duration>20000</duration>
+      
+      <processor>STEADY_STATE</processor>
       
 
    </test>

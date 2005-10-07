@@ -79,6 +79,8 @@ public class SecurityTest extends MessagingTestCase
    protected Topic securedTopic;
    protected Topic unsecuredTopic;
    
+   protected Element oldDefaultConfig;
+   
    // Constructors --------------------------------------------------
    
    public SecurityTest(String name)
@@ -97,6 +99,7 @@ public class SecurityTest extends MessagingTestCase
       
       final String defaultSecurityConfig = 
          "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+      oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
       ServerManagement.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
  
       log.info("========= Start test: " + getName());
@@ -118,7 +121,8 @@ public class SecurityTest extends MessagingTestCase
    
    protected void tearDown() throws Exception
    {
-      log.info("========== Stop test: " + getName());
+      log.info("========== Stop test: " + getName());     
+      ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
       ServerManagement.undeployQueue("testQueue");
       ServerManagement.undeployQueue("testTopic");
       ServerManagement.undeployTopic("securedTopic");

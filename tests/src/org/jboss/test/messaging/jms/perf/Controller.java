@@ -137,6 +137,7 @@ public class Controller
          Job job = (Job)iter.next();
          RunRequest req = new RunRequest(job);
          sendRequestToSlave(slave.getSlaveLocator(), req);
+         
       }
       
    }
@@ -148,17 +149,24 @@ public class Controller
 
    }
    
-   protected void loop(List slaves, long duration) throws Throwable
+   protected void loop(Test test) throws Throwable
    {
+      Configuration config = (Configuration)configs.get(test.getConfigName());
+      
+      List slaves = config.getSlaves();
+      long duration = test.getDuration();
+      
       long start = System.currentTimeMillis();
       while (true)
       {
          Thread.sleep(3000);
-         
+                  
          if (System.currentTimeMillis() - start >= duration)
          {
             break;
          }
+         
+         Map res = new HashMap();
          
          Iterator iter = slaves.iterator();
          
@@ -172,28 +180,31 @@ public class Controller
              
              Iterator iter2 = results.iterator();
              
+             
+             
              while (iter2.hasNext())
              {
                 RunData data = (RunData)iter2.next();
-                data.getResults(persistor);
                 
-                String jobName = data.jobName;
-                
+                Job job = null;
                 Iterator iter3 = slave.getJobs().iterator();
                 while (iter3.hasNext())
                 {
-                   Job job = (Job)iter3.next();
-                   if (job.getName().equals(jobName))
+                   Job j = (Job)iter3.next();
+                   if (j.getName().equals(data.jobName))
                    {
-                      ((ResultSource)job).getResults(persistor);
+                      ((ResultSource)j).getResults(persistor);
+                      job = j;
                       break;
                    }
                 }
-                persistor.persist();
-                
+                res.put(job, data);
              }
-             
          }
+                
+         test.getProcessor().processResults(test, config, res, persistor);       
+                
+
       }
    }
    
@@ -223,7 +234,7 @@ public class Controller
               startJobsAtSlave(slave);
            }
            
-           loop(slaves, test.getDuration());
+           loop(test);
            
            slaves = config.getSlaves();
            iter2 = slaves.iterator();

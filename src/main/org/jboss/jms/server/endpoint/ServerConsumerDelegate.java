@@ -37,6 +37,7 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  * server side, they will be taken care of by the client-side interceptor chain.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -57,7 +58,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    protected InvokerCallbackHandler callbackHandler;
    protected boolean noLocal;
    protected Selector messageSelector;
-  // protected Subscription subscription;
    protected LinkedList waiting = new LinkedList();
 	
    protected PooledExecutor threadPool;
@@ -138,7 +138,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             return null;
          }
 
-         delivery = new SimpleDelivery(observer, routable);
+         delivery = new SimpleDelivery(observer, (MessageReference)routable);
          deliveries.put(routable.getMessageID(), delivery);
 
          synchronized (waiting)

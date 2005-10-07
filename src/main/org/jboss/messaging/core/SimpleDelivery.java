@@ -30,7 +30,7 @@ public class SimpleDelivery implements Delivery, Serializable
 
    protected boolean done;
    protected DeliveryObserver observer;
-   protected Routable routable;
+   protected MessageReference ref;
 
    // Constructors --------------------------------------------------
 
@@ -44,23 +44,23 @@ public class SimpleDelivery implements Delivery, Serializable
       this(null, null, d);
    }
 
-   public SimpleDelivery(DeliveryObserver observer, Routable routable)
+   public SimpleDelivery(DeliveryObserver observer, MessageReference ref)
    {
-      this(observer, routable, false);
+      this(observer, ref, false);
    }
 
-   public SimpleDelivery(DeliveryObserver observer, Routable routable, boolean done)
+   public SimpleDelivery(DeliveryObserver observer, MessageReference ref, boolean done)
    {
       this.done = done;
-      this.routable = routable;
+      this.ref = ref;
       this.observer = observer;
    }
 
    // Delivery implementation ---------------------------------
 
-   public Routable getRoutable()
+   public MessageReference getReference()
    {
-      return routable;
+      return ref;
    }
 
    public boolean isDone()
@@ -97,7 +97,9 @@ public class SimpleDelivery implements Delivery, Serializable
 
    public String toString()
    {
-      return "Delivery[" + routable + "](" + (isDone() ? "done" : "active" ) + ")"; 
+
+      return "delivery[" + ref + "](" + (isDone() ? "done" : "active" ) + ")"; 
+
    }
 
    // Package protected ---------------------------------------------

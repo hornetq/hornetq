@@ -18,7 +18,7 @@ package org.jboss.messaging.core;
 
 public interface Delivery
 {
-   Routable getRoutable();
+   MessageReference getReference();
 
    boolean isDone();
 

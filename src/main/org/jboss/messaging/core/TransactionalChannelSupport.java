@@ -51,19 +51,21 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    {
       try
       {
+         MessageReference ref = ref(r);
+         
          if (tm == null || tm.getTransaction() == null)
          {
             // handle the message non-transactionally
-            return super.handle(sender, r);
+            return super.handle(sender, ref);
          }
 
          try
          {
             // handle transactionally
-            state.add(r);
+            state.add(ref);
 
             // I might as well return null, the sender shouldn't care
-            return new SimpleDelivery(sender, r, true);
+            return new SimpleDelivery(sender, ref, true);
 
          }
          catch(Throwable t)
@@ -113,7 +115,7 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
    }
 
    // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

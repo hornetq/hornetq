@@ -6,21 +6,18 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.logging.Logger;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.marshal.Marshaller;
-import org.jboss.remoting.marshal.UnMarshaller;
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.InvocationResponse;
-
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.InvocationResponse;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.Client;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class InvokerInterceptor implements Interceptor, Serializable
@@ -30,11 +27,6 @@ public class InvokerInterceptor implements Interceptor, Serializable
    private static final Logger log = Logger.getLogger(InvokerInterceptor.class);
 
    public static final InvokerInterceptor singleton = new InvokerInterceptor();
-
-   public static final String REMOTING = "REMOTING";
-   public static final String INVOKER_LOCATOR = "INVOKER_LOCATOR";
-   public static final String SUBSYSTEM = "SUBSYSTEM";
-   public static final String CLIENT = "CLIENT";
 
    private static final long serialVersionUID = -8628256359399051120L;
 
@@ -50,33 +42,14 @@ public class InvokerInterceptor implements Interceptor, Serializable
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace("In InvokerInterceptor"); }
+      
       // look for a Client, it's possible that it has been created already
-      Client client = (Client)invocation.getMetaData(REMOTING, CLIENT);
+      Client client = (Client)invocation.getMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.CLIENT);
 
       if (client == null)
       {
-         //We shouldn't have to do this programmatically - it should pick it up from the params
-         //on the locator uri, but that doesn't seem to work
-         Marshaller marshaller = new org.jboss.invocation.unified.marshall.InvocationMarshaller();
-         UnMarshaller unmarshaller = new org.jboss.invocation.unified.marshall.InvocationUnMarshaller();
-         MarshalFactory.addMarshaller("invocation", marshaller, unmarshaller);
-         
-         
-         if (log.isTraceEnabled()) { log.trace("client is null"); }
-         InvokerLocator locator = (InvokerLocator)invocation.getMetaData(REMOTING, INVOKER_LOCATOR);
-         if (locator == null)
-         {
-            throw new RuntimeException("No InvokerLocator supplied.  Can't invoke remotely!");
-         }
-         if (log.isTraceEnabled()) { log.trace("Locator is:" + locator); }
-         String subsystem = (String)invocation.getMetaData(REMOTING, SUBSYSTEM);
-         if (subsystem == null)
-         {
-            throw new RuntimeException("No subsystem supplied.  Can't invoke remotely!");
-         }
-         if (log.isTraceEnabled()) { log.trace("Subsystem is:" + subsystem); }
-         client = new Client(locator, subsystem);
-         if (log.isTraceEnabled()) { log.trace("Created client"); }
+         throw new IllegalStateException("Cannot find remoting client");
       }
 
       if (log.isTraceEnabled()) { log.trace("Invoking server"); }

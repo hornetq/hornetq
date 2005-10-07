@@ -62,7 +62,7 @@ class TransactionalState extends StateSupport
       addMessageSynchronizations = new HashMap();
       addDeliverySynchronizations = new HashMap();
       removeDeliverySynchronizations = new HashMap();
-
+      
    }
 
    // StateSupport overrides -------------------------------------
@@ -75,12 +75,7 @@ class TransactionalState extends StateSupport
 
    public void add(Delivery d) throws Throwable
    {
-      Routable r = d.getRoutable();
-
-      if (r.isReliable())
-      {
-         throw new IllegalStateException("Cannot reliably carry out a reliable message delivery");
-      }
+      MessageReference ref = d.getReference();
 
       if (d instanceof CompositeDelivery)
       {
@@ -89,32 +84,30 @@ class TransactionalState extends StateSupport
       }
 
       // TODO This is a kludge, this should change when I start using a non-JTA-related API
-      if (r.isRedelivered())
+      if (ref.isRedelivered())
       {
          super.add(d);
          return;
       }
 
-
+      
       Transaction tx = tm.getTransaction();
       if (tx == null)
       {
-         throw new IllegalStateException("No active transaction");
+         super.add(d);
+         return;
+         
       }
 
       if (log.isTraceEnabled()) { log.trace("adding " + d + " transactionally"); }
 
       registerAddDeliverySynchronization(tx, d);
+      
    }
 
    public boolean remove(Delivery d) throws Throwable
    {
-
-      Routable r = d.getRoutable();
-      if (r.isReliable())
-      {
-         throw new IllegalStateException("Cannot forget a reliable message delivery at this level");
-      }
+      MessageReference ref = d.getReference();
 
       if (d instanceof CompositeDelivery)
       {
@@ -129,7 +122,7 @@ class TransactionalState extends StateSupport
 
       if (log.isTraceEnabled()) { log.trace("removing " + d + " transactionally"); }
 
-      registerRemoveDeliverySynchronization(tx, d);
+      registerRemoveDeliverySynchronization(tx, d);      
       return true;
    }
 
@@ -140,35 +133,30 @@ class TransactionalState extends StateSupport
       for(Iterator i = deliveries.iterator(); i.hasNext(); )
       {
          Delivery d = (Delivery)i.next();
-         Routable r = d.getRoutable();
-         if (filter == null || filter.accept(r))
+         MessageReference ref = d.getReference();
+         if (filter == null || filter.accept(ref))
          {
-            delivering.add(r);
+            delivering.add(ref);
          }
       }
       return delivering;
    }
 
 
-   public void add(Routable r) throws Throwable
+   public void add(MessageReference ref) throws Throwable
    {
       Transaction tx = tm.getTransaction();
 
       if (tx == null)
       {
          // no active transaction, handle the message non-transactionally
-         super.add(r);
+         super.add(ref);
          return;
       }
 
       // add transactionally
 
-      if (r.isReliable())
-      {
-         tx.setRollbackOnly();
-         throw new IllegalStateException("Cannot reliably hold a transactional reliable message");
-      }
-
+ 
       String txID = registerAddMessageSynchronization(tx);
 
       List l = (List)transactedMessages.get(txID);
@@ -177,10 +165,12 @@ class TransactionalState extends StateSupport
          l = new ArrayList();
          transactedMessages.put(txID, l);
       }
+      
 
-      if (log.isTraceEnabled()) { log.trace("adding " + r + " transactionally"); }
+      if (log.isTraceEnabled()) { log.trace("adding " + ref + " transactionally"); }
+      
+      l.add(ref);
 
-      l.add(r);
    }
 
    // Public --------------------------------------------------------
@@ -279,7 +269,7 @@ class TransactionalState extends StateSupport
          return;
 
       }
-      messages.addAll(l);
+      messageRefs.addAll(l);
    }
 
    protected void dropTransactedMessages(String txID) throws SystemException
@@ -302,7 +292,7 @@ class TransactionalState extends StateSupport
       enableTransactedMessages(txID);
       channel.deliver();
       
-      //FIXME ???
+      //FIXME
       //I have added this for the following reason:
       //Consider the following scenario:
       //I send a persistent message in a transaction to a queue.
@@ -322,6 +312,7 @@ class TransactionalState extends StateSupport
       //But for now, this seems to work.
       //I have added a test to check for this scenario:
       //MessageConsumerTest.testSendAndReceivePersistentDifferentConnections
+      //I think this should be improved if we merge the transacted and non-transacted message refs
       
       enableTransactedMessages(txID);
    }
@@ -526,6 +517,5 @@ class TransactionalState extends StateSupport
          toRemove.add(d);
       }
    }
-
-
+   
 }

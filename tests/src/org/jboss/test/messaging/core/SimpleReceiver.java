@@ -8,6 +8,7 @@
 
 package org.jboss.test.messaging.core;
 
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
@@ -106,7 +107,7 @@ public class SimpleReceiver implements Receiver
 
          boolean done = ACKING.equals(state) ? true : false;
          log.info("Receiver [" + name + "] is " + (done ? "ACKing" : "NACKing") +  " message " + r);
-         Delivery delivery = new SimpleDelivery(observer, r, done);
+         Delivery delivery = new SimpleDelivery(observer, (MessageReference)r, done);
          messages.add(new Object[] {r, done ? null : delivery});
          return delivery;
       }

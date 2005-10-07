@@ -8,12 +8,11 @@
 
 package org.jboss.test.messaging.jms.message.base;
 
-import org.jboss.test.messaging.jms.base.JMSTestBase;
-import org.jboss.messaging.core.message.SoftMessageReference;
-
 import javax.jms.DeliveryMode;
-import javax.jms.Message;
 import javax.jms.JMSException;
+import javax.jms.Message;
+
+import org.jboss.test.messaging.jms.base.JMSTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -72,7 +71,7 @@ public class MessageTestBase extends JMSTestBase
       queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
 
       // make sure the message is serialized to and from the database
-      SoftMessageReference.keepSoftReference = false;
+      //SoftMessageReference.keepSoftReference = false;
 
       queueProd.send(message);
 

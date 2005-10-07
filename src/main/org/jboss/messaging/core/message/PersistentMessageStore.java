@@ -52,32 +52,29 @@ public class PersistentMessageStore extends TransactionalMessageStore
 
    public MessageReference reference(Routable r) throws Throwable
    {
-
-      if (r.isReference() || !r.isReliable())
-      {
-         if (log.isTraceEnabled())
-         {
-            log.trace("Routable " + r + " is " + (r.isReliable() ? "" : "un" ) + "reliable " + ( r.isReference() ? "reference" : "message")); 
-         }
-         return super.reference(r);
-      }
-
-      // is reliable
+      //we always put it in the memory cache first - whether it's reliable or not
+      MessageReference ref = super.reference(r);
 
       if (log.isTraceEnabled()) { log.trace("Persisting message " + r); }
 
-      pm.store((Message)r);
+      if (r.isReliable())
+      {      
+         //and in the persistent store if it's reliable
+         pm.store((Message)r);
+         
+         if (log.isTraceEnabled()) { log.trace("Persisted message " + r); }
+      }
       
-      if (log.isTraceEnabled()) { log.trace("Persisted message " + r); }
-      
-      return new SoftMessageReference((Message)r, this);
+      return ref;
    }
 
-   public MessageReference getReference(Serializable messageID)
+   
+   public MessageReference getReference(Serializable messageID) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Getting message ref for message ID: " + messageID);}
       
-      MessageReference ref = super.getReference(messageID);
+      //Try and get the reference from the in memory cache first
+      MessageReference ref = super.getReferenceInternal(messageID);
       
       if (ref != null)
       {        
@@ -85,12 +82,12 @@ public class PersistentMessageStore extends TransactionalMessageStore
          return ref;
       }
 
-
+      //Try and retrieve it from persistent storage
       Message m = null;
       try
       {
          m = pm.retrieve(messageID);
-         if (log.isTraceEnabled()) { log.trace("Retrieved it from persistent storage"); }
+         if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage:" + m); }
       }
       catch(Throwable t)
       {
@@ -101,11 +98,23 @@ public class PersistentMessageStore extends TransactionalMessageStore
       {
          return null;
       }
-      return new SoftMessageReference((Message)m, this);
+      
+      //Put it in the memory cache and return a ref from there
+      return super.reference((Message)m);
       
    }
+   
 
-
+   public void remove(MessageReference ref) throws Throwable
+   {
+      super.remove(ref);
+      
+      if (ref.isReliable())
+      {      
+         //if (log.isTraceEnabled()) { log.trace("Removing message ref from persistent store"); }
+         //pm.remove((String)ref.getMessageID());
+      }
+   }
 
 
    // Public --------------------------------------------------------
@@ -114,50 +123,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
    
    // Protected -----------------------------------------------------
 
-   /**
-    * Only called by MessageReference implementations whose Message soft reference have expired.
-    * Has as a side efect the refreshing of the soft reference.
-    */
-   protected Message retrieve(Routable r)
-   {
-
-      if (!r.isReference())
-      {
-         return (Message)r;
-      }
-
-      if (!r.isReliable())
-      {
-         return super.retrieve(r);
-      }
-
-      SoftMessageReference ref = (SoftMessageReference)r;
-      if (!ref.getStoreID().equals(getStoreID()))
-      {
-         throw new IllegalStateException("This reference is maintained by another store (" +
-                                         ref.getStoreID() + ")");
-      }
-
-      try
-      {
-
-         Message m = pm.retrieve(r.getMessageID());
-
-         if (log.isTraceEnabled()) { log.trace("dereferenced message: " + m); }
-
-         // refresh the soft reference
-         ref.refreshReference(m);
-
-         return m;
-      }
-      catch(Throwable t)
-      {
-         log.error("Failed to retrieve message with id=" + r.getMessageID(), t);
-         return null;
-      }
-   }
-
-
+  
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

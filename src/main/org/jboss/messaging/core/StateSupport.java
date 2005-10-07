@@ -32,7 +32,7 @@ abstract class StateSupport implements State
    
    // Attributes ----------------------------------------------------
 
-   protected List messages;
+   protected List messageRefs;
    protected List deliveries;
 
 
@@ -43,7 +43,7 @@ abstract class StateSupport implements State
    public StateSupport(Channel channel)
    {
       this.channel = channel;
-      messages = new ArrayList();
+      messageRefs = new ArrayList();
       deliveries = new ArrayList();
    }
 
@@ -70,32 +70,26 @@ abstract class StateSupport implements State
    {
       if (log.isTraceEnabled()) { log.trace("removing " + d); }
 
-      return deliveries.remove(d);
+      boolean removed = deliveries.remove(d);
+      
+      return removed;
    }
 
-   public void add(Routable r) throws Throwable
+   public void add(MessageReference ref) throws Throwable
    {
-      if (r.isReliable())
-      {
-         throw new IllegalStateException("Cannot reliably hold a reliable message");
-      }
-
-      if (log.isTraceEnabled()) { log.trace("adding " + r); }
-
-      messages.add(r);
+      messageRefs.add(ref);
    }
 
-   public boolean remove(Routable r)
+   public boolean remove(MessageReference ref)
    {
-      if (log.isTraceEnabled()) { log.trace("removing " + r); }
-
-      return messages.remove(r);
+      boolean removed = messageRefs.remove(ref);
+      return removed;
    }
 
    public List undelivered(Filter filter)
    {
       List undelivered = new ArrayList();
-      for(Iterator i = messages.iterator(); i.hasNext(); )
+      for(Iterator i = messageRefs.iterator(); i.hasNext(); )
       {
          Routable r = (Routable)i.next();
          if (filter == null || filter.accept(r))
@@ -109,24 +103,29 @@ abstract class StateSupport implements State
    public List browse(Filter filter)
    {
       List result = delivering(filter);
-      result.addAll(undelivered(filter));
+      
+      List undel = undelivered(filter);
+      if (log.isTraceEnabled()) { log.trace("I have " + undel.size() + " undelivered"); }
+      result.addAll(undel);
       return result;
    }
 
    public void clear()
    {
-      messages.clear();
-      messages = null;
+      messageRefs.clear();
+      messageRefs = null;
       channel = null;
    }
 
    // Public --------------------------------------------------------
-
+   
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes -------------------------------------------------  
+   
 }

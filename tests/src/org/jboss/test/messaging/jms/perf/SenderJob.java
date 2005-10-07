@@ -35,6 +35,15 @@ public class SenderJob extends AbstractJob
    
    protected MessageFactory mf;
    
+   protected double desiredTP;
+   
+   protected boolean doThrottle;
+   
+   protected SenderJob()
+   {
+      throttle(50);
+   }
+   
    public void getResults(ResultPersistor persistor)
    {
       super.getResults(persistor);
@@ -58,6 +67,34 @@ public class SenderJob extends AbstractJob
    public SenderJob(Element e) throws DeploymentException
    {
       importXML(e);
+   }
+   
+   public void throttle(double desiredTP)
+   {
+      this.desiredTP = desiredTP;
+      this.doThrottle = true;
+   }
+   
+   protected void calcThrottle()
+   {
+      if (!doThrottle)
+      {
+         return;
+      }
+      
+      double throttleDelay;
+      
+      double timeToSendMsg = ((double)(1000 * numSessions)) / throughput;
+      log.info("Time to send 1 msg=" + timeToSendMsg + " ms");
+      
+      double timeToSendMsgDesired = ((double)(1000 * numSessions)) / desiredTP;
+      log.info("Time to send 1 msg desired=" + timeToSendMsg + " ms");
+      
+      double eachMessageDelay = timeToSendMsgDesired - timeToSendMsg;
+      log.info("Each msg delay:" + eachMessageDelay);
+      
+      
+      
    }
    
 
@@ -171,10 +208,10 @@ public class SenderJob extends AbstractJob
                
                count++;
                
-               if (count != 0 && count % 50 == 0)
+               if (count != 0 && count % COUNT_GRANULARITY == 0)
                {
-                  updateTotalCount(50);
-                  count = 0;
+                  updateTotalCount(COUNT_GRANULARITY);  
+                  calcThrottle();
                }
                
                if (transacted)
@@ -183,7 +220,9 @@ public class SenderJob extends AbstractJob
                   {
                      sess.commit();
                   }
-               }                          
+               }    
+               
+               //doThrottle();
                
                if (stopping)
                {
@@ -191,7 +230,7 @@ public class SenderJob extends AbstractJob
                }
             }
                         
-            updateTotalCount(count);
+            updateTotalCount(count % COUNT_GRANULARITY);
             
          }
          catch (Exception e)
