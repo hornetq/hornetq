@@ -8,19 +8,17 @@
 
 package org.jboss.messaging.core;
 
-import org.jboss.logging.Logger;
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.message.StorageIdentifier;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.Transaction;
-import javax.transaction.SystemException;
-import java.util.List;
-import java.util.Iterator;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.StorageIdentifier;
+import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
@@ -41,9 +39,9 @@ class ReliableState extends TransactionalState
 
    // Constructors --------------------------------------------------
 
-   public ReliableState(Channel channel, PersistenceManager pm, TransactionManager tm)
+   public ReliableState(Channel channel, PersistenceManager pm)
    {
-      super(channel, tm);
+      super(channel);
       if (pm == null)
       {
           throw new IllegalArgumentException("ReliableState requires a non-null persistence manager");
@@ -63,35 +61,88 @@ class ReliableState extends TransactionalState
 
    public void add(Delivery d) throws Throwable
    {
-
-      if (!d.getReference().isReliable())
+      //Note! Adding of deliveries to the state is NEVER done
+      //in a transactional context.
+      //The only things that are done in a transactional context
+      //are sending of messages and removing deliveries (acking)
+            
+      if (d.getReference().isReliable())
       {
+         //Add delivery to persistent storage - reliable delivery in reliable state
+         pm.add(channelID, d);
+      }
+      else
+      {
+         //Unreliable delivery in reliable state - handle as unreliable
          super.add(d);
-         return;
+      }
+   }
+
+
+   public boolean remove(Delivery d, Transaction tx) throws Throwable
+   {
+      if (d.getReference().isReliable())
+      {
+         //Reliable message in reliable state - removed from db
+         if (!pm.remove(channelID, d, tx))
+         {
+            return false;
+         }
+      }
+      else
+      {
+         //Unreliable message in reliable state - handle as unreliable
+         if (!super.remove(d, tx))
+         {
+            return false;
+         }
       }
       
-      if (d instanceof CompositeDelivery)
-      {
-         // TODO break CompositeDelivery in components and add them individually
-         throw new NotYetImplementedException("Don't know to handle composite deliveries");
-      }
-
-      pm.add(channelID, d);
+      return true;
+      
    }
 
+   
+   public void add(MessageReference ref, Transaction tx) throws Throwable
+   {  
+      if (ref.isReliable())
+      {
+         //Reliable message in a reliable state - just add to db
+         pm.add(channelID, ref, tx);
+      }
+      else
+      {
+         //Unreliable message in a reliable state - handle unreliably
+         super.add(ref, tx);
+      }
 
-   public boolean remove(Delivery d) throws Throwable
+      if (tx != null)
+      {
+         getAddRefsTask(tx);
+      }
+   }
+
+   public boolean remove(MessageReference ref) throws Throwable
    {
-      if (!d.getReference().isReliable())
+      if (ref.isReliable())
       {
-         return super.remove(d);
+         //Reliable message in reliable state - add to db
+         return (pm.remove(channelID, ref));
       }
-      return pm.remove(channelID, d);
+      else
+      {
+         //Unreliable message in reliable state - handle as unreliable
+         return super.remove(ref);
+      }
    }
-
+   
+   
    public List delivering(Filter filter)
    {
       List delivering = super.delivering(filter);
+      
+      
+      
       try
       {
          List persisted = pm.deliveries(channelID);
@@ -118,63 +169,22 @@ class ReliableState extends TransactionalState
          log.error("Cannot get the delivery list from persistence manager", t);
          return null;
       }
+      
       return delivering;
    }
 
 
-   public void add(MessageReference ref) throws Throwable
-   {
-      if (!ref.isReliable())
-      {
-         super.add(ref);
-         return;
-      }
-
-      // reliable message
-
-      Transaction tx = tm.getTransaction();
-      
-
-      if (tx == null)
-      {
-         // no active transaction, handle the message non-transactionally
-         if (log.isTraceEnabled()) { log.trace("Peristing message ref for message id:" + ref.getMessageID()); }
-         pm.add(channelID, ref);
-         return;
-      }
-
-      // add reliable message transactionally
-      String txID = registerAddMessageSynchronization(tx);
-      pm.add(channelID, txID, ref);
-   }
-
-   public boolean remove(MessageReference ref)
-   {
-      if (!ref.isReliable())
-      {
-         return super.remove(ref);
-      }
-
-      try
-      {
-         // reliable message
-         return pm.remove(channelID, ref);
-      }
-      catch(Throwable t)
-      {
-         log.error("Cannot remove message from persistence manager", t);
-         return false;
-      }
-   }
 
    public List undelivered(Filter filter)
    {
+      
       // unreliable messages first
       List undelivered = super.undelivered(filter);
       try
       {
-         if (log.isTraceEnabled()) { log.trace("Getting persistent messages for channel: " + channelID); }
+         if (log.isTraceEnabled()) { log.trace("Getting undelivered reliable messages for channel: " + channelID); }
          List persisted = pm.messages(channelID);
+         if (log.isTraceEnabled()) { log.trace("Retrieved " + persisted.size() + " messages from persistent storage"); }
          for(Iterator i = persisted.iterator(); i.hasNext(); )
          {
             StorageIdentifier id = (StorageIdentifier)i.next();
@@ -192,7 +202,8 @@ class ReliableState extends TransactionalState
             
             if (ref == null)
             {
-               log.warn("Could not find reference for message");
+               log.error("Could not find reference for message:" + id.messageID);
+               return persisted;
             }
 
             // TODO very inefficient. Get rid of this when a reference will be able to fully support headers/properties
@@ -200,7 +211,12 @@ class ReliableState extends TransactionalState
 
             if (filter == null || filter.accept(m))
             {
+               if (log.isTraceEnabled()) { log.trace("Message accepted by filter so adding to list"); }
                undelivered.add(ref);
+            }
+            else
+            {
+               if (log.isTraceEnabled()) { log.trace("Message NOT accepted by filter so not adding to list"); }
             }
          }
 
@@ -226,18 +242,6 @@ class ReliableState extends TransactionalState
    
    // Protected -----------------------------------------------------
 
-   protected void enableTransactedMessages(String txID) throws SystemException
-   {
-      if (log.isTraceEnabled()) { log.trace("Enabling transacted messages"); }
-      super.enableTransactedMessages(txID);
-      pm.enableTransactedMessages(channelID, txID);
-   }
-
-   protected void dropTransactedMessages(String txID) throws SystemException
-   {
-      super.dropTransactedMessages(txID);
-      pm.dropTransactedMessages(channelID, txID);
-   }
 
    // Private -------------------------------------------------------
 

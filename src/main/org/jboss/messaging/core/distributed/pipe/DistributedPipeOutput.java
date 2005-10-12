@@ -65,7 +65,7 @@ public class DistributedPipeOutput implements PipeOutputFacade
       // Mark the message as being received from a remote endpoint
       r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
 
-      Delivery d = receiver.handle(null, r);
+      Delivery d = receiver.handle(null, r, null);
 
       // we only accept synchronous deliveries at this point
       if (d != null && !d.isDone())

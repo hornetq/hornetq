@@ -6,33 +6,26 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.io.Serializable;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.ConnectionMetaData;
-import javax.jms.MessageProducer;
-import javax.jms.Message;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueConnection;
-import javax.jms.TopicConnectionFactory;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.Session;
 import javax.jms.TopicConnection;
-import javax.jms.MessageConsumer;
-import javax.management.ObjectName;
+import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.container.InvokerInterceptor;
-import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
-import org.jboss.logging.Logger;
-
-import java.io.Serializable;
 
 
 /**
@@ -271,6 +264,8 @@ public class ConnectionTest extends MessagingTestCase
 
    }
    
+   
+//   Commented out for now, since how can i make the server fail from a test?   
 //   public void testExceptionListenerFail() throws Exception
 //   {
 //      if (!ServerManagement.isRemote()) return;

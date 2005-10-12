@@ -23,8 +23,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ServerSessionPool;
 import javax.jms.TransactionRolledBackException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+
+
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
@@ -55,6 +55,8 @@ import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -252,63 +254,32 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public void sendTransaction(TransactionRequest request) throws JMSException
    {
-      TransactionManager tm = serverPeer.getTransactionManager();
+      TransactionRepository txRep = serverPeer.getTxRepository();
       
-      Transaction suspended = null;
       Transaction tx = null;
-      
-      //FIXME! All this nasty suspend and resume shennanigans will disappear
-      //when we stop using a JTA transaction manager to manage tx state in the
-      //jms server
       
       try
       {
-         //There may be an AS tx already associated to the thread - we suspend it
-         suspended = tm.getTransaction();
-         if (suspended != null)
-         {
-            tm.suspend();
-         }
-                  
+             
          if (request.requestType == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
          {
             if (log.isTraceEnabled()) { log.trace("One phase commit request received"); }
             
-            tm.begin();
-            tx = tm.getTransaction();
-            if (tx.getStatus() != javax.transaction.Status.STATUS_ACTIVE)
-            {
-               throw new IllegalStateException("Current tx is in state:" + tx.getStatus());
-            }
-            processTx(request.txInfo);
+            tx = txRep.createTransaction();
+            processTx(request.txInfo, tx);
             tx.commit();         
          }
          else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_PREPARE_REQUEST)
          {                        
             if (log.isTraceEnabled()) { log.trace("Two phase commit prepare request received"); }        
-            tm.begin();
-            tx = tm.getTransaction();       
-            if (tx.getStatus() != javax.transaction.Status.STATUS_ACTIVE)
-            {
-               throw new IllegalStateException("Current tx is in state:" + tx.getStatus());
-            }
-            processTx(request.txInfo);
-            tm.suspend();
-            this.globalToLocalTxMap.put(request.xid, tx);                        
+            tx = txRep.createTransaction(request.xid);
+            processTx(request.txInfo, tx);     
+            tx.prepare();
          }
          else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_COMMIT_REQUEST)
          {   
             if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
-            tx = (Transaction)this.globalToLocalTxMap.remove(request.xid);
-
-            if (log.isTraceEnabled()) { log.trace("resuming " + tx); }
-            tm.resume(tx);
-
-            if (tx == null)
-            {
-               final String msg = "Cannot find local tx for global tx:" + request.xid;
-               throw new IllegalStateException(msg);
-            }
+            tx = txRep.getPreparedTx(request.xid);
 
             if (log.isTraceEnabled()) { log.trace("committing " + tx); }
             tx.commit();
@@ -316,35 +287,15 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST)
          {
             if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
-            tx = (Transaction)this.globalToLocalTxMap.remove(request.xid);
-            tm.resume(tx);
-            if (tx == null)
-            {
-               final String msg = "Cannot find local tx for global tx:" + request.xid;
-               throw new IllegalStateException(msg);
-            }   
-            tx.rollback();         
+            tx = txRep.getPreparedTx(request.xid);
+
+            if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
+            tx.rollback();
          }      
       }
       catch (Throwable t)
       {
          handleFailure(t, tx);
-      }
-      finally
-      {
-         //Resume any previous transaction
-         if (suspended != null)
-         {
-            try
-            {
-               if (log.isTraceEnabled()) { log.trace("Resuming suspended tx"); }
-               tm.resume(suspended);
-            }
-            catch (Throwable t)
-            {
-               handleFailure(t, tx);
-            }
-         }
       }
       
       if (log.isTraceEnabled()) { log.trace("Request processed ok"); }
@@ -432,7 +383,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    // Package protected ---------------------------------------------
    
-   void sendMessage(Message m) throws JMSException
+   void sendMessage(Message m, Transaction tx) throws JMSException
    { 
 
       //The JMSDestination header must already have been set for each message
@@ -461,7 +412,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
     
       if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core, destination: " + jmsDestination.getName()); }
       
-      Delivery d = ((Receiver)coreDestination).handle(null, r);
+      Delivery d = ((Receiver)coreDestination).handle(null, r, tx);
       
       // The core destination is supposed to acknowledge immediately. If not, there's a problem.
       if (d == null || !d.isDone())
@@ -472,7 +423,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       }
    }
    
-   void acknowledge(String messageID, String receiverID) throws JMSException
+   void acknowledge(String messageID, String receiverID, Transaction tx) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
 
@@ -481,7 +432,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          throw new IllegalStateException("Cannot find receiver:" + receiverID);
       }
-      receiver.acknowledge(messageID);
+      receiver.acknowledge(messageID, tx);
    }
    
    void redeliverForConnectionConsumer(String receiverID) throws JMSException
@@ -551,27 +502,27 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       }        
    }
    
-   private void processTx(TxState tx) throws JMSException
+   private void processTx(TxState txState, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("I have " + tx.messages.size() + " messages and " + tx.acks.size() + " acks "); }
+      if (log.isTraceEnabled()) { log.trace("I have " + txState.messages.size() + " messages and " + txState.acks.size() + " acks "); }
       
-      Iterator iter = tx.messages.iterator();
+      Iterator iter = txState.messages.iterator();
       while (iter.hasNext())
       {
          Message m = (Message)iter.next();
-         sendMessage(m);
+         sendMessage(m, tx);
          if (log.isTraceEnabled()) { log.trace("Sent message"); }
       }
       
       if (log.isTraceEnabled()) { log.trace("Done the sends"); }
       
       //Then ack the acks
-      iter = tx.acks.iterator();
+      iter = txState.acks.iterator();
       while (iter.hasNext())
       {
          AckInfo ack = (AckInfo)iter.next();
          
-         acknowledge(ack.messageID, ack.receiverID);
+         acknowledge(ack.messageID, ack.receiverID, tx);
          
          if (log.isTraceEnabled()) { log.trace("Acked message:" + ack.messageID); }
       }

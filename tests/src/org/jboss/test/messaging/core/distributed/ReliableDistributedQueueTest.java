@@ -43,11 +43,13 @@ public class ReliableDistributedQueueTest extends DistributedQueueTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager();
-      ms = new PersistentMessageStore("persistent-message-store", pm, tm);
+      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      ms = new PersistentMessageStore("persistent-message-store", pm);
 
-      channel = new DistributedQueue("test", ms, pm, tm, dispatcher);
-      channelTwo = new DistributedQueue("test", msTwo, pm, tm, dispatcherTwo);
+      channel = new DistributedQueue("test", ms, pm, dispatcher);
+      channelTwo = new DistributedQueue("test", msTwo, pm, dispatcherTwo);
+      
+      tm.setPersistenceManager(pm);
    }
 
    public void tearDown() throws Exception
@@ -73,7 +75,7 @@ public class ReliableDistributedQueueTest extends DistributedQueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, pm, tm);
+      channel = new Queue("test", ms, pm);
    }
 
 

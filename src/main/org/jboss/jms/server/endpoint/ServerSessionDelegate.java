@@ -25,7 +25,6 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.aop.AspectManager;
@@ -256,7 +255,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       if (d.isTopic())
       {
          MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
-         TransactionManager tm = connectionEndpoint.getServerPeer().getTransactionManager();
          PersistenceManager pm = connectionEndpoint.getServerPeer().getPersistenceManager();
          Topic topic = (Topic)destination;
 
@@ -327,7 +325,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                         
                if (log.isTraceEnabled()) { log.trace("Creating new durable subscription on topic " + destination); }
              
-               subscription = new DurableSubscription(subscriptionName, topic, selector, ms, pm, tm);
+               subscription = new DurableSubscription(subscriptionName, topic, selector, ms, pm);
                   
                clientManager.addDurableSubscription(clientID, subscriptionName, (DurableSubscription)subscription);
             }
@@ -338,7 +336,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
             
             if (log.isTraceEnabled()) { log.trace("Creating new non-durable subscription on topic " + destination); }
             
-            subscription = new Subscription(topic, selector, ms, tm);    
+            subscription = new Subscription(topic, selector, ms);    
          }
       } 
       
@@ -585,7 +583,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	public void acknowledge(String messageID, String receiverID)
 		throws JMSException
 	{
-		this.connectionEndpoint.acknowledge(messageID, receiverID);
+		this.connectionEndpoint.acknowledge(messageID, receiverID, null);
 	}
 
    public Object getMetaData(Object attr)

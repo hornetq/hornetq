@@ -34,14 +34,14 @@ public class Subscription extends TransactionalChannelSupport
    
    // Constructors --------------------------------------------------
 
-   public Subscription(Topic topic, String selector, MessageStore ms, TransactionManager tm)
+   public Subscription(Topic topic, String selector, MessageStore ms)
    {
-      this(topic, selector, ms, null, tm);
+      this(topic, selector, ms, null);
    }
    
-   protected Subscription(Topic topic, String selector, MessageStore ms, PersistenceManager pm, TransactionManager tm)
+   protected Subscription(Topic topic, String selector, MessageStore ms, PersistenceManager pm)
    {
-      super("sub" + new GUID().toString(), ms, pm, tm);
+      super("sub" + new GUID().toString(), ms, pm);
       this.topic = topic;
       this.selector = selector;
       router = new PointToPointRouter();

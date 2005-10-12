@@ -42,10 +42,12 @@ public class ReliableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager();
-      ms = new PersistentMessageStore("persistent-message-store", pm, tm);
+      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      ms = new PersistentMessageStore("persistent-message-store", pm);
 
-      channel = new Queue("test", ms, pm, tm);
+      channel = new Queue("test", ms, pm);
+      
+      tm.setPersistenceManager(pm);
    }
 
    public void tearDown() throws Exception
@@ -68,7 +70,7 @@ public class ReliableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, pm, tm);
+      channel = new Queue("test", ms, pm);
    }
 
    // Public --------------------------------------------------------

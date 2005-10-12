@@ -39,8 +39,8 @@ public class UnreliableDistributedQueueTest extends DistributedQueueTestBase
    {
       super.setUp();
 
-      channel = new DistributedQueue("test", ms, tm, dispatcher);
-      channelTwo = new DistributedQueue("test", msTwo, tm, dispatcherTwo);
+      channel = new DistributedQueue("test", ms, dispatcher);
+      channelTwo = new DistributedQueue("test", msTwo, dispatcherTwo);
 
    }
 

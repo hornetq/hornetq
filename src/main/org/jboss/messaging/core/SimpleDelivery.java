@@ -10,6 +10,8 @@ package org.jboss.messaging.core;
 
 import java.io.Serializable;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * A simple Delivery implementation.
  *
@@ -78,9 +80,9 @@ public class SimpleDelivery implements Delivery, Serializable
       return observer;
    }
 
-   public void acknowledge() throws Throwable
+   public void acknowledge(Transaction tx) throws Throwable
    {
-      observer.acknowledge(this);
+      observer.acknowledge(this, tx);
    }
 
    public boolean cancel() throws Throwable

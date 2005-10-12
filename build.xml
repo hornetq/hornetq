@@ -125,6 +125,7 @@
         <path refid="jboss.system.classpath"/>
         <path refid="jboss.security.classpath"/>
         <path refid="jboss.server.classpath"/>
+        <path refid="jboss.transaction.classpath"/>
      </path>
 
     <!-- ===== -->

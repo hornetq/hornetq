@@ -1,73 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <controller>
-   
-   
-   <config name='config1'>
-      
-      <slave>
-         <slave-locator>socket://localhost:1234</slave-locator>
          
-         <sender-job>
-            
-            <jms-server-url>jnp://localhost:1099</jms-server-url>
-            <num-connections>2</num-connections>
-            <num-sessions>1</num-sessions>
-            <ramp-delay>0</ramp-delay>
-            <destination-jndi-name>queue/testQueue</destination-jndi-name>
-            <transacted>false</transacted>
-            <transaction-size>0</transaction-size>
-            <anonymous-producer>false</anonymous-producer>
-            <message-size>1024</message-size>
-            <message-type>javax.jms.BytesMessage</message-type>
-            <delivery-mode>1</delivery-mode> <!-- 1 = non-persistent, 2 = persistent -->
-
-         </sender-job>
+   <tests>
       
-      </slave>
-      
-      <!--
-      <slave>
-         <slave-locator>socket://localhost:1235</slave-locator>
+      <test name="Simple Send">       
          
-         <receiver-job>
-            
-            <jms-server-url>jnp://localhost:1099</jms-server-url>
-            <num-connections>1</num-connections>
-            <num-sessions>5</num-sessions>
-            <ramp-delay>0</ramp-delay>
-            <destination-jndi-name>queue/testQueue</destination-jndi-name>
-            <transacted>false</transacted>
-            <transaction-size>0</transaction-size>
-            
-            <acknowledgement-mode>1</acknowledgement-mode>
-            <durable-subscription-name></durable-subscription-name>
-            <message-selector></message-selector>
-            <no-local>false</no-local>
-            <use-listener>false</use-listener>
-
-         </receiver-job>
+         <slave name="slave1">           
+            <slave-locator>socket://localhost:1234</slave-locator>            
+            <sender-job>          
+               <jms-server-url>jnp://localhost:1099</jms-server-url>
+               <num-connections>1</num-connections>
+               <num-sessions>1</num-sessions>
+               <ramp-delay>0</ramp-delay>
+               <destination-jndi-name>queue/testQueue</destination-jndi-name>
+               <transacted>false</transacted>
+               <transaction-size>0</transaction-size>
+               <anonymous-producer>false</anonymous-producer>
+               <message-size>1024</message-size>
+               <message-type>javax.jms.BytesMessage</message-type>
+               <delivery-mode>1</delivery-mode> <!-- 1 = non-persistent, 2 = persistent -->
+               <warmup-time>10000</warmup-time>
+               <run-time>60000</run-time>
+               <throttle>2</throttle>
+               <throttle-scale>1</throttle-scale>
+            </sender-job>                                  
+         </slave>
+      </test>
       
-      </slave>
+      <test name="Destination drain">   
+         <slave name="slave1">           
+            <slave-locator>socket://localhost:1234</slave-locator>      
+            <drain-job>         
+               <jms-server-url>jnp://localhost:1099</jms-server-url>
+               <destination-jndi-name>queue/testQueue</destination-jndi-name>         
+            </drain-job> 
+         </slave>           
+      </test>
       
-      -->
+       <test name="Destination fill">     
+          <slave name="slave1">           
+            <slave-locator>socket://localhost:1234</slave-locator>    
+            <fill-job>          
+               <jms-server-url>jnp://localhost:1099</jms-server-url>
+               <destination-jndi-name>queue/testQueue</destination-jndi-name>            
+               <message-size>1024</message-size>
+               <message-type>javax.jms.BytesMessage</message-type>
+               <delivery-mode>1</delivery-mode> <!-- 1 = non-persistent, 2 = persistent -->
+               <num-messages>10000</num-messages>           
+            </fill-job>  
+         </slave>          
+      </test>
       
+      <test name="Destination drain2">   
+         <slave name="slave1">           
+            <slave-locator>socket://localhost:1234</slave-locator>      
+            <drain-job>         
+               <jms-server-url>jnp://localhost:1099</jms-server-url>
+               <destination-jndi-name>queue/testQueue</destination-jndi-name>         
+            </drain-job> 
+         </slave>           
+      </test>
       
-   </config>
-
-
-
-   <test name="test1">
-      
-      <config>config1</config>
-      
-      <duration>20000</duration>
-      
-      <processor>STEADY_STATE</processor>
-      
-
-   </test>
-      
-   
-   
+      <test name="Simple Send-Receive pair">        
+         <slave name="slave1">           
+            <slave-locator>socket://localhost:1234</slave-locator> 
+            <sender-job>          
+               <jms-server-url>jnp://localhost:1099</jms-server-url>
+               <num-connections>1</num-connections>
+               <num-sessions>1</num-sessions>
+               <ramp-delay>0</ramp-delay>
+               <destination-jndi-name>queue/testQueue</destination-jndi-name>
+               <transacted>false</transacted>
+               <transaction-size>0</transaction-size>
+               <anonymous-producer>false</anonymous-producer>
+               <message-size>1024</message-size>
+               <message-type>javax.jms.BytesMessage</message-type>
+               <delivery-mode>1</delivery-mode> <!-- 1 = non-persistent, 2 = persistent -->
+               <warmup-time>10000</warmup-time>
+               <run-time>60000</run-time>
+            </sender-job>   
+         </slave>   
+         
+         <slave name="slave2">           
+            <slave-locator>socket://localhost:1235</slave-locator>     
+            <receiver-job>            
+               <jms-server-url>jnp://localhost:1099</jms-server-url>
+               <num-connections>1</num-connections>
+               <num-sessions>1</num-sessions>
+               <ramp-delay>0</ramp-delay>
+               <destination-jndi-name>queue/testQueue</destination-jndi-name>
+               <transacted>false</transacted>
+               <transaction-size>0</transaction-size>            
+               <acknowledgement-mode>1</acknowledgement-mode>
+               <durable-subscription-name></durable-subscription-name>
+               <message-selector></message-selector>
+               <no-local>false</no-local>
+               <use-listener>false</use-listener>
+               <warmup-time>10000</warmup-time>
+               <run-time>60000</run-time>
+            </receiver-job>       
+         </slave>           
+         
+      </test>      
+   </tests> 
 </controller>

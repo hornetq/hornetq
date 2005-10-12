@@ -19,9 +19,6 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.LinkRef;
-import javax.naming.NameNotFoundException;
-import javax.transaction.TransactionManager;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.ClassAdvisor;
@@ -32,7 +29,6 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
@@ -40,12 +36,12 @@ import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityManager;
-import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
 
@@ -99,6 +95,7 @@ public class ServerPeer
    protected SecurityManager securityManager;
    protected Map connFactoryDelegates;
    protected MBeanServer mbeanServer;
+   protected TransactionRepository txRepository;
 
    protected boolean started;
 
@@ -116,18 +113,20 @@ public class ServerPeer
 
    protected MessageStore ms;
 
-   protected TransactionManager tm;
    protected PersistenceManager pm;
 
    protected int connFactoryIDSequence;
+   
+   protected String dbURL;
 
    // Constructors --------------------------------------------------
 
 
-   public ServerPeer(String serverPeerID) throws Exception
+   public ServerPeer(String serverPeerID, String dbURL) throws Exception
    {
       this.serverPeerID = serverPeerID;
       this.connFactoryDelegates = new HashMap();
+      this.dbURL = dbURL; //temporary
 
       // the default value to use, unless the JMX attribute is modified
       connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
@@ -156,15 +155,18 @@ public class ServerPeer
       log.debug(this + " starting");
 
       mbeanServer = findMBeanServer();
-      tm = findTransactionManager();
 
       // TODO: this should be configurable
       
-      pm = new HSQLDBPersistenceManager();
+      //hardcoded for now
+      //pm = new HSQLDBPersistenceManager("jdbc:hsqldb:hsql://localhost:1701");
+      pm = new HSQLDBPersistenceManager(dbURL);
+      
+      txRepository = new TransactionRepository(pm);
      
 
       // TODO: is should be possible to share this with other peers
-      ms = new PersistentMessageStore(serverPeerID, pm, tm);
+      ms = new PersistentMessageStore(serverPeerID, pm);
 
       clientManager = new ClientManager(this);
       destinationManager = new DestinationManagerImpl(this);
@@ -242,11 +244,6 @@ public class ServerPeer
 
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
-
-      
-      mbeanServer.invoke(connector, "removeInvocationHandler",
-                         new Object[] {"JMS"},
-                         new String[] {"java.lang.String"});
 
       started = false;
 
@@ -329,6 +326,11 @@ public class ServerPeer
    //
    // end of JMX attributes
    //
+   
+   public TransactionRepository getTxRepository()
+   {
+      return txRepository;
+   }
 
    public synchronized boolean isStarted()
    {
@@ -403,10 +405,6 @@ public class ServerPeer
       return ms;
    }
 
-   public TransactionManager getTransactionManager()
-   {
-      return tm;
-   }
 
    public PersistenceManager getPersistenceManager()
    {
@@ -562,23 +560,6 @@ public class ServerPeer
 
       // TODO if this is ServerPeer is stopped, the InvocationHandler will be left hanging
       
-   }
-
-   private TransactionManager findTransactionManager() throws Exception
-   {
-      TransactionManager tm = null;
-      InitialContext ic = new InitialContext();
-      try
-      {
-         tm = (TransactionManager)ic.lookup("java:/TransactionManager");
-      }
-      catch(NameNotFoundException e)
-      {}
-
-      log.debug("TransactionManager: " + tm);
-
-      ic.close();
-      return tm;
    }
 
 

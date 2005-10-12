@@ -26,6 +26,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.tm.TxManager;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -62,7 +63,7 @@ public class XATest extends MessagingTestCase
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       
-      if (!ServerManagement.isRemote()) tm = ServerManagement.getServerPeer().getTransactionManager();
+      if (!ServerManagement.isRemote()) tm = TxManager.getInstance();
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
@@ -329,6 +330,243 @@ public class XATest extends MessagingTestCase
       }
       
    }
+   
+   
+   
+   
+   
+   
+
+   public void test1PCSendCommit() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      try
+      {
+      
+         conn = cf.createXAConnection();
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+         
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+
+         
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Message m = sess.createTextMessage("XATest");
+         prod.send(queue, m);
+         
+         tx.commit();
+         
+         conn2 = cf.createConnection();
+         conn2.start();
+         Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         TextMessage m2 = (TextMessage)cons.receive(3000);
+         assertNotNull(m2);
+         assertEquals("XATest", m2.getText());
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+
+   }
+   
+   
+   public void test1PCSendRollback() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      try
+      {
+         conn = cf.createXAConnection();
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Message m = sess.createTextMessage("XATest");
+         prod.send(queue, m);    
+         
+         tx.rollback();
+         
+         conn2 = cf.createConnection();
+         conn2.start();
+         Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         Message m2 = cons.receive(3000);
+         assertNull(m2);
+   
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+
+   public void test1PCReceiveCommit() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      try
+      {
+         conn2 = cf.createConnection();
+         conn2.start();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("XATest2");
+         prod.send(m);
+         
+         conn = cf.createXAConnection();
+         conn.start();
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         MessageConsumer cons = sess.createConsumer(queue);
+         
+
+         TextMessage m2 = (TextMessage)cons.receive(3000);
+         
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
+         
+         tx.commit();
+         
+         //New tx
+         tm.begin();
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         Message m3 = cons.receive(3000);
+         
+         assertNull(m3);
+         
+         tm.commit();
+         
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   public void test1PCReceiveRollback() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      try
+      {
+         conn2 = cf.createConnection();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("XATest2");
+         prod.send(m);
+         
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+
+         MessageConsumer cons = sess.createConsumer(queue);
+         
+
+         TextMessage m2 = (TextMessage)cons.receive(3000);
+         
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
+         
+         tx.rollback();
+         
+         //Message should be redelivered
+         
+         //New tx
+         tm.begin();
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         TextMessage m3 = (TextMessage)cons.receive(3000);
+         
+         assertNotNull(m3);
+         assertEquals("XATest2", m3.getText());
+         
+         assertTrue(m3.getJMSRedelivered());
+         
+         tm.commit();
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
    
    
    // Package protected ---------------------------------------------

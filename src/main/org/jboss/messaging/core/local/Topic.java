@@ -10,6 +10,7 @@ package org.jboss.messaging.core.local;
 
 import java.util.Iterator;
 
+
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Distributor;
@@ -17,6 +18,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.tx.Transaction;
 
 
 /**
@@ -44,9 +46,9 @@ public class Topic implements Receiver, Distributor
 
    // Public --------------------------------------------------------
    
-   public Delivery handle(DeliveryObserver sender, Routable r)
+   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
    {
-      router.handle(sender, r);
+      router.handle(sender, r, tx);
       return new SimpleDelivery(true);
    }
 

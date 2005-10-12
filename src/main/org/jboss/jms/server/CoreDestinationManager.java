@@ -109,8 +109,7 @@ class CoreDestinationManager
       {
          c = new Queue(name,
                        sp.getMessageStore(),
-                       sp.getPersistenceManager(),
-                       sp.getTransactionManager());
+                       sp.getPersistenceManager());
          queueMap.put(name, c);
       }
       else

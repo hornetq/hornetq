@@ -15,6 +15,7 @@ import java.io.Serializable;
  * reliable messages and generates references.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -26,14 +27,21 @@ public interface MessageStore
    boolean isReliable();
 
    /**
-    * Store the message reliabily. However, if the message is unreliable (does not need
-    * recoverabilitity), it caches the message in memory and returns a reference.
-    *
-    * @exception Throwable - thrown in case of storage failure.
+    * Return a MessageReference instance if already cached.
+    * Otherwise create a new one
+    * 
+    * @param r
+    * @return
     */
-   MessageReference reference(Routable r) throws Throwable;
+   MessageReference reference(Routable r);
 
-   MessageReference getReference(Serializable messageID) throws Throwable;
+   /**
+    *  Get a pre-existing MessageReference
+    *  
+    * @param messageID
+    * @return
+    */
+   MessageReference getReference(Serializable messageID);
    
    
 

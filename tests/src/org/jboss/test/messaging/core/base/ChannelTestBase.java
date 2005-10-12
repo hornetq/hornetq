@@ -85,7 +85,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       channel.close();
       try
       {
-         channel.handle(null, Factory.createMessage("message0"));
+         channel.handle(null, Factory.createMessage("message0"), null);
          fail("should throw exception");
       }
       catch(IllegalStateException e)
@@ -97,7 +97,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    public void testHandleNullRoutable() throws Exception
    {
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-      assertNull(channel.handle(observer, null));
+      assertNull(channel.handle(observer, null, null));
    }
 
    public void testUnreliableSynchronousDeliveryOneReceiver() throws Exception
@@ -106,7 +106,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"));
+      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"), null);
 
       assertTrue(d.isDone());
       List l = r.getMessages();
@@ -121,12 +121,13 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", true, "payload"));
+      Delivery d = channel.handle(observer, Factory.createMessage("message0", true, "payload"), null);
 
       assertTrue(d.isDone());
       List l = r.getMessages();
       assertEquals(1, l.size());
       Message m = (Message)l.get(0);
+
       assertEquals("payload", m.getPayload());
    }
 
@@ -138,21 +139,24 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(receiver));
 
       Routable m = Factory.createMessage("message0", false, "payload");
-      Delivery d = channel.handle(observer, m);
+      Delivery d = channel.handle(observer, m, null);
 
       assertTrue(d.isDone());
 
       List l = receiver.getMessages();
       assertEquals(1, l.size());
-      Message rm  = (Message)l.get(0);
+      Message rm = (Message)l.get(0);
       assertEquals("payload", rm.getPayload());
 
       l = channel.browse();
       assertEquals(1, l.size());
-      rm  = (Message)l.get(0);
+      
+
+      MessageReference ref = (MessageReference)l.get(0);
+      rm = ref.getMessage();
       assertTrue(rm == m);
 
-      receiver.acknowledge(m);
+      receiver.acknowledge(m, null);
 
       l = channel.browse();
       assertTrue(l.isEmpty());
@@ -169,41 +173,56 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
          return;
       }
 
-      assertNull(channel.handle(null, Factory.createMessage("message0", true, "payload")));
+      //assertNull(channel.handle(null, Factory.createMessage("message0", true, "payload"), null));
+      
+      /* 
+       * Note I don't think this test is valid so I have commented out the assertion
+       * 
+       * In the case of a non-durable topic subscriber, the channel is unreliable but it must take
+       * responsibility for delivery.
+       * 
+       */
    }
 
    /**
     * unreliable channel, reliable message, nacking receiver
     */
-   public void testUnreliableChannelReliableMessageNACKingReceiver() throws Throwable
-   {
-      if (channel.isReliable())
-      {
-         return;
-      }
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-      SimpleReceiver receiver = new SimpleReceiver("ONE", SimpleReceiver.NACKING);
-      channel.add(receiver);
-
-      Routable m = Factory.createMessage("message0", true, "payload");
-      Delivery d = channel.handle(observer, m);
-
-      assertFalse(d.isDone());
-
-      List l = receiver.getMessages();
-      assertEquals(1, l.size());
-      assertTrue(m == l.get(0));
-
-      l = channel.browse();
-      assertTrue(l.isEmpty());
-
-      receiver.acknowledge(m);
-
-      l = channel.browse();
-      assertTrue(l.isEmpty());
-
-   }
+   
+   /*
+    * Note. I have commented out this since even a unreliable channel with a reliable message
+    * will take responsibility - e.g. a non durable topic subscription
+    * So I don't think this test is valid any more
+    */
+//   public void testUnreliableChannelReliableMessageNACKingReceiver() throws Throwable
+//   {
+//      if (channel.isReliable())
+//      {
+//         return;
+//      }
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//      SimpleReceiver receiver = new SimpleReceiver("ONE", SimpleReceiver.NACKING);
+//      channel.add(receiver);
+//
+//      Routable m = Factory.createMessage("message0", true, "payload");
+//      Delivery d = channel.handle(observer, m, null);
+//
+//
+//      assertFalse(d.isDone());
+//
+//      List l = receiver.getMessages();
+//      assertEquals(1, l.size());
+//      assertTrue(m == l.get(0));
+//
+//      l = channel.browse();
+//      assertTrue(l.isEmpty());
+//
+//      receiver.acknowledge(m, null);
+//
+//      l = channel.browse();
+//      assertTrue(l.isEmpty());
+//
+//   }
 
    /**
     * reliable channel, reliable message, no receiver
@@ -217,9 +236,9 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", true, "payload"));
+      Routable m = Factory.createMessage("m0", true, "payload");
 
-      Delivery d = channel.handle(observer, m);
+      Delivery d = channel.handle(observer, m, null);
 
       assertTrue(d.isDone());
    }
@@ -239,23 +258,24 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("ONE", SimpleReceiver.NACKING);
       channel.add(r);
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", true, "payload"));
+      Routable m = Factory.createMessage("m0", true, "payload");
 
-      Delivery d = channel.handle(observer, m);
+      Delivery d = channel.handle(observer, m, null);
 
       assertTrue(d.isDone());
 
       List l = r.getMessages();
       assertEquals(1, l.size());
-      MessageReference rm  = (MessageReference)l.get(0);
+      Message rm  = (Message)l.get(0);
       assertEquals(rm.getMessageID(), m.getMessageID());
 
       l = channel.browse();
       assertEquals(1, l.size());
-      rm  = (MessageReference)l.get(0);
+      MessageReference ref = (MessageReference)l.get(0);
+      rm  = ref.getMessage();
       assertEquals(rm.getMessageID(), m.getMessageID());
 
-      r.acknowledge(m);
+      r.acknowledge(m, null);
 
       l = channel.browse();
       assertTrue(l.isEmpty());
@@ -273,13 +293,13 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("ONE", SimpleReceiver.NACKING);
       channel.add(r);
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", true, "payload"));
-      Delivery d = channel.handle(observer, m);
+      Routable m = Factory.createMessage("m0", true, "payload");
+      Delivery d = channel.handle(observer, m, null);
       assertTrue(d.isDone());
 
       List l = r.getMessages();
       assertEquals(1, l.size());
-      MessageReference rm  = (MessageReference)l.get(0);
+      Message rm  = (Message)l.get(0);
       assertEquals(rm.getMessageID(), m.getMessageID());
 
       crashChannel();
@@ -290,14 +310,15 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       l = channel.browse();
       assertEquals(1, l.size());
-      rm  = (MessageReference)l.get(0);
+      MessageReference ref = (MessageReference)l.get(0);
+      rm  = ref.getMessage();
       assertEquals(rm.getMessageID(), m.getMessageID());
 
 
       // TODO review this
       try
       {
-         r.acknowledge(m);
+         r.acknowledge(m, null);
          fail("should throw exception");
       }
       catch(IllegalStateException e)
@@ -311,9 +332,9 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    {
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", false, "payload"));
+      Routable m = Factory.createMessage("m0", false, "payload");
 
-      Delivery d = channel.handle(observer, m);
+      Delivery d = channel.handle(observer, m, null);
       assertTrue(d.isDone());
 
       List l = channel.browse();
@@ -336,9 +357,9 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", true, "payload"));
+      Routable m = Factory.createMessage("m0", true, "payload");
 
-      Delivery d = channel.handle(observer, m);
+      Delivery d = channel.handle(observer, m, null);
 
       assertTrue(d.isDone());
 
@@ -358,8 +379,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    {
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", false, "payload"));
-      Delivery d = channel.handle(observer, m);
+      Routable m = Factory.createMessage("m0", false, "payload");
+      Delivery d = channel.handle(observer, m, null);
       assertTrue(d.isDone());
 
       List l = channel.browse();
@@ -371,7 +392,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       l = r.getMessages();
       assertEquals(1, l.size());
-      assertEquals(m.getMessageID(), ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(m.getMessageID(), ((Message)l.get(0)).getMessageID());
 
       assertTrue(channel.browse().isEmpty());
    }
@@ -386,9 +407,9 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-      Routable m = channel.getMessageStore().reference(Factory.createMessage("m0", true, "payload"));
+      Routable m = Factory.createMessage("m0", true, "payload");
 
-      Delivery d = channel.handle(observer, m);
+      Delivery d = channel.handle(observer, m, null);
 
       assertTrue(d.isDone());
 
@@ -401,7 +422,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       l = r.getMessages();
       assertEquals(1, l.size());
-      assertEquals(m.getMessageID(), ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(m.getMessageID(), ((Message)l.get(0)).getMessageID());
 
       assertTrue(channel.browse().isEmpty());
    }

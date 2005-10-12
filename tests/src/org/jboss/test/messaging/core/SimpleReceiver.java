@@ -8,12 +8,14 @@
 
 package org.jboss.test.messaging.core;
 
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 
 import java.util.Map;
@@ -89,7 +91,7 @@ public class SimpleReceiver implements Receiver
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable r)
+   public Delivery handle(DeliveryObserver observer, Routable r, Transaction tx)
    {
       try
       {
@@ -107,8 +109,12 @@ public class SimpleReceiver implements Receiver
 
          boolean done = ACKING.equals(state) ? true : false;
          log.info("Receiver [" + name + "] is " + (done ? "ACKing" : "NACKing") +  " message " + r);
-         Delivery delivery = new SimpleDelivery(observer, (MessageReference)r, done);
-         messages.add(new Object[] {r, done ? null : delivery});
+         
+         MessageReference ref = (MessageReference)r;
+         Message m = ref.getMessage();
+         
+         Delivery delivery = new SimpleDelivery(observer, ref, done);
+         messages.add(new Object[] {m, done ? null : delivery});
          return delivery;
       }
       finally
@@ -186,14 +192,15 @@ public class SimpleReceiver implements Receiver
       }
    }
 
-   public void acknowledge(Routable r) throws Throwable
+   public void acknowledge(Routable r, Transaction tx) throws Throwable
    {
       Object[] touple = null;
       Delivery d = null;
       for (Iterator i = messages.iterator(); i.hasNext(); )
       {
          Object[] o = (Object[])i.next();
-         if (o[0] == r)
+         Message m = (Message)o[0];
+         if (m == r)
          {
             d = (Delivery)o[1];
             touple = o;
@@ -211,7 +218,7 @@ public class SimpleReceiver implements Receiver
          throw new IllegalStateException("The message " + r +" has already been acknowledged!");
       }
 
-      d.acknowledge();
+      d.acknowledge(tx);
       touple[1] = null;
    }
 

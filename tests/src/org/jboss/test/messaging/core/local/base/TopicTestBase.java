@@ -13,9 +13,11 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.message.UnreliableMessageStore;
 
 import java.util.List;
 
@@ -34,6 +36,8 @@ public abstract class TopicTestBase extends MessagingTestCase
 
    // TODO here I should have a Destination base class so I won't have to cast it to Distributor
    protected Receiver topic;
+   
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
    
@@ -47,6 +51,7 @@ public abstract class TopicTestBase extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
+      ms = new UnreliableMessageStore("store1");
    }
 
    public void tearDown() throws Exception
@@ -57,12 +62,13 @@ public abstract class TopicTestBase extends MessagingTestCase
    public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
    {
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+      
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
       ((Distributor)topic).add(r1);
       ((Distributor)topic).add(r2);
 
-      Delivery d = topic.handle(observer, Factory.createMessage("message0", false, "payload"));
+      Delivery d = topic.handle(observer, ms.reference(Factory.createMessage("message0", false, "payload")), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
@@ -86,7 +92,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       assertTrue(((Distributor)topic).add(r1));
       assertTrue(((Distributor)topic).add(r2));
 
-      Delivery d = topic.handle(observer, Factory.createMessage("message0", true, "payload"));
+      Delivery d = topic.handle(observer, ms.reference(Factory.createMessage("message0", true, "payload")), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();

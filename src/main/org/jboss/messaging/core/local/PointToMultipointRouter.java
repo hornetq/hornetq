@@ -13,6 +13,7 @@ import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class PointToMultipointRouter implements Router
 
    // Router implementation -----------------------------------------
 
-   public Set handle(DeliveryObserver observer, Routable routable)
+   public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       Set deliveries = new HashSet();
 
@@ -59,7 +60,7 @@ public class PointToMultipointRouter implements Router
 
             try
             {
-               Delivery d = receiver.handle(observer, routable);
+               Delivery d = receiver.handle(observer, routable, tx);
 
                if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled  " + routable + " and returned " + d); }
 

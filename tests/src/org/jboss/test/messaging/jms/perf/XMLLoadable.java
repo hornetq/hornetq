@@ -16,5 +16,5 @@ import org.w3c.dom.Element;
  */
 public interface XMLLoadable
 {
-   void importXML(Element e) throws DeploymentException;
+   void importXML(Element e) throws ConfigurationException;
 }

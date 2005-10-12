@@ -66,9 +66,11 @@ public class JMSTestBase extends MessagingTestCase
       conn = connFactory.createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+      ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)ic.lookup("/queue/Queue");
 
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
       topic = (Topic)ic.lookup("/topic/Topic");
 
@@ -84,7 +86,7 @@ public class JMSTestBase extends MessagingTestCase
    {
       conn.close();
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.deInit();
 
       super.tearDown();

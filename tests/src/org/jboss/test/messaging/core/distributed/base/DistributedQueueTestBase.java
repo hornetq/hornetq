@@ -13,6 +13,7 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.message.Factory;
 
@@ -62,7 +63,7 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
       ((Peer)channel).join();
       channelTwo.join();
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"));
+      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"), null);
 
       assertTrue(d.isDone());
       List l = r.getMessages();

@@ -32,22 +32,12 @@ public class Queue extends TransactionalChannelSupport
 
    public Queue(String name, MessageStore ms)
    {
-      this(name, ms, null, null);
-   }
-
-   public Queue(String name, MessageStore ms, TransactionManager tm)
-   {
-      this(name, ms, null, tm);
+      this(name, ms, null);
    }
 
    public Queue(String name, MessageStore ms, PersistenceManager pm)
    {
-      this(name, ms, pm, null);
-   }
-
-   public Queue(String name, MessageStore ms, PersistenceManager pm, TransactionManager tm)
-   {
-      super(name, ms, pm, tm);
+      super(name, ms, pm);
       router = new PointToPointRouter();
    }
 

@@ -28,37 +28,16 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
  *
  * $Id$
  */
-public class PerfInvocationHandler implements ServerInvocationHandler, JobStore
+public class PerfInvocationHandler implements ServerInvocationHandler
 {
    private static final Logger log = Logger.getLogger(PerfInvocationHandler.class);
    
-   protected Map jobs  = new HashMap();
 
-   public void addJob(Job job)
-   {
-      jobs.put(job.getName(), job);
-   }
-   
-   public void removeJobs()
-   {
-      jobs.clear();
-   }
-   
-   public Collection getJobs()
-   {
-      return Collections.unmodifiableCollection(jobs.values());
-   }
-   
-   public Job getJob(String jobName)
-   {
-      return (Job)jobs.get(jobName);
-   }
-   
    public Object invoke(InvocationRequest invocation) throws Throwable
    {
       log.info("Received request");
       ServerRequest request = (ServerRequest)invocation.getParameter();
-      return request.execute(this);         
+      return request.execute();         
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)

@@ -44,7 +44,7 @@ public class UnreliableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      channel = new Queue("test", ms, tm);
+      channel = new Queue("test", ms);
    }
 
    public void tearDown() throws Exception

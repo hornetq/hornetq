@@ -42,6 +42,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -172,7 +173,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          MessageConsumer cons = sessReceive.createConsumer(queue2);
          
-         TextMessage m2 = (TextMessage)cons.receive(5000);
+         TextMessage m2 = (TextMessage)cons.receive(1500);
          
          assertNotNull(m2);
          
@@ -214,7 +215,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
        consumerConnection.start();
 
-       TextMessage m =  (TextMessage)queueConsumer.receive(3000);
+       TextMessage m =  (TextMessage)queueConsumer.receive(1500);
        assertEquals(m.getText(), "One");
 
        queueConsumer.close();
@@ -233,6 +234,20 @@ public class MessageConsumerTest extends MessagingTestCase
        }
     }
 
+   
+   /*
+    * FIXME
+    * The following tests will fail until JIRA task JBMESSAGING-148 is complete
+    * testClosedConsumer
+    * testRedel0
+    * testRedel1
+    * testRedel2
+    * testRedel3
+    * testRedel4
+    * testRedel5
+    * testRedel6
+    * 
+    */
 
     public void testClosedConsumer() throws Exception
     {
@@ -248,12 +263,12 @@ public class MessageConsumerTest extends MessagingTestCase
        queueProducer.send(tm);
 
        consumerConnection = cf.createConnection();
-       consumerSession = consumerConnection.createSession(true, -1);
+       consumerSession = consumerConnection.createSession(true, 0);
        queueConsumer = consumerSession.createConsumer(queue);
 
        consumerConnection.start();
 
-       TextMessage m =  (TextMessage)queueConsumer.receive(3000);
+       TextMessage m =  (TextMessage)queueConsumer.receive(1500);
        assertEquals(m.getText(), "One");
 
        queueConsumer.close();
@@ -262,11 +277,421 @@ public class MessageConsumerTest extends MessagingTestCase
        // I expect that "Two" is still in the queue
 
        MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
-       m =  (TextMessage)queueConsumer2.receive(3000);
+       m =  (TextMessage)queueConsumer2.receive(1500);
+       assertNotNull(m);
        assertEquals(m.getText(), "Two");
 
        consumerConnection.close();
     }
+    
+    public void testRedel0() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          sess.commit();
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          cons1.close();
+          
+          MessageConsumer cons2 = sess.createConsumer(queue);
+          
+          sess.commit();
+          
+          TextMessage rm2 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello2", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello3", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons2.receive(1500);
+          assertNull(rm4);        
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    
+    public void testRedel1() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          sess.commit();
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          cons1.close();
+          
+          MessageConsumer cons2 = sess.createConsumer(queue);
+          
+          sess.commit();
+          
+          TextMessage rm2 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello2", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello3", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons2.receive(1500);
+          assertNull(rm4);        
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    public void testRedel2() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          sess.commit();
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          cons1.close();
+          
+          sess.commit();
+          
+          MessageConsumer cons2 = sess.createConsumer(queue);
+          
+          TextMessage rm2 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello2", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello3", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons2.receive(1500);
+          assertNull(rm4);        
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    public void testRedel3() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          sess.commit();
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          //rollback should cause redelivery of messages not acked
+          sess.rollback();
+                  
+          TextMessage rm2 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello1", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello2", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm4);
+          assertEquals("hello3", rm4.getText());
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          TextMessage rm5 = (TextMessage)cons1.receive(1500);
+          assertNull(rm5);        
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    public void testRedel4() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          sess.commit();
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          cons1.close();
+          
+          MessageConsumer cons2 = sess.createConsumer(queue);
+          
+          //rollback should cause redelivery of messages
+          
+          //in this case redelivery occurs to a different receiver
+          
+          sess.rollback();
+                  
+          TextMessage rm2 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello1", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello2", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm4);
+          assertEquals("hello3", rm4.getText());
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          TextMessage rm5 = (TextMessage)cons2.receive(1500);
+          assertNull(rm5);            
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    
+    public void testRedel5() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          //redeliver
+          sess.recover();
+                  
+          TextMessage rm2 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello1", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello2", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm4);
+          assertEquals("hello3", rm4.getText());
+          
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          TextMessage rm5 = (TextMessage)cons1.receive(1500);
+          assertNull(rm5);        
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    
+    public void testRedel6() throws Exception
+    {
+       Connection conn = null;
+       
+       try
+       {
+       
+          conn = cf.createConnection();
+          conn.start();
+          
+          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+          MessageProducer prod = sess.createProducer(queue);
+          TextMessage tm1 = sess.createTextMessage("hello1");
+          TextMessage tm2 = sess.createTextMessage("hello2");
+          TextMessage tm3 = sess.createTextMessage("hello3");
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
+          
+          MessageConsumer cons1 = sess.createConsumer(queue);
+          
+          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          assertNotNull(rm1);
+          assertEquals("hello1", rm1.getText());
+          
+          cons1.close();
+          
+          MessageConsumer cons2 = sess.createConsumer(queue);
+          
+          //redeliver
+          sess.recover();
+                  
+          TextMessage rm2 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm2);
+          assertEquals("hello1", rm2.getText());
+          
+          TextMessage rm3 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm3);
+          assertEquals("hello2", rm3.getText());
+          
+          TextMessage rm4 = (TextMessage)cons2.receive(1500);
+          assertNotNull(rm4);
+          assertEquals("hello3", rm4.getText());
+          
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          TextMessage rm5 = (TextMessage)cons2.receive(1500);
+          assertNull(rm5);        
+          
+          
+       }
+       finally
+       {      
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
+       
+    }
+    
+    
 
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
    {
@@ -302,7 +727,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          MessageConsumer cons = sessReceive.createConsumer(queue2);
          
-         TextMessage m2 = (TextMessage)cons.receive(5000);
+         TextMessage m2 = (TextMessage)cons.receive(1500);
          
          assertNotNull(m2);
          
@@ -321,7 +746,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          cons = sessReceive.createConsumer(queue2);
          
-         TextMessage m3 = (TextMessage)cons.receive(5000);
+         TextMessage m3 = (TextMessage)cons.receive(1500);
          
          assertNull(m3);
          
@@ -391,7 +816,7 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                for (int i = 0; i < NUM_MESSAGES; i++)
                {
-                  TextMessage m = (TextMessage)cons.receive(5000);                  
+                  TextMessage m = (TextMessage)cons.receive(1500);                  
                   if (m == null)
                   {
                      log.error("Didn't receive all the messages");
@@ -549,7 +974,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
       }, "Producer").start();
 
-      assertNull(topicConsumer.receive(2000));
+      assertNull(topicConsumer.receive(1500));
    }
 
 
@@ -576,7 +1001,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
       }, "Producer").start();
 
-      Message m2 = topicConsumer.receive(2000);
+      Message m2 = topicConsumer.receive(1500);
       assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
    }
 
@@ -673,12 +1098,12 @@ public class MessageConsumerTest extends MessagingTestCase
       int received = 0;
       while(true)
       {
-         Message m = queueConsumer.receive(3000);
+         Message m = queueConsumer.receive(1500);
          if (m == null)
          {
             break;
          }
-         Thread.sleep(1000);
+         //Thread.sleep(1000);
          received++;
       }
 
@@ -727,12 +1152,12 @@ public class MessageConsumerTest extends MessagingTestCase
       int received = 0;
       while(true)
       {
-         Message m = topicConsumer.receive(3000);
+         Message m = topicConsumer.receive(1500);
          if (m == null)
          {
             break;
          }
-         Thread.sleep(1000);
+         //Thread.sleep(1000);
          received++;
       }
 
@@ -804,7 +1229,7 @@ public class MessageConsumerTest extends MessagingTestCase
       closerThread.start();
 
       long t1 = System.currentTimeMillis();
-      assertNull(topicConsumer.receive(5000));
+      assertNull(topicConsumer.receive(1500));
       long elapsed = System.currentTimeMillis() - t1;
       log.info("timeToSleep = " + timeToSleep + " ms, elapsed = " + elapsed + " ms");
 
@@ -915,7 +1340,7 @@ public class MessageConsumerTest extends MessagingTestCase
       queueConsumer = consumerSession.createConsumer(queue);
       consumerConnection.start();
 
-      TextMessage m = (TextMessage)queueConsumer.receive(2000);
+      TextMessage m = (TextMessage)queueConsumer.receive(1500);
       assertEquals("One", m.getText());
 
       consumerConnection.close();
@@ -926,7 +1351,7 @@ public class MessageConsumerTest extends MessagingTestCase
       queueConsumer = consumerSession.createConsumer(queue);
       consumerConnection.start();
 
-      m = (TextMessage)queueConsumer.receive(2000);
+      m = (TextMessage)queueConsumer.receive(1500);
       assertEquals("Two", m.getText());
 
       consumerConnection.close();
@@ -949,7 +1374,7 @@ public class MessageConsumerTest extends MessagingTestCase
       queueConsumer = consumerSession.createConsumer(queue);
       consumerConnection.start();
 
-      TextMessage m = (TextMessage)queueConsumer.receive(2000);
+      TextMessage m = (TextMessage)queueConsumer.receive(1500);
       assertEquals("One", m.getText());
 
       consumerSession.commit();
@@ -961,7 +1386,7 @@ public class MessageConsumerTest extends MessagingTestCase
       queueConsumer = consumerSession.createConsumer(queue);
       consumerConnection.start();
 
-      m = (TextMessage)queueConsumer.receive(2000);
+      m = (TextMessage)queueConsumer.receive(1500);
       assertEquals("Two", m.getText());
 
       consumerConnection.close();
@@ -1021,7 +1446,7 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                try
                {
-                  m = consumer.receive(3000);
+                  m = consumer.receive(1500);
                }
                catch (Exception e)
                {
@@ -1108,8 +1533,8 @@ public class MessageConsumerTest extends MessagingTestCase
          TextMessage tm = sess3.createTextMessage("nurse!");
          prod.send(tm);
          
-         TextMessage tm1 = (TextMessage)cons1.receive(3000);
-         TextMessage tm2 = (TextMessage)cons2.receive(3000);
+         TextMessage tm1 = (TextMessage)cons1.receive(1500);
+         TextMessage tm2 = (TextMessage)cons2.receive(1500);
          
          assertNotNull(tm1);
          assertNotNull(tm2);
@@ -1124,13 +1549,13 @@ public class MessageConsumerTest extends MessagingTestCase
          
          sess2.recover();
          
-         tm2 = (TextMessage)cons2.receive(3000);
+         tm2 = (TextMessage)cons2.receive(1500);
          assertNotNull(tm2);
          assertEquals("nurse!", tm2.getText());
          
          
          //but tm1 should not be redelivered
-         tm1 = (TextMessage)cons1.receive(3000);
+         tm1 = (TextMessage)cons1.receive(1500);
          assertNull(tm1);
       }
       finally
@@ -1195,7 +1620,7 @@ public class MessageConsumerTest extends MessagingTestCase
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageConsumer cons2 = sess2.createConsumer(topic);
-         Message m = cons2.receive(2000);
+         Message m = cons2.receive(1500);
          assertNull(m);
          
          conn2.close();
@@ -1270,7 +1695,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          MessageConsumer theConsumer = sessReceive.createConsumer(queue2);
          
-         Message m2 = theConsumer.receive(2000);
+         Message m2 = theConsumer.receive(1500);
          
          log.trace("m2 is " + m2);
          
@@ -1279,16 +1704,16 @@ public class MessageConsumerTest extends MessagingTestCase
          
          assertEquals("aardvark", m2.getStringProperty("p1"));
          
-         BytesMessage bm2 = (BytesMessage)theConsumer.receive(2000);
+         BytesMessage bm2 = (BytesMessage)theConsumer.receive(1500);
          assertEquals("aardvark", bm2.readUTF());
          
-         MapMessage mm2 = (MapMessage)theConsumer.receive(2000);
+         MapMessage mm2 = (MapMessage)theConsumer.receive(1500);
          assertEquals("aardvark", mm2.getString("s1"));
          
-         ObjectMessage om2 = (ObjectMessage)theConsumer.receive(2000);
+         ObjectMessage om2 = (ObjectMessage)theConsumer.receive(1500);
          assertEquals("aardvark", (String)om2.getObject());
          
-         StreamMessage sm2 = (StreamMessage)theConsumer.receive(2000);
+         StreamMessage sm2 = (StreamMessage)theConsumer.receive(1500);
          assertEquals("aardvark", sm2.readString());
       }
       finally
@@ -1343,7 +1768,7 @@ public class MessageConsumerTest extends MessagingTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable.receive(3000);
+            TextMessage tm = (TextMessage)durable.receive(1500);
             if (tm == null)
             {
                break;
@@ -1635,7 +2060,7 @@ public class MessageConsumerTest extends MessagingTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable2.receive(3000);
+            TextMessage tm = (TextMessage)durable2.receive(1500);
             if (tm == null)
             {
                break;
@@ -1702,7 +2127,7 @@ public class MessageConsumerTest extends MessagingTestCase
    
          for (int i = 0; i < NUM_TO_RECEIVE1; i++)
          {
-            TextMessage tm = (TextMessage)durable.receive(3000);
+            TextMessage tm = (TextMessage)durable.receive(1500);
             if (tm == null)
             {
                fail();
@@ -1727,7 +2152,7 @@ public class MessageConsumerTest extends MessagingTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable2.receive(3000);
+            TextMessage tm = (TextMessage)durable2.receive(1500);
             if (tm == null)
             {
                break;

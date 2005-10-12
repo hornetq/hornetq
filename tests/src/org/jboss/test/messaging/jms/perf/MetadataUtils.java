@@ -61,22 +61,22 @@ public abstract class MetadataUtils implements XMLLoadable
     * @param tagName    The name of the desired child
     * @return           The named child.
     *
-    * @throws DeploymentException   Child was not found or was not unique.
+    * @throws ConfigurationException   Child was not found or was not unique.
     */
    public static Element getUniqueChild(Element element, String tagName)
-      throws DeploymentException
+      throws ConfigurationException
    {
       Iterator goodChildren = getChildrenByTagName(element, tagName);
 
       if (goodChildren != null && goodChildren.hasNext()) {
          Element child = (Element)goodChildren.next();
          if (goodChildren.hasNext()) {
-            throw new DeploymentException
+            throw new ConfigurationException
                ("expected only one " + tagName + " tag");
          }
          return child;
       } else {
-         throw new DeploymentException
+         throw new ConfigurationException
             ("expected one " + tagName + " tag");
       }
    }
@@ -91,7 +91,7 @@ public abstract class MetadataUtils implements XMLLoadable
     * @return either the named child or null
     */
    public static Element getOptionalChild(Element element, String tagName)
-      throws DeploymentException
+      throws ConfigurationException
    {
       return getOptionalChild(element, tagName, null);
    }
@@ -110,14 +110,14 @@ public abstract class MetadataUtils implements XMLLoadable
    public static Element getOptionalChild(Element element,
                                           String tagName,
                                           Element defaultElement)
-      throws DeploymentException
+      throws ConfigurationException
    {
       Iterator goodChildren = getChildrenByTagName(element, tagName);
 
       if (goodChildren != null && goodChildren.hasNext()) {
          Element child = (Element)goodChildren.next();
          if (goodChildren.hasNext()) {
-            throw new DeploymentException
+            throw new ConfigurationException
                ("expected only one " + tagName + " tag");
          }
          return child;
@@ -267,7 +267,7 @@ public abstract class MetadataUtils implements XMLLoadable
     */
    public static String getUniqueChildContent(Element element,
                                               String tagName)
-      throws DeploymentException
+      throws ConfigurationException
    {
       return getElementContent(getUniqueChild(element, tagName));
    }
@@ -281,7 +281,7 @@ public abstract class MetadataUtils implements XMLLoadable
     */
    public static String getOptionalChildContent(Element element,
                                                 String tagName)
-      throws DeploymentException
+      throws ConfigurationException
    {
       return getElementContent(getOptionalChild(element, tagName));
    }
@@ -294,13 +294,13 @@ public abstract class MetadataUtils implements XMLLoadable
     * @return           The element content or null.
     */
    public static String getOptionalChildContent(Element element, String tagName, String defaultValue)
-           throws DeploymentException
+           throws ConfigurationException
    {
       return getElementContent(getOptionalChild(element, tagName), defaultValue);
    }
 
    public static boolean getOptionalChildBooleanContent(Element element, String name)
-      throws DeploymentException
+      throws ConfigurationException
    {
       Element child = getOptionalChild(element, name);
       if(child != null)
@@ -314,7 +314,7 @@ public abstract class MetadataUtils implements XMLLoadable
 
    public static boolean getOptionalChildBooleanContent(Element element,
       String name, boolean defaultValue)
-      throws DeploymentException
+      throws ConfigurationException
    {
       Element child = getOptionalChild(element, name);
       boolean flag = defaultValue;

@@ -8,14 +8,13 @@
 
 package org.jboss.messaging.core.message;
 
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Message;
-import org.jboss.logging.Logger;
-
-import javax.transaction.TransactionManager;
 import java.io.Serializable;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.Routable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -37,9 +36,9 @@ public class PersistentMessageStore extends TransactionalMessageStore
 
    // Constructors --------------------------------------------------
 
-   public PersistentMessageStore(Serializable storeID, PersistenceManager pm, TransactionManager tm)
+   public PersistentMessageStore(Serializable storeID, PersistenceManager pm)
    {
-      super(storeID, tm);
+      super(storeID);
       this.pm = pm;
    }
 
@@ -49,32 +48,55 @@ public class PersistentMessageStore extends TransactionalMessageStore
    {
       return true;
    }
-
-   public MessageReference reference(Routable r) throws Throwable
+   
+   public MessageReference reference(Routable r)
    {
-      //we always put it in the memory cache first - whether it's reliable or not
-      MessageReference ref = super.reference(r);
-
-      if (log.isTraceEnabled()) { log.trace("Persisting message " + r); }
-
-      if (r.isReliable())
-      {      
-         //and in the persistent store if it's reliable
-         pm.store((Message)r);
-         
-         if (log.isTraceEnabled()) { log.trace("Persisted message " + r); }
+      if (r.isReference())
+      {
+         if (log.isTraceEnabled()) { log.trace("Routable is already a reference"); }
+         return (MessageReference)r;
       }
       
+      MessageReference ref = super.getReference(r.getMessageID());
+      
+      if (ref != null)
+      {        
+         if (log.isTraceEnabled()) { log.trace("Retrieved it from memory cache"); }
+         return ref;
+      }
+      
+      //Maybe it's on disk already?
+      Message m = retrieveMessage(r.getMessageID());
+      if (m != null)
+      {
+         ref = super.createReference(m);
+      }
+           
+      if (ref == null)
+      {
+         //Message doesn't exist either in memory on disc
+         try
+         {
+            pm.store((Message)r);
+            if (log.isTraceEnabled()) { log.trace("Store message " + r); }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to store message", e);
+            return null;
+         }
+         ref= super.createReference(r);
+      }
       return ref;
    }
 
    
-   public MessageReference getReference(Serializable messageID) throws Throwable
+   public MessageReference getReference(Serializable messageID)
    {
       if (log.isTraceEnabled()) { log.trace("Getting message ref for message ID: " + messageID);}
       
       //Try and get the reference from the in memory cache first
-      MessageReference ref = super.getReferenceInternal(messageID);
+      MessageReference ref = super.getReference(messageID);
       
       if (ref != null)
       {        
@@ -83,6 +105,20 @@ public class PersistentMessageStore extends TransactionalMessageStore
       }
 
       //Try and retrieve it from persistent storage
+      Message m = retrieveMessage(messageID);
+
+      if (m != null)
+      {
+         //Put it in the memory cache and return a ref from there
+         ref = super.createReference((Message)m);
+      }
+      
+      return ref;
+      
+   }
+   
+   protected Message retrieveMessage(Serializable messageID)
+   {
       Message m = null;
       try
       {
@@ -93,28 +129,11 @@ public class PersistentMessageStore extends TransactionalMessageStore
       {
          log.error("Persistence manager failed", t);
       }
-
-      if (m == null)
-      {
-         return null;
-      }
-      
-      //Put it in the memory cache and return a ref from there
-      return super.reference((Message)m);
-      
+      return m;
    }
    
 
-   public void remove(MessageReference ref) throws Throwable
-   {
-      super.remove(ref);
-      
-      if (ref.isReliable())
-      {      
-         //if (log.isTraceEnabled()) { log.trace("Removing message ref from persistent store"); }
-         //pm.remove((String)ref.getMessageID());
-      }
-   }
+  
 
 
    // Public --------------------------------------------------------

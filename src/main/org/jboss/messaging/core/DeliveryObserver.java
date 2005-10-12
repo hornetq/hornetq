@@ -8,6 +8,8 @@
 
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -15,10 +17,8 @@ package org.jboss.messaging.core;
  */
 public interface DeliveryObserver
 {
-   /**
-    * Behaves transactionally in presence of a JTA transaction.
-    */
-   void acknowledge(Delivery d);
+
+   void acknowledge(Delivery d, Transaction tx);
 
    boolean cancel(Delivery d) throws Throwable;
 

@@ -61,6 +61,8 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
    
    protected ResourceManager rm;
    
+   protected boolean listenerAdded;
+   
 
    // Constructors --------------------------------------------------
    
@@ -151,10 +153,14 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
          if (exceptionListener != null)
          {
             client.addConnectionListener(this);
+            listenerAdded = true;
          }
          else
-         {
-            client.removeConnectionListener(this);
+         {            
+            if (listenerAdded)
+            {
+               client.removeConnectionListener(this);
+            }
          }
          return null;
       }

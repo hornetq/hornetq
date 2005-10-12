@@ -10,6 +10,8 @@ package org.jboss.messaging.core;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -21,6 +23,6 @@ public interface Router extends Distributor
    /**
     * Returns a set of Delivery instances.
     */
-   Set handle(DeliveryObserver observer, Routable routable);
+   Set handle(DeliveryObserver observer, Routable routable, Transaction transaction);
 
 }

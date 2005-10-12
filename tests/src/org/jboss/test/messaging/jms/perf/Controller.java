@@ -35,9 +35,7 @@ public class Controller
 {
    private static final Logger log = Logger.getLogger(Controller.class);   
    
-   protected Map configs = new HashMap();
-   
-   protected List tests = new ArrayList();
+   protected List tests;
    
    protected ResultPersistor persistor;
    
@@ -50,6 +48,8 @@ public class Controller
    
    private Controller()
    {      
+      tests = new ArrayList();
+      
    }
    
    protected Object sendRequestToSlave(String slaveURL, ServerRequest request) throws Throwable
@@ -99,114 +99,29 @@ public class Controller
    
    protected void init() throws Exception
    {
+      persistor = new CSVResultPersistor("perf-results.csv");
+      
       Document doc = getConfigDocument("controller.xml");
       
       Element root = doc.getDocumentElement();
                 
       log.info("root element name is " + root.getNodeName());
       
-      
-      Iterator iter = MetadataUtils.getChildrenByTagName(root, "config");
-      
-      while (iter.hasNext())
-      {
-         Element element = (Element)iter.next();
-         Configuration config = new Configuration(element);   
-         configs.put(config.getName(), config);
-      }
-      
-      iter = MetadataUtils.getChildrenByTagName(root, "test");
+      Element testsElement = MetadataUtils.getUniqueChild(root, "tests");             
+      Iterator iter = MetadataUtils.getChildrenByTagName(testsElement, "test");
       
       while (iter.hasNext())
       {
-         Element element = (Element)iter.next();
-         Test t = new Test(element);
-         tests.add(t);
-      }
-      
-      persistor = new CSVResultPersistor("perf-results.csv");
-      
+         Element testElement = (Element)iter.next();
+         
+         Test test = new Test(testElement, persistor);
+         
+         tests.add(test); 
+         
+         log.info("Added test");
+      } 
    }
    
-   protected void startJobsAtSlave(SlaveMetadata slave) throws Throwable
-   {
-      Iterator iter = slave.getJobs().iterator();
-      
-      while (iter.hasNext())
-      {
-         Job job = (Job)iter.next();
-         RunRequest req = new RunRequest(job);
-         sendRequestToSlave(slave.getSlaveLocator(), req);
-         
-      }
-      
-   }
-   
-   protected void stopJobsAtSlave(SlaveMetadata slave) throws Throwable
-   {
-      StopRequest req = new StopRequest();
-      sendRequestToSlave(slave.getSlaveLocator(), req);
-
-   }
-   
-   protected void loop(Test test) throws Throwable
-   {
-      Configuration config = (Configuration)configs.get(test.getConfigName());
-      
-      List slaves = config.getSlaves();
-      long duration = test.getDuration();
-      
-      long start = System.currentTimeMillis();
-      while (true)
-      {
-         Thread.sleep(3000);
-                  
-         if (System.currentTimeMillis() - start >= duration)
-         {
-            break;
-         }
-         
-         Map res = new HashMap();
-         
-         Iterator iter = slaves.iterator();
-         
-         while (iter.hasNext())
-         {
-             SlaveMetadata slave = (SlaveMetadata)iter.next();
-             
-             GetDataRequest req = new GetDataRequest();
-             
-             List results = (List)sendRequestToSlave(slave.getSlaveLocator(), req);
-             
-             Iterator iter2 = results.iterator();
-             
-             
-             
-             while (iter2.hasNext())
-             {
-                RunData data = (RunData)iter2.next();
-                
-                Job job = null;
-                Iterator iter3 = slave.getJobs().iterator();
-                while (iter3.hasNext())
-                {
-                   Job j = (Job)iter3.next();
-                   if (j.getName().equals(data.jobName))
-                   {
-                      ((ResultSource)j).getResults(persistor);
-                      job = j;
-                      break;
-                   }
-                }
-                res.put(job, data);
-             }
-         }
-                
-         test.getProcessor().processResults(test, config, res, persistor);       
-                
-
-      }
-   }
    
    protected void run()
    {
@@ -218,34 +133,9 @@ public class Controller
         while (iter.hasNext())
         {
            Test test = (Test)iter.next();
-           
-           Configuration config = (Configuration)configs.get(test.getConfigName());
-           
-           if (config == null)
-           {
-              throw new DeploymentException("Unknown config " + test.getConfigName());
-           }
-           
-           List slaves = config.getSlaves();
-           Iterator iter2 = slaves.iterator();
-           while (iter2.hasNext())
-           {
-              SlaveMetadata slave = (SlaveMetadata)iter2.next();
-              startJobsAtSlave(slave);
-           }
-           
-           loop(test);
-           
-           slaves = config.getSlaves();
-           iter2 = slaves.iterator();
-           while (iter2.hasNext())
-           {
-              SlaveMetadata slave = (SlaveMetadata)iter2.next();
-              stopJobsAtSlave(slave);
-           }
-           
+           test.run();
         }
-        persistor.close();
+        
       }
       catch (Throwable e)
       {
@@ -253,5 +143,4 @@ public class Controller
       }
 
    }
-   
 }

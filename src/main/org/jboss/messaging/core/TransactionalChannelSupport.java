@@ -9,13 +9,13 @@
 package org.jboss.messaging.core;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.tx.Transaction;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.SystemException;
 import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -34,83 +34,66 @@ public abstract class TransactionalChannelSupport extends ChannelSupport
 
    protected TransactionalChannelSupport(Serializable channelID,
                                          MessageStore ms,
-                                         PersistenceManager pm,
-                                         TransactionManager tm)
+                                         PersistenceManager pm)
    {
-      super(channelID, ms, pm, tm);
+      super(channelID, ms, pm);
    }
 
    // Channel overrides ---------------------------------------------
 
-   public boolean isTransactional()
+
+   public final Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
    {
-      return tm != null;
-   }
-
-   public final Delivery handle(DeliveryObserver sender, Routable r)
-   {
-      try
+      if (r == null)
       {
-         MessageReference ref = ref(r);
-         
-         if (tm == null || tm.getTransaction() == null)
-         {
-            // handle the message non-transactionally
-            return super.handle(sender, ref);
-         }
-
-         try
-         {
-            // handle transactionally
-            state.add(ref);
-
-            // I might as well return null, the sender shouldn't care
-            return new SimpleDelivery(sender, ref, true);
-
-         }
-         catch(Throwable t)
-         {
-            log.error("Failure to process the message transactionally", t);
-            tm.setRollbackOnly();
-            return null;
-         }
-      }
-      catch(SystemException e)
-      {
-         log.error("Transaction system failure", e);
          return null;
       }
+      
+      MessageReference ref = ref(r);
+      
+      if (tx == null)
+      {
+         // handle the message non-transactionally
+         return super.handle(sender, ref, tx);
+      }
+
+      // handle transactionally
+      try
+      {
+         state.add(ref, tx);         
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to add to state", t);
+         return null;
+      }
+
+      // I might as well return null, the sender shouldn't care
+      return new SimpleDelivery(sender, ref, true);              
    }
 
    // DeliveryObserver overrides ------------------------------------
    
-   public void acknowledge(Delivery d)
+   public void acknowledge(Delivery d, Transaction tx)
    {
+      if (tx == null)
+      {
+         // acknowledge non transactionally
+         super.acknowledge(d, null);
+         return;
+      }
+
+      if (log.isTraceEnabled()){ log.trace("acknowledging transactionally " + d); }
+
+
+      // handle transactionally
       try
       {
-         if (tm == null || tm.getTransaction() == null)
-         {
-            // acknowledge non transactionally
-            super.acknowledge(d);
-            return;
-         }
-
-         if (log.isTraceEnabled()){ log.trace("acknowledging transactionally " + d); }
-
-         try
-         {
-            // handle transactionally
-            state.remove(d);
-         }
-         catch(Throwable t)
-         {
-            log.error("Failure to process the message transactionally", t);
-            tm.setRollbackOnly();
-         }
+         state.remove(d, tx);         
       }
-      catch(SystemException e)
+      catch (Throwable t)
       {
-         log.error("Transaction system failure", e);
+         log.error("Failed to remove from state", t);
       }
    }
 

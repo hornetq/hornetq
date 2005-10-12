@@ -63,12 +63,9 @@ public class ServerProducerDelegate implements ProducerDelegate
    public void send(Destination destination, Message m, int deliveryMode,
                     int priority, long timeToLive) throws JMSException
    {
-      // TODO destination, deliveryMode, priority, timeToLive are ignored.
-      // TODO See "Delegate Implementation" thread http://www.jboss.org/index.html?module=bb&op=viewtopic&t=64747
-
       if (log.isTraceEnabled()) { log.trace("Sending message: " + m); }
       
-      sessionEndpoint.connectionEndpoint.sendMessage(m);
+      sessionEndpoint.connectionEndpoint.sendMessage(m, null);
    }
 
    public Object getMetaData(Object attr)

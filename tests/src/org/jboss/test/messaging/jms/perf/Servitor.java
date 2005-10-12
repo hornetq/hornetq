@@ -14,7 +14,13 @@ package org.jboss.test.messaging.jms.perf;
  */
 public interface Servitor extends Runnable
 {
+   
    boolean isFailed();
    
    void stop();
+   
+   void startCount();
+   
+   long getCount();
+  
 }

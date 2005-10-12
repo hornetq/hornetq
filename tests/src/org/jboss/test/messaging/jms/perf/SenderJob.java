@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class SenderJob extends AbstractJob
+public class SenderJob extends BaseThroughputJob
 {
    private static final long serialVersionUID = -4031253412475892666L;
 
@@ -35,25 +35,6 @@ public class SenderJob extends AbstractJob
    
    protected MessageFactory mf;
    
-   protected double desiredTP;
-   
-   protected boolean doThrottle;
-   
-   protected SenderJob()
-   {
-      throttle(50);
-   }
-   
-   public void getResults(ResultPersistor persistor)
-   {
-      super.getResults(persistor);
-      
-      persistor.addValue("anon", anon);
-      persistor.addValue("msgSize", msgSize);
-      persistor.addValue("deliveryMode", deliveryMode);
-      persistor.addValue("messageFactory", mf.getClass().getName());
-   }
-   
    public Servitor createServitor()
    {
       return new Sender();
@@ -64,40 +45,11 @@ public class SenderJob extends AbstractJob
       return "Sender";
    }
    
-   public SenderJob(Element e) throws DeploymentException
+   public SenderJob(Element e) throws ConfigurationException
    {
-      importXML(e);
+      super(e);
    }
    
-   public void throttle(double desiredTP)
-   {
-      this.desiredTP = desiredTP;
-      this.doThrottle = true;
-   }
-   
-   protected void calcThrottle()
-   {
-      if (!doThrottle)
-      {
-         return;
-      }
-      
-      double throttleDelay;
-      
-      double timeToSendMsg = ((double)(1000 * numSessions)) / throughput;
-      log.info("Time to send 1 msg=" + timeToSendMsg + " ms");
-      
-      double timeToSendMsgDesired = ((double)(1000 * numSessions)) / desiredTP;
-      log.info("Time to send 1 msg desired=" + timeToSendMsg + " ms");
-      
-      double eachMessageDelay = timeToSendMsgDesired - timeToSendMsg;
-      log.info("Each msg delay:" + eachMessageDelay);
-      
-      
-      
-   }
-   
-
    protected void logInfo()
    {
       super.logInfo();
@@ -107,7 +59,7 @@ public class SenderJob extends AbstractJob
       log.info("Delivery Mode:" + (deliveryMode == DeliveryMode.PERSISTENT ? "Persistent" : "Non-persistent"));
    }
    
-   public void importXML(Element element) throws DeploymentException
+   public void importXML(Element element) throws ConfigurationException
    {  
       super.importXML(element);
       
@@ -145,34 +97,24 @@ public class SenderJob extends AbstractJob
       }
       else
       {
-         throw new DeploymentException("Invalid message type:" + messageType);
+         throw new ConfigurationException("Invalid message type:" + messageType);
       }
       
       this.deliveryMode = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "delivery-mode"));
       
       if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
       {
-         throw new DeploymentException("Invalid delivery mode:" + deliveryMode);
+         throw new ConfigurationException("Invalid delivery mode:" + deliveryMode);
       }
    }
 
    protected class Sender extends AbstractServitor
    {
-      private boolean failed;
-      
-      private boolean stopping;
-      
-      public void stop()
-      {
-         stopping = true;
-      }
       
       public void run()
       {
          try
          {
-            Thread.sleep(rampDelay);
-            
             Connection conn = getNextConnection();
             
             Session sess = conn.createSession(transacted, Session.AUTO_ACKNOWLEDGE); //Ackmode doesn't matter            
@@ -190,9 +132,7 @@ public class SenderJob extends AbstractJob
             
             prod.setDeliveryMode(deliveryMode);                       
             
-            long count = 0;
-            
-            while (true)
+            while (!stopping)
             {
             
                Message m = mf.getMessage(sess, msgSize);
@@ -208,30 +148,22 @@ public class SenderJob extends AbstractJob
                
                count++;
                
-               if (count != 0 && count % COUNT_GRANULARITY == 0)
+               if (count % throttleScale == 0)
                {
-                  updateTotalCount(COUNT_GRANULARITY);  
-                  calcThrottle();
+                  if (throttle != 0)
+                  {
+                     Thread.sleep(throttle);
+                  }
                }
-               
+                             
                if (transacted)
                {
                   if (count % transactionSize == 0)
                   {
                      sess.commit();
                   }
-               }    
-               
-               //doThrottle();
-               
-               if (stopping)
-               {
-                  break;
-               }
+               }                   
             }
-                        
-            updateTotalCount(count % COUNT_GRANULARITY);
-            
          }
          catch (Exception e)
          {
@@ -244,7 +176,16 @@ public class SenderJob extends AbstractJob
       {
          return failed;
       }
+   } 
+   
+
+   public void fillInResults(ResultPersistor persistor)
+   {
+      super.fillInResults(persistor);
+      persistor.addValue("anonymous", this.anon);
+      persistor.addValue("messageSize", this.msgSize);
+      persistor.addValue("deliveryMode", this.deliveryMode);
+      persistor.addValue("messageType", this.mf.getClass().getName());
+      
    }
-   
-   
 }

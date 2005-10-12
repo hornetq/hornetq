@@ -8,6 +8,8 @@
 
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * A message delivery. It can be "done" or active.
  * 
@@ -26,7 +28,7 @@ public interface Delivery
 
    DeliveryObserver getObserver();
 
-   void acknowledge() throws Throwable;
+   void acknowledge(Transaction tx) throws Throwable;
 
    boolean cancel() throws Throwable;
 

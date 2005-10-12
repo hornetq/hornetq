@@ -8,33 +8,31 @@
 
 package org.jboss.messaging.core.message;
 
-import javax.transaction.TransactionManager;
 import java.io.Serializable;
 
 /**
  * TODO incomplete implementation
+ * 
+ * What's the point of this class?? 
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class TransactionalMessageStore extends MessageStoreSupport
+public class TransactionalMessageStore extends UnreliableMessageStore
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
-
-   protected TransactionManager tm;
+   // Attributes ----------------------------------------------------  
 
    // Constructors --------------------------------------------------
 
-   public TransactionalMessageStore(Serializable storeID, TransactionManager tm)
+   public TransactionalMessageStore(Serializable storeID)
    {
       super(storeID);
-      this.tm = tm;
    }
 
    // MessageStore implementation -----------------------------------

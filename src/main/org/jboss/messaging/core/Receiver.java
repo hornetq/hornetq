@@ -8,6 +8,8 @@
 
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * A component that handles routable instances. Handling means consumption or
  * synchronous/asynchronous forwarding to another receiver(s).
@@ -29,6 +31,6 @@ public interface Receiver
     * @see org.jboss.messaging.core.Delivery
     * @see org.jboss.messaging.core.DeliveryObserver
     */
-   Delivery handle(DeliveryObserver observer, Routable routable);
+   Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx);
 
 }

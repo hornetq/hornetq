@@ -124,7 +124,7 @@
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
    <property name="perf.tests.archive" value="perfrunner.jar"/>
-   <property name="build.tests.remote" value="true"/>
+   <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -207,7 +207,8 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
-         <sysproperty key="remote" value="${build.tests.remoteorlocal}"/>
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -222,11 +223,11 @@
             <fileset dir="${build.tests.classes}">
 
                <include name="**/messaging/**/*Test.class"/>
-               <!--
-               <include name="**/messaging/core/local/*Test.class"/>
-               -->
+               
                <exclude name="**/messaging/**/performance/**"/>
-               <exclude name="**/messaging/**/performance/**"/>
+               
+               <exclude name="**/jms/managed/**"/>
+               <exclude name="**/jms/**/perf/**"/>
             </fileset>
          </batchtest>
       </junit>
@@ -244,6 +245,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
+         <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -258,10 +260,44 @@
             <fileset dir="${build.tests.classes}">
 
                <include name="**/messaging/jms/*Test.class"/>
-               <!--
-               <include name="**/messaging/core/local/*Test.class"/>
-               -->
+               <exclude name="**/jms/managed/**"/>
+               <exclude name="**/jms/**/perf/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+<target name="coretests"
+           depends="tests-jar, prepare-testdirs"
+           description="Runs the jms tests only">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <jvmarg value="-Xmx512M"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+         </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+
+
+               <include name="**/messaging/**/*Test.class"/>
+
                <exclude name="**/messaging/**/performance/**"/>
+               <exclude name="**/messaging/jms/**"/>
             </fileset>
          </batchtest>
       </junit>
@@ -277,12 +313,19 @@
             <echo>Module root is:${module.root}</echo>
 
       <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
+             fork="true"
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
+             
+             <!--
+         <jvmarg value="-Xdebug"/>
+         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
+         
+         -->
+         <jvmarg value="-Xmx512M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -334,6 +377,32 @@
             styledir="${build.tests.stylesheets}"
             />
       </junitreport>
+   </target>
+   
+	<target name="corereport" depends="coretests, compile-stylesheets">
+	 <mkdir dir="${build.tests.reports}/html"/>
+
+	 <junitreport todir="${build.tests.reports}">
+	    <fileset dir="${build.tests.reports}">
+	       <include name="TEST-*.xml"/>
+	    </fileset>
+	    <report format="frames"
+	       todir="${build.tests.reports}/html"
+	       styledir="${build.tests.stylesheets}"
+	       />
+	 </junitreport>
+   </target>
+   
+   <target name="build-report" >
+   	 <junitreport todir="${build.tests.reports}">
+   	    <fileset dir="${build.tests.reports}">
+   	       <include name="TEST-*.xml"/>
+   	    </fileset>
+   	    <report format="frames"
+   	       todir="${build.tests.reports}/html"
+   	       styledir="${build.tests.stylesheets}"
+   	       />
+	 </junitreport>
    </target>
 
 

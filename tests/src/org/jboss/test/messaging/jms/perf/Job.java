@@ -12,14 +12,14 @@ package org.jboss.test.messaging.jms.perf;
  *
  * $Id$
  */
-public interface Job extends Runnable 
+public interface Job
 {
+   JobResult run();
+   
    String getName();
    
-   RunData getData();
+   boolean isFailed();
    
-   void stop();
+   void fillInResults(ResultPersistor persistor);
    
-   void setTP(double tp);
-
 }

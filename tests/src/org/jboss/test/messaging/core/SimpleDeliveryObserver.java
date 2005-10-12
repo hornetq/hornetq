@@ -11,6 +11,7 @@ package org.jboss.test.messaging.core;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 
@@ -32,7 +33,7 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
    // DeliveryObserver implementation --------------------------
 
-   public synchronized void acknowledge(Delivery d)
+   public synchronized void acknowledge(Delivery d, Transaction tx)
    {
       log.info("Delivery " + d + " was acknowledged");
    }

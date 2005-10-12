@@ -23,10 +23,9 @@ public class RunRequest implements ServerRequest
       this.job = test;
    }
    
-   public Object execute(JobStore store)
+   public Object execute()
    {
-      store.addJob(job);
-      new Thread(job).start();
-      return null;
+      JobResult jr = job.run();
+      return jr;
    }
 }

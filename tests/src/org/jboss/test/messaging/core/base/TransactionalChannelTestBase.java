@@ -10,14 +10,16 @@ package org.jboss.test.messaging.core.base;
 
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.message.Factory;
 import org.jboss.messaging.core.message.TransactionalMessageStore;
+import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionRepository;
 
 import javax.naming.InitialContext;
-import javax.transaction.TransactionManager;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -43,7 +45,19 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       {
          for(Iterator j = l.iterator(); j.hasNext(); )
          {
-            if (a[i].getMessageID().equals(((MessageReference)j.next()).getMessageID()))
+            Object o = j.next();
+            Message m = null;
+            if (o instanceof MessageReference)
+            {
+               MessageReference ref = (MessageReference)o;
+               m = ref.getMessage();
+            }
+            else
+            {
+               m = (Message)o;
+            }
+            
+            if (a[i].getMessageID().equals(m.getMessageID()))
             {
                j.remove();
                break;
@@ -59,7 +73,7 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected TransactionManager tm;
+   protected TransactionRepository tm;
    protected MessageStore ms;
 
    // Constructors --------------------------------------------------
@@ -76,10 +90,10 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       super.setUp();
 
       InitialContext ic = new InitialContext();
-      tm = (TransactionManager)ic.lookup("java:/TransactionManager");
+      tm = new TransactionRepository(null);
       ic.close();
 
-      ms = new TransactionalMessageStore("message-store", tm);
+      ms = new TransactionalMessageStore("message-store");
 
    }
 
@@ -105,22 +119,25 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       MessageStore ms = channel.getMessageStore();
       Routable[] m =
             {
-               ms.reference(Factory.createMessage("m0", false, "payload0")),
-               ms.reference(Factory.createMessage("m1", false, "payload1")),
-               ms.reference(Factory.createMessage("m2", false, "payload2")),
+               Factory.createMessage("m0", false, "payload0"),
+               Factory.createMessage("m1", false, "payload1"),
+               Factory.createMessage("m2", false, "payload2"),
             };
 
 
-      tm.begin();
+      Transaction tx = tm.createTransaction();
 
-      channel.handle(observer, m[0]);
-      channel.handle(observer, m[1]);
-      channel.handle(observer, m[2]);
+      channel.handle(observer, m[0], tx);
+      channel.handle(observer, m[1], tx);
+      channel.handle(observer, m[2], tx);
 
       assertTrue(receiver.getMessages().isEmpty());
-      assertTrue(channel.browse().isEmpty());
+      
+      List msgs = channel.browse();
+      log.debug("I have " + msgs.size() + " messages in channel");
+      assertTrue(msgs.isEmpty());
 
-      tm.commit();
+      tx.commit();
 
       List messages = receiver.getMessages();
       assertEqualSets(m, messages);
@@ -139,21 +156,21 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       MessageStore ms = channel.getMessageStore();
       Routable[] m =
             {
-               ms.reference(Factory.createMessage("m0", false, "payload0")),
-               ms.reference(Factory.createMessage("m1", false, "payload1")),
-               ms.reference(Factory.createMessage("m2", false, "payload2")),
+               Factory.createMessage("m0", false, "payload0"),
+               Factory.createMessage("m1", false, "payload1"),
+               Factory.createMessage("m2", false, "payload2"),
             };
 
-      tm.begin();
+      Transaction tx = tm.createTransaction();
 
-      channel.handle(observer, m[0]);
-      channel.handle(observer, m[1]);
-      channel.handle(observer, m[2]);
+      channel.handle(observer, m[0], tx);
+      channel.handle(observer, m[1], tx);
+      channel.handle(observer, m[2], tx);
 
       assertTrue(receiver.getMessages().isEmpty());
       assertTrue(channel.browse().isEmpty());
 
-      tm.rollback();
+      tx.rollback();
 
       assertTrue(receiver.getMessages().isEmpty());
    }
@@ -172,22 +189,22 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       MessageStore ms = channel.getMessageStore();
       Routable[] m =
             {
-               ms.reference(Factory.createMessage("m0", true, "payload0")),
-               ms.reference(Factory.createMessage("m1", true, "payload1")),
-               ms.reference(Factory.createMessage("m2", true, "payload2")),
+               Factory.createMessage("m0", true, "payload0"),
+               Factory.createMessage("m1", true, "payload1"),
+               Factory.createMessage("m2", true, "payload2"),
             };
 
 
-      tm.begin();
+      Transaction tx = tm.createTransaction();
 
-      channel.handle(observer, m[0]);
-      channel.handle(observer, m[1]);
-      channel.handle(observer, m[2]);
+      channel.handle(observer, m[0], tx);
+      channel.handle(observer, m[1], tx);
+      channel.handle(observer, m[2], tx);
 
       assertTrue(receiver.getMessages().isEmpty());
       assertTrue(channel.browse().isEmpty());
 
-      tm.commit();
+      tx.commit();
 
       List messages = receiver.getMessages();
       assertEqualSets(m, messages);
@@ -206,23 +223,23 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       MessageStore ms = channel.getMessageStore();
       Routable[] m =
             {
-               ms.reference(Factory.createMessage("m0", true, "payload0")),
-               ms.reference(Factory.createMessage("m1", true, "payload1")),
-               ms.reference(Factory.createMessage("m2", true, "payload2")),
+               Factory.createMessage("m0", true, "payload0"),
+               Factory.createMessage("m1", true, "payload1"),
+               Factory.createMessage("m2", true, "payload2"),
             };
 
 
 
-      tm.begin();
+      Transaction tx = tm.createTransaction();
 
-      channel.handle(observer, m[0]);
-      channel.handle(observer, m[1]);
-      channel.handle(observer, m[2]);
+      channel.handle(observer, m[0], tx);
+      channel.handle(observer, m[1], tx);
+      channel.handle(observer, m[2], tx);
 
       assertTrue(receiver.getMessages().isEmpty());
       assertTrue(channel.browse().isEmpty());
 
-      tm.rollback();
+      tx.rollback();
 
       assertTrue(receiver.getMessages().isEmpty());
    }
@@ -242,28 +259,28 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       MessageStore ms = channel.getMessageStore();
       Routable[] m =
             {
-               ms.reference(Factory.createMessage("m0", false, "payload0")),
-               ms.reference(Factory.createMessage("m1", false, "payload1")),
-               ms.reference(Factory.createMessage("m2", false, "payload2")),
+               Factory.createMessage("m0", false, "payload0"),
+               Factory.createMessage("m1", false, "payload1"),
+               Factory.createMessage("m2", false, "payload2"),
             };
 
-      channel.handle(observer, m[0]);
-      channel.handle(observer, m[1]);
-      channel.handle(observer, m[2]);
+      channel.handle(observer, m[0], null);
+      channel.handle(observer, m[1], null);
+      channel.handle(observer, m[2], null);
 
       List l = channel.browse();
       assertEquals(3, l.size());
 
-      tm.begin();
+      Transaction tx = tm.createTransaction();
 
-      receiver.acknowledge(m[0]);
-      receiver.acknowledge(m[1]);
-      receiver.acknowledge(m[2]);
+      receiver.acknowledge(m[0], tx);
+      receiver.acknowledge(m[1], tx);
+      receiver.acknowledge(m[2], tx);
 
       l = channel.browse();
       assertEquals(3, l.size());
 
-      tm.commit();
+      tx.commit();
 
       assertTrue(channel.browse().isEmpty());
    }
@@ -281,28 +298,28 @@ public abstract class TransactionalChannelTestBase extends ChannelTestBase
       MessageStore ms = channel.getMessageStore();
       Routable[] m =
             {
-               ms.reference(Factory.createMessage("m0", false, "payload0")),
-               ms.reference(Factory.createMessage("m1", false, "payload1")),
-               ms.reference(Factory.createMessage("m2", false, "payload2")),
+               Factory.createMessage("m0", false, "payload0"),
+               Factory.createMessage("m1", false, "payload1"),
+               Factory.createMessage("m2", false, "payload2"),
             };
 
-      channel.handle(observer, m[0]);
-      channel.handle(observer, m[1]);
-      channel.handle(observer, m[2]);
+      channel.handle(observer, m[0], null);
+      channel.handle(observer, m[1], null);
+      channel.handle(observer, m[2], null);
 
       List l = channel.browse();
       assertEquals(3, l.size());
 
-      tm.begin();
+      Transaction tx = tm.createTransaction();
 
-      receiver.acknowledge(m[0]);
-      receiver.acknowledge(m[1]);
-      receiver.acknowledge(m[2]);
+      receiver.acknowledge(m[0], tx);
+      receiver.acknowledge(m[1], tx);
+      receiver.acknowledge(m[2], tx);
 
       l = channel.browse();
       assertEquals(3, l.size());
 
-      tm.rollback();
+      tx.rollback();
 
 
       l = channel.browse();

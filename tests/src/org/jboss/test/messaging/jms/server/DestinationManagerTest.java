@@ -48,18 +48,31 @@ public class DestinationManagerTest extends MessagingTestCase
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       //destinationManager = ServerManagement.getServerPeer().getDestinationManager();
+      ServerManagement.undeployQueue("testQueue");
+      ServerManagement.undeployTopic("testTopic");
+      ServerManagement.undeployQueue("SomeName");
+      ServerManagement.undeployTopic("SomeName");
 
    }
 
    public void tearDown() throws Exception
    {
+      ServerManagement.undeployQueue("testQueue");
+      ServerManagement.undeployTopic("testTopic");
+      ServerManagement.undeployQueue("SomeName");
+      ServerManagement.undeployTopic("SomeName");
+      
       ServerManagement.deInit();
       //destinationManager = null;
       super.tearDown();
+      
+      
    }
 
    public void testCreateQueue() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       String name = "testQueue";
       this.createQueue(name, null);
 
@@ -70,6 +83,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateTopic() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       this.createTopic(name, null);
 
@@ -80,6 +94,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateQueueDifferentJNDIName() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       String jndiName = "/a/b/c/testQueue2";
       this.createQueue(name, jndiName);
@@ -90,6 +105,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateQueueDifferentJNDIName2() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       String jndiName = "testQueue";
       this.createQueue(name, jndiName);
@@ -101,6 +117,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateTopicDifferrentJNDIName() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
       String jndiName = "/a/b/c/testTopic2";
       this.createTopic(name, jndiName);
@@ -111,6 +128,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateQueue() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       this.createQueue(name, null);
 
@@ -127,6 +145,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateTopic() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
       this.createTopic(name, null);
 
@@ -143,6 +162,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateQueueDifferentJNDIName() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       this.createQueue(name, null);
 
@@ -160,6 +180,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateTopicDifferentJNDIName() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
       this.createTopic(name, null);
 
@@ -177,6 +198,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateQueueAndTopicWithTheSameName() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "SomeName";
       this.createQueue(name, null);
       this.createTopic(name, null);
@@ -190,17 +212,20 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testDestroyInexistentQueue() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       this.destroyQueue("there is not such a queue");
    }
 
    public void testDestroyInexistentTopic() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       this.destroyTopic("there is not such a topic");
    }
 
 
    public void testDestroyQueue() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       this.createQueue(name, null);
 
@@ -225,6 +250,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testDestroyTopic() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
       this.createTopic(name, null);
 

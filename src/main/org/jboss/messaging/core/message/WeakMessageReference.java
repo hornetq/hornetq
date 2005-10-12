@@ -31,7 +31,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    // Attributes ----------------------------------------------------
 
-   protected transient MessageStoreSupport ms;
+   protected transient UnreliableMessageStore ms;
    private WeakReference ref;
    
    // Constructors --------------------------------------------------
@@ -41,10 +41,11 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
     */
    public WeakMessageReference()
    {
+      if (log.isTraceEnabled()) { log.trace("Creating using default constructor"); }
    }
 
    WeakMessageReference(Serializable messageID, boolean reliable,
-                        long expirationTime, MessageStoreSupport ms)
+                        long expirationTime, UnreliableMessageStore ms)
    {
       super(messageID, reliable, expirationTime);
 
@@ -56,7 +57,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    /**
     * Creates a reference based on a given message.
     */
-   public WeakMessageReference(Message m, MessageStoreSupport ms)
+   public WeakMessageReference(Message m, UnreliableMessageStore ms)
    {
       this(m.getMessageID(), m.isReliable(), m.getExpiration(), ms);
 
@@ -85,6 +86,13 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
 
    public Message getMessage()
    {
+      if (log.isTraceEnabled()) { log.trace("Getting message from reference" + ref); }
+      
+      if (ref == null)
+      {
+         //Been created through serialization
+      }
+      
       Message m = (Message)ref.get();
       if (m == null)
       {

@@ -60,20 +60,18 @@ public class DistributedQueue extends Queue implements Peer, QueueFacade
     */
    public DistributedQueue(String name,
                            MessageStore ms,
-                           TransactionManager tm,
                            RpcDispatcher dispatcher)
    {
-      this(name, ms, null, tm, dispatcher);
+      this(name, ms, null, dispatcher);
    }
 
 
    public DistributedQueue(String name,
                            MessageStore ms, 
                            PersistenceManager pm,
-                           TransactionManager tm,
                            RpcDispatcher dispatcher)
    {
-      super(name, ms, pm, tm);
+      super(name, ms, pm);
 
       Object so = dispatcher.getServerObject();
       if (!(so instanceof RpcServer))

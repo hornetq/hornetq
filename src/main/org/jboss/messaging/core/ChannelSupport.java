@@ -4,15 +4,11 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-
-
 package org.jboss.messaging.core;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.tx.Transaction;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.List;
@@ -36,46 +32,46 @@ abstract class ChannelSupport implements Channel
    protected Serializable channelID;
    protected Router router;
    protected State state;
-   protected TransactionManager tm;
    protected PersistenceManager pm;
    protected MessageStore ms;
-  // protected Filter selector;
 
 
    // Constructors --------------------------------------------------
 
    protected ChannelSupport(Serializable channelID,
                             MessageStore ms,
-                            PersistenceManager pm,
-                            TransactionManager tm)
+                            PersistenceManager pm)
    {
       if (log.isTraceEnabled()) { log.trace("Creating ChannelSupport: " + channelID + " reliable?" + (pm != null)); }
 
       this.channelID = channelID;
       this.ms = ms;
-      this.tm = tm;
       this.pm = pm;
       if (pm == null)
       {
-         state = new TransactionalState(this, tm);
+         state = new UnreliableState(this);
       }
       else
       {
-         state = new ReliableState(this, pm, tm);
+         state = new ReliableState(this, pm);
       }
    }
 
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver sender, Routable r)
-   {
+   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
+   {      
+      if (r == null)
+      {
+         return null;
+      }
       return handleNoTx(sender, r);
    }
 
    // DeliveryObserver implementation --------------------------
 
-   public void acknowledge(Delivery d)
+   public void acknowledge(Delivery d, Transaction tx)
    {
       acknowledgeNoTx(d);
    }
@@ -83,15 +79,14 @@ abstract class ChannelSupport implements Channel
 
    public boolean cancel(Delivery d) throws Throwable
    {
-      // TODO must be done atomically
-      if (!state.remove(d))
+      if (!state.remove(d, null))
       {
          return false;
       }
 
       if (log.isTraceEnabled()) { log.trace(this + " canceled delivery " + d); }
 
-      state.add(d.getReference());
+      state.add(d.getReference(), null);
       if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
       return true;
    }
@@ -102,7 +97,7 @@ abstract class ChannelSupport implements Channel
 
       // TODO must be done atomically
    
-      if (state.remove(old))
+      if (state.remove(old, null))
       {
          if (log.isTraceEnabled()) { log.trace(this + "old delivery was active, canceled it"); }
          
@@ -113,7 +108,7 @@ abstract class ChannelSupport implements Channel
          if (log.isTraceEnabled()) { log.trace("Setting redelivered to true"); }
          ref.setRedelivered(true);
 
-         Delivery newd = r.handle(this, ref);
+         Delivery newd = r.handle(this, ref, null);
 
          if (newd == null || newd.isDone())
          {
@@ -199,7 +194,15 @@ abstract class ChannelSupport implements Channel
 
          MessageReference r = (MessageReference)i.next();
 
-         state.remove(r);
+         try
+         {
+            state.remove(r);
+         }
+         catch (Throwable t)
+         {
+            log.error("Failed to remove ref", t);
+            return;
+         }
          // TODO: if I crash now I could lose a persisent message
          if (log.isTraceEnabled()){ log.trace("removed " + r + " from state"); }
          
@@ -233,6 +236,7 @@ abstract class ChannelSupport implements Channel
    
    // Protected -----------------------------------------------------
    
+   
    protected MessageReference ref(Routable r)
    {
       MessageReference ref = null;
@@ -251,20 +255,12 @@ abstract class ChannelSupport implements Channel
          }
          catch (Throwable t)
          {
-            try
-            {
-               log.error("Failed to reference routable", t);
-               tm.rollback();             
-            }
-            catch(SystemException e)
-            {
-               log.error(this + " failed to rollback state transaction", e);
-               
-            }
+            log.error("Failed to reference routable", t);
             return null;
          }
       }
    }
+   
    
    // Private -------------------------------------------------------
 
@@ -293,7 +289,7 @@ abstract class ChannelSupport implements Channel
       
       MessageReference ref = ref(r);
 
-      Set deliveries = router.handle(this, ref);
+      Set deliveries = router.handle(this, ref, null);
 
       if (deliveries.isEmpty())
       {
@@ -303,7 +299,7 @@ abstract class ChannelSupport implements Channel
          
          try
          {
-            state.add(ref);
+            state.add(ref, null);
             if (log.isTraceEnabled()){ log.trace("Added state"); }
 
          }
@@ -317,13 +313,9 @@ abstract class ChannelSupport implements Channel
       else
       {
          // there are receivers
-
-         Transaction crtTx = null;
          try
          {
-            crtTx = tm.suspend();
-
-            //tm.begin();
+            
             for (Iterator i = deliveries.iterator(); i.hasNext(); )
             {
                Delivery d = (Delivery)i.next();
@@ -332,7 +324,7 @@ abstract class ChannelSupport implements Channel
                   state.add(d);
                }
             }
-           // tm.commit();
+          
          }
          catch(Throwable t)
          {
@@ -345,22 +337,7 @@ abstract class ChannelSupport implements Channel
             // TODO this is untested
             return new CompositeDelivery(sender, deliveries);
          }
-         finally
-         {
-            if (crtTx != null)
-            {
-               try
-               {
-                  tm.resume(crtTx);
-               }
-               catch(Exception e)
-               {
-                  String msg = this + " failed to resume existing transaction " + crtTx;
-                  log.error(msg, e);
-                  throw new IllegalStateException(msg);
-               }
-            }
-         }
+         
       }
 
       // the channel can safely assume responsibility for delivery
@@ -379,7 +356,7 @@ abstract class ChannelSupport implements Channel
 
       try
       {
-         if (state.remove(d))
+         if (state.remove(d, null))
          {
             if (log.isTraceEnabled()) { log.trace(this + " delivery " + d + " completed and forgotten"); }
          }

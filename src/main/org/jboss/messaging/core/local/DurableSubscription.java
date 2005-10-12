@@ -12,10 +12,7 @@
  */
 package org.jboss.messaging.core.local;
 
-import java.io.Serializable;
-
 import javax.jms.JMSException;
-import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
@@ -32,9 +29,9 @@ public class DurableSubscription extends Subscription
    
    // Constructors --------------------------------------------------
 
-   public DurableSubscription(String subName, Topic topic, String selector, MessageStore ms, PersistenceManager pm, TransactionManager tm)
+   public DurableSubscription(String subName, Topic topic, String selector, MessageStore ms, PersistenceManager pm)
    {
-      super(topic, selector, ms, pm, tm);
+      super(topic, selector, ms, pm);
       this.subName = subName;
    }
    

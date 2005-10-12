@@ -66,7 +66,7 @@ public abstract class DistributedChannelTestBase extends TransactionalChannelTes
    {
       super.setUp();
 
-      msTwo = new TransactionalMessageStore("message-store-2", tm);
+      msTwo = new TransactionalMessageStore("message-store-2");
 
       jchannel = new JChannel(props);
       dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer());

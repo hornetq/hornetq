@@ -13,6 +13,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 
 import java.util.Set;
@@ -43,7 +44,7 @@ public class SingleDestinationRouter implements Router
 
    // Router implementation -----------------------------------------
 
-   public synchronized Set handle(DeliveryObserver observer, Routable routable)
+   public synchronized Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       if (receiver == null)
       {
@@ -53,7 +54,7 @@ public class SingleDestinationRouter implements Router
       Set deliveries = new HashSet(1);
       try
       {
-         Delivery d = receiver.handle(observer, routable);
+         Delivery d = receiver.handle(observer, routable, tx);
 
          if (d != null)
          {

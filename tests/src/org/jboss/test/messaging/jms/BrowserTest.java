@@ -114,7 +114,7 @@ public class BrowserTest extends MessagingTestCase
 		log.trace("Starting testBrowse()");						
 		
 
-		final int numMessages = 100;
+		final int numMessages = 10;
 		
 		for (int i = 0; i < numMessages; i++)
 		{
@@ -139,7 +139,7 @@ public class BrowserTest extends MessagingTestCase
 			count++;
 		}
 		
-		assertEquals(count, numMessages);
+		assertEquals(numMessages, count);
 		
 		MessageConsumer mc = session.createConsumer(queue);
 		
@@ -163,6 +163,8 @@ public class BrowserTest extends MessagingTestCase
 		}
 		
 		log.trace("Received " + count + " messages");
+      
+      assertEquals(0, count);
 	}
 	
 	

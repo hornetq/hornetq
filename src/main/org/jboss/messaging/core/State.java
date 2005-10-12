@@ -10,6 +10,8 @@ package org.jboss.messaging.core;
 
 import java.util.List;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * A channel's state.
  *
@@ -19,13 +21,6 @@ import java.util.List;
  */
 interface State
 {
-   /**
-    * @return true if the state is able to atomically store undelivered or accept deliveries.
-    *         It doesn't necesarily mean the state is reliable, though.
-    *
-    * @see org.jboss.messaging.core.State#isReliable()
-    */
-   boolean isTransactional();
 
    /**
     * @return true if the state is able to store reliable undelivered. It implies transactionality.
@@ -34,15 +29,12 @@ interface State
     */
    boolean isReliable();
 
-   /**
-    * Works transactionally in presence of a JTA transaction.
-    */
    void add(Delivery d) throws Throwable;
 
    /**
     * Works transactionally in presence of a JTA transaction.
     */
-   boolean remove(Delivery d) throws Throwable;
+   boolean remove(Delivery d, Transaction tx) throws Throwable;
 
    /**
     * A list of routables in process of being delivered.
@@ -51,12 +43,9 @@ interface State
     */
    List delivering(Filter filter);
 
-   /**
-    * Works transactionally in presence of a JTA transaction.
-    */
-   void add(MessageReference ref) throws Throwable;
+   void add(MessageReference ref, Transaction tx) throws Throwable;
 
-   boolean remove(MessageReference ref);
+   boolean remove(MessageReference ref) throws Throwable;
 
    /**
     * A list of routables that are currently NOT being delivered by the channel.

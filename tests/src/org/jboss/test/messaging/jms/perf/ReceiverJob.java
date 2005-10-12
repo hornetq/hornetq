@@ -21,9 +21,11 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class ReceiverJob extends AbstractJob
+public class ReceiverJob extends BaseThroughputJob
 {
    private static final long serialVersionUID = 3633353742146810600L;
+   
+   private static final long RECEIVE_TIMEOUT = 10000;
 
    private static final Logger log = Logger.getLogger(SenderJob.class);
 
@@ -37,18 +39,7 @@ public class ReceiverJob extends AbstractJob
    
    protected boolean asynch;
    
-   public void getResults(ResultPersistor persistor)
-   {
-      super.getResults(persistor);
-      
-      persistor.addValue("ackMode", ackMode);
-      persistor.addValue("subName", subName);
-      persistor.addValue("selector", selector);
-      persistor.addValue("noLocal", noLocal);
-      persistor.addValue("asynch", asynch);
-   }
-   
-   
+
    public Servitor createServitor()
    {
       return new Receiver();
@@ -59,9 +50,9 @@ public class ReceiverJob extends AbstractJob
       return "Receiver";
    }
    
-   public ReceiverJob(Element e) throws DeploymentException
+   public ReceiverJob(Element e) throws ConfigurationException
    {
-      importXML(e);
+      super(e);
    }
 
    protected void logInfo()
@@ -74,7 +65,7 @@ public class ReceiverJob extends AbstractJob
       log.info("Use message listener? " + asynch);
    }
    
-   public void importXML(Element element) throws DeploymentException
+   public void importXML(Element element) throws ConfigurationException
    {  
       super.importXML(element);
       
@@ -87,23 +78,13 @@ public class ReceiverJob extends AbstractJob
       if (ackMode != Session.AUTO_ACKNOWLEDGE && ackMode != Session.CLIENT_ACKNOWLEDGE &&
             ackMode != Session.DUPS_OK_ACKNOWLEDGE && ackMode != Session.SESSION_TRANSACTED)
       {
-         throw new DeploymentException("Invalid ack mode:" + ackMode);
+         throw new ConfigurationException("Invalid ack mode:" + ackMode);
       }
    }
    
 
-
-   
    protected class Receiver extends AbstractServitor
    {
-      private boolean failed; 
-      
-      private boolean stopping;
-      
-      public void stop()
-      {
-         stopping = true;
-      }
       
       public void run()
       {
@@ -111,48 +92,31 @@ public class ReceiverJob extends AbstractJob
          {
             log.info("Running receiver");
             
-            Thread.sleep(rampDelay);
-            
             Connection conn = getNextConnection();
           
             Session sess = conn.createSession(transacted, ackMode);
            
             MessageConsumer cons = sess.createConsumer(dest, selector, noLocal);
-
-            long count = 0;
             
-            while (true)
-            {
+            while (!stopping)
+            {               
             
-               Message m = cons.receive(1000);     
+               Message m = cons.receive(RECEIVE_TIMEOUT);     
                       
                if (m != null)
                {
                   count++;
                }
-               
-               if (count != 0 && count % COUNT_GRANULARITY == 0)
-               {
-                  updateTotalCount(COUNT_GRANULARITY);                 
-               }
-               
-                             
+                         
                if (transacted)
                {
                   if (count % transactionSize == 0)
                   {
                      sess.commit();
                   }
-               }                            
-               
-               if (stopping)
-               {
-                  break;
-               }
-            }
-                        
-            updateTotalCount(count % COUNT_GRANULARITY);
-            
+               }                                           
+            }    
+
          }
          catch (Exception e)
          {
@@ -165,6 +129,17 @@ public class ReceiverJob extends AbstractJob
       {
          return failed;
       }
+   }
+   
+   
+   public void fillInResults(ResultPersistor persistor)
+   {
+      super.fillInResults(persistor);
+      persistor.addValue("ackMode", this.ackMode);
+      persistor.addValue("subName", this.subName);
+      persistor.addValue("selector", selector);
+      persistor.addValue("noLocal", this.noLocal);
+      persistor.addValue("asynch", this.asynch);      
    }
    
 }

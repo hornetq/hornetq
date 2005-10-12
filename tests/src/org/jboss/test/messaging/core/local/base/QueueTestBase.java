@@ -13,6 +13,7 @@ import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.Factory;
 
 import java.util.List;
@@ -57,7 +58,7 @@ public abstract class QueueTestBase extends TransactionalChannelTestBase
       channel.add(r1);
       channel.add(r2);
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"));
+      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"), null);
 
 
       assertTrue(d.isDone());
@@ -87,7 +88,7 @@ public abstract class QueueTestBase extends TransactionalChannelTestBase
       assertTrue(channel.add(r1));
       assertTrue(channel.add(r2));
 
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", true, "payload"));
+      Delivery d = channel.handle(observer, Factory.createMessage("message0", true, "payload"), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();

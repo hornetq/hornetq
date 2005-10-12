@@ -80,6 +80,7 @@
       <constructor>
          <!-- serverPeerID -->
          <arg type="java.lang.String" value="0" />
+         <arg type="java.lang.String" value="jdbc:hsqldb:hsql://localhost:1701" />
       </constructor>
       <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>

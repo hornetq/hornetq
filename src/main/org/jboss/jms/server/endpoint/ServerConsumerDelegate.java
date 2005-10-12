@@ -16,8 +16,6 @@ import java.util.Map;
 
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.message.JBossMessage;
@@ -25,6 +23,7 @@ import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.local.Subscription;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -101,16 +100,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable routable)
+   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       // deliver the message on a different thread than the core thread that brought it here
 
       Delivery delivery = null;
-
-//      if (!deliveries.isEmpty())
-//      {
-//         return null;
-//      }
 
       try
       {
@@ -138,6 +132,15 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             return null;
          }
 
+         if (routable.isRedelivered())
+         {
+            if (log.isTraceEnabled())
+            {
+               log.trace("Message is redelivered - setting jmsredelivered to true");
+            }
+            message.setRedelivered(true);
+         }
+         
          delivery = new SimpleDelivery(observer, (MessageReference)routable);
          deliveries.put(routable.getMessageID(), delivery);
 
@@ -319,14 +322,14 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       }
    }
    
-   void acknowledge(String messageID)
+   void acknowledge(String messageID, Transaction tx)
    {
       if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
 
       try
       {        
          Delivery d = (Delivery)deliveries.get(messageID);
-         d.acknowledge();
+         d.acknowledge(tx);
          deliveries.remove(messageID);
          
       }
@@ -356,84 +359,18 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       
       if (log.isTraceEnabled()) { log.trace("There are " + old.size() + " deliveries to redeliver"); }
 
-      
-      
-      
-      //FIXME - Hmmmmm.....
-      //Currently the core requires a transaction to be running for doing redelivery
-      //I don't see why this is necessary-
-      //We shouldn't need to do redelivery in a tx
-      TransactionManager mgr = this.sessionEndpoint.serverPeer.getTransactionManager();
-      
-      Transaction txOld;
-      try
+      for(Iterator i = old.iterator(); i.hasNext();)
       {
-         txOld = mgr.suspend();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to suspend tx");
-         throw new IllegalStateException("Failed to suspend tx");
-      }
-      
-      
-      try
-      {
-         mgr.begin();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to start tx", e);
-         throw new IllegalStateException("Failed to start tx");
-      }
-      
-      try
-      {
-         
-         for(Iterator i = old.iterator(); i.hasNext();)
-         {
-            try
-            {
-               Delivery d = (Delivery)i.next();
-               d.redeliver(this);
-            }
-            catch(Throwable t)
-            {
-               String msg = "Failed to initiate redelivery";
-               log.error(msg, t);
-               throw new JMSException(msg);
-            }
-         }
-         
-         mgr.commit();
-         
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to redeliver", t);
          try
          {
-            mgr.rollback();
+            Delivery d = (Delivery)i.next();
+            d.redeliver(this);
          }
-         catch (Throwable t2)
+         catch(Throwable t)
          {
-            log.error("Failed to rollback", t2);
-            throw new IllegalStateException("Failed to rollback");
-         }
-      }
-      finally
-      {
-         if (txOld != null)
-         {
-            try
-            {
-               mgr.resume(txOld);
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to resume tx", e);
-               throw new IllegalStateException("Failed to resume tx");
-            }
+            String msg = "Failed to initiate redelivery";
+            log.error(msg, t);
+            throw new JMSException(msg);
          }
       }
       

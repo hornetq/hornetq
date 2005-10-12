@@ -8,70 +8,50 @@
 
 package org.jboss.messaging.core;
 
-import javax.transaction.SystemException;
 import java.io.Serializable;
 import java.util.List;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
- * A reliable, transactional (JTA) PersistenceManager.
+ * A PersistenceManager is responsible for managing persistent message state in
+ * a persistent store.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
 public interface PersistenceManager
 {
-   void add(Serializable channelID, Delivery d) throws Throwable;
+   void add(Serializable channelID, Delivery d) throws Exception;
 
-   boolean remove(Serializable channelID, Delivery d)  throws Throwable;
+   boolean remove(Serializable channelID, Delivery d, Transaction tx)  throws Exception;
 
    /**
     * @return a List of StorageIdentifiers for all messages for which there are active deliveries.
     */
-   List deliveries(Serializable channelID) throws Throwable;
+   List deliveries(Serializable channelID) throws Exception;
 
-   void add(Serializable channelID, MessageReference ref) throws Throwable;
+   void add(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 
-   boolean remove(Serializable channelID, MessageReference ref) throws Throwable;
+   boolean remove(Serializable channelID, MessageReference ref) throws Exception;
 
    /**
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
     */
-   List messages(Serializable channelID) throws Throwable;
+   List messages(Serializable channelID) throws Exception;
 
-   /**
-    * Transactional handling only. Needs a JTA transaction.
-    *
-    * @exception SystemException - thrown when rollback cannot be completed.
-    */
-   void add(Serializable channelID, Serializable txID, MessageReference r) throws SystemException;
-
-   /**
-    * Needs a JTA transaction.
-    *
-    * @exception SystemException - thrown when rollback cannot be completed.
-    */
-   void enableTransactedMessages(Serializable channelID, Serializable txID) throws SystemException;
-
-   /**
-    * Needs a JTA transaction.
-    *
-    * @exception SystemException - thrown when rollback cannot be completed.
-    */
-   void dropTransactedMessages(Serializable channelID, Serializable txID) throws SystemException;
-
-
-   void store(Message m) throws Throwable;
+   void store(Message m) throws Exception;
    
-   void remove(String messageID) throws Throwable;
+   void remove(String messageID) throws Exception;
 
-   /**
-    * @return null if no such message is found.
-    *
-    * @exception Throwable - problem with the persistent storage.
-    */
-   Message retrieve(Serializable messageID) throws Throwable;
+   Message retrieve(Serializable messageID) throws Exception;
    
    void removeAllMessageData(Serializable channelID) throws Exception;
+   
+   void commitTx(Transaction tx) throws Exception;
+   
+   void rollbackTx(Transaction tx) throws Exception;
 
 }

@@ -6,12 +6,14 @@
  */
 package org.jboss.messaging.core.distributed.pipe;
 
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -59,7 +61,7 @@ public class DistributedPipe implements Receiver
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable r)
+   public Delivery handle(DeliveryObserver observer, Routable r, Transaction tx)
    {
 
       // TODO for the time being, this end always makes synchonous calls and always returns "done"
@@ -68,6 +70,13 @@ public class DistributedPipe implements Receiver
       // Check if the message was sent remotely; in this case, I must not resend it to avoid
       // endless loops among peers or deadlock on distributed RPC if deadlock detection is not
       // enabled.
+      
+      //Convert a message reference back into a Message before sending remotely
+      if (r.isReference())
+      {
+         MessageReference ref = (MessageReference)r;
+         r = ref.getMessage();
+      }
 
       if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
       {

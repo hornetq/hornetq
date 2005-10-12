@@ -40,7 +40,7 @@ public class Colocated extends Client
       sc = new ServiceContainer("transaction,remoting", null);
       sc.start();
 
-      serverPeer = new ServerPeer("ServerPeer0");
+      serverPeer = new ServerPeer("ServerPeer0", "jdbc:hsqldb:mem:messaging");
       serverPeer.start();
 
       deployTopic("T");
