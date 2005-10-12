@@ -42,6 +42,7 @@ public class PerfInvocationHandler implements ServerInvocationHandler
 
    public void addListener(InvokerCallbackHandler callbackHandler)
    {
+      
    }
 
    public void removeListener(InvokerCallbackHandler callbackHandler)

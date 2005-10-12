@@ -50,6 +50,11 @@ public class ReceiverJob extends BaseThroughputJob
       return "Receiver";
    }
    
+   public ReceiverJob()
+   {
+      
+   }
+   
    public ReceiverJob(Element e) throws ConfigurationException
    {
       super(e);

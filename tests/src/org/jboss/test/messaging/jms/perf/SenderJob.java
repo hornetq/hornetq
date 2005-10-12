@@ -45,9 +45,16 @@ public class SenderJob extends BaseThroughputJob
       return "Sender";
    }
    
+   public SenderJob()
+   {
+      
+   }
+   
    public SenderJob(Element e) throws ConfigurationException
    {
       super(e);
+      if (log.isTraceEnabled()) { log.trace("Constructing SenderJob from XML element"); }
+      
    }
    
    protected void logInfo()
@@ -61,6 +68,7 @@ public class SenderJob extends BaseThroughputJob
    
    public void importXML(Element element) throws ConfigurationException
    {  
+      if (log.isTraceEnabled()) { log.trace("importing xml"); }
       super.importXML(element);
       
       this.anon = MetadataUtils.getOptionalChildBooleanContent(element, "anonymous-producer", false);

@@ -65,25 +65,33 @@ public class PersistentMessageStore extends TransactionalMessageStore
          return ref;
       }
       
-      //Maybe it's on disk already?
-      Message m = retrieveMessage(r.getMessageID());
-      if (m != null)
+      /*
+      if (r.isReliable())
       {
-         ref = super.createReference(m);
+         //Maybe it's on disk already?
+         Message m = retrieveMessage(r.getMessageID());
+         if (m != null)
+         {
+            ref = super.createReference(m);
+         }
       }
+      */
            
       if (ref == null)
       {
          //Message doesn't exist either in memory on disc
-         try
+         if (r.isReliable())
          {
-            pm.store((Message)r);
-            if (log.isTraceEnabled()) { log.trace("Store message " + r); }
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to store message", e);
-            return null;
+            try
+            {
+               pm.store((Message)r);
+               if (log.isTraceEnabled()) { log.trace("Store message " + r); }
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to store message", e);
+               return null;
+            }
          }
          ref= super.createReference(r);
       }

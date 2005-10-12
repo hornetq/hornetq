@@ -36,7 +36,10 @@ public class CSVResultPersistor implements ResultPersistor
    {
       try
       {
-         writer.write(value);
+         if (value != null)
+         {
+            writer.write(value);
+         }
          writer.write(",");
       }
       catch (IOException e)

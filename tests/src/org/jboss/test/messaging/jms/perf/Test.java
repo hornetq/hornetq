@@ -64,37 +64,37 @@ public class Test implements XMLLoadable
          SlaveInfo slaveInfo = new SlaveInfo(slaveName, slaveLocator);
          slaveInfos.add(slaveInfo);
          
-         iter = MetadataUtils.getChildrenByTagName(slaveElement,"drain-job");      
-         while (iter.hasNext())
+         Iterator iter2 = MetadataUtils.getChildrenByTagName(slaveElement,"drain-job");      
+         while (iter2.hasNext())
          {
-            Element elChild = (Element)iter.next();
+            Element elChild = (Element)iter2.next();
             DrainJob job= new DrainJob(elChild);
             slaveInfo.addJob(job);
             log.info("Added drain job");
          }
          
-         iter = MetadataUtils.getChildrenByTagName(slaveElement,"fill-job");      
-         while (iter.hasNext())
+         iter2 = MetadataUtils.getChildrenByTagName(slaveElement,"fill-job");      
+         while (iter2.hasNext())
          {
-            Element elChild = (Element)iter.next();
+            Element elChild = (Element)iter2.next();
             FillJob job= new FillJob(elChild);
             slaveInfo.addJob(job);
             log.info("Added fill job");
          }
          
-         iter = MetadataUtils.getChildrenByTagName(slaveElement,"sender-job");      
-         while (iter.hasNext())
+         iter2 = MetadataUtils.getChildrenByTagName(slaveElement,"sender-job");      
+         while (iter2.hasNext())
          {
-            Element elChild = (Element)iter.next();
+            Element elChild = (Element)iter2.next();
             SenderJob job= new SenderJob(elChild);
             slaveInfo.addJob(job);
             log.info("Added sender job");
          }
          
-         iter = MetadataUtils.getChildrenByTagName(slaveElement, "receiver-job");      
-         while (iter.hasNext())
+         iter2 = MetadataUtils.getChildrenByTagName(slaveElement, "receiver-job");      
+         while (iter2.hasNext())
          {
-            Element elChild = (Element)iter.next();
+            Element elChild = (Element)iter2.next();
             ReceiverJob job= new ReceiverJob(elChild);
             slaveInfo.addJob(job);
             log.info("Added receiver job");
@@ -204,9 +204,13 @@ public class Test implements XMLLoadable
          persistor.addValue("testName", this.name);
          persistor.addValue("jobName", runner.getJob().getName());
          runner.getJob().fillInResults(persistor);
-         persistor.addValue("messages", result.messages);
-         persistor.addValue("time", result.time);
+         if (result != null)
+         {
+            persistor.addValue("messages", result.messages);
+            persistor.addValue("time", result.time);
+         }
          persistor.persist();
       }
+      log.info("Test run complete");
    }
 }

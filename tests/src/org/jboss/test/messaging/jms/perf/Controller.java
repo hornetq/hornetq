@@ -136,6 +136,10 @@ public class Controller
            test.run();
         }
         
+        log.info("Run all tests");
+        
+        persistor.close();
+        
       }
       catch (Throwable e)
       {

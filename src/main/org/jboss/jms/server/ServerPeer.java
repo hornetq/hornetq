@@ -545,7 +545,7 @@ public class ServerPeer
    {
       String s = (String)mbeanServer.invoke(connector, "getInvokerLocator",
                                             new Object[0], new String[0]);
-      locator = new InvokerLocator(s);
+      locator = new InvokerLocator(s + "&socketTimeout=0");
 
       log.debug("LocatorURI: " + getLocatorURI());
 

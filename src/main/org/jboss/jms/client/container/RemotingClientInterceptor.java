@@ -83,6 +83,7 @@ public class RemotingClientInterceptor implements Interceptor, Serializable
          client = new Client(locator, subsystem);
          if (log.isTraceEnabled()) { log.trace("Created client"); }
          
+      
          invocation.getMetaData().addMetaData(REMOTING, CLIENT, client, PayloadKey.TRANSIENT);
          getHandler(invocation).metadata.addMetaData(REMOTING, CLIENT, client, PayloadKey.TRANSIENT);
       }
