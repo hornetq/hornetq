@@ -4,7 +4,7 @@
          
    <tests>
       
-      
+      <!--
       
       <test name="Simple Send">       
          
@@ -66,7 +66,7 @@
          </slave>           
       </test>
       
-      
+      -->
       
       <test name="Simple Send-Receive pair">        
          <slave name="slave1">           
@@ -83,8 +83,9 @@
                <message-size>0</message-size>
                <message-type>javax.jms.Message</message-type>
                <delivery-mode>1</delivery-mode>
-               <warmup-time>5000</warmup-time>
-               <run-time>10000</run-time>
+               <warmup-time>10000</warmup-time>
+               <run-time>60000</run-time>
+               <cool-down>20000</cool-down>
             </sender-job>   
          </slave>   
          
@@ -103,8 +104,9 @@
                <message-selector></message-selector>
                <no-local>false</no-local>
                <use-listener>false</use-listener>
-               <warmup-time>5000</warmup-time>
-               <run-time>10000</run-time>
+               <warmup-time>10000</warmup-time>
+               <run-time>60000</run-time>
+               <cool-down>20000</cool-down>
             </receiver-job>       
          </slave>           
          

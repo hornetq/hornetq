@@ -141,8 +141,6 @@ class ReliableState extends TransactionalState
    {
       List delivering = super.delivering(filter);
       
-      
-      
       try
       {
          List persisted = pm.deliveries(channelID);

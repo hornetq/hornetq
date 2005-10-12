@@ -25,7 +25,7 @@ public class ReceiverJob extends BaseThroughputJob
 {
    private static final long serialVersionUID = 3633353742146810600L;
    
-   private static final long RECEIVE_TIMEOUT = 10000;
+   private static final long RECEIVE_TIMEOUT = 1000;
 
    private static final Logger log = Logger.getLogger(SenderJob.class);
 
@@ -106,20 +106,22 @@ public class ReceiverJob extends BaseThroughputJob
             while (!stopping)
             {               
             
-               Message m = cons.receive(RECEIVE_TIMEOUT);     
+               Message m = cons.receiveNoWait();  
                       
                if (m != null)
                {
                   count++;
+                  //log.info("Received message");
+                  if (transacted)
+                  {
+                     if (count % transactionSize == 0)
+                     {
+                        sess.commit();
+                     }
+                  } 
                }
                          
-               if (transacted)
-               {
-                  if (count % transactionSize == 0)
-                  {
-                     sess.commit();
-                  }
-               }                                           
+                                                         
             }    
 
          }

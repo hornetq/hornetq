@@ -14,6 +14,7 @@ import org.jboss.messaging.core.tx.Transaction;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,8 +52,8 @@ public class UnreliableState implements State
    public UnreliableState(Channel channel)
    {
       this.channel = channel;
-      messageRefs = new ArrayList();
-      deliveries = new ArrayList();
+      messageRefs = Collections.synchronizedList(new ArrayList());
+      deliveries = Collections.synchronizedList(new ArrayList());
       txToAddRefTasks = new ConcurrentReaderHashMap();
       txToRemoveDelTasks = new ConcurrentReaderHashMap();
    }
@@ -125,17 +126,20 @@ public class UnreliableState implements State
          log.trace("Getting undelivered unreliable messages");
       }
       List undelivered = new ArrayList();
-      for(Iterator i = messageRefs.iterator(); i.hasNext(); )
+      synchronized(messageRefs)
       {
-         Routable r = (Routable)i.next();
-         if (filter == null || filter.accept(r))
+         for(Iterator i = messageRefs.iterator(); i.hasNext(); )
          {
-            if (log.isTraceEnabled()) { log.trace("Accepted by filter so adding to list"); }
-            undelivered.add(r);
-         }
-         else
-         {
-            if (log.isTraceEnabled()) { log.trace("NOT Accepted by filter so not adding to list"); }
+            Routable r = (Routable)i.next();
+            if (filter == null || filter.accept(r))
+            {
+               if (log.isTraceEnabled()) { log.trace("Accepted by filter so adding to list"); }
+               undelivered.add(r);
+            }
+            else
+            {
+               if (log.isTraceEnabled()) { log.trace("NOT Accepted by filter so not adding to list"); }
+            }
          }
       }
       if (log.isTraceEnabled())
@@ -163,13 +167,16 @@ public class UnreliableState implements State
    public List delivering(Filter filter)
    {
       List delivering = new ArrayList();
-      for(Iterator i = deliveries.iterator(); i.hasNext(); )
+      synchronized (deliveries)
       {
-         Delivery d = (Delivery)i.next();
-         Routable r = d.getReference();
-         if (filter == null || filter.accept(r))
+         for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
-            delivering.add(r);
+            Delivery d = (Delivery)i.next();
+            Routable r = d.getReference();
+            if (filter == null || filter.accept(r))
+            {
+               delivering.add(r);
+            }
          }
       }
       return delivering;

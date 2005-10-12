@@ -19,7 +19,7 @@ public interface Servitor extends Runnable
    
    void stop();
    
-   void startCount();
+   void setCounting(boolean counting);
    
    long getCount();
   

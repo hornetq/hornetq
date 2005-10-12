@@ -53,6 +53,8 @@ public abstract class BaseThroughputJob extends BaseJob implements XMLLoadable
    /* How long to wait before gathering results proper */
    protected long warmUpTime;
    
+   protected long coolDown;
+   
    /* How long to run for after warm up */
    protected long runTime;
    
@@ -112,10 +114,17 @@ public abstract class BaseThroughputJob extends BaseJob implements XMLLoadable
       
       for (int i = 0; i < numSessions; i++)
       {
-         servitors[i].startCount();
+         servitors[i].setCounting(true);
       }
       
       Thread.sleep(runTime);
+      
+      for (int i = 0; i < numSessions; i++)
+      {
+         servitors[i].setCounting(false);
+      }
+      
+      Thread.sleep(coolDown);
       
       for (int i = 0; i < numSessions; i++)
       {
@@ -167,19 +176,28 @@ public abstract class BaseThroughputJob extends BaseJob implements XMLLoadable
       
       protected long startCount;
       
+      protected long endCount;
+      
       public void stop()
       {
          stopping = true;
       }
       
-      public void startCount()
+      public void setCounting(boolean counting)
       {
-         startCount = count;
+         if (counting)
+         {
+            startCount = count;            
+         }
+         else
+         {
+            endCount = count;
+         }
       }
       
       public long getCount()
       {
-         return count - startCount;
+         return endCount - startCount;
       }
       
       public boolean isFailed()
@@ -249,7 +267,7 @@ public abstract class BaseThroughputJob extends BaseJob implements XMLLoadable
       {
          this.throttleScale = 1;
       }
-      
+      this.coolDown = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "dool-down"));
    }
    
 
@@ -261,6 +279,7 @@ public abstract class BaseThroughputJob extends BaseJob implements XMLLoadable
       persistor.addValue("transacted", this.transacted);
       persistor.addValue("transactionSize", this.transactionSize);
       persistor.addValue("warmUpTime", this.warmUpTime);
+      persistor.addValue("coolDown", this.coolDown);
       persistor.addValue("runTime", this.runTime);
       persistor.addValue("throttle", this.throttle);
       persistor.addValue("throttleScale", this.throttleScale);
