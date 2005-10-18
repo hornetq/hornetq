@@ -7,13 +7,6 @@
 
 package org.jboss.test.messaging.jms.perf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.management.MBeanServer;
 
 import org.jboss.logging.Logger;
@@ -24,9 +17,6 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class PerfInvocationHandler implements ServerInvocationHandler
 {

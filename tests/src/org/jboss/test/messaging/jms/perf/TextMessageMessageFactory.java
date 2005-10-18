@@ -11,12 +11,8 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class TextMessageMessageFactory extends AbstractMessageFactory
 {

@@ -8,19 +8,12 @@ package org.jboss.test.messaging.jms.perf;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public interface Servitor extends Runnable
-{
-   
+{ 
    boolean isFailed();
    
-   void stop();
+   void init();
    
-   void setCounting(boolean counting);
-   
-   long getCount();
-  
+   void deInit(); 
 }

@@ -13,9 +13,6 @@ import javax.jms.StreamMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class StreamMessageMessageFactory extends AbstractMessageFactory
 {

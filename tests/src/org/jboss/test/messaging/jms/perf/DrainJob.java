@@ -10,55 +10,74 @@ import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
+import javax.jms.Topic;
 
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
+/**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ */
 public class DrainJob extends BaseJob
 {
+   private static final long serialVersionUID = -4637670167659745878L;
+
    private static final Logger log = Logger.getLogger(DrainJob.class);
    
    protected static final long RECEIVE_TIMEOUT = 5000;
 
-   public String getName()
+   protected String subName;
+   
+   public DrainJob(String serverURL, String destinationName, String subName)
    {
-      return "Drain Job";
+      super(serverURL, destinationName);
+      this.subName = subName;
    }
    
-   public DrainJob()
+   public Object getResult()
    {
-      
+      return null;
    }
    
-   public DrainJob(Element e) throws ConfigurationException
-   {
-      super(e);
-   }
-
-   public JobResult run()
-   {
-      
-      
+   public void run()
+   { 
       Connection conn = null;
+      
+      int count = 0;
       
       try
       {
+ 
          super.setup();
          
          conn = cf.createConnection();
+         
+         conn.start();
       
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+             
+         MessageConsumer consumer;
+         if (subName == null)
+         {
          
-         MessageConsumer consumer = sess.createConsumer(dest);
-         
+            consumer = sess.createConsumer(dest);
+         }
+         else
+         {
+            consumer = sess.createDurableSubscriber((Topic)dest, subName);
+         }
+                    
          while (true)
          {
             Message m = consumer.receive(RECEIVE_TIMEOUT);
+            //log.info("received message");
             if (m == null)
             {
                break;
             }
+            count++;
          }
+         
+         log.info("Finished running job===================");         
       }
       catch (Exception e)
       {
@@ -81,13 +100,13 @@ public class DrainJob extends BaseJob
          }
       }
       
-      return null;
+
    } 
    
-   
-   public void fillInResults(ResultPersistor persistor)
-   {
       
+   public void setSubName(String subName)
+   {
+      this.subName = subName;
    }
 
 }

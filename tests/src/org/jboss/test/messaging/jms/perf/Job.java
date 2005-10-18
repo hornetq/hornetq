@@ -8,18 +8,11 @@ package org.jboss.test.messaging.jms.perf;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
-public interface Job
+public interface Job extends Runnable
 {
-   JobResult run();
-   
-   String getName();
-   
    boolean isFailed();
    
-   void fillInResults(ResultPersistor persistor);
+   Object getResult();
    
 }

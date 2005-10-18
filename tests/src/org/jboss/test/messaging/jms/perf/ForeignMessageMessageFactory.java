@@ -15,12 +15,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class ForeignMessageMessageFactory extends AbstractMessageFactory
 {

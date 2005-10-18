@@ -8,15 +8,17 @@ package org.jboss.test.messaging.jms.perf;
 
 import java.io.Serializable;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
+/**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ */
 public abstract class BaseJob implements Job, Serializable
 {
    private transient static final Logger log = Logger.getLogger(BaseJob.class);
@@ -33,33 +35,37 @@ public abstract class BaseJob implements Job, Serializable
    
    protected boolean failed;
    
-   public void importXML(Element element) throws ConfigurationException
-   { 
-      if (log.isTraceEnabled()) { log.trace("importing xml"); }
-      this.serverURL = MetadataUtils.getUniqueChildContent(element, "jms-server-url");
-      this.destName = MetadataUtils.getUniqueChildContent(element, "destination-jndi-name");
-      if (log.isTraceEnabled()) { log.trace("server url iz:" + this.serverURL); }
+   public BaseJob(String serverURL, String destinationName)
+   {
+      this.serverURL = serverURL;
+      this.destName = destinationName;
    }
    
-   public BaseJob()
+
+   protected String sub(Map variables, String value)
    {
-      
-   }
-   
-   
-   
-   public BaseJob(Element el)
-   {
-      try
+      if (value == null)
       {
-         importXML(el);
-      }
-      catch (ConfigurationException e)
-      {
-         log.error("Failed to inport XML", e);
+         return null;
       }
       
-      logInfo();
+      if (variables == null)
+      {
+         return value;
+      }
+      
+      value = value.trim();
+      
+      if (value.startsWith("@"))
+      {
+         String variable = value.substring(1);
+         String newValue = (String)variables.get(variable);
+         if (newValue != null)
+         {
+            value = newValue;
+         }
+      }
+      return value;
    }
    
    protected void setup() throws Exception
@@ -100,4 +106,31 @@ public abstract class BaseJob implements Job, Serializable
    {
       return failed;
    }
+
+   /**
+    * Set the destName.
+    * 
+    * @param destName The destName to set.
+    */
+   public void setDestName(String destName)
+   {
+      this.destName = destName;
+   }
+
+   
+
+   /**
+    * Set the serverURL.
+    * 
+    * @param serverURL The serverURL to set.
+    */
+   public void setServerURL(String serverURL)
+   {
+      this.serverURL = serverURL;
+   }
+   
+//   public String getLocator()
+//   {
+//      return slaveLocator;
+//   }
 }

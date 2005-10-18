@@ -13,13 +13,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class SenderJob extends BaseThroughputJob
 {
@@ -35,26 +31,9 @@ public class SenderJob extends BaseThroughputJob
    
    protected MessageFactory mf;
    
-   public Servitor createServitor()
+   public Servitor createServitor(int numMessages)
    {
-      return new Sender();
-   }
-   
-   public String getName()
-   {
-      return "Sender";
-   }
-   
-   public SenderJob()
-   {
-      
-   }
-   
-   public SenderJob(Element e) throws ConfigurationException
-   {
-      super(e);
-      if (log.isTraceEnabled()) { log.trace("Constructing SenderJob from XML element"); }
-      
+      return new Sender(numMessages);
    }
    
    protected void logInfo()
@@ -66,68 +45,54 @@ public class SenderJob extends BaseThroughputJob
       log.info("Delivery Mode:" + (deliveryMode == DeliveryMode.PERSISTENT ? "Persistent" : "Non-persistent"));
    }
    
-   public void importXML(Element element) throws ConfigurationException
-   {  
-      if (log.isTraceEnabled()) { log.trace("importing xml"); }
-      super.importXML(element);
-      
-      this.anon = MetadataUtils.getOptionalChildBooleanContent(element, "anonymous-producer", false);
-      this.msgSize = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "message-size"));
-      String messageType = MetadataUtils.getUniqueChildContent(element, "message-type");
-      
-      if ("javax.jms.Message".equals(messageType))
-      {
-         mf = new MessageMessageFactory();
-      }
-      else if ("javax.jms.BytesMessage".equals(messageType))
-      {
-         mf = new BytesMessageMessageFactory();
-      }
-      else if ("javax.jms.MapMessage".equals(messageType))
-      {
-         mf = new MapMessageMessageFactory();
-      }
-      else if ("javax.jms.ObjectMessage".equals(messageType))
-      {
-         mf = new ObjectMessageMessageFactory();
-      }
-      else if ("javax.jms.StreamMessage".equals(messageType))
-      {
-         mf = new StreamMessageMessageFactory();
-      }
-      else if ("javax.jms.TextMessage".equals(messageType))
-      {
-         mf = new TextMessageMessageFactory();
-      }
-      else if ("foreign".equals(messageType))
-      {
-         mf = new ForeignMessageMessageFactory();
-      }
-      else
-      {
-         throw new ConfigurationException("Invalid message type:" + messageType);
-      }
-      
-      this.deliveryMode = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "delivery-mode"));
-      
-      if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
-      {
-         throw new ConfigurationException("Invalid delivery mode:" + deliveryMode);
-      }
+   public SenderJob(String serverURL, String destinationName, int numConnections,
+         int numSessions, boolean transacted, int transactionSize, 
+         int numMessages, boolean anon, int messageSize,
+         MessageFactory messageFactory, int deliveryMode)
+   {
+      super (serverURL, destinationName, numConnections,
+            numSessions, transacted, transactionSize, numMessages);
+      this.anon = anon;
+      this.msgSize = messageSize;
+      this.mf = messageFactory;
+      this.deliveryMode = deliveryMode;
    }
+   
+
 
    protected class Sender extends AbstractServitor
    {
       
-      public void run()
+      Sender(int numMessages)
+      {
+         super(numMessages);
+      }
+      
+      MessageProducer prod;
+      Session sess;
+      
+      public void deInit()
+      {
+         try
+         {
+            sess.close();
+         }      
+         catch (Exception e)
+         {
+            log.error("Receiver failed", e);
+            failed = true;
+         }
+      }
+      
+      public void init()
       {
          try
          {
             Connection conn = getNextConnection();
             
-            Session sess = conn.createSession(transacted, Session.AUTO_ACKNOWLEDGE); //Ackmode doesn't matter            
+            sess = conn.createSession(transacted, Session.AUTO_ACKNOWLEDGE); //Ackmode doesn't matter            
             
-            MessageProducer prod = null;
+            prod = null;
             
             if (anon)
             {
@@ -138,10 +103,23 @@ public class SenderJob extends BaseThroughputJob
                prod = sess.createProducer(dest);
             }
             
-            prod.setDeliveryMode(deliveryMode);                       
+            prod.setDeliveryMode(deliveryMode); 
+         }
+         catch (Exception e)
+         {
+            log.error("Sender failed", e);
+            failed = true;
+         }
+      }
+      
+      public void run()
+      {
+         try
+         {
+            int count = 0;
             
-            while (!stopping)
-            {
+            while (count < numMessages)
+            {               
             
                Message m = mf.getMessage(sess, msgSize);
                
@@ -155,15 +133,7 @@ public class SenderJob extends BaseThroughputJob
                }
                
                count++;
-               
-               if (count % throttleScale == 0)
-               {
-                  if (throttle != 0)
-                  {
-                     Thread.sleep(throttle);
-                  }
-               }
-                             
+           
                if (transacted)
                {
                   if (count % transactionSize == 0)
@@ -172,6 +142,7 @@ public class SenderJob extends BaseThroughputJob
                   }
                }                   
             }
+
          }
          catch (Exception e)
          {
@@ -187,13 +158,43 @@ public class SenderJob extends BaseThroughputJob
    } 
    
 
-   public void fillInResults(ResultPersistor persistor)
+   /**
+    * Set the anon.
+    * 
+    * @param anon The anon to set.
+    */
+   public void setAnon(boolean anon)
    {
-      super.fillInResults(persistor);
-      persistor.addValue("anonymous", this.anon);
-      persistor.addValue("messageSize", this.msgSize);
-      persistor.addValue("deliveryMode", this.deliveryMode);
-      persistor.addValue("messageType", this.mf.getClass().getName());
-      
+      this.anon = anon;
+   }
+
+   /**
+    * Set the deliveryMode.
+    * 
+    * @param deliveryMode The deliveryMode to set.
+    */
+   public void setDeliveryMode(int deliveryMode)
+   {
+      this.deliveryMode = deliveryMode;
+   }
+
+   /**
+    * Set the mf.
+    * 
+    * @param mf The mf to set.
+    */
+   public void setMf(MessageFactory mf)
+   {
+      this.mf = mf;
+   }
+
+   /**
+    * Set the msgSize.
+    * 
+    * @param msgSize The msgSize to set.
+    */
+   public void setMsgSize(int msgSize)
+   {
+      this.msgSize = msgSize;
    }
 }

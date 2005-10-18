@@ -7,17 +7,19 @@
 package org.jboss.test.messaging.jms.perf;
 
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
+/**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ */
 public class FillJob extends BaseJob
 {
+   private static final long serialVersionUID = 339586193389055268L;
+
    private static final Logger log = Logger.getLogger(FillJob.class);
    
    protected int numMessages;
@@ -33,14 +35,9 @@ public class FillJob extends BaseJob
       return "Fill Job";
    }
    
-   public FillJob()
+   public Object getResult()
    {
-      
-   }
-   
-   public FillJob(Element e) throws ConfigurationException
-   {
-      super(e);
+      return null;
    }
    
    public void logInfo()
@@ -52,17 +49,21 @@ public class FillJob extends BaseJob
       log.info("Message type: " + this.mf.getClass().getName());
    }
 
-   public JobResult run()
+   public void run()
    {
             
       Connection conn = null;
       
       try
       {
+         log.info("==============Running job:" + this.getName());
+         
          super.setup();
          
          conn = cf.createConnection();
-      
+         
+         long count = 0;
+         
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(dest);
@@ -72,8 +73,11 @@ public class FillJob extends BaseJob
          {
             Message m = mf.getMessage(sess, msgSize);
             prod.send(m);
+            count++;
          }
-        
+           
+         log.info("==========================Finished running job");
+           
       }
       catch (Exception e)
       {
@@ -95,63 +99,64 @@ public class FillJob extends BaseJob
             }
          }
       }
-      
-      return null;
+
    } 
    
-   public void importXML(Element element) throws ConfigurationException
-   {  
-      super.importXML(element);
-      
-      this.numMessages = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "num-messages"));
-      
-      this.msgSize = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "message-size"));
-      String messageType = MetadataUtils.getUniqueChildContent(element, "message-type");
-      
-      if ("javax.jms.Message".equals(messageType))
-      {
-         mf = new MessageMessageFactory();
-      }
-      else if ("javax.jms.BytesMessage".equals(messageType))
-      {
-         mf = new BytesMessageMessageFactory();
-      }
-      else if ("javax.jms.MapMessage".equals(messageType))
-      {
-         mf = new MapMessageMessageFactory();
-      }
-      else if ("javax.jms.ObjectMessage".equals(messageType))
-      {
-         mf = new ObjectMessageMessageFactory();
-      }
-      else if ("javax.jms.StreamMessage".equals(messageType))
-      {
-         mf = new StreamMessageMessageFactory();
-      }
-      else if ("javax.jms.TextMessage".equals(messageType))
-      {
-         mf = new TextMessageMessageFactory();
-      }
-      else if ("foreign".equals(messageType))
-      {
-         mf = new ForeignMessageMessageFactory();
-      }
-      else
-      {
-         throw new ConfigurationException("Invalid message type:" + messageType);
-      }
-      
-      this.deliveryMode = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "delivery-mode"));
-      
-      if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
-      {
-         throw new ConfigurationException("Invalid delivery mode:" + deliveryMode);
-      }
-   }
-   
-   public void fillInResults(ResultPersistor persistor)
+   public FillJob(String serverURL, String destName, int numMessages, int messageSize, MessageFactory mf,
+         int deliveryMode)
    {
+      super(serverURL, destName);
+      this.numMessages = numMessages;
+      this.mf = mf;
+      this.deliveryMode = deliveryMode;
       
+   }
+      
+
+   /**
+    * Set the deliveryMode.
+    * 
+    * @param deliveryMode The deliveryMode to set.
+    */
+   public void setDeliveryMode(int deliveryMode)
+   {
+      this.deliveryMode = deliveryMode;
+   }
+
+
+
+   /**
+    * Set the mf.
+    * 
+    * @param mf The mf to set.
+    */
+   public void setMf(MessageFactory mf)
+   {
+      this.mf = mf;
+   }
+
+
+
+   /**
+    * Set the msgSize.
+    * 
+    * @param msgSize The msgSize to set.
+    */
+   public void setMsgSize(int msgSize)
+   {
+      this.msgSize = msgSize;
+   }
+
+
+
+   /**
+    * Set the numMessages.
+    * 
+    * @param numMessages The numMessages to set.
+    */
+   public void setNumMessages(int numMessages)
+   {
+      this.numMessages = numMessages;
    }
 
 }

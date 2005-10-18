@@ -13,13 +13,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class ReceiverJob extends BaseThroughputJob
 {
@@ -40,24 +36,25 @@ public class ReceiverJob extends BaseThroughputJob
    protected boolean asynch;
    
 
-   public Servitor createServitor()
+   public Servitor createServitor(int numMessages)
    {
-      return new Receiver();
+      return new Receiver(numMessages);
    }
    
-   public String getName()
+
+   public ReceiverJob(String serverURL, String destinationName, int numConnections,
+         int numSessions, boolean transacted, int transactionSize,
+         int numMessages, int ackMode, String subName,
+         String selector, boolean noLocal, boolean asynch)
    {
-      return "Receiver";
-   }
-   
-   public ReceiverJob()
-   {
-      
-   }
-   
-   public ReceiverJob(Element e) throws ConfigurationException
-   {
-      super(e);
+      super (serverURL, destinationName, numConnections,
+            numSessions, transacted, transactionSize,
+            numMessages);
+      this.ackMode = ackMode;
+      this.subName = subName;
+      this.selector = selector;
+      this.noLocal = noLocal;
+      this.asynch = asynch;
    }
 
    protected void logInfo()
@@ -70,26 +67,49 @@ public class ReceiverJob extends BaseThroughputJob
       log.info("Use message listener? " + asynch);
    }
    
-   public void importXML(Element element) throws ConfigurationException
-   {  
-      super.importXML(element);
-      
-      this.ackMode = Integer.parseInt(MetadataUtils.getUniqueChildContent(element, "acknowledgement-mode"));
-      this.subName = MetadataUtils.getOptionalChildContent(element, "durable-subscription-name", null);
-      this.selector = MetadataUtils.getOptionalChildContent(element, "mesage-selector", null);
-      this.noLocal = MetadataUtils.getOptionalChildBooleanContent(element, "no-local", false);
-      this.asynch = MetadataUtils.getOptionalChildBooleanContent(element, "use-listener", false);
-      
-      if (ackMode != Session.AUTO_ACKNOWLEDGE && ackMode != Session.CLIENT_ACKNOWLEDGE &&
-            ackMode != Session.DUPS_OK_ACKNOWLEDGE && ackMode != Session.SESSION_TRANSACTED)
-      {
-         throw new ConfigurationException("Invalid ack mode:" + ackMode);
-      }
-   }
-   
-
    protected class Receiver extends AbstractServitor
    {
+      
+      Receiver(int numMessages)
+      {
+         super(numMessages);
+      }
+      
+      Session sess;
+      
+      MessageConsumer cons;
+      
+      public void deInit()
+      {
+         try
+         {
+            sess.close();
+         }      
+         catch (Exception e)
+         {
+            log.error("Receiver failed", e);
+            failed = true;
+         }
+      }
+      
+      public void init()
+      {
+         try
+         {
+            Connection conn = getNextConnection();
+            
+            sess = conn.createSession(transacted, ackMode);
+           
+            cons = sess.createConsumer(dest, selector, noLocal);
+                   
+         }
+         catch (Exception e)
+         {
+            log.error("Receiver failed", e);
+            failed = true;
+         }
+     
+      }
       
       public void run()
       {
@@ -97,21 +117,17 @@ public class ReceiverJob extends BaseThroughputJob
          {
             log.info("Running receiver");
             
-            Connection conn = getNextConnection();
-          
-            Session sess = conn.createSession(transacted, ackMode);
-           
-            MessageConsumer cons = sess.createConsumer(dest, selector, noLocal);
+               
+            int count = 0;
             
-            while (!stopping)
-            {               
-            
-               Message m = cons.receiveNoWait();  
+            while (count < (numMessages))
+            {                           
+               
+               Message m = cons.receive(RECEIVE_TIMEOUT);  
                       
                if (m != null)
                {
                   count++;
-                  //log.info("Received message");
                   if (transacted)
                   {
                      if (count % transactionSize == 0)
@@ -119,11 +135,14 @@ public class ReceiverJob extends BaseThroughputJob
                         sess.commit();
                      }
                   } 
+               }    
+               else
+               {
+                  failed = true;
+                  break;
                }
-                         
                                                          
-            }    
-
+            }  
          }
          catch (Exception e)
          {
@@ -139,14 +158,54 @@ public class ReceiverJob extends BaseThroughputJob
    }
    
    
-   public void fillInResults(ResultPersistor persistor)
+   /**
+    * Set the ackMode.
+    * 
+    * @param ackMode The ackMode to set.
+    */
+   public void setAckMode(int ackMode)
    {
-      super.fillInResults(persistor);
-      persistor.addValue("ackMode", this.ackMode);
-      persistor.addValue("subName", this.subName);
-      persistor.addValue("selector", selector);
-      persistor.addValue("noLocal", this.noLocal);
-      persistor.addValue("asynch", this.asynch);      
+      this.ackMode = ackMode;
+   }
+
+   /**
+    * Set the asynch.
+    * 
+    * @param asynch The asynch to set.
+    */
+   public void setAsynch(boolean asynch)
+   {
+      this.asynch = asynch;
+   }
+
+   /**
+    * Set the noLocal.
+    * 
+    * @param noLocal The noLocal to set.
+    */
+   public void setNoLocal(boolean noLocal)
+   {
+      this.noLocal = noLocal;
+   }
+
+   /**
+    * Set the selector.
+    * 
+    * @param selector The selector to set.
+    */
+   public void setSelector(String selector)
+   {
+      this.selector = selector;
+   }
+
+   /**
+    * Set the subName.
+    * 
+    * @param subName The subName to set.
+    */
+   public void setSubName(String subName)
+   {
+      this.subName = subName;
    }
    
 }

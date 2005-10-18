@@ -12,9 +12,6 @@ import org.jboss.remoting.transport.Connector;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class Slave
 {

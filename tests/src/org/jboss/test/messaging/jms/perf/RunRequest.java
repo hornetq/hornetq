@@ -8,9 +8,6 @@ package org.jboss.test.messaging.jms.perf;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class RunRequest implements ServerRequest
 {
@@ -25,7 +22,7 @@ public class RunRequest implements ServerRequest
    
    public Object execute()
    {
-      JobResult jr = job.run();
-      return jr;
+      job.run();
+      return job.getResult();
    }
 }
