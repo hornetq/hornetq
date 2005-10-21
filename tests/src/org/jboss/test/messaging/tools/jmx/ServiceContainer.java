@@ -67,6 +67,12 @@ public class ServiceContainer
    // Static --------------------------------------------------------
 
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
+   public static ObjectName TRANSACTION_MANAGER_OBJECT_NAME;
+   public static ObjectName CACHED_CONNECTION_MANAGER_OBJECT_NAME;
+   public static ObjectName CONNECTION_MANAGER_OBJECT_NAME;
+   public static ObjectName MANAGED_CONNECTION_FACTORY_OBJECT_NAME;
+   public static ObjectName MANAGED_CONNECTION_POOL_OBJECT_NAME;
+   public static ObjectName WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME;
    public static ObjectName REMOTING_OBJECT_NAME;
 
    static
@@ -75,6 +81,18 @@ public class ServiceContainer
       {
          SERVICE_CONTROLLER_OBJECT_NAME =
          new ObjectName("jboss.system:service=ServiceController");
+         TRANSACTION_MANAGER_OBJECT_NAME =
+         new ObjectName("jboss:service=TransactionManager");
+         CACHED_CONNECTION_MANAGER_OBJECT_NAME =
+         new ObjectName("jboss.jca:service=CachedConnectionManager");
+         CONNECTION_MANAGER_OBJECT_NAME =
+         new ObjectName("jboss.jca:name=DefaultDS,service=LocalTxCM");
+         MANAGED_CONNECTION_FACTORY_OBJECT_NAME =
+         new ObjectName("jboss.jca:name=DefaultDS,service=ManagedConnectionFactory");
+         MANAGED_CONNECTION_POOL_OBJECT_NAME =
+         new ObjectName("jboss.jca:name=DefaultDS,service=ManagedConnectionPool");
+         WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME =
+         new ObjectName("jboss.jca:name=DefaultDS,service=DataSourceBinding");
          REMOTING_OBJECT_NAME =
          new ObjectName("jboss.remoting:service=Connector,transport=socket");
       }
@@ -93,7 +111,9 @@ public class ServiceContainer
    private String jndiNamingFactory;
    private Server hsqldbServer;
 
+   private boolean transaction;
    private boolean database;
+   private boolean jca;
    private boolean remoting;
    private boolean aop;
    private boolean security;
@@ -157,6 +177,18 @@ public class ServiceContainer
          {
             startInVMDatabase();
          }
+         if (transaction)
+         {
+            startTransactionManager();
+         }
+         if (jca)
+         {
+            startManagedConnectionFactory();
+            startCachedConnectionManager();
+            startManagedConnectionPool();
+            startConnectionManager();
+            startWrapperDataSourceService();
+         }
          if (remoting)
          {
             startRemoting();
@@ -193,6 +225,12 @@ public class ServiceContainer
       }
 
       stopService(REMOTING_OBJECT_NAME);
+      stopService(WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
+      stopService(CONNECTION_MANAGER_OBJECT_NAME);
+      stopService(MANAGED_CONNECTION_POOL_OBJECT_NAME);
+      stopService(CACHED_CONNECTION_MANAGER_OBJECT_NAME);
+      stopService(TRANSACTION_MANAGER_OBJECT_NAME);
+      stopService(MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
       if (database)
       {
          stopInVMDatabase();
@@ -293,8 +331,8 @@ public class ServiceContainer
    private void startInVMDatabase() throws Exception
    {
       HsqlProperties props = new HsqlProperties();
-      props.setProperty("server.database.0", "mem:messaging");
-      props.setProperty("server.dbname.0", "memmessaging");
+      props.setProperty("server.database.0", "mem:test");
+      props.setProperty("server.dbname.0", "memtest");
       props.setProperty("server.trace", "false");
       props.setProperty("server.silent", "true");
       props.setProperty("server.no_system_exit", "true");
@@ -304,7 +342,6 @@ public class ServiceContainer
       hsqldbServer.setProperties(props);
       hsqldbServer.start();
 
-      //Temporary hack
 
       log.debug("started the database");
    }
@@ -312,7 +349,7 @@ public class ServiceContainer
    private void stopInVMDatabase() throws Exception
    {
       Class.forName("org.hsqldb.jdbcDriver" );
-      Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:messaging", "sa", "");
+      Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", "");
       Statement stat = conn.createStatement();
       stat.executeUpdate("SHUTDOWN");
       conn.close();
@@ -321,6 +358,104 @@ public class ServiceContainer
 //      hsqldbServer.stop();
    }
 
+   private void startTransactionManager() throws Exception
+   {
+      if (tm == null)
+      {
+         // the default JBoss TransactionManager
+         tm = TxManager.getInstance();
+      }
+
+      TransactionManagerJMXWrapper mbean = new TransactionManagerJMXWrapper(tm);
+      mbeanServer.registerMBean(mbean, TRANSACTION_MANAGER_OBJECT_NAME);
+      mbeanServer.invoke(TRANSACTION_MANAGER_OBJECT_NAME, "start", new Object[0], new String[0]);
+      log.debug("started " + TRANSACTION_MANAGER_OBJECT_NAME);
+
+      initialContext.bind("java:/TransactionManager", tm);
+      toUnbindAtExit.add("java:/TransactionManager");
+
+      log.debug("bound java:/TransactionManager");
+
+      // to get this to work I need to bind DTMTransactionFactory in JNDI
+//      ClientUserTransaction singleton = ClientUserTransaction.getSingleton();
+//      initialContext.bind("UserTransaction", singleton);
+//      toUnbindAtExit.add("UserTransaction");
+//      log.info("bound /UserTransaction");
+
+   }
+
+   private void startCachedConnectionManager() throws Exception
+   {
+      CachedConnectionManager ccm = new CachedConnectionManager();
+
+      // dependencies
+      ccm.setTransactionManagerServiceName(TRANSACTION_MANAGER_OBJECT_NAME);
+
+      mbeanServer.registerMBean(ccm, CACHED_CONNECTION_MANAGER_OBJECT_NAME);
+      mbeanServer.invoke(CACHED_CONNECTION_MANAGER_OBJECT_NAME, "start", new Object[0], new String[0]);
+      log.debug("started " + CACHED_CONNECTION_MANAGER_OBJECT_NAME);
+
+   }
+
+   private void startManagedConnectionFactory() throws Exception
+   {
+      LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
+      mcf.setConnectionURL("jdbc:hsqldb:mem:test");
+      mcf.setDriverClass("org.hsqldb.jdbcDriver");
+      mcf.setUserName("sa");
+
+      ManagedConnectionFactoryJMXWrapper mbean = new ManagedConnectionFactoryJMXWrapper(mcf);
+      mbeanServer.registerMBean(mbean, MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
+      mbeanServer.invoke(MANAGED_CONNECTION_FACTORY_OBJECT_NAME, "start", new Object[0], new String[0]);
+      log.debug("started " + MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
+   }
+
+   private void startManagedConnectionPool() throws Exception
+   {
+      JBossManagedConnectionPool mcp = new JBossManagedConnectionPool();
+      mcp.setCriteria("ByContainer");
+
+      // dependencies
+      mcp.setManagedConnectionFactoryName(MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
+
+      mbeanServer.registerMBean(mcp, MANAGED_CONNECTION_POOL_OBJECT_NAME);
+      mbeanServer.invoke(MANAGED_CONNECTION_POOL_OBJECT_NAME, "start", new Object[0], new String[0]);
+      log.debug("started " + MANAGED_CONNECTION_POOL_OBJECT_NAME);
+   }
+
+   private void startConnectionManager() throws Exception
+   {
+      TxConnectionManager cm = new TxConnectionManager();
+      cm.preRegister(mbeanServer, CONNECTION_MANAGER_OBJECT_NAME);
+      cm.setTrackConnectionByTx(true);
+      cm.setLocalTransactions(true);
+
+      // dependencies
+      cm.setTransactionManagerService(TRANSACTION_MANAGER_OBJECT_NAME);
+      cm.setCachedConnectionManager(CachedConnectionManagerMBean.OBJECT_NAME);
+      cm.setManagedConnectionPool(MANAGED_CONNECTION_POOL_OBJECT_NAME);
+
+
+      mbeanServer.registerMBean(cm, CONNECTION_MANAGER_OBJECT_NAME);
+      mbeanServer.invoke(CONNECTION_MANAGER_OBJECT_NAME, "start", new Object[0], new String[0]);
+      log.debug("started " + CONNECTION_MANAGER_OBJECT_NAME);
+   }
+
+   private void startWrapperDataSourceService() throws Exception
+   {
+      WrapperDataSourceService wdss = new WrapperDataSourceService();
+      wdss.setJndiName("java:/DefaultDS");
+
+      // dependencies
+      wdss.setConnectionManager(CONNECTION_MANAGER_OBJECT_NAME);
+      ObjectName irrelevant = new ObjectName(":name=irrelevant");
+      wdss.setJMXInvokerName(irrelevant);
+      Registry.bind(irrelevant, new NoopInvoker());
+
+      mbeanServer.registerMBean(wdss, WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
+      mbeanServer.invoke(WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME, "start", new Object[0], new String[0]);
+      log.debug("started " + WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
+   }
 
    private void startRemoting() throws Exception
    {
@@ -376,12 +511,22 @@ public class ServiceContainer
          }
 
          if ("all".equals(tok))
-         {            
+         {
+            transaction = true;
             database = true;
+            jca = true;
             remoting = true;
             aop = true;
             security = true;
-         }         
+         }
+         else if ("transaction".equals(tok))
+         {
+            transaction = true;
+            if (minus)
+            {
+               transaction = false;
+            }
+         }
          else if ("database".equals(tok))
          {
             database = true;
@@ -389,7 +534,15 @@ public class ServiceContainer
             {
                database = false;
             }
-         }         
+         }
+         else if ("jca".equals(tok))
+         {
+            jca = true;
+            if (minus)
+            {
+               jca = false;
+            }
+         }
          else if ("remoting".equals(tok))
          {
             remoting = true;

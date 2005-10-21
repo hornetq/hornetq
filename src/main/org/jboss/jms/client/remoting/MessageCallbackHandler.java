@@ -39,7 +39,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Attributes ----------------------------------------------------
    
-   protected int capacity = 20;
+   protected int capacity = 100;
    protected BoundedBuffer messages;
    protected SessionDelegate sessionDelegate;
    protected String receiverID;

@@ -43,7 +43,7 @@
 
    <!--
        Sometimes I need to locally patch a library and use the local version (src/resources),
-       until the change makes it to thridpary. This is how you can locally override a library.
+       until the change makes it to thirdparty. This is how you can locally override a library.
        To use the thirdparty library, just comment out the path definition below.
    -->
 
@@ -64,19 +64,11 @@
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="gnu.regexp.classpath"/>
       <path refid="sun.servlet.classpath"/>
+      <path refid="apache.commons.classpath"/>
       
-      <path location="../src/resources/hsqldb.jar"/>
-      
+      <path location="../src/resources/hsqldb.jar"/>      
       <path location="../src/resources/jboss-serialization.jar"/>
-
-      <path location="../src/resources/commons-dbcp-1.2.1.jar"/>
-            
-      <path location="../src/resources/commons-pool-1.2.jar"/>
-      
-      <pathelement path="../../thirdparty/apache-collections/lib/commons-collections.jar"/>
-      
-      <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>
-      
+      <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>      
       <path location="../src/resources/jcommon-1.0.0-rc1.jar"/>
       
    </path>

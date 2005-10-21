@@ -5,7 +5,6 @@
  * See terms of license at gnu.org.
  */
 
-
 package org.jboss.messaging.core.persistence;
 
 import java.io.Serializable;
@@ -22,9 +21,11 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Topic;
+import javax.naming.InitialContext;
 import javax.sql.DataSource;
+import javax.transaction.Status;
+import javax.transaction.TransactionManager;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
@@ -58,6 +59,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    
    protected String dbURL;
    
+   protected TransactionManager mgr;
+   
 
    // Constructors --------------------------------------------------
 
@@ -78,9 +81,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
       Connection conn = null;
       PreparedStatement ps = null;
-      //TransactionManagerStrategy tms = new TransactionManagerStrategy();
-      
-      //tms.startTX();
+      TransactionWrapper wrap = new TransactionWrapper();
       try
       {
          MessageReference ref = d.getReference();
@@ -98,17 +99,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          {
             log.trace(sql);
             log.trace("Inserted " + rows + " rows");
-         }
-         conn.commit();
+         }         
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
+         throw e;
       }
       finally
       {
@@ -130,7 +126,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable t)
             {}
          }
-        
+         wrap.end();
       }
    }
 
@@ -141,9 +137,11 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    {
       if (log.isTraceEnabled()) { log.trace("Removing delivery " + d + " from channel: "  + channelID);}
             
-
       Connection conn = null;
       PreparedStatement ps = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
+      
       try
       {
          conn = ds.getConnection();
@@ -182,18 +180,11 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             log.trace("Removed/updated " + updated + " rows");
          }
                   
-         conn.commit();        
-   
          return updated == 1;
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
          throw e;
       }
       finally
@@ -216,6 +207,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable t)
             {}
          }
+         wrap.end();
       }
    }
 
@@ -229,6 +221,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
       Connection conn = null;
       PreparedStatement ps = null;      
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
@@ -256,72 +250,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          }
          ps.executeUpdate();
          if (log.isTraceEnabled()) { log.trace(sql); }
-         conn.commit();
+         
          
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
-      }
-      finally
-      {         
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-      }
-   }
-   
-   /*
-    * Message reference removal never happens in a jms transaction
-    */
-   public boolean remove(Serializable channelID, MessageReference ref) throws Exception
-   {
-      if (log.isTraceEnabled()) { log.trace("Removing message ref " + ref + " from channel " + channelID); }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;  
-
-      try
-      {
-         conn = ds.getConnection();
-         
-         String sql = "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
-         ps = conn.prepareStatement(sql);
-         ps.setString(1, (String)channelID);
-         ps.setString(2, (String)ref.getMessageID());
-         int rows = ps.executeUpdate();
-         if (log.isTraceEnabled()) { log.trace(sql); }
-         conn.commit();
-         return rows == 1;         
-      }
-      catch (SQLException e)
-      {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
          throw e;
       }
       finally
@@ -344,56 +278,39 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
       }
    }
    
    /*
-    * The jms transaction is committing.
-    * We needs to remove any deliveries marked as "D".
+    * Message reference removal never happens in a jms transaction
     */
-   public void commitTx(Transaction tx) throws Exception
+   public boolean remove(Serializable channelID, MessageReference ref) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Committing transaction:" + tx.getID()); }
+      if (log.isTraceEnabled()) { log.trace("Removing message ref " + ref + " from channel " + channelID); }
       
       Connection conn = null;
-      PreparedStatement ps = null;
+      PreparedStatement ps = null;  
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
          conn = ds.getConnection();
          
-      
-         String sql = "DELETE FROM DELIVERY WHERE STATE='-' AND TRANSACTIONID=?";
-   
+         String sql = "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
          ps = conn.prepareStatement(sql);
-         ps.setString(1, String.valueOf(tx.getID()));
-         
+         ps.setString(1, (String)channelID);
+         ps.setString(2, (String)ref.getMessageID());
          int rows = ps.executeUpdate();
+         if (log.isTraceEnabled()) { log.trace(sql); }
          
-         if (log.isTraceEnabled()) { log.trace("Removed " + rows + " rows from DELIVERY"); }
-         
-         sql = "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID=? WHERE STATE='+' AND TRANSACTIONID=?";
-         ps.close();
-         ps = conn.prepareStatement(sql);
-         ps.setNull(1, Types.VARCHAR);
-         ps.setString(2, String.valueOf(tx.getID()));
-         
-         rows = ps.executeUpdate();
-         
-         removeTXRecord(conn, tx);
-         
-         if (log.isTraceEnabled()) { log.trace("Updated " + rows + " rows in MESSAGE_REFERENCES"); }
-         conn.commit();
-                 
+         return rows == 1;         
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
+         throw e;
       }
       finally
       {         
@@ -415,7 +332,75 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
+      }
+   }
+   
+   /*
+    * The jms transaction is committing.
+    * We needs to remove any deliveries marked as "D".
+    */
+   public void commitTx(Transaction tx) throws Exception
+   {
+      if (log.isTraceEnabled()) { log.trace("Committing transaction:" + tx.getID()); }
+      
+      Connection conn = null;
+      PreparedStatement ps = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
+      try
+      {
+         conn = ds.getConnection();
+               
+         String sql = "DELETE FROM DELIVERY WHERE STATE='-' AND TRANSACTIONID=?";
+   
+         ps = conn.prepareStatement(sql);
+         ps.setString(1, String.valueOf(tx.getID()));
+         
+         int rows = ps.executeUpdate();
+         
+         if (log.isTraceEnabled()) { log.trace("Removed " + rows + " rows from DELIVERY"); }
+         
+         sql = "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID=? WHERE STATE='+' AND TRANSACTIONID=?";
+         ps.close();
+         ps = conn.prepareStatement(sql);
+         ps.setNull(1, Types.VARCHAR);
+         ps.setString(2, String.valueOf(tx.getID()));
+         
+         rows = ps.executeUpdate();
+         
+         removeTXRecord(conn, tx);
+         
+         if (log.isTraceEnabled()) { log.trace("Updated " + rows + " rows in MESSAGE_REFERENCES"); }        
+                 
+      }
+      catch (SQLException e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {         
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {}
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {}
+         }
+         wrap.end();
       }
    }
    
@@ -430,12 +415,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       
       Connection conn = null;
       PreparedStatement ps = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
          conn = ds.getConnection();
-         
-      
+               
          String sql = "DELETE FROM MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'";
    
          ps = conn.prepareStatement(sql);
@@ -457,17 +443,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          if (log.isTraceEnabled()) { log.trace("Updated " + rows + " rows from DELIVERY"); }
                   
          removeTXRecord(conn, tx);
-         conn.commit();
-                 
+                         
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
+         throw e;
       }
       finally
       {         
@@ -489,6 +470,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
       }
    }
    
@@ -557,6 +539,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
@@ -583,18 +567,11 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          
          if (log.isTraceEnabled()) { log.trace("There are " + count + " deliveries"); }
    
-         conn.commit();
-         
          return result;
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
          throw e;
       }
       finally
@@ -626,6 +603,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
       }
    }
 
@@ -636,6 +614,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps1 = null;
       PreparedStatement ps2 = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
@@ -653,17 +633,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          
          ps1.executeUpdate();
          ps2.executeUpdate();
-         
-         conn.commit();
+
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
+         throw e;
       }
       finally
       {         
@@ -695,6 +670,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
       }
     
    }
@@ -707,6 +683,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
       
       try
       {
@@ -731,18 +709,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          
          if (log.isTraceEnabled()) { log.trace("got " + result.size() + " message refs"); }
          
-         conn.commit();
+         
          
          return result;
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
          throw e;
       }
       finally
@@ -774,6 +747,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
       }
    }
    
@@ -781,29 +755,23 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    {
       Connection conn = null;
       PreparedStatement stat = null;
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
          conn = ds.getConnection();
          
-   
          String sql = "DELETE FROM MESSAGE WHERE MESSAGEID=?";
    
          stat = conn.prepareStatement(sql);
          stat.setString(1, messageID);
          
-         stat.executeUpdate();
-         
-         conn.commit();
+         stat.executeUpdate();  
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
+         throw e;
       }
       finally
       {
@@ -825,7 +793,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
-
+         wrap.end();
      }
 
    }
@@ -834,6 +802,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    {
       Connection conn = null;
       PreparedStatement ps = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
@@ -934,18 +904,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setObject(15, jmsProperties);
          ps.executeUpdate();
          if (log.isTraceEnabled()) { log.trace(ps); }
-         
-         conn.commit();
-         
+            
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
+         throw e;
       }
       finally
       {
@@ -967,7 +931,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
-
+         wrap.end();
       }
       
    }
@@ -978,12 +942,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
       try
       {
          Message m = null;
          conn = ds.getConnection();
          
-   
          String sql = "SELECT " +
                       "MESSAGEID, " +
                       "RELIABLE, " +
@@ -1030,18 +994,11 @@ public class HSQLDBPersistenceManager implements PersistenceManager
               */                        
          }
          
-         conn.commit();
-         
          return m;
       }
       catch (SQLException e)
       {
-         try
-         {
-            conn.rollback();
-         }
-         catch (Throwable t)
-         {}
+         wrap.exceptionOccurred();
          throw e;
       }
       finally
@@ -1073,33 +1030,26 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
+         wrap.end();
       }
     
    }
+   
 
    // Public --------------------------------------------------------
 
    public void start() throws Exception
    {
-      BasicDataSource bds = new BasicDataSource();
+      InitialContext ic = new InitialContext();
+      mgr = (TransactionManager)ic.lookup("java:/TransactionManager");
       
-      bds.setDriverClassName("org.hsqldb.jdbcDriver");
-      bds.setUsername("sa");
-      bds.setPassword("");
-      bds.setUrl(dbURL);      
-      bds.setDefaultAutoCommit(false);
-      bds.setDefaultReadOnly(false);
-      bds.setInitialSize(0);
-      bds.setMaxActive(20);
-      bds.setMaxIdle(20);
-      bds.setPoolPreparedStatements(true);
-      bds.setMaxOpenPreparedStatements(0);
-      
-      ds = bds;
+      ds = (DataSource)ic.lookup("java:/DefaultDS");
       
       Connection conn = null;
       
       String sql = null;
+      
+      TransactionWrapper tx = new TransactionWrapper(); 
 
       try
       {
@@ -1167,6 +1117,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable t)
             {}
          }
+         tx.end();
       }
    }
 
@@ -1182,7 +1133,43 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
    // Inner classes -------------------------------------------------
    
+   class TransactionWrapper
+   {      
+      private javax.transaction.Transaction oldTx;
+      
+      private TransactionWrapper() throws Exception
+      {
+         oldTx = mgr.suspend();
+         
+         mgr.begin();    
+      }
+      
+      private void end() throws Exception
+      {
+         try
+         {
+            if (Status.STATUS_MARKED_ROLLBACK == mgr.getStatus())
+            {
+               mgr.rollback();
+            }
+            else
+            {
+               mgr.commit();
+            }
+         }
+         finally
+         {
+            if (oldTx != null)
+            {
+               mgr.resume(oldTx);
+            }
+         }
+      }
+      
+      private void exceptionOccurred() throws Exception
+      {
+         mgr.setRollbackOnly();
+      }
+   }
   
- 
-
 }

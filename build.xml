@@ -107,10 +107,7 @@
        <path refid="javassist.classpath"/>
        <path refid="jgroups.jgroups.classpath"/>
        <path refid="junit.junit.classpath"/>
-       <path refid="gnu.regexp.classpath"/>
-       <path>
-          <pathelement path="${module.root}/src/resources/commons-dbcp-1.2.1.jar"/>
-       </path>
+       <path refid="gnu.regexp.classpath"/>       
     </path>
     
 

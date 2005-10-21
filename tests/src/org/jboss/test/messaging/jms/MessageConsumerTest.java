@@ -816,7 +816,7 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                for (int i = 0; i < NUM_MESSAGES; i++)
                {
-                  TextMessage m = (TextMessage)cons.receive(1500);                  
+                  TextMessage m = (TextMessage)cons.receive(5000);                  
                   if (m == null)
                   {
                      log.error("Didn't receive all the messages");
