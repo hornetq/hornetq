@@ -30,7 +30,7 @@ public class Slave
       }
       catch (Exception e)
       {
-         log.info("Invalid port or no port specified");
+         log.error("Invalid port or no port specified");
          return;
       }
       

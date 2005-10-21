@@ -156,7 +156,7 @@ class ReliableState extends TransactionalState
             }
             MessageReference ref = ms.getReference(id.messageID);
             // TODO filtering could be probably pushed to the database
-            if (filter == null || filter.accept(ref))
+            if (filter == null || filter.accept(ref.getMessage()))
             {
                delivering.add(ref);
             }

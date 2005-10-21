@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
+import javax.jms.Message;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
@@ -99,7 +100,7 @@ public class Selector implements Filter
    {
       try
       {
-			JBossMessage mess = (JBossMessage)routable;
+			Message mess = (Message)routable;
 			
          // Set the identifiers values
          Iterator i = identifiers.values().iterator();
@@ -107,7 +108,8 @@ public class Selector implements Filter
          while (i.hasNext())
          {
             Identifier id = (Identifier) i.next();
-            Object find = mess.getJMSProperties().get(id.name);
+            
+            Object find = mess.getObjectProperty(id.name);
             
             if (find == null)
                find = getHeaderFieldReferences(mess, id.name);
@@ -161,7 +163,7 @@ public class Selector implements Filter
 
   
    // [JPL]
-   private Object getHeaderFieldReferences(JBossMessage mess, String idName)
+   private Object getHeaderFieldReferences(Message mess, String idName)
       throws JMSException
    {
       // JMS 3.8.1.1 -- Message header field references are restricted to:

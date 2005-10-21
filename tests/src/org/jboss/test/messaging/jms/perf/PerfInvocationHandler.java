@@ -25,7 +25,7 @@ public class PerfInvocationHandler implements ServerInvocationHandler
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {
-      log.info("Received request");
+      log.trace("Received request");
       ServerRequest request = (ServerRequest)invocation.getParameter();
       return request.execute();         
    }

@@ -21,5 +21,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
 	<classpathentry kind="lib" path="src/resources/hsqldb.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/jgroups/lib/jgroups.jar"/>
+	<classpathentry kind="lib" path="C:/dev/jboss-head/jms/src/resources/jfreechart-1.0.0-rc1.jar"/>
+	<classpathentry kind="lib" path="src/resources/commons-dbcp-1.2.1.jar"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>

@@ -8,10 +8,8 @@
 
 package org.jboss.messaging.core.persistence;
 
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,9 +22,9 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Topic;
-import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
@@ -57,6 +55,9 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    // Attributes ----------------------------------------------------
 
    protected DataSource ds;
+   
+   protected String dbURL;
+   
 
    // Constructors --------------------------------------------------
 
@@ -1080,12 +1081,22 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
    public void start() throws Exception
    {
- 
-      InitialContext ic = new InitialContext();      
-
-      ds = new BasicDataSource();
-      ic.close();
-
+      BasicDataSource bds = new BasicDataSource();
+      
+      bds.setDriverClassName("org.hsqldb.jdbcDriver");
+      bds.setUsername("sa");
+      bds.setPassword("");
+      bds.setUrl(dbURL);      
+      bds.setDefaultAutoCommit(false);
+      bds.setDefaultReadOnly(false);
+      bds.setInitialSize(0);
+      bds.setMaxActive(20);
+      bds.setMaxIdle(20);
+      bds.setPoolPreparedStatements(true);
+      bds.setMaxOpenPreparedStatements(0);
+      
+      ds = bds;
+      
       Connection conn = null;
       
       String sql = null;
@@ -1172,68 +1183,6 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    // Inner classes -------------------------------------------------
    
   
-   protected String dbURL;
-   
-   /*
-    * TODO
-    * FIXME
-    * I have implemented the BasicDataSource class as a temporary measure since I cannot
-    * work out how to use a JBoss pooled data source class without using JTA and without
-    * having autocommit=true
-    * We want a really simple non JCA data-source with auto-commit = false.
-    */
-   class BasicDataSource implements javax.sql.DataSource
-   {
-      
-      BasicDataSource()
-      {
-         try
-         {
-            Class.forName("org.hsqldb.jdbcDriver");
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to load driver", e);
-         }
+ 
 
-      }
-
-      public Connection getConnection() throws SQLException
-      {
-         Connection conn = DriverManager.getConnection(dbURL, "sa", "");
-         conn.setAutoCommit(false);
-         return conn;
-      }
-
-      public Connection getConnection(String username, String password) throws SQLException
-      {
-         return getConnection();
-      }
-
-      public int getLoginTimeout() throws SQLException
-      {
-         // FIXME getLoginTimeout
-         return 0;
-      }
-
-      public PrintWriter getLogWriter() throws SQLException
-      {
-         // FIXME getLogWriter
-         return null;
-      }
-
-      public void setLoginTimeout(int seconds) throws SQLException
-      {
-         // FIXME setLoginTimeout
-         
-      }
-
-      public void setLogWriter(PrintWriter out) throws SQLException
-      {
-         // FIXME setLogWriter
-         
-      }
-      
-   }
-   
 }

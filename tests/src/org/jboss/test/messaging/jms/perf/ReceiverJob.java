@@ -11,6 +11,7 @@ import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
+import javax.jms.Topic;
 
 import org.jboss.logging.Logger;
 
@@ -21,7 +22,7 @@ public class ReceiverJob extends BaseThroughputJob
 {
    private static final long serialVersionUID = 3633353742146810600L;
    
-   private static final long RECEIVE_TIMEOUT = 1000;
+   private static final long RECEIVE_TIMEOUT = 10 * 60 * 1000;
 
    private static final Logger log = Logger.getLogger(SenderJob.class);
 
@@ -35,6 +36,8 @@ public class ReceiverJob extends BaseThroughputJob
    
    protected boolean asynch;
    
+   protected String clientID;
+   
 
    public Servitor createServitor(int numMessages)
    {
@@ -42,12 +45,12 @@ public class ReceiverJob extends BaseThroughputJob
    }
    
 
-   public ReceiverJob(String serverURL, String destinationName, int numConnections,
+   public ReceiverJob(String slaveURL, String serverURL, String destinationName, int numConnections,
          int numSessions, boolean transacted, int transactionSize,
          int numMessages, int ackMode, String subName,
-         String selector, boolean noLocal, boolean asynch)
+         String selector, boolean noLocal, boolean asynch, String clientID)
    {
-      super (serverURL, destinationName, numConnections,
+      super (slaveURL, serverURL, destinationName, numConnections,
             numSessions, transacted, transactionSize,
             numMessages);
       this.ackMode = ackMode;
@@ -55,16 +58,18 @@ public class ReceiverJob extends BaseThroughputJob
       this.selector = selector;
       this.noLocal = noLocal;
       this.asynch = asynch;
+      this.clientID = clientID;
    }
 
    protected void logInfo()
    {
       super.logInfo();
-      log.info("Acknowledgement Mode? " + ackMode);
-      log.info("Durable subscription name: " + subName);
-      log.info("Message selector: " + selector);
-      log.info("No local?: " + noLocal);
-      log.info("Use message listener? " + asynch);
+      log.trace("Acknowledgement Mode? " + ackMode);
+      log.trace("Durable subscription name: " + subName);
+      log.trace("Message selector: " + selector);
+      log.trace("No local?: " + noLocal);
+      log.trace("Use message listener? " + asynch);
+      log.trace("Client id: " + clientID);
    }
    
    protected class Receiver extends AbstractServitor
@@ -82,12 +87,17 @@ public class ReceiverJob extends BaseThroughputJob
       public void deInit()
       {
          try
-         {
-            sess.close();
+         {             
+            if (subName != null)
+            {
+               sess.unsubscribe(subName);
+            }
+            
+            sess.close();  
          }      
          catch (Exception e)
          {
-            log.error("Receiver failed", e);
+            log.error("!!!!!!!!!!!!!!!!!!Close failed", e);
             failed = true;
          }
       }
@@ -98,10 +108,28 @@ public class ReceiverJob extends BaseThroughputJob
          {
             Connection conn = getNextConnection();
             
+            if (subName != null)
+            {
+               try
+               {
+                  conn.setClientID(clientID);
+               }
+               catch (Exception e)
+               {
+                  //Some providers may provide a connection with client id already set
+               }
+            }
+            
             sess = conn.createSession(transacted, ackMode);
-           
-            cons = sess.createConsumer(dest, selector, noLocal);
-                   
+            
+            if (subName == null)
+            {           
+               cons = sess.createConsumer(dest, selector, noLocal);
+            }
+            else
+            {
+               cons = sess.createDurableSubscriber((Topic)dest, subName, selector, noLocal);
+            }
          }
          catch (Exception e)
          {
@@ -115,9 +143,6 @@ public class ReceiverJob extends BaseThroughputJob
       {
          try
          {
-            log.info("Running receiver");
-            
-               
             int count = 0;
             
             while (count < (numMessages))
@@ -138,6 +163,7 @@ public class ReceiverJob extends BaseThroughputJob
                }    
                else
                {
+                  log.error("!!!!!!!!!!!!!!Failed to receive messages!!!!");
                   failed = true;
                   break;
                }
@@ -146,7 +172,7 @@ public class ReceiverJob extends BaseThroughputJob
          }
          catch (Exception e)
          {
-            log.error("Receiver failed", e);
+            log.error("!!!!!!!!!!!!!!!Receiver failed", e);
             failed = true;
          }
       }
@@ -208,4 +234,9 @@ public class ReceiverJob extends BaseThroughputJob
       this.subName = subName;
    }
    
+   
+   public void setClientID(String clientID)
+   {
+      this.clientID = clientID;
+   }
 }

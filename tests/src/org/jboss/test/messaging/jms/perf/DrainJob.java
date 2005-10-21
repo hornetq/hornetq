@@ -27,15 +27,18 @@ public class DrainJob extends BaseJob
 
    protected String subName;
    
-   public DrainJob(String serverURL, String destinationName, String subName)
+   protected String clientID;
+   
+   public DrainJob(String slaveURL, String serverURL, String destinationName, String subName, String clientID)
    {
-      super(serverURL, destinationName);
+      super(slaveURL, serverURL, destinationName);
       this.subName = subName;
+      this.clientID = clientID;
    }
    
    public Object getResult()
    {
-      return null;
+      return new JobTimings(0, 0);
    }
    
    public void run()
@@ -49,7 +52,21 @@ public class DrainJob extends BaseJob
  
          super.setup();
          
+         log.info("Running drain job ===============");
+         
          conn = cf.createConnection();
+         
+         if (clientID != null)
+         {
+            try
+            {
+               conn.setClientID(clientID);
+            }
+            catch (Exception e)
+            {
+               //Some providers may provide a connection with client id already set
+            }
+         }
          
          conn.start();
       
@@ -107,6 +124,11 @@ public class DrainJob extends BaseJob
    public void setSubName(String subName)
    {
       this.subName = subName;
+   }
+   
+   public void setClientID(String clientID)
+   {
+      this.clientID = clientID;
    }
 
 }

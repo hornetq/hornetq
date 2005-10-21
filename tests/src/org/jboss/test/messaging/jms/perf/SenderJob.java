@@ -31,6 +31,8 @@ public class SenderJob extends BaseThroughputJob
    
    protected MessageFactory mf;
    
+   protected long initialPause;
+   
    public Servitor createServitor(int numMessages)
    {
       return new Sender(numMessages);
@@ -39,23 +41,25 @@ public class SenderJob extends BaseThroughputJob
    protected void logInfo()
    {
       super.logInfo();
-      log.info("Use anonymous producer? " + anon);
-      log.info("Message size: " + msgSize);
-      log.info("Message type: " + mf.getClass().getName());
-      log.info("Delivery Mode:" + (deliveryMode == DeliveryMode.PERSISTENT ? "Persistent" : "Non-persistent"));
+      log.trace("Use anonymous producer? " + anon);
+      log.trace("Message size: " + msgSize);
+      log.trace("Message type: " + mf.getClass().getName());
+      log.trace("Delivery Mode:" + (deliveryMode == DeliveryMode.PERSISTENT ? "Persistent" : "Non-persistent"));
+      log.trace("Initial pause:" + initialPause);
    }
    
-   public SenderJob(String serverURL, String destinationName, int numConnections,
+   public SenderJob(String slaveURL, String serverURL, String destinationName, int numConnections,
          int numSessions, boolean transacted, int transactionSize, 
          int numMessages, boolean anon, int messageSize,
-         MessageFactory messageFactory, int deliveryMode)
+         MessageFactory messageFactory, int deliveryMode, long initialPause)
    {
-      super (serverURL, destinationName, numConnections,
+      super (slaveURL, serverURL, destinationName, numConnections,
             numSessions, transacted, transactionSize, numMessages);
       this.anon = anon;
       this.msgSize = messageSize;
       this.mf = messageFactory;
       this.deliveryMode = deliveryMode;
+      this.initialPause = initialPause;
    }
    
 
@@ -79,7 +83,7 @@ public class SenderJob extends BaseThroughputJob
          }      
          catch (Exception e)
          {
-            log.error("Receiver failed", e);
+            log.error("!!!!!!!!!!!!!!!!!!!!!Close failed", e);
             failed = true;
          }
       }
@@ -104,10 +108,12 @@ public class SenderJob extends BaseThroughputJob
             }
             
             prod.setDeliveryMode(deliveryMode); 
+            
+            Thread.sleep(initialPause);
          }
          catch (Exception e)
          {
-            log.error("Sender failed", e);
+            log.error("!!!!!!!!!!!!!!!!!!!!!!!!Sender failed", e);
             failed = true;
          }
       }
@@ -135,7 +141,7 @@ public class SenderJob extends BaseThroughputJob
                count++;
            
                if (transacted)
-               {
+               {                  
                   if (count % transactionSize == 0)
                   {
                      sess.commit();
@@ -146,7 +152,7 @@ public class SenderJob extends BaseThroughputJob
          }
          catch (Exception e)
          {
-            log.error("Sender failed", e);
+            log.error("!!!!!!!!!!!!!!!!!!!!!!!!Sender failed", e);
             failed = true;
          }
       }
@@ -196,5 +202,10 @@ public class SenderJob extends BaseThroughputJob
    public void setMsgSize(int msgSize)
    {
       this.msgSize = msgSize;
+   }
+   
+   public void setInitialPause(long initialPause)
+   {
+      this.initialPause = initialPause;
    }
 }

@@ -15,4 +15,6 @@ public interface Job extends Runnable
    
    Object getResult();
    
+   String getSlaveURL();
+   
 }

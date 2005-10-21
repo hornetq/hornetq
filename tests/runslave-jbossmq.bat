@@ -1,0 +1,1 @@
+java -cp "output/lib/perfrunner.jar;../../thirdparty/apache-log4j/lib/log4j.jar;etc;../../j2ee/output/lib/jboss-j2ee.jar;../../thirdparty/jboss/remoting/lib/jboss-remoting.jar;../../common/output/lib/jboss-common.jar;../../thirdparty/jboss/remoting/lib/jboss-serialization.jar;/dev/jboss-4.0.3/client/jbossall-client.jar" org.jboss.test.messaging.jms.perf.Slave %1

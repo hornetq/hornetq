@@ -130,8 +130,8 @@ public class UnreliableState implements State
       {
          for(Iterator i = messageRefs.iterator(); i.hasNext(); )
          {
-            Routable r = (Routable)i.next();
-            if (filter == null || filter.accept(r))
+            MessageReference r = (MessageReference)i.next();
+            if (filter == null || filter.accept(r.getMessage()))
             {
                if (log.isTraceEnabled()) { log.trace("Accepted by filter so adding to list"); }
                undelivered.add(r);
@@ -173,7 +173,7 @@ public class UnreliableState implements State
          {
             Delivery d = (Delivery)i.next();
             Routable r = d.getReference();
-            if (filter == null || filter.accept(r))
+            if (filter == null || filter.accept(r.getMessage()))
             {
                delivering.add(r);
             }

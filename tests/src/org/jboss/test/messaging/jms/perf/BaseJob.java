@@ -35,8 +35,11 @@ public abstract class BaseJob implements Job, Serializable
    
    protected boolean failed;
    
-   public BaseJob(String serverURL, String destinationName)
+   protected String slaveURL;
+   
+   public BaseJob(String slaveURL, String serverURL, String destinationName)
    {
+      this.slaveURL = slaveURL;
       this.serverURL = serverURL;
       this.destName = destinationName;
    }
@@ -85,9 +88,11 @@ public abstract class BaseJob implements Job, Serializable
       
       ic = new InitialContext(env);
       
+      log.trace("Looking up:" + destName);
+      
       dest = (Destination)ic.lookup(destName);
       
-      cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
    }
    
@@ -127,6 +132,16 @@ public abstract class BaseJob implements Job, Serializable
    public void setServerURL(String serverURL)
    {
       this.serverURL = serverURL;
+   }
+   
+   public void setSlaveURL(String slaveURL)
+   {
+      this.slaveURL = slaveURL;
+   }
+   
+   public String getSlaveURL()
+   {
+      return slaveURL;
    }
    
 //   public String getLocator()

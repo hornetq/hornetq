@@ -59,7 +59,7 @@ public abstract class BaseThroughputJob extends BaseJob
       {
          startTime = System.currentTimeMillis();
          
-         log.info("==============Running job:");
+         log.info("==============Running job:" + this);
          setup();
          logInfo();
          runTest();         
@@ -114,6 +114,12 @@ public abstract class BaseThroughputJob extends BaseJob
             failed = true;
          }
       }    
+      
+      if (testTime == 0)
+      {
+         failed = true;
+         log.error("!!!!!!!!!!!!!! testTime is zero");
+      }
    }
    
    abstract class AbstractServitor implements Servitor
@@ -165,18 +171,18 @@ public abstract class BaseThroughputJob extends BaseJob
    protected void logInfo()
    {
       super.logInfo();      
-      log.info("Number of connections: " + numConnections);
-      log.info("Numbe of concurrent sessions: " + numSessions);
-      log.info("Transacted?: " + transacted);
-      log.info("Transaction size: " + transactionSize);
-      log.info("Num messages:" + numMessages);
+      log.trace("Number of connections: " + numConnections);
+      log.trace("Numbe of concurrent sessions: " + numSessions);
+      log.trace("Transacted?: " + transacted);
+      log.trace("Transaction size: " + transactionSize);
+      log.trace("Num messages:" + numMessages);
    }
    
    
-   public BaseThroughputJob(String serverURL, String destinationName, int numConnections,
+   public BaseThroughputJob(String slaveURL, String serverURL, String destinationName, int numConnections,
          int numSessions, boolean transacted, int transactionSize, int numMessages)
    {
-      super(serverURL, destinationName);
+      super(slaveURL, serverURL, destinationName);
       this.numConnections = numConnections;
       this.numSessions = numSessions;
       this.transacted = transacted;

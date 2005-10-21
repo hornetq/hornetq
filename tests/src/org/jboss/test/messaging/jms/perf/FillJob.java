@@ -30,14 +30,9 @@ public class FillJob extends BaseJob
    
    protected MessageFactory mf;
    
-   public String getName()
-   {
-      return "Fill Job";
-   }
-   
    public Object getResult()
    {
-      return null;
+      return new JobTimings(0, 0);
    }
    
    public void logInfo()
@@ -56,7 +51,7 @@ public class FillJob extends BaseJob
       
       try
       {
-         log.info("==============Running job:" + this.getName());
+         log.info("==============Running fill job");
          
          super.setup();
          
@@ -102,10 +97,10 @@ public class FillJob extends BaseJob
 
    } 
    
-   public FillJob(String serverURL, String destName, int numMessages, int messageSize, MessageFactory mf,
+   public FillJob(String slaveURL, String serverURL, String destName, int numMessages, int messageSize, MessageFactory mf,
          int deliveryMode)
    {
-      super(serverURL, destName);
+      super(slaveURL, serverURL, destName);
       this.numMessages = numMessages;
       this.mf = mf;
       this.deliveryMode = deliveryMode;
