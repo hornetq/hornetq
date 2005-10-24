@@ -67,7 +67,6 @@
       <path refid="apache.commons.classpath"/>
       
       <path location="../src/resources/hsqldb.jar"/>      
-      <path location="../src/resources/jboss-serialization.jar"/>
       <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>      
       <path location="../src/resources/jcommon-1.0.0-rc1.jar"/>
       
@@ -84,12 +83,6 @@
        To use the thirdparty library, just comment out the path definition below.
    -->
 
-   <!--
-   <path id="jboss.remoting.classpath">
-       <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
-   </path>
-   -->
-
    <!-- The combined dependent module classpath -->
    <path id="dependentmodule.classpath">
       <path refid="jboss.common.classpath"/>
@@ -99,8 +92,8 @@
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.mbeans.classpath"/>
       <path refid="jboss.remoting.classpath"/>
+      <path refid="jboss.serialization.classpath"/>
       <path refid="jboss.aop.classpath"/>
-
       <path refid="jboss.system.classpath"/>
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.naming.classpath"/>
@@ -109,7 +102,6 @@
       <!-- these are only required to compile test support -->
       <path refid="jboss.jca.classpath"/>
       
-
    </path>
 
 
@@ -129,7 +121,7 @@
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
    <property name="perf.tests.archive" value="perfrunner.jar"/>
-   <property name="build.tests.remote" value="false"/>
+   <property name="build.tests.remote" value="true"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -330,8 +322,8 @@
              <!--
          <jvmarg value="-Xdebug"/>
          <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
-         
          -->
+         
          <jvmarg value="-Xmx512M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <classpath>
