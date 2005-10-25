@@ -2261,6 +2261,36 @@ public class MessageConsumerTest extends MessagingTestCase
          }
       }
    }
+   
+
+   
+   public void testRedeliveredDifferentSessions() throws Exception
+   {
+      Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sessProducer.createProducer(queue);
+      TextMessage tm = sessProducer.createTextMessage("testRedeliveredDifferentSessions");
+      prod.send(tm);
+      
+      
+      consumerConnection.start();
+      Session sess1 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons1 = sess1.createConsumer(topic);
+      TextMessage tm2 = (TextMessage)cons1.receive(3000);
+      assertNotNull(tm2);
+      assertEquals("testRedeliveredDifferentSessions", tm2.getText());
+      //don't acknowledge it
+      sess1.close();
+      
+      Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons2 = sess1.createConsumer(topic);
+      TextMessage tm3 = (TextMessage)cons1.receive(3000);
+      assertNotNull(tm3);
+      assertEquals("testRedeliveredDifferentSessions", tm3.getText());
+      
+      assertTrue(tm3.getJMSRedelivered());
+      
+   }
 
 
 

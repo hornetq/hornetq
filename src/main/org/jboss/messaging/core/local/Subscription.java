@@ -15,6 +15,13 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.util.id.GUID;
 
+/**
+ * 
+ * Represents a non-durable topic subscription
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ */
 public class Subscription extends ChannelSupport
 {
    // Constants -----------------------------------------------------

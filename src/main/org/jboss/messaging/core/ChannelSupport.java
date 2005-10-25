@@ -20,6 +20,7 @@ import java.io.Serializable;
  * PersistenceManager is available, it supports recoverability of reliable messages.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
  * @version <tt>$Revision$</tt>
  * $Id$
  */

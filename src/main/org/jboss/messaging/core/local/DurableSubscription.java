@@ -17,6 +17,13 @@ import javax.jms.JMSException;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 
+/**
+ * 
+ * Represents a durable topic subscription
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ */
 public class DurableSubscription extends Subscription
 {
    // Constants -----------------------------------------------------

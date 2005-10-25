@@ -15,6 +15,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * synchronous/asynchronous forwarding to another receiver(s).
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Added tx support
  * @version <tt>$Revision$</tt>
  *
  * $Id$
