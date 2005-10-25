@@ -16,9 +16,10 @@ import javax.jms.JMSException;
  * 
  * @author Tim Fox
  *
+ * $Id$
  */
-public interface Closeable {
-
+public interface Closeable
+{
     /**
      * 
      * Close the instance

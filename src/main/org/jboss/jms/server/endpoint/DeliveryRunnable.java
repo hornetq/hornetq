@@ -35,12 +35,13 @@ class DeliveryRunnable extends Callback implements Runnable
    // Attributes ----------------------------------------------------
    
    protected transient InvokerCallbackHandler callbackHandler;
-   
    protected transient ServerConnectionDelegate connection;
 
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(ServerConnectionDelegate connection, InvokerCallbackHandler callbackHandler, Message m)
+   public DeliveryRunnable(ServerConnectionDelegate connection,
+                           InvokerCallbackHandler callbackHandler,
+                           Message m)
    {
       super(m);
       this.callbackHandler = callbackHandler;

@@ -30,6 +30,8 @@ import org.jboss.logging.Logger;
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a> Adapted from the JBoss 4 version
+ *
+ * $Id$
  */
 public class ClosedInterceptor
    implements Interceptor, Serializable

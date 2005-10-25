@@ -43,8 +43,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
 
    // Constructors --------------------------------------------------
    
-   public JBossMessageProducer(ProducerDelegate delegate, Destination destination)
-         throws JMSException
+   public JBossMessageProducer(ProducerDelegate delegate)
    {
       this.delegate = delegate;     
    }

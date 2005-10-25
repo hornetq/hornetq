@@ -61,7 +61,6 @@ public class JBossConnection implements
    // Constructors --------------------------------------------------
 
    public JBossConnection(ConnectionDelegate delegate, int connectionType)
-         throws JMSException
    {
       this.delegate = delegate;
       this.connectionType = connectionType;      

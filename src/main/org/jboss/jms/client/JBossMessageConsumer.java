@@ -39,7 +39,7 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(ConsumerDelegate delegate) throws JMSException
+   public JBossMessageConsumer(ConsumerDelegate delegate)
    {      
       this.delegate = delegate;
    }

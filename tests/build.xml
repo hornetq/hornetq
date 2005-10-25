@@ -169,13 +169,15 @@
    <!--
       The values from imported files or set by the calling ant tasks will take precedence over
       the values specified below.
+
+      Specifically, these value are overriden by those read from ./build.properties!
    -->
    <property name="junit.printsummary" value="true"/>
    <property name="junit.haltonerror" value="false"/>
    <property name="junit.haltonfailure" value="false"/>
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
-   <property name="junit.timeout" value="1500000"/>
+   <property name="junit.timeout" value=""/>
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
    <property name="junit.jvm.options" value=""/>

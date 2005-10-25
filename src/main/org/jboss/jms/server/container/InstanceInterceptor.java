@@ -90,10 +90,11 @@ public class InstanceInterceptor implements Interceptor
                }
                else
                {
-                  throw new Exception("The server doesn't know of any connection with connectionID=" +
-                                   connectionID);
+                  log.error("trying to access an inexistent connection (connectionID=" +
+                            connectionID);
+                  throw new Exception("The server doesn't know of any connection " +
+                                       "with connectionID=" + connectionID);
                }
-               // TODO log error
             }
 
             invocation.setTargetObject(scd);

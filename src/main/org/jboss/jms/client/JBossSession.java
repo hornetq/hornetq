@@ -78,13 +78,10 @@ class JBossSession implements
 
    // Constructors --------------------------------------------------
 
-   public JBossSession(SessionDelegate sessionDelegate, int sessionType) throws JMSException
+   public JBossSession(SessionDelegate sessionDelegate, int sessionType)
    {
       this.sessionDelegate = sessionDelegate;      
-  //    this.isXA = isXA;
       this.sessionType = sessionType;
-    //  sessionDelegate.addMetaData(JMSAdvisor.TRANSACTED, transacted ? Boolean.TRUE : Boolean.FALSE);
-    //  this.acknowledgeMode = acknowledgeMode;
    }
 
    // Session implementation ----------------------------------------
@@ -181,7 +178,7 @@ class JBossSession implements
    public MessageProducer createProducer(Destination d) throws JMSException
    {
       ProducerDelegate producerDelegate = sessionDelegate.createProducerDelegate(d);
-      return new JBossMessageProducer(producerDelegate, d);
+      return new JBossMessageProducer(producerDelegate);
    }
 
   public MessageConsumer createConsumer(Destination d) throws JMSException

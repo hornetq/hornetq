@@ -110,9 +110,8 @@ public class MessageConsumerTest extends MessagingTestCase
       queueProducer = producerSession.createProducer(queue);
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueConsumer = consumerSession.createConsumer(queue);
-      
-      
-      
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -2282,8 +2281,8 @@ public class MessageConsumerTest extends MessagingTestCase
       //don't acknowledge it
       sess1.close();
       
-      Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons2 = sess1.createConsumer(topic);
+      consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      sess1.createConsumer(topic);
       TextMessage tm3 = (TextMessage)cons1.receive(3000);
       assertNotNull(tm3);
       assertEquals("testRedeliveredDifferentSessions", tm3.getText());
