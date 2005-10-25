@@ -9,12 +9,15 @@
 package org.jboss.jms.util;
 
 import javax.jms.DeliveryMode;
+import javax.jms.Session;
 
 /**
  * A collection of static string convertors.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a> $Id$
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ToString
 {
@@ -34,6 +37,24 @@ public class ToString
       }
       return "UNKNOWN";
    }
+
+   public static String acknowledgmentMode(int ack)
+   {
+      if (ack == Session.AUTO_ACKNOWLEDGE)
+      {
+         return "AUTO_ACKNOWLEDGE";
+      }
+      if (ack == Session.CLIENT_ACKNOWLEDGE)
+      {
+         return "CLIENT_ACKNOWLEDGE";
+      }
+      if (ack == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         return "DUPS_OK_ACKNOWLEDGE";
+      }
+      return "UNKNOWN";
+   }
+
 
    // Attributes ----------------------------------------------------
    

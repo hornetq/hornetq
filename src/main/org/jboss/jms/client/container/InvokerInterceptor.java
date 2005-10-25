@@ -12,6 +12,7 @@ import java.io.Serializable;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.InvocationResponse;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 
@@ -38,12 +39,13 @@ public class InvokerInterceptor implements Interceptor, Serializable
 
    // InvokerInterceptor implementation -----------------------------
 
-   public String getName() { return "InvokerInterceptor"; }
+   public String getName()
+   {
+      return "InvokerInterceptor";
+   }
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("In InvokerInterceptor"); }
-      
       // look for a Client, it's possible that it has been created already
       Client client = (Client)invocation.getMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.CLIENT);
 
@@ -52,9 +54,10 @@ public class InvokerInterceptor implements Interceptor, Serializable
          throw new IllegalStateException("Cannot find remoting client");
       }
 
-      if (log.isTraceEnabled()) { log.trace("Invoking server"); }
+      if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
       InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
-      if (log.isTraceEnabled()) { log.trace("Invoked server"); }
+      if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
+
       invocation.setResponseContextInfo(response.getContextInfo());
       return response.getResponse();
    }

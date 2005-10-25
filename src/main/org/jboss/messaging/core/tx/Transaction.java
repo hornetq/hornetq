@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -18,6 +19,7 @@ import org.jboss.messaging.core.PersistenceManager;
  * A JMS Server local transaction
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.com">Ovidiu Feodorov</a>
  * 
  * partially based on org.jboss.mq.pm.Tx by
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -27,7 +29,9 @@ import org.jboss.messaging.core.PersistenceManager;
 public class Transaction
 {
    // Constants -----------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(Transaction.class);
+
    // Attributes ----------------------------------------------------
    
    protected int state;
@@ -56,7 +60,37 @@ public class Transaction
    public static final int STATE_COMMITTED = 2;
    
    public static final int STATE_ROLLEDBACK = 3;
-   
+
+   public static final int STATE_ROLLBACK_ONLY = 4;
+
+   public String stateToString(int state)
+   {
+      if (state == STATE_ACTIVE)
+      {
+         return "ACTIVE";
+      }
+      else if (state == STATE_PREPARED)
+      {
+         return "PREPARED";
+      }
+      else if (state == STATE_COMMITTED)
+      {
+         return "COMMITTED";
+      }
+      else if (state == STATE_ROLLEDBACK)
+      {
+         return "ROLLEDBACK";
+      }
+      else if (state == STATE_ROLLBACK_ONLY)
+      {
+         return "ROLLBACK_ONLY";
+      }
+      else
+      {
+         return "UNKNOWN";
+      }
+   }
+
    // Constructors --------------------------------------------------
    
    Transaction(long id, PersistenceManager mgr)
@@ -94,6 +128,13 @@ public class Transaction
    
    public void commit() throws Exception
    {
+      if (state == STATE_ROLLBACK_ONLY)
+      {
+         throw new TransactionException("Transaction marked rollback only, cannot commit");
+      }
+
+      if (log.isTraceEnabled()) { log.trace("committing " + this); }
+
       //TODO - commit the tx in the database
       
       state = STATE_COMMITTED;
@@ -123,7 +164,9 @@ public class Transaction
    public void rollback() throws Exception
    {
       //TODO - rollback the tx in the database
-      
+
+      if (log.isTraceEnabled()) { log.trace("rolling back " + this); }
+
       state = STATE_ROLLEDBACK;
       
       if (insertedTXRecord)
@@ -138,7 +181,14 @@ public class Transaction
          task.run();
       }
    }
-   
+
+   public void setRollbackOnly() throws Exception
+   {
+      if (log.isTraceEnabled()) { log.trace("setting rollback_only on " + this); }
+
+      state = STATE_ROLLBACK_ONLY;
+   }
+
 
    public boolean insertedTXRecord()
    { 
@@ -146,9 +196,16 @@ public class Transaction
       insertedTXRecord = true;
       return inserted;
    }
-   
-   
-   
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("TX(");
+      sb.append(txID);
+      sb.append("):");
+      sb.append(stateToString(state));
+      return sb.toString();
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

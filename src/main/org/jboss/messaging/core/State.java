@@ -21,34 +21,61 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 interface State
 {
+   /**
+    * @return true if the state can guarantee recoverability for <i>reliable</i> messages.
+    *         Recoverability is not guaranteed for non-reliable messages (and <i>should not</i>
+    *         be provided by default, for performance reasons), even if the channel is recoverable.
+    */
+   boolean isRecoverable();
 
    /**
-    * @return true if the state is able to store reliable undelivered. It implies transactionality.
+    * A non-recoverable state cannot guarantee recoverability for reliable messages so by default
+    * it won't accept reliable messages. However, there are situations when discarding a reliable
+    * message is acceptable for a specific state instance, so it should be a way to configure the
+    * state to do so.
     *
-    * @see org.jboss.messaging.core.State#isTransactional()
+    * A state instance indicates unequivocally whether it accepts reliable messages or not returning
+    * true or false as result of this method. The result also applies to deliveries, depending on
+    * what kind of message the delivery is related to.
+    *
+    * A recoverable state must always accept reliable messages, so this method must always return
+    * true for a recoverable state.
+    *
+    * @return false if the state doesn't accept reliable messages.
     */
-   boolean isReliable();
+   public boolean acceptReliableMessages();
 
+   /**
+    * Adds a message reference to the state. Adding a message can be done in the context of a
+    * local transaction, if tx is not null.
+    */
+   void add(MessageReference ref, Transaction tx) throws Throwable;
+
+   /**
+    * Removes a message from the state. Removing a message is done non-transactionally.
+    */
+   boolean remove(MessageReference ref) throws Throwable;
+
+   /**
+    * Adds a delivery to the state. Adding a delivery is done non-transactionally.
+    */
    void add(Delivery d) throws Throwable;
 
    /**
-    * Works transactionally in presence of a JTA transaction.
+    * Removes a delivery from the state. Removing a delivery can be done in the context of a
+    * local transaction, if tx is not null.
     */
    boolean remove(Delivery d, Transaction tx) throws Throwable;
 
    /**
-    * A list of routables in process of being delivered.
+    * A list of message references of messages in process of being delivered.
     *
     * @return a <i>copy</i> of the internal storage.
     */
    List delivering(Filter filter);
 
-   void add(MessageReference ref, Transaction tx) throws Throwable;
-
-   boolean remove(MessageReference ref) throws Throwable;
-
    /**
-    * A list of routables that are currently NOT being delivered by the channel.
+    * A list of message references of messages that are currently NOT being delivered by the channel.
     *
     * @return a <i>copy</i> of the the internal storage.
     */
@@ -57,14 +84,14 @@ interface State
    /**
     * @param filter - may be null, in which case no filter is applied.
     *
-    * @return a List containing messages whose state is maintained by this State instance.
-    *         The list includes messages in process of being delivered and messages for which
-    *         delivery hasn't been attempted yet.
+    * @return a List containing message references of messages whose state is maintained by this
+    *         State instance. The list includes references of messages in process of being delivered
+    *         and references of messages for which delivery has not been attempted yet.
     */
    List browse(Filter filter);
 
    /**
-    * Clears unreliable state but not persisted state, so a recovery of the channel is possible
+    * Clears non-recoverable state but not persisted state, so a recovery of the channel is possible
     * TODO really?
     */
    void clear();

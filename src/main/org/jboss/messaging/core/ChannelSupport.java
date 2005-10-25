@@ -12,22 +12,26 @@ import org.jboss.messaging.core.tx.Transaction;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.Serializable;
 
 /**
+ * A basic channel implementation. It supports atomicity, isolation and, if a non-null
+ * PersistenceManager is available, it supports recoverability of reliable messages.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-abstract class ChannelSupport implements Channel
+public class ChannelSupport implements Channel
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ChannelSupport.class);
 
    // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
+
+    // Attributes ----------------------------------------------------
 
    protected Serializable channelID;
    protected Router router;
@@ -35,47 +39,93 @@ abstract class ChannelSupport implements Channel
    protected PersistenceManager pm;
    protected MessageStore ms;
 
-
    // Constructors --------------------------------------------------
 
+   /**
+    * @param acceptReliableMessages - it only makes sense if pm is null. Otherwise ignored (a
+    *        recoverable channel always accepts reliable messages)
+    */
    protected ChannelSupport(Serializable channelID,
                             MessageStore ms,
-                            PersistenceManager pm)
+                            PersistenceManager pm,
+                            boolean acceptReliableMessages)
    {
-      if (log.isTraceEnabled()) { log.trace("Creating ChannelSupport: " + channelID + " reliable?" + (pm != null)); }
+      if (log.isTraceEnabled()) { log.trace("creating " + (pm != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
 
       this.channelID = channelID;
       this.ms = ms;
       this.pm = pm;
       if (pm == null)
       {
-         state = new UnreliableState(this);
+         state = new NonRecoverableState(this, acceptReliableMessages);
       }
       else
       {
-         state = new ReliableState(this, pm);
+         state = new RecoverableState(this, pm);
+         // acceptReliableMessage ignored, the channel alwyas accepts reliable messages
       }
    }
 
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
-   {      
+   public final Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
+   {
       if (r == null)
       {
          return null;
       }
-      return handleNoTx(sender, r);
+
+      if (log.isTraceEnabled()){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
+
+      MessageReference ref = ref(r);
+
+      if (tx == null)
+      {
+         return handleNoTx(sender, r);
+      }
+
+      if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
+
+      try
+      {
+         state.add(ref, tx);
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to add message reference " + ref + " to state", t);
+         return null;
+      }
+
+      // I might as well return null, the sender shouldn't care
+      return new SimpleDelivery(sender, ref, true);
    }
+
 
    // DeliveryObserver implementation --------------------------
 
    public void acknowledge(Delivery d, Transaction tx)
    {
-      acknowledgeNoTx(d);
+      if (tx == null)
+      {
+         // acknowledge non transactionally
+         acknowledgeNoTx(d);
+         return;
+      }
+
+      if (log.isTraceEnabled()){ log.trace("acknowledge " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
+
+      try
+      {
+         state.remove(d, tx);
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to remove delivery " + d + " from state", t);
+      }
    }
-   
+
+
 
    public boolean cancel(Delivery d) throws Throwable
    {
@@ -118,7 +168,6 @@ abstract class ChannelSupport implements Channel
          // TODO race condition: what if the receiver acknowledges right here v ?
          state.add(newd);
       }
-  
    }
 
    // Distributor implementation ------------------------------------
@@ -157,14 +206,40 @@ abstract class ChannelSupport implements Channel
 
    // Channel implementation ----------------------------------------
 
-   public boolean isTransactional()
+   public Serializable getChannelID()
    {
-      return state.isReliable();
+      return channelID;
    }
 
-   public boolean isReliable()
+   public boolean isRecoverable()
    {
-      return state.isReliable();
+      return state.isRecoverable();
+   }
+   
+   public boolean acceptReliableMessages()
+   {
+      return state.acceptReliableMessages();
+   }
+
+   public List browse()
+   {
+      return browse(null);
+   }
+
+   public List browse(Filter f)
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " browse" + (f == null ? "" : ", filter = " + f)); }
+
+      List references = state.browse(f);
+
+      // dereference pass
+      ArrayList messages = new ArrayList(references.size());
+      for(Iterator i = references.iterator(); i.hasNext();)
+      {
+         MessageReference ref = (MessageReference)i.next();
+         messages.add(ref.getMessage());
+      }
+      return messages;
    }
 
    public MessageStore getMessageStore()
@@ -172,23 +247,11 @@ abstract class ChannelSupport implements Channel
       return ms;
    }
 
-   public List browse()
-   {
-      return state.browse(null);
-   }
-
-   public List browse(Filter f)
-   {
-      return state.browse(f);
-   }
-
-
    public void deliver()
    {
-      if (log.isTraceEnabled()){ log.trace("attempting to deliver messages"); }
+      if (log.isTraceEnabled()){ log.trace("attempting to deliver channel's " + this + " messages"); }
 
       List messages = state.undelivered(null);
-      if (log.isTraceEnabled()){ log.trace("there are " + messages.size() + " messages to deliver"); }
       for(Iterator i = messages.iterator(); i.hasNext(); )
       {
 
@@ -208,12 +271,6 @@ abstract class ChannelSupport implements Channel
          
          handleNoTx(null, r);
       }
-   }
-
-
-   public Serializable getChannelID()
-   {
-      return channelID;
    }
 
    public void close()
@@ -273,20 +330,31 @@ abstract class ChannelSupport implements Channel
    }
 
    /**
-    * I need a separate private method to make sure is not overriden by TransactionalChannelSupport.
-    *
     * @param sender - may be null, in which case the returned acknowledgment will probably be ignored.
     */
    private Delivery handleNoTx(DeliveryObserver sender, Routable r)
    {
       checkClosed();
-      if (log.isTraceEnabled()){ log.trace("handling non transactionally " + r); }
 
       if (r == null)
       {
          return null;
       }
-      
+
+      // don't even attempt synchronous delivery for a reliable message when we have an
+      // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
+      // situation where we need to reliably store an active delivery of a reliable message, which
+      // in these conditions cannot be done.
+
+      if (r.isReliable() && !state.acceptReliableMessages())
+      {
+         log.error("Cannot handle reliable message " + r +
+                   " because the channel has a non-recoverable state!");
+         return null;
+      }
+
+      if (log.isTraceEnabled()){ log.trace("handling non-transactionally " + r); }
+
       MessageReference ref = ref(r);
 
       Set deliveries = router.handle(this, ref, null);
@@ -300,12 +368,12 @@ abstract class ChannelSupport implements Channel
          try
          {
             state.add(ref, null);
-            if (log.isTraceEnabled()){ log.trace("Added state"); }
+            if (log.isTraceEnabled()){ log.trace("adding reference to state successful"); }
 
          }
          catch(Throwable t)
          {
-            // this channel cannot safely hold a reliable message, so it doesn't accept it
+            // this channel cannot safely hold the message, so it doesn't accept it
             log.error("Cannot handle the message", t);
             return null;
          }
@@ -345,9 +413,6 @@ abstract class ChannelSupport implements Channel
    }
 
 
-   /**
-    * I need a separate private method to make sure is not overriden by TransactionalChannelSupport.
-    */
    private void acknowledgeNoTx(Delivery d)
    {
       checkClosed();

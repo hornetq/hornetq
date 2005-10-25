@@ -29,7 +29,8 @@ public class DurableSubscription extends Subscription
    
    // Constructors --------------------------------------------------
 
-   public DurableSubscription(String subName, Topic topic, String selector, MessageStore ms, PersistenceManager pm)
+   public DurableSubscription(String subName, Topic topic, String selector,
+                              MessageStore ms, PersistenceManager pm)
    {
       super(topic, selector, ms, pm);
       this.subName = subName;
@@ -37,11 +38,6 @@ public class DurableSubscription extends Subscription
    
 
    // Channel implementation ----------------------------------------
-
-   public boolean isStoringUndeliverableMessages()
-   {
-      return true;
-   }
 
    // Public --------------------------------------------------------
    

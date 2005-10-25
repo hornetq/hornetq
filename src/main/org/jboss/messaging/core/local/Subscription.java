@@ -6,19 +6,16 @@
  */
 package org.jboss.messaging.core.local;
 
-import java.io.Serializable;
 
 import javax.jms.JMSException;
-import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.endpoint.ServerConsumerDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.TransactionalChannelSupport;
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.util.id.GUID;
 
-public class Subscription extends TransactionalChannelSupport
+public class Subscription extends ChannelSupport
 {
    // Constants -----------------------------------------------------
    
@@ -29,7 +26,6 @@ public class Subscription extends TransactionalChannelSupport
    // Attributes ----------------------------------------------------
    
    protected Topic topic;
-   
    protected String selector;
    
    // Constructors --------------------------------------------------
@@ -41,7 +37,8 @@ public class Subscription extends TransactionalChannelSupport
    
    protected Subscription(Topic topic, String selector, MessageStore ms, PersistenceManager pm)
    {
-      super("sub" + new GUID().toString(), ms, pm);
+      // A Subscription must accept reliable messages, even if itself is non-recoverable
+      super("sub" + new GUID().toString(), ms, pm, true);
       this.topic = topic;
       this.selector = selector;
       router = new PointToPointRouter();
@@ -49,11 +46,6 @@ public class Subscription extends TransactionalChannelSupport
    
 
    // Channel implementation ----------------------------------------
-
-   public boolean isStoringUndeliverableMessages()
-   {
-      return false;
-   }
 
    // Public --------------------------------------------------------
    

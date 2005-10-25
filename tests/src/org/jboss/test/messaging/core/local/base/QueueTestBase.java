@@ -8,12 +8,11 @@
 
 package org.jboss.test.messaging.core.local.base;
 
-import org.jboss.test.messaging.core.base.TransactionalChannelTestBase;
-import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
+import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.Factory;
 
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.List;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public abstract class QueueTestBase extends TransactionalChannelTestBase
+public abstract class QueueTestBase extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -52,6 +51,12 @@ public abstract class QueueTestBase extends TransactionalChannelTestBase
 
    public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
    {
+      if (channel.isRecoverable())
+      {
+         // we test only non-recoverable channels now
+         return;
+      }
+
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
@@ -59,7 +64,6 @@ public abstract class QueueTestBase extends TransactionalChannelTestBase
       channel.add(r2);
 
       Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"), null);
-
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
@@ -82,6 +86,12 @@ public abstract class QueueTestBase extends TransactionalChannelTestBase
 
    public void testReliableSynchronousDeliveryTwoReceivers() throws Exception
    {
+      if (!channel.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);

@@ -82,7 +82,9 @@ public class ClosedInterceptor
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
-            
+
+      if (log.isTraceEnabled()) { log.trace(methodName + " " + ((JMSMethodInvocation)invocation).getHandler().getDelegateID()); }
+
       if (isClosing)
       {         
          if (checkClosingAlreadyDone())
@@ -91,8 +93,7 @@ public class ClosedInterceptor
          }
       }
       else if (isClose)
-      {         
-         if (log.isTraceEnabled()) { log.trace("Closing..."); }
+      {
          if(checkCloseAlreadyDone())
          {
             return null;
@@ -184,6 +185,7 @@ public class ClosedInterceptor
       throws Throwable
    {
       state = CLOSED;
+      if (log.isTraceEnabled()) { log.trace("closed"); }
    }
    
    /**
@@ -197,8 +199,6 @@ public class ClosedInterceptor
          throw new IllegalStateException("The object is closed");
       }
       ++inuseCount;
-      
-          
    }
    
    /**

@@ -30,6 +30,8 @@ import org.jboss.logging.Logger;
  * and Producer
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ *
+ * $Id$
  */
 public class TransactionInterceptor implements Interceptor, Serializable
 {
@@ -74,24 +76,19 @@ public class TransactionInterceptor implements Interceptor, Serializable
       MethodInvocation mi = (MethodInvocation)invocation;
       String methodName = mi.getMethod().getName();
       
-      if (log.isTraceEnabled()) { log.trace("In TransactionInterceptor: method is " + methodName); }
-      
+      if (log.isTraceEnabled()) { log.trace("handling " + methodName); }
+
       if ("createSessionDelegate".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("createSessionDelegate"); }
-         
          SessionDelegate sd = (SessionDelegate)invocation.invokeNext();
          
          boolean transacted = ((Boolean)mi.getArguments()[0]).booleanValue();
          boolean isXA = ((Boolean)mi.getArguments()[2]).booleanValue();
          
-         if (log.isTraceEnabled())
-         {
-            log.trace("transacted:" + transacted + ", xa:" + isXA);
-         }
-         
+         if (log.isTraceEnabled()) { log.trace("setting transacted=" + transacted + ", XA=" + isXA + " on the newly created session"); }
          sd.setTransacted(transacted);
          sd.setXA(isXA);
+
          if (transacted)
          {            
             ResourceManager theRm = ((ConnectionDelegate)this.getDelegate(mi)).getResourceManager();
@@ -114,10 +111,6 @@ public class TransactionInterceptor implements Interceptor, Serializable
       }         
       else if ("commit".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("commit"); }
-         
-         //SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
-         
          if (!this.transacted)
          {
             throw new IllegalStateException("Cannot commit a non-transacted session");
@@ -142,8 +135,6 @@ public class TransactionInterceptor implements Interceptor, Serializable
       }
       else if ("rollback".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("rollback"); }
-         
          SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
          if (!this.transacted)
          {
@@ -174,8 +165,6 @@ public class TransactionInterceptor implements Interceptor, Serializable
       }
       else if ("send".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("send"); }
-         
          JMSInvocationHandler handler = getHandler(invocation).getParent();
          
          SessionDelegate sessDelegate = (SessionDelegate)handler.getDelegate();
@@ -211,8 +200,6 @@ public class TransactionInterceptor implements Interceptor, Serializable
       }
       else if ("preDeliver".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("predeliver"); }
-         
          //SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
          if (!this.transacted)
          {
@@ -244,52 +231,45 @@ public class TransactionInterceptor implements Interceptor, Serializable
       }  
       else if ("getXAResource".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("getXAResource"); }
-         
          return xaResource;
       }
       else if ("setXAResource".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("setXAResource"); }
          JBossXAResource resource = (JBossXAResource)mi.getArguments()[0];
          this.xaResource = resource;
          return null;
       }
       else if ("getResourceManager".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("getResourceManager"); }
-         
          return this.rm;
       }
       else if ("setResourceManager".equals(methodName))
       {
-         if (log.isTraceEnabled()) { log.trace("setResourceManager"); }
          ResourceManager theRM = (ResourceManager)mi.getArguments()[0];
          this.rm = theRM;
          return null;
       }
       else if ("getTransacted".equals(methodName))
       {
-         //SessionState state = getSessionState(mi);
          return new Boolean(transacted);
       }
       else if ("getXA".equals(methodName))
       {
-         //SessionState state = getSessionState(mi);
          return new Boolean(XA);
       }
       else if ("setTransacted".equals(methodName))
       {
          this.transacted = ((Boolean)mi.getArguments()[0]).booleanValue();
+         if (log.isTraceEnabled()) { log.trace("set transacted to " + transacted + ", ending the invocation"); }
          return null;
       }
       else if ("setXA".equals(methodName))
       {
          this.XA = ((Boolean)mi.getArguments()[0]).booleanValue();
+         if (log.isTraceEnabled()) { log.trace("set XA to " + XA + ", ending the invocation"); }
          return null;
       }
-      
-      
+
       return invocation.invokeNext();            
    }
    

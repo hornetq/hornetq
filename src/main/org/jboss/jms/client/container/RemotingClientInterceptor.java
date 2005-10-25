@@ -26,6 +26,8 @@ import org.jboss.remoting.marshal.UnMarshaller;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class RemotingClientInterceptor implements Interceptor, Serializable
 {
@@ -56,8 +58,6 @@ public class RemotingClientInterceptor implements Interceptor, Serializable
    {
       Client client = (Client)invocation.getMetaData(REMOTING, CLIENT);
       
-      if (log.isTraceEnabled()) { log.trace("In RemotingClientInterceptor"); }
-
       if (client == null)
       {
          //We shouldn't have to do this programmatically - it should pick it up from the params
@@ -67,23 +67,22 @@ public class RemotingClientInterceptor implements Interceptor, Serializable
          MarshalFactory.addMarshaller("invocation", marshaller, unmarshaller);
          
          
-         if (log.isTraceEnabled()) { log.trace("client is null"); }
          InvokerLocator locator = (InvokerLocator)invocation.getMetaData(REMOTING, INVOKER_LOCATOR);
          if (locator == null)
          {
             throw new RuntimeException("No InvokerLocator supplied.  Can't invoke remotely!");
          }
-         if (log.isTraceEnabled()) { log.trace("Locator is:" + locator); }
+
          String subsystem = (String)invocation.getMetaData(REMOTING, SUBSYSTEM);
          if (subsystem == null)
          {
             throw new RuntimeException("No subsystem supplied.  Can't invoke remotely!");
          }
-         if (log.isTraceEnabled()) { log.trace("Subsystem is:" + subsystem); }
+
          client = new Client(locator, subsystem);
-         if (log.isTraceEnabled()) { log.trace("Created client"); }
-         
-      
+
+         if (log.isTraceEnabled()) { log.trace("created client, locator=" + locator + ", subsystem=" + subsystem); }
+
          invocation.getMetaData().addMetaData(REMOTING, CLIENT, client, PayloadKey.TRANSIENT);
          getHandler(invocation).metadata.addMetaData(REMOTING, CLIENT, client, PayloadKey.TRANSIENT);
       }

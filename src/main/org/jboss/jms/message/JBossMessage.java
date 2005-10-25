@@ -791,11 +791,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public String toString()
    {
       StringBuffer sb = new StringBuffer("JBossMessage[");
-      sb.append("ID=");
+      sb.append("");
       sb.append(messageID);
-      sb.append(",");
-      sb.append(isReliable() ? "PERSISTENT" : "NONPERSISTENT");
-      sb.append("]");
+      sb.append("]:");
+      sb.append(isReliable() ? "PERSISTENT" : "NON-PERSISTENT");
       return sb.toString();
    }
    

@@ -12,7 +12,6 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
@@ -33,7 +32,6 @@ import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
-import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSConsumerInvocationHandler;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.RemotingClientInterceptor;
@@ -46,7 +44,6 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.DestinationManagerImpl;
-import org.jboss.jms.server.DurableSubscriptionHolder;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.ResourceManager;
@@ -56,14 +53,12 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
 /**
@@ -436,7 +431,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    public void close() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.close()");
+      if (log.isTraceEnabled()) log.trace("close()");
     
       synchronized(consumers)
       {
@@ -451,7 +446,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    
    public void closing() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("ServerSessionDelegate.closing()");
+      if (log.isTraceEnabled()) log.trace("closing (noop)");
 
       //Currently does nothing
    }

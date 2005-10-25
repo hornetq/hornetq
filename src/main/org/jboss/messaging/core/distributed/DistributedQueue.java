@@ -20,7 +20,6 @@ import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
 
-import javax.transaction.TransactionManager;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -56,7 +55,7 @@ public class DistributedQueue extends Queue implements Peer, QueueFacade
    // Constructors --------------------------------------------------
 
    /**
-    * An unreliable distributed queue.
+    * An non-recoverable distributed queue.
     */
    public DistributedQueue(String name,
                            MessageStore ms,

@@ -24,7 +24,8 @@ public interface Receiver
 
    /**
     * A receiver can return an active, "done" or null delivery. The method returns null in case
-    * the receiver doesn't accept the message.
+    * the receiver doesn't accept the message. The return value is <i>unspecified</i> when the
+    * message is submitted in the context of a transaction (tx not null).
     *
     * @param observer - the component the delivery should be acknowledged to.
     * 

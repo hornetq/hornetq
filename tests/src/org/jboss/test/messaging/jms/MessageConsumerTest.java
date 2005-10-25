@@ -135,9 +135,21 @@ public class MessageConsumerTest extends MessagingTestCase
 
       super.tearDown();
    }
-   
-   
-   
+
+   /**
+    * The simplest possible test.
+    */
+   public void testConsumer() throws Exception
+   {
+      TextMessage tm = producerSession.createTextMessage("someText");
+
+      queueProducer.send(tm);
+
+      consumerConnection.start();
+      TextMessage m = (TextMessage)queueConsumer.receive();
+      assertEquals(tm.getText(), m.getText());
+   }
+
    /* Test that an ack can be sent after the consumer that received the message has been closed.
     * Acks are scoped per session.
     */
@@ -690,8 +702,7 @@ public class MessageConsumerTest extends MessagingTestCase
        }
        
     }
-    
-    
+
 
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
    {
@@ -1807,8 +1818,8 @@ public class MessageConsumerTest extends MessagingTestCase
    
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
    
-         MessageConsumer durable1 = sess1.createDurableSubscriber(topic, "mySubscription1");
-         MessageConsumer durable2 = sess1.createDurableSubscriber(topic, "mySubscription2");
+         sess1.createDurableSubscriber(topic, "mySubscription1");
+         sess1.createDurableSubscriber(topic, "mySubscription2");
                
          conn1.close();
          

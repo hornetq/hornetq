@@ -114,7 +114,7 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
       Class[] interfaces = new Class[] { ConnectionDelegate.class };
       cd = (ConnectionDelegate)Proxy.newProxyInstance(loader, interfaces, h);
 
-      log.debug("created connection delegate (connectionID=" + scd.getConnectionID() + ")");
+      log.debug("created connection delegate (connectionID=" + scd.getConnectionID() + "), returning it to the client");
 
       return cd;
    }

@@ -5,6 +5,7 @@
  * See terms of license at gnu.org.
  */
 
+
 package org.jboss.messaging.core.persistence;
 
 import java.io.Serializable;
@@ -23,8 +24,8 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import javax.transaction.Status;
 import javax.transaction.TransactionManager;
+import javax.transaction.Status;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
@@ -56,11 +57,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    // Attributes ----------------------------------------------------
 
    protected DataSource ds;
-   
+
    protected String dbURL;
-   
+
    protected TransactionManager mgr;
-   
+
+
 
    // Constructors --------------------------------------------------
 
@@ -82,6 +84,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
+
       try
       {
          MessageReference ref = d.getReference();
@@ -95,11 +98,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setString(5, "C");
          int rows = ps.executeUpdate();
 
-         if (log.isTraceEnabled())
-         {
-            log.trace(sql);
-            log.trace("Inserted " + rows + " rows");
-         }         
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID(), ref.getStoreID(), null, "C") + " inserted " + rows + " row(s)"); }
       }
       catch (SQLException e)
       {
@@ -135,13 +134,11 @@ public class HSQLDBPersistenceManager implements PersistenceManager
     */
    public boolean remove(Serializable channelID, Delivery d, Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Removing delivery " + d + " from channel: "  + channelID);}
+      if (log.isTraceEnabled()) { log.trace("Removing delivery " + d + " from channel: "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
             
       Connection conn = null;
       PreparedStatement ps = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
-      
       try
       {
          conn = ds.getConnection();
@@ -161,6 +158,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             ps.setString(2, (String)d.getReference().getMessageID());
             
             updated = ps.executeUpdate();
+
+            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, d.getReference().getMessageID()) + " removed/updated " + updated + " row(s)"); }
          }
          else
          {
@@ -168,18 +167,14 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             sql = "UPDATE DELIVERY SET TRANSACTIONID=?, STATE='-' WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
             ps = conn.prepareStatement(sql);
             ps.setString(1, String.valueOf(tx.getID()));
-            ps.setString(2, (String)d.getReference().getStoreID());
+            ps.setString(2, (String)channelID);
             ps.setString(3, (String)d.getReference().getMessageID());
-            
-            updated = ps.executeUpdate();            
+
+            updated = ps.executeUpdate();
+
+            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, String.valueOf(tx.getID()), channelID, d.getReference().getMessageID()) + " updated " + updated + " row(s)"); }
          }
-         
-         if (log.isTraceEnabled())
-         {
-            log.trace(sql);
-            log.trace("Removed/updated " + updated + " rows");
-         }
-                  
+
          return updated == 1;
       }
       catch (SQLException e)
@@ -217,11 +212,10 @@ public class HSQLDBPersistenceManager implements PersistenceManager
     */
    public void add(Serializable channelID, MessageReference ref, Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Adding message ref " + ref + " to channel: "  + channelID);}
+      if (log.isTraceEnabled()) { log.trace("Adding " + ref + " for channel "  + channelID + (tx == null ? " non-transactionally" : " in transaction: " + tx));}
 
       Connection conn = null;
-      PreparedStatement ps = null;      
-      
+      PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
@@ -229,29 +223,39 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          conn = ds.getConnection();
                   
          insertTx(conn, tx);
-         
+
+         String state;
+         String txID = null;
+
+         if (tx == null)
+         {
+            state = "C";
+         }
+         else
+         {
+            txID = String.valueOf(tx.getID());
+            state = "+";
+         }
+
          String sql =
                "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) VALUES (?, ?, ?, ?, ?)";
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)ref.getMessageID());
          ps.setString(3, (String)ref.getStoreID());
-         if (tx == null)
+         if (txID == null)
          {
-            if (log.isTraceEnabled()) { log.trace("No tx so adding with state C"); }
             ps.setNull(4, java.sql.Types.VARCHAR);
-            ps.setString(5, "C");
          }
          else
          {
-            { log.trace("tx so adding with state +"); }
-            ps.setString(4, String.valueOf(tx.getID()));
-            ps.setString(5, "+");
+            ps.setString(4, (String)txID);
          }
-         ps.executeUpdate();
-         if (log.isTraceEnabled()) { log.trace(sql); }
-         
-         
+         ps.setString(5, (String)state);
+
+         int inserted = ps.executeUpdate();
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID(), ref.getStoreID(), txID, state) + " inserted " + inserted + " row(s)"); }
       }
       catch (SQLException e)
       {
@@ -287,11 +291,10 @@ public class HSQLDBPersistenceManager implements PersistenceManager
     */
    public boolean remove(Serializable channelID, MessageReference ref) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Removing message ref " + ref + " from channel " + channelID); }
+      if (log.isTraceEnabled()) { log.trace("Removing " + ref + " from channel " + channelID); }
       
       Connection conn = null;
-      PreparedStatement ps = null;  
-      
+      PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
@@ -303,9 +306,10 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)ref.getMessageID());
          int rows = ps.executeUpdate();
-         if (log.isTraceEnabled()) { log.trace(sql); }
-         
-         return rows == 1;         
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID()) + " updated " + rows + " row(s)"); }
+
+         return rows == 1;
       }
       catch (SQLException e)
       {
@@ -338,29 +342,28 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    
    /*
     * The jms transaction is committing.
-    * We needs to remove any deliveries marked as "D".
+    * We needs to remove any deliveries marked as "-".
     */
    public void commitTx(Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Committing transaction:" + tx.getID()); }
+      if (log.isTraceEnabled()) { log.trace("updating database for committing transaction " + tx); }
       
       Connection conn = null;
       PreparedStatement ps = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
          conn = ds.getConnection();
-               
+
          String sql = "DELETE FROM DELIVERY WHERE STATE='-' AND TRANSACTIONID=?";
    
          ps = conn.prepareStatement(sql);
          ps.setString(1, String.valueOf(tx.getID()));
          
          int rows = ps.executeUpdate();
-         
-         if (log.isTraceEnabled()) { log.trace("Removed " + rows + " rows from DELIVERY"); }
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, String.valueOf(tx.getID())) + " removed " + rows + " row(s)"); }
          
          sql = "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID=? WHERE STATE='+' AND TRANSACTIONID=?";
          ps.close();
@@ -369,11 +372,10 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setString(2, String.valueOf(tx.getID()));
          
          rows = ps.executeUpdate();
-         
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, null, String.valueOf(tx.getID())) + " updated " + rows + " row(s)"); }
+
          removeTXRecord(conn, tx);
-         
-         if (log.isTraceEnabled()) { log.trace("Updated " + rows + " rows in MESSAGE_REFERENCES"); }        
-                 
       }
       catch (SQLException e)
       {
@@ -415,13 +417,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       
       Connection conn = null;
       PreparedStatement ps = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
       {
          conn = ds.getConnection();
-               
+
          String sql = "DELETE FROM MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'";
    
          ps = conn.prepareStatement(sql);
@@ -429,7 +430,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          
          int rows = ps.executeUpdate();
          
-         if (log.isTraceEnabled()) { log.trace("Removed " + rows + " rows from MESSAGE_REFERENCE"); }
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, String.valueOf(tx.getID())) + " removed " + rows + " row(s)"); }
          
          sql = "UPDATE DELIVERY SET STATE='C', TRANSACTIONID=? WHERE STATE='-' AND TRANSACTIONID=?";
          ps.close();
@@ -440,10 +441,9 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          
          rows = ps.executeUpdate();
          
-         if (log.isTraceEnabled()) { log.trace("Updated " + rows + " rows from DELIVERY"); }
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, null, String.valueOf(tx.getID())) + " updated " + rows + " row(s)"); }
                   
          removeTXRecord(conn, tx);
-                         
       }
       catch (SQLException e)
       {
@@ -487,9 +487,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       PreparedStatement ps = null;
       try
       {
-         ps = conn.prepareStatement("INSERT INTO TRANSACTION (TRANSACTIONID) values(?)");
+         String sql = "INSERT INTO TRANSACTION (TRANSACTIONID) values(?)";
+         ps = conn.prepareStatement(sql);
          ps.setString(1, String.valueOf(tx.getID()));
-         ps.executeUpdate();
+
+         int rows = ps.executeUpdate();
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, String.valueOf(tx.getID())) + " inserted " + rows + " row(s)"); }
       }
       finally
       {
@@ -512,9 +516,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       PreparedStatement ps = null;
       try
       {
-         ps = conn.prepareStatement("DELETE FROM TRANSACTION WHERE TRANSACTIONID = ?");
+         String sql = "DELETE FROM TRANSACTION WHERE TRANSACTIONID = ?";
+
+         ps = conn.prepareStatement(sql);
          ps.setString(1, String.valueOf(tx.getID()));
-         ps.executeUpdate();
+         int rows = ps.executeUpdate();
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, String.valueOf(tx.getID())) + " removed " + rows + " row(s)"); }
       }
       finally
       {
@@ -539,7 +547,6 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
@@ -547,15 +554,17 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          conn = ds.getConnection();
                
          List result = new ArrayList();
-      
-         String sql = "SELECT MESSAGEID, STOREID FROM DELIVERY WHERE CHANNELID=? AND STATE='C'";
+
+         // the deliveries that are currently being acknowledged in a transaction still count until
+         // transaction commits
+         String sql = "SELECT MESSAGEID, STOREID FROM DELIVERY " +
+                      "WHERE CHANNELID=? AND (STATE='C' OR STATE='-')";
    
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
          
          rs = ps.executeQuery();
-         if (log.isTraceEnabled()) { log.trace(sql); }
-   
+
          int count = 0;
          while (rs.next())
          {
@@ -564,9 +573,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             result.add(new StorageIdentifier(id, storeID));
             count++;
          }
-         
-         if (log.isTraceEnabled()) { log.trace("There are " + count + " deliveries"); }
-   
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID) + " selected " + count + " row(s)"); }
          return result;
       }
       catch (SQLException e)
@@ -614,7 +622,6 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps1 = null;
       PreparedStatement ps2 = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
@@ -633,7 +640,6 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          
          ps1.executeUpdate();
          ps2.executeUpdate();
-
       }
       catch (SQLException e)
       {
@@ -683,9 +689,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
-      
+
       try
       {
          List result = new ArrayList();
@@ -697,9 +702,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setString(1, (String)channelID);
          
          rs = ps.executeQuery();
-         
-         if (log.isTraceEnabled()) { log.trace(sql); }
-         
+
          while (rs.next())
          {
             String id = rs.getString(1);
@@ -707,10 +710,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             result.add(new StorageIdentifier(id, storeID));
          }
          
-         if (log.isTraceEnabled()) { log.trace("got " + result.size() + " message refs"); }
-         
-         
-         
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID) + " selected " + result.size() + " row(s)"); }
+
          return result;
       }
       catch (SQLException e)
@@ -760,13 +761,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       try
       {
          conn = ds.getConnection();
-         
+
          String sql = "DELETE FROM MESSAGE WHERE MESSAGEID=?";
    
          stat = conn.prepareStatement(sql);
          stat.setString(1, messageID);
          
-         stat.executeUpdate();  
+         stat.executeUpdate();
       }
       catch (SQLException e)
       {
@@ -802,7 +803,6 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    {
       Connection conn = null;
       PreparedStatement ps = null;
-      
       TransactionWrapper wrap = new TransactionWrapper();
 
       try
@@ -902,9 +902,9 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setBoolean(13, replyToIsQueue);
          ps.setString(14, replyTo);
          ps.setObject(15, jmsProperties);
-         ps.executeUpdate();
-         if (log.isTraceEnabled()) { log.trace(ps); }
-            
+         int result = ps.executeUpdate();
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql) + " inserted " + result + " row(s)"); }
       }
       catch (SQLException e)
       {
@@ -931,7 +931,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             catch (Throwable e)
             {}
          }
-         wrap.end();
+        wrap.end();
       }
       
    }
@@ -943,11 +943,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       PreparedStatement ps = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
+
       try
       {
          Message m = null;
          conn = ds.getConnection();
-         
+
          String sql = "SELECT " +
                       "MESSAGEID, " +
                       "RELIABLE, " +
@@ -970,11 +971,12 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setString(1, (String)messageID);
          
          rs = ps.executeQuery();
-         if (log.isTraceEnabled()) { log.trace(sql); }
-   
+
+         int count = 0;
          if (rs.next())
          {
             m = (Message)rs.getObject("PAYLOAD");
+            count ++;
             /*
             m = Factory.createMessage(rs.getString("MESSAGEID"),
                                       rs.getBoolean("RELIABLE"),
@@ -993,7 +995,9 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                                       (Map)rs.getObject("JMSPROPERTIES"));
               */                        
          }
-         
+
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, messageID) + " selected " + count + " row(s)"); }
+
          return m;
       }
       catch (SQLException e)
@@ -1032,9 +1036,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          }
          wrap.end();
       }
-    
    }
-   
 
    // Public --------------------------------------------------------
 
@@ -1042,14 +1044,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    {
       InitialContext ic = new InitialContext();
       mgr = (TransactionManager)ic.lookup("java:/TransactionManager");
-      
+
       ds = (DataSource)ic.lookup("java:/DefaultDS");
-      
+      ic.close();
+
       Connection conn = null;
-      
       String sql = null;
-      
-      TransactionWrapper tx = new TransactionWrapper(); 
+      TransactionWrapper tx = new TransactionWrapper();
 
       try
       {
@@ -1134,16 +1135,16 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    // Inner classes -------------------------------------------------
    
    class TransactionWrapper
-   {      
+   {
       private javax.transaction.Transaction oldTx;
-      
+
       private TransactionWrapper() throws Exception
       {
          oldTx = mgr.suspend();
-         
-         mgr.begin();    
+
+         mgr.begin();
       }
-      
+
       private void end() throws Exception
       {
          try
@@ -1165,11 +1166,11 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             }
          }
       }
-      
+
       private void exceptionOccurred() throws Exception
       {
          mgr.setRollbackOnly();
       }
    }
-  
+
 }

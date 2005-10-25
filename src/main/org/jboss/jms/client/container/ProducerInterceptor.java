@@ -77,7 +77,7 @@ public class ProducerInterceptor implements Interceptor, Serializable
       String methodName = mi.getMethod().getName();
       Object[] args = mi.getArguments();
       
-      if (log.isTraceEnabled()) { log.trace("Method is " + methodName); }
+      if (log.isTraceEnabled()) { log.trace("handling " + methodName); }
       
       if ("createProducerDelegate".equals(methodName))
       {

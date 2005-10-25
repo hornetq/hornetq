@@ -242,6 +242,12 @@ public class ServerPeer
 
       tearDownConnectionFactories();
 
+
+      // remove the JMS subsystem
+//      mbeanServer.invoke(connector, "removeInvocationHandler",
+//                         new Object[] {"JMS"},
+//                         new String[] {"java.lang.String"});
+
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
 
@@ -545,7 +551,10 @@ public class ServerPeer
    {
       String s = (String)mbeanServer.invoke(connector, "getInvokerLocator",
                                             new Object[0], new String[0]);
+
+      // TODO 
       locator = new InvokerLocator(s + "&socketTimeout=0");
+      //locator = new InvokerLocator(s);
 
       log.debug("LocatorURI: " + getLocatorURI());
 

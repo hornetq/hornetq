@@ -6,9 +6,6 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.util.Arrays;
-
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -94,7 +91,6 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-
       producerConnection.close();
       consumerConnection.close();
 
@@ -102,12 +98,40 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.deInit();
 
       super.tearDown();
-   
    }
-   
-   
-   
-   
+
+   /**
+    * The simplest possible non-transacted test.
+    */
+   public void testSimpleSend() throws Exception
+   {
+      consumerConnection.start();
+      TextMessage m = producerSession.createTextMessage("test");
+      queueProducer.send(m);
+      TextMessage r = (TextMessage)queueConsumer.receive(3000);
+      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+      assertEquals("test", r.getText());
+   }
+
+   /**
+    * The simplest possible transacted test.
+    */
+   public void testTransactedSend() throws Exception
+   {
+      consumerConnection.start();
+
+      Session transactedSession = producerConnection.createSession(true, -1);
+      MessageProducer prod = transactedSession.createProducer(queue);
+
+      TextMessage m = transactedSession.createTextMessage("test");
+      prod.send(m);
+
+      transactedSession.commit();
+
+      TextMessage r = (TextMessage)queueConsumer.receive();
+      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+      assertEquals("test", r.getText());
+   }
 
    public void testPersistentSendToTopic() throws Exception
    {
@@ -145,19 +169,6 @@ public class MessageProducerTest extends MessagingTestCase
       t.join();
       
    }
-   
-
-   public void testSimpleSend() throws Exception
-   {
-      consumerConnection.start();
-      TextMessage m = producerSession.createTextMessage("test");
-      queueProducer.send(m);
-      TextMessage r = (TextMessage)queueConsumer.receive(3000);
-      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-      assertEquals("test", r.getText());
-   }
-   
-
 
    /* Test sending via anonymous producer */
    public void testSendDestination() throws Exception

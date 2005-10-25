@@ -73,6 +73,8 @@ public class ConnectionTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
       topic = (Destination)initialContext.lookup("/topic/Topic");
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception

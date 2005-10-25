@@ -219,7 +219,12 @@ public class SimpleReceiver implements Receiver
       }
 
       d.acknowledge(tx);
-      touple[1] = null;
+
+      // make sure I get rid of message if the transaction is rolled back
+      if (tx != null)
+      {
+         tx.addPostCommitTasks(new PostAcknowledgeCommitTask(touple));
+      }
    }
 
    public void setState(String state)
@@ -264,4 +269,24 @@ public class SimpleReceiver implements Receiver
    }
 
    // Inner classes -------------------------------------------------
+
+   private class PostAcknowledgeCommitTask implements Runnable
+   {
+      private Object[] touple;
+
+
+      /**
+       * @param touple - touple[0] contains the message, touple[1] contains the delivery
+       */
+      public PostAcknowledgeCommitTask(Object[] touple)
+      {
+         this.touple = touple;
+      }
+
+      public void run()
+      {
+         // clear the delivery
+         touple[1] = null;
+      }
+   }
 }

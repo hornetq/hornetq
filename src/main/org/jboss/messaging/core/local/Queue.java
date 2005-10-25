@@ -8,11 +8,10 @@
 
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.TransactionalChannelSupport;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.ChannelSupport;
 
-import javax.transaction.TransactionManager;
 
 
 /**
@@ -20,7 +19,7 @@ import javax.transaction.TransactionManager;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class Queue extends TransactionalChannelSupport
+public class Queue extends ChannelSupport
 {
    // Constants -----------------------------------------------------
 
@@ -37,16 +36,11 @@ public class Queue extends TransactionalChannelSupport
 
    public Queue(String name, MessageStore ms, PersistenceManager pm)
    {
-      super(name, ms, pm);
+      super(name, ms, pm, false);
       router = new PointToPointRouter();
    }
 
    // Channel implementation ----------------------------------------
-
-   public boolean isStoringUndeliverableMessages()
-   {
-      return true;
-   }
 
    // Public --------------------------------------------------------
 

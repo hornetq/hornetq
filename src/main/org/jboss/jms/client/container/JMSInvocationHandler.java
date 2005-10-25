@@ -18,6 +18,8 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.MethodHashing;
+import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.logging.Logger;
 
 
 
@@ -31,6 +33,8 @@ import org.jboss.aop.util.MethodHashing;
 public class JMSInvocationHandler implements InvocationHandler, Serializable
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(JMSInvocationHandler.class);
 
    private final static long serialVersionUID = 1945932848345348326L;
 
@@ -90,49 +94,77 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
      
       // initialize the invocation's metadata
       // TODO I don't know if this is the most efficient thing to do
-      invocation.getMetaData().mergeIn(getMetaData());           
+      invocation.getMetaData().mergeIn(getMetaData());
+
+      if (log.isTraceEnabled()) { log.trace("invocation (" + invocation.getMethod().getName() + ") submitted to the interceptor chain"); }
 
       return invocation.invokeNext();
    }
    
+   // Package protected ---------------------------------------------
+
    JMSInvocationHandler getParent()
    {
        return parent;
    }
-   
+
    void setParent(JMSInvocationHandler parent)
    {
       this.parent = parent;
    }
-   
+
    Set getChildren()
    {
        return children;
    }
-   
+
    void addChild(JMSInvocationHandler child)
    {
        children.add(child);
        child.setParent(this);
    }
-   
+
    void removeChild(JMSInvocationHandler child)
    {
        children.remove(child);
        child.setParent(null);
    }
-   
+
    Object getDelegate()
    {
        return delegate;
    }
-   
+
    void setDelegate(Object proxy)
    {
        this.delegate = proxy;
    }
-   
-   // Package protected ---------------------------------------------
+
+   /**
+    * Returns the most significant ID maintained by the handler's metadata for this specific
+    * handler instance.
+    */
+   Object getDelegateID()
+   {
+      Object id = metadata.getMetaData(JMSAdvisor.JMS, JMSAdvisor.BROWSER_ID);
+      if (id == null)
+      {
+         id = metadata.getMetaData(JMSAdvisor.JMS, JMSAdvisor.PRODUCER_ID);
+      }
+      if (id == null)
+      {
+         id = metadata.getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONSUMER_ID);
+      }
+      if (id == null)
+      {
+         id = metadata.getMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID);
+      }
+      if (id == null)
+      {
+         id = metadata.getMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID);
+      }
+      return id;
+   }
 
    // Protected -----------------------------------------------------
 

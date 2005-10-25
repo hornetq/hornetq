@@ -10,16 +10,20 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.message.TransactionalMessageStore;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+
+import javax.transaction.TransactionManager;
+import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
+ * 
  * $Id$
  */
-public class ReliableQueueTest extends QueueTestBase
+public class NonRecoverableQueueTest extends QueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -27,11 +31,9 @@ public class ReliableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private HSQLDBPersistenceManager pm;
-
    // Constructors --------------------------------------------------
 
-   public ReliableQueueTest(String name)
+   public NonRecoverableQueueTest(String name)
    {
       super(name);
    }
@@ -42,12 +44,7 @@ public class ReliableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
-      ms = new PersistentMessageStore("persistent-message-store", pm);
-
-      channel = new Queue("test", ms, pm);
-      
-      tm.setPersistenceManager(pm);
+      channel = new Queue("test", ms);
    }
 
    public void tearDown() throws Exception
@@ -55,22 +52,17 @@ public class ReliableQueueTest extends QueueTestBase
       channel.close();
       channel = null;
 
-      pm.stop();
-      ms = null;
-
       super.tearDown();
    }
 
    public void crashChannel() throws Exception
    {
-      channel.close();
-      channel = null;
-
+      // doesn't matter
    }
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, pm);
+      // doesn't matter
    }
 
    // Public --------------------------------------------------------

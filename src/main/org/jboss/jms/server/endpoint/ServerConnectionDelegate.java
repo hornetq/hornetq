@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
@@ -33,7 +32,6 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
@@ -48,11 +46,10 @@ import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.Transaction;
@@ -123,13 +120,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    // ConnectionDelegate implementation -----------------------------
    
    public SessionDelegate createSessionDelegate(boolean transacted,
-         int acknowledgmentMode,
-         boolean isXA)
+                                                int acknowledgmentMode,
+                                                boolean isXA)
    {
-      if (log.isTraceEnabled())
-      {
-         log.trace("creating session, transacted: " + transacted + " ackMode: " + acknowledgmentMode + " Xa:" + isXA);
-      }
+      if (log.isTraceEnabled()) { log.trace("creating session, transacted=" + transacted + " ackMode=" + ToString.acknowledgmentMode(acknowledgmentMode) + " XA=" + isXA); }
       
       // create the dynamic proxy that implements SessionDelegate
       SessionDelegate sd = null;
@@ -213,7 +207,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    public void close() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("In ServerConnectionDelegate.close()"); }
+      if (log.isTraceEnabled()) { log.trace("close()"); }
       
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       Iterator iter = this.temporaryDestinations.iterator();
@@ -227,7 +221,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    public void closing() throws JMSException
    {
-      log.trace("In ServerConnectionDelegate.closing()");
+      log.trace("closing (noop)");
       
       //This currently does nothing
    }

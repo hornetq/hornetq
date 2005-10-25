@@ -28,10 +28,9 @@ import org.jboss.remoting.transport.Connector;
 
 /**
  * 
- * Handles operations related to the consumer
+ * Handles operations related to the consumer.
  * 
- * Important! There is one instance of this interceptor per instance of Consumer
- * and Session
+ * Important! There is one instance of this interceptor per instance of Consumer and Session.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

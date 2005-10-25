@@ -20,7 +20,7 @@ import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
  *
  * $Id$
  */
-public class ReliableDistributedQueueTest extends DistributedQueueTestBase
+public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -32,7 +32,7 @@ public class ReliableDistributedQueueTest extends DistributedQueueTestBase
 
    // Constructors --------------------------------------------------
 
-    public ReliableDistributedQueueTest(String name)
+    public RecoverableDistributedQueueTest(String name)
    {
       super(name);
    }
@@ -49,7 +49,7 @@ public class ReliableDistributedQueueTest extends DistributedQueueTestBase
       channel = new DistributedQueue("test", ms, pm, dispatcher);
       channelTwo = new DistributedQueue("test", msTwo, pm, dispatcherTwo);
       
-      tm.setPersistenceManager(pm);
+      tr.setPersistenceManager(pm);
    }
 
    public void tearDown() throws Exception

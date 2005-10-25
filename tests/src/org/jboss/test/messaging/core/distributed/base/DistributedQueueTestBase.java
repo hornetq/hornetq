@@ -13,7 +13,6 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.message.Factory;
 

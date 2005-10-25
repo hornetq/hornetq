@@ -22,10 +22,6 @@ import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.marshal.Marshaller;
-import org.jboss.remoting.marshal.UnMarshaller;
 
 /**
  * Handles operations related to the connection
@@ -68,10 +64,7 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
    
    public ConnectionInterceptor()
    {
-      if (log.isTraceEnabled())
-      {
-         log.trace("Creating new ConnectionInterceptor");
-      }
+      if (log.isTraceEnabled()) { log.trace("Creating new ConnectionInterceptor"); }
    }
 
    // Public --------------------------------------------------------
@@ -93,16 +86,16 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
       MethodInvocation mi = (MethodInvocation)invocation;
       String methodName = mi.getMethod().getName();      
             
-      if (log.isTraceEnabled())
-      {
-         log.trace("ConnectionInterceptor, methodName=" + methodName);
-      }
+      if (log.isTraceEnabled()) { log.trace("handling " + methodName); }
       
       if ("createConnectionDelegate".equals(methodName))
       {
          ConnectionDelegate connectionDelegate = (ConnectionDelegate)invocation.invokeNext();
          ResourceManager rm = new ResourceManager(connectionDelegate);
+
+         // TODO: Why not just this.rm = rm?
          connectionDelegate.setResourceManager(rm);
+
          return connectionDelegate;
       }
         
@@ -176,6 +169,7 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
       else if ("setResourceManager".equals(methodName))
       {
          this.rm = (ResourceManager)mi.getArguments()[0];
+         if (log.isTraceEnabled()) { log.trace("setting the resource manager, ending the invocation"); }
          return null;
       }
       else if ("createSessionDelegate".equals(methodName))

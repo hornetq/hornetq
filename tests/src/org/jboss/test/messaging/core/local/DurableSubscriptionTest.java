@@ -8,22 +8,19 @@
 
 package org.jboss.test.messaging.core.local;
 
-import org.jboss.test.messaging.core.local.base.QueueTestBase;
+import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.message.TransactionalMessageStore;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-
-import javax.transaction.TransactionManager;
-import javax.naming.InitialContext;
+import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
-public class UnreliableQueueTest extends QueueTestBase
+public class DurableSubscriptionTest extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -31,9 +28,11 @@ public class UnreliableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
+   private HSQLDBPersistenceManager pm;
+
    // Constructors --------------------------------------------------
 
-   public UnreliableQueueTest(String name)
+   public DurableSubscriptionTest(String name)
    {
       super(name);
    }
@@ -44,25 +43,38 @@ public class UnreliableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      channel = new Queue("test", ms);
+      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      ms = new PersistentMessageStore("persistent-message-store", pm);
+      tr.setPersistenceManager(pm);
+
+      channel = new DurableSubscription("testDurableSubscription", null, null, ms, pm);
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
+      log.debug("tearing down");
+
       channel.close();
       channel = null;
+
+      pm.stop();
+      ms = null;
 
       super.tearDown();
    }
 
    public void crashChannel() throws Exception
    {
-      // doesn't matter
+      channel.close();
+      channel = null;
+
    }
 
    public void recoverChannel() throws Exception
    {
-      // doesn't matter
+      channel = new Queue("test", ms, pm);
    }
 
    // Public --------------------------------------------------------

@@ -37,29 +37,29 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
    Serializable getChannelID();
 
    /**
-    * @return true if the channel is able to atomically accept messages/acknowledgments. It doesn't
-    *         necesarily mean the channel is reliable, though.
-    *
-    * @see org.jboss.messaging.core.Channel#isReliable()
+    * @return true if the channel can guarantee recoverability for <i>reliable</i> messages.
+    *         Recoverability is not guaranteed for non-reliable messages (and <i>should not</i>
+    *         be provided by default, for performance reasons), even if the channel is recoverable.
     */
-   boolean isTransactional();
+   boolean isRecoverable();
 
    /**
-    * @return true if the channel is able to handle reliable messages and guarantee recoverability.
-    *         Recoverability is not guaranteed for non-reliable messages, even if the channel is
-    *         reliable. It implies transactionality.
+    * A non-recoverable channel cannot guarantee recoverability for reliable messages so by default
+    * it won't accept reliable messages. However, there are situations when discarding a reliable
+    * message is acceptable for a specific instance of a channel, so it should be a way to
+    * configure the channel to do so.
     *
-    * @see org.jboss.messaging.core.Channel#isTransactional()
-    */
-   boolean isReliable();
-
-   /**
-    * Specifies the behaviour of the channel in the situation in which it has no receivers.
+    * A channel indicates unequivocally whether it accepts reliable messages or not returning
+    * true or false as result of this method.
     *
-    * @return true if the channel stores undeliverable messages, for further delivery, false if it
-    *         acknowledges and discards them.
+    * A recoverable channel must always accept reliable messages, so this method must always return
+    * true for a recoverable channel.
+    *
+    * @see State#acceptReliableMessages()
+    *
+    * @return false if the channel doesn't accept reliable messages.
     */
-   boolean isStoringUndeliverableMessages();
+   public boolean acceptReliableMessages();
 
    /**
     * @return a List containing messages being held by the channel. The list includes messages in

@@ -9,6 +9,7 @@ package org.jboss.messaging.core.tx;
 import java.util.Map;
 
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -23,7 +24,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 public class TransactionRepository
 {
    // Constants -----------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(TransactionRepository.class);
+
    // Attributes ----------------------------------------------------
    
    protected Map globalToLocalMap;
@@ -72,6 +75,9 @@ public class TransactionRepository
    public Transaction createTransaction() throws TransactionException
    {
       Transaction tx = new Transaction(generateTxId(), pm);
+
+      if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
+
       return tx;
    }
    

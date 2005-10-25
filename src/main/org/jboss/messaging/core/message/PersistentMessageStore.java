@@ -66,7 +66,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       }
       
       /*
-      if (r.isReliable())
+      if (r.isRecoverable())
       {
          //Maybe it's on disk already?
          Message m = retrieveMessage(r.getMessageID());

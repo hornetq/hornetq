@@ -97,7 +97,7 @@ public class UnreliableMessageStore implements MessageStore
       MessageReference ref = new WeakMessageReference((Message)r, this);
       messageRefs.put(r.getMessageID(), new WeakReference(ref));
       messages.put(r.getMessageID(), r);
-      if (log.isTraceEnabled()) { log.trace("Added message and ref to cache:" + r.getMessageID()); }
+      if (log.isTraceEnabled()) { log.trace("Added message and ref to cache: " + r.getMessageID()); }
       return ref;
    }
    

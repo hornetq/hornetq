@@ -85,7 +85,7 @@ public class SessionTest extends MessagingTestCase
    
    
    // Public --------------------------------------------------------
-   
+
    public void testCreateProducer() throws Exception
    {
       try
@@ -353,9 +353,39 @@ public class SessionTest extends MessagingTestCase
       
       conn.close();
    }
-   
-   
-   
+
+
+   //
+   // Test session state
+   //
+
+   public void testCreateTwoSessions() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sessionOne = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      assertFalse(sessionOne.getTransacted());
+      Session sessionTwo = conn.createSession(true, -1);
+      assertTrue(sessionTwo.getTransacted());
+
+      // this test whether session's transacted state is correctly scoped per instance (by an
+      // interceptor or othewise)
+      assertFalse(sessionOne.getTransacted());
+   }
+
+   public void testCloseAndCreateSession() throws Exception
+   {
+      Connection c = cf.createConnection();
+      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      s.close();
+
+      // this test whether session's closed state is correctly scoped per instance (by an
+      // interceptor or othewise)
+      s = c.createSession(true, -1);
+   }
+
+
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

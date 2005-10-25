@@ -30,9 +30,13 @@
 
 
 
-#TARGET_CLASS=org.jboss.test.messaging.core.local.UnreliableQueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.ReliableQueueTest
-TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
+
+#TARGET_CLASS=org.jboss.test.messaging.core.persistence.JDBCUtilTest
 
 #
 # distributed core
@@ -49,10 +53,12 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.UnreliableDistributedQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
 #TARGET_TEST=testUnreliableChannelReliableMessageNACKingReceiver
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReliableDistributedQueueTest
-#TARGET_TEST=testJGroupsChannelNotConnected
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
+TARGET_TEST=testNonRecoverableChannel_26_1
+
+
 
 #
 # JMS Facade
@@ -60,13 +66,17 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 
 #TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
+#TARGET_TEST=testCreateTwoSessions
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
+#TARGET_TEST=testTransactedSend
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
+#TARGET_TEST=testSetClientIDFail
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testClosedConsumer
-#TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
+#TARGET_TEST=testConsumer
+TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
+TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest

@@ -100,7 +100,7 @@ public class SimpleDelivery implements Delivery, Serializable
    public String toString()
    {
 
-      return "delivery[" + ref + "](" + (isDone() ? "done" : "active" ) + ")"; 
+      return "Delivery[" + ref + "](" + (isDone() ? "done" : "active" ) + ")"; 
 
    }
 

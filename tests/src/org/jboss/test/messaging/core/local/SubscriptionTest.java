@@ -6,18 +6,18 @@
  */
 
 
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.local;
 
-import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
-import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.test.messaging.core.local.base.QueueTestBase;
+import org.jboss.messaging.core.local.Subscription;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
+ * 
  * $Id$
  */
-public class UnreliableDistributedQueueTest extends DistributedQueueTestBase
+public class SubscriptionTest extends QueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -25,32 +25,28 @@ public class UnreliableDistributedQueueTest extends DistributedQueueTestBase
    
    // Attributes ----------------------------------------------------
 
-
    // Constructors --------------------------------------------------
 
-   public UnreliableDistributedQueueTest(String name)
+   public SubscriptionTest(String name)
    {
       super(name);
    }
 
-   // DistributedQueueTestBase overrides ---------------------------
+   // ChannelTestBase overrides  ------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new DistributedQueue("test", ms, dispatcher);
-      channelTwo = new DistributedQueue("test", msTwo, dispatcherTwo);
-
+      channel = new Subscription(null, null, ms);
+      
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
       channel.close();
       channel = null;
-
-      channelTwo.close();
-      channelTwo = null;
 
       super.tearDown();
    }

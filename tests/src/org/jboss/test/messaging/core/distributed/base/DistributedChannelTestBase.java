@@ -9,7 +9,7 @@
 package org.jboss.test.messaging.core.distributed.base;
 
 
-import org.jboss.test.messaging.core.base.TransactionalChannelTestBase;
+import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
@@ -26,7 +26,7 @@ import org.jgroups.blocks.RpcDispatcher;
  *
  * $Id$
  */
-public abstract class DistributedChannelTestBase extends TransactionalChannelTestBase
+public abstract class DistributedChannelTestBase extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 

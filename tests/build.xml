@@ -121,7 +121,7 @@
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
    <property name="perf.tests.archive" value="perfrunner.jar"/>
-   <property name="build.tests.remote" value="true"/>
+   <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -263,7 +263,7 @@
       </junit>
    </target>
 
-<target name="coretests"
+   <target name="coretests"
            depends="tests-jar, prepare-testdirs"
            description="Runs the jms tests only">
 
@@ -289,8 +289,8 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
 
-
                <include name="**/messaging/**/*Test.class"/>
+               <!-- <include name="org/jboss/test/messaging/core/distributed/ReliableDistributedQueueTest.class"/> -->
 
                <exclude name="**/messaging/**/performance/**"/>
                <exclude name="**/messaging/jms/**"/>
@@ -298,9 +298,6 @@
          </batchtest>
       </junit>
    </target>
-   
-   
-   
 
    <target name="test"
            depends="tests-jar, prepare-testdirs"

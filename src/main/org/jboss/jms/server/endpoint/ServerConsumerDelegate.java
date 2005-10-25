@@ -21,9 +21,17 @@ import org.jboss.jms.client.Closeable;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -100,7 +108,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
       // deliver the message on a different thread than the core thread that brought it here
 
@@ -108,7 +116,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
       try
       {
-         Message message = routable.getMessage();
+         Message message = reference.getMessage();
 
          try
          {
@@ -132,7 +140,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             return null;
          }
 
-         if (routable.isRedelivered())
+         if (reference.isRedelivered())
          {
             if (log.isTraceEnabled())
             {
@@ -141,8 +149,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             message.setRedelivered(true);
          }
          
-         delivery = new SimpleDelivery(observer, (MessageReference)routable);
-         deliveries.put(routable.getMessageID(), delivery);
+         delivery = new SimpleDelivery(observer, (MessageReference)reference);
+         deliveries.put(reference.getMessageID(), delivery);
 
          synchronized (waiting)
          {

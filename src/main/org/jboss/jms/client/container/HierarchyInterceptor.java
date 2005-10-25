@@ -20,6 +20,8 @@ import org.jboss.logging.Logger;
  * other invocations to complete allowing the close.
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ *
+ * $Id$
  */
 public class HierarchyInterceptor  implements Interceptor, Serializable
 {
@@ -57,7 +59,7 @@ public class HierarchyInterceptor  implements Interceptor, Serializable
           methodName.equals("createBrowserDelegate") ||
 			 methodName.equals("createConnectionDelegate"))
       {
-			if (log.isTraceEnabled()) log.trace("Method name is " + methodName);
+			if (log.isTraceEnabled()) log.trace("post " + methodName + ", updating hierarchy");
 			
          JMSInvocationHandler thisHandler = ((JMSMethodInvocation)invocation).getHandler();
          JMSInvocationHandler returnedHandler =

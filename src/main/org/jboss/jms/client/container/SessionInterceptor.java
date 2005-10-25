@@ -18,6 +18,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 
 /**
@@ -27,6 +28,8 @@ import org.jboss.logging.Logger;
  * and Connection
  *
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ *
+ * $Id$
  */
 public class SessionInterceptor implements Interceptor, Serializable
 {
@@ -65,8 +68,8 @@ public class SessionInterceptor implements Interceptor, Serializable
       MethodInvocation mi = (MethodInvocation)invocation;
       String methodName = mi.getMethod().getName();
       
-      if (log.isTraceEnabled()) log.trace("In SessionInterceptor: method is " + methodName);
-      
+      if (log.isTraceEnabled()) { log.trace("handling " + methodName); }
+
       if ("createSessionDelegate".equals(methodName))
       {
          SessionDelegate sessionDelegate = (SessionDelegate)invocation.invokeNext();
@@ -82,11 +85,12 @@ public class SessionInterceptor implements Interceptor, Serializable
          //This only does anything if in client acknowledge mode
          if (ackMode != Session.CLIENT_ACKNOWLEDGE)
          {
+            if (log.isTraceEnabled()) { log.trace("nothing to acknowledge, ending the invocation"); }
             return null;
          }                        
          
-         if (log.isTraceEnabled()) 
-            log.trace("I have " + unacked.size() + " messages in the session to ack");
+         if (log.isTraceEnabled()) { log.trace("I have " + unacked.size() + " messages in the session to ack"); }
+
          Iterator iter = unacked.iterator();
          try
          {
@@ -100,6 +104,8 @@ public class SessionInterceptor implements Interceptor, Serializable
          {
             unacked.clear();
          }
+
+         if (log.isTraceEnabled()) { log.trace("session acknowledged, ending the invocation"); }
          return null;
          
       }     
@@ -112,7 +118,7 @@ public class SessionInterceptor implements Interceptor, Serializable
          
          if (ackMode == Session.SESSION_TRANSACTED)
          {
-            if (log.isTraceEnabled()) log.trace("Session is transacted - doing nothing");
+            if (log.isTraceEnabled()) { log.trace("session is transacted, noop and ending the invocation"); }
             return null;
          }
          else if (ackMode == Session.AUTO_ACKNOWLEDGE)
@@ -135,7 +141,9 @@ public class SessionInterceptor implements Interceptor, Serializable
             {
                log.trace("There are now " + unacked.size() + " messages");
             }
-         }         
+         }
+
+         if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
          return null;
       }
       else if ("close".equals(methodName))
@@ -174,6 +182,7 @@ public class SessionInterceptor implements Interceptor, Serializable
       else if ("setAcknowledgeMode".equals(methodName))
       {
          this.ackMode = ((Integer)mi.getArguments()[0]).intValue();
+         if (log.isTraceEnabled()) { log.trace("set acknowledgment mode to " + ToString.acknowledgmentMode(ackMode) + ", ending the invocation"); }
          return null;
       }
      

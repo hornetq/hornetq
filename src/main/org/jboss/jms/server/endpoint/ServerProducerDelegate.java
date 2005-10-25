@@ -17,6 +17,8 @@ import javax.jms.Message;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ServerProducerDelegate implements ProducerDelegate
 {
@@ -51,13 +53,13 @@ public class ServerProducerDelegate implements ProducerDelegate
    public void closing() throws JMSException
    {
       //Currently this does nothing
-      if (log.isTraceEnabled()) { log.trace("closing"); }
+      if (log.isTraceEnabled()) { log.trace("closing (noop)"); }
    }
 
    public void close() throws JMSException
    {
       //Currently this does nothing
-      if (log.isTraceEnabled()) { log.trace("close"); }
+      if (log.isTraceEnabled()) { log.trace("close (noop)"); }
    }
    
    public void send(Destination destination, Message m, int deliveryMode,
