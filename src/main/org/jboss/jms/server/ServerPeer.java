@@ -239,6 +239,8 @@ public class ServerPeer
       }
 
       log.debug(this + " stopping");
+      
+      clientManager.stop();
 
       tearDownConnectionFactories();
 

@@ -54,6 +54,9 @@ class DeliveryRunnable extends Callback implements Runnable
       catch(Throwable t)
       {
          log.error("Failed to deliver the message to the client", t);
+         
+         
+         
       }
    }
 

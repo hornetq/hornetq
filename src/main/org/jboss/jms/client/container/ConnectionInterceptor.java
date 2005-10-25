@@ -17,6 +17,7 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionMetaData;
+import org.jboss.jms.client.Pinger;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
@@ -59,6 +60,8 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
    
    protected boolean listenerAdded;
    
+   protected Pinger pinger;
+   
 
    // Constructors --------------------------------------------------
    
@@ -95,7 +98,11 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
 
          // TODO: Why not just this.rm = rm?
          connectionDelegate.setResourceManager(rm);
-
+         
+         Pinger thePinger = new Pinger(connectionDelegate);
+         thePinger.start();
+         connectionDelegate.setPinger(thePinger);
+         
          return connectionDelegate;
       }
         
@@ -176,6 +183,23 @@ public class ConnectionInterceptor implements Interceptor, Serializable, Connect
       {
          justCreated = false;
          return invocation.invokeNext();
+      }
+      else if ("close".equals(methodName))
+      {
+         if (log.isTraceEnabled()) { log.trace("closing:" + this.clientID); }
+         pinger.stop();
+         return invocation.invokeNext();
+      }
+      else if ("getPinger".equals(methodName))
+      {
+         if (log.isTraceEnabled()) { log.trace("getting pinger:" + this.pinger); }
+         return pinger;
+      }
+      else if ("setPinger".equals(methodName))
+      {         
+         this.pinger = (Pinger)mi.getArguments()[0];
+         if (log.isTraceEnabled()) { log.trace("setting pinger:" + this.pinger); }
+         return null;
       }
       else
       {

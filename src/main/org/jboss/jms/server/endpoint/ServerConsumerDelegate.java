@@ -162,7 +162,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             }
             else
             {
-               //The consumer is closed so we store the message for later
+               //The consumer is stopped so we store the message for later
                //See test ConnectionClosedTest.testCannotReceiveMessageOnClosedConnection
                //for why we do this
                if (log.isTraceEnabled()) { log.trace("Adding message " + message + " to the waiting list"); }
@@ -214,10 +214,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Closeable implementation --------------------------------------
 
-   public void closing() throws JMSException
-   {
-      if (log.isTraceEnabled()) { log.trace(this.id + " closing"); }
-   }
 
    public void close() throws JMSException
    {

@@ -50,12 +50,6 @@ public class ServerProducerDelegate implements ProducerDelegate
 
    // ProducerDelegate implementation ------------------------
 
-   public void closing() throws JMSException
-   {
-      //Currently this does nothing
-      if (log.isTraceEnabled()) { log.trace("closing (noop)"); }
-   }
-
    public void close() throws JMSException
    {
       //Currently this does nothing

@@ -32,12 +32,14 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.Pinger;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
@@ -97,8 +99,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    protected String password;
    
-   /* Map of global Xids to local tx */
-   protected Map globalToLocalTxMap;
+   protected long lastPinged;
    
    // Constructors --------------------------------------------------
    
@@ -110,11 +111,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
       started = false;
       connectionID = new GUID().toString();
-      receivers = new ConcurrentReaderHashMap();
-      globalToLocalTxMap = new ConcurrentReaderHashMap();
+      receivers = new ConcurrentReaderHashMap();      
       this.clientID = clientID;
       this.username = username;
       this.password = password;
+      lastPinged = System.currentTimeMillis();
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -215,17 +216,24 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          dm.removeTemporaryDestination((JBossDestination)iter.next());
       }
-      this.temporaryDestinations = null;
-      this.receivers = null;
-   }
-   
-   public void closing() throws JMSException
-   {
-      log.trace("closing (noop)");
+      ClientManager cm = serverPeer.getClientManager();
+      cm.removeConnectionDelegate(this.connectionID);
+
+      iter = this.sessions.values().iterator();
+      while (iter.hasNext())
+      {
+         ServerSessionDelegate session = (ServerSessionDelegate)iter.next();
+         session.close();
+      }
+      sessions.clear();
+      receivers.clear();
+      temporaryDestinations.clear();   
       
-      //This currently does nothing
+      if (log.isTraceEnabled()) { log.trace("Connection closed"); }
+      
    }
    
+
    public ExceptionListener getExceptionListener() throws JMSException
    {
       throw new IllegalStateException("getExceptionListener is not handled on the server");
@@ -347,6 +355,22 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return null;
    }
    
+   public void setPinger(Pinger pinger)
+   {
+      log.warn("setPinger(): NOT handled on the server-side");
+   }
+   
+   public Pinger getPinger()
+   {
+      log.warn("getPinger(): NOT handled on the server-side");
+      return null;
+   }
+   
+   public void ping()
+   {
+      setLastPinged();
+   }
+   
    
    // Public --------------------------------------------------------
    
@@ -374,6 +398,12 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    {
       return serverPeer;
    }
+   
+   public synchronized long getLastPinged()
+   {
+      return lastPinged;
+   }
+   
    
    // Package protected ---------------------------------------------
    
@@ -455,6 +485,13 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return connectionID + "-Session" + id;
    }
    
+   protected synchronized void setLastPinged()
+   {
+      lastPinged = System.currentTimeMillis();
+      
+   }
+   
+
    
    // Private -------------------------------------------------------
    

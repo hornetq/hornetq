@@ -85,7 +85,6 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public void close() throws JMSException
    {
-      delegate.closing();
       delegate.close();
    }
 

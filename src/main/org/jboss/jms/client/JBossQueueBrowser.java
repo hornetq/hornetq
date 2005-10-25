@@ -40,7 +40,6 @@ class JBossQueueBrowser implements QueueBrowser, Serializable
    
    public void close() throws JMSException
    {
-      delegate.closing();
 	   delegate.close();
    }
  

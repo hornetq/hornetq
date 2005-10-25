@@ -88,8 +88,4 @@ public class ServerBrowserDelegate implements BrowserDelegate
       iterator = null;
    }
    
-   public void closing() throws JMSException
-   {
-      //Do nothing
-   }
 }

@@ -8,16 +8,12 @@ package org.jboss.jms.client.container;
 
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import javax.jms.IllegalStateException;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.Closeable;
 import org.jboss.logging.Logger;
 
 
@@ -42,24 +38,18 @@ public class ClosedInterceptor
 
    
    /** Not closed */
-   private static final int NOT_CLOSED = 0;
-   
-   /** Closing */
-   private static final int IN_CLOSING = 1;
-   
-   /** Closing */
-   private static final int CLOSING = 2;
+   private static final int OPEN = 0;
    
    /** Performing the close */
-   private static final int IN_CLOSE = 3;
+   private static final int WAITING_TO_CLOSE = 1;
    
    /** Closed */
-   private static final int CLOSED = -1;
+   private static final int CLOSED = 2;
    
    // Attributes ----------------------------------------------------
 
    /** The state of the object */
-   private int state = NOT_CLOSED;
+   private int state = OPEN;
    
    /** The inuse count */
    private int inuseCount = 0;
@@ -80,33 +70,18 @@ public class ClosedInterceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
-      boolean isClosing = methodName.equals("closing");
-      boolean isClose = methodName.equals("close");
 
       if (log.isTraceEnabled()) { log.trace(methodName + " " + ((JMSMethodInvocation)invocation).getHandler().getDelegateID()); }
 
-      if (isClosing)
-      {         
-         if (checkClosingAlreadyDone())
-         {
-            return null;
-         }
-      }
-      else if (isClose)
+      boolean isClose = methodName.equals("close");
+      
+      if (isClose)
       {
-         if(checkCloseAlreadyDone())
-         {
-            return null;
-         }
+         waitForInvocationsToComplete();
       }
       else
       {
          inuse();
-      }
-
-      if (isClosing)
-      {
-         maintainRelatives(invocation);
       }
 
       try
@@ -115,11 +90,7 @@ public class ClosedInterceptor
       }
       finally
       {
-         if (isClosing)
-         {
-            closing();
-         }
-         else if (isClose)
+         if (isClose)
          {
             closed();
          }
@@ -132,50 +103,22 @@ public class ClosedInterceptor
 
    // Protected ------------------------------------------------------
 
-   /**
-    * Check the closing notification has not already been done
-    * 
-    * @return true when already closing or closed
-    */
-   protected synchronized boolean checkClosingAlreadyDone()
-      throws Throwable
-   {
-      if (state != NOT_CLOSED)
-      {
-         return true;
-      }
-      state = IN_CLOSING;
-      return false;
-   }
+  
 
    /**
-    * Closing the object
-    */
-   protected synchronized void closing()
-      throws Throwable
-   {
-      state = CLOSING;
-   }
-
-   /**
-    * Check the close has not already been done and
-    * wait for all invocations to complete
+    * Wait for all invocations to complete
     * 
     * @return true when already closed
     */
-   protected synchronized boolean checkCloseAlreadyDone()
+   protected synchronized void waitForInvocationsToComplete()
       throws Throwable
    {
-      if (state != CLOSING)
-      {
-         return true;
-      }
+      state = WAITING_TO_CLOSE;
       while (inuseCount > 0)
       {
          wait();
       }
-      state = IN_CLOSE;
-      return false;
+      
    }
 
    /**
@@ -194,9 +137,13 @@ public class ClosedInterceptor
    protected synchronized void inuse()
       throws Throwable
    {
-      if (state != NOT_CLOSED)
+      if (state == CLOSED)
       {
          throw new IllegalStateException("The object is closed");
+      }
+      if (state == WAITING_TO_CLOSE)
+      {
+         throw new IllegalStateException("The object is waiting to close - will not accept any more invocations");
       }
       ++inuseCount;
    }
@@ -213,53 +160,7 @@ public class ClosedInterceptor
       }
    }
 
-   /**
-    * Close children and remove from parent
-    * 
-    * @param invocation the invocation
-    */
-   protected void maintainRelatives(Invocation invocation)
-   {                  
-      
-      //Get the InvocationHandler for this invocation
-      JMSInvocationHandler thisHandler = ((JMSMethodInvocation)invocation).getHandler();
-             
-      //We use a clone to avoid a deadlock where requests
-      //are made to close parent and child concurrently
-      
-      Set clone = null;
-      Set children = thisHandler.getChildren();
-      synchronized (children)
-      {
-         clone = new HashSet(children);
-      }
-      
-      // Cycle through the children this will do a depth
-      // first close
-      for (Iterator i = clone.iterator(); i.hasNext();)
-      {
-         JMSInvocationHandler childHandler = (JMSInvocationHandler) i.next();
-         
-         Closeable child = (Closeable) childHandler.getDelegate();             
-         try
-         {
-            child.closing();
-            child.close();
-         }
-         catch (Throwable ignored)
-         {
-            // Add a log interceptor to the child if you want the error
-            ignored.printStackTrace();
-         }
-      }
-      
-      // Remove from the parent
-      JMSInvocationHandler parentHandler = thisHandler.getParent();
-      if (parentHandler != null)
-      {
-         parentHandler.removeChild(thisHandler);
-      }
-   }
+   
 
    // Package Private ------------------------------------------------
 

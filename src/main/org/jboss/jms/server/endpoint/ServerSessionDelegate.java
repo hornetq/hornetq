@@ -437,20 +437,22 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          for(Iterator i = consumers.values().iterator(); i.hasNext(); )
          {
-            ((ServerConsumerDelegate)i.next()).remove();
-
+            ServerConsumerDelegate consumer = (ServerConsumerDelegate)i.next();
+            consumer.close();
+            consumer.remove();
+         }
+      }
+      
+      synchronized(producers)
+      {
+         for(Iterator i = producers.values().iterator(); i.hasNext(); )
+         {
+            ((ServerProducerDelegate)i.next()).close();
          }
       }
       
    }
-   
-   public void closing() throws JMSException
-   {
-      if (log.isTraceEnabled()) log.trace("closing (noop)");
-
-      //Currently does nothing
-   }
-   
+    
    public void commit() throws JMSException
    {
       throw new JMSException("commit is not handled on the server");

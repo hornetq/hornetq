@@ -26,12 +26,6 @@ public interface Closeable {
      * @throws JMSException
      */
     void close() throws JMSException;
-    
-    /**
-     * Tell the instance to prepare to close
-     * 
-     * @throws JMSException
-     */
-    void closing() throws JMSException;
+      
         
 }

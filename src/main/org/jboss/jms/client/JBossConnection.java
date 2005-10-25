@@ -111,7 +111,6 @@ public class JBossConnection implements
 
    public void close() throws JMSException
    {
-      delegate.closing();
       delegate.close();
    }
 
@@ -205,6 +204,11 @@ public class JBossConnection implements
    public Serializable getConnectionID()
    {
       return delegate.getConnectionID();
+   }
+   
+   public Pinger getPinger()
+   {
+      return delegate.getPinger();
    }
 
    // Package protected ---------------------------------------------

@@ -125,7 +125,6 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    
    public void close() throws JMSException
    {
-      delegate.closing();
       delegate.close();
    }
    
