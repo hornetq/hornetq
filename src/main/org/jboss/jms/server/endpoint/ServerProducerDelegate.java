@@ -10,6 +10,7 @@ import org.jboss.logging.Logger;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.server.ServerPeer;
 
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -35,6 +36,8 @@ public class ServerProducerDelegate implements ProducerDelegate
    /** I need this to set up the JMSDestination header on outgoing messages */
    protected Destination jmsDestination;
    protected ServerSessionDelegate sessionEndpoint;
+   
+   protected boolean closed;
 
    // Constructors --------------------------------------------------
 
@@ -50,15 +53,34 @@ public class ServerProducerDelegate implements ProducerDelegate
 
    // ProducerDelegate implementation ------------------------
 
-   public void close() throws JMSException
+   public void closing() throws JMSException
    {
       //Currently this does nothing
+      if (log.isTraceEnabled()) { log.trace("closing (noop)"); }
+   }
+
+   public void close() throws JMSException
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Producer is already closed");
+      }
+      
+      //Currently this does nothing
       if (log.isTraceEnabled()) { log.trace("close (noop)"); }
+      this.sessionEndpoint.producers.remove(this.id);
+      
+      closed = true;
    }
    
    public void send(Destination destination, Message m, int deliveryMode,
                     int priority, long timeToLive) throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Producer is closed");
+      }
+      
       if (log.isTraceEnabled()) { log.trace("Sending message: " + m); }
       
       sessionEndpoint.connectionEndpoint.sendMessage(m, null);

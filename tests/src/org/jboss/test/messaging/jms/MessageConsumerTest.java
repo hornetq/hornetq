@@ -146,7 +146,7 @@ public class MessageConsumerTest extends MessagingTestCase
       queueProducer.send(tm);
 
       consumerConnection.start();
-      TextMessage m = (TextMessage)queueConsumer.receive();
+      TextMessage m = (TextMessage)queueConsumer.receive(3000);
       assertEquals(tm.getText(), m.getText());
    }
 
@@ -1040,7 +1040,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
       }, "Producer").start();
 
-      Message m2 = topicConsumer.receive();
+      Message m2 = topicConsumer.receive(3000);
 
       if (log.isTraceEnabled()) log.trace("m1:" + m1 + ", m2:" + m2) ;
 
@@ -1205,7 +1205,7 @@ public class MessageConsumerTest extends MessagingTestCase
       }, "closing thread");
       closerThread.start();
 
-      assertNull(topicConsumer.receive());
+      assertNull(topicConsumer.receive(3000));
 
       // wait for the closing thread to finish
       latch.acquire();
@@ -1306,7 +1306,7 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             try
             {
-               topicConsumer.receive();
+               topicConsumer.receive(3000);
             }
             catch(Exception e)
             {
@@ -2046,7 +2046,7 @@ public class MessageConsumerTest extends MessagingTestCase
    
          for (int i = 0; i < NUM_TO_RECEIVE; i++)
          {
-            TextMessage tm = (TextMessage)durable.receive();
+            TextMessage tm = (TextMessage)durable.receive(3000);
             assertNotNull(tm);
          }
    

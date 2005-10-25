@@ -14,6 +14,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.BrowserDelegate;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 
 /**
@@ -94,7 +95,7 @@ public class BrowserInterceptor implements Interceptor, Serializable
 
    // Private -------------------------------------------------------
    
-   private void checkCache(Invocation invocation)
+   private void checkCache(Invocation invocation) throws JMSException
    {
       if (cache == null)
       {

@@ -17,7 +17,6 @@ import javax.jms.ServerSessionPool;
 import org.jboss.jms.MetaDataRepository;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.client.Pinger;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.TransactionRequest;
 
@@ -59,14 +58,4 @@ public interface ConnectionDelegate extends Closeable, MetaDataRepository
    public void setResourceManager(ResourceManager rm);
    public ResourceManager getResourceManager();
    
-   public void ping();
-   
-   public void setPinger(Pinger pinger);
-   
-   public Pinger getPinger();
-   
-   /**
-    *  Redeliver messages for connection consumer
-    */
-  //                    public void redeliver();
 }

@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.delegate;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
@@ -16,13 +17,11 @@ import org.jboss.jms.client.Closeable;
 public interface BrowserDelegate extends Closeable
 {
    
-   //void reset();
-      
-   Message nextMessage();
+   Message nextMessage() throws JMSException;
    
-   boolean hasNextMessage();
+   boolean hasNextMessage() throws JMSException;
       
-   Message[] nextMessageBlock(int maxMessages);
+   Message[] nextMessageBlock(int maxMessages) throws JMSException;
    
 }
    

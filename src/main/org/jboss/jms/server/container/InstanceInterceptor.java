@@ -83,8 +83,16 @@ public class InstanceInterceptor implements Interceptor
 
             if (scd == null)
             {
-               throw new Exception("The server doesn't know of any connection with connectionID=" +
+               if ("close".equals(methodName))
+               {
+                  //Do nothing
+                  return null;
+               }
+               else
+               {
+                  throw new Exception("The server doesn't know of any connection with connectionID=" +
                                    connectionID);
+               }
                // TODO log error
             }
 

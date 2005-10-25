@@ -151,6 +151,7 @@ class JBossSession implements
 
    public void close() throws JMSException
    {
+      sessionDelegate.closing();
       sessionDelegate.close();
    }
 

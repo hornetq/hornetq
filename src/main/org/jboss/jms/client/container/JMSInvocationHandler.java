@@ -113,12 +113,22 @@ public class JMSInvocationHandler implements InvocationHandler, Serializable
       this.parent = parent;
    }
 
+   Set getChildren()
+   {
+       return children;
+   }
+
    void addChild(JMSInvocationHandler child)
    {
        children.add(child);
        child.setParent(this);
    }
 
+   void removeChild(JMSInvocationHandler child)
+   {
+       children.remove(child);
+       child.setParent(null);
+   }
 
    Object getDelegate()
    {

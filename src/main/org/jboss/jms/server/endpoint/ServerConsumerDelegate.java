@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
@@ -76,6 +77,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    // <messageID-Delivery>
    private Map deliveries;
    
+   protected boolean closed;
+   
    
    // Constructors --------------------------------------------------
 
@@ -110,6 +113,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
+      if (closed)
+      {
+         throw new java.lang.IllegalStateException("Consumer is closed!");
+      }
+      
       // deliver the message on a different thread than the core thread that brought it here
 
       Delivery delivery = null;
@@ -127,7 +135,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
             String msg = "Cannot make a copy of the message";
             log.error(msg, e);
-            throw new IllegalStateException(msg);
+            throw new java.lang.IllegalStateException(msg);
          }
 
          if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
@@ -158,11 +166,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             if (started)
             {
                if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
-               threadPool.execute(new DeliveryRunnable(callbackHandler, message));
+               threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
             }
             else
             {
-               //The consumer is stopped so we store the message for later
+               //The consumer is closed so we store the message for later
                //See test ConnectionClosedTest.testCannotReceiveMessageOnClosedConnection
                //for why we do this
                if (log.isTraceEnabled()) { log.trace("Adding message " + message + " to the waiting list"); }
@@ -214,9 +222,18 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Closeable implementation --------------------------------------
 
+   public void closing() throws JMSException
+   {
+      if (log.isTraceEnabled()) { log.trace(this.id + " closing"); }
+   }
 
    public void close() throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Consumer is already closed");
+      }
+      
       if (log.isTraceEnabled()) { log.trace(this.id + " close"); }
 
       //On close we only disconnect the consumer from the Channel we don't actually remove it
@@ -224,6 +241,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       //after the consumer has closed.
       //This is perfectly valid.
       disconnect();
+      
+      closed = true;
    }
    
    void setStarted(boolean s)
@@ -250,7 +269,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
                   if (log.isTraceEnabled()) { log.trace("queueing the message " + m + " for delivery"); }
                   try
                   {
-                     threadPool.execute(new DeliveryRunnable(callbackHandler, m));
+                     threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, m));
                   }
                   catch (InterruptedException e)
                   {
@@ -297,7 +316,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       
       if (!disconnected)
       {
-         disconnect();
+         close();
       }
       
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
@@ -305,8 +324,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       if (this.destination instanceof Subscription)
       {
          ((Subscription)destination).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
-      }
+      }     
       
+      this.sessionEndpoint.consumers.remove(this.id);
    }  
    
    /**

@@ -23,8 +23,6 @@ import javax.jms.Message;
 import javax.jms.ServerSessionPool;
 import javax.jms.TransactionRolledBackException;
 
-
-
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.advice.AdviceStack;
@@ -32,14 +30,12 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.client.Pinger;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.JMSAdvisor;
@@ -59,6 +55,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -99,7 +96,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    protected String password;
    
-   protected long lastPinged;
+   protected boolean closed;
+   
+   protected WriterPreferenceReadWriteLock closeLock;
+   
    
    // Constructors --------------------------------------------------
    
@@ -111,11 +111,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
       started = false;
       connectionID = new GUID().toString();
-      receivers = new ConcurrentReaderHashMap();      
+      receivers = new ConcurrentReaderHashMap();
       this.clientID = clientID;
       this.username = username;
       this.password = password;
-      lastPinged = System.currentTimeMillis();
+      this.closeLock = new WriterPreferenceReadWriteLock();
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -123,117 +123,255 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    public SessionDelegate createSessionDelegate(boolean transacted,
                                                 int acknowledgmentMode,
                                                 boolean isXA)
+      throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("creating session, transacted=" + transacted + " ackMode=" + ToString.acknowledgmentMode(acknowledgmentMode) + " XA=" + isXA); }
+      try
+      {
+         closeLock.readLock().acquire();
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (log.isTraceEnabled()) { log.trace("creating session, transacted=" + transacted + " ackMode=" + ToString.acknowledgmentMode(acknowledgmentMode) + " XA=" + isXA); }
+         
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+                  
+         // create the dynamic proxy that implements SessionDelegate
+         SessionDelegate sd = null;
+         Serializable oid = serverPeer.getSessionAdvisor().getName();
+         String stackName = "SessionStack";
+         AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
+         
+         // TODO why do I need to the advisor to create the interceptor stack?
+         Interceptor[] interceptors = stack.createInterceptors(serverPeer.getSessionAdvisor(), null);
+         
+         // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
+         JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
+         
+         String sessionID = generateSessionID();
+         
+         SimpleMetaData metadata = new SimpleMetaData();
+         // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
+         metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
+         metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+               RemotingClientInterceptor.INVOKER_LOCATOR,
+               serverPeer.getLocator(),
+               PayloadKey.AS_IS);
+         metadata.addMetaData(RemotingClientInterceptor.REMOTING,
+               RemotingClientInterceptor.SUBSYSTEM,
+               "JMS",
+               PayloadKey.AS_IS);
+         metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionID, PayloadKey.AS_IS);
+         metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
+             
+         h.getMetaData().mergeIn(metadata);
+         
+         // TODO 
+         ClassLoader loader = getClass().getClassLoader();
+         Class[] interfaces = new Class[] { SessionDelegate.class };
+         sd = (SessionDelegate)Proxy.newProxyInstance(loader, interfaces, h);      
+         
+         // create the corresponding "server-side" SessionDelegate and register it with this
+         // ConnectionDelegate instance
+         ServerSessionDelegate ssd = new ServerSessionDelegate(sessionID, this, acknowledgmentMode);
+         putSessionDelegate(sessionID, ssd);
+         
+         log.debug("created session delegate (sessionID=" + sessionID + ")");
+         
+         return sd;
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
       
-      // create the dynamic proxy that implements SessionDelegate
-      SessionDelegate sd = null;
-      Serializable oid = serverPeer.getSessionAdvisor().getName();
-      String stackName = "SessionStack";
-      AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
-      
-      // TODO why do I need to the advisor to create the interceptor stack?
-      Interceptor[] interceptors = stack.createInterceptors(serverPeer.getSessionAdvisor(), null);
-      
-      // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
-      JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
-      
-      String sessionID = generateSessionID();
-      
-      SimpleMetaData metadata = new SimpleMetaData();
-      // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
-      metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
-            RemotingClientInterceptor.INVOKER_LOCATOR,
-            serverPeer.getLocator(),
-            PayloadKey.AS_IS);
-      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
-            RemotingClientInterceptor.SUBSYSTEM,
-            "JMS",
-            PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID, connectionID, PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.SESSION_ID, sessionID, PayloadKey.AS_IS);
-          
-      h.getMetaData().mergeIn(metadata);
-      
-      // TODO 
-      ClassLoader loader = getClass().getClassLoader();
-      Class[] interfaces = new Class[] { SessionDelegate.class };
-      sd = (SessionDelegate)Proxy.newProxyInstance(loader, interfaces, h);      
-      
-      // create the corresponding "server-side" SessionDelegate and register it with this
-      // ConnectionDelegate instance
-      ServerSessionDelegate ssd = new ServerSessionDelegate(sessionID, this, acknowledgmentMode);
-      putSessionDelegate(sessionID, ssd);
-      
-      log.debug("created session delegate (sessionID=" + sessionID + ")");
-      
-      return sd;
    }
-   
-   
-   
+         
    public String getClientID() throws JMSException
    {
-      return clientID;
+      try
+      {
+         closeLock.readLock().acquire();
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+         return clientID;
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
    }
    
    public void setClientID(String clientID) throws IllegalStateException
    {
-      if (log.isTraceEnabled()) { log.trace("setClientID:" + clientID); }
-      if (this.clientID != null)
+      try
       {
-         throw new IllegalStateException("Cannot set clientID, already set as:" + clientID);
+         closeLock.readLock().acquire();
       }
-      this.clientID = clientID;
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+         if (log.isTraceEnabled()) { log.trace("setClientID:" + clientID); }
+         if (this.clientID != null)
+         {
+            throw new IllegalStateException("Cannot set clientID, already set as:" + clientID);
+         }
+         this.clientID = clientID;
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
+   }
+      
+   public void start() throws JMSException
+   {
+      try
+      {
+         closeLock.readLock().acquire();
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+         setStarted(true);
+         log.debug("Connection " + connectionID + " started");
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
    }
    
-   
-   public void start()
+   public boolean isStarted() throws JMSException
    {
-      setStarted(true);
-      log.debug("Connection " + connectionID + " started");
+      try
+      {
+         closeLock.readLock().acquire();
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+         return started;
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
    }
    
-   public boolean isStarted()
+   public synchronized void stop() throws JMSException
    {
-      return started;
-   }
-   
-   public synchronized void stop()
-   {
-      setStarted(false);
-      log.debug("Connection " + connectionID + " stopped");
+      try
+      {
+         closeLock.readLock().acquire();
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+         setStarted(false);
+         log.debug("Connection " + connectionID + " stopped");
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
    }
    
    public void close() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("close()"); }
-      
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      Iterator iter = this.temporaryDestinations.iterator();
-      while (iter.hasNext())
+      try
       {
-         dm.removeTemporaryDestination((JBossDestination)iter.next());
+         closeLock.writeLock().acquire();
       }
-      ClientManager cm = serverPeer.getClientManager();
-      cm.removeConnectionDelegate(this.connectionID);
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         if (log.isTraceEnabled()) { log.trace("close()"); }
+         
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is already closed");
+         }
+          
+         //We clone to avoid concurrent modification exceptions
+         Iterator iter = new HashSet(this.sessions.values()).iterator();
+         while (iter.hasNext())
+         {
+            ServerSessionDelegate sess = (ServerSessionDelegate)iter.next();
+            sess.close();
+         }
+         
+         DestinationManagerImpl dm = serverPeer.getDestinationManager();
+         iter = this.temporaryDestinations.iterator();
+         while (iter.hasNext())
+         {
+            dm.removeTemporaryDestination((JBossDestination)iter.next());
+         }
+         
+         this.temporaryDestinations.clear();
+         this.receivers.clear();
+         this.serverPeer.getClientManager().removeConnectionDelegate(this.connectionID);
+         closed = true;
+      }
+      finally
+      {
+         closeLock.writeLock().release();
+      }
 
-      iter = this.sessions.values().iterator();
-      while (iter.hasNext())
-      {
-         ServerSessionDelegate session = (ServerSessionDelegate)iter.next();
-         session.close();
-      }
-      sessions.clear();
-      receivers.clear();
-      temporaryDestinations.clear();   
-      
-      if (log.isTraceEnabled()) { log.trace("Connection closed"); }
+   }
+   
+   public void closing() throws JMSException
+   {
+      log.trace("closing (noop)");
       
    }
    
-
    public ExceptionListener getExceptionListener() throws JMSException
    {
       throw new IllegalStateException("getExceptionListener is not handled on the server");
@@ -256,51 +394,71 @@ public class ServerConnectionDelegate implements ConnectionDelegate
 
    public void sendTransaction(TransactionRequest request) throws JMSException
    {
-      TransactionRepository txRep = serverPeer.getTxRepository();
-      
-      Transaction tx = null;
-      
       try
       {
-             
-         if (request.requestType == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
-         {
-            if (log.isTraceEnabled()) { log.trace("One phase commit request received"); }
-            
-            tx = txRep.createTransaction();
-            processTx(request.txInfo, tx);
-            tx.commit();         
-         }
-         else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_PREPARE_REQUEST)
-         {                        
-            if (log.isTraceEnabled()) { log.trace("Two phase commit prepare request received"); }        
-            tx = txRep.createTransaction(request.xid);
-            processTx(request.txInfo, tx);     
-            tx.prepare();
-         }
-         else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_COMMIT_REQUEST)
-         {   
-            if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
-            tx = txRep.getPreparedTx(request.xid);
-
-            if (log.isTraceEnabled()) { log.trace("committing " + tx); }
-            tx.commit();
-         }
-         else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST)
-         {
-            if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
-            tx = txRep.getPreparedTx(request.xid);
-
-            if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
-            tx.rollback();
-         }      
+         closeLock.readLock().acquire();
       }
-      catch (Throwable t)
+      catch (InterruptedException e)
       {
-         handleFailure(t, tx);
+         //Ignore
       }
-      
-      if (log.isTraceEnabled()) { log.trace("Request processed ok"); }
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
+         
+         TransactionRepository txRep = serverPeer.getTxRepository();
+         
+         Transaction tx = null;
+         
+         try
+         {
+                
+            if (request.requestType == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
+            {
+               if (log.isTraceEnabled()) { log.trace("One phase commit request received"); }
+               
+               tx = txRep.createTransaction();
+               processTx(request.txInfo, tx);
+               tx.commit();         
+            }
+            else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_PREPARE_REQUEST)
+            {                        
+               if (log.isTraceEnabled()) { log.trace("Two phase commit prepare request received"); }        
+               tx = txRep.createTransaction(request.xid);
+               processTx(request.txInfo, tx);     
+               tx.prepare();
+            }
+            else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_COMMIT_REQUEST)
+            {   
+               if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
+               tx = txRep.getPreparedTx(request.xid);
+   
+               if (log.isTraceEnabled()) { log.trace("committing " + tx); }
+               tx.commit();
+            }
+            else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST)
+            {
+               if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
+               tx = txRep.getPreparedTx(request.xid);
+   
+               if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
+               tx.rollback();
+            }      
+         }
+         catch (Throwable t)
+         {
+            handleFailure(t, tx);
+         }
+         
+         if (log.isTraceEnabled()) { log.trace("Request processed ok"); }
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
    }
    
 
@@ -355,22 +513,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return null;
    }
    
-   public void setPinger(Pinger pinger)
-   {
-      log.warn("setPinger(): NOT handled on the server-side");
-   }
-   
-   public Pinger getPinger()
-   {
-      log.warn("getPinger(): NOT handled on the server-side");
-      return null;
-   }
-   
-   public void ping()
-   {
-      setLastPinged();
-   }
-   
    
    // Public --------------------------------------------------------
    
@@ -399,17 +541,10 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return serverPeer;
    }
    
-   public synchronized long getLastPinged()
-   {
-      return lastPinged;
-   }
-   
-   
    // Package protected ---------------------------------------------
    
    void sendMessage(Message m, Transaction tx) throws JMSException
    { 
-
       //The JMSDestination header must already have been set for each message
       JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
       if (jmsDestination == null)
@@ -445,6 +580,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          log.error(msg);
          throw new JBossJMSException(msg);
       }
+      
    }
    
    void acknowledge(String messageID, String receiverID, Transaction tx) throws JMSException
@@ -485,13 +621,6 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       return connectionID + "-Session" + id;
    }
    
-   protected synchronized void setLastPinged()
-   {
-      lastPinged = System.currentTimeMillis();
-      
-   }
-   
-
    
    // Private -------------------------------------------------------
    

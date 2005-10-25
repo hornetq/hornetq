@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.server.endpoint;
 
+import javax.jms.JMSException;
+
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.messaging.core.Message;
@@ -33,13 +35,16 @@ class DeliveryRunnable extends Callback implements Runnable
    // Attributes ----------------------------------------------------
    
    protected transient InvokerCallbackHandler callbackHandler;
+   
+   protected transient ServerConnectionDelegate connection;
 
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(InvokerCallbackHandler callbackHandler, Message m)
+   public DeliveryRunnable(ServerConnectionDelegate connection, InvokerCallbackHandler callbackHandler, Message m)
    {
       super(m);
       this.callbackHandler = callbackHandler;
+      this.connection = connection;
    }
 
    // Runnable implementation ---------------------------------------
@@ -53,9 +58,17 @@ class DeliveryRunnable extends Callback implements Runnable
       }
       catch(Throwable t)
       {
-         log.error("Failed to deliver the message to the client", t);
+         log.error("Failed to deliver the message to the client, closing connection", t);
          
-         
+         //Close the connection
+         try
+         {
+            connection.close();
+         }
+         catch (JMSException e)
+         {
+            log.error("Failed to close connection", e);
+         }
          
       }
    }

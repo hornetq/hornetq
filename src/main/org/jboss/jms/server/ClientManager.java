@@ -15,8 +15,6 @@ import java.util.Set;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.Pinger;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
@@ -60,8 +58,10 @@ public class ClientManager
       this.serverPeer = serverPeer;
       connections = new ConcurrentReaderHashMap();
       subscriptions = new ConcurrentReaderHashMap();
-      checker = new ConnectionChecker();
-      checker.start();
+      //checker = new ConnectionChecker();
+      //checker.start();
+      
+      //default values
       pingCheckInterval = 4000;
       connectionCloseTime = 10000;
    }
@@ -70,7 +70,7 @@ public class ClientManager
    
    public void stop()
    {
-      checker.stop();
+      //checker.stop();
    }
 
    public ServerConnectionDelegate putConnectionDelegate(Serializable connectionID,
@@ -209,6 +209,7 @@ public class ClientManager
          setStopping();
          try
          {
+            checkerThread.interrupt();
             checkerThread.join();
          }
          catch (InterruptedException e)
@@ -228,7 +229,8 @@ public class ClientManager
             }
             catch (InterruptedException e)
             {
-               log.error("Connection checker thread interrupted");
+               //Ignore
+               break;
             }
             
             long now = System.currentTimeMillis();
@@ -237,7 +239,8 @@ public class ClientManager
             {
                ServerConnectionDelegate conn = (ServerConnectionDelegate)iter.next();
                
-               long lastPinged = conn.getLastPinged();
+               //long lastPinged = conn.getLastPinged();
+               long lastPinged = 0;
                
                if (now - lastPinged > connectionCloseTime)
                {

@@ -11,6 +11,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.server.container.JMSAdvisor;
+import org.jboss.logging.Logger;
 
 import javax.jms.MessageListener;
 import java.io.Serializable;
@@ -25,6 +26,9 @@ public class ReceiverInterceptor implements Interceptor, Serializable
    // Constants -----------------------------------------------------
 
    private final static long serialVersionUID = -5432273485632120909L;
+   
+   private static final Logger log = Logger.getLogger(ReceiverInterceptor.class);
+
 
    // Static --------------------------------------------------------
 
@@ -73,6 +77,7 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          }
          else if (name.equals("closing"))
          {
+            if (log.isTraceEnabled()) { log.trace("Closing message handler"); }
             messageHandler.close();
          }
       }

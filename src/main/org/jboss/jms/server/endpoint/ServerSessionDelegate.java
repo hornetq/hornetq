@@ -10,6 +10,7 @@ package org.jboss.jms.server.endpoint;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -91,8 +92,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	protected int acknowledgmentMode;
 
    protected ServerPeer serverPeer;
-
+   
    private InvokerCallbackHandler callbackHandler;
+   
+   private boolean closed;
 
 
    // Constructors --------------------------------------------------
@@ -115,7 +118,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    public ProducerDelegate createProducerDelegate(Destination jmsDestination)
          throws JMSException
    {
-
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+            
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       Distributor destination = null;
@@ -182,6 +189,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                                                   boolean isCC)
 		throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      
       if ("".equals(selector))
       {
          selector = null;
@@ -395,6 +407,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    public javax.jms.Queue createQueue(String name) throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       Distributor coreDestination = dm.getCoreDestination(true, name);
 
@@ -413,6 +430,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    public javax.jms.Topic createTopic(String name) throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
       Distributor coreDestination = dm.getCoreDestination(false, name);
 
@@ -431,28 +453,38 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    public void close() throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is already closed");
+      }
+      
       if (log.isTraceEnabled()) log.trace("close()");
-    
-      synchronized(consumers)
+            
+      //Clone to avoid ConcurrentModificationException
+      HashSet consumerSet = new HashSet(consumers.values());
+      for(Iterator i = consumerSet.iterator(); i.hasNext(); )
       {
-         for(Iterator i = consumers.values().iterator(); i.hasNext(); )
-         {
-            ServerConsumerDelegate consumer = (ServerConsumerDelegate)i.next();
-            consumer.close();
-            consumer.remove();
-         }
+         ((ServerConsumerDelegate)i.next()).remove();
       }
       
-      synchronized(producers)
+      HashSet producerSet = new HashSet(producers.values());
+      for(Iterator i = producerSet.iterator(); i.hasNext(); )
       {
-         for(Iterator i = producers.values().iterator(); i.hasNext(); )
-         {
-            ((ServerProducerDelegate)i.next()).close();
-         }
+         ((ServerProducerDelegate)i.next()).close();
       }
       
+      this.connectionEndpoint.sessions.remove(this.sessionID);
+      
+      closed = true;
    }
-    
+   
+   public void closing() throws JMSException
+   {
+      if (log.isTraceEnabled()) log.trace("closing (noop)");
+
+      //Currently does nothing
+   }
+   
    public void commit() throws JMSException
    {
       throw new JMSException("commit is not handled on the server");
@@ -472,6 +504,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	public BrowserDelegate createBrowserDelegate(Destination jmsDestination, String messageSelector)
    	throws JMSException
 	{
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
 
       if (jmsDestination == null)
       {
@@ -523,7 +559,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	   // create the corresponding "server-side" BrowserDelegate and register it with this
 	   // BrowserDelegate instance
 	   ServerBrowserDelegate sbd =
-	         new ServerBrowserDelegate(browserID, (Channel)destination, messageSelector);
+	         new ServerBrowserDelegate(this, browserID, (Channel)destination, messageSelector);
 	   putBrowserDelegate(browserID, sbd);
 	
 	   return bd;
@@ -554,6 +590,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
 	public void redeliver(String asfReceiverID) throws JMSException
 	{
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      
       if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
       
       if (asfReceiverID != null)
@@ -580,6 +621,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	public void acknowledge(String messageID, String receiverID)
 		throws JMSException
 	{
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
 		this.connectionEndpoint.acknowledge(messageID, receiverID, null);
 	}
 
@@ -651,6 +696,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    
    public void addTemporaryDestination(Destination dest) throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
       JBossDestination d = (JBossDestination)dest;
       if (!d.isTemporary())
       {
@@ -662,6 +711,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    
    public void deleteTemporaryDestination(Destination dest) throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
       JBossDestination d = (JBossDestination)dest;
       
       if (!d.isTemporary())
@@ -704,6 +757,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    
    public void unsubscribe(String subscriptionName) throws JMSException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
       if (subscriptionName == null)
       {
          throw new InvalidDestinationException("Destination is null");
@@ -772,52 +829,34 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // Public --------------------------------------------------------
 
-   public ServerProducerDelegate putProducerDelegate(String producerID, ServerProducerDelegate d)
+   protected ServerProducerDelegate putProducerDelegate(String producerID, ServerProducerDelegate d)
    {
-      synchronized(producers)
-      {
-         return (ServerProducerDelegate)producers.put(producerID, d);
-      }
+      return (ServerProducerDelegate)producers.put(producerID, d);
    }
 
    public ServerProducerDelegate getProducerDelegate(String producerID)
    {
-      synchronized(producers)
-      {
-         return (ServerProducerDelegate)producers.get(producerID);
-      }
+      return (ServerProducerDelegate)producers.get(producerID);
    }
 
-   public ServerConsumerDelegate putConsumerDelegate(String consumerID, ServerConsumerDelegate d)
+   protected ServerConsumerDelegate putConsumerDelegate(String consumerID, ServerConsumerDelegate d)
    {
-      synchronized(consumers)
-      {
-         return (ServerConsumerDelegate)consumers.put(consumerID, d);
-      }
+      return (ServerConsumerDelegate)consumers.put(consumerID, d);
    }
 
    public ServerConsumerDelegate getConsumerDelegate(String consumerID)
    {
-      synchronized(consumers)
-      {
-         return (ServerConsumerDelegate)consumers.get(consumerID);
-      }
+      return (ServerConsumerDelegate)consumers.get(consumerID);
    }
 	
-	public ServerBrowserDelegate putBrowserDelegate(String browserID, ServerBrowserDelegate sbd)
+	protected ServerBrowserDelegate putBrowserDelegate(String browserID, ServerBrowserDelegate sbd)
    {
-      synchronized(browsers)
-      {
-         return (ServerBrowserDelegate)browsers.put(browserID, sbd);
-      }
+      return (ServerBrowserDelegate)browsers.put(browserID, sbd);
    }
 	
 	public ServerBrowserDelegate getBrowserDelegate(String browserID)
    {
-      synchronized(browsers)
-      {
-         return (ServerBrowserDelegate)browsers.get(browserID);
-      }
+      return (ServerBrowserDelegate)browsers.get(browserID);
    }
 
    public ServerConnectionDelegate getConnectionEndpoint()

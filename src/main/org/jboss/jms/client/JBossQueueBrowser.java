@@ -40,6 +40,7 @@ class JBossQueueBrowser implements QueueBrowser, Serializable
    
    public void close() throws JMSException
    {
+      delegate.closing();
 	   delegate.close();
    }
  
@@ -62,12 +63,26 @@ class JBossQueueBrowser implements QueueBrowser, Serializable
    {            
       public boolean hasMoreElements()
       {
-         return delegate.hasNextMessage();
+         try
+         {
+            return delegate.hasNextMessage();
+         }
+         catch (JMSException e)
+         {
+            throw new IllegalStateException(e.getMessage());
+         }
       }
      
       public Object nextElement()
       {
-         return delegate.nextMessage();
+         try
+         {
+            return delegate.nextMessage();
+         }
+         catch (JMSException e)
+         {
+            throw new IllegalStateException(e.getMessage());
+         }
       }
    }
    
