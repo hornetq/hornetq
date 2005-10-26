@@ -35,6 +35,8 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 {

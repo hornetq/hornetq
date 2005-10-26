@@ -12,12 +12,12 @@ import javax.jms.JMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.util.id.GUID;
 
 /**
  * 
- * Represents a non-durable topic subscription
+ * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold
+ * messages in transit to consumers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
