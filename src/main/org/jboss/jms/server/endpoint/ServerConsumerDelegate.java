@@ -61,13 +61,17 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    // Attributes ----------------------------------------------------
 
    protected String id;
-   protected Channel destination;
+   
+   protected Channel channel;
+   
    protected ServerSessionDelegate sessionEndpoint;
+   
    protected InvokerCallbackHandler callbackHandler;
+   
    protected boolean noLocal;
+   
    protected Selector messageSelector;
-   protected LinkedList waiting = new LinkedList();
-	
+   
    protected PooledExecutor threadPool;
    
    protected boolean started;
@@ -82,7 +86,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    
    // Constructors --------------------------------------------------
 
-   public ServerConsumerDelegate(String id, Channel destination,
+   public ServerConsumerDelegate(String id, Channel channel,
                                  InvokerCallbackHandler callbackHandler,
                                  ServerSessionDelegate sessionEndpoint,
                                  String selector, boolean noLocal)
@@ -91,10 +95,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       log.debug("creating ServerConsumerDelegate[" + id + "]");
 
       this.id = id;
-      this.destination = destination;
+      this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
       this.callbackHandler = callbackHandler;
-      threadPool = sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
+      this.threadPool = sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
       this.noLocal = noLocal;
       if (selector != null)
       {
@@ -103,86 +107,79 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          if (log.isTraceEnabled()) log.trace("created selector");
       }
       //this.subscription = subscription;
-      deliveries = new HashMap();
-      started = sessionEndpoint.connectionEndpoint.started;
-      destination.add(this);
+      this.deliveries = new HashMap();
+      this.started = sessionEndpoint.connectionEndpoint.started;
+      this.channel.add(this);
 
    }
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
+   public synchronized Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
       if (closed)
       {
          throw new java.lang.IllegalStateException("Consumer is closed!");
       }
       
-      // deliver the message on a different thread than the core thread that brought it here
+      //If the consumer is stopped then we don't accept the message, it should go back into the channel
+      //for delivery later
+      if (!started)
+      {
+         return null;
+      }
+      
+      //deliver the message on a different thread than the core thread that brought it here
 
       Delivery delivery = null;
 
+      Message message = reference.getMessage();
+
       try
       {
-         Message message = reference.getMessage();
-
-         try
-         {
-            message = JBossMessage.copy((javax.jms.Message)message);
-         }
-         catch(JMSException e)
-         {
-            // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
-            String msg = "Cannot make a copy of the message";
-            log.error(msg, e);
-            throw new java.lang.IllegalStateException(msg);
-         }
-
-         if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
-
-         boolean accept = this.accept(message);
-
-         if (!accept)
-         {
-            if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
-            return null;
-         }
-
-         if (reference.isRedelivered())
-         {
-            if (log.isTraceEnabled())
-            {
-               log.trace("Message is redelivered - setting jmsredelivered to true");
-            }
-            message.setRedelivered(true);
-         }
-         
-         delivery = new SimpleDelivery(observer, (MessageReference)reference);
-         deliveries.put(reference.getMessageID(), delivery);
-
-         synchronized (waiting)
-         {
-
-            if (started)
-            {
-               if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
-               threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
-            }
-            else
-            {
-               //The consumer is closed so we store the message for later
-               //See test ConnectionClosedTest.testCannotReceiveMessageOnClosedConnection
-               //for why we do this
-               if (log.isTraceEnabled()) { log.trace("Adding message " + message + " to the waiting list"); }
-               waiting.addLast(message);
-            }
-         }
-
+         message = JBossMessage.copy((javax.jms.Message)message);
       }
-      catch(InterruptedException e)
+      catch(JMSException e)
       {
-         log.warn("Interrupted asynchronous delivery", e);
+         // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
+         String msg = "Cannot make a copy of the message";
+         log.error(msg, e);
+         throw new java.lang.IllegalStateException(msg);
       }
+
+      if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
+
+      boolean accept = this.accept(message);
+
+      if (!accept)
+      {
+         if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
+         return null;
+      }
+
+      if (reference.isRedelivered())
+      {
+         if (log.isTraceEnabled())
+         {
+            log.trace("Message is redelivered - setting jmsredelivered to true");
+         }
+         message.setRedelivered(true);
+      }
+      
+      delivery = new SimpleDelivery(observer, (MessageReference)reference);
+      deliveries.put(reference.getMessageID(), delivery);
+      
+      if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
+      try
+      {
+         threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
+      }
+      catch (InterruptedException e)
+      {
+         log.warn("Thread interrupted", e);
+         //Ignore
+      }
+
 
       return delivery;
    }
@@ -222,12 +219,12 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Closeable implementation --------------------------------------
 
-   public void closing() throws JMSException
+   public synchronized void closing() throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace(this.id + " closing"); }
    }
 
-   public void close() throws JMSException
+   public synchronized void close() throws JMSException
    {
       if (closed)
       {
@@ -245,39 +242,16 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       closed = true;
    }
    
-   void setStarted(boolean s)
+   synchronized void setStarted(boolean started)
    {
-      if (log.isTraceEnabled()) { log.trace("setStarted: " + s); } 
+      if (log.isTraceEnabled()) { log.trace("setStarted: " + started); } 
       
-      synchronized (waiting)
+      this.started = started;   
+      
+      if (started)
       {
-         started = s;
-         
-         if (s)
-         {
-            if (!waiting.isEmpty())
-            {
-               if (log.isTraceEnabled()) { log.trace("there are " + waiting.size() + " waiting messages to deliver"); }
-               
-               int n = waiting.size();
-               for (int i = 0; i < n; i++)
-               {
-                  //We remove them one by one, in case it fails mid way through
-                  //and we don't want to deliver the message twice on retry
-                  Message m = (Message)waiting.removeFirst();
-                  
-                  if (log.isTraceEnabled()) { log.trace("queueing the message " + m + " for delivery"); }
-                  try
-                  {
-                     threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, m));
-                  }
-                  catch (InterruptedException e)
-                  {
-                     log.error("Thread interrupted", e);
-                  }
-               }
-            }
-         }         
+         //need to prompt delivery
+         channel.deliver();
       }
    }
    
@@ -289,15 +263,12 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       return "ServerConsumerDelegate[" + id + "]";
    }
 
-
-
    // Package protected ---------------------------------------------
-   
-
+  
    /** Actually remove the consumer and clear up any deliveries it may have */
-   void remove() throws JMSException
+   synchronized void remove() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + destination);
+      if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + channel);
  
       for(Iterator i = deliveries.keySet().iterator(); i.hasNext(); )
       {
@@ -321,30 +292,15 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
       
-      if (this.destination instanceof Subscription)
+      if (this.channel instanceof Subscription)
       {
-         ((Subscription)destination).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
+         ((Subscription)channel).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
       }     
       
       this.sessionEndpoint.consumers.remove(this.id);
    }  
    
-   /**
-    * Disconnect this consumer from the Channel that feeds it.
-    * This method does not clear up any deliveries
-    *
-    */
-   void disconnect()
-   {
-      boolean removed = destination.remove(this);
-      
-      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");         
-      
-      if (removed)
-      {
-         disconnected = true;
-      }
-   }
+   
    
    void acknowledge(String messageID, Transaction tx)
    {
@@ -401,6 +357,23 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    }
 
    // Protected -----------------------------------------------------
+   
+   /**
+    * Disconnect this consumer from the Channel that feeds it.
+    * This method does not clear up any deliveries
+    *
+    */
+   protected void disconnect()
+   {
+      boolean removed = channel.remove(this);
+      
+      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");         
+      
+      if (removed)
+      {
+         disconnected = true;
+      }
+   }
 
    // Private -------------------------------------------------------
 

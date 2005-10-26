@@ -82,7 +82,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
     * JBossConnectionConsumer constructor
     * 
     * @param connection the connection
-    * @param destination destination
+    * @param channel destination
     * @param messageSelector the message selector
     * @param serverSessionPool the server session pool
     * @param maxMessages the maxmimum messages

@@ -22,7 +22,7 @@ import org.jboss.util.id.GUID;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  */
-public class Subscription extends ChannelSupport
+public class Subscription extends Pipe
 {
    // Constants -----------------------------------------------------
    
@@ -48,7 +48,6 @@ public class Subscription extends ChannelSupport
       super("sub" + new GUID().toString(), ms, pm, true);
       this.topic = topic;
       this.selector = selector;
-      router = new PointToPointRouter();
    }
    
 

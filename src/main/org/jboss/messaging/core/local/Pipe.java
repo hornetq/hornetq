@@ -33,10 +33,15 @@ public class Pipe extends ChannelSupport
    {
       this(name, ms, null);
    }
-
+   
    public Pipe(String name, MessageStore ms, PersistenceManager pm)
    {
-      super(name, ms, pm, false);
+      this(name, ms, pm, false);
+   }
+
+   public Pipe(String name, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages)
+   {
+      super(name, ms, pm, acceptReliableMessages);
       router = new SingleDestinationRouter();
    }
 
