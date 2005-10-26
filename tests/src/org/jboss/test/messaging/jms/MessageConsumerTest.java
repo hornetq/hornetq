@@ -6,30 +6,9 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
-import javax.jms.Session;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
+import javax.jms.*;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -276,40 +255,61 @@ public class MessageConsumerTest extends MessagingTestCase
     * 
     */
 
-    public void testClosedConsumer() throws Exception
-    {
-       // create my consumer from scratch
-       consumerConnection.close();
+   public void testSendMessageAndCloseConsumer1() throws Exception
+   {
+      // setUp() created a consumer already
 
-       TextMessage tm = producerSession.createTextMessage();
+      Message m = producerSession.createMessage();
+      queueProducer.send(m);
 
-       tm.setText("One");
-       queueProducer.send(tm);
+      queueConsumer.close();
 
-       tm.setText("Two");
-       queueProducer.send(tm);
+      // since no message was received, we expect the message back in the queue
 
-       consumerConnection = cf.createConnection();
-       consumerSession = consumerConnection.createSession(true, 0);
-       queueConsumer = consumerSession.createConsumer(queue);
+      queueConsumer = consumerSession.createConsumer(queue);
 
-       consumerConnection.start();
+      Message r = queueConsumer.receive(3000);
+      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+   }
 
-       TextMessage m =  (TextMessage)queueConsumer.receive(1500);
-       assertEquals(m.getText(), "One");
+   /**
+    * Basically the same test as before, with more than one message and a slightly different
+    * way of checking the messages are back in the queue.
+    */
+   public void testSendMessageAndCloseConsumer2() throws Exception
+   {
+      // create my consumer from scratch
+      consumerConnection.close();
 
-       queueConsumer.close();
-       consumerSession.commit();
+      TextMessage tm = producerSession.createTextMessage();
 
-       // I expect that "Two" is still in the queue
+      tm.setText("One");
+      queueProducer.send(tm);
 
-       MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
-       m =  (TextMessage)queueConsumer2.receive(1500);
-       assertNotNull(m);
-       assertEquals(m.getText(), "Two");
+      tm.setText("Two");
+      queueProducer.send(tm);
 
-       consumerConnection.close();
-    }
+      consumerConnection = cf.createConnection();
+      consumerSession = consumerConnection.createSession(true, 0);
+      queueConsumer = consumerSession.createConsumer(queue);
+
+      consumerConnection.start();
+
+      TextMessage m =  (TextMessage)queueConsumer.receive(1500);
+      assertEquals(m.getText(), "One");
+
+      queueConsumer.close();
+      consumerSession.commit();
+
+      // I expect that "Two" is still in the queue
+
+      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
+      m =  (TextMessage)queueConsumer2.receive(1500);
+      assertNotNull(m);
+      assertEquals(m.getText(), "Two");
+
+      consumerConnection.close();
+   }
     
     public void testRedel0() throws Exception
     {
