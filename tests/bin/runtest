@@ -55,8 +55,8 @@
 
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
 #TARGET_TEST=testUnreliableChannelReliableMessageNACKingReceiver
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
-TARGET_TEST=testNonRecoverableChannel_26_1
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
+#TARGET_TEST=testNonRecoverableChannel_26_1
 
 
 
@@ -73,10 +73,10 @@ TARGET_TEST=testNonRecoverableChannel_26_1
 #TARGET_TEST=testSetClientIDFail
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testConsumer
-TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
-TARGET_TEST=testBrowseWithSelector
+TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+TARGET_TEST=testRedel0
+#TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
+#TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
@@ -165,13 +165,14 @@ $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
+$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
 $reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
 $reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
 $reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
-$reldir/../../../thirdparty/apache-commons/lib/commons-httpclient.jar${SEP}\
+$reldir/../../../thirdparty/apache-httpclient/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\

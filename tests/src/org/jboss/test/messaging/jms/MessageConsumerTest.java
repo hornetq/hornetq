@@ -138,13 +138,29 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * The simplest possible test.
     */
-   public void testConsumer() throws Exception
+   public void testConsumer1() throws Exception
    {
-      TextMessage tm = producerSession.createTextMessage("someText");
+      // start consumer connection before the message is submitted
+      consumerConnection.start();
 
+      TextMessage tm = producerSession.createTextMessage("someText");
       queueProducer.send(tm);
 
+      TextMessage m = (TextMessage)queueConsumer.receive();
+      assertEquals(tm.getText(), m.getText());
+   }
+
+   /**
+    * Another simples test.
+    */
+   public void testConsumer2() throws Exception
+   {
+      TextMessage tm = producerSession.createTextMessage("someText");
+      queueProducer.send(tm);
+
+      // start consumer connection after the message is submitted
       consumerConnection.start();
+      
       TextMessage m = (TextMessage)queueConsumer.receive(3000);
       assertEquals(tm.getText(), m.getText());
    }
