@@ -200,6 +200,8 @@
            depends="tests-jar, prepare-testdirs"
            description="Runs all available tests">
 
+      <antcall target="print-testclasspath"/>
+
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
              includeantruntime="${junit.includeantruntime}"
@@ -237,6 +239,8 @@
            depends="tests-jar, prepare-testdirs"
            description="Runs the jms tests only">
 
+      <antcall target="print-testclasspath"/>
+
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
              includeantruntime="${junit.includeantruntime}"
@@ -270,6 +274,8 @@
    <target name="coretests"
            depends="tests-jar, prepare-testdirs"
            description="Runs the jms tests only">
+
+      <antcall target="print-testclasspath"/>
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -592,10 +598,14 @@
                   
             </test>
          </junit>
-   </target>   
-   
-   
-   
+   </target>
+
+   <target name="print-testclasspath">
+      <pathconvert targetos="unix" property="test.classpath.property" refid="test.classpath"/>
+      <echo message="${test.classpath.property}"/>
+   </target>
+
+
 
 </project>
 
