@@ -369,7 +369,7 @@ public class ChannelSupport implements Channel
          try
          {
             state.add(ref, null);
-            if (log.isTraceEnabled()){ log.trace("adding reference to state successful"); }
+            if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
 
          }
          catch(Throwable t)
