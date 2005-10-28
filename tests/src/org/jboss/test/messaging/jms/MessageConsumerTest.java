@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Enumeration;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -867,12 +869,88 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
 
+   /**
+    * Test server-side consumer delegate activation (on receive())
+    */
    public void testReceive1() throws Exception
    {
+      Connection conn = null;
+
+       try
+       {
+          conn = cf.createConnection();
+
+          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+          s.createConsumer(queue);
+
+          conn.start();
+
+          MessageProducer p = s.createProducer(queue);
+          Message m = s.createTextMessage("1");
+          p.send(m);
+
+          MessageConsumer c2 = s.createConsumer(queue);
+          Message r = c2.receive(2000);
+
+          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+       }
+       finally
+       {
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
    }
 
+   /**
+    * Test server-side consumer delegate activation (on receive())
+    */
    public void testReceive2() throws Exception
    {
+      Connection conn = null;
+
+       try
+       {
+          conn = cf.createConnection();
+
+          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+          s.createConsumer(queue);
+
+          conn.start();
+
+          MessageProducer p = s.createProducer(queue);
+          Message m = s.createTextMessage("1");
+          p.send(m);
+
+          MessageConsumer c2 = s.createConsumer(queue);
+          final Set received = new HashSet();
+          c2.setMessageListener(new MessageListener()
+          {
+             public void onMessage(Message m)
+             {
+                received.add(m);
+                received.notify();
+             }
+          });
+
+          synchronized(received)
+          {
+             received.wait(3000);
+          }
+          assertEquals(1, received.size());
+          Message r = (Message)received.iterator().next();
+          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+       }
+       finally
+       {
+          if (conn != null)
+          {
+             conn.close();
+          }
+       }
    }
 
 
