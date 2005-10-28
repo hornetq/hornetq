@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.delegate;
 
+import java.io.Serializable;
+
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.JMSException;
@@ -47,4 +49,12 @@ public interface ConsumerDelegate extends Closeable, MetaDataRepository
    void setMessageSelector(String selector);
    
    void setReceiverID(String receiverID);
+   
+   Message getMessage();
+   
+   //void readyForMessage(boolean ready);
+   
+   void stopDelivering();
+   
+   void cancelMessage(Serializable messageID) throws JMSException;
 }

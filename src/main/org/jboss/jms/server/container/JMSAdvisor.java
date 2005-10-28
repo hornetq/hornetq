@@ -36,7 +36,7 @@ public class JMSAdvisor extends ClassAdvisor
    public static final String REMOTING_SESSION_ID = "REMOTING_SESSION_ID";
    public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
    public static final String CONNECTION_FACTORY_ID = "CONNECTION_FACTORY_ID";
-   public static final String EVICTED_MESSAGE_IDS = "EVICTED_MESSAGE_IDS";
+   //public static final String EVICTED_MESSAGE_IDS = "EVICTED_MESSAGE_IDS";
 
 
    // Static --------------------------------------------------------

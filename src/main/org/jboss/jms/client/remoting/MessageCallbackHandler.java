@@ -10,6 +10,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.util.JBossJMSException;
@@ -43,26 +44,64 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Attributes ----------------------------------------------------
    
-   protected int capacity = 100;
-   protected BoundedBuffer messages;
+   protected int capacity = 1;
+   protected BoundedBuffer messages;   //Change this - no longer required, for now i just set capacity to 1
    protected SessionDelegate sessionDelegate;
+   protected ConsumerDelegate consumerDelegate;
    protected String receiverID;
    
-   private volatile boolean receiving;
+   private volatile boolean receiving;  //why volatile?
+   
+   private volatile boolean listening;
+      
    private Thread receivingThread;
-   
-   
+      
    protected MessageListener listener;
+   
    protected Thread listenerThread;
    
    protected boolean isConnectionConsumer;
    
    private int listenerThreadCount = 0;
    
-   private volatile boolean closed;
+   private volatile boolean closed;  // why volatile ?
 
-
-
+   private boolean isReceiving()
+   {
+      return receiving;
+   }
+   
+   private void setReceiving(boolean receiving)
+   {
+      this.receiving = receiving;
+   }
+   
+   private boolean isListening()
+   {
+      return listening;
+   }
+   
+   private void setListening(boolean listening)
+   {
+      this.listening = listening;
+   }
+   
+   private boolean isClosed()
+   {
+      return closed;
+   }
+   
+   private void setClosed(boolean closed)
+   {
+      this.closed = closed;
+   }
+      
+   private void clearBuffer()
+   {
+      //temporary hack
+      messages = new BoundedBuffer(1);
+   }
+   
    // Constructors --------------------------------------------------
 
    public MessageCallbackHandler(boolean isCC)
@@ -77,13 +116,31 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    {
       if (log.isTraceEnabled()) { log.trace("receiving message " + callback.getParameter() + " from the remoting layer"); }
 
-      if (closed)
-      {
-         throw new IllegalStateException("Message handler is closed");
-      }
-
       Message m = (Message)callback.getParameter();
       
+            
+      try
+      {
+         if (!isListening() && !isReceiving())
+         {
+            //There is a small chance, but possible that a receive times out or a message listener
+            //is unset before then later it receives a message
+            //this message cannot be handled so it needs to be sent back
+            //to the server to be cancelled
+            consumerDelegate.cancelMessage(m.getJMSMessageID());
+         }
+         
+         if (isClosed())
+         {
+            consumerDelegate.cancelMessage(m.getJMSMessageID());
+            log.warn("Tried to deliver message but consumer is closed!!");
+         }
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to cancel message", e);
+      }
+  
       try
       {			
          JBossMessage jm = (JBossMessage)m;	
@@ -114,28 +171,47 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    {
       if (log.isTraceEnabled()) { log.trace("listener thread started"); }
       
-      while(true)
-      {
-         try
-         {
+      if (log.isTraceEnabled()) { log.trace("calling setListening"); }
+      
+      setListening(true);
+      
+      if (log.isTraceEnabled()) { log.trace("set listening"); }
+      
+      try
+      {      
+         while(true)
+         {            
+            //Tell the server we are ready to receive a message
+            
+            if (log.isTraceEnabled()) { log.trace("clearing buffer"); }
+            clearBuffer();
+            if (log.isTraceEnabled()) { log.trace("calling readyForMessage"); }
+            consumerDelegate.getMessage();
+            if (log.isTraceEnabled()) { log.trace("called readyForMessage"); }
+                        
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
             JBossMessage m = (JBossMessage)messages.take();
             preDeliver(m);   
             listener.onMessage(m);
             if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
-            postDeliver(m);
-         }
-         catch(InterruptedException e)
-         {
-            log.debug("message listener thread interrupted, exiting");
-            return;
-         }
-         catch(Throwable t)
-         {
-            // TODO - different actions for client error/commuication error
-            // TODO - try several times and then give up?
-            log.error(t);
-         }
+            postDeliver(m);         
+         }     
+      }
+      catch(InterruptedException e)
+      {
+         log.debug("message listener thread interrupted, exiting");         
+      }
+      catch(Throwable t)
+      {
+         // TODO - different actions for client error/commuication error
+         // TODO - try several times and then give up?
+         log.error(t);
+      }
+      finally
+      {      
+         //Tell the server we don't want any more messages
+         consumerDelegate.stopDelivering();
+         setListening(false);
       }
    }
    
@@ -147,12 +223,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       this.sessionDelegate = delegate;
    }
    
+   public void setConsumerDelegate(ConsumerDelegate delegate)
+   {
+      this.consumerDelegate = delegate;
+   }
+   
    public void setReceiverID(String receiverID)
    {
       this.receiverID = receiverID;
    }
-   
-   
    
    public synchronized MessageListener getMessageListener()
    {
@@ -164,11 +243,19 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       if (receiving)
       {
          throw new JBossJMSException("Another thread is already receiving");
-      }
+      }            
       
       if (listenerThread != null)
       {
          listenerThread.interrupt();
+         try
+         {
+            listenerThread.join();
+         }
+         catch (InterruptedException e)
+         {
+            log.error("Thread interrupted", e);
+         }
       }
       
       this.listener = listener;
@@ -209,20 +296,24 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       
       synchronized(this)
       {
-         if (listener != null)
+         if (isListening())
          {
             throw new JBossJMSException("A message listener is already registered");
          }
-         if (receiving)
+         if (isReceiving())
          {
             throw new JBossJMSException("Another thread is already receiving");
          }
-         receiving = true;
+         setReceiving(true);
       }
       
       try
       {
          receivingThread = Thread.currentThread();
+         
+         //Tell the server we're ready to accept a message
+         clearBuffer();
+         consumerDelegate.getMessage();
          
          JBossMessage m = null;
          while(true)
@@ -241,8 +332,28 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                {
                   //ReceiveNoWait
                   if (log.isTraceEnabled()) { log.trace("receive noWait"); }
+                  
+                  /*
+                   * FIXME
+                   * 
+                   * We have a problem with receive no wait
+                   * Even if there is a message sitting waiting in the server queue
+                   * then if we don't wait at all here, there is probably not
+                   * enough time for the message to get here so the client can receive it
+                   * So temporarily I have hacked it to wait for a bit, even though it
+                   * is no wait. !!!!!!!!!!!!
+                   * 
+                   * What we really need to do is introduce a synchronous
+                   * "giveMeNextMessage" method on the channel, that gives the first
+                   * available message that is sitting in the queue, or null if there
+                   * is none
+                   * Then we would call that method here.
+                   * 
+                   * 
+                   * 
+                   */
 
-                  m = ((JBossMessage)messages.poll(0));
+                  m = ((JBossMessage)messages.poll(1000));
                  
                   if (m == null)
                   {
@@ -267,7 +378,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             catch(InterruptedException e)
             {
                if (log.isTraceEnabled()) { log.trace("Thread was interrupted"); }
-               if (closed)
+               if (isClosed())
                {
                   if (log.isTraceEnabled()) { log.trace("It's closed"); }
                   return null;
@@ -303,7 +414,16 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       finally
       {
-         receiving = false;
+         //Tell the server we don't want the next message
+         try
+         {
+            consumerDelegate.stopDelivering();
+         }
+         catch (Exception e )
+         {
+            //Might be closed - ignore
+         }
+         setReceiving(false);
          receivingThread = null;
       }
    }
@@ -313,38 +433,38 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     *
     * @return List<Serializable> containing the ids of the messages evicted from the buffer.
     */
-   public List reset()
-   {
-      List ids = new ArrayList();
-      try
-      {
-         JBossMessage m = null;
-         while((m = (JBossMessage)messages.poll(0)) != null)
-         {
-            ids.add(m.getMessageID());
-         }
-      }
-      catch(Exception e)
-      {
-         log.warn(e);
-      }
-
-      if (log.isTraceEnabled()) { log.trace("evicted " + ids.size() + " cached messages"); }
-
-      return ids;
-   }
+//   public List reset()
+//   {
+//      List ids = new ArrayList();
+//      try
+//      {
+//         JBossMessage m = null;
+//         while((m = (JBossMessage)messages.poll(0)) != null)
+//         {
+//            ids.add(m.getMessageID());
+//         }
+//      }
+//      catch(Exception e)
+//      {
+//         log.warn(e);
+//      }
+//
+//      if (log.isTraceEnabled()) { log.trace("evicted " + ids.size() + " cached messages"); }
+//
+//      return ids;
+//   }
 
    /**
     * @return List<Serializable> containing the ids of the messages evicted from the buffer.
     */
-   public List close()
+   public void close()
    {
-      if (closed)
-      {
-         return Collections.EMPTY_LIST;
-      }
+//      if (closed)
+//      {
+//         return Collections.EMPTY_LIST;
+//      }
 
-      closed = true;
+      setClosed(true);
 
       log.debug("closing " + this);
 
@@ -355,7 +475,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
 
       // evict messages sitting in the buffer, they need to be "undelivered"
-      List evicted = reset();
+      //List evicted = reset();
       messages = null;
 
       // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
@@ -374,7 +494,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          log.warn("Failed to clean up callback handler/callback server", e);
       }
 
-      return evicted;
+      //return evicted;
    }
 
    public String toString()

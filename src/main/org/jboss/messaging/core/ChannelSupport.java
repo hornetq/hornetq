@@ -101,6 +101,16 @@ public class ChannelSupport implements Channel
       // I might as well return null, the sender shouldn't care
       return new SimpleDelivery(sender, ref, true);
    }
+   
+//   public MessageReference removeFirst()
+//   {
+//      return state.removeFirst();
+//   }
+//   
+//   public void addDelivery(Delivery del) throws Throwable
+//   {
+//      state.add(del);
+//   }
 
 
    // DeliveryObserver implementation --------------------------

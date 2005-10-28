@@ -7,15 +7,19 @@
 package org.jboss.jms.server.endpoint;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
+import javax.jms.MessageListener;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
@@ -47,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  *
  * $Id$
  */
-public class ServerConsumerDelegate implements Receiver, Filter, Closeable
+public class ServerConsumerDelegate implements Receiver, Filter, Closeable, ConsumerDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -82,7 +86,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    protected boolean closed;
 
    // List<Serializable> contains messageIDs
-   private List messagesToReturn;
+   //private List messagesToReturn;
+   
+   protected boolean waitingForMessage;
 
 
    // Constructors --------------------------------------------------
@@ -131,6 +137,14 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          return null;
       }
       
+      //If the client side consumer is not ready to accept a message and have it sent to it then
+      //we return null to refuse the message
+      if (!waitingForMessage)
+      {
+         if (log.isTraceEnabled()) { log.trace("Not ready for message so returning null"); }
+         return null;
+      }
+                  
       //deliver the message on a different thread than the core thread that brought it here
 
       Delivery delivery = null;
@@ -170,6 +184,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       
       delivery = new SimpleDelivery(observer, (MessageReference)reference);
       deliveries.add(delivery);
+      
+      //Now we set waitingForMessage to false since the consumer can only deal with messages one at a time
+      //i.e. we don't buffer them on the client side
+      waitingForMessage = false;
       
       if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
       try
@@ -237,6 +255,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
       closed = true;
 
+      /*
       if (messagesToReturn != null)
       {
          boolean canceled = false;
@@ -265,12 +284,13 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
             channel.deliver();
          }
       }
+      */
 
       //On close we only disconnect the consumer from the Channel we don't actually remove it
       //This is because it may still contain deliveries that may well be acknowledged after
       //the consumer has closed. This is perfectly valid.
       disconnect();
-      messagesToReturn = null;
+      //messagesToReturn = null;
    }
    
    synchronized void setStarted(boolean started)
@@ -286,18 +306,150 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       }
    }
    
+   //ConsumerDelegate implementation
+   public MessageListener getMessageListener() throws JMSException
+   {
+      log.warn("getMessageListener is not handled on the server");
+      return null;
+   }
+   
+   public void setMessageListener(MessageListener listener) throws JMSException
+   {
+      log.warn("setMessageListener is not handled on the server");
+   }
+
+   public javax.jms.Message receive(long timeout) throws JMSException
+   {      
+      log.warn("receive is not handled on the server");
+      return null;
+   }
+   
+   public Destination getDestination() throws JMSException
+   {
+      log.warn("getDestination is not handled on the server");
+      return null;
+   }
+   
+   public boolean getNoLocal() throws JMSException
+   {
+      log.warn("getNoLocal is not handled on the server");
+      return false;
+   }
+   
+   public String getMessageSelector() throws JMSException
+   {
+      log.warn("getMessageSelector is not handled on the server");
+      return null;
+   }
+   
+   public String getReceiverID()
+   {
+      log.warn("getReceiverID is not handled on the server");
+      return null;
+   }
+   
+   public void setDestination(Destination dest)
+   {
+      log.warn("setDestination is not handled on the server");
+   }
+   
+   public void setNoLocal(boolean noLocal)
+   {
+      log.warn("setNoLocal is not handled on the server");
+   }
+   
+   public void setMessageSelector(String selector)
+   {
+      log.warn("setMessageSelector is not handled on the server");
+   }
+   
+   public void setReceiverID(String receiverID)
+   {
+      log.warn("setReceiverID is not handled on the server");
+   }
+   
+   public void addMetaData(Object attr, Object metaDataValue) throws JMSException
+   {
+      log.warn("addMetaData is not handled on the server");
+   }
+
+   public Object removeMetaData(Object attr) throws JMSException
+   {
+      log.warn("removeMetaData is not handled on the server");
+      return null;
+   }
+   
+   public Object getMetaData(Object attr) throws JMSException
+   {
+      log.warn("getMetaData is not handled on the server");
+      return null;
+   }
+
+   
+ 
+   public synchronized void stopDelivering()
+   {
+      waitingForMessage = false;     
+   }
+   
+   public synchronized javax.jms.Message getMessage()
+   {
+      //Messsage m = channel.get();
+      
+      javax.jms.Message m = null;
+      
+      if (m == null)
+      {
+         waitingForMessage = true;
+         channel.deliver();
+      }
+      
+      return m;
+   }
+   
+   public void cancelMessage(Serializable messageID) throws JMSException
+   {
+      boolean cancelled = false;
+      Iterator iter = deliveries.iterator();
+      try
+      {
+         
+         while (iter.hasNext())
+         {
+            Delivery del = (Delivery)iter.next();
+            if (del.getReference().getMessageID().equals(messageID))
+            {
+               del.cancel();
+               cancelled = true;
+               break;
+            }
+         }
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to cancel message", t);
+         throw new IllegalStateException("Failed to cancel message");
+      }
+      if (!cancelled)
+      {
+         throw new IllegalStateException("Cannot find delivery to cancel");
+      }
+   }
+   
 
    // Public --------------------------------------------------------
 
    /**
     * TODO this is a hack, replace with something smarter
     */
+   /*
    public void setMessagesToReturnToDestination(List messageIDs)
    {
       if (log.isTraceEnabled()) { log.trace("marking " + (messageIDs == null ? "null " : Integer.toString(messageIDs.size()) )+ " messages to be returned to destination"); }
 
       this.messagesToReturn = messageIDs;
    }
+   */
 
    public String toString()
    {
@@ -351,8 +503,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
             Delivery d = (Delivery)i.next();
-            d.acknowledge(tx);
-            i.remove();
+            if (d.getReference().getMessageID().equals(messageID))
+            {
+               d.acknowledge(tx);
+               i.remove();
+            }
          }
       }
       catch(Throwable t)
@@ -363,37 +518,52 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    
    void redeliver() throws JMSException
    {
-      // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
-      // TODO and some old deliveries may be lost
-
-      if (log.isTraceEnabled()) { log.trace("redeliver"); }                        
+//      // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
+//      // TODO and some old deliveries may be lost
+//
+//      if (log.isTraceEnabled()) { log.trace("redeliver"); }                        
+//      
+//      List old = new ArrayList();
+//      synchronized(deliveries)
+//      {
+//         for(Iterator i = deliveries.iterator(); i.hasNext();)
+//         {
+//            Delivery d = (Delivery)i.next();
+//            old.add(d);
+//            i.remove();
+//         }
+//      }
       
-      List old = new ArrayList();
-      synchronized(deliveries)
-      {
-         for(Iterator i = deliveries.iterator(); i.hasNext();)
-         {
-            Delivery d = (Delivery)i.next();
-            old.add(d);
-            i.remove();
-         }
-      }
+//      if (log.isTraceEnabled()) { log.trace("There are " + old.size() + " deliveries to redeliver"); }
+//
+//      for(Iterator i = old.iterator(); i.hasNext();)
+//      {
+//         try
+//         {
+//            Delivery d = (Delivery)i.next();
+//            d.redeliver(this);
+//         }
+//         catch(Throwable t)
+//         {
+//            String msg = "Failed to initiate redelivery";
+//            log.error(msg, t);
+//            throw new JMSException(msg);
+//         }
+//      }
       
-      if (log.isTraceEnabled()) { log.trace("There are " + old.size() + " deliveries to redeliver"); }
-
-      for(Iterator i = old.iterator(); i.hasNext();)
+      
+      for(Iterator i = deliveries.iterator(); i.hasNext(); )
       {
+         Delivery d = (Delivery)i.next();
          try
          {
-            Delivery d = (Delivery)i.next();
-            d.redeliver(this);
+            d.cancel();
          }
          catch(Throwable t)
          {
-            String msg = "Failed to initiate redelivery";
-            log.error(msg, t);
-            throw new JMSException(msg);
+            log.error("Cannot cancel delivery: " + d, t);
          }
+         i.remove();
       }
       
    }

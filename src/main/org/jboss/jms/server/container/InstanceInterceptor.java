@@ -215,12 +215,12 @@ public class InstanceInterceptor implements Interceptor
                // TODO log error
             }
 
-            if ("closing".equals(methodName))
-            {
-               // TODO this is a hack, find a more elegant way of sending the list of evicted messages on closing
-               List ids = (List)mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.EVICTED_MESSAGE_IDS);
-               c.setMessagesToReturnToDestination(ids);
-            }
+//            if ("closing".equals(methodName))
+//            {
+//               // TODO this is a hack, find a more elegant way of sending the list of evicted messages on closing
+//               List ids = (List)mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.EVICTED_MESSAGE_IDS);
+//               c.setMessagesToReturnToDestination(ids);
+//            }
 
             invocation.setTargetObject(c);
          }
