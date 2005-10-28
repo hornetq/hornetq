@@ -53,12 +53,12 @@ public class MessagingTestCase extends TestCase
 
    protected void setUp() throws Exception
    {
-      log.info("========= Start test: " + getName());
+      log.info("####################################################### Start test: " + getName());
    }
 
    protected void tearDown() throws Exception
    {
-      log.info("========== Stop test: " + getName());
+      log.info("####################################################### Stop test: " + getName());
    }
    
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception

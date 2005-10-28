@@ -70,11 +70,11 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_TEST=testTransactedSend
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-#TARGET_TEST=testSetClientIDFail
+#TARGET_TEST=testClose1
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-TARGET_TEST=testRedel0
+#TARGET_TEST=testRedel8
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest

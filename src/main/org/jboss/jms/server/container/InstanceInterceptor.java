@@ -19,6 +19,7 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * The interceptor looks up various instances and associates them to the invocation as targets.
@@ -213,6 +214,14 @@ public class InstanceInterceptor implements Interceptor
                                    "with consumerID=" + consumerID);
                // TODO log error
             }
+
+            if ("closing".equals(methodName))
+            {
+               // TODO this is a hack, find a more elegant way of sending the list of evicted messages on closing
+               List ids = (List)mi.getMetaData(JMSAdvisor.JMS, JMSAdvisor.EVICTED_MESSAGE_IDS);
+               c.setMessagesToReturnToDestination(ids);
+            }
+
             invocation.setTargetObject(c);
          }
          else if (m.getDeclaringClass().equals(ServerBrowserDelegate.class))

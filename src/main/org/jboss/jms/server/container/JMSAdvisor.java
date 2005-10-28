@@ -15,6 +15,8 @@ import org.jboss.jms.server.ServerPeer;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JMSAdvisor extends ClassAdvisor
 {
@@ -34,7 +36,8 @@ public class JMSAdvisor extends ClassAdvisor
    public static final String REMOTING_SESSION_ID = "REMOTING_SESSION_ID";
    public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
    public static final String CONNECTION_FACTORY_ID = "CONNECTION_FACTORY_ID";
-   
+   public static final String EVICTED_MESSAGE_IDS = "EVICTED_MESSAGE_IDS";
+
 
    // Static --------------------------------------------------------
    

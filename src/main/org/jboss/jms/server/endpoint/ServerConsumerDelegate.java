@@ -8,10 +8,8 @@ package org.jboss.jms.server.endpoint;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
@@ -77,12 +75,16 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    
    protected boolean disconnected = false;
 
-   // <messageID-Delivery>
-   private Map deliveries;
-   
+   // deliveries must be maintained in order they were received
+   private List deliveries;
+
+
    protected boolean closed;
-   
-   
+
+   // List<Serializable> contains messageIDs
+   private List messagesToReturn;
+
+
    // Constructors --------------------------------------------------
 
    public ServerConsumerDelegate(String id, Channel channel,
@@ -106,7 +108,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
          if (log.isTraceEnabled()) log.trace("created selector");
       }
       //this.subscription = subscription;
-      this.deliveries = new HashMap();
+      this.deliveries = new ArrayList();
       this.started = sessionEndpoint.connectionEndpoint.started;
       this.channel.add(this);
 
@@ -118,7 +120,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    {
       if (closed)
       {
-         throw new java.lang.IllegalStateException("Consumer is closed!");
+         if (log.isTraceEnabled()) { log.trace("consumer " + this + " closed, rejecting message" ); }
+         return null;
       }
       
       //If the consumer is stopped then we don't accept the message, it should go back into the channel
@@ -166,7 +169,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       }
       
       delivery = new SimpleDelivery(observer, (MessageReference)reference);
-      deliveries.put(reference.getMessageID(), delivery);
+      deliveries.add(delivery);
       
       if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
       try
@@ -229,16 +232,45 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       {
          throw new IllegalStateException("Consumer is already closed");
       }
-      
+
       if (log.isTraceEnabled()) { log.trace(this.id + " close"); }
 
-      //On close we only disconnect the consumer from the Channel we don't actually remove it
-      //This is because it may still contain deliveries that may well be acknowledged
-      //after the consumer has closed.
-      //This is perfectly valid.
-      disconnect();
-      
       closed = true;
+
+      if (messagesToReturn != null)
+      {
+         boolean canceled = false;
+         for(Iterator i = deliveries.iterator(); i.hasNext();)
+         {
+            Delivery d = (Delivery)i.next();
+            Object messageID = d.getReference().getMessageID();
+            if (messagesToReturn.contains(messageID))
+            {
+               try
+               {
+                  if (log.isTraceEnabled()) { log.trace("returning message " + messageID + " to destination for redelivery"); }
+                  d.cancel();
+                  i.remove();
+                  canceled = true;
+               }
+               catch(Throwable t)
+               {
+                  log.error(d + " cannot be canceled");
+               }
+            }
+         }
+
+         if (canceled)
+         {
+            channel.deliver();
+         }
+      }
+
+      //On close we only disconnect the consumer from the Channel we don't actually remove it
+      //This is because it may still contain deliveries that may well be acknowledged after
+      //the consumer has closed. This is perfectly valid.
+      disconnect();
+      messagesToReturn = null;
    }
    
    synchronized void setStarted(boolean started)
@@ -257,6 +289,16 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
 
    // Public --------------------------------------------------------
 
+   /**
+    * TODO this is a hack, replace with something smarter
+    */
+   public void setMessagesToReturnToDestination(List messageIDs)
+   {
+      if (log.isTraceEnabled()) { log.trace("marking " + (messageIDs == null ? "null " : Integer.toString(messageIDs.size()) )+ " messages to be returned to destination"); }
+
+      this.messagesToReturn = messageIDs;
+   }
+
    public String toString()
    {
       return "ServerConsumerDelegate[" + id + "]";
@@ -269,10 +311,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    {
       if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + channel);
  
-      for(Iterator i = deliveries.keySet().iterator(); i.hasNext(); )
+      for(Iterator i = deliveries.iterator(); i.hasNext(); )
       {
-         Object messageID = i.next();
-         Delivery d = (Delivery)deliveries.get(messageID);
+         Delivery d = (Delivery)i.next();
          try
          {
             d.cancel();
@@ -290,11 +331,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       }
       
       this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
-      
+
       if (this.channel instanceof Subscription)
       {
          ((Subscription)channel).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
-      }     
+      }
       
       this.sessionEndpoint.consumers.remove(this.id);
    }  
@@ -306,11 +347,13 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
 
       try
-      {        
-         Delivery d = (Delivery)deliveries.get(messageID);
-         d.acknowledge(tx);
-         deliveries.remove(messageID);
-         
+      {
+         for(Iterator i = deliveries.iterator(); i.hasNext(); )
+         {
+            Delivery d = (Delivery)i.next();
+            d.acknowledge(tx);
+            i.remove();
+         }
       }
       catch(Throwable t)
       {
@@ -328,10 +371,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
       List old = new ArrayList();
       synchronized(deliveries)
       {
-
-         for(Iterator i = deliveries.keySet().iterator(); i.hasNext();)
+         for(Iterator i = deliveries.iterator(); i.hasNext();)
          {
-            old.add(deliveries.get(i.next()));
+            Delivery d = (Delivery)i.next();
+            old.add(d);
             i.remove();
          }
       }
@@ -365,8 +408,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable
    protected void disconnect()
    {
       boolean removed = channel.remove(this);
-      
-      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");         
+
+      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");
       
       if (removed)
       {

@@ -22,6 +22,10 @@ import org.jboss.remoting.transport.Connector;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -56,21 +60,27 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    private int listenerThreadCount = 0;
    
    private volatile boolean closed;
-   
-   
-   
+
+
+
    // Constructors --------------------------------------------------
 
    public MessageCallbackHandler(boolean isCC)
    {
       this.messages = new BoundedBuffer(capacity);
-      this.isConnectionConsumer = isCC;   }
+      this.isConnectionConsumer = isCC;
+   }
 
    // InvokerCallbackHandler implementation -------------------------
    
    public void handleCallback(Callback callback) throws HandleCallbackException
    {
       if (log.isTraceEnabled()) { log.trace("receiving message " + callback.getParameter() + " from the remoting layer"); }
+
+      if (closed)
+      {
+         throw new IllegalStateException("Message handler is closed");
+      }
 
       Message m = (Message)callback.getParameter();
       
@@ -297,22 +307,56 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          receivingThread = null;
       }
    }
-   
-   public void close()
+
+   /**
+    * Evict messages sitting in the buffer waiting to be picked up.
+    *
+    * @return List<Serializable> containing the ids of the messages evicted from the buffer.
+    */
+   public List reset()
+   {
+      List ids = new ArrayList();
+      try
+      {
+         JBossMessage m = null;
+         while((m = (JBossMessage)messages.poll(0)) != null)
+         {
+            ids.add(m.getMessageID());
+         }
+      }
+      catch(Exception e)
+      {
+         log.warn(e);
+      }
+
+      if (log.isTraceEnabled()) { log.trace("evicted " + ids.size() + " cached messages"); }
+
+      return ids;
+   }
+
+   /**
+    * @return List<Serializable> containing the ids of the messages evicted from the buffer.
+    */
+   public List close()
    {
       if (closed)
       {
-         return;
+         return Collections.EMPTY_LIST;
       }
+
       closed = true;
-      
-      if (log.isTraceEnabled()) { log.trace("Closing:" + this); }
-      
+
+      log.debug("closing " + this);
+
       if (receivingThread != null)
       {
-         if (log.isTraceEnabled()) { log.trace("Interrupting receiving thread:"); }
+         if (log.isTraceEnabled()) { log.trace("interrupting receiving thread"); }
          receivingThread.interrupt();
       }
+
+      // evict messages sitting in the buffer, they need to be "undelivered"
+      List evicted = reset();
+      messages = null;
 
       // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
       try
@@ -320,17 +364,24 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          // unregister this callback handler and stop the callback server
 
          client.removeListener(this);
-         log.debug("Listener removed from server");
+         if (log.isTraceEnabled()) { log.trace("removed listener from callback server"); }
 
          callbackServer.stop();
-         log.debug("Closed callback server " + callbackServer.getInvokerLocator());
+         if (log.isTraceEnabled()) { log.trace("closed callback server " + callbackServer.getInvokerLocator()); }
       }
       catch(Throwable e)
       {
          log.warn("Failed to clean up callback handler/callback server", e);
       }
+
+      return evicted;
    }
-   
+
+   public String toString()
+   {
+      return "MessageCallbackHandler[" + receiverID + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

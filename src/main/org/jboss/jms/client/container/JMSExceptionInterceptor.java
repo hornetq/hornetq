@@ -8,6 +8,7 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jboss.jms.util.JBossJMSException;
@@ -49,6 +50,9 @@ public class JMSExceptionInterceptor implements Interceptor, Serializable
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+
+      if (log.isTraceEnabled()) { log.trace("handling " + ((MethodInvocation)invocation).getMethod().getName()); }
+
       try
       {
          return invocation.invokeNext();

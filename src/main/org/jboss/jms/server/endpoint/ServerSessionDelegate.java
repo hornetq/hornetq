@@ -609,11 +609,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                   
       }
       
-		Iterator iter = this.consumers.values().iterator();
-		while (iter.hasNext())
+		for(Iterator i = this.consumers.values().iterator(); i.hasNext(); )
 		{
           // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
-			ServerConsumerDelegate scd = (ServerConsumerDelegate)iter.next();
+			ServerConsumerDelegate scd = (ServerConsumerDelegate)i.next();
          scd.redeliver();
 		}     
 	}

@@ -555,7 +555,7 @@ public class ServerPeer
                                             new Object[0], new String[0]);
 
       // TODO 
-      locator = new InvokerLocator(s + "&socketTimeout=0");
+      locator = new InvokerLocator(s + "&socketTimeout=3600000");
       //locator = new InvokerLocator(s);
 
       log.debug("LocatorURI: " + getLocatorURI());

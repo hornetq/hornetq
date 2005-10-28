@@ -150,7 +150,7 @@ public class ChannelSupport implements Channel
    
       if (state.remove(old, null))
       {
-         if (log.isTraceEnabled()) { log.trace(this + "old delivery was active, canceled it"); }
+         if (log.isTraceEnabled()) { log.trace(this + " old delivery was active, canceled it"); }
          
          MessageReference ref = old.getReference();
          

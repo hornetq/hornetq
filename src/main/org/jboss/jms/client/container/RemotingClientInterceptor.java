@@ -60,6 +60,10 @@ public class RemotingClientInterceptor implements Interceptor, Serializable
       
       if (client == null)
       {
+
+         if (log.isTraceEnabled()) { log.trace("creating client"); }
+
+
          //We shouldn't have to do this programmatically - it should pick it up from the params
          //on the locator uri, but that doesn't seem to work
          Marshaller marshaller = new org.jboss.invocation.unified.marshall.InvocationMarshaller();

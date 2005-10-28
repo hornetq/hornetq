@@ -52,6 +52,9 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          MethodInvocation mi = (MethodInvocation)invocation;
          Method m = mi.getMethod();
          String name = m.getName();
+
+         if (log.isTraceEnabled()) { log.trace("handling " + name); }
+
          Object[] args = mi.getArguments();
          MessageCallbackHandler messageHandler = (MessageCallbackHandler)mi.
                getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
@@ -74,11 +77,6 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          else if (name.equals("getMessageListener"))
          {
             return messageHandler.getMessageListener();
-         }
-         else if (name.equals("closing"))
-         {
-            if (log.isTraceEnabled()) { log.trace("Closing message handler"); }
-            messageHandler.close();
          }
       }
       return invocation.invokeNext();

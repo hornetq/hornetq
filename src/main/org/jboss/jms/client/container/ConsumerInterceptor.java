@@ -8,6 +8,9 @@ package org.jboss.jms.client.container;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.util.List;
+import java.util.Set;
+import java.util.Iterator;
 
 import javax.jms.Destination;
 
@@ -75,6 +78,8 @@ public class ConsumerInterceptor implements Interceptor, Serializable
          String methodName = mi.getMethod().getName();
          SimpleMetaData invocationMetaData = invocation.getMetaData();
 
+         if (log.isTraceEnabled()) { log.trace("handling " + methodName); }
+
          if ("createConsumerDelegate".equals(methodName))
          {
             // register/unregister a callback handler that deal with callbacks sent by the server
@@ -101,7 +106,7 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             log.debug("Callback server listening on " + callbackServerLocator);
 
             boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
-            
+
 
             MessageCallbackHandler msgHandler = new MessageCallbackHandler(isCC);
 
@@ -112,7 +117,8 @@ public class ConsumerInterceptor implements Interceptor, Serializable
 
             // Optimization: I've already created the client so I may as well pass it along to be
             //               used by the InvokerInterceptor too.
-            invocationMetaData.addMetaData(RemotingClientInterceptor.REMOTING, RemotingClientInterceptor.CLIENT,
+            invocationMetaData.addMetaData(RemotingClientInterceptor.REMOTING,
+                                           RemotingClientInterceptor.CLIENT,
                                            client, PayloadKey.TRANSIENT);
 
             // I will need this on the server-side to create the ConsumerDelegate instance
@@ -120,21 +126,21 @@ public class ConsumerInterceptor implements Interceptor, Serializable
                                            client.getSessionId(), PayloadKey.AS_IS);
 
             ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
-                           
-            JMSConsumerInvocationHandler ih =
+
+            JMSConsumerInvocationHandler consumerHandler =
                   (JMSConsumerInvocationHandler)Proxy.getInvocationHandler(consumerDelegate);
 
-            
-            ih.setMessageHandler(msgHandler);
-            
+            consumerHandler.setMessageHandler(msgHandler);
+
             Destination theDest = ((Destination)mi.getArguments()[0]);
             String theSelector = ((String)mi.getArguments()[1]);
-            boolean theNoLocal = ((Boolean)mi.getArguments()[2]).booleanValue();    
-            String theReceiverID = (String)ih.getMetaData().getMetaData(JMSAdvisor.JMS,
-                  JMSAdvisor.CONSUMER_ID);
+            boolean theNoLocal = ((Boolean)mi.getArguments()[2]).booleanValue();
+            String theReceiverID =
+               (String)consumerHandler.getMetaData().getMetaData(JMSAdvisor.JMS,
+                                                                 JMSAdvisor.CONSUMER_ID);
 
             SessionDelegate del = getDelegate(invocation);
-            
+
 				msgHandler.setSessionDelegate(del);
 				msgHandler.setReceiverID(theReceiverID);
             msgHandler.setCallbackServer(callbackServer, client); // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
@@ -143,11 +149,11 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             consumerDelegate.setNoLocal(theNoLocal);
             consumerDelegate.setMessageSelector(theSelector);
             consumerDelegate.setReceiverID(theReceiverID);
-            
+
             return consumerDelegate;
          }
          else if ("getDestination".equals(methodName))
-         {            
+         {
             return this.destination;
          }
          else if ("getNoLocal".equals(methodName))
@@ -157,13 +163,13 @@ public class ConsumerInterceptor implements Interceptor, Serializable
          else if ("getMessageSelector".equals(methodName))
          {
             return this.messageSelector;
-         }            
+         }
          else if ("getReceiverID".equals(methodName))
          {
             return this.receiverID;
          }
          else if ("setDestination".equals(methodName))
-         {            
+         {
             this.destination = (Destination)mi.getArguments()[0];
             return null;
          }
@@ -176,11 +182,30 @@ public class ConsumerInterceptor implements Interceptor, Serializable
          {
             this.messageSelector = (String)mi.getArguments()[0];
             return null;
-         }            
+         }
          else if ("setReceiverID".equals(methodName))
          {
             this.receiverID = (String)mi.getArguments()[0];
             return null;
+         }
+         else if ("redeliver".equals(methodName) ||
+                  "recover".equals(methodName))
+         {
+            // invalidate messages sitting in the consumers' buffers
+            resetConsumerBuffers(mi);
+         }
+         else if ("closing".equals(methodName))
+         {
+            // invalidate messages sitting in the buffer
+            MessageCallbackHandler msgHandler = getMessageHandler(mi);
+            if (msgHandler != null)
+            {
+               List evictedMessageIDs = msgHandler.close();
+
+               invocationMetaData.addMetaData(JMSAdvisor.JMS,
+                                              JMSAdvisor.EVICTED_MESSAGE_IDS,
+                                              evictedMessageIDs, PayloadKey.AS_IS);
+            }
          }
       }
       return invocation.invokeNext();
@@ -196,11 +221,39 @@ public class ConsumerInterceptor implements Interceptor, Serializable
    {
       return ((JMSMethodInvocation)invocation).getHandler();
    }
-   
+
+   private MessageCallbackHandler getMessageHandler(Invocation invocation)
+   {
+      Object handler = ((JMSMethodInvocation)invocation).getHandler();
+      if (handler instanceof JMSConsumerInvocationHandler)
+      {
+         JMSConsumerInvocationHandler consumerHandler = (JMSConsumerInvocationHandler)handler;
+         return consumerHandler.getMessageHandler();
+      }
+      return null;
+   }
+
    private SessionDelegate getDelegate(Invocation invocation)
    {
       return (SessionDelegate)getHandler(invocation).getDelegate();
    }
-   
+
+   private void resetConsumerBuffers(Invocation invocation)
+   {
+      Set consumerIH = ((JMSMethodInvocation)invocation).getHandler().getChildren();
+      for(Iterator i = consumerIH.iterator(); i.hasNext();)
+      {
+         JMSInvocationHandler h = (JMSInvocationHandler)i.next();
+         MessageCallbackHandler msgHandler =
+               (MessageCallbackHandler)h.getMetaData().
+               getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
+
+         if (msgHandler != null)
+         {
+            msgHandler.reset();
+         }
+      }
+   }
+
    // Inner classes -------------------------------------------------
 }
