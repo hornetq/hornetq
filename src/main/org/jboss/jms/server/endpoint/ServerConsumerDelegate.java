@@ -85,9 +85,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
    protected boolean closed;
 
-   // List<Serializable> contains messageIDs
-   //private List messagesToReturn;
-   
    protected boolean waitingForMessage;
 
 
@@ -255,42 +252,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
       closed = true;
 
-      /*
-      if (messagesToReturn != null)
-      {
-         boolean canceled = false;
-         for(Iterator i = deliveries.iterator(); i.hasNext();)
-         {
-            Delivery d = (Delivery)i.next();
-            Object messageID = d.getReference().getMessageID();
-            if (messagesToReturn.contains(messageID))
-            {
-               try
-               {
-                  if (log.isTraceEnabled()) { log.trace("returning message " + messageID + " to destination for redelivery"); }
-                  d.cancel();
-                  i.remove();
-                  canceled = true;
-               }
-               catch(Throwable t)
-               {
-                  log.error(d + " cannot be canceled");
-               }
-            }
-         }
-
-         if (canceled)
-         {
-            channel.deliver();
-         }
-      }
-      */
-
       //On close we only disconnect the consumer from the Channel we don't actually remove it
       //This is because it may still contain deliveries that may well be acknowledged after
       //the consumer has closed. This is perfectly valid.
       disconnect();
-      //messagesToReturn = null;
    }
    
    synchronized void setStarted(boolean started)
@@ -306,7 +271,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       }
    }
    
-   //ConsumerDelegate implementation
+   // ConsumerDelegate implementation -------------------------------
+
    public MessageListener getMessageListener() throws JMSException
    {
       log.warn("getMessageListener is not handled on the server");
@@ -385,8 +351,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       return null;
    }
 
-   
- 
    public synchronized void stopDelivering()
    {
       waitingForMessage = false;     
@@ -435,21 +399,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          throw new IllegalStateException("Cannot find delivery to cancel");
       }
    }
-   
 
    // Public --------------------------------------------------------
-
-   /**
-    * TODO this is a hack, replace with something smarter
-    */
-   /*
-   public void setMessagesToReturnToDestination(List messageIDs)
-   {
-      if (log.isTraceEnabled()) { log.trace("marking " + (messageIDs == null ? "null " : Integer.toString(messageIDs.size()) )+ " messages to be returned to destination"); }
-
-      this.messagesToReturn = messageIDs;
-   }
-   */
 
    public String toString()
    {
@@ -458,7 +409,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
    // Package protected ---------------------------------------------
   
-   /** Actually remove the consumer and clear up any deliveries it may have */
+   /**
+    * Actually remove the consumer and clear up any deliveries it may have
+    * */
    synchronized void remove() throws JMSException
    {
       if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + channel);
@@ -518,40 +471,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    void redeliver() throws JMSException
    {
-//      // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
-//      // TODO and some old deliveries may be lost
-//
-//      if (log.isTraceEnabled()) { log.trace("redeliver"); }                        
-//      
-//      List old = new ArrayList();
-//      synchronized(deliveries)
-//      {
-//         for(Iterator i = deliveries.iterator(); i.hasNext();)
-//         {
-//            Delivery d = (Delivery)i.next();
-//            old.add(d);
-//            i.remove();
-//         }
-//      }
-      
-//      if (log.isTraceEnabled()) { log.trace("There are " + old.size() + " deliveries to redeliver"); }
-//
-//      for(Iterator i = old.iterator(); i.hasNext();)
-//      {
-//         try
-//         {
-//            Delivery d = (Delivery)i.next();
-//            d.redeliver(this);
-//         }
-//         catch(Throwable t)
-//         {
-//            String msg = "Failed to initiate redelivery";
-//            log.error(msg, t);
-//            throw new JMSException(msg);
-//         }
-//      }
-      
-      
       for(Iterator i = deliveries.iterator(); i.hasNext(); )
       {
          Delivery d = (Delivery)i.next();

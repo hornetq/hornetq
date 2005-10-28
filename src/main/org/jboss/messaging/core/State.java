@@ -97,12 +97,4 @@ interface State
     */
    void clear();
    
-//   /**
-//    *  Synchronously remove the firts available message reference from the channel
-//    *  Returns null if nothing to remove
-//    * 
-//    * @return
-//    */
-//   MessageReference removeFirst();
-   
 }

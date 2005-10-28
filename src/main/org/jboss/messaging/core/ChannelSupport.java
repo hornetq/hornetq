@@ -102,17 +102,6 @@ public class ChannelSupport implements Channel
       return new SimpleDelivery(sender, ref, true);
    }
    
-//   public MessageReference removeFirst()
-//   {
-//      return state.removeFirst();
-//   }
-//   
-//   public void addDelivery(Delivery del) throws Throwable
-//   {
-//      state.add(del);
-//   }
-
-
    // DeliveryObserver implementation --------------------------
 
    public void acknowledge(Delivery d, Transaction tx)

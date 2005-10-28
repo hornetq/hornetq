@@ -81,16 +81,6 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
 
    void close();
    
-   /**
-    *  Synchronously receive the first available message reference from the channel
-    *  Returns null if nothing to receive
-    * 
-    * @return
-    */
-//   MessageReference removeFirst();
-//   
-//   void addDelivery(Delivery del) throws Throwable;
-//   
 }
 
 

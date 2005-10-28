@@ -23,11 +23,6 @@ import org.jboss.remoting.transport.Connector;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -428,42 +423,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
    }
 
-   /**
-    * Evict messages sitting in the buffer waiting to be picked up.
-    *
-    * @return List<Serializable> containing the ids of the messages evicted from the buffer.
-    */
-//   public List reset()
-//   {
-//      List ids = new ArrayList();
-//      try
-//      {
-//         JBossMessage m = null;
-//         while((m = (JBossMessage)messages.poll(0)) != null)
-//         {
-//            ids.add(m.getMessageID());
-//         }
-//      }
-//      catch(Exception e)
-//      {
-//         log.warn(e);
-//      }
-//
-//      if (log.isTraceEnabled()) { log.trace("evicted " + ids.size() + " cached messages"); }
-//
-//      return ids;
-//   }
-
-   /**
-    * @return List<Serializable> containing the ids of the messages evicted from the buffer.
-    */
    public void close()
    {
-//      if (closed)
-//      {
-//         return Collections.EMPTY_LIST;
-//      }
-
       setClosed(true);
 
       log.debug("closing " + this);
@@ -474,8 +435,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          receivingThread.interrupt();
       }
 
-      // evict messages sitting in the buffer, they need to be "undelivered"
-      //List evicted = reset();
       messages = null;
 
       // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
@@ -493,8 +452,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       {
          log.warn("Failed to clean up callback handler/callback server", e);
       }
-
-      //return evicted;
    }
 
    public String toString()
