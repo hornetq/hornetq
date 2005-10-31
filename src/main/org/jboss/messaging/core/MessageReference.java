@@ -34,4 +34,5 @@ import java.io.Serializable;
 public interface MessageReference extends Routable
 {
    Serializable getStoreID();
+
 }

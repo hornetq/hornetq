@@ -21,8 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.*;
 import javax.naming.InitialContext;
+import javax.jms.Destination;
+import javax.jms.Connection;
+import javax.jms.Session;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -70,6 +76,8 @@ public class TransactedSessionTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       queue = (Destination)initialContext.lookup("/queue/Queue");
       topic = (Destination)initialContext.lookup("/topic/Topic");
+
+      log.debug("setup done");
    }
    
    public void tearDown() throws Exception
@@ -93,7 +101,6 @@ public class TransactedSessionTest extends MessagingTestCase
       
       try
       {
-      
          conn = cf.createConnection();
          
          Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -115,6 +122,7 @@ public class TransactedSessionTest extends MessagingTestCase
          assertFalse(mRec1.getJMSRedelivered());
          
          sess1.rollback(); //causes redelivery for session
+
          mRec1 = (TextMessage)consumer1.receive(2000);
          assertEquals("igloo", mRec1.getText());
          assertTrue(mRec1.getJMSRedelivered());
@@ -165,11 +173,14 @@ public class TransactedSessionTest extends MessagingTestCase
          sess.commit();
          
          TextMessage mRec = (TextMessage)consumer.receive(2000);
+
          assertEquals("igloo", mRec.getText());
          assertFalse(mRec.getJMSRedelivered());
          
          sess.rollback();
+
          mRec = (TextMessage)consumer.receive(2000);
+
          assertNotNull(mRec);
          assertEquals("igloo", mRec.getText());
          assertTrue(mRec.getJMSRedelivered());

@@ -26,6 +26,7 @@ package org.jboss.messaging.core.message;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
@@ -36,6 +37,8 @@ import org.jboss.messaging.core.MessageReference;
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class WeakMessageReference extends RoutableSupport implements MessageReference
 {   
@@ -84,6 +87,15 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
 
       ref = new WeakReference(m);
    }
+   
+   public WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
+                               long timestamp, Map headers, boolean redelivered,
+                               UnreliableMessageStore ms)
+   {
+      super(messageID, reliable, expiration, timestamp, headers);
+      this.redelivered = redelivered;
+      this.ms = ms;
+   }
 
    // Message implementation ----------------------------------------
 
@@ -117,8 +129,6 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       return m;
    }
    
-
-
    // Public --------------------------------------------------------
 
    public boolean equals(Object o)

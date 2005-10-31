@@ -559,7 +559,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    // Package protected ---------------------------------------------
    
    void sendMessage(Message m, Transaction tx) throws JMSException
-   { 
+   {
+      if (log.isTraceEnabled()) { log.trace("sending " + m + " transactionally on " + tx); }
+
       //The JMSDestination header must already have been set for each message
       JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
       if (jmsDestination == null)
@@ -584,7 +586,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       
       Routable r = (Routable)m;
     
-      if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core, destination: " + jmsDestination.getName()); }
+      if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core, destination: " + jmsDestination.getName() + ", tx: " + tx); }
       
       Delivery d = ((Receiver)coreDestination).handle(null, r, tx);
       
@@ -595,12 +597,11 @@ public class ServerConnectionDelegate implements ConnectionDelegate
          log.error(msg);
          throw new JBossJMSException(msg);
       }
-      
    }
    
    void acknowledge(String messageID, String receiverID, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("receiving ACK for " + messageID); }
+      if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID + " from receiver " + receiverID + " transactionally on " + tx); }
 
       ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
       if (receiver == null)
@@ -679,27 +680,23 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    private void processTx(TxState txState, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("I have " + txState.messages.size() + " messages and " + txState.acks.size() + " acks "); }
+      if (log.isTraceEnabled()) { log.trace("processing transaction, there are " + txState.messages.size() + " messages and " + txState.acks.size() + " acks "); }
       
-      Iterator iter = txState.messages.iterator();
-      while (iter.hasNext())
+      for(Iterator i = txState.messages.iterator(); i.hasNext(); )
       {
-         Message m = (Message)iter.next();
+         Message m = (Message)i.next();
          sendMessage(m, tx);
-         if (log.isTraceEnabled()) { log.trace("Sent message"); }
+         if (log.isTraceEnabled()) { log.trace("sent " + m); }
       }
       
       if (log.isTraceEnabled()) { log.trace("Done the sends"); }
       
       //Then ack the acks
-      iter = txState.acks.iterator();
-      while (iter.hasNext())
+      for(Iterator i = txState.acks.iterator(); i.hasNext(); )
       {
-         AckInfo ack = (AckInfo)iter.next();
-         
+         AckInfo ack = (AckInfo)i.next();
          acknowledge(ack.messageID, ack.receiverID, tx);
-         
-         if (log.isTraceEnabled()) { log.trace("Acked message:" + ack.messageID); }
+         if (log.isTraceEnabled()) { log.trace("acked " + ack.messageID); }
       }
       
       if (log.isTraceEnabled()) { log.trace("Done the acks"); }

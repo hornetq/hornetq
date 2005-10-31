@@ -78,6 +78,8 @@ public class SelectorTest extends MessagingTestCase
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       prod = session.createProducer(queue);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -102,7 +104,6 @@ public class SelectorTest extends MessagingTestCase
     */
    public void testSelectiveClosingConsumer() throws Exception
    {
-
       String selector = "color = 'red'";
       MessageConsumer redConsumer = session.createConsumer(queue, selector);
       conn.start();

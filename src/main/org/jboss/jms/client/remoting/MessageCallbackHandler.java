@@ -29,12 +29,14 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.client.container.JMSMethodInvocation;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.transport.Connector;
+import org.jboss.aop.advice.Interceptor;
 
 import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 
@@ -127,28 +129,39 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       if (log.isTraceEnabled()) { log.trace("receiving message " + callback.getParameter() + " from the remoting layer"); }
 
       Message m = (Message)callback.getParameter();
-      
-            
+
       try
       {
+         boolean cancel = false;
          if (!isListening() && !isReceiving())
          {
             //There is a small chance, but possible that a receive times out or a message listener
             //is unset before then later it receives a message
             //this message cannot be handled so it needs to be sent back
             //to the server to be cancelled
-            consumerDelegate.cancelMessage(m.getJMSMessageID());
+            if (log.isTraceEnabled()) { log.trace("NOT listening and NOT receiving"); }
+            cancel = true;
          }
-         
-         if (isClosed())
+         else if (isClosed())
          {
-            consumerDelegate.cancelMessage(m.getJMSMessageID());
             log.warn("Tried to deliver message but consumer is closed!!");
+            cancel = true;
+         }
+
+         if (cancel)
+         {
+            if (log.isTraceEnabled()) { log.trace("cancelling message " + m.getJMSMessageID()); }
+            consumerDelegate.cancelMessage(m.getJMSMessageID());
+            if (log.isTraceEnabled()) { log.trace("message " + m.getJMSMessageID() + " cancelled, returning"); }
+            return;
          }
       }
       catch (JMSException e)
       {
-         log.error("Failed to cancel message", e);
+         log.error("Failed to cancel message " + m, e);
+         //TODO - if I don't return, the message I wanted to cancel goes to buffer. Do I want that?
+         if (log.isTraceEnabled()) { log.trace("returning"); }
+         return;
       }
   
       try
@@ -161,8 +174,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             jm.setSessionDelegate(sessionDelegate);
          }
+         if (log.isTraceEnabled()) { log.trace("trying to put " + m + " in the client delivery queue"); }
          messages.put(m);
-         if (log.isTraceEnabled()) { log.trace("message " + m + " queued in the client delivery queue"); }
+         if (log.isTraceEnabled()) { log.trace(m + " was successfully queued in the client delivery queue, thread exiting"); }
       }
       catch(InterruptedException e)
       {
@@ -181,24 +195,21 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    {
       if (log.isTraceEnabled()) { log.trace("listener thread started"); }
       
-      if (log.isTraceEnabled()) { log.trace("calling setListening"); }
-      
       setListening(true);
       
-      if (log.isTraceEnabled()) { log.trace("set listening"); }
-      
+      if (log.isTraceEnabled()) { log.trace("set listening to true"); }
+
       try
       {      
          while(true)
          {            
-            //Tell the server we are ready to receive a message
-            
             if (log.isTraceEnabled()) { log.trace("clearing buffer"); }
             clearBuffer();
-            if (log.isTraceEnabled()) { log.trace("calling readyForMessage"); }
-            consumerDelegate.getMessage();
-            if (log.isTraceEnabled()) { log.trace("called readyForMessage"); }
-                        
+
+            // forward the invocation to the server, the server-side consumer delegate needs
+            // to know it must start accepting messages
+            forwardToServer(mi, this, receiverInterceptor);
+
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
             JBossMessage m = (JBossMessage)messages.take();
             preDeliver(m);   
@@ -219,8 +230,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       finally
       {      
-         //Tell the server we don't want any more messages
-         consumerDelegate.stopDelivering();
+         stopServerDelivery();
          setListening(false);
       }
    }
@@ -247,8 +257,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    {
       return listener;
    }
-   
-   public synchronized void setMessageListener(MessageListener listener) throws JMSException
+
+   // only for use by the listener thread
+   private JMSMethodInvocation mi;
+   private Interceptor receiverInterceptor;
+
+   public synchronized void setMessageListener(MessageListener listener,
+                                               JMSMethodInvocation mi,
+                                               Interceptor receiverInterceptor) throws JMSException
    {
       if (receiving)
       {
@@ -269,8 +285,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       
       this.listener = listener;
+
       if (listener != null)
       {
+         this.mi = mi;
+         this.receiverInterceptor = receiverInterceptor;
+
          listenerThread = new Thread(this, "MessageListenerThread-" + listenerThreadCount++);
          listenerThread.start();
       }
@@ -297,7 +317,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     *        or null if one is not immediately available. Returns null if the consumer is
     *        concurrently closed.
     */
-   public Message receive(long timeout) throws JMSException, InterruptedException
+   public Message receive(long timeout, JMSMethodInvocation jmsmi, Interceptor receiverInt)
+         throws JMSException, InterruptedException
    {
       
       long startTimestamp = System.currentTimeMillis();
@@ -321,10 +342,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       {
          receivingThread = Thread.currentThread();
          
-         //Tell the server we're ready to accept a message
          clearBuffer();
-         consumerDelegate.getMessage();
          
+         // forward the invocation to the server, the server-side consumer delegate needs
+         // to know it must start accepting messages
+         forwardToServer(jmsmi, this, receiverInt);
+
          JBossMessage m = null;
          while(true)
          {
@@ -373,14 +396,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                }
                else
                {
-                  if (log.isTraceEnabled()) { log.trace("receive timeout " + timeout + " ms"); }
+                  if (log.isTraceEnabled()) { log.trace("receive timeout " + timeout + " ms, blocking poll on queue"); }
 
                   m = ((JBossMessage)messages.poll(timeout));
                                     
                   if (m == null)
                   {
                      // timeout expired
-                     if (log.isTraceEnabled()) { log.trace("Timeout expired"); }
+                     if (log.isTraceEnabled()) { log.trace(timeout + " ms timeout expired"); }
+                     stopServerDelivery();
                      return null;
                   }
                }
@@ -388,9 +412,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             catch(InterruptedException e)
             {
                if (log.isTraceEnabled()) { log.trace("Thread was interrupted"); }
+
+               stopServerDelivery();
+
                if (isClosed())
                {
-                  if (log.isTraceEnabled()) { log.trace("It's closed"); }
+                  if (log.isTraceEnabled()) { log.trace(this + " is closed"); }
                   return null;
                }
                else
@@ -399,21 +426,22 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                }
             }
             
-            if (log.isTraceEnabled()) { log.trace("Calling delivered()"); }
+            if (log.isTraceEnabled()) { log.trace("got " + m + " from queue"); }
             
             // notify that the message has been delivered (not necessarily acknowledged though)
 
             receivingThread = null; // Crucial - in case thread is interrupted during pre or postDeliver
+
             preDeliver(m);
             postDeliver(m);
             
             if (!m.isExpired())
             {
-               if (log.isTraceEnabled()) { log.trace("Message is not expired, returning it to the caller"); }
+               if (log.isTraceEnabled()) { log.trace("message " + m + " is not expired, returning it to the caller"); }
                return m;
             }
 
-            log.debug("Message expired");
+            log.debug("message expired, discarding");
 
             // discard the message, adjust timeout and reenter the buffer
             if (timeout != 0)
@@ -424,22 +452,33 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       finally
       {
-         //Tell the server we don't want the next message
-         try
-         {
-            consumerDelegate.stopDelivering();
-         }
-         catch (Exception e )
-         {
-            //Might be closed - ignore
-         }
          setReceiving(false);
          receivingThread = null;
       }
    }
 
+
+   /**
+    * Interrupts the receiving thead. Necessary when the server-side consumer delegate activation
+    * fails and there's no point in waiting for a message that won't ever come.
+    */
+   public synchronized void interrupt()
+   {
+      if (isReceiving() && receivingThread != null)
+      {
+         if (log.isTraceEnabled()) { log.trace("interrupting the receiving thread " + receivingThread); }
+         receivingThread.interrupt();
+      }
+   }
+
    public void close()
    {
+      if (isClosed())
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " already closed, returning"); }
+         return;
+      }
+
       setClosed(true);
 
       log.debug("closing " + this);
@@ -457,9 +496,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       {
          // unregister this callback handler and stop the callback server
 
+         if (log.isTraceEnabled()) { log.trace("attempting to remove listener from callback server"); }
          client.removeListener(this);
          if (log.isTraceEnabled()) { log.trace("removed listener from callback server"); }
 
+         if (log.isTraceEnabled()) { log.trace("attempting to stop callback server"); }
          callbackServer.stop();
          if (log.isTraceEnabled()) { log.trace("closed callback server " + callbackServer.getInvokerLocator()); }
       }
@@ -500,6 +541,52 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
    }
    
+   private void forwardToServer(JMSMethodInvocation mi,
+                                final MessageCallbackHandler messageHandler,
+                                Interceptor receiverInterceptor)
+   {
+
+
+      final JMSMethodInvocation newmi = mi.chop(receiverInterceptor);
+
+      // TODO Use a thread pool
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               if (log.isTraceEnabled()) { log.trace("forwarding invocation (" + newmi.getMethod().getName() + ")"); }
+               newmi.invokeNext();
+            }
+            catch(Throwable t)
+            {
+               log.error("Consumer activation failed", t);
+               messageHandler.interrupt();
+            }
+         }
+      }, "Consumer Activation Thread").start();
+   }
+
+   /**
+    * Sends a stopDelivery invocation to the server-side consumer delegate
+    */
+   private void stopServerDelivery()
+   {
+      try
+      {
+         if (log.isTraceEnabled()) { log.trace("stopping delivery on server"); }
+         consumerDelegate.stopDelivering();
+      }
+      catch (Exception e )
+      {
+         //Might be closed - ignore
+         String msg = "Stopping delivery on server did not succeed";
+         log.warn(msg);
+         if (log.isTraceEnabled()) { log.trace(msg, e); }
+      }
+   }
+
    // Inner classes -------------------------------------------------
 }
 

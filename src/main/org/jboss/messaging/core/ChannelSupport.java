@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Collections;
 import java.io.Serializable;
 
 /**
@@ -98,7 +100,7 @@ public class ChannelSupport implements Channel
 
       if (tx == null)
       {
-         return handleNoTx(sender, r);
+         return handleNoTx(sender, null, r);
       }
 
       if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
@@ -144,6 +146,8 @@ public class ChannelSupport implements Channel
 
    public boolean cancel(Delivery d) throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace("cancel " + d); }
+
       if (!state.remove(d, null))
       {
          return false;
@@ -151,7 +155,14 @@ public class ChannelSupport implements Channel
 
       if (log.isTraceEnabled()) { log.trace(this + " canceled delivery " + d); }
 
-      state.add(d.getReference(), null);
+      MessageReference ref = d.getReference();
+
+      // mark it as redelivered
+      ref.setRedelivered(true);
+
+      // add the message at the top of the list
+      state.addFirst(ref);
+
       if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
       return true;
    }
@@ -189,13 +200,11 @@ public class ChannelSupport implements Channel
 
    public boolean add(Receiver r)
    {
-      if (log.isTraceEnabled()) { log.trace("Attempting to add receiver to channel[" + getChannelID() + "]: " + r); }
+      if (log.isTraceEnabled()) { log.trace("attempting to add receiver to channel[" + getChannelID() + "]: " + r); }
       
       boolean added = router.add(r);
-      if (added)
-      {
-         deliver();
-      }
+
+      if (log.isTraceEnabled()) { log.trace("receiver " + (added ? "" : "NOT ") + " added"); }
       return added;
    }
 
@@ -264,7 +273,7 @@ public class ChannelSupport implements Channel
 
    public void deliver()
    {
-      if (log.isTraceEnabled()){ log.trace("attempting to deliver channel's " + this + " messages"); }
+      if (log.isTraceEnabled()){ log.trace("attempting to deliver " + this + "'s messages"); }
 
       List messages = state.undelivered(null);
       for(Iterator i = messages.iterator(); i.hasNext(); )
@@ -274,6 +283,7 @@ public class ChannelSupport implements Channel
 
          try
          {
+
             state.remove(r);
          }
          catch (Throwable t)
@@ -281,10 +291,29 @@ public class ChannelSupport implements Channel
             log.error("Failed to remove ref", t);
             return;
          }
-         // TODO: if I crash now I could lose a persisent message
+
+         // TODO for a reliable message this is dangerous, I can lose the persistent message if I crash now?
          if (log.isTraceEnabled()){ log.trace("removed " + r + " from state"); }
          
-         handleNoTx(null, r);
+         handleNoTx(null, null, r);
+      }
+   }
+
+   public void deliver(Receiver r)
+   {
+      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
+
+      try
+      {
+         MessageReference ref = state.remove();
+
+         // TODO for a reliable message this is dangerous, I can lose the persistent message if I crash now?
+
+         handleNoTx(null, r, ref);
+      }
+      catch(Throwable t)
+      {
+         log.error("delivery failed", t);
       }
    }
 
@@ -347,7 +376,7 @@ public class ChannelSupport implements Channel
    /**
     * @param sender - may be null, in which case the returned acknowledgment will probably be ignored.
     */
-   private Delivery handleNoTx(DeliveryObserver sender, Routable r)
+   private Delivery handleNoTx(DeliveryObserver sender, Receiver receiver, Routable r)
    {
       checkClosed();
 
@@ -371,8 +400,30 @@ public class ChannelSupport implements Channel
       if (log.isTraceEnabled()){ log.trace("handling non-transactionally " + r); }
 
       MessageReference ref = ref(r);
+      Set deliveries = Collections.EMPTY_SET;
 
-      Set deliveries = router.handle(this, ref, null);
+      if (receiver == null)
+      {
+         deliveries = router.handle(this, ref, null);
+      }
+      else
+      {
+         try
+         {
+            Delivery d = receiver.handle(this, ref, null);
+
+            if (d != null)
+            {
+               deliveries = new HashSet(1);
+               deliveries.add(d);
+            }
+         }
+         catch(Throwable t)
+         {
+            // broken receiver - log the exception and ignore it
+            log.error("The receiver " + receiver + " is broken", t);
+         }
+      }
 
       if (deliveries.isEmpty())
       {
@@ -449,4 +500,5 @@ public class ChannelSupport implements Channel
    }
 
    // Inner classes -------------------------------------------------
+
 }

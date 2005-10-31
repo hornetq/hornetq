@@ -23,14 +23,10 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.message.TransactionalMessageStore;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-
-import javax.transaction.TransactionManager;
-import javax.naming.InitialContext;
 
 /**
+ * Tests a non-recoverable queue that doesn't accept reliable messages.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * 

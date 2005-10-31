@@ -130,12 +130,12 @@ public class Transaction
    }
    
    
-   public void addPostCommitTasks(Runnable task)
+   public void addPostCommitTask(Runnable task)
    {
       postCommitTasks.add(task);
    }
    
-   public void addPostRollbackTasks(Runnable task)
+   public void addPostRollbackTask(Runnable task)
    {
       postRollbackTasks.add(task);
    }

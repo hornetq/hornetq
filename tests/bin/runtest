@@ -12,7 +12,22 @@
 # local core
 #
 
+
 #TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
+#TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
+#TARGET_TEST=testNonRecoverableState_remove_2
+#TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState2Test
+#TARGET_TEST=testNonRecoverableState_remove_6
+#TARGET_CLASS=org.jboss.test.messaging.core.RecoverableStateTest
+#TARGET_TEST=testRecoverableState_57
+
+#TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
+#TARGET_TEST=testAddReceiver_6
+#TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
+
 #TARGET_CLASS=org.jboss.test.messaging.core.DistributorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageReferenceSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageSupportTest
@@ -27,14 +42,6 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.AbstractDestinationAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeAsChannelTest
-
-
-
-#TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 
 #TARGET_CLASS=org.jboss.test.messaging.core.persistence.JDBCUtilTest
 
@@ -65,6 +72,7 @@
 #
 
 #TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
+#TARGET_TEST=testRedeliveredFlagLocalTopic
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_TEST=testCreateTwoSessions
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
@@ -72,9 +80,12 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_TEST=testClose1
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
+#TARGET_TEST=testCannotReceiveMessageOnStoppedConnection
+TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionConsumerTest
+TARGET_TEST=testSimple
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testRedel8
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_TEST=testRedeliveredDifferentSessions
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest

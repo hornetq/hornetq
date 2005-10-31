@@ -25,6 +25,7 @@ package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -35,6 +36,8 @@ import java.lang.ref.SoftReference;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class SoftMessageReference extends RoutableSupport implements MessageReference
 {
@@ -134,6 +137,10 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
       return m;
    }
 
+   public MessageReference copy()
+   {
+      throw new NotYetImplementedException();
+   }
 
    // Public --------------------------------------------------------
 

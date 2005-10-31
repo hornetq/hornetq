@@ -22,14 +22,21 @@
 package org.jboss.jms.client.container;
 
 import org.jboss.aop.MethodJoinPoint;
+import org.jboss.aop.Advisor;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.MethodInvocation;
+
+import java.lang.reflect.Method;
+
 
 /**
  * Sub-class of MethodInvocation that allows the InvocationHandler to be retrieved
  * from the MethodInvocation.
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
+ * $Id$
  * 
  */
 public class JMSMethodInvocation extends MethodInvocation
@@ -50,11 +57,45 @@ public class JMSMethodInvocation extends MethodInvocation
       super(info, interceptors);
       this.handler = handler;
    }
-   
-  
-   
+
+   public JMSMethodInvocation(Interceptor[] interceptors, long methodHash, Method advisedMethod,
+                              Method unadvisedMethod, Advisor advisor, JMSInvocationHandler handler)
+   {
+      super(interceptors, methodHash, advisedMethod,unadvisedMethod, advisor);
+      this.handler = handler;
+   }
+
+
+   // Public --------------------------------------------------------
+
    JMSInvocationHandler getHandler()
    {
       return handler;
+   }
+
+   /**
+    * Creates a new invocation with a truncated interceptor chain.
+    *
+    * @param fromInterceptor
+    */
+   public JMSMethodInvocation chop(Interceptor fromInterceptor)
+   {
+      Interceptor[] truncated = interceptors;
+      for(int i = 0; i < interceptors.length; i++)
+      {
+         if (interceptors[i] == fromInterceptor)
+         {
+            truncated = new Interceptor[interceptors.length - i - 1];
+            System.arraycopy(interceptors, i + 1, truncated, 0, truncated.length);
+         }
+      }
+
+      JMSMethodInvocation newJMSinvocation = new JMSMethodInvocation(truncated, methodHash,
+                                                                     advisedMethod, unadvisedMethod,
+                                                                     advisor, null);
+      newJMSinvocation.getMetaData().mergeIn(getMetaData());
+      newJMSinvocation.arguments = arguments;
+
+      return newJMSinvocation;
    }
 }

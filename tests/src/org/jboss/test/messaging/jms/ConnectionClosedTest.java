@@ -21,8 +21,22 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.*;
 import javax.naming.InitialContext;
+import javax.jms.ConnectionFactory;
+import javax.jms.Topic;
+import javax.jms.Queue;
+import javax.jms.Connection;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicSession;
+import javax.jms.Session;
+import javax.jms.TopicSubscriber;
+import javax.jms.MessageProducer;
+import javax.jms.DeliveryMode;
+import javax.jms.TextMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.QueueBrowser;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -104,11 +118,9 @@ public class ConnectionClosedTest extends MessagingTestCase
       TopicConnection conn2 = ((TopicConnectionFactory)cf).createTopicConnection();
       
       TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      
       TopicSession sess2 = conn2.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       
       TopicSubscriber sub1 = sess1.createSubscriber(topic);
-      
       TopicSubscriber sub2 = sess2.createSubscriber(topic);
       
       conn1.start();
@@ -126,7 +138,9 @@ public class ConnectionClosedTest extends MessagingTestCase
          TextMessage tm = sess3.createTextMessage("hello");
          prod.send(tm);
       }
-      
+
+      log.debug("all messages sent");
+
       int count = 0;
       while (true)
       {
@@ -139,7 +153,9 @@ public class ConnectionClosedTest extends MessagingTestCase
          count++;
       }
       assertEquals(NUM_MESSAGES, count);
-      
+
+      log.debug("all messages received by sub1");
+
       Message m = sub2.receive(2000);
       
       assertNull(m);
@@ -158,6 +174,8 @@ public class ConnectionClosedTest extends MessagingTestCase
          count++;
       }
       assertEquals(NUM_MESSAGES, count);
+
+      log.debug("all messages received by sub2");
       
       conn1.close();
       

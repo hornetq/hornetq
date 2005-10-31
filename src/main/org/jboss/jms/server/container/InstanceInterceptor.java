@@ -72,7 +72,7 @@ public class InstanceInterceptor implements Interceptor
          String methodName = m.getName();         
          JMSAdvisor jmsAdvisor = (JMSAdvisor)mi.getAdvisor();
 			
-			if (log.isTraceEnabled()) log.trace("handling " + methodName + ", declaring class=" + m.getDeclaringClass());
+			if (log.isTraceEnabled()) { log.trace("handling " + m.getDeclaringClass().getName() + "." + methodName ); }
 						
          if ("createConnectionDelegate".equals(methodName))
          {

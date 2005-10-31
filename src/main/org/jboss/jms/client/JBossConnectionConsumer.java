@@ -143,7 +143,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
    public void close() throws javax.jms.JMSException
    {
-      if (trace) { log.trace("ConnectionConsumer Closing " + this); }
+      if (trace) { log.trace("close " + this); }
       
       closed = true;
       

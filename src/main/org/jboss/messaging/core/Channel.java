@@ -92,6 +92,11 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
     */
    void deliver();
 
+   /**
+    * Synchronously returns the "oldest" message stored by the channel to the receiver.
+    */
+   void deliver(Receiver receiver);
+
    void close();
    
 }

@@ -23,7 +23,6 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.logging.Logger;
@@ -62,9 +61,9 @@ public class ReceiverInterceptor implements Interceptor, Serializable
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      if (invocation instanceof MethodInvocation)
+      if (invocation instanceof JMSMethodInvocation)
       {
-         MethodInvocation mi = (MethodInvocation)invocation;
+         JMSMethodInvocation mi = (JMSMethodInvocation)invocation;
          Method m = mi.getMethod();
          String name = m.getName();
 
@@ -77,16 +76,22 @@ public class ReceiverInterceptor implements Interceptor, Serializable
          if (name.equals("receive"))
          {
             long timeout = args == null ? 0 : ((Long)args[0]).longValue();
-            return messageHandler.receive(timeout);
+            return messageHandler.receive(timeout, mi, this);
          }
          else if (name.equals("receiveNoWait"))
          {
-            return messageHandler.receive(-1);
+            return messageHandler.receive(-1, mi, this);
          }
          else if (name.equals("setMessageListener"))
          {
             MessageListener l = (MessageListener)args[0];
-            messageHandler.setMessageListener(l);
+            if (l != null)
+            {
+               // nullify the first argument, the MessageListener is not serializable
+               args[0] = null;
+            }
+
+            messageHandler.setMessageListener(l, mi, this);
             return null;
          }
          else if (name.equals("getMessageListener"))
@@ -104,4 +109,5 @@ public class ReceiverInterceptor implements Interceptor, Serializable
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 }

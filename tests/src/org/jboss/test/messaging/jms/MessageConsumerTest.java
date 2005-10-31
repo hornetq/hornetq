@@ -114,8 +114,8 @@ public class MessageConsumerTest extends MessagingTestCase
       queue = (Queue)ic.lookup("/queue/Queue");
       queue2 = (Queue)ic.lookup("/queue/Queue2");
 
-      
-      
+
+
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 
@@ -135,7 +135,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-    
+
       producerConnection.close();
       consumerConnection.close();
 
@@ -147,8 +147,8 @@ public class MessageConsumerTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployQueue("Queue2");
-      
-      
+
+
       ServerManagement.deInit();
 
       super.tearDown();
@@ -198,12 +198,12 @@ public class MessageConsumerTest extends MessagingTestCase
       Message m = producerSession.createMessage();
       queueProducer.send(m);
 
-      // the message is in the first consumer's buffers
+      // the message is in the channel
 
       QueueBrowser browser = producerSession.createBrowser(queue);
       Enumeration e = browser.getEnumeration();
 
-      // however the queue maintains it as "delivered, but not acknowledged"
+      // however the queue maintains it as "not delivered"
       Message bm = (Message)e.nextElement();
       assertEquals(m.getJMSMessageID(), bm.getJMSMessageID());
       assertFalse(e.hasMoreElements());
@@ -213,14 +213,14 @@ public class MessageConsumerTest extends MessagingTestCase
       MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
 
       Message rm = queueConsumer2.receive(3000);
-      assertNull(rm);
+      assertEquals(m.getJMSMessageID(), rm.getJMSMessageID());
 
       queueConsumer.close();
 
 
       // try to receive from queue again, it should get a message
-      rm = queueConsumer2.receive();
-      assertEquals(m.getJMSMessageID(), rm.getJMSMessageID());
+      rm = queueConsumer2.receive(3000);
+      assertNull(rm);
 
    }
 
@@ -585,17 +585,13 @@ public class MessageConsumerTest extends MessagingTestCase
           sess.rollback();
                   
           TextMessage rm2 = (TextMessage)cons1.receive(1500);
-          assertNotNull(rm2);
           assertEquals("hello1", rm2.getText());
           
           TextMessage rm3 = (TextMessage)cons1.receive(1500);
-          assertNotNull(rm3);
           assertEquals("hello2", rm3.getText());
 
           TextMessage rm4 = (TextMessage)cons1.receive(1500);
-          assertNotNull(rm4);
           assertEquals("hello3", rm4.getText());
-
 
           //This last step is important - there shouldn't be any more messages to receive
           TextMessage rm5 = (TextMessage)cons1.receive(1500);
@@ -672,7 +668,6 @@ public class MessageConsumerTest extends MessagingTestCase
              conn.close();
           }
        }
-       
     }
     
     
@@ -719,8 +714,6 @@ public class MessageConsumerTest extends MessagingTestCase
           //This last step is important - there shouldn't be any more messages to receive
           TextMessage rm5 = (TextMessage)cons1.receive(1500);
           assertNull(rm5);        
-          
-          
        }
        finally
        {      
@@ -729,10 +722,8 @@ public class MessageConsumerTest extends MessagingTestCase
              conn.close();
           }
        }
-       
     }
-    
-    
+
     public void testRedel6() throws Exception
     {
        Connection conn = null;
@@ -742,7 +733,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn = cf.createConnection();
           conn.start();
           
-          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
           MessageProducer prod = sess.createProducer(queue);
           TextMessage tm1 = sess.createTextMessage("hello1");
           TextMessage tm2 = sess.createTextMessage("hello2");
@@ -760,10 +751,14 @@ public class MessageConsumerTest extends MessagingTestCase
           cons1.close();
           
           MessageConsumer cons2 = sess.createConsumer(queue);
-          
+
+          log.debug("sess.recover()");
+
           //redeliver
           sess.recover();
-                  
+
+          log.debug("receiving ...");
+
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm2);
           assertEquals("hello1", rm2.getText());
@@ -2526,38 +2521,35 @@ public class MessageConsumerTest extends MessagingTestCase
          }
       }
    }
-   
 
-   
    public void testRedeliveredDifferentSessions() throws Exception
    {
       Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
       MessageProducer prod = sessProducer.createProducer(queue);
       TextMessage tm = sessProducer.createTextMessage("testRedeliveredDifferentSessions");
       prod.send(tm);
-      
-      
+
       consumerConnection.start();
+
       Session sess1 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons1 = sess1.createConsumer(topic);
+      MessageConsumer cons1 = sess1.createConsumer(queue);
       TextMessage tm2 = (TextMessage)cons1.receive(3000);
       assertNotNull(tm2);
       assertEquals("testRedeliveredDifferentSessions", tm2.getText());
+
       //don't acknowledge it
       sess1.close();
-      
-      consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      sess1.createConsumer(topic);
-      TextMessage tm3 = (TextMessage)cons1.receive(3000);
+
+      log.debug("sess1 closed");
+
+      Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons2 = sess2.createConsumer(queue);
+      TextMessage tm3 = (TextMessage)cons2.receive(3000);
       assertNotNull(tm3);
       assertEquals("testRedeliveredDifferentSessions", tm3.getText());
       
       assertTrue(tm3.getJMSRedelivered());
-      
    }
-
-
 
    // Package protected ---------------------------------------------
 

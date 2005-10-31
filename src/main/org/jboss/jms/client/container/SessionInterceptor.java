@@ -139,26 +139,24 @@ public class SessionInterceptor implements Interceptor, Serializable
          else if (ackMode == Session.AUTO_ACKNOWLEDGE)
          {
             //Just acknowledge now
-            if (log.isTraceEnabled()) log.trace("Auto-acking message");
+            if (log.isTraceEnabled()) log.trace("AUTO_ACKNOWLEDGE, so acknowledging to the server");
             getDelegate(mi).acknowledge(messageID, receiverID);
+            if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
          }
          else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
             //TODO Lazy acks - for now we ack individually
-            if (log.isTraceEnabled()) log.trace("Lazy acking message");
+            if (log.isTraceEnabled()) log.trace("DUPS_OK_ACKNOWLEDGE, so lazy acking message");
             getDelegate(mi).acknowledge(messageID, receiverID);
+            if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
          }
          else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
          {
-            if (log.isTraceEnabled()) log.trace("Client acknowledge so storing in unacked msgs");
+            if (log.isTraceEnabled()) log.trace("CLIENT_ACKNOWLEDGE, so storing in unacked msgs");
             unacked.add(new AckInfo(messageID, receiverID));
-            if (log.isTraceEnabled())
-            {
-               log.trace("There are now " + unacked.size() + " messages");
-            }
+            if (log.isTraceEnabled()) { log.trace("there are now " + unacked.size() + " unacked messages"); }
          }
 
-         if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
          return null;
       }
       else if ("close".equals(methodName))

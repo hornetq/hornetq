@@ -215,11 +215,10 @@ public class TransactionInterceptor implements Interceptor, Serializable
       }
       else if ("preDeliver".equals(methodName))
       {
-         //SessionDelegate sessDelegate = (SessionDelegate)this.getDelegate(mi);
          if (!this.transacted)
          {
             //Not transacted - do nothing - ack will happen when delivered() is called
-            if (log.isTraceEnabled()) { log.trace("Session is not transacted"); }
+            if (log.isTraceEnabled()) { log.trace("session is not transacted, this is a noop, returning"); }
             return null;
          }
          else 
@@ -227,10 +226,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
             String messageID = (String)mi.getArguments()[0];
             String receiverID = (String)mi.getArguments()[1];
             
-            if (log.isTraceEnabled())
-            {
-               log.trace("XAresource: " + xaResource);
-            }
+            if (log.isTraceEnabled()) { log.trace("XAresource: " + xaResource); }
             
             Object txID = xaResource.getCurrentTxID();
             

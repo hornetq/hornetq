@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -36,7 +35,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -59,8 +57,6 @@ public class ConnectionConsumerTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected InitialContext initialContext;
-   
    protected ConnectionFactory cf;
    protected Destination queue;
 
@@ -77,17 +73,20 @@ public class ConnectionConsumerTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.init("all");
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/queue/Queue");
+
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      queue = (Destination)ic.lookup("/queue/Queue");
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-     // ServerManagement.deployQueue("Queue");
       ServerManagement.deInit();
       super.tearDown();
    }
@@ -153,7 +152,9 @@ public class ConnectionConsumerTest extends MessagingTestCase
          log.trace("Received all messages");
          
          cc.close();
-         
+
+         log.debug("closing connections ...");
+
          connProducer.close();
          connProducer = null;
          connConsumer.close();

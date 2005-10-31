@@ -97,10 +97,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    // deliveries must be maintained in order they were received
    private List deliveries;
 
-
    protected boolean closed;
 
-   protected boolean waitingForMessage;
+   protected boolean ready;
 
 
    // Constructors --------------------------------------------------
@@ -125,11 +124,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          this.messageSelector = new Selector(selector);
          if (log.isTraceEnabled()) log.trace("created selector");
       }
-      //this.subscription = subscription;
       this.deliveries = new ArrayList();
       this.started = sessionEndpoint.connectionEndpoint.started;
       this.channel.add(this);
-
    }
 
    // Receiver implementation ---------------------------------------
@@ -141,79 +138,79 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          if (log.isTraceEnabled()) { log.trace("consumer " + this + " closed, rejecting message" ); }
          return null;
       }
-      
+
       //If the consumer is stopped then we don't accept the message, it should go back into the channel
       //for delivery later
       if (!started)
       {
          return null;
       }
-      
+
       //If the client side consumer is not ready to accept a message and have it sent to it then
       //we return null to refuse the message
-      if (!waitingForMessage)
+      if (!ready)
       {
          if (log.isTraceEnabled()) { log.trace("Not ready for message so returning null"); }
          return null;
       }
-                  
-      //deliver the message on a different thread than the core thread that brought it here
 
-      Delivery delivery = null;
-
-      Message message = reference.getMessage();
+      // deliver the message on a different thread than the core thread that brought it here
 
       try
       {
-         message = JBossMessage.copy((javax.jms.Message)message);
-      }
-      catch(JMSException e)
-      {
-         // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
-         String msg = "Cannot make a copy of the message";
-         log.error(msg, e);
-         throw new java.lang.IllegalStateException(msg);
-      }
+         Delivery delivery = null;
+         Message message = reference.getMessage();
 
-      if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
-
-      boolean accept = this.accept(message);
-
-      if (!accept)
-      {
-         if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
-         return null;
-      }
-
-      if (reference.isRedelivered())
-      {
-         if (log.isTraceEnabled())
+         try
          {
-            log.trace("Message is redelivered - setting jmsredelivered to true");
+            message = JBossMessage.copy((javax.jms.Message)message);
+            if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
          }
-         message.setRedelivered(true);
-      }
-      
-      delivery = new SimpleDelivery(observer, (MessageReference)reference);
-      deliveries.add(delivery);
-      
-      //Now we set waitingForMessage to false since the consumer can only deal with messages one at a time
-      //i.e. we don't buffer them on the client side
-      waitingForMessage = false;
-      
-      if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery"); }
-      try
-      {
-         threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
-         //Ignore
-      }
+         catch(JMSException e)
+         {
+            // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
+            String msg = "Cannot make a copy of the message";
+            log.error(msg, e);
+            throw new java.lang.IllegalStateException(msg);
+         }
 
+         boolean accept = this.accept(message);
+         if (!accept)
+         {
+            if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
+            return null;
+         }
 
-      return delivery;
+         if (reference.isRedelivered())
+         {
+            message.setRedelivered(true);
+            if (log.isTraceEnabled()) { log.trace("set the redelivered flag to true"); }
+         }
+
+         delivery = new SimpleDelivery(observer, (MessageReference)reference);
+         deliveries.add(delivery);
+
+         // we set 'ready' to false since the consumer can only deal with messages one at a time
+         // i.e. we don't buffer them on the client side
+         ready = false;
+
+         try
+         {
+            if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }
+            threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
+         }
+         catch (InterruptedException e)
+         {
+            log.warn("Thread interrupted", e);
+         }
+
+         return delivery;
+      }
+      finally
+      {
+         // make sure the consumer don't stay "ready" on failure
+         ready = false;
+      }
    }
 
    // Filter implementation -----------------------------------------
@@ -225,10 +222,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       {
          accept = messageSelector.accept(r);
 
-         if (log.isTraceEnabled())
-         {
-            log.trace("message selector accepts the message");
-         }
+         if (log.isTraceEnabled()) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
       }
 
       if (accept)
@@ -296,12 +290,16 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      log.warn("setMessageListener is not handled on the server");
+      if (log.isTraceEnabled()) { log.trace("a listener is set, grabbing a message from core"); }
+      grabMessage();
    }
 
    public javax.jms.Message receive(long timeout) throws JMSException
-   {      
-      log.warn("receive is not handled on the server");
+   {
+      if (log.isTraceEnabled()) { log.trace("receive invoked on client, grabbing a message from core"); }
+      grabMessage();
+
+      // we return null, the message will arrive asynchronously later
       return null;
    }
    
@@ -368,22 +366,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
    public synchronized void stopDelivering()
    {
-      waitingForMessage = false;     
-   }
-   
-   public synchronized javax.jms.Message getMessage()
-   {
-      //Messsage m = channel.get();
-      
-      javax.jms.Message m = null;
-      
-      if (m == null)
-      {
-         waitingForMessage = true;
-         channel.deliver();
-      }
-      
-      return m;
+      ready = false;
    }
    
    public void cancelMessage(Serializable messageID) throws JMSException
@@ -486,12 +469,14 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    void redeliver() throws JMSException
    {
+      if (log.isTraceEnabled()) { log.trace(this + " cancels deliveries"); }
       for(Iterator i = deliveries.iterator(); i.hasNext(); )
       {
          Delivery d = (Delivery)i.next();
          try
          {
-            d.cancel();
+            boolean canceled = d.cancel();
+            if (log.isTraceEnabled()) { log.trace(d + (canceled ? " canceled" : " NOT canceled")); }
          }
          catch(Throwable t)
          {
@@ -499,7 +484,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          }
          i.remove();
       }
-      
    }
 
    // Protected -----------------------------------------------------
@@ -522,6 +506,14 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    }
 
    // Private -------------------------------------------------------
+
+   private synchronized void grabMessage()
+   {
+      ready = true;
+      channel.deliver(this);
+   }
+
+
 
    // Inner classes -------------------------------------------------
 }

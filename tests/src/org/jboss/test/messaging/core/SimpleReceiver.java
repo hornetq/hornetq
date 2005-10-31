@@ -28,6 +28,7 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 
@@ -67,6 +68,7 @@ public class SimpleReceiver implements Receiver
    private List messages;
    private String state;
    private String name;
+   private Channel channel;
    private String futureState;
    private int invocationsToFutureStateCount;
    private Map waitingArea;
@@ -93,10 +95,16 @@ public class SimpleReceiver implements Receiver
     */
    public SimpleReceiver(String name, String state)
    {
+      this(name, state, null);
+   }
+
+   public SimpleReceiver(String name, String state, Channel channel)
+   {
       checkValid(state);
 
       this.name = name;
       this.state = state;
+      this.channel = channel;
       messages = new ArrayList();
       waitingArea = new HashMap();
       waitingArea.put(INVOCATION_COUNT, new Integer(0));
@@ -152,6 +160,16 @@ public class SimpleReceiver implements Receiver
    public String getName()
    {
       return name;
+   }
+
+   public void requestMessages()
+   {
+      if (channel == null)
+      {
+         log.error("No channel, cannot request messages");
+         return;
+      }
+      channel.deliver(this);
    }
 
    public void clear()
@@ -236,7 +254,7 @@ public class SimpleReceiver implements Receiver
       // make sure I get rid of message if the transaction is rolled back
       if (tx != null)
       {
-         tx.addPostCommitTasks(new PostAcknowledgeCommitTask(touple));
+         tx.addPostCommitTask(new PostAcknowledgeCommitTask(touple));
       }
    }
 

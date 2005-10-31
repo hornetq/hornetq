@@ -22,11 +22,8 @@
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.StorageIdentifier;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -36,7 +33,7 @@ import org.jboss.messaging.core.tx.Transaction;
  *
  * $Id$
  */
-class RecoverableState extends NonRecoverableState
+public class RecoverableState extends NonRecoverableState
 {
    // Constants -----------------------------------------------------
 
@@ -49,8 +46,6 @@ class RecoverableState extends NonRecoverableState
    private PersistenceManager pm;
    private Serializable channelID;
 
-   private MessageStore ms;
-
    // Constructors --------------------------------------------------
 
    public RecoverableState(Channel channel, PersistenceManager pm)
@@ -61,9 +56,9 @@ class RecoverableState extends NonRecoverableState
           throw new IllegalArgumentException("RecoverableState requires a non-null persistence manager");
       }
       this.pm = pm;
-      this.channelID = channel.getChannelID();
-      ms = channel.getMessageStore();
 
+      // the channel isn't going to change, so cache its id
+      this.channelID = channel.getChannelID();
    }
 
    // NonRecoverableState overrides -------------------------------------
@@ -75,33 +70,74 @@ class RecoverableState extends NonRecoverableState
 
    public void add(MessageReference ref, Transaction tx) throws Throwable
    {
-      if (!ref.isReliable())
+      super.add(ref, tx);
+
+      if (ref.isReliable())
       {
-         //Unreliable message in a recoverable state - handle as unreliable
-         super.add(ref, tx);
-         return;
+         //Reliable message in a recoverable state - also add to db
+         if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+         pm.add(channelID, ref, tx);
       }
-      //Reliable message in a recoverable state - just add to db
-      pm.add(channelID, ref, tx);
 
       if (tx != null)
       {
          addAddReferenceTask(tx);
+         if (log.isTraceEnabled()) { log.trace("added an Add task to transaction " + tx); }
       }
    }
 
-   public boolean remove(MessageReference ref) throws Throwable
+   public void addFirst(MessageReference ref) throws Throwable
    {
+      super.addFirst(ref);
+
       if (ref.isReliable())
       {
-         //Reliable message in recoverable state - remove from db
-         return (pm.remove(channelID, ref));
+         //Reliable message in a recoverable state - also add to db
+         if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database"); }
+         // TODO Q1 - have a method that enforces ordering
+         pm.add(channelID, ref, null);
+         if (log.isTraceEnabled()) { log.trace("added " + ref + " to database"); }
       }
-      else
+   }
+
+
+   public boolean remove(MessageReference ref) throws Throwable
+   {
+      boolean memory = super.remove(ref);
+      if (!memory)
       {
-         //Unreliable message in recoverable state - handle as unreliable
-         return super.remove(ref);
+         return false;
       }
+
+      if (ref.isReliable())
+      {
+         boolean database = pm.remove(channelID, ref);
+         if (database && log.isTraceEnabled()) { log.trace("removed " + ref + " from database"); }
+         return database;
+      }
+
+      return memory;
+   }
+
+   public MessageReference remove() throws Throwable
+   {
+      MessageReference removed = super.remove();
+      if (removed == null)
+      {
+         return null;
+      }
+
+      if (removed.isReliable())
+      {
+         boolean database = pm.remove(channelID, removed);
+         if (!database)
+         {
+            throw new IllegalStateException("reference " + removed + " not found in database");
+         }
+         else if (log.isTraceEnabled()) { log.trace("removed " + removed + " from database"); }
+      }
+
+      return removed;
    }
 
    public void add(Delivery d) throws Throwable
@@ -109,121 +145,33 @@ class RecoverableState extends NonRecoverableState
       // Note! Adding of deliveries to the state is NEVER done in a transactional context.
       // The only things that are done in a transactional context are sending of messages and
       // removing deliveries (acking).
-            
+
+      super.add(d);
+
       if (d.getReference().isReliable())
       {
-         //Add delivery to persistent storage - reliable delivery in recoverable state
+         // also add delivery to persistent storage (reliable delivery in recoverable state)
          pm.add(channelID, d);
-      }
-      else
-      {
-         //Unreliable delivery in recoverable state - handle as unreliable
-         super.add(d);
+         if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
       }
    }
 
    public boolean remove(Delivery d, Transaction tx) throws Throwable
    {
+      boolean memory = super.remove(d, tx);
+      if (!memory)
+      {
+         return false;
+      }
+
       if (d.getReference().isReliable())
       {
-         //Reliable message in recoverable state - removed from db
-         return pm.remove(channelID, d, tx);
+         boolean database = pm.remove(channelID, d, tx);
+         if (database && log.isTraceEnabled()) { log.trace("removed " + d + " from database " + (tx == null ? "non-transactionally" : " on transaction " + tx)); }
+         return database;
       }
-      else
-      {
-         //Unreliable message in recoverable state - handle as unreliable
-         return super.remove(d, tx);
-      }
-   }
 
-   public List delivering(Filter filter)
-   {
-      List delivering = super.delivering(filter);
-      
-      try
-      {
-         List persisted = pm.deliveries(channelID);
-         for(Iterator i = persisted.iterator(); i.hasNext(); )
-         {
-            StorageIdentifier id = (StorageIdentifier)i.next();
-            if (!id.storeID.equals(ms.getStoreID()))
-            {
-               // TODO maybe the channel could have access to multiple stores
-               throw new IllegalStateException("My current message store (id=" + ms.getStoreID() +
-                                               ") cannot reference messages being maintained by " +
-                                               "the store with id=" + id.storeID);
-            }
-
-            MessageReference ref = ms.getReference(id.messageID);
-
-            // TODO: I need to dereference the message each time I apply the filter. Refactor so the message reference will also contain JMS properties
-            if (filter == null || filter.accept(ref.getMessage()))
-            {
-               delivering.add(ref);
-            }
-         }
-      }
-      catch(Throwable t)
-      {
-         log.error("Cannot get the delivery list from persistence manager", t);
-         return null;
-      }
-      
-      return delivering;
-   }
-
-   public List undelivered(Filter filter)
-   {
-      // unreliable messages first
-      List undelivered = super.undelivered(filter);
-
-      try
-      {
-         if (log.isTraceEnabled()) { log.trace("Getting undelivered reliable messages for channel: " + channelID); }
-
-         List persisted = pm.messages(channelID);
-
-         if (log.isTraceEnabled()) { log.trace("Retrieved " + persisted.size() + " messages from persistent storage"); }
-
-         for(Iterator i = persisted.iterator(); i.hasNext(); )
-         {
-            StorageIdentifier id = (StorageIdentifier)i.next();
-            if (!id.storeID.equals(ms.getStoreID()))
-            {
-               // TODO maybe the channel could have access to multiple stores
-               throw new IllegalStateException("My current message store (id=" + ms.getStoreID() +
-                                               ") cannot reference messages being maintained by " +
-                                               "the store with id=" + id.storeID);
-            }
-
-            // TODO filtering could be probably pushed to the database
-            if (log.isTraceEnabled()) { log.trace("Looking for reference for message id " + id.messageID); }
-            MessageReference ref = ms.getReference(id.messageID);
-            
-            if (ref == null)
-            {
-               log.error("Could not find reference for message:" + id.messageID);
-               return persisted;
-            }
-
-            // TODO: I need to dereference the message each time I apply the filter. Refactor so the message reference will also contain JMS properties
-            if (filter == null || filter.accept(ref.getMessage()))
-            {
-               if (log.isTraceEnabled()) { log.trace("Message accepted by filter so adding to list"); }
-               undelivered.add(ref);
-            }
-            else
-            {
-               if (log.isTraceEnabled()) { log.trace("Message NOT accepted by filter so not adding to list"); }
-            }
-         }
-      }
-      catch(Throwable t)
-      {
-         log.error("Cannot get message list from persistence manager", t);
-         return null;
-      }
-      return undelivered;
+      return memory;
    }
 
    public void clear()

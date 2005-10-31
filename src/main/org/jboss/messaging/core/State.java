@@ -33,7 +33,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-interface State
+public interface State
 {
    /**
     * @return true if the state can guarantee recoverability for <i>reliable</i> messages.
@@ -66,9 +66,19 @@ interface State
    void add(MessageReference ref, Transaction tx) throws Throwable;
 
    /**
-    * Removes a message from the state. Removing a message is done non-transactionally.
+    * Adds at the top of the list. TODO Experimental - useful for redeliveries
+    */
+   void addFirst(MessageReference ref) throws Throwable;
+
+   /**
+    * Removes a message from state.
     */
    boolean remove(MessageReference ref) throws Throwable;
+
+   /**
+    * Removes the "oldest" message from state.
+    */
+   MessageReference remove() throws Throwable;
 
    /**
     * Adds a delivery to the state. Adding a delivery is done non-transactionally.

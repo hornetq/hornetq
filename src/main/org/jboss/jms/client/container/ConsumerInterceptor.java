@@ -203,6 +203,16 @@ public class ConsumerInterceptor implements Interceptor, Serializable
             this.receiverID = (String)mi.getArguments()[0];
             return null;
          }
+         else if ("closing".equals(methodName))
+         {
+            // MessageCallbackHandler closed by the same interceptor that created it
+            MessageCallbackHandler msgHandler = getMessageHandler(mi);
+            if (msgHandler != null)
+            {
+               msgHandler.close();
+            }
+         }
+
       }
       return invocation.invokeNext();
    }
@@ -216,6 +226,17 @@ public class ConsumerInterceptor implements Interceptor, Serializable
 	private JMSInvocationHandler getHandler(Invocation invocation)
    {
       return ((JMSMethodInvocation)invocation).getHandler();
+   }
+
+   private MessageCallbackHandler getMessageHandler(Invocation invocation)
+   {
+      Object handler = ((JMSMethodInvocation)invocation).getHandler();
+      if (handler instanceof JMSConsumerInvocationHandler)
+      {
+         JMSConsumerInvocationHandler consumerHandler = (JMSConsumerInvocationHandler)handler;
+         return consumerHandler.getMessageHandler();
+      }
+      return null;
    }
 
    private SessionDelegate getDelegate(Invocation invocation)

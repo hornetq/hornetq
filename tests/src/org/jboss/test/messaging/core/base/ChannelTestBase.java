@@ -26,6 +26,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.Factory;
@@ -103,10 +104,10 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       super.tearDown();
    }
 
-   public static void assertEqualSets(Message[] a, List messages)
+   public static void assertEqualSets(Routable[] a, List routables)
    {
-      assertEquals(a.length, messages.size());
-      List l = new ArrayList(messages);
+      assertEquals(a.length, routables.size());
+      List l = new ArrayList(routables);
 
       for(int i = 0; i < a.length; i++)
       {
@@ -125,7 +126,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
             }
 
             if (a[i].getMessageID().equals(m.getMessageID()) &&
-                a[i].getPayload().equals(m.getPayload()))
+                (a[i] instanceof Message ? ((Message)a[i]).getPayload().equals(m.getPayload()) : true))
             {
                j.remove();
                break;
@@ -138,6 +139,33 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
          fail("Messages " + l + " do not match!");
       }
    }
+
+   public static void assertEqualSets(Delivery[] a, List deliveries)
+   {
+      assertEquals(a.length, deliveries.size());
+      List l = new ArrayList(deliveries);
+
+      for(int i = 0; i < a.length; i++)
+      {
+         for(Iterator j = l.iterator(); j.hasNext(); )
+         {
+            Delivery d = (Delivery)j.next();
+            MessageReference ref = d.getReference();
+
+            if (a[i].getReference().getMessageID().equals(ref.getMessageID()))
+            {
+               j.remove();
+               break;
+            }
+         }
+      }
+
+      if (!l.isEmpty())
+      {
+         fail("Deliveries " + l + " do not match!");
+      }
+   }
+
 
    // Channel tests -------------------------------------------------
 
@@ -5570,8 +5598,14 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       List stored = channel.browse();
       assertEquals(1, stored.size());
 
-      SimpleReceiver receiver = new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING);
+      SimpleReceiver receiver =
+            new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING, channel);
       assertTrue(channel.add(receiver));
+
+      assertEquals(1, channel.browse().size());
+
+      // receiver explicitely asks for message
+      receiver.requestMessages();
 
       assertTrue(channel.browse().isEmpty());
 
@@ -5607,8 +5641,14 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       List stored = channel.browse();
       assertEquals(1, stored.size());
 
-      SimpleReceiver receiver = new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver receiver =
+            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, channel);
       assertTrue(channel.add(receiver));
+
+      assertEquals(1, channel.browse().size());
+
+      // receiver explicitely asks for message
+      receiver.requestMessages();
 
       assertEquals(1, channel.browse().size());
 
@@ -5696,8 +5736,12 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       List stored = channel.browse();
       assertEquals(1, stored.size());
 
-      SimpleReceiver receiver = new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING);
+      SimpleReceiver receiver =
+            new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING, channel);
       assertTrue(channel.add(receiver));
+
+      // receiver explicitely asks for message
+      receiver.requestMessages();
 
       assertTrue(channel.browse().isEmpty());
 
@@ -5733,8 +5777,14 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       List stored = channel.browse();
       assertEquals(1, stored.size());
 
-      SimpleReceiver receiver = new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver receiver =
+            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, channel);
       assertTrue(channel.add(receiver));
+
+      assertEquals(1, channel.browse().size());
+
+      // receiver explicitely asks for message
+      receiver.requestMessages();
 
       assertEquals(1, channel.browse().size());
 
