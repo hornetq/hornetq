@@ -198,18 +198,15 @@ public class MessageConsumerTest extends MessagingTestCase
       Message m = producerSession.createMessage();
       queueProducer.send(m);
 
-      // the message is in the channel
+      // the message is in the channel, however the queue maintains it as "not delivered"
 
       QueueBrowser browser = producerSession.createBrowser(queue);
       Enumeration e = browser.getEnumeration();
-
-      // however the queue maintains it as "not delivered"
       Message bm = (Message)e.nextElement();
       assertEquals(m.getJMSMessageID(), bm.getJMSMessageID());
       assertFalse(e.hasMoreElements());
 
-
-      // create a second consumer and try to receive from queue, it should return null
+      // create a second consumer and try to receive from queue, it should return the message 
       MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
 
       Message rm = queueConsumer2.receive(3000);
@@ -1519,6 +1516,7 @@ public class MessageConsumerTest extends MessagingTestCase
    public void testMessageListenerOnTopic() throws Exception
    {
       if (log.isTraceEnabled()) log.trace("testMessageListenerOnTopic");
+
       MessageListenerImpl l = new MessageListenerImpl();
       topicConsumer.setMessageListener(l);
 
@@ -1533,6 +1531,76 @@ public class MessageConsumerTest extends MessagingTestCase
 
       assertEquals(m1.getJMSMessageID(), l.getNextMessage().getJMSMessageID());
    }
+
+
+//   TODO: enable this
+//   public void testMessageListenerOnTopicMultipleMessages() throws Exception
+//   {
+//      log.debug("testMessageListenerOnTopicMultipleMessages");
+//
+//      MessageListenerImpl l = new MessageListenerImpl();
+//      topicConsumer.setMessageListener(l);
+//
+//      consumerConnection.start();
+//
+//      int NUM_MESSAGES = 10;
+//      for(int i = 0; i < NUM_MESSAGES; i++)
+//      {
+//         TextMessage m = producerSession.createTextMessage("body" + i);
+//         topicProducer.send(m);
+//      }
+//
+//      for(int i = 0; i < NUM_MESSAGES; i++)
+//      {
+//         l.waitForMessages();
+//         log.info("got message " + i);
+//      }
+//
+//
+//      int counter = 0;
+//      for(Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
+//      {
+//         TextMessage m = (TextMessage)i.next();
+//         assertEquals("body" + counter, m.getText());
+//      }
+//
+//      log.debug("testMessageListenerOnTopicMultipleMessages done");
+//   }
+
+//   TODO: enable this
+//   public void testMessageListenerOnQueueMultipleMessages() throws Exception
+//   {
+//      log.debug("testMessageListenerOnQueueMultipleMessages");
+//
+//      MessageListenerImpl l = new MessageListenerImpl();
+//      QueueConsumer.setMessageListener(l);
+//
+//      consumerConnection.start();
+//
+//      int NUM_MESSAGES = 10;
+//      for(int i = 0; i < NUM_MESSAGES; i++)
+//      {
+//         TextMessage m = producerSession.createTextMessage("body" + i);
+//         queueProducer.send(m);
+//      }
+//
+//      for(int i = 0; i < NUM_MESSAGES; i++)
+//      {
+//         l.waitForMessages();
+//         log.info("got message " + i);
+//      }
+//
+//
+//      int counter = 0;
+//      for(Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
+//      {
+//         TextMessage m = (TextMessage)i.next();
+//         assertEquals("body" + counter, m.getText());
+//      }
+//
+//      log.debug("testMessageListenerOnTopicMultipleMessages done");
+//   }
+
 
    public void testSetMessageListenerTwice() throws Exception
    {
@@ -2616,11 +2684,6 @@ public class MessageConsumerTest extends MessagingTestCase
       
       
    }
-   
-   
-   
-   
-   
 
    // Package protected ---------------------------------------------
 
@@ -2632,8 +2695,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
    private class RedelMessageListenerImpl implements MessageListener
    {
-      private Message m;
-      
       private Session sess;
       
       private int count;
@@ -2731,7 +2792,7 @@ public class MessageConsumerTest extends MessagingTestCase
          log.info("Added message " + m + " to my list");
 
          latch.release();
-
+         //latch = new Latch();
       };
 
       public Message getNextMessage()
@@ -2744,6 +2805,11 @@ public class MessageConsumerTest extends MessagingTestCase
          Message m = (Message)i.next();
          i.remove();
          return m;
+      }
+
+      public List getMessages()
+      {
+         return messages;
       }
 
       public int size()
