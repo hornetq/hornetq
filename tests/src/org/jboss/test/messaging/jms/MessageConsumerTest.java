@@ -2550,6 +2550,77 @@ public class MessageConsumerTest extends MessagingTestCase
       
       assertTrue(tm3.getJMSRedelivered());
    }
+   
+   public void testRedelMessageListener1() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      RedelMessageListenerImpl listener = new RedelMessageListenerImpl(false);
+      listener.sess = sess;
+      
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sess.createProducer(queue);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
+      
+
+      listener.waitForMessages();
+      
+      assertFalse(listener.failed);
+      
+      
+     }
+   
+   public void testRedelMessageListener2() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      RedelMessageListenerImpl listener = new RedelMessageListenerImpl(true);
+      listener.sess = sess;
+      
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sess.createProducer(queue);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
+      
+      sess.commit();
+      
+      
+      listener.waitForMessages();
+      
+      assertFalse(listener.failed);
+      
+      
+   }
+   
+   
+   
+   
+   
 
    // Package protected ---------------------------------------------
 
@@ -2559,6 +2630,90 @@ public class MessageConsumerTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
 
+   private class RedelMessageListenerImpl implements MessageListener
+   {
+      private Message m;
+      
+      private Session sess;
+      
+      private int count;
+      
+      private boolean failed;
+      
+      private Latch latch = new Latch();
+      
+      private boolean transacted;
+      
+      public RedelMessageListenerImpl(boolean transacted)
+      {
+         this.transacted = transacted;
+      }
+
+      /** Blocks the calling thread until at least a message is received */
+      public void waitForMessages() throws InterruptedException
+      {
+         latch.acquire();
+      }
+      
+      public void onMessage(Message m)
+      {
+         try
+         {
+            TextMessage tm = (TextMessage)m;
+            
+            log.info("Got message:" + count);
+            
+            if (count == 0)
+            {
+               if (!("a".equals(tm.getText())))
+               {
+                  failed = true;
+               }
+               if (transacted)
+               {
+                  sess.rollback();
+               }
+               else
+               {
+                  sess.recover();
+               }
+            }
+            
+            if (count == 1)
+            {
+               if (!("a".equals(tm.getText())))
+               {
+                  failed = true;
+               }
+            }
+            if (count == 2)
+            {
+               if (!("b".equals(tm.getText())))
+               {
+                  failed = true;
+               }
+            }
+            if (count == 3)
+            {
+               if (!("c".equals(tm.getText())))
+               {
+                  failed = true;
+               }
+               if (transacted)
+               {
+                  sess.commit();
+               }
+               latch.release();
+            }
+            count++;
+         }
+         catch (JMSException e)
+         {
+            failed = true;
+         }
+      }
+   }
+   
    private class MessageListenerImpl implements MessageListener
    {
       private List messages = Collections.synchronizedList(new ArrayList());

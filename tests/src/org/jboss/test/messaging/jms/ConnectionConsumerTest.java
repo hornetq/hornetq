@@ -93,6 +93,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
+
    
    public void testSimple() throws Exception
    {
@@ -239,6 +240,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          sessCons.setMessageListener(listener);
          
  
+         log.info("Rolling back session");
          sessCons.rollback();
      
          listener.waitForLatch(10000);
@@ -255,11 +257,15 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages in redelivery");
          }
          
-         log.trace("Received all messages in redelivery");
+         log.info("Received all messages in redelivery");
          
          sessCons.commit();
          
+         log.info("Committed session");
+         
          cc.close();
+         
+         log.info("Closed connection consumer");
          
          connProducer.close();
          connProducer = null;
@@ -336,6 +342,16 @@ public class ConnectionConsumerTest extends MessagingTestCase
       }
    }
    
+   public void testCatchRaceConditions() throws Exception
+   {
+      for (int i = 0; i < 100; i++)
+      {
+         testSimple();
+         testRedelivery();
+         testCloseWhileProcessing();
+      }
+   }
+   
    class SimpleMessageListener implements MessageListener
    {
       Latch latch = new Latch();
@@ -379,7 +395,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          {
     
             
-            log.trace("Received message " + this);
+            log.info("Received message " + this);
             
             TextMessage tm = (TextMessage)message;
             

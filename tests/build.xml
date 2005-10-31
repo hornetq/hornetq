@@ -65,10 +65,11 @@
       <path refid="gnu.regexp.classpath"/>
       <path refid="sun.servlet.classpath"/>
       <path refid="apache.commons.classpath"/>
-      
+
       <path location="../src/resources/hsqldb.jar"/>      
-      <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>      
-      <path location="../src/resources/jcommon-1.0.0-rc1.jar"/>
+      <path location="../src/resources/jcommon-1.0.0-rc1.jar"/> 
+      <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/> 
+      
       
    </path>
 
@@ -120,7 +121,8 @@
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
-   <property name="perf.tests.archive" value="perfrunner.jar"/>
+   <property name="perf.slave.archive" value="perf-slave.jar"/>
+   <property name="perf.runner.archive" value="perf-runner.jar"/>
    <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
@@ -178,7 +180,6 @@
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="2400000"/>
-   <property name="junit.timeout" value=""/>
 
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
@@ -240,6 +241,8 @@
            description="Runs the jms tests only">
 
       <antcall target="print-testclasspath"/>
+      
+      <echo message="${junit.timeout}"/>
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -348,21 +351,6 @@
       </junit>
    </target>
    
-   <target name="perfchart" depends="tests-jar">
-   
-   	<mkdir dir="perf-output"/>
-   	
-   	<java classname="org.jboss.test.messaging.jms.perf.PerfCharter" fork="true">
-   	   <jvmarg value="-Xmx512M"/>
-           <classpath>
-	          <pathelement location="${module.root}/etc"/>
-	          <path refid="test.classpath"/>
-	          <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-         </classpath>
-   	</java>
-   
-   </target>
-   
 
    <target name="compile-stylesheets">
       <mkdir dir="${build.tests.stylesheets}"/>
@@ -427,9 +415,6 @@
 	 </junitreport>
    </target>
 
-
-   <target name="performance-tests"/>
-
    <target name="functional-tests" depends="tests"/>
 
    <!-- Clean up all build output -->
@@ -480,21 +465,41 @@
    </target>
    
    
-   <target name="perf-jar"
+   <target name="perf-slave-jar"
            depends="compile"
-           description="Creates the jar file for the performance runner">
+           description="Creates the jar file for the performance test slave">
 
       <mkdir dir="${build.tests.lib}"/>
 
-      <!-- Build the perf tests jar -->
-      <jar jarfile="${build.tests.lib}/${perf.tests.archive}">
+      <!-- Build the perf slave jar -->
+      <jar jarfile="${build.tests.lib}/${perf.slave.archive}">
          <fileset dir="${build.tests.classes}">
-            <include name="org/jboss/test/messaging/jms/perf/**"/>
+            <include name="org/jboss/test/messaging/jms/perf/framework/**"/>
+            <exclude name="org/jboss/test/messaging/jms/perf/framework/data/**"/>
+            <exclude name="org/jboss/test/messaging/jms/perf/framework/persistence/**"/>
          </fileset>
       </jar>
    </target>
    
-   <target name="perf"
+   <target name="perf-runner-jar"
+	      depends="compile"
+	      description="Creates the jar file for the performance test runner">
+
+	 <mkdir dir="${build.tests.lib}"/>
+
+	 <!-- Build the perf runner jar -->
+	 <jar jarfile="${build.tests.lib}/${perf.runner.archive}">
+	    <fileset dir="${build.tests.classes}">
+	       <include name="org/jboss/test/messaging/jms/perf/framework/**"/>
+	    </fileset>
+	 </jar>
+   </target>
+   
+   <target name="run-slave" depends="perf-slave-jar">
+    
+   </target>
+   
+   <target name="performance-tests"
            depends="tests-jar, prepare-testdirs"
            description="Runs performance tests">      
 
@@ -506,31 +511,12 @@
              showoutput="${junit.showoutput}"
              timeout="3600000">
              
-             <!--
+         <!--
          <jvmarg value="-Xdebug"/>
-         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
-         
+         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>         
          -->
          <jvmarg value="-Xmx512M"/>
          
-         <sysproperty key="perf.jndiServerURL" value="jnp://localhost:1099"/>
-	<sysproperty key="perf.queueName" value="queue/perfTestQueue"/>
-	<sysproperty key="perf.topicName" value="topic/perfTestTopic"/>
-	<sysproperty key="perf.subscriptionName" value="perfTestSub"/>
-	<sysproperty key="perf.scaleNumber" value="5"/>
-	<sysproperty key="perf.numSlaves" value="2"/>
-	<sysproperty key="perf.slaveURL1" value="socket://localhost:1234/?socketTimeout=0"/>
-	<sysproperty key="perf.slaveURL2" value="socket://localhost:1235/?socketTimeout=0"/>                    
-	<sysproperty key="perf.queueNamePrefix" value="queue/perfTestQueue"/>
-	<sysproperty key="perf.topicNamePrefix" value="topic/perfTestTopic"/>
-	<sysproperty key="perf.numMessages" value="1000"/>
-	<sysproperty key="perf.numWarmupMessages" value="100"/>
-	<sysproperty key="perf.providerName" value="JBossMessaging"/>
-	<sysproperty key="perf.dbURL" value="jdbc:hsqldb:hsql://localhost:7776"/>
-	<sysproperty key="perf.standardMessageSize" value="1024"/>
-	<sysproperty key="perf.initialPause" value="8000"/>               
-         <sysproperty key="perf.clientID" value="perfTestClientID"/>
-            
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -541,64 +527,27 @@
                fork="${junit.batchtest.fork}"
                todir="${junit.batchtest.todir}"
                haltonfailure="false"
-               haltonerror="false">
-               
+               haltonerror="false">              
          </test>
       </junit>
-   </target>   
+   </target> 
    
-   
-   <target name="perf-jbossmq"
-              depends="tests-jar, prepare-testdirs"
-              description="Runs performance tests">      
-   
-         <junit printsummary="${junit.printsummary}"
-                fork="true"
-                includeantruntime="${junit.includeantruntime}"
-                haltonerror="${junit.haltonerror}"
-                haltonfailure="${junit.haltonfailure}"
-                showoutput="${junit.showoutput}"
-                timeout="3600000">
-                
-                <!--
-            <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
-            
-            -->
-            <jvmarg value="-Xmx512M"/>
-            
-            <sysproperty key="perf.jndiServerURL" value="jnp://localhost:1099"/>
-            <sysproperty key="perf.queueName" value="queue/perfTestQueue"/>
-            <sysproperty key="perf.topicName" value="topic/perfTestTopic"/>
-            <sysproperty key="perf.subscriptionName" value="perfTestSub"/>
-            <sysproperty key="perf.scaleNumber" value="5"/>
-            <sysproperty key="perf.numSlaves" value="2"/>
-            <sysproperty key="perf.slaveURL1" value="socket://localhost:1234/?socketTimeout=0"/>
-            <sysproperty key="perf.slaveURL2" value="socket://localhost:1235/?socketTimeout=0"/>                    
-            <sysproperty key="perf.queueNamePrefix" value="queue/perfTestQueue"/>
-            <sysproperty key="perf.topicNamePrefix" value="topic/perfTestTopic"/>
-            <sysproperty key="perf.numMessages" value="2000"/>
-            <sysproperty key="perf.numWarmupMessages" value="100"/>
-            <sysproperty key="perf.providerName" value="JBossMQ"/>
-            <sysproperty key="perf.dbURL" value="jdbc:hsqldb:hsql://localhost:7776"/>
-            <sysproperty key="perf.standardMessageSize" value="1024"/>
-            <sysproperty key="perf.initialPause" value="8000"/>               
-            <sysproperty key="perf.clientID" value="perfTestClientID"/>   
-            <classpath>
-               <pathelement location="${module.root}/etc"/>
-               <path refid="test.classpath"/>
-               <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+   <target name="perfchart" depends="tests-jar">
+      
+      	<mkdir dir="perf-output"/>
+      	
+      	<java classname="org.jboss.test.messaging.jms.perf.chart.PerfCharter" fork="true">
+      	   <jvmarg value="-Xmx512M"/>
+              <classpath>
+   	          <pathelement location="${module.root}/etc"/>
+   	          <path refid="test.classpath"/>
+   	          <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             </classpath>
-            <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-            <test name="org.jboss.test.messaging.jms.perf.PerfRunner"
-                  fork="${junit.batchtest.fork}"
-                  todir="${junit.batchtest.todir}"
-                  haltonfailure="false"
-                  haltonerror="false">
-                  
-            </test>
-         </junit>
+      	</java>
+      
    </target>
+   
+  
 
    <target name="print-testclasspath">
       <pathconvert targetos="unix" property="test.classpath.property" refid="test.classpath"/>
