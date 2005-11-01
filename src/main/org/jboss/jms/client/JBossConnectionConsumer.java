@@ -214,8 +214,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                if (queue.isEmpty())
                {
                   //We didn't get any messages doing receiveNoWait, so let's wait
-                  //This returns if a message is received or 
-                  //by the consumer closing
+                  //This returns if a message is received or by the consumer closing
                   if (trace) { log.trace("Getting message with blocking receive"); }
                   Message m = cons.receive(0);
                   if (m != null)
