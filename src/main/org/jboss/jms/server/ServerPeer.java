@@ -132,16 +132,14 @@ public class ServerPeer
 
    protected int connFactoryIDSequence;
    
-   protected String dbURL;
 
    // Constructors --------------------------------------------------
 
 
-   public ServerPeer(String serverPeerID, String dbURL) throws Exception
+   public ServerPeer(String serverPeerID) throws Exception
    {
       this.serverPeerID = serverPeerID;
       this.connFactoryDelegates = new HashMap();
-      this.dbURL = dbURL; //temporary
 
       // the default value to use, unless the JMX attribute is modified
       connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
@@ -171,11 +169,7 @@ public class ServerPeer
 
       mbeanServer = findMBeanServer();
 
-      // TODO: this should be configurable
-      
-      //hardcoded for now
-      //pm = new HSQLDBPersistenceManager("jdbc:hsqldb:hsql://localhost:1701");
-      pm = new HSQLDBPersistenceManager(dbURL);
+      pm = new HSQLDBPersistenceManager();
       
       txRepository = new TransactionRepository(pm);
      

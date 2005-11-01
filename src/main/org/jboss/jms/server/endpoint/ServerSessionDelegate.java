@@ -603,7 +603,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    }
 	
 
-	public void redeliver(String asfReceiverID) throws JMSException
+	public void cancelDeliveries(String asfReceiverID) throws JMSException
 	{
       if (closed)
       {
@@ -620,7 +620,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          //connection consumers receiver
          if (log.isTraceEnabled()) { log.trace("Redelivering the connectionconsumer's messages"); }
                
-         this.connectionEndpoint.redeliverForConnectionConsumer(asfReceiverID);
+         this.connectionEndpoint.cancelDeliveriesForConnectionConsumer(asfReceiverID);
                   
       }
       
@@ -628,7 +628,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 		{
           // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
 			ServerConsumerDelegate scd = (ServerConsumerDelegate)i.next();
-         scd.redeliver();
+         scd.cancelAllDeliveries();
 		}     
 	}
 	

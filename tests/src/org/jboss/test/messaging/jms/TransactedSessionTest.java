@@ -90,65 +90,48 @@ public class TransactedSessionTest extends MessagingTestCase
    
    // Public --------------------------------------------------------
    
-   /**
-    * 
-    * Test that when the redelivered flag is set for one consumer that it's not set globally
-    * 
-    */
-//   public void testRedeliveredFlagLocalTopic() throws Exception
-//   {
-//      Connection conn = null;
-//      
-//      try
-//      {
-//         conn = cf.createConnection();
-//         
-//         Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
-//         Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);
-//         Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
-//         MessageConsumer consumer1 = sess1.createConsumer(topic);
-//         MessageConsumer consumer2 = sess2.createConsumer(topic);
-//         
-//         
-//         MessageProducer producer = sessSend.createProducer(topic);
-//         Message mSent = sessSend.createTextMessage("igloo");
-//         producer.send(mSent);      
-//         sessSend.commit();
-//               
-//         conn.start();
-//              
-//         TextMessage mRec1 = (TextMessage)consumer1.receive(2000);
-//         assertEquals("igloo", mRec1.getText());
-//         assertFalse(mRec1.getJMSRedelivered());
-//         
-//         sess1.rollback(); //causes redelivery for session
-//
-//         mRec1 = (TextMessage)consumer1.receive(2000);
-//         assertEquals("igloo", mRec1.getText());
-//         assertTrue(mRec1.getJMSRedelivered());
-//         
-//         TextMessage mRec2 = (TextMessage)consumer2.receive(2000);
-//         assertEquals("igloo", mRec2.getText());
-//         assertFalse(mRec2.getJMSRedelivered());
-//         
-//         sess2.rollback();
-//         
-//         mRec2 = (TextMessage)consumer2.receive(2000);
-//         assertEquals("igloo", mRec2.getText());
-//         assertTrue(mRec2.getJMSRedelivered());
-//         
-//         sess1.commit();
-//         sess2.commit();
-//      }
-//      finally
-//      {      
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//      }
-//      
-//   }
+   public void testRedeliveredFlagTopic() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+         Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);         
+         MessageConsumer consumer1 = sess1.createConsumer(topic);
+         
+         MessageProducer producer = sessSend.createProducer(topic);
+         Message mSent = sessSend.createTextMessage("igloo");
+         producer.send(mSent);      
+         sessSend.commit();
+               
+         conn.start();
+              
+         TextMessage mRec1 = (TextMessage)consumer1.receive(2000);
+         assertEquals("igloo", mRec1.getText());
+         assertFalse(mRec1.getJMSRedelivered());
+         
+         sess1.rollback(); //causes redelivery for session
+
+         mRec1 = (TextMessage)consumer1.receive(2000);
+         assertEquals("igloo", mRec1.getText());
+         assertTrue(mRec1.getJMSRedelivered());
+         
+         
+         
+         sess1.commit();
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+      
+   }
    
    
    /** Test redelivery works ok for Topic */

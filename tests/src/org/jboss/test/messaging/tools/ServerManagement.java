@@ -140,7 +140,7 @@ public class ServerManagement
       }
       sc = new ServiceContainer(config, tm);
       sc.start();
-      serverPeer = new ServerPeer("ServerPeer0", "jdbc:hsqldb:mem:messaging");      
+      serverPeer = new ServerPeer("ServerPeer0");      
       serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       final String defaultSecurityConfig = 
          "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";

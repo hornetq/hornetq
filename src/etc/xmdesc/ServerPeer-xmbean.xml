@@ -17,10 +17,6 @@
          <name>serverPeerID</name>
          <type>java.lang.String</type>
       </parameter>
-      <parameter>
-         <name>dbURL</name>
-         <type>java.lang.String</type>
-      </parameter>
    </constructor>
 
    <!-- Managed attributes -->

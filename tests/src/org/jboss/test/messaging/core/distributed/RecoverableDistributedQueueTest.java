@@ -56,7 +56,7 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      pm = new HSQLDBPersistenceManager();
       ms = new PersistentMessageStore("persistent-message-store", pm);
 
       channel = new DistributedQueue("test", ms, pm, dispatcher);

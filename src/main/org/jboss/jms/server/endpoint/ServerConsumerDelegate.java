@@ -370,7 +370,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       if (log.isTraceEnabled()) { log.trace("set ready to " + ready); }
    }
    
-   public void cancelMessage(Serializable messageID) throws JMSException
+   public synchronized void cancelMessage(Serializable messageID) throws JMSException
    {
       boolean cancelled = false;
       Iterator iter = deliveries.iterator();
@@ -468,7 +468,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       }
    }
    
-   void redeliver() throws JMSException
+   synchronized void cancelAllDeliveries() throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace(this + " cancels deliveries"); }
       for(Iterator i = deliveries.iterator(); i.hasNext(); )

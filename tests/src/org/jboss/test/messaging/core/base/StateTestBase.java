@@ -8,21 +8,21 @@
 
 package org.jboss.test.messaging.core.base;
 
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.State;
+import java.util.List;
+
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.State;
 import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-
-import java.util.List;
 
 
 /**
@@ -79,7 +79,7 @@ public abstract class StateTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-aop,-remoting,-security");
       sc.start();
 
-      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      pm = new HSQLDBPersistenceManager();
       tr = new TransactionRepository(pm);
 
       // message store to be initialized by subclasses

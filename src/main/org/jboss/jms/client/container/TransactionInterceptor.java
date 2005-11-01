@@ -175,7 +175,7 @@ public class TransactionInterceptor implements Interceptor, Serializable
          String asfReceiverID = sessDelegate.getAsfReceiverID();
          if (log.isTraceEnabled()) { log.trace("asfReceiverID is:" + asfReceiverID); }
          if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
-         sessDelegate.redeliver(asfReceiverID);
+         sessDelegate.cancelDeliveries(asfReceiverID);
          return null;				
       }
       else if ("send".equals(methodName))

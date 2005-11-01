@@ -70,6 +70,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
@@ -113,7 +114,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    protected boolean closed;
    
-   protected WriterPreferenceReadWriteLock closeLock;
+   protected ReadWriteLock closeLock;
    
    
    // Constructors --------------------------------------------------
@@ -611,14 +612,14 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       receiver.acknowledge(messageID, tx);
    }
    
-   void redeliverForConnectionConsumer(String receiverID) throws JMSException
+   void cancelDeliveriesForConnectionConsumer(String receiverID) throws JMSException
    {
       ServerConsumerDelegate receiver = (ServerConsumerDelegate)receivers.get(receiverID);
       if (receiver == null)
       {
          throw new IllegalStateException("Cannot find receiver:" + receiverID);
       }
-      receiver.redeliver();
+      receiver.cancelAllDeliveries();
    }
    
    

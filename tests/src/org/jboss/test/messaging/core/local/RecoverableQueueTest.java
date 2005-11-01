@@ -55,7 +55,7 @@ public class RecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      pm = new HSQLDBPersistenceManager();
       ms = new PersistentMessageStore("persistent-message-store", pm);
 
       channel = new Queue("test", ms, pm);

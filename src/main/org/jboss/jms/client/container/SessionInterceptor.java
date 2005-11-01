@@ -183,7 +183,7 @@ public class SessionInterceptor implements Interceptor, Serializable
          String asfReceiverID = del.getAsfReceiverID();
          
          if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
-         del.redeliver(asfReceiverID);
+         del.cancelDeliveries(asfReceiverID);
          return null;         
       }
       else if ("getAcknowledgeMode".equals(methodName))

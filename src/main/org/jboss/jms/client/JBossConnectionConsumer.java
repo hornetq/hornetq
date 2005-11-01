@@ -79,7 +79,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    protected int maxMessages;
    
    /** Is the ConnectionConsumer closed? */
-   protected boolean closed = false;
+   protected volatile boolean closed = false;
      
    /** The "listening" thread that gets messages from destination and queues
    them for delivery to sessions */
@@ -152,12 +152,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       MessageCallbackHandler messageHandler =
          (MessageCallbackHandler)handler.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
       
-      //This causes any blocking receives to be interrupted. We do not close() the message consumer
-      //and wait for this to result in the messageCallbackhandler to be closed since it's possible
-      //the receiving session is still processing messges which would result in exceptions when
-      //acks are sent
       messageHandler.close();
-      
+
       if (trace) { log.trace("Closed message handler"); }
       
       //wait for the run thread to finish
@@ -168,6 +164,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
             if (trace)
                log.trace("Joining thread " + this);
             internalThread.join();
+            if (trace)
+               log.trace("Joined thread " + this);
          }
          catch (InterruptedException e)
          {
@@ -211,7 +209,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   if (trace) { log.trace("Got message, adding to queue"); }
                   queue.addLast(m);
                }
-               if (queue.isEmpty())
+               if (queue.isEmpty() && !closed)
                {
                   //We didn't get any messages doing receiveNoWait, so let's wait
                   //This returns if a message is received or by the consumer closing
@@ -231,7 +229,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
             }
             
-            if (!queue.isEmpty())
+            if (!queue.isEmpty() && !closed)
             {
                if (trace) { log.trace("I have " + queue.size() + " messages to send to session"); }
                ServerSession serverSession = serverSessionPool.getServerSession();

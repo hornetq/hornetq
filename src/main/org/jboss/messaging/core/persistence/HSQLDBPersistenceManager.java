@@ -71,17 +71,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
    protected DataSource ds;
 
-   protected String dbURL;
-
    protected TransactionManager mgr;
-
-
 
    // Constructors --------------------------------------------------
 
-   public HSQLDBPersistenceManager(String dbURL) throws Exception
+   public HSQLDBPersistenceManager() throws Exception
    {
-      this.dbURL = dbURL;
+
       start();
    }
 

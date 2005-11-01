@@ -1606,10 +1606,14 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       if (log.isTraceEnabled()) log.trace("testSetMessageListenerTwice");
       MessageListenerImpl listener1 = new MessageListenerImpl();
+      
       topicConsumer.setMessageListener(listener1);
+      log.info("Set message listener1");
 
       MessageListenerImpl listener2 = new MessageListenerImpl();
+      
       topicConsumer.setMessageListener(listener2);
+      log.info("Set message listener2");
 
       consumerConnection.start();
 
@@ -1618,6 +1622,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
       // block the current thread until the listener gets something; this is to avoid closing
       // connection too early
+      //log.info("Waiting for messages....");
+      
       listener2.waitForMessages();
 
       assertEquals(m1.getJMSMessageID(), listener2.getNextMessage().getJMSMessageID());

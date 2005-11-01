@@ -56,7 +56,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager("jdbc:hsqldb:mem:messaging");
+      pm = new HSQLDBPersistenceManager();
       ms = new PersistentMessageStore("persistent-message-store", pm);
       tr.setPersistenceManager(pm);
 
