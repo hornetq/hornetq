@@ -327,6 +327,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       
       synchronized(this)
       {
+         if (isClosed())
+         {
+            throw new JBossJMSException("The message handler is closed");
+         }
          if (isListening())
          {
             throw new JBossJMSException("A message listener is already registered");
@@ -485,8 +489,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 
       if (receivingThread != null)
       {
-         if (log.isTraceEnabled()) { log.trace("interrupting receiving thread"); }
          receivingThread.interrupt();
+         if (log.isTraceEnabled()) { log.trace("interrupted receiving thread " + receivingThread); }
       }
 
       messages = null;
