@@ -367,6 +367,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    public synchronized void stopDelivering()
    {
       ready = false;
+      if (log.isTraceEnabled()) { log.trace("set ready to " + ready); }
    }
    
    public void cancelMessage(Serializable messageID) throws JMSException
