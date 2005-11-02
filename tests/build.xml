@@ -180,6 +180,9 @@
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="2400000"/>
+   
+   
+   <property name="junit.timeout2" value="2400000"/>
 
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
@@ -209,7 +212,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
@@ -242,7 +245,7 @@
 
       <antcall target="print-testclasspath"/>
       
-      <echo message="${junit.timeout}"/>
+      <echo message="${junit.timeout2}"/>
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -250,7 +253,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
@@ -286,7 +289,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
@@ -327,7 +330,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="3600000">
+             timeout="${junit.timeout2}">
              
              <!--
          <jvmarg value="-Xdebug"/>

@@ -318,19 +318,7 @@ public class MessageConsumerTest extends MessagingTestCase
     }
 
    
-   /*
-    * FIXME
-    * The following tests will fail until JIRA task JBMESSAGING-148 is complete
-    * testClosedConsumer
-    * testRedel0
-    * testRedel1
-    * testRedel2
-    * testRedel3
-    * testRedel4
-    * testRedel5
-    * testRedel6
-    * 
-    */
+   
 
    public void testSendMessageAndCloseConsumer1() throws Exception
    {
@@ -351,12 +339,15 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
    }
 
+ 
    /**
     * Basically the same test as before, with more than one message and a slightly different
     * way of checking the messages are back in the queue.
     */
    public void testSendMessageAndCloseConsumer2() throws Exception
    {
+      
+      
       // create my consumer from scratch
       consumerConnection.close();
 
@@ -386,6 +377,8 @@ public class MessageConsumerTest extends MessagingTestCase
       m =  (TextMessage)queueConsumer2.receive(1500);
       assertNotNull(m);
       assertEquals(m.getText(), "Two");
+      
+      consumerSession.commit();
 
       consumerConnection.close();
    }
@@ -1533,73 +1526,73 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
 
-//   TODO: enable this
-//   public void testMessageListenerOnTopicMultipleMessages() throws Exception
-//   {
-//      log.debug("testMessageListenerOnTopicMultipleMessages");
+////   TODO: enable this
+////   public void testMessageListenerOnTopicMultipleMessages() throws Exception
+////   {
+////      log.debug("testMessageListenerOnTopicMultipleMessages");
+////
+////      MessageListenerImpl l = new MessageListenerImpl();
+////      topicConsumer.setMessageListener(l);
+////
+////      consumerConnection.start();
+////
+////      int NUM_MESSAGES = 10;
+////      for(int i = 0; i < NUM_MESSAGES; i++)
+////      {
+////         TextMessage m = producerSession.createTextMessage("body" + i);
+////         topicProducer.send(m);
+////      }
+////
+////      for(int i = 0; i < NUM_MESSAGES; i++)
+////      {
+////         l.waitForMessages();
+////         log.info("got message " + i);
+////      }
+////
+////
+////      int counter = 0;
+////      for(Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
+////      {
+////         TextMessage m = (TextMessage)i.next();
+////         assertEquals("body" + counter, m.getText());
+////      }
+////
+////      log.debug("testMessageListenerOnTopicMultipleMessages done");
+////   }
 //
-//      MessageListenerImpl l = new MessageListenerImpl();
-//      topicConsumer.setMessageListener(l);
-//
-//      consumerConnection.start();
-//
-//      int NUM_MESSAGES = 10;
-//      for(int i = 0; i < NUM_MESSAGES; i++)
-//      {
-//         TextMessage m = producerSession.createTextMessage("body" + i);
-//         topicProducer.send(m);
-//      }
-//
-//      for(int i = 0; i < NUM_MESSAGES; i++)
-//      {
-//         l.waitForMessages();
-//         log.info("got message " + i);
-//      }
-//
-//
-//      int counter = 0;
-//      for(Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
-//      {
-//         TextMessage m = (TextMessage)i.next();
-//         assertEquals("body" + counter, m.getText());
-//      }
-//
-//      log.debug("testMessageListenerOnTopicMultipleMessages done");
-//   }
-
-//   TODO: enable this
-//   public void testMessageListenerOnQueueMultipleMessages() throws Exception
-//   {
-//      log.debug("testMessageListenerOnQueueMultipleMessages");
-//
-//      MessageListenerImpl l = new MessageListenerImpl();
-//      QueueConsumer.setMessageListener(l);
-//
-//      consumerConnection.start();
-//
-//      int NUM_MESSAGES = 10;
-//      for(int i = 0; i < NUM_MESSAGES; i++)
-//      {
-//         TextMessage m = producerSession.createTextMessage("body" + i);
-//         queueProducer.send(m);
-//      }
-//
-//      for(int i = 0; i < NUM_MESSAGES; i++)
-//      {
-//         l.waitForMessages();
-//         log.info("got message " + i);
-//      }
-//
-//
-//      int counter = 0;
-//      for(Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
-//      {
-//         TextMessage m = (TextMessage)i.next();
-//         assertEquals("body" + counter, m.getText());
-//      }
-//
-//      log.debug("testMessageListenerOnTopicMultipleMessages done");
-//   }
+////   TODO: enable this
+////   public void testMessageListenerOnQueueMultipleMessages() throws Exception
+////   {
+////      log.debug("testMessageListenerOnQueueMultipleMessages");
+////
+////      MessageListenerImpl l = new MessageListenerImpl();
+////      QueueConsumer.setMessageListener(l);
+////
+////      consumerConnection.start();
+////
+////      int NUM_MESSAGES = 10;
+////      for(int i = 0; i < NUM_MESSAGES; i++)
+////      {
+////         TextMessage m = producerSession.createTextMessage("body" + i);
+////         queueProducer.send(m);
+////      }
+////
+////      for(int i = 0; i < NUM_MESSAGES; i++)
+////      {
+////         l.waitForMessages();
+////         log.info("got message " + i);
+////      }
+////
+////
+////      int counter = 0;
+////      for(Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
+////      {
+////         TextMessage m = (TextMessage)i.next();
+////         assertEquals("body" + counter, m.getText());
+////      }
+////
+////      log.debug("testMessageListenerOnTopicMultipleMessages done");
+////   }
 
 
    public void testSetMessageListenerTwice() throws Exception

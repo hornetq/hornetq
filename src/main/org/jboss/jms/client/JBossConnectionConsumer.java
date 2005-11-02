@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.client;
 
-import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 
 import javax.jms.ConnectionConsumer;
@@ -33,12 +32,9 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -79,7 +75,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    protected int maxMessages;
    
    /** Is the ConnectionConsumer closed? */
-   protected volatile boolean closed = false;
+   protected volatile boolean closed;
      
    /** The "listening" thread that gets messages from destination and queues
    them for delivery to sessions */
@@ -147,12 +143,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       
       closed = true;
       
-      JMSInvocationHandler handler = (JMSInvocationHandler)Proxy.getInvocationHandler(cons);
-      
-      MessageCallbackHandler messageHandler =
-         (MessageCallbackHandler)handler.getMetaData().getMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER);
-      
-      messageHandler.close();
+      //JMSInvocationHandler handler = (JMSInvocationHandler)Proxy.getInvocationHandler(cons);            
 
       if (trace) { log.trace("Closed message handler"); }
       
@@ -161,6 +152,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       {
          try
          {
+            internalThread.interrupt();
             if (trace)
                log.trace("Joining thread " + this);
             internalThread.join();
@@ -173,6 +165,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                log.trace("Ignoring interrupting while joining thread " + this);
          }
       }
+      
+      sess.close();
       
       if (trace) { log.trace("Closed: " + this); }
    }
@@ -200,7 +194,11 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                {               
                   //receiveNoWait
                   if (trace) { log.trace("Attempting to get message with receiveNoWait"); }
-                  Message m = cons.receive(-1);
+                  Message m = null;                  
+                  if (!closed)
+                  {
+                     m = cons.receive(-1);
+                  }
                   if (m == null)
                   {
                      if (trace) { log.trace("Didn't get message"); }
@@ -214,7 +212,12 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   //We didn't get any messages doing receiveNoWait, so let's wait
                   //This returns if a message is received or by the consumer closing
                   if (trace) { log.trace("Getting message with blocking receive"); }
-                  Message m = cons.receive(0);
+                  Message m = null;
+                  
+                  if (!closed)
+                  {
+                     m = cons.receive(0);
+                  }
                   if (m != null)
                   {
                      if (trace) { log.trace("Got message, adding to queue"); }
@@ -257,16 +260,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       }
       catch (Throwable t)
       {
-         log.error("Caught Throwable in processing run()", t);
-         try
-         {
-            close();
-         }
-         catch (Throwable ignore)
-         {
-            if (trace) { log.trace("Ignoring error removing consumer from connection " + this, ignore); }
-         }
-         
+         log.error("Caught Throwable in processing run()", t);         
       }      
    }   
 

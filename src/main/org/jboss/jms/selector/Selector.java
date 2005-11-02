@@ -28,7 +28,6 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;

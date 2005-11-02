@@ -116,19 +116,19 @@ public class SelectorTest extends MessagingTestCase
 
       prod.send(redMessage);
       prod.send(blueMessage);
-
+      
       Message rec = redConsumer.receive();
       assertEquals(redMessage.getJMSMessageID(), rec.getJMSMessageID());
       assertEquals("red", rec.getStringProperty("color"));
-
-
+      
       assertNull(redConsumer.receive(3000));
-
+      
       redConsumer.close();
-
+      
       MessageConsumer universalConsumer = session.createConsumer(queue);
-
+      
       rec = universalConsumer.receive();
+      
       assertEquals(rec.getJMSMessageID(), blueMessage.getJMSMessageID());
       assertEquals("blue", rec.getStringProperty("color"));
    }

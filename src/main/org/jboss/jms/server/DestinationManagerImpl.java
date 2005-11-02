@@ -35,9 +35,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.Receiver;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 

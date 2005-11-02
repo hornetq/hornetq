@@ -28,9 +28,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 

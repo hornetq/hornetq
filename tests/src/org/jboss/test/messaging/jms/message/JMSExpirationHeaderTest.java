@@ -264,6 +264,8 @@ public class JMSExpirationHeaderTest extends MessageTest
       latch.acquire();
 
       log.trace("Expected message:" + expectedMessage);
+      
+      assertNotNull(expectedMessage);
 
       assertEquals("placeholder-shouldnt-be-overwritten", expectedMessage.getJMSMessageID());
    }

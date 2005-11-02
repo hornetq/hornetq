@@ -316,6 +316,17 @@ public class ChannelSupport implements Channel
          log.error("delivery failed", t);
       }
    }
+   
+   public MessageReference getFirst() throws Throwable
+   {
+      MessageReference ref = state.remove();
+      return ref;
+   }
+   
+   public void add(Delivery delivery) throws Throwable
+   {
+      this.state.add(delivery);
+   }
 
    public void close()
    {

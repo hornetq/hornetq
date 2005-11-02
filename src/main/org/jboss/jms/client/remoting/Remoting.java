@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.client.remoting;
 
-import org.jboss.jms.client.container.ConsumerInterceptor;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.transport.Connector;
 

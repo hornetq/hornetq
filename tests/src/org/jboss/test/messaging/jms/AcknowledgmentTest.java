@@ -81,7 +81,7 @@ public class AcknowledgmentTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
       topic = (Topic)initialContext.lookup("/topic/Topic");
-      drainDestination(cf, queue);
+      //drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
@@ -369,7 +369,6 @@ public class AcknowledgmentTest extends MessagingTestCase
 		conn.close();
 		
    }
-	
 
 
 	/**

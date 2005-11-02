@@ -91,7 +91,7 @@ public class ReceiverInterceptor implements Interceptor, Serializable
                args[0] = null;
             }
 
-            messageHandler.setMessageListener(l, mi, this);
+            messageHandler.setMessageListener(l);
             return null;
          }
          else if (name.equals("getMessageListener"))

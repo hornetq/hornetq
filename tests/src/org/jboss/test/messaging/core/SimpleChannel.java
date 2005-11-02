@@ -8,6 +8,7 @@
 
 package org.jboss.test.messaging.core;
 
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
@@ -100,6 +101,17 @@ public class SimpleChannel implements Channel
    {
       throw new NotYetImplementedException();
    }
+   
+   public MessageReference getFirst()
+   {
+      throw new NotYetImplementedException();
+   }
+   
+   public void add(Delivery delivery)
+   {
+      throw new NotYetImplementedException();
+   }
+  
 
    // DeliveryObserver implementation -------------------------------
 

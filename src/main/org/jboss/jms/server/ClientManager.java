@@ -60,12 +60,6 @@ public class ClientManager
    protected Map connections;
    protected Map subscriptions;
    
-   protected ConnectionChecker checker;
-   
-   protected long pingCheckInterval;
-   
-   protected long connectionCloseTime;
-
    // Constructors --------------------------------------------------
 
    public ClientManager(ServerPeer serverPeer)
@@ -73,12 +67,7 @@ public class ClientManager
       this.serverPeer = serverPeer;
       connections = new ConcurrentReaderHashMap();
       subscriptions = new ConcurrentReaderHashMap();
-      //checker = new ConnectionChecker();
-      //checker.start();
-      
-      //default values
-      pingCheckInterval = 4000;
-      connectionCloseTime = 10000;
+
    }
 
    // Public --------------------------------------------------------
@@ -157,26 +146,7 @@ public class ClientManager
       return removed;
    }
    
-   public long getConnectionCloseTime()
-   {
-      return connectionCloseTime;
-   }
-   
-   public long getPingCheckInterval()
-   {
-      return pingCheckInterval;
-   }
-   
-   public void setConnectionCloseTime(long time)
-   {
-      this.connectionCloseTime = time;
-   }
-   
-   public void setPingCheckInterval(long time)
-   {
-      this.pingCheckInterval = time;
-   }
-   
+  
 
    // Package protected ---------------------------------------------
    
@@ -185,95 +155,5 @@ public class ClientManager
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
-   
-   class ConnectionChecker implements Runnable
-   {
-      //TODO Needs to be configurable
-      protected boolean stopping;
-      
-      protected Thread checkerThread;
-      
-      protected ClientManager clientManager;
-      
-      public ConnectionChecker()
-      {
-      }
-      
-      private synchronized void setStopping()
-      {
-         stopping = true;
-      }
-      
-      private synchronized boolean isStopping()
-      {
-         return stopping;
-      }
-      
-      public void start()
-      {
-         if (log.isTraceEnabled()) { log.trace("Starting connection checker"); }
-         checkerThread = new Thread(this);
-         checkerThread.setDaemon(true);
-         checkerThread.start();
-         if (log.isTraceEnabled()) { log.trace("Connection checker started"); }
-      }
-      
-      public void stop()
-      {
-         if (log.isTraceEnabled()) { log.trace("Stopping connection checker"); }
-         setStopping();
-         try
-         {
-            checkerThread.interrupt();
-            checkerThread.join();
-         }
-         catch (InterruptedException e)
-         {
-            log.error("Connection checker thread interrupted");
-         }
-         if (log.isTraceEnabled()) { log.trace("Connection checker stopped"); }
-      }
-      
-      public void run()
-      {
-         while (!isStopping())
-         {
-            try
-            {
-               Thread.sleep(pingCheckInterval);
-            }
-            catch (InterruptedException e)
-            {
-               //Ignore
-               break;
-            }
-            
-            long now = System.currentTimeMillis();
-            Iterator iter = connections.values().iterator();
-            while (iter.hasNext())
-            {
-               ServerConnectionDelegate conn = (ServerConnectionDelegate)iter.next();
-               
-               //long lastPinged = conn.getLastPinged();
-               long lastPinged = 0;
-               
-               if (now - lastPinged > connectionCloseTime)
-               {
-                  log.warn("Connection: " + conn.getConnectionID() + " has not pinged me for " + (now - lastPinged) + " ms, so I am closing it.");
-                  //Close the connection
-                  try
-                  {
-                     conn.close();
-                  }
-                  catch (JMSException e)
-                  {
-                     log.error("Failed to close connection", e);
-                  }
-               }
-               
-            }
-            
-         }
-      } 
-   }
+
 }

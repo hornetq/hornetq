@@ -99,6 +99,12 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
 
    void close();
    
+   MessageReference getFirst() throws Throwable;
+   
+   //Note - we can get rid of this if simplify concept of delivery
+   //see http://jira.jboss.com/jira/browse/JBMESSAGING-139
+   void add(Delivery delivery) throws Throwable;
+   
 }
 
 

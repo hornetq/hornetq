@@ -185,39 +185,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       
    }
 
-   
-   public void testBollox() throws Exception
-   {
-      
-      
-
-      TopicConnection conn1 = ((TopicConnectionFactory)cf).createTopicConnection();
-
-      TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      TopicSubscriber sub1 = sess1.createSubscriber(topic);
-      
-      //Send the messages
-      Connection conn2 = cf.createConnection();      
-      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sess2.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
-      TextMessage tm = sess2.createTextMessage("hello");
-      prod.send(tm);
-           
-      conn1.start();
-      
-      TextMessage tm2 = (TextMessage)sub1.receive(2000);
-      assertNotNull(tm2);
-      assertEquals("hello", tm2.getText());
-       
-      
-      conn1.close();
-      conn2.close();
-      
-   }
-   
-   
+  
    /**
     * A close terminates all pending message receives on the connection�s session�s  consumers. The
     * receives may return with a message or null depending on whether or not there was a message

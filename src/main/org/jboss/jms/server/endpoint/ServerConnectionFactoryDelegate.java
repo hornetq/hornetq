@@ -32,7 +32,6 @@ import org.jboss.aop.advice.AdviceStack;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
-import org.jboss.jms.client.container.InvokerInterceptor;
 import org.jboss.jms.client.container.JMSInvocationHandler;
 import org.jboss.jms.client.container.RemotingClientInterceptor;
 import org.jboss.jms.delegate.ConnectionDelegate;

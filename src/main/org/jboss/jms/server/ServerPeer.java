@@ -129,7 +129,7 @@ public class ServerPeer
    protected MessageStore ms;
 
    protected PersistenceManager pm;
-
+   
    protected int connFactoryIDSequence;
    
 

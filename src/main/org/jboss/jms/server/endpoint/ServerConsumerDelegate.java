@@ -129,7 +129,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       this.channel.add(this);
    }
 
-   // Receiver implementation ---------------------------------------
+   // Receiver implementation ---------------------------------------      
+   
+
 
    public synchronized Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
@@ -296,10 +298,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
    public javax.jms.Message receive(long timeout) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("receive invoked on client, grabbing a message from core"); }
-      grabMessage();
-
-      // we return null, the message will arrive asynchronously later
+      log.warn("receive is not handled on the server"); 
+      
       return null;
    }
    
@@ -398,6 +398,12 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          throw new IllegalStateException("Cannot find delivery to cancel");
       }
    }
+   
+   public javax.jms.Message getMessage() throws JMSException
+   {
+      javax.jms.Message m = grabMessage();
+      return m;
+   }
 
    // Public --------------------------------------------------------
 
@@ -446,7 +452,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    
    
-   void acknowledge(String messageID, Transaction tx)
+   synchronized void acknowledge(String messageID, Transaction tx)
    {
       if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
 
@@ -505,13 +511,110 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          disconnected = true;
       }
    }
+   
+   
 
    // Private -------------------------------------------------------
 
-   private synchronized void grabMessage()
-   {
-      ready = true;
-      channel.deliver(this);
+   /*
+    * We attempt to get the message directly fron the channel first.
+    * If we find one, we return that.
+    * Otherwise, we register as being interested in receiving a message
+    * asynchronously, then return and wait for it on the client side.
+    */
+   private synchronized javax.jms.Message grabMessage() throws JMSException
+   {          
+      if (closed)
+      {
+         if (log.isTraceEnabled()) { log.trace("consumer " + this + " closed, rejecting message" ); }
+         throw new IllegalStateException("Consumer is closed");
+      }
+
+      Message message = null;
+      
+      //We only get a message if the consumer is started
+      if (started)
+      {
+        
+         MessageReference ref = null;
+         
+         try
+         {
+            ref = channel.getFirst();            
+         }
+         catch (Throwable t)
+         {
+            //Hmmm.. why does this method need to throw Throwable ?????
+            String msg = "Failed to get ref from channel";
+            log.error(msg, t);
+            throw new JMSException(msg);
+         }
+         if (ref != null)
+         {
+            Delivery delivery = null;
+            message = ref.getMessage();
+   
+            message = JBossMessage.copy((javax.jms.Message)message);
+            
+            if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
+         
+            boolean accept = this.accept(message);
+            delivery = new SimpleDelivery(channel, ref);
+            if (!accept)
+            {
+               if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
+               //put it back
+               try
+               {
+                  //TODO-
+                  //Really the channel should *only* give us the message if it matches the filter
+                  //This should be unnecessary
+                  
+                  channel.add(delivery);
+                  boolean cancelled = delivery.cancel();
+               }
+               catch (Throwable t)
+               {
+                  String msg = "Failed to cancel delivery";
+                  log.error(msg, t);
+                  throw new JMSException(msg);               
+               }
+               message = null;
+            }
+            else
+            {   
+               if (ref.isRedelivered())
+               {
+                  message.setRedelivered(true);
+                  if (log.isTraceEnabled()) { log.trace("set the redelivered flag to true"); }
+               }
+                     
+               try
+               {
+                  channel.add(delivery);
+               }
+               catch (Throwable t)
+               {
+                  String msg = "Failed to add delivery to channel";
+                  log.error(msg, t);
+                  throw new JMSException(msg);
+               }
+               deliveries.add(delivery);
+            }
+         }
+      }
+            
+      //If we haven't got a message we do asynch.
+      if (message == null)
+      {
+         ready = true;
+         channel.deliver(this);
+         return null;
+      }
+      else
+      {
+         return (javax.jms.Message)message;
+      }
    }
 
 
