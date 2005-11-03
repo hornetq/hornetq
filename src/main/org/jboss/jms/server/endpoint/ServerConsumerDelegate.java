@@ -275,11 +275,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       
       this.started = started;   
       
-      if (started)
-      {
-         //need to prompt delivery
-         channel.deliver();
-      }
    }
    
    // ConsumerDelegate implementation -------------------------------
