@@ -80,6 +80,7 @@ public class ServerPeer
    private static final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
    private static final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
    private static ObjectName DESTINATION_MANAGER_OBJECT_NAME;
+   private static ObjectName STATE_MANAGER_OBJECT_NAME;
 
    static
    {
@@ -87,6 +88,8 @@ public class ServerPeer
       {
          DESTINATION_MANAGER_OBJECT_NAME =
          new ObjectName("jboss.messaging:service=DestinationManager");
+         STATE_MANAGER_OBJECT_NAME =
+            new ObjectName("jboss.messaging:service=StateManager");
       }
       catch(Exception e)
       {
@@ -102,10 +105,11 @@ public class ServerPeer
    protected String serverPeerID;
    protected InvokerLocator locator;
    protected ObjectName connector;
-   //protected ObjectName securityManagerON;
+
 
 
    protected ClientManager clientManager;
+   protected StateManager stateManager;
    protected DestinationManagerImpl destinationManager;
    protected SecurityManager securityManager;
    protected Map connFactoryDelegates;
@@ -173,12 +177,15 @@ public class ServerPeer
       
       txRepository = new TransactionRepository(pm);
      
-
       // TODO: is should be possible to share this with other peers
       ms = new PersistentMessageStore(serverPeerID, pm);
 
-      clientManager = new ClientManager(this);
+      clientManager = new ClientManagerImpl(this);
       destinationManager = new DestinationManagerImpl(this);
+            
+      JDBCStateManager jdbcStateManager = new JDBCStateManager(this);
+      jdbcStateManager.start();
+      stateManager = jdbcStateManager;
       
       //FIXME
       //Important Note
@@ -229,6 +236,8 @@ public class ServerPeer
 
       mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
       
+      mbeanServer.registerMBean(stateManager, STATE_MANAGER_OBJECT_NAME);
+      
       securityManager.init();
       
       setupConnectionFactories();
@@ -249,17 +258,23 @@ public class ServerPeer
 
       log.debug(this + " stopping");
       
-      clientManager.stop();
-
       tearDownConnectionFactories();
-
-
+      
+      destinationManager.destroyAllDestinations();
+      pm = null;      
+      txRepository = null;      
+      ms = null;
+      clientManager = null;      
+      destinationManager = null;      
+      stateManager = null;
+      
       // remove the JMS subsystem
 //      mbeanServer.invoke(connector, "removeInvocationHandler",
 //                         new Object[] {"JMS"},
 //                         new String[] {"java.lang.String"});
 
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
+      mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
       tearDownAdvisors();
 
       started = false;
@@ -312,6 +327,7 @@ public class ServerPeer
       connector = on;
    }
    
+   
    public void setSecurityDomain(String securityDomain)
    {
       securityManager.setSecurityDomain(securityDomain);
@@ -362,6 +378,11 @@ public class ServerPeer
    public ClientManager getClientManager()
    {
       return clientManager;
+   }
+   
+   public StateManager getStateManager()
+   {
+      return stateManager;
    }
 
    public DestinationManagerImpl getDestinationManager()

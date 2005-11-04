@@ -61,6 +61,11 @@ public class Queue extends ChannelSupport
    {
       return "CoreQueue[" + getChannelID() + "]";
    }
+   
+   public void load() throws Exception
+   {
+      state.load();
+   }
 
    // Package protected ---------------------------------------------
    

@@ -129,6 +129,9 @@ public class MessageConsumerTest extends MessagingTestCase
       queueProducer = producerSession.createProducer(queue);
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueConsumer = consumerSession.createConsumer(queue);
+      
+      super.drainDestination(cf, queue);
+      super.drainDestination(cf, queue2);
 
       log.debug("setup done");
    }
@@ -1132,6 +1135,8 @@ public class MessageConsumerTest extends MessagingTestCase
       t3.join();
       
       sess1.close();
+      sess2.close();
+      sess3.close();
       prodSession.close();
       
       assertTrue(!rec1.failed);
@@ -1492,7 +1497,7 @@ public class MessageConsumerTest extends MessagingTestCase
       long t1 = System.currentTimeMillis();
       assertNull(topicConsumer.receive(1500));
       long elapsed = System.currentTimeMillis() - t1;
-      log.info("timeToSleep = " + timeToSleep + " ms, elapsed = " + elapsed + " ms");
+      log.trace("timeToSleep = " + timeToSleep + " ms, elapsed = " + elapsed + " ms");
 
       // make sure it didn't wait 5 seconds to return null; allow 10 ms for overhead
       assertTrue(elapsed <= timeToSleep + 100);
@@ -1546,7 +1551,7 @@ public class MessageConsumerTest extends MessagingTestCase
 ////      for(int i = 0; i < NUM_MESSAGES; i++)
 ////      {
 ////         l.waitForMessages();
-////         log.info("got message " + i);
+////         log.trace("got message " + i);
 ////      }
 ////
 ////
@@ -1580,7 +1585,7 @@ public class MessageConsumerTest extends MessagingTestCase
 ////      for(int i = 0; i < NUM_MESSAGES; i++)
 ////      {
 ////         l.waitForMessages();
-////         log.info("got message " + i);
+////         log.trace("got message " + i);
 ////      }
 ////
 ////
@@ -1601,12 +1606,12 @@ public class MessageConsumerTest extends MessagingTestCase
       MessageListenerImpl listener1 = new MessageListenerImpl();
       
       topicConsumer.setMessageListener(listener1);
-      log.info("Set message listener1");
+      log.trace("Set message listener1");
 
       MessageListenerImpl listener2 = new MessageListenerImpl();
       
       topicConsumer.setMessageListener(listener2);
-      log.info("Set message listener2");
+      log.trace("Set message listener2");
 
       consumerConnection.start();
 
@@ -1615,7 +1620,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
       // block the current thread until the listener gets something; this is to avoid closing
       // connection too early
-      //log.info("Waiting for messages....");
+      //log.trace("Waiting for messages....");
       
       listener2.waitForMessages();
 
@@ -1653,7 +1658,7 @@ public class MessageConsumerTest extends MessagingTestCase
       catch(JMSException e)
       {
           // ok
-         log.info(e.getMessage());
+         log.trace(e.getMessage());
       }
    }
 
@@ -2646,15 +2651,20 @@ public class MessageConsumerTest extends MessagingTestCase
       listener.waitForMessages();
       
       assertFalse(listener.failed);
-      
-      
-     }
    
+        conn.close();
+      
+      
+   }
+   
+
    public void testRedelMessageListener2() throws Exception
    {
       Connection conn = cf.createConnection();
       
       conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       
@@ -2665,7 +2675,7 @@ public class MessageConsumerTest extends MessagingTestCase
       
       cons.setMessageListener(listener);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");
@@ -2674,16 +2684,147 @@ public class MessageConsumerTest extends MessagingTestCase
       prod.send(m2);
       prod.send(m3);
       
-      sess.commit();
+      listener.waitForMessages();
       
+      assertFalse(listener.failed);
+      
+      conn.close();
+      
+   }
+
+   
+   public void testExceptionMessageListener1() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sessSend.createProducer(queue);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
       
       listener.waitForMessages();
       
       assertFalse(listener.failed);
       
+      conn.close();
       
    }
-
+   
+   public void testExceptionMessageListener2() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sessSend.createProducer(queue);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
+      
+      listener.waitForMessages();
+      
+      assertFalse(listener.failed);
+      
+      conn.close();
+      
+   }
+   
+   public void testExceptionMessageListener3() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sessSend.createProducer(queue);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
+      
+      listener.waitForMessages();
+      
+      assertFalse(listener.failed);
+      
+      conn.close();
+      
+   }
+   
+   public void testExceptionMessageListener4() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sessSend.createProducer(queue);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
+      
+      listener.waitForMessages();
+      
+      assertFalse(listener.failed);
+      
+      conn.close();
+      
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -2692,6 +2833,115 @@ public class MessageConsumerTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
 
+   private class ExceptionRedelMessageListenerImpl implements MessageListener
+   {
+      private Latch latch = new Latch();
+      
+      private int count;
+      
+      private Session sess;
+      
+      private boolean failed;
+      
+      public void waitForMessages() throws InterruptedException
+      {
+         latch.acquire();
+      }
+       
+      public ExceptionRedelMessageListenerImpl(Session sess)
+      {
+         this.sess = sess;
+      }
+      
+      public void onMessage(Message m)
+      {
+         TextMessage tm = (TextMessage)m;
+         count++;
+         
+         log.trace("Got message:" + count);
+         
+         
+         try
+         {
+            log.trace("message:" + tm.getText());
+            if (count == 1)
+            {
+               if (!("a".equals(tm.getText())))
+               {
+                  log.trace("Should be a but was " + tm.getText());
+                  failed = true;
+               }
+               log.trace("Throwing exception");
+               throw new RuntimeException("Aardvark");
+            }
+            else if (count == 2)
+            {
+               log.trace("ack mode:" + sess.getAcknowledgeMode());
+               if (sess.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE || sess.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
+               {
+                  //Message should be immediately redelivered
+                  if (!("a".equals(tm.getText())))
+                  {
+                     log.trace("Should be a but was " + tm.getText());
+                     failed = true;
+                  }
+               }
+               else
+               {
+                  //Transacted or CLIENT_ACKNOWLEDGE - next message should be delivered
+                  if (!("b".equals(tm.getText())))
+                  {
+                     log.trace("Should be b but was " + tm.getText());
+                     failed = true;
+                  }
+               }
+            }
+            else if (count == 3)
+            {
+               if (sess.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE || sess.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
+               {
+                  if (!("b".equals(tm.getText())))
+                  {
+                     log.trace("Should be b but was " + tm.getText());
+                     failed = true;
+                  }
+               }
+               else
+               {
+                  if (!("c".equals(tm.getText())))
+                  {
+                     log.trace("Should be c but was " + tm.getText());
+                     failed = true;
+                  }
+                  latch.release();
+               }
+            }
+            
+            else if (count == 4)
+            {
+               if (sess.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE || sess.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
+               {
+                  if (!("c".equals(tm.getText())))
+                  {
+                     log.trace("Should be c but was " + tm.getText());
+                     failed = true;
+                  }
+                  latch.release();
+               }
+               else
+               {
+                  //Shouldn't get a 4th messge
+                  failed = true;
+               }
+            }
+         }
+         catch (JMSException e)
+         {           
+            failed = true;
+         }
+      }
+   }
+   
    private class RedelMessageListenerImpl implements MessageListener
    {
       private Session sess;
@@ -2721,12 +2971,13 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             TextMessage tm = (TextMessage)m;
             
-            log.info("Got message:" + count);
+            log.trace("Got message:" + count);
             
             if (count == 0)
             {
                if (!("a".equals(tm.getText())))
                {
+                  log.trace("Should be a but was " + tm.getText());
                   failed = true;
                }
                if (transacted)
@@ -2743,6 +2994,7 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                if (!("a".equals(tm.getText())))
                {
+                  log.trace("Should be a but was " + tm.getText());
                   failed = true;
                }
             }
@@ -2750,6 +3002,7 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                if (!("b".equals(tm.getText())))
                {
+                  log.trace("Should be b but was " + tm.getText());
                   failed = true;
                }
             }
@@ -2757,6 +3010,7 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                if (!("c".equals(tm.getText())))
                {
+                  log.trace("Should be c but was " + tm.getText());
                   failed = true;
                }
                if (transacted)
@@ -2788,7 +3042,7 @@ public class MessageConsumerTest extends MessagingTestCase
       public void onMessage(Message m)
       {
          messages.add(m);
-         log.info("Added message " + m + " to my list");
+         log.trace("Added message " + m + " to my list");
 
          latch.release();
          //latch = new Latch();

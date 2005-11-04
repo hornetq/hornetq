@@ -19,65 +19,81 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.local;
+package org.jboss.jms.server;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jms.JMSException;
 
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.local.DurableSubscription;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * 
- * Represents a durable topic subscription
- * 
+ * Implementation of ClientManager
+ *
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  */
-public class DurableSubscription extends Subscription
+public class ClientManagerImpl implements ClientManager
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ClientManagerImpl.class);
+
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
+
+   protected ServerPeer serverPeer;
+   protected Map connections;
    
-   protected String subName;
    
    // Constructors --------------------------------------------------
 
-   public DurableSubscription(String clientID, String subName, Topic topic, String selector,
-                              MessageStore ms, PersistenceManager pm)
+   public ClientManagerImpl(ServerPeer serverPeer)
    {
-      super(clientID + "." + subName, topic, selector, ms, pm);
-      this.subName = subName;
-   }
-   
+      this.serverPeer = serverPeer;
+      connections = new ConcurrentReaderHashMap();
+      
 
-   // Channel implementation ----------------------------------------
+   }
 
    // Public --------------------------------------------------------
    
-   public void closeConsumer(PersistenceManager pm) throws JMSException
+
+   public ServerConnectionDelegate putConnectionDelegate(Serializable connectionID,
+                                                         ServerConnectionDelegate d)
    {
-      //do nothing - this is durable
+      return (ServerConnectionDelegate)connections.put(connectionID, d);
    }
    
-   public String getSubName()
+   public void removeConnectionDelegate(Serializable connectionID)
    {
-      return subName;
-   }
-   
-   public void load() throws Exception
-   {
-      this.state.load();
+      connections.remove(connectionID);
    }
 
+   public ServerConnectionDelegate getConnectionDelegate(Serializable connectionID)
+   {
+      return (ServerConnectionDelegate)connections.get(connectionID);
+   }
+   
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
    
-   // Inner classes -------------------------------------------------   
-}
+   // Inner classes -------------------------------------------------
 
+}

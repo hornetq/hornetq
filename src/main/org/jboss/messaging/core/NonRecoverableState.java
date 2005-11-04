@@ -249,6 +249,11 @@ public class NonRecoverableState implements State
       messageRefs.clear();
       messageRefs = null;
    }
+   
+   public void load() throws Exception
+   {
+      //do nothing
+   }
 
    // Public --------------------------------------------------------
    
@@ -311,7 +316,10 @@ public class NonRecoverableState implements State
             messageRefs.add(ref);
          }
 
-         channel.deliver();
+         //FIXME - in the case of JMS, we only ever want ONE message, so deliver() is
+         //doing unnecessary work
+         //We could provide a flag to determine whether deliver() or deliverOnlyOne() is called
+         channel.deliver();         
       }            
    }
 

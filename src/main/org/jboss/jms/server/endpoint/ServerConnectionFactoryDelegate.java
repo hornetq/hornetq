@@ -24,7 +24,7 @@ package org.jboss.jms.server.endpoint;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 
-import javax.jms.JMSSecurityException;
+import javax.jms.JMSException;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.aop.Dispatcher;
@@ -46,6 +46,7 @@ import org.jboss.logging.Logger;
  * server.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -62,26 +63,26 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
 
    protected ServerPeer serverPeer;
    
-   protected String defaultClientID;
+   protected String clientID;
 
    // Constructors --------------------------------------------------
 
    public ServerConnectionFactoryDelegate(ServerPeer serverPeer, String defaultClientID)
    {
       this.serverPeer = serverPeer;
-      this.defaultClientID = defaultClientID;
+      this.clientID = defaultClientID;
    }
 
    // ConnectionFactoryDelegate implementation ----------------------
 
    public ConnectionDelegate createConnectionDelegate()
-      throws JMSSecurityException
+      throws JMSException
    {
       return createConnectionDelegate(null, null);
    }
 
    public ConnectionDelegate createConnectionDelegate(String username, String password)
-      throws JMSSecurityException
+      throws JMSException
    {
       log.debug("Creating a new connection with username=" + username);
       
@@ -112,10 +113,20 @@ public class ServerConnectionFactoryDelegate implements ConnectionFactoryDelegat
             RemotingClientInterceptor.SUBSYSTEM,
                            "JMS",
                            PayloadKey.AS_IS);
+      
+      //See if there is a preconfigured client id for the user
+      if (username != null)
+      {
+         String preconfClientID = serverPeer.getStateManager().getPreConfiguredClientID(username);
+         if (preconfClientID != null)
+         {
+            clientID = preconfClientID;
+         }
+      }
 
       // create the corresponding "server-side" ConnectionDelegate and register it with the
       // server peer's ClientManager
-      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer, defaultClientID, username, password);
+      ServerConnectionDelegate scd = new ServerConnectionDelegate(serverPeer, clientID, username, password);
       clientManager.putConnectionDelegate(scd.getConnectionID(), scd);
       
       metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_ID,

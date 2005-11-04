@@ -120,4 +120,6 @@ public interface State
     */
    void clear();
    
+   void load() throws Exception;
+   
 }

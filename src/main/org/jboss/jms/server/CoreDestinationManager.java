@@ -21,7 +21,9 @@
   */
 package org.jboss.jms.server;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -29,6 +31,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 
@@ -123,29 +126,55 @@ class CoreDestinationManager
          c = new Queue(name,
                        sp.getMessageStore(),
                        sp.getPersistenceManager());
+         
+         try
+         {
+            //We load the queue with any state it might have in the db
+            ((Queue)c).load();
+         }
+         catch (Exception e)
+         {
+            JMSException e2 = new JMSException("Failed to load queue state");
+            e2.setLinkedException(e);
+            throw e2;
+         }
+         
          queueMap.put(name, c);
       }
       else
       {
          // TODO I am using LocalTopics for the time being, switch to distributed Topics
          c = new Topic(name);
+         
          topicMap.put(name, c);
-      }
-      
-      //We also remove all message data here just in case there was any data left around in the database
-      //from a previous failure
-      try
-      {
-         sp.getPersistenceManager().removeAllMessageData(name);
          
-         //FIXME - Also need to remove any message refs stored in memory for this destination
+         //TODO
+         //The following piece of code may be better placed either in the Topic itself
+         //or in the StateManager - I'm not sure it really belongs here
+         
+         //Load any durable subscriptions for the Topic
+         Set durableSubs = sp.getStateManager().loadDurableSubscriptionsForTopic(name);
+         Iterator iter = durableSubs.iterator();
+         while (iter.hasNext())
+         {
+            DurableSubscription sub = (DurableSubscription)iter.next();
+            //load the state of the dub
+            try
+            {
+               sub.load();
+            }
+            catch (Exception e)
+            {
+               JMSException e2 = new JMSException("Failed to load durable subscription state");
+               e2.setLinkedException(e);
+               throw e2;
+            }
+            //and subscribe it to the Topic
+            sub.subscribe();
+         }
+         
          
       }
-      catch (Exception e)
-      {
-         log.error("Failed to remove message data", e);
-      }
-      
    }
    
    /**
@@ -153,18 +182,7 @@ class CoreDestinationManager
     */
    Distributor removeCoreDestination(boolean isQueue, String name)
    {
-      ServerPeer sp = destinationManager.getServerPeer();
-      try
-      {
-         sp.getPersistenceManager().removeAllMessageData(name);
-         
-         //FIXME - Also need to remove any message refs stored in memory for this destination
-         
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to remove message data", e);
-      }
+  
       if (isQueue)
       {
          return (Distributor)queueMap.remove(name);

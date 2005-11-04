@@ -22,6 +22,8 @@
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
@@ -45,6 +47,8 @@ public class RecoverableState extends NonRecoverableState
 
    private PersistenceManager pm;
    private Serializable channelID;
+   private Serializable storeID;
+   private MessageStore messageStore;
 
    // Constructors --------------------------------------------------
 
@@ -59,6 +63,11 @@ public class RecoverableState extends NonRecoverableState
 
       // the channel isn't going to change, so cache its id
       this.channelID = channel.getChannelID();
+      
+      this.storeID = channel.getMessageStore().getStoreID();
+      
+      this.messageStore = channel.getMessageStore();
+      
    }
 
    // NonRecoverableState overrides -------------------------------------
@@ -70,74 +79,99 @@ public class RecoverableState extends NonRecoverableState
 
    public void add(MessageReference ref, Transaction tx) throws Throwable
    {
-      super.add(ref, tx);
-
-      if (ref.isReliable())
-      {
-         //Reliable message in a recoverable state - also add to db
-         if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-         pm.add(channelID, ref, tx);
-      }
-
-      if (tx != null)
-      {
-         addAddReferenceTask(tx);
-         if (log.isTraceEnabled()) { log.trace("added an Add task to transaction " + tx); }
+      //We synchronize on the ref to prevent a message being removed from memory
+      //and failing on attempting to remove from db, because it tries after the message
+      //is added to memory but before it's been added to db
+      synchronized (ref)
+      {      
+         super.add(ref, tx);
+   
+         if (ref.isReliable())
+         {
+            //Reliable message in a recoverable state - also add to db
+            if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+            pm.add(channelID, ref, tx);
+         }
+   
+         if (tx != null)
+         {
+            addAddReferenceTask(tx);
+            if (log.isTraceEnabled()) { log.trace("added an Add task to transaction " + tx); }
+         }
       }
    }
 
    public void addFirst(MessageReference ref) throws Throwable
    {
-      super.addFirst(ref);
-
-      if (ref.isReliable())
-      {
-         //Reliable message in a recoverable state - also add to db
-         if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database"); }
-         // TODO Q1 - have a method that enforces ordering
-         pm.add(channelID, ref, null);
-         if (log.isTraceEnabled()) { log.trace("added " + ref + " to database"); }
+      //We synchronize on the ref to prevent a message being removed from memory
+      //and failing on attempting to remove from db, because it tries after the message
+      //is added to memory but before it's been added to db
+      synchronized (ref)
+      {         
+         super.addFirst(ref);
+   
+         if (ref.isReliable())
+         {
+            //Reliable message in a recoverable state - also add to db
+            if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database"); }
+            // TODO Q1 - have a method that enforces ordering
+            pm.add(channelID, ref, null);
+            if (log.isTraceEnabled()) { log.trace("added " + ref + " to database"); }
+         }
       }
    }
 
 
    public boolean remove(MessageReference ref) throws Throwable
    {
-      boolean memory = super.remove(ref);
-      if (!memory)
+      //We synchronize on the ref to prevent a message being removed from memory
+      //and failing on attempting to remove from db, because it tries after the message
+      //is added to memory but before it's been added to db
+      synchronized (ref)
       {
-         return false;
+         boolean memory = super.remove(ref);
+         if (!memory)
+         {
+            return false;
+         }
+   
+         if (ref.isReliable())
+         {
+            boolean database = pm.remove(channelID, ref);
+            if (database && log.isTraceEnabled()) { log.trace("removed " + ref + " from database"); }
+            return database;
+         }
+   
+         return memory;
       }
-
-      if (ref.isReliable())
-      {
-         boolean database = pm.remove(channelID, ref);
-         if (database && log.isTraceEnabled()) { log.trace("removed " + ref + " from database"); }
-         return database;
-      }
-
-      return memory;
    }
 
    public MessageReference remove() throws Throwable
-   {
+   {      
       MessageReference removed = super.remove();
       if (removed == null)
       {
          return null;
       }
-
-      if (removed.isReliable())
+      
+      //We synchronize on the ref to prevent a message being removed from memory
+      //and failing on attempting to remove from db, because it tries after the message
+      //is added to memory but before it's been added to db
+      synchronized (removed)
       {
-         boolean database = pm.remove(channelID, removed);
-         if (!database)
-         {
-            throw new IllegalStateException("reference " + removed + " not found in database");
-         }
-         else if (log.isTraceEnabled()) { log.trace("removed " + removed + " from database"); }
-      }
 
-      return removed;
+         if (removed.isReliable())
+         {
+            boolean database = pm.remove(channelID, removed);
+            if (!database)
+            {
+               throw new IllegalStateException("reference " + removed + " not found in database");
+            }
+            else if (log.isTraceEnabled()) { log.trace("removed " + removed + " from database"); }
+         }
+   
+         return removed;
+      }
    }
 
    public void add(Delivery d) throws Throwable
@@ -145,33 +179,47 @@ public class RecoverableState extends NonRecoverableState
       // Note! Adding of deliveries to the state is NEVER done in a transactional context.
       // The only things that are done in a transactional context are sending of messages and
       // removing deliveries (acking).
-
-      super.add(d);
-
-      if (d.getReference().isReliable())
+      
+      //We synchronize on the delivery to prevent a delivery being removed from memory
+      //and failing on attempting to remove from db, because it tries after the delivery
+      //is added to memory but before it's been added to db
+      synchronized (d)
       {
-         // also add delivery to persistent storage (reliable delivery in recoverable state)
-         pm.add(channelID, d);
-         if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
+   
+         super.add(d);
+   
+         if (d.getReference().isReliable())
+         {
+            // also add delivery to persistent storage (reliable delivery in recoverable state)
+            pm.add(channelID, d);
+            if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
+         }
       }
    }
 
    public boolean remove(Delivery d, Transaction tx) throws Throwable
    {
-      boolean memory = super.remove(d, tx);
-      if (!memory)
+      //We synchronize on the delivery to prevent a delivery being removed from memory
+      //and failing on attempting to remove from db, because it tries after the delivery
+      //is added to memory but before it's been added to db
+      synchronized (d)
       {
-         return false;
+      
+         boolean memory = super.remove(d, tx);
+         if (!memory)
+         {
+            return false;
+         }
+   
+         if (d.getReference().isReliable())
+         {
+            boolean database = pm.remove(channelID, d, tx);
+            if (database && log.isTraceEnabled()) { log.trace("removed " + d + " from database " + (tx == null ? "non-transactionally" : " on transaction " + tx)); }
+            return database;
+         }
+   
+         return memory;
       }
-
-      if (d.getReference().isReliable())
-      {
-         boolean database = pm.remove(channelID, d, tx);
-         if (database && log.isTraceEnabled()) { log.trace("removed " + d + " from database " + (tx == null ? "non-transactionally" : " on transaction " + tx)); }
-         return database;
-      }
-
-      return memory;
    }
 
    public void clear()
@@ -180,8 +228,37 @@ public class RecoverableState extends NonRecoverableState
       pm = null;
       // the persisted state remains
    }
+   
+   /**
+    * Load the state from persistent storage
+    */
+   public void load() throws Exception
+   {
+      List refs = pm.messages(storeID, channelID);
+      
+      Iterator iter = refs.iterator();
+      while (iter.hasNext())
+      {
+         String messageID = (String)iter.next();
+         MessageReference ref = messageStore.getReference(messageID);
+         messageRefs.add(ref);
+      }
+      
+      List dels = pm.deliveries(storeID, channelID);
+      iter = dels.iterator();
+      while (iter.hasNext())
+      {
+         String messageID = (String)iter.next();
+         MessageReference ref = messageStore.getReference(messageID);
+         Delivery del = new SimpleDelivery(channel, ref);
+         deliveries.add(del);
+      }
+      
+   }
 
    // Public --------------------------------------------------------
+   
+   
 
    // Package protected ---------------------------------------------
    

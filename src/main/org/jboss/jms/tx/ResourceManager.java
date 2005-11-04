@@ -104,10 +104,14 @@ public class ResourceManager
     * @param Xid - The id of the transaction to add the message to
     * @param ackInfo Information describing the acknowledgement
     */
-   public void addAck(Object xid, AckInfo ackInfo)
+   public void addAck(Object xid, AckInfo ackInfo) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("Addding ack for xid:" + xid); }
       TxState tx = getTx(xid);
+      if (tx == null)
+      {
+         throw new JMSException("There is no transaction with id:" + xid);
+      }
       tx.acks.add(ackInfo);
    }
          

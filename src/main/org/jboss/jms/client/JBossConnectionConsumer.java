@@ -87,6 +87,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    /** The thread id generator */
    protected static SynchronizedInt threadId = new SynchronizedInt(0);
    
+   protected Object closeLock = new Object();
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -143,36 +145,35 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       
       closed = true;
       
-      //JMSInvocationHandler handler = (JMSInvocationHandler)Proxy.getInvocationHandler(cons);            
-
       if (trace) { log.trace("Closed message handler"); }
       
-      //wait for the run thread to finish
-      if (internalThread != null && !internalThread.equals(Thread.currentThread()))
+      internalThread.interrupt();
+          
+      try
       {
-         try
+         internalThread.join(3000);
+         if (internalThread.isAlive())
          {
             internalThread.interrupt();
-            if (trace)
-               log.trace("Joining thread " + this);
             internalThread.join();
-            if (trace)
-               log.trace("Joined thread " + this);
-         }
-         catch (InterruptedException e)
-         {
-            if (trace)
-               log.trace("Ignoring interrupting while joining thread " + this);
-         }
+         }         
+      }
+      catch (InterruptedException e)
+      {
+         if (trace)
+            log.trace("Ignoring interrupting while joining thread " + this);
       }
       
       sess.close();
       
       if (trace) { log.trace("Closed: " + this); }
+      
    }
    
    // Runnable implementation ---------------------------------------
-
+   
+   
+   
    public void run()
    {
       if (trace) { log.trace("running connection consumer"); }
@@ -181,6 +182,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
          LinkedList queue = new LinkedList();
          outer: while (true)
          {
+            
             if (closed)
             {
                if (trace) { log.trace("Connection consumer is closed, breaking"); }
@@ -199,6 +201,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   {
                      m = cons.receive(-1);
                   }
+                  
                   if (m == null)
                   {
                      if (trace) { log.trace("Didn't get message"); }
@@ -207,7 +210,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   if (trace) { log.trace("Got message, adding to queue"); }
                   queue.addLast(m);
                }
-               if (queue.isEmpty() && !closed)
+               if (queue.isEmpty())
                {
                   //We didn't get any messages doing receiveNoWait, so let's wait
                   //This returns if a message is received or by the consumer closing
@@ -218,6 +221,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   {
                      m = cons.receive(0);
                   }
+                  
                   if (m != null)
                   {
                      if (trace) { log.trace("Got message, adding to queue"); }
@@ -232,7 +236,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
             }
             
-            if (!queue.isEmpty() && !closed)
+            if (!queue.isEmpty())
             {
                if (trace) { log.trace("I have " + queue.size() + " messages to send to session"); }
                ServerSession serverSession = serverSessionPool.getServerSession();
@@ -246,7 +250,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
                for (int i = 0; i < queue.size(); i++)
                {
-                  session.addAsfMessage((Message) queue.get(i), receiverID);
+                  session.addAsfMessage((Message) queue.get(i), receiverID, cons);
                   if (trace) { log.trace("Added message to session"); }
                }
 
@@ -255,8 +259,13 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                if (trace) { log.trace("ServerSession processed messages"); }
                queue.clear();
             }
+            
          }
          if (trace) { log.trace("ConnectionConsumer run() exiting"); }
+      }
+      catch (JMSException e)
+      {
+         //Receive interrupted - ignore
       }
       catch (Throwable t)
       {

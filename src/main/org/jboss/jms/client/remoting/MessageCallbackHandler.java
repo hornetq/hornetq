@@ -24,6 +24,7 @@ package org.jboss.jms.client.remoting;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.Session;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.jms.client.container.JMSMethodInvocation;
@@ -55,6 +56,90 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Static --------------------------------------------------------
    
+   public static void callOnMessage(ConsumerDelegate cons, SessionDelegate sess, MessageListener listener,
+         String receiverID, boolean isConnectionConsumer, Message m)
+   {
+      preDeliver(sess, receiverID, m, isConnectionConsumer);
+      
+      try
+      {      
+         listener.onMessage(m);         
+      }
+      catch (RuntimeException e)
+      {
+         //See JMS1.1 spec 4.5.2
+         try
+         {
+            int ackMode = sess.getAcknowledgeMode();
+            
+            if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+            {
+               //Cancel the message - this means it will be immediately redelivered
+               try
+               {
+                  cons.cancelMessage(m.getJMSMessageID());
+               }
+               catch (JMSException e2)
+               {
+                  log.error("Failed to cancel message", e2);
+               }
+            }
+            else
+            {
+               //Session is either transacted or CLIENT_ACKNOWLEDGE
+               //We just deliver next message
+            }
+         }
+         catch (JMSException e2)
+         {
+            log.error("Failed to get ack mode", e);
+         }   
+      }
+      
+      postDeliver(sess, receiverID, m, isConnectionConsumer);
+     
+   }
+   
+   protected static void preDeliver(SessionDelegate sess, String receiverID, Message m, boolean isConnectionConsumer)
+   {
+      try
+      {
+         //If this is the callback-handler for a connection consumer we don't want
+         //to acknowledge or add anything to the tx for this session
+         if (!isConnectionConsumer)
+         {
+            sess.preDeliver(m.getJMSMessageID(), receiverID);
+         }
+      }
+      catch (JMSException e)
+      {
+         final String msg = "Failed to get message id";
+         log.error(msg, e);
+         //Not much we can do here
+         throw new IllegalStateException(e);
+      }      
+   }
+   
+   protected static void postDeliver(SessionDelegate sess, String receiverID, Message m, boolean isConnectionConsumer)
+   {
+      try
+      {
+         //If this is the callback-handler for a connection consumer we don't want
+         //to acknowledge or add anything to the tx for this session
+         if (!isConnectionConsumer)
+         {
+            sess.postDeliver(m.getJMSMessageID(), receiverID);
+         }
+      }
+      catch (JMSException e)
+      {
+         final String msg = "Failed to get message id";
+         log.error(msg, e);
+         //Not much we can do here
+         throw new IllegalStateException(e);
+      }      
+   }
+   
    // Attributes ----------------------------------------------------
 
    protected SynchronousChannel channel;   
@@ -83,9 +168,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    protected int listenerThreadCount;
    
-   protected volatile boolean listenerStopping;
+   protected volatile boolean stopping;
    
-   protected volatile boolean receiverStopping;
+   //protected volatile boolean receiverStopping;
    
    protected volatile boolean waiting;
 
@@ -166,14 +251,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {            
             if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
             
-            if (!listenerStopping)
+            if (!stopping)
             {               
                JBossMessage m = getMessage(0);
             
-               preDeliver(m);   
-               listener.onMessage(m);
-               if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }
-               postDeliver(m);   
+               callOnMessage(consumerDelegate, sessionDelegate, listener, receiverID, isConnectionConsumer, m);
+               
+               if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }  
+               
             }
             else
             {
@@ -197,6 +282,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    
    // Public --------------------------------------------------------
+   
+
    
    public void setMessageListener(MessageListener listener) throws JMSException
    {
@@ -233,7 +320,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       {
          closed = true;
             
-         //Interrup the listening thread if there is one
+         //Interrupt the listening thread if there is one
          if (listening)
          {
             stopListener();
@@ -274,7 +361,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     *        concurrently closed.
     */
    public Message receive(long timeout, JMSMethodInvocation jmsmi, Interceptor receiverInt)
-      throws JMSException, InterruptedException
+      throws JMSException
    {            
 
       //Since the jms consumer is single threaded,
@@ -305,7 +392,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                {
                   if (log.isTraceEnabled()) log.trace("receive with no timeout");
                   
-                  if (!receiverStopping)
+                  if (!stopping)
                   {
                      m = getMessage(0);
                   }
@@ -322,7 +409,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                   //ReceiveNoWait
                   if (log.isTraceEnabled()) { log.trace("receive noWait"); }                  
                   
-                  if (!receiverStopping)
+                  if (!stopping)
                   {
                      m = getMessage(-1);
                   }
@@ -337,7 +424,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                {
                   if (log.isTraceEnabled()) { log.trace("receive timeout " + timeout + " ms, blocking poll on queue"); }
                   
-                  if (!receiverStopping)
+                  if (!stopping)
                   {
                      m = getMessage(timeout);
                   }
@@ -357,13 +444,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                
                if (closed)
                {
-                  if (log.isTraceEnabled()) { log.trace("It's closed"); }
                   return null;
                }
                else
                {
-                  throw e;
-               }          
+                  throw new JMSException("Interrupted");
+               }
             }
             
             if (log.isTraceEnabled()) { log.trace("got " + m); }
@@ -371,8 +457,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             if (!m.isExpired())
             {
                if (log.isTraceEnabled()) { log.trace("message " + m + " is not expired, returning it to the caller"); }
-               preDeliver(m);
-               postDeliver(m);
+               
+               preDeliver(sessionDelegate, receiverID, m, isConnectionConsumer);
+               
+               postDeliver(sessionDelegate, receiverID, m, isConnectionConsumer);
+               
                return m;
             }
             
@@ -453,29 +542,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
    }
    
-   protected void preDeliver(Message m) throws JMSException
-   {
-      //If this is the callback-handler for a connection consumer we don't want
-      //to acknowledge or add anything to the tx for this session
-      if (!this.isConnectionConsumer)
-      {
-         sessionDelegate.preDeliver(m.getJMSMessageID(), receiverID);
-      }
-   }
-   
-   protected void postDeliver(Message m) throws JMSException
-   {
-      //If this is the callback-handler for a connection consumer we don't want
-      //to acknowledge or add anything to the tx for this session
-      if (!this.isConnectionConsumer)
-      {
-         sessionDelegate.postDeliver(m.getJMSMessageID(), receiverID);
-      }
-   }
+  
    
    protected void stopListener()
    {
-      listenerStopping = true;
+      stopping = true;
       
       //The listener loop may not be waiting, so interrupting the thread will
       //not necessarily work, thus leaving it hanging
@@ -483,8 +554,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       listenerThread.interrupt();
       try
       {
-         listenerThread.join();
-         listenerStopping = false;
+         listenerThread.join(3000);
+         if (listenerThread.isAlive())
+         {
+            listenerThread.interrupt();
+            listenerThread.join();            
+         }
+         stopping = false;
       }
       catch (InterruptedException e)
       {
@@ -495,14 +571,17 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    protected void stopReceiver()
    {
-      receiverStopping = true;
+      stopping = true;
       
       //The listener loop may not be waiting, so interrupting the thread will
       //not necessarily work, thus leaving it hanging
       //so we use the listenerStopping variable too
       receiverThread.interrupt();
       
-      receiverStopping = false;
+      //FIXME - There is a possibility the receiver thread could still be waiting inside the receive() method
+      //after the interrupt - need to deal with this
+      
+      stopping = false;
          
    }
    
@@ -524,6 +603,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       
       //Get message from server if one is available
       m = (JBossMessage)getMessageFromServer();
+      
       
       if (m == null)
       {

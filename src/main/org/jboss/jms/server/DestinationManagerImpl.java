@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
@@ -122,12 +123,22 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       return serverPeer;
    }
    
-   /*
-   public DestinationManagerImpl getDestinationManager()
+   public void destroyAllDestinations() throws Exception
    {
-      return this;
+      Iterator iter = queueNameToJNDI.keySet().iterator();
+      while (iter.hasNext())
+      {
+         String queueName = (String)iter.next();
+         destroyQueue(queueName);
+      }
+      iter = topicNameToJNDI.keySet().iterator();
+      while (iter.hasNext())
+      {
+         String topicName = (String)iter.next();
+         destroyTopic(topicName);
+      }
    }
-   */
+   
 
    public synchronized void addTemporaryDestination(Destination jmsDestination) throws JMSException
    {

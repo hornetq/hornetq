@@ -82,6 +82,8 @@ public class ConnectionConsumerTest extends MessagingTestCase
       queue = (Destination)ic.lookup("/queue/Queue");
 
       log.debug("setup done");
+      
+      super.drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
@@ -150,13 +152,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages");
          }
          
-         log.info("Received all messages");
+         log.trace("Received all messages");
          
-         log.info("closing connection consumer ...");
+         log.trace("closing connection consumer ...");
          
          cc.close();
 
-         log.info("closing connections ...");
+         log.trace("closing connections ...");
 
          connProducer.close();
          connProducer = null;
@@ -172,6 +174,9 @@ public class ConnectionConsumerTest extends MessagingTestCase
       }
    }
   
+   
+
+   
    public void testRedelivery() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -241,7 +246,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          sessCons.setMessageListener(listener);
          
  
-         log.info("Rolling back session");
+         log.trace("Rolling back session");
          sessCons.rollback();
      
          listener.waitForLatch(10000);
@@ -258,15 +263,15 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages in redelivery");
          }
          
-         log.info("Received all messages in redelivery");
+         log.trace("Received all messages in redelivery");
          
          sessCons.commit();
          
-         log.info("Committed session");
+         log.trace("Committed session");
          
          cc.close();
          
-         log.info("Closed connection consumer");
+         log.trace("Closed connection consumer");
          
          connProducer.close();
          connProducer = null;
@@ -387,7 +392,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          {
     
             
-            log.info("Received message " + msgsReceived);
+            log.trace("Received message " + msgsReceived);
             
             TextMessage tm = (TextMessage)message;
             

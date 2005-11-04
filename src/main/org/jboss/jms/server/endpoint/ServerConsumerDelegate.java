@@ -38,17 +38,17 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.Subscription;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.local.Subscription;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -278,6 +278,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       if (started)
       {
          //need to prompt delivery
+         
+         //FIXME - Really we only want to prompt asynchronous delivery of ONE message
+         //not all of them - this is currently doing unnecessary work
          channel.deliver();
       }
    }
@@ -397,6 +400,12 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       {
          throw new IllegalStateException("Cannot find delivery to cancel");
       }
+      else
+      {
+         //FIXME - Really we only want to prompt asynchronous delivery of ONE message
+         //not all of them - this is currently doing unnecessary work
+         channel.deliver();
+      }
    }
    
    public javax.jms.Message getMessage() throws JMSException
@@ -491,6 +500,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          }
          i.remove();
       }
+      //FIXME - Really we only want to prompt asynchronous delivery of ONE message
+      //not all of them - this is currently doing unnecessary work
+      channel.deliver();
    }
 
    // Protected -----------------------------------------------------

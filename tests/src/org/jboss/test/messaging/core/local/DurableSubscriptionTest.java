@@ -60,7 +60,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
       ms = new PersistentMessageStore("persistent-message-store", pm);
       tr.setPersistenceManager(pm);
 
-      channel = new DurableSubscription("testDurableSubscription", null, null, ms, pm);
+      channel = new DurableSubscription("clientid123", "testDurableSubscription", null, null, ms, pm);
 
       log.debug("setup done");
    }

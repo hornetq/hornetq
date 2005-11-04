@@ -36,7 +36,9 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.logging.Logger;
 import org.jgroups.protocols.JMS;
@@ -139,6 +141,7 @@ public class AsfInterceptor
          
          Message m = (Message)mi.getArguments()[0];
          String theReceiverID = (String)mi.getArguments()[1];
+         ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
          if (this.receiverID != null && this.receiverID != theReceiverID)
          {
             throw new IllegalStateException("Cannot receive messages from more than one receiver");
@@ -157,6 +160,7 @@ public class AsfInterceptor
          AsfMessageHolder holder = new AsfMessageHolder();
          holder.msg = m;
          holder.receiverID = receiverID;
+         holder.consumerDelegate = cons;
          
          synchronized (msgs)
          {
@@ -175,11 +179,8 @@ public class AsfInterceptor
             {
                AsfMessageHolder holder = (AsfMessageHolder)msgs.removeFirst();
                
-               del.preDeliver(holder.msg.getJMSMessageID(), holder.receiverID);
-               
-               sessionListener.onMessage(holder.msg);
+               MessageCallbackHandler.callOnMessage(holder.consumerDelegate, del, sessionListener, holder.receiverID, false, holder.msg);
                               
-               del.postDeliver(holder.msg.getJMSMessageID(), holder.receiverID);               
             }
          }
          return null;
@@ -216,5 +217,6 @@ public class AsfInterceptor
    {
       Message msg;
       String receiverID;
+      ConsumerDelegate consumerDelegate;
    }
 }

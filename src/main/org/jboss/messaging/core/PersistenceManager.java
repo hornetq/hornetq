@@ -44,7 +44,7 @@ public interface PersistenceManager
    /**
     * @return a List of StorageIdentifiers for all messages for which there are active deliveries.
     */
-   List deliveries(Serializable channelID) throws Exception;
+   List deliveries(Serializable storeID, Serializable channelID) throws Exception;
 
    void add(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 
@@ -53,7 +53,7 @@ public interface PersistenceManager
    /**
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
     */
-   List messages(Serializable channelID) throws Exception;
+   List messages(Serializable storeID, Serializable channelID) throws Exception;
 
    void store(Message m) throws Exception;
    

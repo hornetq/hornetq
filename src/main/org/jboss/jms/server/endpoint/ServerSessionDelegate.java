@@ -58,9 +58,9 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.ClientManager;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.StateManager;
 import org.jboss.jms.server.container.JMSAdvisor;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.util.JBossJMSException;
@@ -68,7 +68,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
@@ -235,6 +234,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
     
       Distributor destination = dm.getCoreDestination(jmsDestination);
+      if (destination == null)
+      {
+         throw new InvalidDestinationException("Cannot find destination " + jmsDestination);
+      }
      
       // create the MessageConsumer dynamic proxy
 
@@ -277,7 +280,6 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       if (d.isTopic())
       {
          MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
-         PersistenceManager pm = connectionEndpoint.getServerPeer().getPersistenceManager();
          Topic topic = (Topic)destination;
 
          if (subscriptionName != null)
@@ -291,9 +293,9 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
             }
                      
             //It's a durable subscription - have we already got one with that name?
-            ClientManager clientManager = serverPeer.getClientManager();
+            StateManager stateManager = serverPeer.getStateManager();
                        
-            subscription = clientManager.getDurableSubscription(clientID, subscriptionName);                        
+            subscription = stateManager.getDurableSubscription(clientID, subscriptionName);                        
          
             if (subscription != null)
             {
@@ -326,10 +328,10 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                {
                   if (log.isTraceEnabled()) { log.trace("Changed so deleting old subscription"); }
                   
-                  DurableSubscription removed = this.serverPeer.getClientManager().
+                  boolean removed = this.serverPeer.getStateManager().
                      removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
    
-                  if (removed == null)
+                  if (!removed)
                   {
                      throw new InvalidDestinationException("Cannot find durable subscription with name " +
                         subscriptionName + " to unsubscribe");
@@ -347,9 +349,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
                         
                if (log.isTraceEnabled()) { log.trace("Creating new durable subscription on topic " + destination); }
              
-               subscription = new DurableSubscription(subscriptionName, topic, selector, ms, pm);
-                  
-               clientManager.addDurableSubscription(clientID, subscriptionName, (DurableSubscription)subscription);
+               subscription = stateManager.createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
             }
          } //durable sub
          else
@@ -779,14 +779,22 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       {
          throw new InvalidDestinationException("Destination is null");
       }
-      DurableSubscription subscription = this.serverPeer.getClientManager().
-            removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+      DurableSubscription subscription = this.serverPeer.getStateManager().getDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
 
       if (subscription == null)
       {
          throw new InvalidDestinationException("Cannot find durable subscription with name " +
             subscriptionName + " to unsubscribe");
       }
+      
+      boolean removed = 
+         this.serverPeer.getStateManager().removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+      
+      if (!removed)
+      {
+         throw new JMSException("Failed to remove durable subscription");
+      }
+
       
       subscription.unsubscribe();
       
@@ -820,7 +828,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       return false;
    }
    
-   public void addAsfMessage(Message m, String receiverID)
+   public void addAsfMessage(Message m, String receiverID, ConsumerDelegate cons)
    {
       log.warn("addAsfMessage should not be handled at the server endpoint");
    }

@@ -37,8 +37,8 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import javax.transaction.Status;
+import javax.transaction.TransactionManager;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
@@ -47,7 +47,6 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.StorageIdentifier;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -248,6 +247,14 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
          String sql =
                "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) VALUES (?, ?, ?, ?, ?)";
+         if (log.isTraceEnabled())
+         {
+            log.trace(sql);
+            log.trace("CHANNELID=" + channelID);
+            log.trace("MESSAGEID=" + ref.getMessageID());
+            log.trace("STOREID=" + ref.getStoreID());
+            
+         }
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)ref.getMessageID());
@@ -255,14 +262,19 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          if (txID == null)
          {
             ps.setNull(4, java.sql.Types.VARCHAR);
+            if (log.isTraceEnabled()) log.trace("TRANSACTIONID=NULL");
          }
          else
          {
             ps.setString(4, (String)txID);
+            if (log.isTraceEnabled()) log.trace("TRANSACTIONID=" + txID);
          }
          ps.setString(5, (String)state);
+         if (log.isTraceEnabled()) log.trace(("STATE=" + state));
 
          int inserted = ps.executeUpdate();
+         
+         if (log.isTraceEnabled()) log.trace("inserted " + inserted + " rows");
 
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID(), ref.getStoreID(), txID, state) + " inserted " + inserted + " row(s)"); }
       }
@@ -311,6 +323,14 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          conn = ds.getConnection();
          
          String sql = "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
+         
+         if (log.isTraceEnabled())
+         {
+            log.trace(sql);
+            log.trace("CHANNELID=" + channelID);
+            log.trace("MESSAGEID=" + ref.getMessageID());            
+         }
+         
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)ref.getMessageID());
@@ -318,6 +338,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID()) + " updated " + rows + " row(s)"); }
 
+         if (log.isTraceEnabled()) { log.trace("Deleted " + rows + " rows"); }
+         
          return rows == 1;
       }
       catch (SQLException e)
@@ -549,9 +571,9 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       }
    }
 
-   public List deliveries(Serializable channelID) throws Exception
+   public List deliveries(Serializable storeID, Serializable channelID) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("listing deliveries for channel: " + channelID); }
+      if (log.isTraceEnabled()) { log.trace("listing deliveries for channel: " + channelID + " and store " + storeID); }
 
       Connection conn = null;
       PreparedStatement ps = null;
@@ -566,20 +588,20 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
          // the deliveries that are currently being acknowledged in a transaction still count until
          // transaction commits
-         String sql = "SELECT MESSAGEID, STOREID FROM DELIVERY " +
-                      "WHERE CHANNELID=? AND (STATE='C' OR STATE='-')";
+         String sql = "SELECT MESSAGEID FROM DELIVERY " +
+                      "WHERE CHANNELID=? AND STOREID=? AND STATE='C'";
    
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
+         ps.setString(2, (String)storeID);
          
          rs = ps.executeQuery();
 
          int count = 0;
          while (rs.next())
          {
-            String id = rs.getString(1);
-            String storeID = rs.getString(2);
-            result.add(new StorageIdentifier(id, storeID));
+            String id = rs.getString(1);            
+            result.add(id);
             count++;
          }
 
@@ -692,9 +714,9 @@ public class HSQLDBPersistenceManager implements PersistenceManager
    
    
 
-   public List messages(Serializable channelID) throws Exception
+   public List messages(Serializable storeID, Serializable channelID) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Getting message references for channel " + channelID); }
+      if (log.isTraceEnabled()) { log.trace("Getting message references for channel " + channelID + " and store " + storeID); }
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
@@ -705,18 +727,18 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          List result = new ArrayList();
          conn = ds.getConnection();         
    
-         String sql = "SELECT MESSAGEID, STOREID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STATE='C'";
+         String sql = "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STOREID=? AND STATE='C'";
          
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
+         ps.setString(2, (String)storeID);
          
          rs = ps.executeQuery();
 
          while (rs.next())
          {
-            String id = rs.getString(1);
-            String storeID = rs.getString(2);
-            result.add(new StorageIdentifier(id, storeID));
+            String id = rs.getString(1);            
+            result.add(id);
          }
          
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID) + " selected " + result.size() + " row(s)"); }
@@ -1046,6 +1068,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          wrap.end();
       }
    }
+   
 
    // Public --------------------------------------------------------
 

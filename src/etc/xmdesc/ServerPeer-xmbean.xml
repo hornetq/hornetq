@@ -38,7 +38,7 @@
       <name>Connector</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   
+    
    <attribute access="read-only" getMethod="getServerPeer">
       <description>Get a reference to the ServerPeer object</description>
       <name>ServerPeer</name>

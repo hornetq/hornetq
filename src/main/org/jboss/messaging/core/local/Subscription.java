@@ -54,13 +54,13 @@ public class Subscription extends Pipe
 
    public Subscription(Topic topic, String selector, MessageStore ms)
    {
-      this(topic, selector, ms, null);
+      this("sub" + new GUID().toString(), topic, selector, ms, null);
    }
    
-   protected Subscription(Topic topic, String selector, MessageStore ms, PersistenceManager pm)
+   protected Subscription(String name, Topic topic, String selector, MessageStore ms, PersistenceManager pm)
    {
       // A Subscription must accept reliable messages, even if itself is non-recoverable
-      super("sub" + new GUID().toString(), ms, pm, true);
+      super(name, ms, pm, true);
       this.topic = topic;
       this.selector = selector;
    }

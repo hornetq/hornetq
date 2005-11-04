@@ -154,7 +154,13 @@ public class PersistentMessageStore extends TransactionalMessageStore
    }
    
 
-  
+   public void remove(MessageReference ref) throws Throwable
+   {
+      super.remove(ref);
+      
+      pm.remove((String)ref.getMessageID());
+      
+   }
 
 
    // Public --------------------------------------------------------

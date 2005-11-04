@@ -438,9 +438,9 @@ class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(Message m, String receiverID)
+   void addAsfMessage(Message m, String receiverID, ConsumerDelegate cons)
    {
-      sessionDelegate.addAsfMessage(m, receiverID);
+      sessionDelegate.addAsfMessage(m, receiverID, cons);
    }
       
    // Protected -----------------------------------------------------

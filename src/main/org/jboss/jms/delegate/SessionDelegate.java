@@ -142,7 +142,7 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
    
    public boolean getTransacted() throws JMSException;
    
-   public void addAsfMessage(Message m, String receiverID);
+   public void addAsfMessage(Message m, String receiverID, ConsumerDelegate cons);
    
    public MessageListener getMessageListener() throws JMSException;
    

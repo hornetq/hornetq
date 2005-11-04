@@ -211,7 +211,7 @@ public class ClosedInterceptor
    protected synchronized void inuse()
       throws Throwable
    {
-      if (state != NOT_CLOSED)
+      if (state == IN_CLOSE || state == CLOSED)
       {
          throw new IllegalStateException("The object is closed");
       }

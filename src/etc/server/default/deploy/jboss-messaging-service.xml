@@ -82,6 +82,7 @@
          <arg type="java.lang.String" value="0" />
       </constructor>
       <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
+      
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <!--
       <depends>jboss.messaging:service=AspectLoader</depends>
@@ -95,6 +96,31 @@
 		</attribute>
    </mbean>
    
+   <!-- A Statemanager that stores state in the database -->
+   
+   <!--
+   
+   <mbean code="org.jboss.jms.server.JDBCStateManager"
+	      name="jboss.messaging:service=StateManager">
+      <depends optional-attribute-name="ConnectionManager">jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <attribute name="SqlProperties">
+      CREATE_TABLES_ON_STARTUP = TRUE
+      CREATE_USER_TABLE = CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, \
+                                                 CLIENTID VARCHAR(128), PRIMARY KEY(USERID))
+      CREATE_ROLE_TABLE = CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, USERID VARCHAR(32) NOT NULL, \
+                                                 PRIMARY KEY(USERID, ROLEID))
+      CREATE_SUBSCRIPTION_TABLE = CREATE TABLE JMS_SUBSCRIPTION (CLIENTID VARCHAR(128) NOT NULL, \
+                                                 SUBNAME VARCHAR(128) NOT NULL, TOPIC VARCHAR(255) NOT NULL, \
+                                                 SELECTOR VARCHAR(255), PRIMARY KEY(CLIENTID, SUBNAME))
+      GET_SUBSCRIPTION = SELECT NAME, TOPIC, SELECTOR FROM JMS_SUBSCRIPTION WHERE CLIENTID=? AND NAME=?            
+      INSERT_SUBSCRIPTION = INSERT INTO JMS_SUBSCRIPTION (CLIENTID, NAME, TOPIC, SELECTOR) VALUES (?, ?, ?, ?)      
+      DELETE_SUBSCRIPTION = DELETE FROM JMS_SUBSCRIPTION WHERE CLIENTID=? AND NAME=?   
+      GET_PRECONFCLIENTID = SELECT CLIENTID FROM JMS_USER WHERE USERID=?   
+      GET_SUBSCRIPTIONS = SELECT CLIENTID, NAME, SELECTOR FROM JMS_SUBSCRIPTION WHERE TOPIC=?
+      </attribute>
+   </mbean>
+
+   -->
    
    <!-- Test destinations -->
       
