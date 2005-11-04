@@ -116,7 +116,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          final String msg = "Failed to get message id";
          log.error(msg, e);
          //Not much we can do here
-         throw new IllegalStateException(e);
+         throw new RuntimeException(e);
       }      
    }
    
@@ -136,7 +136,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          final String msg = "Failed to get message id";
          log.error(msg, e);
          //Not much we can do here
-         throw new IllegalStateException(e);
+         throw new RuntimeException(e);
       }      
    }
    
