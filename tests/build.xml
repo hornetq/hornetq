@@ -325,7 +325,7 @@
             <echo>Module root is:${module.root}</echo>
 
       <junit printsummary="${junit.printsummary}"
-             fork="true"
+             fork="${junit.fork}"
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
@@ -336,7 +336,7 @@
          <jvmarg value="-Xdebug"/>
          <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
          -->
-         
+        
          <jvmarg value="-Xmx512M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <classpath>
@@ -345,11 +345,19 @@
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <!--
          <test name="${test.classname}"
                fork="${junit.batchtest.fork}"
                todir="${junit.batchtest.todir}"
                haltonfailure="${junit.test.haltonfailure}"
                haltonerror="${junit.test.haltonerror}">
+         </test>
+         -->
+         <test name="${test.classname}"
+	                fork="${junit.batchtest.fork}"
+	                todir="${junit.batchtest.todir}"
+	                haltonfailure="${junit.test.haltonfailure}"
+	                haltonerror="${junit.test.haltonerror}">
          </test>
       </junit>
    </target>

@@ -57,7 +57,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    // Static --------------------------------------------------------
    
    public static void callOnMessage(ConsumerDelegate cons, SessionDelegate sess, MessageListener listener,
-         String receiverID, boolean isConnectionConsumer, Message m)
+         String receiverID, boolean isConnectionConsumer, Message m) throws JMSException
    {
       preDeliver(sess, receiverID, m, isConnectionConsumer);
       
@@ -68,76 +68,44 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       catch (RuntimeException e)
       {
          //See JMS1.1 spec 4.5.2
-         try
+         int ackMode = sess.getAcknowledgeMode();
+         
+         if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            int ackMode = sess.getAcknowledgeMode();
-            
-            if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-            {
-               //Cancel the message - this means it will be immediately redelivered
-               try
-               {
-                  cons.cancelMessage(m.getJMSMessageID());
-               }
-               catch (JMSException e2)
-               {
-                  log.error("Failed to cancel message", e2);
-               }
-            }
-            else
-            {
-               //Session is either transacted or CLIENT_ACKNOWLEDGE
-               //We just deliver next message
-            }
+            //Cancel the message - this means it will be immediately redelivered
+
+            cons.cancelMessage(m.getJMSMessageID());           
          }
-         catch (JMSException e2)
+         else
          {
-            log.error("Failed to get ack mode", e);
-         }   
+            //Session is either transacted or CLIENT_ACKNOWLEDGE
+            //We just deliver next message
+         }           
       }
       
-      postDeliver(sess, receiverID, m, isConnectionConsumer);
-     
+      postDeliver(sess, receiverID, m, isConnectionConsumer);     
    }
    
    protected static void preDeliver(SessionDelegate sess, String receiverID, Message m, boolean isConnectionConsumer)
+      throws JMSException
    {
-      try
+      //If this is the callback-handler for a connection consumer we don't want
+      //to acknowledge or add anything to the tx for this session
+      if (!isConnectionConsumer)
       {
-         //If this is the callback-handler for a connection consumer we don't want
-         //to acknowledge or add anything to the tx for this session
-         if (!isConnectionConsumer)
-         {
-            sess.preDeliver(m.getJMSMessageID(), receiverID);
-         }
-      }
-      catch (JMSException e)
-      {
-         final String msg = "Failed to get message id";
-         log.error(msg, e);
-         //Not much we can do here
-         throw new RuntimeException(e);
-      }      
+         sess.preDeliver(m.getJMSMessageID(), receiverID);
+      }         
    }
    
    protected static void postDeliver(SessionDelegate sess, String receiverID, Message m, boolean isConnectionConsumer)
+      throws JMSException
    {
-      try
+      //If this is the callback-handler for a connection consumer we don't want
+      //to acknowledge or add anything to the tx for this session
+      if (!isConnectionConsumer)
       {
-         //If this is the callback-handler for a connection consumer we don't want
-         //to acknowledge or add anything to the tx for this session
-         if (!isConnectionConsumer)
-         {
-            sess.postDeliver(m.getJMSMessageID(), receiverID);
-         }
-      }
-      catch (JMSException e)
-      {
-         final String msg = "Failed to get message id";
-         log.error(msg, e);
-         //Not much we can do here
-         throw new RuntimeException(e);
-      }      
+         sess.postDeliver(m.getJMSMessageID(), receiverID);
+      }         
    }
    
    // Attributes ----------------------------------------------------

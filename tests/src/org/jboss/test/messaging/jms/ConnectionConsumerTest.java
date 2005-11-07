@@ -203,7 +203,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
          
-         log.trace("Started connection consumer");
+         log.info("Started connection consumer");
          
          connProducer = cf.createConnection();
             
@@ -216,7 +216,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             prod.send(m);
          }
          
-         log.trace("Sent messages");
+         log.info("Sent messages");
          
          //Wait for messages
          
@@ -232,7 +232,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages");
          }
          
-         log.trace("Received all messages");
+         //log.info("Received all messages");
          
          
          // Now rollback the session
@@ -246,12 +246,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
          sessCons.setMessageListener(listener);
          
  
-         log.trace("Rolling back session");
+         //log.info("Rolling back session");
          sessCons.rollback();
+         //log.info("Rolled back session");
      
          listener.waitForLatch(10000);
          
-         log.trace("Messages received in recovery:" + listener.getMsgsReceived());
+         //log.info("Messages received in recovery:" + listener.getMsgsReceived());
          
          if (listener.getMsgsReceived() != NUM_MESSAGES)
          {
@@ -263,15 +264,15 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages in redelivery");
          }
          
-         log.trace("Received all messages in redelivery");
+         log.info("Received all messages in redelivery");
          
          sessCons.commit();
          
-         log.trace("Committed session");
+         log.info("Committed session");
          
          cc.close();
          
-         log.trace("Closed connection consumer");
+         log.info("Closed connection consumer");
          
          connProducer.close();
          connProducer = null;
@@ -384,6 +385,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
       void waitForLatch(long timeout) throws Exception
       {
          latch.attempt(timeout);
+         //Thread.sleep(1000);
       }
       
       public synchronized void onMessage(Message message)
@@ -392,7 +394,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          {
     
             
-            log.trace("Received message " + msgsReceived);
+            //log.trace("Received message " + msgsReceived);
             
             TextMessage tm = (TextMessage)message;
             

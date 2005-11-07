@@ -21,11 +21,17 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -39,6 +45,8 @@ import javax.naming.InitialContext;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
@@ -617,6 +625,87 @@ public class AcknowledgmentTest extends MessagingTestCase
 
    }
    
+   public void testMessageListenerAutoAck() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sessSend.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage tm1 = sessSend.createTextMessage("a");
+      TextMessage tm2 = sessSend.createTextMessage("b");
+      TextMessage tm3 = sessSend.createTextMessage("c");
+      prod.send(tm1);
+      prod.send(tm2);
+      prod.send(tm3);
+      sessSend.close();
+      
+      conn.start();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons = sessReceive.createConsumer(queue);
+      MessageListenerAutoAck listener = new MessageListenerAutoAck(sessReceive);
+      cons.setMessageListener(listener);
+      listener.waitForMessages();
+      
+      conn.close();
+      
+      assertFalse(listener.failed);
+   }
+   
+   public void testMessageListenerClientAck() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sessSend.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage tm1 = sessSend.createTextMessage("a");
+      TextMessage tm2 = sessSend.createTextMessage("b");
+      TextMessage tm3 = sessSend.createTextMessage("c");
+      prod.send(tm1);
+      prod.send(tm2);
+      prod.send(tm3);
+      sessSend.close();
+      
+      conn.start();
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons = sessReceive.createConsumer(queue);
+      MessageListenerClientAck listener = new MessageListenerClientAck(sessReceive);
+      cons.setMessageListener(listener);
+      listener.waitForMessages();
+      
+      conn.close();
+      
+      assertFalse(listener.failed);
+   }
+   
+   
+// This test won't work until message ordering is done
+//   public void testMessageListenerTransactionalAck() throws Exception
+//   {
+//      Connection conn = cf.createConnection();
+//      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//      MessageProducer prod = sessSend.createProducer(queue);
+//      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+//      TextMessage tm1 = sessSend.createTextMessage("a");
+//      TextMessage tm2 = sessSend.createTextMessage("b");
+//      TextMessage tm3 = sessSend.createTextMessage("c");
+//      prod.send(tm1);
+//      prod.send(tm2);
+//      prod.send(tm3);
+//      sessSend.close();
+//      
+//      conn.start();
+//      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+//      MessageConsumer cons = sessReceive.createConsumer(queue);
+//      MessageListenerTransactionalAck listener = new MessageListenerTransactionalAck(sessReceive);
+//      cons.setMessageListener(listener);
+//      listener.waitForMessages();
+//      
+//      conn.close();
+//      
+//      assertFalse(listener.failed);
+//   }
+   
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -624,6 +713,301 @@ public class AcknowledgmentTest extends MessagingTestCase
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+   
+   
+   private class MessageListenerAutoAck implements MessageListener
+   {
+      
+      private Latch latch = new Latch();
+      
+      private Session sess;
+      
+      private int count = 0;
+      
+      boolean failed;
+      
+      MessageListenerAutoAck(Session sess)
+      {
+         this.sess = sess;
+      }
+      
+      public void waitForMessages() throws InterruptedException
+      {
+         latch.acquire();
+      }
+
+      public void onMessage(Message m)
+      {
+         try
+         {
+            count++;
+            
+            TextMessage tm = (TextMessage)m;
+            
+            log.info("Got message:" + tm.getText());
+            
+            //Receive first three messages then recover() session
+            //Only last message should be redelivered
+            if (count == 1)
+            {
+               if (!"a".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 2)
+            {
+               if (!"b".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 3)
+            {
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+               sess.recover();
+            }
+            if (count == 4)
+            {
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+               latch.release();
+            }            
+               
+         }
+         catch (JMSException e)
+         {
+            failed = true;
+            latch.release();
+         }
+      }
+            
+   }
+   
+   
+   private class MessageListenerClientAck implements MessageListener
+   {
+      
+      private Latch latch = new Latch();
+      
+      private Session sess;
+      
+      private int count = 0;
+      
+      boolean failed;
+      
+      MessageListenerClientAck(Session sess)
+      {
+         this.sess = sess;
+      }
+
+      
+      public void waitForMessages() throws InterruptedException
+      {
+         latch.acquire();
+      }
+
+      public void onMessage(Message m)
+      {
+         try
+         {
+            count++;
+            
+            TextMessage tm = (TextMessage)m;
+            log.trace("Got message " + tm.getText() + " count=" + count);
+            
+            if (count == 1)
+            {
+               if (!"a".equals(tm.getText()))
+               {
+                  log.trace("Expected a but got " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }               
+            }
+            if (count == 2)
+            {
+               if (!"b".equals(tm.getText()))
+               {
+                  log.trace("Expected b but got " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }               
+            }
+            if (count == 3)
+            {
+               log.trace("Expected c but got " + tm.getText());
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+               sess.recover();
+            }
+            if (count == 4)
+            {
+               log.trace("Expected a but got " + tm.getText());
+               if (!"a".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }     
+               tm.acknowledge();
+               sess.recover();
+            } 
+            if (count == 5)
+            {
+               log.trace("Expected b but got " + tm.getText());
+               if (!"b".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }  
+               sess.recover();
+            }
+            if (count == 6)
+            {
+               log.trace("Expected b but got " + tm.getText());
+               if (!"b".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }               
+            }
+            if (count == 7)
+            {
+               log.trace("Expected c but got " + tm.getText());
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }               
+            }
+            latch.release();
+               
+         }
+         catch (JMSException e)
+         {
+            failed = true;
+            latch.release();
+         }
+      }
+            
+   }
+   
+   private class MessageListenerTransactionalAck implements MessageListener
+   {
+      
+      private Latch latch = new Latch();
+      
+      private Session sess;
+      
+      private int count = 0;
+      
+      boolean failed;
+      
+      MessageListenerTransactionalAck(Session sess)
+      {
+         this.sess = sess;
+      }
+
+      
+      public void waitForMessages() throws InterruptedException
+      {
+         latch.acquire();
+      }
+
+      public void onMessage(Message m)
+      {
+         try
+         {
+            count++;
+            
+            TextMessage tm = (TextMessage)m;
+            
+            log.info("Got message:" + tm.getText());
+            
+            if (count == 1)
+            {
+               if (!"a".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }               
+            }
+            if (count == 2)
+            {
+               if (!"b".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }               
+            }
+            if (count == 3)
+            {
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+               sess.rollback();
+            }
+            if (count == 4)
+            {
+               if (!"a".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }     
+            } 
+            if (count == 5)
+            {
+               if (!"b".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }  
+               sess.commit();
+            }
+            if (count == 6)
+            {
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }  
+               sess.recover();
+            }
+            if (count == 7)
+            {
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }  
+               sess.commit();
+               latch.release();
+            }
+           
+               
+         }
+         catch (JMSException e)
+         {
+            failed = true;
+            latch.release();
+         }
+      }
+            
+   }
 
 }
 

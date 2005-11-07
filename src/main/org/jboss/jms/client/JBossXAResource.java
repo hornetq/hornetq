@@ -181,7 +181,6 @@ public class JBossXAResource implements XAResource
       }
       catch (JMSException e)
       {
-         log.error("Failed to initiate redelivery");
          throw new XAException(XAException.XAER_RMERR);
       }
 

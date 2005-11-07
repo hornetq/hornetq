@@ -2623,7 +2623,17 @@ public class MessageConsumerTest extends MessagingTestCase
       assertTrue(tm3.getJMSRedelivered());
    }
    
-   public void testRedelMessageListener1() throws Exception
+   
+   
+   public void testWibble() throws Exception
+   {
+      for (int i = 0; i < 100; i++)
+      {
+         dotestRedelMessageListener1();
+      }
+   }
+   
+   public void dotestRedelMessageListener1() throws Exception
    {
       Connection conn = cf.createConnection();
       
@@ -2639,6 +2649,7 @@ public class MessageConsumerTest extends MessagingTestCase
       cons.setMessageListener(listener);
       
       MessageProducer prod = sess.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");
@@ -2650,9 +2661,11 @@ public class MessageConsumerTest extends MessagingTestCase
 
       listener.waitForMessages();
       
+      conn.close();
+      
       assertFalse(listener.failed);
    
-        conn.close();
+      
       
       
    }
@@ -2870,6 +2883,7 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   log.trace("Should be a but was " + tm.getText());
                   failed = true;
+                  latch.release();
                }
                log.trace("Throwing exception");
                throw new RuntimeException("Aardvark");
@@ -2884,6 +2898,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   {
                      log.trace("Should be a but was " + tm.getText());
                      failed = true;
+                     latch.release();
                   }
                }
                else
@@ -2893,6 +2908,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   {
                      log.trace("Should be b but was " + tm.getText());
                      failed = true;
+                     latch.release();
                   }
                }
             }
@@ -2904,6 +2920,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   {
                      log.trace("Should be b but was " + tm.getText());
                      failed = true;
+                     latch.release();
                   }
                }
                else
@@ -2912,6 +2929,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   {
                      log.trace("Should be c but was " + tm.getText());
                      failed = true;
+                     latch.release();
                   }
                   latch.release();
                }
@@ -2925,6 +2943,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   {
                      log.trace("Should be c but was " + tm.getText());
                      failed = true;
+                     latch.release();
                   }
                   latch.release();
                }
@@ -2932,12 +2951,14 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   //Shouldn't get a 4th messge
                   failed = true;
+                  latch.release();
                }
             }
          }
          catch (JMSException e)
          {           
             failed = true;
+            latch.release();
          }
       }
    }
@@ -2971,7 +2992,7 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             TextMessage tm = (TextMessage)m;
             
-            log.trace("Got message:" + count);
+            log.trace("Got message:" + tm.getText() + " count is " + count);
             
             if (count == 0)
             {
@@ -2979,14 +3000,18 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   log.trace("Should be a but was " + tm.getText());
                   failed = true;
+                  latch.release();
                }
                if (transacted)
                {
                   sess.rollback();
+                  log.trace("rollback() called");
                }
                else
                {
+                  log.trace("Calling recover");
                   sess.recover();
+                  log.trace("recover() called");
                }
             }
             
@@ -2996,6 +3021,7 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   log.trace("Should be a but was " + tm.getText());
                   failed = true;
+                  latch.release();
                }
             }
             if (count == 2)
@@ -3004,6 +3030,7 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   log.trace("Should be b but was " + tm.getText());
                   failed = true;
+                  latch.release();
                }
             }
             if (count == 3)
@@ -3012,10 +3039,16 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   log.trace("Should be c but was " + tm.getText());
                   failed = true;
+                  latch.release();
                }
                if (transacted)
                {
                   sess.commit();
+               }
+               else
+               {
+                  log.trace("Acknowledging session");
+                  tm.acknowledge();
                }
                latch.release();
             }
@@ -3023,7 +3056,9 @@ public class MessageConsumerTest extends MessagingTestCase
          }
          catch (JMSException e)
          {
+            log.trace("Caught JMSException", e);
             failed = true;
+            latch.release();
          }
       }
    }

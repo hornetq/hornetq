@@ -610,7 +610,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          throw new IllegalStateException("Session is closed");
       }
       
-      if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
+      if (log.isTraceEnabled()) { log.trace("Cancelling messages"); }
       
       if (asfReceiverID != null)
       {
@@ -618,7 +618,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
          //In this case we don't want to redeliver the messages in the 
          //sessions consumers, but instead redeliver the messages from the
          //connection consumers receiver
-         if (log.isTraceEnabled()) { log.trace("Redelivering the connectionconsumer's messages"); }
+         if (log.isTraceEnabled()) { log.trace("Cancelling the connectionconsumer's messages"); }
                
          this.connectionEndpoint.cancelDeliveriesForConnectionConsumer(asfReceiverID);
                   

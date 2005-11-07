@@ -150,14 +150,21 @@ public class SessionInterceptor implements Interceptor, Serializable
             getDelegate(mi).acknowledge(messageID, receiverID);
             if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
          }
-         else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
+         
+         return null;
+         
+      }
+      else if ("preDeliver".equals(methodName))
+      {     
+         String messageID = (String)mi.getArguments()[0];
+         String receiverID = (String)mi.getArguments()[1];    
+      
+         if (ackMode == Session.CLIENT_ACKNOWLEDGE)
          {
             if (log.isTraceEnabled()) log.trace("CLIENT_ACKNOWLEDGE, so storing in unacked msgs");
             unacked.add(new AckInfo(messageID, receiverID));
             if (log.isTraceEnabled()) { log.trace("there are now " + unacked.size() + " unacked messages"); }
          }
-
-         return null;
       }
       else if ("close".equals(methodName))
       {
