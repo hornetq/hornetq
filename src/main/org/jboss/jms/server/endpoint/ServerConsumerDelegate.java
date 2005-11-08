@@ -397,7 +397,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
                else
                {
                   throw new JMSException("Failed to cancel delivery (FIXME this is due to a race condition in the code" +
-                        " whereby messages can be acknowledged before the call to handle() has returned):" + messageID);
+                        " whereby messages can be cancelled before the call to handle() has returned):" + messageID);
                }
             }
          }
@@ -508,7 +508,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
                if (!cancelled)
                {
                   throw new JMSException("Failed to cancel delivery (FIXME this is due to a race condition in the code" +
-                        " whereby messages can be acknowledged before the call to handle() has returned):" + d.getReference().getMessageID());
+                        " whereby messages can be cancelled before the call to handle() has returned):" + d.getReference().getMessageID());
                }
                
                if (log.isTraceEnabled()) { log.trace(d +  " canceled"); }

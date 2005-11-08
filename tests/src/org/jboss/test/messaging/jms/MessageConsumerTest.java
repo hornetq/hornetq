@@ -2625,15 +2625,7 @@ public class MessageConsumerTest extends MessagingTestCase
    
    
    
-   public void testWibble() throws Exception
-   {
-      for (int i = 0; i < 100; i++)
-      {
-         dotestRedelMessageListener1();
-      }
-   }
-   
-   public void dotestRedelMessageListener1() throws Exception
+   public void testRedelMessageListener1() throws Exception
    {
       Connection conn = cf.createConnection();
       
@@ -2665,9 +2657,7 @@ public class MessageConsumerTest extends MessagingTestCase
       
       assertFalse(listener.failed);
    
-      
-      
-      
+
    }
    
 
@@ -2859,6 +2849,7 @@ public class MessageConsumerTest extends MessagingTestCase
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
+         Thread.sleep(2000); //enough time for postdeliver to be called
       }
        
       public ExceptionRedelMessageListenerImpl(Session sess)
@@ -2872,8 +2863,7 @@ public class MessageConsumerTest extends MessagingTestCase
          count++;
          
          log.trace("Got message:" + count);
-         
-         
+                  
          try
          {
             log.trace("message:" + tm.getText());
@@ -2897,6 +2887,11 @@ public class MessageConsumerTest extends MessagingTestCase
                   if (!("a".equals(tm.getText())))
                   {
                      log.trace("Should be a but was " + tm.getText());
+                     failed = true;
+                     latch.release();
+                  }
+                  if (!tm.getJMSRedelivered())
+                  {
                      failed = true;
                      latch.release();
                   }
@@ -2984,6 +2979,7 @@ public class MessageConsumerTest extends MessagingTestCase
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
+         Thread.sleep(2000); //enough time for postdeliver to be called
       }
       
       public void onMessage(Message m)
@@ -2992,26 +2988,26 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             TextMessage tm = (TextMessage)m;
             
-            log.trace("Got message:" + tm.getText() + " count is " + count);
+            log.info("Got message:" + tm.getText() + " count is " + count);
             
             if (count == 0)
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.trace("Should be a but was " + tm.getText());
+                  log.info("Should be a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (transacted)
                {
                   sess.rollback();
-                  log.trace("rollback() called");
+                  log.info("rollback() called");
                }
                else
                {
                   log.trace("Calling recover");
                   sess.recover();
-                  log.trace("recover() called");
+                  log.info("recover() called");
                }
             }
             
@@ -3019,7 +3015,12 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.trace("Should be a but was " + tm.getText());
+                  log.info("Should be a but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+               if (!tm.getJMSRedelivered())
+               {
                   failed = true;
                   latch.release();
                }
@@ -3028,26 +3029,26 @@ public class MessageConsumerTest extends MessagingTestCase
             {
                if (!("b".equals(tm.getText())))
                {
-                  log.trace("Should be b but was " + tm.getText());
+                  log.info("Should be b but was " + tm.getText());
                   failed = true;
                   latch.release();
-               }
+               }               
             }
             if (count == 3)
             {
                if (!("c".equals(tm.getText())))
                {
-                  log.trace("Should be c but was " + tm.getText());
+                  log.info("Should be c but was " + tm.getText());
                   failed = true;
                   latch.release();
-               }
+               }               
                if (transacted)
                {
                   sess.commit();
                }
                else
                {
-                  log.trace("Acknowledging session");
+                  log.info("Acknowledging session");
                   tm.acknowledge();
                }
                latch.release();
@@ -3056,7 +3057,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
          catch (JMSException e)
          {
-            log.trace("Caught JMSException", e);
+            log.info("Caught JMSException", e);
             failed = true;
             latch.release();
          }
@@ -3072,6 +3073,7 @@ public class MessageConsumerTest extends MessagingTestCase
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
+         Thread.sleep(2000); //enough time for postdeliver to be called
       }
 
       public void onMessage(Message m)

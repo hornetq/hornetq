@@ -23,6 +23,7 @@
    <interceptor class="org.jboss.jms.client.container.ProducerInterceptor" scope="PER_CLASS"/>
 	<interceptor class="org.jboss.jms.client.container.AsfInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.RemotingClientInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ConcurrencyInterceptor" scope="PER_CLASS"/>
 
    <stack name="ConnectionFactoryStack">
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
@@ -54,6 +55,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ConcurrencyInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FactoryInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.RemotingClientInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.AsfInterceptor"/>
@@ -70,6 +72,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ConcurrencyInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.RemotingClientInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ProducerInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.TransactionInterceptor"/>
@@ -81,6 +84,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ConcurrencyInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.RemotingClientInterceptor"/>     
       <interceptor-ref name="org.jboss.jms.client.container.ConsumerInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ReceiverInterceptor"/>            
@@ -91,7 +95,8 @@
       <interceptor-ref name="org.jboss.jms.client.container.JMSExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
-      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>      
+      <interceptor-ref name="org.jboss.jms.client.container.ObjectOverrideInterceptor"/>   
+      <interceptor-ref name="org.jboss.jms.client.container.ConcurrencyInterceptor"/>   
       <interceptor-ref name="org.jboss.jms.client.container.RemotingClientInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.BrowserInterceptor"/>            
       <interceptor-ref name="org.jboss.jms.client.container.InvokerInterceptor"/>

@@ -102,9 +102,11 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
 	public void acknowledge(String messageID, String receiverID)
          throws JMSException;
    
-   public void preDeliver(String messageID, String receiverID);
+   public void preDeliver(String messageID, String receiverID)
+      throws JMSException;
    
-   public void postDeliver(String messageID, String receiverID);
+   public void postDeliver(String messageID, String receiverID)
+      throws JMSException;
    
 
    /**

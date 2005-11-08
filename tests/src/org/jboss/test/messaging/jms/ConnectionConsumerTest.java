@@ -96,7 +96,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   
+
    public void testSimple() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -175,118 +175,145 @@ public class ConnectionConsumerTest extends MessagingTestCase
    }
   
    
-
+//  won't work until message ordering is done
+//   
+//   public void testRedeliveryTransacted() throws Exception
+//   {
+//      if (ServerManagement.isRemote()) return;
+//      
+//      Connection connConsumer = null;
+//      
+//      Connection connProducer = null;
+//      
+//      try
+//      {
+//         connConsumer = cf.createConnection();        
+//         
+//         connConsumer.start();
+//                  
+//         Session sessCons = connConsumer.createSession(true, Session.SESSION_TRANSACTED);
+//         
+//         RedelMessageListener listener = new RedelMessageListener(sessCons);
+//         
+//         sessCons.setMessageListener(listener);
+//         
+//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+//         
+//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
+//         
+//         log.info("Started connection consumer");
+//         
+//         connProducer = cf.createConnection();
+//            
+//         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer prod = sessProd.createProducer(queue);
+//            
+//         TextMessage m1 = sessProd.createTextMessage("a");
+//         TextMessage m2 = sessProd.createTextMessage("b");
+//         TextMessage m3 = sessProd.createTextMessage("c");
+//         prod.send(m1);
+//         prod.send(m2);
+//         prod.send(m3);
+//         
+//         
+//         log.info("Sent messages");
+//         
+//         //Wait for messages
+//         
+//         listener.waitForLatch(10000);                  
+//         
+//         if (listener.failed)
+//         {
+//            fail ("Didn't receive correct messages");
+//         }
+//         
+//         cc.close();
+//         
+//         log.info("Closed connection consumer");
+//         
+//         connProducer.close();
+//         connProducer = null;
+//         connConsumer.close();
+//         connConsumer = null;
+//         
+//    
+//      }
+//      finally 
+//      {
+//         if (connConsumer != null) connConsumer.close();
+//         if (connConsumer != null) connProducer.close();
+//      }
+//   }
    
-   public void testRedelivery() throws Exception
-   {
-      if (ServerManagement.isRemote()) return;
-      
-      final int NUM_MESSAGES = 10;
-      
-      Connection connConsumer = null;
-      
-      Connection connProducer = null;
-      
-      try
-      {
-         connConsumer = cf.createConnection();        
-         
-         connConsumer.start();
-                  
-         Session sessCons = connConsumer.createSession(true, Session.SESSION_TRANSACTED);
-         
-         SimpleMessageListener listener = new SimpleMessageListener(NUM_MESSAGES);
-         
-         sessCons.setMessageListener(listener);
-         
-         ServerSessionPool pool = new MockServerSessionPool(sessCons);
-         
-         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
-         
-         log.info("Started connection consumer");
-         
-         connProducer = cf.createConnection();
-            
-         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProd.createProducer(queue);
-            
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage m = sessProd.createTextMessage("testing testing");
-            prod.send(m);
-         }
-         
-         log.info("Sent messages");
-         
-         //Wait for messages
-         
-         listener.waitForLatch(10000);
-         
-         if (listener.getMsgsReceived() != NUM_MESSAGES)
-         {
-            fail("Didn't receive all messages");
-         }
-         
-         if (listener.failed)
-         {
-            fail ("Didn't receive correct messages");
-         }
-         
-         //log.info("Received all messages");
-         
-         
-         // Now rollback the session
-         // This is what the app server would do if an unchecked exception is thrown
-         // or the tx is marked for rollback
-         
-
-         //the messages should be redelivered since they have not been acked
-                 
-         listener = new SimpleMessageListener(NUM_MESSAGES);
-         sessCons.setMessageListener(listener);
-         
- 
-         //log.info("Rolling back session");
-         sessCons.rollback();
-         //log.info("Rolled back session");
-     
-         listener.waitForLatch(10000);
-         
-         //log.info("Messages received in recovery:" + listener.getMsgsReceived());
-         
-         if (listener.getMsgsReceived() != NUM_MESSAGES)
-         {
-            fail("Didn't receive all messages in redelivery");
-         }
-         
-         if (listener.failed)
-         {
-            fail ("Didn't receive correct messages in redelivery");
-         }
-         
-         log.info("Received all messages in redelivery");
-         
-         sessCons.commit();
-         
-         log.info("Committed session");
-         
-         cc.close();
-         
-         log.info("Closed connection consumer");
-         
-         connProducer.close();
-         connProducer = null;
-         connConsumer.close();
-         connConsumer = null;
-         
-    
-      }
-      finally 
-      {
-         if (connConsumer != null) connConsumer.close();
-         if (connConsumer != null) connProducer.close();
-      }
-   }
+//   won't work until message ordering is done
+//   public void testRedeliveryNonTransacted() throws Exception
+//   {
+//      if (ServerManagement.isRemote()) return;
+//      
+//      Connection connConsumer = null;
+//      
+//      Connection connProducer = null;
+//      
+//      try
+//      {
+//         connConsumer = cf.createConnection();        
+//         
+//         connConsumer.start();
+//                  
+//         Session sessCons = connConsumer.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+//         
+//         RedelMessageListener listener = new RedelMessageListener(sessCons);
+//         
+//         sessCons.setMessageListener(listener);
+//         
+//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+//         
+//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
+//         
+//         log.info("Started connection consumer");
+//         
+//         connProducer = cf.createConnection();
+//            
+//         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer prod = sessProd.createProducer(queue);
+//            
+//         TextMessage m1 = sessProd.createTextMessage("a");
+//         TextMessage m2 = sessProd.createTextMessage("b");
+//         TextMessage m3 = sessProd.createTextMessage("c");
+//         prod.send(m1);
+//         prod.send(m2);
+//         prod.send(m3);
+//         
+//         
+//         log.info("Sent messages");
+//         
+//         //Wait for messages
+//         
+//         listener.waitForLatch(10000);                  
+//         
+//         if (listener.failed)
+//         {
+//            fail ("Didn't receive correct messages");
+//         }
+//         
+//         cc.close();
+//         
+//         log.info("Closed connection consumer");
+//         
+//         connProducer.close();
+//         connProducer = null;
+//         connConsumer.close();
+//         connConsumer = null;
+//         
+//    
+//      }
+//      finally 
+//      {
+//         if (connConsumer != null) connConsumer.close();
+//         if (connConsumer != null) connProducer.close();
+//      }
+//   }
+   
    
    
 
@@ -385,7 +412,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
       void waitForLatch(long timeout) throws Exception
       {
          latch.attempt(timeout);
-         //Thread.sleep(1000);
+         Thread.sleep(2000); //Enough time for postDeliver to complete  
       }
       
       public synchronized void onMessage(Message message)
@@ -415,6 +442,146 @@ public class ConnectionConsumerTest extends MessagingTestCase
       }
       
    }
+   
+   class RedelMessageListener implements MessageListener
+   {
+      Latch latch = new Latch();
+
+      boolean failed;
+      
+      int count;
+      
+      Session sess;
+       
+      RedelMessageListener(Session sess)
+      {
+         this.sess = sess;   
+      }
+      
+      void waitForLatch(long timeout) throws Exception
+      {
+         latch.attempt(timeout);
+         Thread.sleep(2000);        //Enough time for postdeliver to complete
+      }
+      
+      public synchronized void onMessage(Message message)
+      {
+         try
+         {
+            count++;
+            
+            
+                        
+            TextMessage tm = (TextMessage)message;
+            
+            log.info("Got message " + tm.getText() + " count=" + count);
+            
+            if (count == 1)
+            {
+               if (!tm.getText().equals("a"))
+               {
+                  log.info("Expected a but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 2)
+            {
+               if (!tm.getText().equals("b"))
+               {
+                  log.info("Expected b but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 3)
+            {
+               if (!tm.getText().equals("c"))
+               {
+                  log.info("Expected c but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+               else
+               {
+                  if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
+                  {
+                     log.info("Rolling back");
+                     sess.rollback();
+                  }
+                  else
+                  {
+                     log.info("Recovering");
+                     sess.recover();
+                  }
+               }
+            }
+            if (count == 4)
+            {
+               if (!tm.getText().equals("a"))
+               {
+                  log.info("Expected a but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+               if (!tm.getJMSRedelivered())
+               {
+                  log.info("Redelivered flag not set");
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 5)
+            {
+               if (!tm.getText().equals("b"))
+               {
+                  log.info("Expected b but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+               if (!tm.getJMSRedelivered())
+               {
+                  log.info("Redelivered flag not set");
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 6)
+            {
+               if (!tm.getText().equals("c"))
+               {
+                  log.info("Expected c but was " + tm.getText());
+                  failed = true;
+                  latch.release();
+               }
+               if (!tm.getJMSRedelivered())
+               {
+                  log.info("Redelivered flag not set");
+                  failed = true;
+                  latch.release();
+               }
+               else
+               {
+                  if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
+                  {
+                     log.info("Committing");
+                     sess.commit();
+                  }
+                  latch.release();
+               }
+            }
+            
+         }
+         catch (JMSException e)
+         {
+            log.error(e);
+            failed = true;
+         }
+  
+      }
+      
+   }
+   
    
    class MockServerSessionPool implements ServerSessionPool
    {
