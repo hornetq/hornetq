@@ -29,6 +29,8 @@ import org.jboss.remoting.transport.Connector;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class Remoting
 {

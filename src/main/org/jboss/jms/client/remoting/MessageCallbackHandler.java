@@ -56,8 +56,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Static --------------------------------------------------------
    
-   public static void callOnMessage(ConsumerDelegate cons, SessionDelegate sess, MessageListener listener,
-         String receiverID, boolean isConnectionConsumer, Message m) throws JMSException
+   public static void callOnMessage(ConsumerDelegate cons,
+                                    SessionDelegate sess,
+                                    MessageListener listener,
+                                    String receiverID,
+                                    boolean isConnectionConsumer,
+                                    Message m)
+         throws JMSException
    {
       preDeliver(sess, receiverID, m, isConnectionConsumer);
       
@@ -86,7 +91,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       postDeliver(sess, receiverID, m, isConnectionConsumer);     
    }
    
-   protected static void preDeliver(SessionDelegate sess, String receiverID, Message m, boolean isConnectionConsumer)
+   protected static void preDeliver(SessionDelegate sess,
+                                    String receiverID,
+                                    Message m,
+                                    boolean isConnectionConsumer)
       throws JMSException
    {
       //If this is the callback-handler for a connection consumer we don't want
@@ -97,7 +105,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }         
    }
    
-   protected static void postDeliver(SessionDelegate sess, String receiverID, Message m, boolean isConnectionConsumer)
+   protected static void postDeliver(SessionDelegate sess,
+                                     String receiverID,
+                                     Message m,
+                                     boolean isConnectionConsumer)
       throws JMSException
    {
       //If this is the callback-handler for a connection consumer we don't want
@@ -175,18 +186,21 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          try
          {                    
             //We attempt to put the message in the Channel
-            //The call will return false if the message is not picked up the receiving or listening thread
-            //in which case we need to cancel it
+            //The call will return false if the message is not picked up the receiving or listening
+            //thread in which case we need to cancel it
             
             boolean handled = false;
             while (waiting)
             {
-               //channel.offer will *only* return true if there is a thread waiting to take a message using
-               //take() or poll()
-               //hence we can guarantee there is no chance any messages can arrive and are left in the channel
-               //without being handled -  this is why we use a SynchronousChannel :)
+               //channel.offer will *only* return true if there is a thread waiting to take a
+               //message using take() or poll() hence we can guarantee there is no chance any
+               //messages can arrive and are left in the channel without being handled -  this is
+               //why we use a SynchronousChannel :)
                handled = channel.offer(m, 0);
-               if (handled) break;
+               if (handled)
+               {
+                  break;
+               }
             }
             
             if (!handled)
@@ -223,7 +237,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             {               
                JBossMessage m = getMessage(0);
             
-               callOnMessage(consumerDelegate, sessionDelegate, listener, receiverID, isConnectionConsumer, m);
+               callOnMessage(consumerDelegate, sessionDelegate, listener,
+                             receiverID, isConnectionConsumer, m);
                
                if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }  
                

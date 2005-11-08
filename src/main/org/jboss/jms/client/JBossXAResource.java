@@ -38,6 +38,8 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
+ *
+ * $Id$
  */
 public class JBossXAResource implements XAResource
 {

@@ -30,12 +30,12 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.util.id.GUID;
 
 /**
- * 
  * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold
  * messages in transit to consumers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
+ * $Id$
  */
 public class Subscription extends Pipe
 {
@@ -57,7 +57,8 @@ public class Subscription extends Pipe
       this("sub" + new GUID().toString(), topic, selector, ms, null);
    }
    
-   protected Subscription(String name, Topic topic, String selector, MessageStore ms, PersistenceManager pm)
+   protected Subscription(String name, Topic topic, String selector,
+                          MessageStore ms, PersistenceManager pm)
    {
       // A Subscription must accept reliable messages, even if itself is non-recoverable
       super(name, ms, pm, true);

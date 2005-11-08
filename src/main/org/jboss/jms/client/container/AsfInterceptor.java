@@ -54,6 +54,8 @@ import org.jgroups.protocols.JMS;
  * on which this interceptor lives.
  *  
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ *
+ * $Id$
  */
 public class AsfInterceptor
    implements Interceptor, Serializable

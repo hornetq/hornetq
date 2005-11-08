@@ -44,6 +44,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
  * @version $Revision$
+ *
+ * $Id$
  */
 public class ResourceManager
 {
@@ -88,7 +90,7 @@ public class ResourceManager
    /**
     * Add a message to a transaction
     * 
-    * @param Xid - The id of the transaction to add the message to
+    * @param xid - The id of the transaction to add the message to
     * @param m The message
     */
    public void addMessage(Object xid, Message m)
@@ -101,7 +103,7 @@ public class ResourceManager
    /**
     * Add an acknowledgement to the transaction
     * 
-    * @param Xid - The id of the transaction to add the message to
+    * @param xid - The id of the transaction to add the message to
     * @param ackInfo Information describing the acknowledgement
     */
    public void addAck(Object xid, AckInfo ackInfo) throws JMSException

@@ -37,6 +37,7 @@ import org.jboss.tm.TransactionManagerService;
  * @author Adrian Brock (Adrian@jboss.org)
  * @author Ivelin Ivanov (ivelin@jboss.org)
  *
+ * $Id$
  */
 public class JDBCStateManager extends InMemoryStateManager implements JDBCStateManagerMBean
 {
@@ -184,7 +185,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("GET_SUBSCRIPTION", GET_SUBSCRIPTION));
+            ps = conn.prepareStatement(sqlProperties.getProperty("GET_SUBSCRIPTION",
+                                                                 GET_SUBSCRIPTION));
             
             ps.setString(1, clientID);
             
@@ -235,8 +237,9 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
               
    }
    
-   public DurableSubscription createDurableSubscription(String topicName, String clientID, String subscriptionName,
-         String selector) throws JMSException
+   public DurableSubscription createDurableSubscription(String topicName, String clientID,
+                                                        String subscriptionName, String selector)
+         throws JMSException
    {
       try
       {
@@ -249,7 +252,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("INSERT_SUBSCRIPTION", INSERT_SUBSCRIPTION));
+            ps = conn.prepareStatement(sqlProperties.getProperty("INSERT_SUBSCRIPTION",
+                                                                 INSERT_SUBSCRIPTION));
             
             ps.setString(1, clientID);
             
@@ -262,7 +266,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
             ps.executeUpdate();
             
             //Create in memory too
-            DurableSubscription sub = super.createDurableSubscription(topicName, clientID, subscriptionName, selector);
+            DurableSubscription sub = super.createDurableSubscription(topicName, clientID,
+                                                                      subscriptionName, selector);
             
             return sub;
          }
@@ -308,7 +313,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("DELETE_SUBSCRIPTION", DELETE_SUBSCRIPTION));
+            ps = conn.prepareStatement(sqlProperties.getProperty("DELETE_SUBSCRIPTION",
+                                                                 DELETE_SUBSCRIPTION));
             
             ps.setString(1, clientID);
             
@@ -367,7 +373,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("GET_PRECONFCLIENTID", GET_PRECONFCLIENTID));
+            ps = conn.prepareStatement(sqlProperties.getProperty("GET_PRECONFCLIENTID",
+                                                                 GET_PRECONFCLIENTID));
             
             ps.setString(1, username);
             
@@ -427,7 +434,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("GET_SUBSCRIPTIONS", GET_SUBSCRIPTIONS));
+            ps = conn.prepareStatement(sqlProperties.getProperty("GET_SUBSCRIPTIONS",
+                                                                 GET_SUBSCRIPTIONS));
             
             ps.setString(1, topicName);
             
@@ -504,7 +512,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating JMS_USERS table"); }            
-            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_USER_TABLE", CREATE_USER_TABLE));
+            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_USER_TABLE",
+                                                                           CREATE_USER_TABLE));
          }
          catch (SQLException e) 
          {}
@@ -512,7 +521,8 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating JMS_ROLES table"); }
-            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_ROLE_TABLE", CREATE_ROLE_TABLE));
+            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_ROLE_TABLE",
+                                                                           CREATE_ROLE_TABLE));
          }
          catch (SQLException e) 
          {}
@@ -520,7 +530,9 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating JMS_SUBSCRIPTIONS table"); }
-            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_SUBSCRIPTION_TABLE", CREATE_SUBSCRIPTION_TABLE));
+            conn.createStatement().
+                  executeUpdate(sqlProperties.getProperty("CREATE_SUBSCRIPTION_TABLE",
+                                                          CREATE_SUBSCRIPTION_TABLE));
          }
          catch (SQLException e) 
          {}

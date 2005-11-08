@@ -30,6 +30,7 @@ import org.jboss.messaging.core.ChannelSupport;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
  * $Id$
  */
 public class Queue extends ChannelSupport

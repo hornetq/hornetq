@@ -21,10 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;

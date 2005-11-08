@@ -13,11 +13,8 @@ import java.util.Set;
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Topic;
-import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -26,6 +23,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * $Id$
  */
 public class InMemoryStateManager implements StateManager 
 {
@@ -59,7 +57,8 @@ public class InMemoryStateManager implements StateManager
       return subs == null ? null : (DurableSubscription)subs.get(subscriptionName);
    }
    
-   public DurableSubscription createDurableSubscription(String topicName, String clientID, String subscriptionName,
+   public DurableSubscription createDurableSubscription(String topicName, String clientID,
+                                                        String subscriptionName,
          String selector) throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
@@ -71,10 +70,12 @@ public class InMemoryStateManager implements StateManager
       
       if (subs.get(subscriptionName) != null)
       {
-         throw new IllegalStateException("Client with client id " + clientID + " already has a subscription with name " + subscriptionName);
+         throw new IllegalStateException("Client with client id " + clientID + " already has " +
+                                         "a subscription with name " + subscriptionName);
       }
  
-      DurableSubscription subscription = internalCreateDurableSubscription(clientID, subscriptionName, topicName, selector);
+      DurableSubscription subscription =
+            internalCreateDurableSubscription(clientID, subscriptionName, topicName, selector);
             
       subs.put(subscriptionName, subscription);
       
@@ -117,26 +118,26 @@ public class InMemoryStateManager implements StateManager
    {
       return Collections.EMPTY_SET;
    }
-   
-  
-   
-  
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
-   private DurableSubscription internalCreateDurableSubscription(String clientID, String subName, String topicName, String selector)
-      throws JMSException
+   private DurableSubscription internalCreateDurableSubscription(String clientID, String subName,
+                                                                 String topicName, String selector)
+         throws JMSException
    {
       Topic topic = (Topic)serverPeer.getDestinationManager().getCoreDestination(false, topicName);
       if (topic == null)
       {
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
-      
+
       DurableSubscription sub =
-         new DurableSubscription(clientID, subName, topic, selector, serverPeer.getMessageStore(), serverPeer.getPersistenceManager());;
-      
+            new DurableSubscription(clientID, subName, topic, selector,
+                                    serverPeer.getMessageStore(),
+                                    serverPeer.getPersistenceManager());;
+
       return sub;
    }
    

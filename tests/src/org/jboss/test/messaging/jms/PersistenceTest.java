@@ -39,6 +39,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * $Id$
  */
 public class PersistenceTest extends MessagingTestCase
 {

@@ -35,6 +35,8 @@ import org.jboss.jms.MetaDataRepository;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface ConsumerDelegate extends Closeable, MetaDataRepository
 {

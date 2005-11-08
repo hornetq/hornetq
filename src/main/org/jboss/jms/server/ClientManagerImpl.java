@@ -22,17 +22,10 @@
 package org.jboss.jms.server;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-
-import javax.jms.JMSException;
 
 import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.DurableSubscription;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -42,6 +35,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * $Id$
  */
 public class ClientManagerImpl implements ClientManager
 {

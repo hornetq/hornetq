@@ -112,9 +112,6 @@ public interface SessionDelegate extends Closeable, MetaDataRepository
     */
 	public void acknowledgeSession() throws JMSException;
 
-   /**
-    * Redeliver any un-acked messages.	
-    */
 	public void cancelDeliveries(String receiverID) throws JMSException;
    
    /**

@@ -336,7 +336,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          ps.setString(2, (String)ref.getMessageID());
          int rows = ps.executeUpdate();
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID()) + " updated " + rows + " row(s)"); }
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID()) + " deleted " + rows + " row(s)"); }
 
          if (log.isTraceEnabled()) { log.trace("Deleted " + rows + " rows"); }
          

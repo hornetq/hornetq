@@ -31,6 +31,8 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JMSExpirationHeaderTest extends MessageTest
 {

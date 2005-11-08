@@ -31,7 +31,7 @@ public interface JDBCStateManagerMBean
 
    /**
     * Sets the sqlProperties.
-    * @param sqlProperties The sqlProperties to set    */
+    * @param value The sqlProperties to set    */
    void setSqlProperties(String value);
    
 }
