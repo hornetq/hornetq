@@ -22,6 +22,6 @@
 	<classpathentry kind="lib" path="/thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="src/resources/jcommon-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="src/resources/jfreechart-1.0.0-rc1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2sdk1.4.2_09"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 </classpath>
