@@ -158,9 +158,9 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
    /**
-    * The simplest possible test.
+    * The simplest possible receive() test.
     */
-   public void testConsumer1() throws Exception
+   public void testReceive() throws Exception
    {
       // start consumer connection before the message is submitted
       consumerConnection.start();
@@ -172,10 +172,25 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(tm.getText(), m.getText());
    }
 
+   public void testReceivePersistent() throws Exception
+   {
+      // start consumer connection before the message is submitted
+      consumerConnection.start();
+
+      TextMessage tm = producerSession.createTextMessage("someText");
+      queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+      queueProducer.send(tm);
+
+      TextMessage m = (TextMessage)queueConsumer.receive();
+      assertEquals(tm.getText(), m.getText());
+   }
+
+
    /**
-    * Another simples test.
+    * The simplest possible receive(timeout) test.
     */
-   public void testConsumer2() throws Exception
+   public void testReceiveTimeout() throws Exception
    {
       TextMessage tm = producerSession.createTextMessage("someText");
       queueProducer.send(tm);
@@ -186,6 +201,43 @@ public class MessageConsumerTest extends MessagingTestCase
       TextMessage m = (TextMessage)queueConsumer.receive(3000);
       assertEquals(tm.getText(), m.getText());
    }
+
+   /**
+    * The simplest possible receiveNoWait() test.
+    */
+   public void testReceiveNoWait() throws Exception
+   {
+      TextMessage tm = producerSession.createTextMessage("someText");
+      queueProducer.send(tm);
+
+      // start consumer connection after the message is submitted
+      consumerConnection.start();
+
+      TextMessage m = (TextMessage)queueConsumer.receiveNoWait();
+      assertEquals(tm.getText(), m.getText());
+   }
+
+   /**
+    * The simplest possible message listener test.
+    */
+   public void testReceiveOnListener() throws Exception
+   {
+      TextMessage tm = producerSession.createTextMessage("someText");
+      queueProducer.send(tm);
+
+      MessageListenerImpl l = new MessageListenerImpl();
+      queueConsumer.setMessageListener(l);
+
+      // start consumer connection after the message is submitted
+      consumerConnection.start();
+
+      // wait for the listener to receive the message
+      l.waitForMessages();
+
+      TextMessage m = (TextMessage)l.getNextMessage();
+      assertEquals(tm.getText(), m.getText());
+   }
+
 
 
    //
@@ -1661,6 +1713,25 @@ public class MessageConsumerTest extends MessagingTestCase
          log.trace(e.getMessage());
       }
    }
+
+   public void tesSessionListener() throws Exception
+   {
+      TextMessage tm = producerSession.createTextMessage("someText");
+      queueProducer.send(tm);
+
+      MessageListenerImpl l = new MessageListenerImpl();
+      consumerSession.setMessageListener(l);
+
+      // start consumer connection after the message is submitted
+      consumerConnection.start();
+
+      // wait for the listener to receive the message
+      l.waitForMessages();
+
+      TextMessage m = (TextMessage)l.getNextMessage();
+      assertEquals(tm.getText(), m.getText());
+   }
+
 
    //
    // Multiple consumers
