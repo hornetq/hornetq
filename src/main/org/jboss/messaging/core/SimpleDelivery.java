@@ -96,6 +96,12 @@ public class SimpleDelivery implements Delivery, Serializable
 
    public void acknowledge(Transaction tx) throws Throwable
    {
+      // deals with the race condition when acknowledgment arrives before the delivery
+      // is returned back to the sending delivery observer
+      if (tx == null)
+      {
+         done = true;
+      }
       observer.acknowledge(this, tx);
    }
 

@@ -1966,6 +1966,49 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.browse().isEmpty());
    }
 
+   /**
+    * The same test as before, but with a Receiver configured to acknowledge immediately
+    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
+    * the Delivery is returned to channel.
+    *
+    * @throws Throwable
+    */
+   public void testNonRecoverableChannel_25_race() throws Throwable
+   {
+      if (channel.isRecoverable())
+      {
+         // we test only non-recoverable channels now
+         return;
+      }
+
+      // add an NACKING receiver to the channel
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      r.setImmediateAsynchronousAcknowledgment(true);
+      assertTrue(channel.add(r));
+
+      Message m = Factory.createMessage("message0", false, "payload");
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      // non-transacted send, non-reliable message, one message
+      Delivery delivery = channel.handle(observer, m, null);
+
+      assertTrue(delivery.isDone());
+
+      // the receiver should have returned a "done" delivery
+      assertTrue(channel.browse().isEmpty());
+
+      List messages = r.getMessages();
+      assertEquals(1, messages.size());
+      Message ackm = (Message)messages.get(0);
+      assertEquals("message0", ackm.getMessageID());
+
+      // an extra acknowledgment should be discarded
+      r.acknowledge(ackm, null);
+
+      assertTrue(channel.browse().isEmpty());
+   }
+
+
    ////////////
    //////////// Transacted acknowledgment and commit
    ////////////
@@ -4454,6 +4497,49 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.browse().isEmpty());
    }
 
+   /**
+    * The same test as before, but with a Receiver configured to acknowledge immediately
+    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
+    * the Delivery is returned to channel.
+    *
+    * @throws Throwable
+    */
+   public void testRecoverableChannel_25_race() throws Throwable
+   {
+      if (!channel.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
+      // add an NACKING receiver to the channel
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      r.setImmediateAsynchronousAcknowledgment(true);
+      assertTrue(channel.add(r));
+
+      Message m = Factory.createMessage("message0", false, "payload");
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      // non-transacted send, non-reliable message, one message
+      Delivery delivery = channel.handle(observer, m, null);
+
+      assertTrue(delivery.isDone());
+
+      // the receiver should have returned a "done" delivery
+      assertTrue(channel.browse().isEmpty());
+
+      List messages = r.getMessages();
+      assertEquals(1, messages.size());
+      Message ackm = (Message)messages.get(0);
+      assertEquals("message0", ackm.getMessageID());
+
+      // an extra acknowledgment should be discarded
+      r.acknowledge(ackm, null);
+
+      assertTrue(channel.browse().isEmpty());
+   }
+
+
    ////////////
    //////////// Transacted acknowledgment and commit
    ////////////
@@ -4758,6 +4844,49 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       assertTrue(channel.browse().isEmpty());
    }
+
+   /**
+    * The same test as before, but with a Receiver configured to acknowledge immediately
+    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
+    * the Delivery is returned to channel.
+    *
+    * @throws Throwable
+    */
+   public void testRecoverableChannel_27_race() throws Throwable
+   {
+      if (!channel.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
+      // add an NACKING receiver to the channel
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      r.setImmediateAsynchronousAcknowledgment(true);
+      assertTrue(channel.add(r));
+
+      Message m = Factory.createMessage("message0", true, "payload");
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      // non-transacted send, reliable message, one message
+      Delivery delivery = channel.handle(observer, m, null);
+
+      assertTrue(delivery.isDone());
+
+      // the receiver should have returned a "done" delivery
+      assertTrue(channel.browse().isEmpty());
+
+      List messages = r.getMessages();
+      assertEquals(1, messages.size());
+      Message ackm = (Message)messages.get(0);
+      assertEquals("message0", ackm.getMessageID());
+
+      // an extra acknowledgment should be discarded
+      r.acknowledge(ackm, null);
+
+      assertTrue(channel.browse().isEmpty());
+   }
+
 
    ////////////
    //////////// Transacted acknowledgment and commit

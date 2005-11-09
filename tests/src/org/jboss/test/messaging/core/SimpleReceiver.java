@@ -72,6 +72,7 @@ public class SimpleReceiver implements Receiver
    private String futureState;
    private int invocationsToFutureStateCount;
    private Map waitingArea;
+   private boolean immediateAsynchronousAcknowledgment;
 
    // Constructors --------------------------------------------------
 
@@ -108,6 +109,7 @@ public class SimpleReceiver implements Receiver
       messages = new ArrayList();
       waitingArea = new HashMap();
       waitingArea.put(INVOCATION_COUNT, new Integer(0));
+      immediateAsynchronousAcknowledgment = false;
    }
 
    // Receiver implementation ---------------------------------------
@@ -136,6 +138,19 @@ public class SimpleReceiver implements Receiver
          
          Delivery delivery = new SimpleDelivery(observer, ref, done);
          messages.add(new Object[] {m, done ? null : delivery});
+
+         if (immediateAsynchronousAcknowledgment)
+         {
+            log.info("simulating an asynchronous ACK that arrives before we return the delivery to channel");
+            try
+            {
+               delivery.acknowledge(null);
+            }
+            catch(Throwable t)
+            {
+               log.error("Cannot acknowledge", t);
+            }
+         }
          return delivery;
       }
       finally
@@ -156,6 +171,11 @@ public class SimpleReceiver implements Receiver
    }
 
    // Public --------------------------------------------------------
+
+   public void setImmediateAsynchronousAcknowledgment(boolean b)
+   {
+      immediateAsynchronousAcknowledgment = b;
+   }
 
    public String getName()
    {
