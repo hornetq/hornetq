@@ -1714,7 +1714,7 @@ public class MessageConsumerTest extends MessagingTestCase
       }
    }
 
-   public void tesSessionListener() throws Exception
+   public void testSessionListener() throws Exception
    {
       TextMessage tm = producerSession.createTextMessage("someText");
       queueProducer.send(tm);
