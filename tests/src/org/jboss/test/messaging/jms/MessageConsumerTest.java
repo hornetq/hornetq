@@ -1726,9 +1726,10 @@ public class MessageConsumerTest extends MessagingTestCase
       consumerConnection.start();
 
       // wait for the listener to receive the message
-      l.waitForMessages();
+      l.waitForMessages(3000);
 
       TextMessage m = (TextMessage)l.getNextMessage();
+      assertNotNull(m);
       assertEquals(tm.getText(), m.getText());
    }
 
@@ -3146,6 +3147,17 @@ public class MessageConsumerTest extends MessagingTestCase
          latch.acquire();
          Thread.sleep(2000); //enough time for postdeliver to be called
       }
+
+      public void waitForMessages(long timeout) throws InterruptedException
+      {
+         boolean acquired = latch.attempt(timeout);
+         if (!acquired)
+         {
+            log.info("unsucessful latch aquire attemnpt");
+         }
+         Thread.sleep(2000); //enough time for postdeliver to be called
+      }
+
 
       public void onMessage(Message m)
       {
