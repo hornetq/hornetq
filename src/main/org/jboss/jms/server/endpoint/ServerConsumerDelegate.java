@@ -90,18 +90,18 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    protected PooledExecutor threadPool;
    
-   protected boolean started;
+   protected volatile boolean started;
    
    protected boolean disconnected = false;
 
    // deliveries must be maintained in order they were received
    private List deliveries;
 
-   protected boolean closed;
+   protected volatile boolean closed;
 
-   protected boolean ready;
+   protected volatile boolean ready;
    
-   protected boolean grabbing;
+   protected volatile boolean grabbing;
    
    protected Object deliveryLock;
    
@@ -135,38 +135,32 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       this.deliveryLock = new Object();
    }
 
-   // Receiver implementation ---------------------------------------      
+   // Receiver implementation --------------------------------------- 
+   
+
    
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
+      //Check if we're ready to handle this reference
+      //We do the check outside of the synchronized block for performance reasons
+      //Then we do the check again once we are inside the block
+      //We don't want a lot of threads blocking on the mutex
+      if (!wantReference())
+      {
+         return null;
+      }
+      
       //Serialize delivery for this consumer
       synchronized (deliveryLock)
       {
+         //Need to check again - the state may have changed
+         //while a thread was blocked on the mutex
          
-         if (closed)
-         {
-            if (log.isTraceEnabled()) { log.trace("consumer " + this + " closed, rejecting message" ); }
-            return null;
-         }
-   
-         //If the consumer is stopped then we don't accept the message, it should go back into the channel
-         //for delivery later
-         if (!started)
+         if (!wantReference())
          {
             return null;
          }
-   
-         //If the client side consumer is not ready to accept a message and have it sent to it
-         //or we're not grabbing a message for receiveNoWait
-         //we return null to refuse the message
-         if (!ready && !grabbing)
-         {
-            if (log.isTraceEnabled()) { log.trace("Not ready for message so returning null"); }
-            return null;
-         }
-   
-         // deliver the message on a different thread than the core thread that brought it here
-   
+         
          try
          {
             Delivery delivery = null;
@@ -204,6 +198,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
             if (!grabbing)
             {
                //We want to asynchronously deliver the message to the consumer
+               //deliver the message on a different thread than the core thread that brought it here
+               
                try
                {
                   if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }
@@ -608,8 +604,38 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       }
    }
    
-   
+   /*
+    * Do we want to handle the message? (excluding filter check)
+    */
+   protected boolean wantReference()
+   {
+      //If the client side consumer is not ready to accept a message and have it sent to it
+      //or we're not grabbing a message for receiveNoWait
+      //we return null to refuse the message
+      if (!ready && !grabbing)
+      {
+         if (log.isTraceEnabled()) { log.trace("Not ready for message so returning null"); }
+         return false;
+      }
+            
+      if (closed)
+      {
+         if (log.isTraceEnabled()) { log.trace("consumer " + this + " closed, rejecting message" ); }
+         return false;
+      }
 
+      //If the consumer is stopped then we don't accept the message, it should go back into the channel
+      //for delivery later
+      if (!started)
+      {
+         return false;
+      }
+      
+      //TODO nice all the message headers and properties are in the reference we can do the 
+      //filter check in here too.
+      
+      return true;
+   }
    
    
 
