@@ -121,7 +121,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    // Attributes ----------------------------------------------------
 
-   protected SynchronousChannel channel;   
+   protected SynchronousChannel buffer;
    
    protected SessionDelegate sessionDelegate;
    
@@ -159,7 +159,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 
    public MessageCallbackHandler(boolean isCC)
    {
-      channel = new SynchronousChannel();
+      buffer = new SynchronousChannel();
       
       isConnectionConsumer = isCC;
       
@@ -205,7 +205,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                //waiting had been set but the main consumer thread hadn't quite blocked on the call
                //to take or poll from the channel
                
-               handled = channel.offer(m, 0);
+               handled = buffer.offer(m, 0);
                if (handled)
                {
                   break;
@@ -671,12 +671,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             if (timeout == 0)
             {
                //Indefinite wait
-               m = (JBossMessage)channel.take();         
+               m = (JBossMessage)buffer.take();
             }            
             else
             {
                //wait with timeout
-               m = (JBossMessage)channel.poll(timeout);
+               m = (JBossMessage)buffer.poll(timeout);
             }
          }
          finally
@@ -686,6 +686,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             if (!closed)
             {
+               // TODO - Optimization: We don't actually need to do this most of the time, because
+               //        the consumer delegate auto-deactivates after being handled a message. One
+               //        of the cases we need to deactivate is on receive(timeout) expiration.
+               //
                deactivateConsumer();
             }
          }

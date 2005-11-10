@@ -22,6 +22,7 @@
 #TARGET_TEST=testRecoverableState_57
 
 #TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
+#TARGET_TEST=testNonRecoverableChannel_25_race
 #TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
 #TARGET_TEST=testAddReceiver_6
 #TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
@@ -85,7 +86,7 @@
 #TARGET_TEST=testSimple
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testMessageListenerOnTopicMultipleMessages
+TARGET_TEST=testReceiveOnListener
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest

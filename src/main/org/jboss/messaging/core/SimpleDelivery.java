@@ -106,7 +106,8 @@ public class SimpleDelivery implements Delivery, Serializable
       // is returned back to the sending delivery observer
       if (tx == null)
       {
-         //Why don't we set done to true if the ack is transactional???
+         //TODO Why don't we set done to true if the ack is transactional???
+         //     http://jira.jboss.org/jira/browse/JBMESSAGING-173
          done = true;
       }
       observer.acknowledge(this, tx);
@@ -129,9 +130,7 @@ public class SimpleDelivery implements Delivery, Serializable
 
    public String toString()
    {
-
-      return "Delivery[" + ref + "](" + (isDone() ? "done" : "active" ) + ")"; 
-
+      return "Delivery[" + ref + "](" + (isDone() ? "done" : "active" ) + ")";
    }
 
    // Package protected ---------------------------------------------

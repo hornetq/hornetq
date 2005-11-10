@@ -23,13 +23,11 @@ package org.jboss.test.messaging.jms.message;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -39,6 +37,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JMSPriorityHeaderTest extends MessagingTestCase
 {

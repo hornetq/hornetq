@@ -158,7 +158,7 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
    /**
-    * The simplest possible receive() test.
+    * The simplest possible receive() test for a non-persistent message.
     */
    public void testReceive() throws Exception
    {
@@ -166,6 +166,8 @@ public class MessageConsumerTest extends MessagingTestCase
       consumerConnection.start();
 
       TextMessage tm = producerSession.createTextMessage("someText");
+      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
       queueProducer.send(tm);
       
       log.info("Sent message");
@@ -182,7 +184,7 @@ public class MessageConsumerTest extends MessagingTestCase
       consumerConnection.start();
 
       TextMessage tm = producerSession.createTextMessage("someText");
-      queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+      assertEquals(DeliveryMode.PERSISTENT, tm.getJMSDeliveryMode());
 
       queueProducer.send(tm);
 
@@ -1720,30 +1722,6 @@ public class MessageConsumerTest extends MessagingTestCase
          log.trace(e.getMessage());
       }
    }
-
-
-   // This test seems invalid - the distinguished session listener is only used when ASF is used
-   // to deliver messages
-//   public void testSessionListener() throws Exception
-//   {
-//      TextMessage tm = producerSession.createTextMessage("someText");
-//      queueProducer.send(tm);
-//
-//      MessageListenerImpl l = new MessageListenerImpl();
-//      consumerSession.setMessageListener(l);
-//      
-//      Thread.sleep(3000);
-//
-//      // start consumer connection after the message is submitted
-//      consumerConnection.start();
-//
-//      // wait for the listener to receive the message
-//      l.waitForMessages(3000);
-//
-//      TextMessage m = (TextMessage)l.getNextMessage();
-//      assertNotNull(m);
-//      assertEquals(tm.getText(), m.getText());
-//   }
 
 
    //

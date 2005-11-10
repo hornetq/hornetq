@@ -57,7 +57,8 @@ public class RecoverableState extends NonRecoverableState
       super(channel, true);
       if (pm == null)
       {
-          throw new IllegalArgumentException("RecoverableState requires a non-null persistence manager");
+          throw new IllegalArgumentException("RecoverableState requires a " +
+                                             "non-null persistence manager");
       }
       this.pm = pm;
 

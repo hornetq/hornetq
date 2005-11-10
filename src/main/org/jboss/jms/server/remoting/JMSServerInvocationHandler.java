@@ -40,6 +40,8 @@ import java.util.Collection;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JMSServerInvocationHandler implements ServerInvocationHandler
 {
@@ -68,11 +70,13 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public void setMBeanServer(MBeanServer server)
    {
       this.server = server;
+      log.debug("set MBeanServer " + this.server);
    }
 
    public void setInvoker(ServerInvoker invoker)
    {
       this.invoker = invoker;
+      log.debug("set ServerInvoker " + this.invoker);
    }
 
    public Object invoke(InvocationRequest invocation) throws Throwable
