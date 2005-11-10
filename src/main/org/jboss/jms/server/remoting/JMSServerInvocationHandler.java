@@ -90,6 +90,10 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          {
             i.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER, callbackHandler);
          }
+         else
+         {
+            throw new javax.jms.IllegalStateException("Cannot find callback handler for session id " + s);
+         }
       }
       return Dispatcher.singleton.invoke(i);
    }

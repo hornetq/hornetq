@@ -90,10 +90,11 @@ public abstract class MessageSupport extends RoutableSupport implements Message
                          boolean reliable,
                          long expiration,
                          long timestamp,
+                         int priority,
                          Map headers,
                          Serializable payload)
    {
-      super(messageID, reliable, expiration, timestamp, headers);
+      super(messageID, reliable, expiration, timestamp, priority, headers);
       this.payload = payload;
    }
 

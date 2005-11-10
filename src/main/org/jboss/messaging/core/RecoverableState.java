@@ -241,7 +241,7 @@ public class RecoverableState extends NonRecoverableState
       {
          String messageID = (String)iter.next();
          MessageReference ref = messageStore.getReference(messageID);
-         messageRefs.add(ref);
+         messageRefs.addLast(ref, ref.getPriority());
       }
       
       List dels = pm.deliveries(storeID, channelID);
@@ -251,7 +251,7 @@ public class RecoverableState extends NonRecoverableState
          String messageID = (String)iter.next();
          MessageReference ref = messageStore.getReference(messageID);
          Delivery del = new SimpleDelivery(channel, ref);
-         deliveries.add(del);
+         deliveries.put(del.getReference().getMessageID(), del);
       }
       
    }

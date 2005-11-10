@@ -246,15 +246,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          }
 
          String sql =
-               "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) VALUES (?, ?, ?, ?, ?)";
-         if (log.isTraceEnabled())
-         {
-            log.trace(sql);
-            log.trace("CHANNELID=" + channelID);
-            log.trace("MESSAGEID=" + ref.getMessageID());
-            log.trace("STOREID=" + ref.getStoreID());
-            
-         }
+               "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) VALUES (?, ?, ?, ?, ?)";         
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)ref.getMessageID());
@@ -262,20 +254,15 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          if (txID == null)
          {
             ps.setNull(4, java.sql.Types.VARCHAR);
-            if (log.isTraceEnabled()) log.trace("TRANSACTIONID=NULL");
          }
          else
          {
             ps.setString(4, (String)txID);
-            if (log.isTraceEnabled()) log.trace("TRANSACTIONID=" + txID);
          }
          ps.setString(5, (String)state);
-         if (log.isTraceEnabled()) log.trace(("STATE=" + state));
 
          int inserted = ps.executeUpdate();
          
-         if (log.isTraceEnabled()) log.trace("inserted " + inserted + " rows");
-
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID(), ref.getStoreID(), txID, state) + " inserted " + inserted + " row(s)"); }
       }
       catch (SQLException e)
@@ -323,23 +310,14 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          conn = ds.getConnection();
          
          String sql = "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
-         
-         if (log.isTraceEnabled())
-         {
-            log.trace(sql);
-            log.trace("CHANNELID=" + channelID);
-            log.trace("MESSAGEID=" + ref.getMessageID());            
-         }
-         
+
          ps = conn.prepareStatement(sql);
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)ref.getMessageID());
          int rows = ps.executeUpdate();
 
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(sql, channelID, ref.getMessageID()) + " deleted " + rows + " row(s)"); }
-
-         if (log.isTraceEnabled()) { log.trace("Deleted " + rows + " rows"); }
-         
+  
          return rows == 1;
       }
       catch (SQLException e)

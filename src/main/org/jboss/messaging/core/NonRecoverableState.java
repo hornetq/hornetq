@@ -23,11 +23,16 @@ package org.jboss.messaging.core;
 
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
+import org.jboss.messaging.core.refqueue.BasicSynchronizedPrioritizedDeque;
+import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,10 +58,9 @@ public class NonRecoverableState implements State
    
    // Attributes ----------------------------------------------------
 
-   // List <MessageReference>
-   protected List messageRefs;
-   // List <Delivery>
-   protected List deliveries;
+   protected PrioritizedDeque messageRefs;
+   
+   protected Map deliveries;
 
    protected Map txToAddReferenceTasks;
    protected Map txToRemoveDeliveryTasks;
@@ -70,10 +74,10 @@ public class NonRecoverableState implements State
    {
       this.channel = channel;
       this.acceptReliableMessages = acceptReliableMessages;
-      messageRefs = Collections.synchronizedList(new ArrayList());
-      deliveries = Collections.synchronizedList(new ArrayList());
-      txToAddReferenceTasks = new ConcurrentReaderHashMap();
-      txToRemoveDeliveryTasks = new ConcurrentReaderHashMap();
+      messageRefs = new BasicSynchronizedPrioritizedDeque(new BasicPrioritizedDeque(10));
+      deliveries = new ConcurrentHashMap();
+      txToAddReferenceTasks = new ConcurrentHashMap();
+      txToRemoveDeliveryTasks = new ConcurrentHashMap();
    }
 
    // State implementation -----------------------------------
@@ -100,8 +104,8 @@ public class NonRecoverableState implements State
                                             " cannot be added to non-recoverable state");
          }
 
-         messageRefs.add(ref);
-         if (log.isTraceEnabled()) { log.trace("added " + ref + " in memory [" + messageRefs.size() + "]"); }
+         messageRefs.addLast(ref, ref.getPriority());
+         if (log.isTraceEnabled()) { log.trace("added " + ref + " in memory"); }
          return;
       }
 
@@ -133,26 +137,22 @@ public class NonRecoverableState implements State
                                          " cannot be added to non-recoverable state");
       }
 
-      messageRefs.add(0, ref);
-      if (log.isTraceEnabled()) { log.trace("added " + ref + " at the top of the list in memory [" + messageRefs.size() + "]"); }
+      messageRefs.addFirst(ref, ref.getPriority());
+      if (log.isTraceEnabled()) { log.trace("added " + ref + " at the top of the list in memory"); }
       return;
    }
 
    public boolean remove(MessageReference ref) throws Throwable
    {
       boolean removed = messageRefs.remove(ref);
-      if (removed && log.isTraceEnabled()) { log.trace("removed " + ref + " from memory [" + messageRefs.size() + "]"); }
+      if (removed && log.isTraceEnabled()) { log.trace("removed " + ref + " from memory"); }
 
       return removed;
    }
 
    public MessageReference remove() throws Throwable
    {
-      MessageReference result = null;
-      if (!messageRefs.isEmpty())
-      {
-         result = (MessageReference)messageRefs.remove(0);
-      }
+      MessageReference result = (MessageReference)messageRefs.removeFirst();
 
       if (log.isTraceEnabled()) { log.trace("removing the oldest message in memory returns " + result); }
       return result;
@@ -170,7 +170,7 @@ public class NonRecoverableState implements State
       // The only things that are done in a transactional context are sending of messages
       // and removing deliveries (acking).
       
-      deliveries.add(d);
+      deliveries.put(d.getReference().getMessageID(), d);
       if (log.isTraceEnabled()) { log.trace("added " + d + " to memory"); }
    }
 
@@ -185,9 +185,9 @@ public class NonRecoverableState implements State
          return true;
       }
 
-      boolean memory = deliveries.remove(d);
-      if (memory && log.isTraceEnabled()) { log.trace("removed " + d + " from memory"); }
-      return memory;
+      boolean removed = deliveries.remove(d.getReference().getMessageID()) != null;
+      if (removed && log.isTraceEnabled()) { log.trace("removed " + d + " from memory"); }
+      return removed;
    }
 
    public List delivering(Filter filter)
@@ -195,7 +195,7 @@ public class NonRecoverableState implements State
       List delivering = new ArrayList();
       synchronized (deliveries)
       {
-         for(Iterator i = deliveries.iterator(); i.hasNext(); )
+         for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
          {
             Delivery d = (Delivery)i.next();
             MessageReference r = d.getReference();
@@ -216,9 +216,10 @@ public class NonRecoverableState implements State
       List undelivered = new ArrayList();
       synchronized(messageRefs)
       {
-         for(Iterator i = messageRefs.iterator(); i.hasNext(); )
+         Iterator iter = messageRefs.getAll().iterator();
+         while (iter.hasNext())
          {
-            MessageReference r = (MessageReference)i.next();
+            MessageReference r = (MessageReference)iter.next();
 
             // TODO: I need to dereference the message each time I apply the filter. Refactor so the message reference will also contain JMS properties
             if (filter == null || filter.accept(r.getMessage()))
@@ -313,7 +314,7 @@ public class NonRecoverableState implements State
          {
             MessageReference ref = (MessageReference)i.next();
             if (log.isTraceEnabled()) { log.trace("adding " + ref + " to non-recoverable state"); }
-            messageRefs.add(ref);
+            messageRefs.addLast(ref, ref.getPriority());
          }
 
          //FIXME - in the case of JMS, we only ever want ONE message, so deliver() is
@@ -339,7 +340,7 @@ public class NonRecoverableState implements State
          {
             Delivery d = (Delivery)i.next();
             if (log.isTraceEnabled()) { log.trace("removing " + d + " from non-recoverable state"); }
-            deliveries.remove(d);
+            deliveries.remove(d.getReference().getMessageID());
          }
       }            
    }

@@ -164,8 +164,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    
    protected String connectionID;
 
-   protected int priority;
-
    // Constructors --------------------------------------------------
 
    public JBossMessage()
@@ -175,7 +173,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public JBossMessage(String messageID)
    {
-      this(messageID, false, 0, System.currentTimeMillis(),
+      this(messageID, true, 0, System.currentTimeMillis(),
            null, null, null, 4, null, true, null, true, null, null);
    }
 
@@ -194,10 +192,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        String replyTo,
                        Map jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, coreHeaders, payload);
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload);
 
-      this.jmsType = jmsType;
-      this.priority = priority;
+      this.jmsType = jmsType;      
 
       if (correlationID instanceof byte[])
       {
@@ -263,7 +260,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          System.arraycopy(other.correlationIDBytes, 0, this.correlationIDBytes, 0, other.correlationIDBytes.length);
       }
       this.connectionID = other.connectionID;
-      this.priority = other.priority;
+      
    }
 
    /**

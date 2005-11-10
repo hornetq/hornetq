@@ -22,6 +22,7 @@
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -71,6 +72,10 @@ public interface Routable extends Serializable
     * @return the time (in GMT milliseconds) when this routable was delivered to the provider.
     */
    long getTimestamp();
+   
+   int getPriority();
+   
+   void setPriority(int priority);
 
    /**
     * @return true if the delivery of this message had to be repeated at least once.
@@ -115,5 +120,7 @@ public interface Routable extends Serializable
     * Returns a copy of the header name set.
     */
    Set getHeaderNames();
+   
+   Map getHeaders();
 
 }

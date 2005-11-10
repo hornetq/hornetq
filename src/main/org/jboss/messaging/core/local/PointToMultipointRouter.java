@@ -77,7 +77,7 @@ public class PointToMultipointRouter implements Router
 
                if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled  " + routable + " and returned " + d); }
 
-               if (d != null)
+               if (d != null && !d.isCancelled())
                {
                   deliveries.add(d);
                }

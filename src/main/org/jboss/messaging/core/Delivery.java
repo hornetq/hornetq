@@ -37,6 +37,8 @@ public interface Delivery
    MessageReference getReference();
 
    boolean isDone();
+   
+   boolean isCancelled();
 
    void setObserver(DeliveryObserver observer);
 

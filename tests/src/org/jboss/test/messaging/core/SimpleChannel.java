@@ -8,21 +8,20 @@
 
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.logging.Logger;
-
-import java.util.List;
-import java.util.Iterator;
-import java.io.Serializable;
 
 /**
  * A test Channel implementation.
@@ -102,10 +101,6 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
    
-   public MessageReference getFirst()
-   {
-      throw new NotYetImplementedException();
-   }
    
    public void add(Delivery delivery)
    {

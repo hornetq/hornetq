@@ -83,7 +83,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
       log.debug("setup done");
       
-      super.drainDestination(cf, queue);
+      //super.drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
@@ -96,7 +96,15 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-
+//   public void testWibble() throws Exception
+//   {
+//      for (int i = 0; i < 1000; i++)
+//      {
+//         log.info("run:" + i);
+//         dotestCloseWhileProcessing();
+//      }
+//   }
+   
    public void testSimple() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -123,7 +131,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
          
-         log.trace("Started connection consumer");
+         log.info("Started connection consumer");
          
          connProducer = cf.createConnection();
             
@@ -136,7 +144,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             prod.send(m);
          }
          
-         log.trace("Sent messages");
+         log.info("Sent messages");
          
          //Wait for messages
          
@@ -152,13 +160,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages");
          }
          
-         log.trace("Received all messages");
+         log.info("Received all messages");
          
-         log.trace("closing connection consumer ...");
+         log.info("closing connection consumer ...");
          
          cc.close();
 
-         log.trace("closing connections ...");
+         log.info("closing connections ...");
 
          connProducer.close();
          connProducer = null;
@@ -175,145 +183,74 @@ public class ConnectionConsumerTest extends MessagingTestCase
    }
   
    
-//  won't work until message ordering is done
-//   
-//   public void testRedeliveryTransacted() throws Exception
-//   {
-//      if (ServerManagement.isRemote()) return;
-//      
-//      Connection connConsumer = null;
-//      
-//      Connection connProducer = null;
-//      
-//      try
-//      {
-//         connConsumer = cf.createConnection();        
-//         
-//         connConsumer.start();
-//                  
-//         Session sessCons = connConsumer.createSession(true, Session.SESSION_TRANSACTED);
-//         
-//         RedelMessageListener listener = new RedelMessageListener(sessCons);
-//         
-//         sessCons.setMessageListener(listener);
-//         
-//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
-//         
-//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
-//         
-//         log.info("Started connection consumer");
-//         
-//         connProducer = cf.createConnection();
-//            
-//         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageProducer prod = sessProd.createProducer(queue);
-//            
-//         TextMessage m1 = sessProd.createTextMessage("a");
-//         TextMessage m2 = sessProd.createTextMessage("b");
-//         TextMessage m3 = sessProd.createTextMessage("c");
-//         prod.send(m1);
-//         prod.send(m2);
-//         prod.send(m3);
-//         
-//         
-//         log.info("Sent messages");
-//         
-//         //Wait for messages
-//         
-//         listener.waitForLatch(10000);                  
-//         
-//         if (listener.failed)
-//         {
-//            fail ("Didn't receive correct messages");
-//         }
-//         
-//         cc.close();
-//         
-//         log.info("Closed connection consumer");
-//         
-//         connProducer.close();
-//         connProducer = null;
-//         connConsumer.close();
-//         connConsumer = null;
-//         
-//    
-//      }
-//      finally 
-//      {
-//         if (connConsumer != null) connConsumer.close();
-//         if (connConsumer != null) connProducer.close();
-//      }
-//   }
    
-//   won't work until message ordering is done
-//   public void testRedeliveryNonTransacted() throws Exception
-//   {
-//      if (ServerManagement.isRemote()) return;
-//      
-//      Connection connConsumer = null;
-//      
-//      Connection connProducer = null;
-//      
-//      try
-//      {
-//         connConsumer = cf.createConnection();        
-//         
-//         connConsumer.start();
-//                  
-//         Session sessCons = connConsumer.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-//         
-//         RedelMessageListener listener = new RedelMessageListener(sessCons);
-//         
-//         sessCons.setMessageListener(listener);
-//         
-//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
-//         
-//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
-//         
-//         log.info("Started connection consumer");
-//         
-//         connProducer = cf.createConnection();
-//            
-//         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageProducer prod = sessProd.createProducer(queue);
-//            
-//         TextMessage m1 = sessProd.createTextMessage("a");
-//         TextMessage m2 = sessProd.createTextMessage("b");
-//         TextMessage m3 = sessProd.createTextMessage("c");
-//         prod.send(m1);
-//         prod.send(m2);
-//         prod.send(m3);
-//         
-//         
-//         log.info("Sent messages");
-//         
-//         //Wait for messages
-//         
-//         listener.waitForLatch(10000);                  
-//         
-//         if (listener.failed)
-//         {
-//            fail ("Didn't receive correct messages");
-//         }
-//         
-//         cc.close();
-//         
-//         log.info("Closed connection consumer");
-//         
-//         connProducer.close();
-//         connProducer = null;
-//         connConsumer.close();
-//         connConsumer = null;
-//         
-//    
-//      }
-//      finally 
-//      {
-//         if (connConsumer != null) connConsumer.close();
-//         if (connConsumer != null) connProducer.close();
-//      }
-//   }
-   
+   public void testRedeliveryTransacted() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection connConsumer = null;
+      
+      Connection connProducer = null;
+      
+      try
+      {
+         connConsumer = cf.createConnection();        
+         
+         connConsumer.start();
+                  
+         Session sessCons = connConsumer.createSession(true, Session.SESSION_TRANSACTED);
+         
+         RedelMessageListener listener = new RedelMessageListener(sessCons);
+         
+         sessCons.setMessageListener(listener);
+         
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+         
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
+         
+         log.info("Started connection consumer");
+         
+         connProducer = cf.createConnection();
+            
+         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessProd.createProducer(queue);
+            
+         TextMessage m1 = sessProd.createTextMessage("a");
+         TextMessage m2 = sessProd.createTextMessage("b");
+         TextMessage m3 = sessProd.createTextMessage("c");
+         prod.send(m1);
+         prod.send(m2);
+         prod.send(m3);
+         
+         
+         log.info("Sent messages");
+         
+         //Wait for messages
+         
+         listener.waitForLatch(10000);                  
+         
+         if (listener.failed)
+         {
+            fail ("Didn't receive correct messages");
+         }
+         
+         cc.close();
+         
+         log.info("Closed connection consumer");
+         
+         connProducer.close();
+         connProducer = null;
+         connConsumer.close();
+         connConsumer = null;
+         
+    
+      }
+      finally 
+      {
+         if (connConsumer != null) connConsumer.close();
+         if (connConsumer != null) connProducer.close();
+      }
+   }
    
    
 
@@ -343,7 +280,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
          
-         log.trace("Started connection consumer");
+         log.info("Started connection consumer");
          
          connProducer = cf.createConnection();
             
@@ -356,7 +293,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             prod.send(m);
          }
          
-         log.trace("Sent messages");
+         log.info("Sent messages");
          
 
          cc.close();
@@ -412,7 +349,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
       void waitForLatch(long timeout) throws Exception
       {
          latch.attempt(timeout);
-         Thread.sleep(2000); //Enough time for postDeliver to complete  
+         //Thread.sleep(2000); //Enough time for postDeliver to complete  
       }
       
       public synchronized void onMessage(Message message)
@@ -421,7 +358,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          {
     
             
-            //log.trace("Received message " + msgsReceived);
+            //log.info("Received message " + msgsReceived);
             
             TextMessage tm = (TextMessage)message;
             
@@ -461,7 +398,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
       void waitForLatch(long timeout) throws Exception
       {
          latch.attempt(timeout);
-         Thread.sleep(2000);        //Enough time for postdeliver to complete
+         //Thread.sleep(2000);        //Enough time for postdeliver to complete
       }
       
       public synchronized void onMessage(Message message)
@@ -469,9 +406,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          try
          {
             count++;
-            
-            
-                        
+             
             TextMessage tm = (TextMessage)message;
             
             log.info("Got message " + tm.getText() + " count=" + count);
@@ -508,12 +443,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                   {
                      log.info("Rolling back");
                      sess.rollback();
-                  }
-                  else
-                  {
-                     log.info("Recovering");
-                     sess.recover();
-                  }
+                  }                  
                }
             }
             if (count == 4)
@@ -566,7 +496,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                   {
                      log.info("Committing");
                      sess.commit();
-                  }
+                  }                 
                   latch.release();
                }
             }

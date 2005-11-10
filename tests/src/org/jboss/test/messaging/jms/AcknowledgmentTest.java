@@ -674,32 +674,31 @@ public class AcknowledgmentTest extends MessagingTestCase
    }
    
    
-// This test won't work until message ordering is done
-//   public void testMessageListenerTransactionalAck() throws Exception
-//   {
-//      Connection conn = cf.createConnection();
-//      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//      MessageProducer prod = sessSend.createProducer(queue);
-//      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-//      TextMessage tm1 = sessSend.createTextMessage("a");
-//      TextMessage tm2 = sessSend.createTextMessage("b");
-//      TextMessage tm3 = sessSend.createTextMessage("c");
-//      prod.send(tm1);
-//      prod.send(tm2);
-//      prod.send(tm3);
-//      sessSend.close();
-//      
-//      conn.start();
-//      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
-//      MessageConsumer cons = sessReceive.createConsumer(queue);
-//      MessageListenerTransactionalAck listener = new MessageListenerTransactionalAck(sessReceive);
-//      cons.setMessageListener(listener);
-//      listener.waitForMessages();
-//      
-//      conn.close();
-//      
-//      assertFalse(listener.failed);
-//   }
+   public void testMessageListenerTransactionalAck() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sessSend.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage tm1 = sessSend.createTextMessage("a");
+      TextMessage tm2 = sessSend.createTextMessage("b");
+      TextMessage tm3 = sessSend.createTextMessage("c");
+      prod.send(tm1);
+      prod.send(tm2);
+      prod.send(tm3);
+      sessSend.close();
+      
+      conn.start();
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      MessageConsumer cons = sessReceive.createConsumer(queue);
+      MessageListenerTransactionalAck listener = new MessageListenerTransactionalAck(sessReceive);
+      cons.setMessageListener(listener);
+      listener.waitForMessages();
+      
+      conn.close();
+      
+      assertFalse(listener.failed);
+   }
    
    
    // Package protected ---------------------------------------------
@@ -740,7 +739,7 @@ public class AcknowledgmentTest extends MessagingTestCase
             
             TextMessage tm = (TextMessage)m;
             
-            log.info("Got message:" + tm.getText());
+            log.trace("Got message:" + tm.getText());
             
             //Receive first three messages then recover() session
             //Only last message should be redelivered
@@ -930,7 +929,7 @@ public class AcknowledgmentTest extends MessagingTestCase
             
             TextMessage tm = (TextMessage)m;
             
-            log.info("Got message:" + tm.getText());
+            log.trace("Got message:" + tm.getText());
             
             if (count == 1)
             {
@@ -955,6 +954,7 @@ public class AcknowledgmentTest extends MessagingTestCase
                   failed = true;
                   latch.release();
                }
+               log.trace("Rollback");
                sess.rollback();
             }
             if (count == 4)
@@ -972,6 +972,7 @@ public class AcknowledgmentTest extends MessagingTestCase
                   failed = true;
                   latch.release();
                }  
+               log.trace("commit");
                sess.commit();
             }
             if (count == 6)
@@ -981,7 +982,8 @@ public class AcknowledgmentTest extends MessagingTestCase
                   failed = true;
                   latch.release();
                }  
-               sess.recover();
+               log.trace("recover");
+               sess.rollback();
             }
             if (count == 7)
             {
@@ -990,14 +992,14 @@ public class AcknowledgmentTest extends MessagingTestCase
                   failed = true;
                   latch.release();
                }  
+               log.trace("Commit");
                sess.commit();
                latch.release();
-            }
-           
-               
+            }        
          }
          catch (JMSException e)
          {
+            //log.error(e);
             failed = true;
             latch.release();
          }

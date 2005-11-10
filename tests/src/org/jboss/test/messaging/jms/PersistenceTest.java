@@ -27,7 +27,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
@@ -89,7 +88,7 @@ public class PersistenceTest extends MessagingTestCase
 
    /**
     * Test that the messages in a persistent queue survive starting and stopping and server,
-    * as well as preserving message order across restarts
+    * 
     */
    public void testQueuePersistence() throws Exception
    {
@@ -132,7 +131,218 @@ public class PersistenceTest extends MessagingTestCase
       conn.close();
    }
    
+   /**
+    * First test that message order survives a restart 
+    */
+   public void testMessageOrderPersistence1() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection conn = cf.createConnection();
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sessSend.createProducer(queue);
+      
+      TextMessage m0 = sessSend.createTextMessage("a");
+      TextMessage m1 = sessSend.createTextMessage("b");
+      TextMessage m2 = sessSend.createTextMessage("c");
+      TextMessage m3 = sessSend.createTextMessage("d");
+      TextMessage m4 = sessSend.createTextMessage("e");
+      TextMessage m5 = sessSend.createTextMessage("f");
+      TextMessage m6 = sessSend.createTextMessage("g");
+      TextMessage m7 = sessSend.createTextMessage("h");
+      TextMessage m8 = sessSend.createTextMessage("i");
+      TextMessage m9 = sessSend.createTextMessage("j"); 
+      
+      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
+      prod.send(m1, DeliveryMode.PERSISTENT, 1, 0);
+      prod.send(m2, DeliveryMode.PERSISTENT, 2, 0);
+      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
+      prod.send(m4, DeliveryMode.PERSISTENT, 4, 0);
+      prod.send(m5, DeliveryMode.PERSISTENT, 5, 0);
+      prod.send(m6, DeliveryMode.PERSISTENT, 6, 0);
+      prod.send(m7, DeliveryMode.PERSISTENT, 7, 0);
+      prod.send(m8, DeliveryMode.PERSISTENT, 8, 0);
+      prod.send(m9, DeliveryMode.PERSISTENT, 9, 0);
+      
+      conn.close();
+      
+      ServerManagement.getServerPeer().stop();
+      
+      ServerManagement.getServerPeer().start();
+      ServerManagement.deployQueue("Queue");
+      
+      conn = cf.createConnection();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.start();
+      MessageConsumer cons = sessReceive.createConsumer(queue);
+     
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("j", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("i", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("h", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("g", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("f", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("e", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("d", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("c", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("b", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("a", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receiveNoWait();
+         assertNull(t);
+      }
+      
+     
+      conn.close();
+   }
 
+   
+   /**
+    * Second test that message order survives a restart 
+    */
+   public void testMessageOrderPersistence2() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection conn = cf.createConnection();
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sessSend.createProducer(queue);
+      
+      TextMessage m0 = sessSend.createTextMessage("a");
+      TextMessage m1 = sessSend.createTextMessage("b");
+      TextMessage m2 = sessSend.createTextMessage("c");
+      TextMessage m3 = sessSend.createTextMessage("d");
+      TextMessage m4 = sessSend.createTextMessage("e");
+      TextMessage m5 = sessSend.createTextMessage("f");
+      TextMessage m6 = sessSend.createTextMessage("g");
+      TextMessage m7 = sessSend.createTextMessage("h");
+      TextMessage m8 = sessSend.createTextMessage("i");
+      TextMessage m9 = sessSend.createTextMessage("j");
+
+      
+      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
+      prod.send(m1, DeliveryMode.PERSISTENT, 0, 0);
+      prod.send(m2, DeliveryMode.PERSISTENT, 0, 0);
+      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
+      prod.send(m4, DeliveryMode.PERSISTENT, 3, 0);
+      prod.send(m5, DeliveryMode.PERSISTENT, 4, 0);
+      prod.send(m6, DeliveryMode.PERSISTENT, 4, 0);
+      prod.send(m7, DeliveryMode.PERSISTENT, 5, 0);
+      prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
+      prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
+      
+      conn.close();
+      
+      ServerManagement.getServerPeer().stop();
+      
+      ServerManagement.getServerPeer().start();
+      ServerManagement.deployQueue("Queue");
+      
+      conn = cf.createConnection();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.start();
+      MessageConsumer cons = sessReceive.createConsumer(queue);
+     
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("j", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("h", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("i", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("f", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("g", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("d", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("e", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("a", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("b", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receive(1000);
+         assertNotNull(t);
+         assertEquals("c", t.getText());
+      }
+      {
+         TextMessage t = (TextMessage)cons.receiveNoWait();
+         assertNull(t);
+      }
+      
+      conn.close();
+   }
+   
+   /*
+    * Test durable subscription state survives a restart
+    */
    public void testDurableSubscriptionPersistence() throws Exception
    {
       if (ServerManagement.isRemote()) return;

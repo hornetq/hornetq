@@ -62,22 +62,14 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       if (log.isTraceEnabled()) { log.trace("Creating using default constructor"); }
    }
 
-   WeakMessageReference(Serializable messageID, boolean reliable,
-                        long expirationTime, UnreliableMessageStore ms)
-   {
-      super(messageID, reliable, expirationTime);
-
-      // TODO how about headers here?
-
-      this.ms = ms;
-   }
 
    /**
     * Creates a reference based on a given message.
     */
    public WeakMessageReference(Message m, UnreliableMessageStore ms)
    {
-      this(m.getMessageID(), m.isReliable(), m.getExpiration(), ms);
+      //this(m.getMessageID(), m.isReliable(), m.getExpiration(), ms);
+      this(m.getMessageID(), m.isReliable(), m.getExpiration(), m.getTimestamp(), m.getHeaders(), m.isRedelivered(), m.getPriority(), ms);
 
       for(Iterator i = m.getHeaderNames().iterator(); i.hasNext(); )
       {
@@ -88,11 +80,11 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       ref = new WeakReference(m);
    }
    
-   public WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
-                               long timestamp, Map headers, boolean redelivered,
-                               UnreliableMessageStore ms)
+   protected WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
+         long timestamp, Map headers, boolean redelivered, int priority,
+         UnreliableMessageStore ms)
    {
-      super(messageID, reliable, expiration, timestamp, headers);
+      super(messageID, reliable, expiration, timestamp, priority, headers);
       this.redelivered = redelivered;
       this.ms = ms;
    }

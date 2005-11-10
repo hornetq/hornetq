@@ -143,15 +143,17 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    protected Object closedLock;
    
+   protected Object receiverLock;
+   
    protected MessageListener listener;
    
    protected int listenerThreadCount;
    
    protected volatile boolean stopping;
    
-   //protected volatile boolean receiverStopping;
-   
    protected volatile boolean waiting;
+   
+   protected Thread activateThread;
 
    // Constructors --------------------------------------------------
 
@@ -162,6 +164,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       isConnectionConsumer = isCC;
       
       closedLock = new Object();
+      
+      receiverLock = new Object();
    }
 
    // InvokerCallbackHandler implementation -------------------------
@@ -196,6 +200,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                //message using take() or poll() hence we can guarantee there is no chance any
                //messages can arrive and are left in the channel without being handled -  this is
                //why we use a SynchronousChannel :)
+               
+               //We do this in a while loop to deal with a possible race condition where
+               //waiting had been set but the main consumer thread hadn't quite blocked on the call
+               //to take or poll from the channel
+               
                handled = channel.offer(m, 0);
                if (handled)
                {
@@ -314,6 +323,21 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             stopReceiver();
          }
          
+         //It's possible we are in a call to activate still.
+         //We must wait for that call to complete, otherwise the 
+         //serverconsumer can end up closing while the call is still executing (observed)
+         if (activateThread != null)
+         {
+            try
+            {
+               activateThread.join();
+            }
+            catch (InterruptedException e)
+            {
+               //Ignore
+            }
+         }
+         
          // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
          try
          {
@@ -357,9 +381,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          throw new JBossJMSException("A message listener is already registered");         
       }
       
-      receiving = true;
       
-      receiverThread = Thread.currentThread();
+      synchronized (receiverLock)
+      {         
+         receiving = true;
+         
+         receiverThread = Thread.currentThread();
+      }
       
       long startTimestamp = System.currentTimeMillis();
       
@@ -459,8 +487,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       finally
       {
-         receiving = false;
-         receiverThread = null;
+         synchronized (receiverLock)
+         {
+            receiving = false;
+            receiverThread = null;
+         }
       }
  
    }
@@ -554,54 +585,94 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    protected void stopReceiver()
    {
-      stopping = true;
-      
-      //The listener loop may not be waiting, so interrupting the thread will
-      //not necessarily work, thus leaving it hanging
-      //so we use the listenerStopping variable too
-      receiverThread.interrupt();
-      
-      //FIXME - There is a possibility the receiver thread could still be waiting inside the receive() method
-      //after the interrupt - need to deal with this
-      
-      stopping = false;
+      synchronized (receiverLock)
+      {
+         
+         stopping = true;
+         
+         //The listener loop may not be waiting, so interrupting the thread will
+         //not necessarily work, thus leaving it hanging
+         //so we use the listenerStopping variable too
+         if (receiving)
+         {
+            receiverThread.interrupt();
+         }
+         
+         //FIXME - There is a possibility the receiver thread could still be waiting inside the receive() method
+         //after the interrupt - need to deal with this
+         
+         stopping = false;
+      }
          
    }
    
-   protected Message getMessageFromServer() throws JMSException
+   protected void activateConsumer() throws JMSException
    {
-      return consumerDelegate.getMessage();
+      //We execute this on a separate thread to avoid the case where the asynch delivery
+      //arrives before we have returned from the synch call, which would
+      //cause us to lose the message
+      
+      //TODO Use a thread pool
+      activateThread = new Thread(new Runnable()
+            {
+         public void run()
+         {
+            try
+            {
+               if (log.isTraceEnabled()) { log.trace("Consumer Activation"); }
+               consumerDelegate.activate();
+            }
+            catch(Throwable t)
+            {
+               log.error("Consumer activation failed", t);
+               stopReceiver();
+            }
+         }
+            }, "Consumer Activation Thread");
+      activateThread.start();
    }
    
-   protected void stopServerDelivery() throws JMSException
+   protected void deactivateConsumer() throws JMSException
    {
-      consumerDelegate.stopDelivering();
+      consumerDelegate.deactivate();
    }
+   
+   protected Message getMessageNow() throws JMSException
+   {
+      return consumerDelegate.getMessageNow();
+   }
+   
+
+   
    
    protected JBossMessage getMessage(long timeout) throws InterruptedException, JMSException
    {
       JBossMessage m = null;
       
-      waiting = true;
-      
-      //Get message from server if one is available
-      m = (JBossMessage)getMessageFromServer();
-      
-      
-      if (m == null)
+      //If it's receiveNoWait then get the message directly
+      if (timeout == -1)
       {
+         waiting = false;
          
+         m = (JBossMessage)getMessageNow();
+          
+      }
+      else
+      {
+         //otherwise we active the server side consumer and 
+         //wait for a message to arrive asynchonrously
+         
+         waiting = true;
+         
+         activateConsumer();
+      
          try
          {
             if (timeout == 0)
             {
                //Indefinite wait
                m = (JBossMessage)channel.take();         
-            }
-            else if (timeout == -1)
-            {
-               //Receive no-wait - do nothing               
-            }
+            }            
             else
             {
                //wait with timeout
@@ -612,16 +683,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             //We only need to call this if we didn't receive a message synchronously
             waiting = false;
+            
             if (!closed)
             {
-               stopServerDelivery();
+               deactivateConsumer();
             }
          }
       }
-      else
-      {
-         waiting = false;
-      }
+     
       
       if (m != null)
       {

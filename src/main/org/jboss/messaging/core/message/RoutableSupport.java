@@ -78,6 +78,7 @@ abstract class RoutableSupport implements Routable, Externalizable
    protected long timestamp;
    protected Map headers;
    protected boolean redelivered;
+   protected int priority;
 
    // Constructors --------------------------------------------------
 
@@ -110,6 +111,7 @@ abstract class RoutableSupport implements Routable, Externalizable
            reliable,
            timeToLive == Long.MAX_VALUE ? 0 : System.currentTimeMillis() + timeToLive,
            System.currentTimeMillis(),
+           4,
            null);
    }
 
@@ -117,12 +119,14 @@ abstract class RoutableSupport implements Routable, Externalizable
                           boolean reliable, 
                           long expiration, 
                           long timestamp,
+                          int priority,
                           Map headers)
    {
       this.messageID = messageID;
       this.reliable = reliable;
       this.expiration = expiration;
       this.timestamp = timestamp;
+      this.priority = priority;
       if (headers == null)
       {
          this.headers = new HashMap();
@@ -141,6 +145,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       this.timestamp = other.timestamp;
       this.headers = new HashMap(other.headers);
       this.redelivered = other.redelivered;
+      this.priority = other.priority;
    }
 
    // Routable implementation ---------------------------------------
@@ -198,6 +203,21 @@ abstract class RoutableSupport implements Routable, Externalizable
    public Set getHeaderNames()
    {
       return headers.keySet();
+   }
+   
+   public Map getHeaders()
+   {
+      return headers;
+   }
+   
+   public int getPriority()
+   {
+      return priority;
+   }
+   
+   public void setPriority(int priority)
+   {
+      this.priority = priority;
    }
 
    // Externalizable implementation ---------------------------------

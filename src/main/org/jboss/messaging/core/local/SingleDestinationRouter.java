@@ -69,7 +69,7 @@ public class SingleDestinationRouter implements Router
       {
          Delivery d = receiver.handle(observer, routable, tx);
 
-         if (d != null)
+         if (d != null && !d.isCancelled())
          {
             deliveries.add(d);
          }

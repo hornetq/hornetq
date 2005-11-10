@@ -68,9 +68,12 @@ public interface ConsumerDelegate extends Closeable, MetaDataRepository
    
    void setReceiverID(String receiverID);
    
-   void stopDelivering();
-   
    void cancelMessage(Serializable messageID) throws JMSException;
    
-   Message getMessage() throws JMSException;
+   Message getMessageNow() throws JMSException;
+   
+   void activate() throws JMSException;
+   
+   void deactivate() throws JMSException;
+   
 }

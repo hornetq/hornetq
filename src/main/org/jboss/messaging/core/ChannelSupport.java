@@ -318,16 +318,6 @@ public class ChannelSupport implements Channel
       }
    }
    
-   public MessageReference getFirst() throws Throwable
-   {
-      MessageReference ref = state.remove();
-      return ref;
-   }
-   
-   public void add(Delivery delivery) throws Throwable
-   {
-      this.state.add(delivery);
-   }
 
    public void close()
    {
@@ -424,7 +414,7 @@ public class ChannelSupport implements Channel
          {
             Delivery d = receiver.handle(this, ref, null);
 
-            if (d != null)
+            if (d != null && !d.isCancelled())
             {
                deliveries = new HashSet(1);
                deliveries.add(d);

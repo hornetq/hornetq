@@ -45,6 +45,7 @@ public class SimpleDelivery implements Delivery, Serializable
    // Attributes ----------------------------------------------------
 
    protected boolean done;
+   protected boolean cancelled;
    protected DeliveryObserver observer;
    protected MessageReference ref;
 
@@ -79,9 +80,14 @@ public class SimpleDelivery implements Delivery, Serializable
       return ref;
    }
 
-   public boolean isDone()
+   public synchronized boolean isDone()
    {
       return done;
+   }
+   
+   public synchronized boolean isCancelled()
+   {
+      return cancelled;
    }
 
    public void setObserver(DeliveryObserver observer)
@@ -94,19 +100,23 @@ public class SimpleDelivery implements Delivery, Serializable
       return observer;
    }
 
-   public void acknowledge(Transaction tx) throws Throwable
+   public synchronized void acknowledge(Transaction tx) throws Throwable
    {
       // deals with the race condition when acknowledgment arrives before the delivery
       // is returned back to the sending delivery observer
       if (tx == null)
       {
+         //Why don't we set done to true if the ack is transactional???
          done = true;
       }
       observer.acknowledge(this, tx);
    }
 
-   public boolean cancel() throws Throwable
+   public synchronized boolean cancel() throws Throwable
    {
+      // deals with the race condition when cancellation arrives before the delivery
+      // is returned back to the sending delivery observer
+      cancelled = true;
       return observer.cancel(this);
    }
 
