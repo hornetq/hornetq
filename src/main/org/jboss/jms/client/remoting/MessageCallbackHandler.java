@@ -686,11 +686,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             if (!closed)
             {
-               // TODO - Optimization: We don't actually need to do this most of the time, because
-               //        the consumer delegate auto-deactivates after being handled a message. One
-               //        of the cases we need to deactivate is on receive(timeout) expiration.
-               //
-               deactivateConsumer();
+               if (m == null)
+               {
+                  deactivateConsumer();
+               }
             }
          }
       }
