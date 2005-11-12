@@ -138,22 +138,15 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
             
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      Distributor destination = null;
-     
       if (jmsDestination != null)
       {
-         destination = dm.getCoreDestination(jmsDestination);
-
-         if (destination == null)
+         if (dm.getCoreDestination(jmsDestination) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
       }
      
-      log.debug("got producer's destination: " + destination);
-
       // create the dynamic proxy that implements ProducerDelegate
-
       Serializable oid = serverPeer.getProducerAdvisor().getName();
       String stackName = "ProducerStack";
       AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);

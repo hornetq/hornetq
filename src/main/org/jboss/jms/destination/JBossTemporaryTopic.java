@@ -53,26 +53,29 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       this.delegate = delegate;
    }
    
-   // Public --------------------------------------------------------
-   
-   // TemporaryQueue implementation ----------------------------------------------
+   // TemporaryQueue implementation ---------------------------------
    
    public void delete() throws JMSException
    {
       if (delegate != null) delegate.deleteTemporaryDestination(this);
    }
    
-   // JBossDestination overrides ---------------------------------------------------
+   // JBossDestination overrides ------------------------------------
    
    public boolean isTemporary()
    {
       return true;
    }
-   
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossTemporaryTopic[" + name + "]";
+   }
+
    // Package protected ---------------------------------------------
-   
-   
-   
+
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------

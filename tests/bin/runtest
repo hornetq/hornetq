@@ -77,7 +77,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
 #TARGET_TEST=testCreateTwoSessions
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
-#TARGET_TEST=testTransactedSend
+#TARGET_TEST=testCreateProducerOnInexistentDestination
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
 #TARGET_TEST=testClose1
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
@@ -85,15 +85,18 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionConsumerTest
 #TARGET_TEST=testSimple
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-TARGET_TEST=testReceiveOnListener
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_TEST=testCreateConsumerOnInexistentDestination
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.selector.SelectorTest
-
+#TARGET_CLASS=org.jboss.test.messaging.jms.QueueTest
+#TARGET_TEST=testQueue
+TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
+#TARGET_TEST=testQueue
 
 #
 # JMS Facade server

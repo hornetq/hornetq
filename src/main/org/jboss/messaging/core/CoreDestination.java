@@ -19,18 +19,16 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.local;
+package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.Receiver;
-
-public abstract class Destination implements Distributor, Receiver
+/**
+ * Marker interface used as common type for a core destination (queue, topic, etc.)
+ *
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ */
+public interface CoreDestination extends Distributor, Receiver
 {
-   protected String name;
-   
-   public String getName()
-   {
-      return name;
-   }
-     
 }

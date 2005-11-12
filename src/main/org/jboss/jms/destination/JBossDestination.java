@@ -27,6 +27,8 @@ import java.io.Serializable;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public abstract class JBossDestination implements Destination, Serializable
 {

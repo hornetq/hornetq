@@ -55,9 +55,7 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
       this.delegate = delegate;
    }
    
-   // Public --------------------------------------------------------
-   
-   // TemporaryQueue implementation ----------------------------------------------
+   // TemporaryQueue implementation ---------------------------------
    
    public void delete() throws JMSException
    {
@@ -67,17 +65,22 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
       }
    }
    
-   // JBossDestination overrides ---------------------------------------------------
+   // JBossDestination overrides ------------------------------------
    
    public boolean isTemporary()
    {
       return true;
    }
-   
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossTemporaryQueue[" + name + "]";
+   }
+
    // Package protected ---------------------------------------------
-   
-   
-   
+
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------

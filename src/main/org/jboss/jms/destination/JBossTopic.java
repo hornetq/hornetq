@@ -27,6 +27,8 @@ import javax.jms.JMSException;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JBossTopic extends JBossDestination implements Topic
 {
@@ -65,6 +67,11 @@ public class JBossTopic extends JBossDestination implements Topic
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossTopic[" + name + "]";
+   }
 
    // Package protected ---------------------------------------------
    

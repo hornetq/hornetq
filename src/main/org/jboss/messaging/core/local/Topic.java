@@ -26,13 +26,12 @@ import java.util.Iterator;
 
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.tx.Transaction;
-
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -40,7 +39,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * $Id$
  */
-public class Topic implements Receiver, Distributor
+public class Topic implements CoreDestination
 {
    // Constants -----------------------------------------------------
 
@@ -49,11 +48,13 @@ public class Topic implements Receiver, Distributor
    // Attributes ----------------------------------------------------
    
    protected Router router;
-   
+   protected String name;
+
    // Constructors --------------------------------------------------
 
    public Topic(String name)
-   {      
+   {
+      this.name = name;
       router = new PointToMultipointRouter();
    }
 
@@ -64,7 +65,6 @@ public class Topic implements Receiver, Distributor
       router.handle(sender, r, tx);
       return new SimpleDelivery(true);
    }
-
 
    public boolean add(Receiver receiver)
    {

@@ -62,9 +62,8 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
@@ -561,7 +560,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
    
    void sendMessage(Message m, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("sending " + m + " transactionally on " + tx); }
+      if (log.isTraceEnabled()) { log.trace("sending " + m + (tx == null ? "non-transactionally" : " transactionally on " + tx)); }
 
       //The JMSDestination header must already have been set for each message
       JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
@@ -569,11 +568,9 @@ public class ServerConnectionDelegate implements ConnectionDelegate
       {
          throw new IllegalStateException("JMSDestination header not set!");
       }
-      
-      Distributor coreDestination = null;
-      
+
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      coreDestination = dm.getCoreDestination(jmsDestination);
+      CoreDestination coreDestination = dm.getCoreDestination(jmsDestination);
       
       if (coreDestination == null)
       {
@@ -589,7 +586,7 @@ public class ServerConnectionDelegate implements ConnectionDelegate
     
       if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core, destination: " + jmsDestination.getName() + ", tx: " + tx); }
       
-      Delivery d = ((Receiver)coreDestination).handle(null, r, tx);
+      Delivery d = coreDestination.handle(null, r, tx);
       
       // The core destination is supposed to acknowledge immediately. If not, there's a problem.
       if (d == null || !d.isDone())

@@ -405,11 +405,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       }
    }
    
-   /*
-    * We attempt to get the message directly fron the channel first.
-    * If we find one, we return that.
-    * Otherwise, we register as being interested in receiving a message
-    * asynchronously, then return and wait for it on the client side.
+   /**
+    * We attempt to get the message directly fron the channel first. If we find one, we return that.
+    * Otherwise, we register as being interested in receiving a message asynchronously, then return
+    * and wait for it on the client side.
     */
    public javax.jms.Message getMessageNow() throws JMSException
    {      
@@ -501,8 +500,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       this.sessionEndpoint.consumers.remove(this.id);
    }  
    
-   
-   
    void acknowledge(String messageID, Transaction tx)
    {
       if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
@@ -579,7 +576,6 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    {
       synchronized (deliveryLock)
       {
-      
          if (ready || grabbing)
          {
             channel.deliver(this);
@@ -624,8 +620,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          return false;
       }
 
-      //If the consumer is stopped then we don't accept the message, it should go back into the channel
-      //for delivery later
+      // If the consumer is stopped then we don't accept the message, it should go back into the
+      // channel for delivery later.
       if (!started)
       {
          return false;

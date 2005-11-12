@@ -27,6 +27,8 @@ import javax.jms.JMSException;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JBossQueue extends JBossDestination implements Queue
 {
@@ -65,6 +67,11 @@ public class JBossQueue extends JBossDestination implements Queue
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossQueue[" + name + "]";
+   }
 
    // Package protected ---------------------------------------------
    

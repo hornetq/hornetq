@@ -31,6 +31,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
@@ -56,10 +57,10 @@ class CoreDestinationManager
 
    // Attributes ----------------------------------------------------
 
-   // <name - AbstractDestination>
+   // <name - CoreDestination>
    protected Map queueMap;
 
-   // <name - AbstractDestination>
+   // <name - CoreDestination>
    protected Map topicMap;
 
    protected DestinationManagerImpl destinationManager;
@@ -71,6 +72,8 @@ class CoreDestinationManager
       queueMap = new ConcurrentReaderHashMap();
       topicMap = new ConcurrentReaderHashMap();
       this.destinationManager = destinationManager;
+
+      log.debug("CoreDestinationManager created");
    }
 
    // Public --------------------------------------------------------
@@ -78,24 +81,23 @@ class CoreDestinationManager
    /**
     * Returns the core destination that corresponds to the given destination name.
     *
-    * @return the AbstractDestination instance or null if there isn't a mapping for the given
+    * @return the CoreDestination instance or null if there isn't a mapping for the given
     *         destination.
     *
     * @exception JMSException - thrown if the JNDI destination cannot be mapped on a core
     *            destination.
     */
-   Distributor getCoreDestination(boolean isQueue, String name) throws JMSException
+   CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("getting core " + (isQueue ? "queue" : "topic")
-                                            + " for " + name); }
+      if (log.isTraceEnabled()) { log.trace("getting core " + (isQueue ? "queue" : "topic") + " for " + name); }
 
       if (isQueue)
       {
-         return (Distributor)queueMap.get(name);
+         return (CoreDestination)queueMap.get(name);
       }
       else
       {
-         return (Distributor)topicMap.get(name);
+         return (CoreDestination)topicMap.get(name);
       }
    }
 
@@ -112,8 +114,8 @@ class CoreDestinationManager
       String name = d.getName();
       boolean isQueue = d.isQueue();
 
-      Distributor c = getCoreDestination(isQueue, name);
-      if (c != null)
+      CoreDestination cd = getCoreDestination(isQueue, name);
+      if (cd != null)
       {
          throw new JMSException("Destination " + jmsDestination + " already exists");
       }
@@ -123,14 +125,12 @@ class CoreDestinationManager
       // TODO I am using LocalQueues for the time being, switch to distributed Queues
       if (isQueue)
       {
-         c = new Queue(name,
-                       sp.getMessageStore(),
-                       sp.getPersistenceManager());
+         cd = new Queue(name, sp.getMessageStore(), sp.getPersistenceManager());
          
          try
          {
-            //We load the queue with any state it might have in the db
-            ((Queue)c).load();
+            // we load the queue with any state it might have in the db
+            ((Queue)cd).load();
          }
          catch (Exception e)
          {
@@ -139,14 +139,14 @@ class CoreDestinationManager
             throw e2;
          }
          
-         queueMap.put(name, c);
+         queueMap.put(name, cd);
       }
       else
       {
          // TODO I am using LocalTopics for the time being, switch to distributed Topics
-         c = new Topic(name);
+         cd = new Topic(name);
          
-         topicMap.put(name, c);
+         topicMap.put(name, cd);
          
          //TODO
          //The following piece of code may be better placed either in the Topic itself
@@ -172,8 +172,6 @@ class CoreDestinationManager
             //and subscribe it to the Topic
             sub.subscribe();
          }
-         
-         
       }
    }
    

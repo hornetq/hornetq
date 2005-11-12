@@ -24,6 +24,7 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
+import org.jboss.messaging.core.CoreDestination;
 
 
 
@@ -33,7 +34,7 @@ import org.jboss.messaging.core.ChannelSupport;
  *
  * $Id$
  */
-public class Queue extends ChannelSupport
+public class Queue extends ChannelSupport implements CoreDestination
 {
    // Constants -----------------------------------------------------
 
