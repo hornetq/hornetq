@@ -29,7 +29,6 @@ import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.distributed.util.ServerResponse;
 import org.jboss.messaging.core.distributed.pipe.DistributedPipe;
 import org.jboss.messaging.core.distributed.pipe.DistributedPipeOutput;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
@@ -38,8 +37,9 @@ import org.jgroups.Address;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A distributed queue peer.
@@ -109,30 +109,64 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
       return peerID;
    }
 
-   public Acknowledgment join(Address address, Serializable id, Serializable pipeID)
+   public Acknowledgment join(Address remoteAddress,
+                              Serializable remotePeerID,
+                              Serializable remotePipeID)
          throws Throwable
    {
       // I will never receive my own call, since the server objects are not registered
       // at the time of call
 
-      log.debug("peer " + PeerIdentity.identityToString(getChannelID(), id, address) +
-                " wants to join");
+      PeerIdentity remotePeerIdentity =
+         new PeerIdentity(getChannelID(), remotePeerID, remoteAddress);
 
-      DistributedPipe p =  new DistributedPipe(pipeID, dispatcher, address);
+      log.debug("peer " + remotePeerIdentity + " wants to join");
+
+      DistributedPipe p =  new DistributedPipe(remotePipeID, dispatcher, remoteAddress);
+      RemotePeer rp = new RemotePeer(remotePeerIdentity, p);
 
       // TODO what happens if this peer receives this very moment a message to be
       // TODO delivered to the queue? Seding to the joining peer will fail, since its distributed
       // TODO pipe isn't completely functional yet. To add test case.
 
-      add(p);
-      return new Acknowledgment(dispatcher.getChannel().getLocalAddress(), id);
+      add(rp);
+      PeerIdentity pi =
+         new PeerIdentity(getChannelID(), this.peerID, dispatcher.getChannel().getLocalAddress());
+      return new Acknowledgment(pi, p.getID());
+   }
+
+
+   public void leave(PeerIdentity remotePeerIdentity)
+   {
+      if (getPeerIdentity().equals(remotePeerIdentity))
+      {
+         // ignore my own requests
+         return;
+      }
+
+      log.debug("peer " + remotePeerIdentity + " wants to leave");
+
+      // TODO synchronization
+      for(Iterator i = iterator(); i.hasNext(); )
+      {
+         Object receiver = i.next();
+         if (receiver instanceof RemotePeer)
+         {
+            RemotePeer rp = (RemotePeer)receiver;
+            if (rp.getPeerIdentity().equals(remotePeerIdentity))
+            {
+               i.remove();
+               break;
+            }
+         }
+      }
    }
 
    // Peer implementation -------------------------------------------
 
    /**
-    * Connects the peer to the distributed queue. The underlying JChannel must be connected at the
-    * time of the call.
+    * Connects the peer to the distributed queue. The underlying JChannel must be connected
+    * at the time of the call.
     *
     * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
     */
@@ -213,7 +247,27 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
     */
    public synchronized void leave() throws DistributedException
    {
-      throw new NotYetImplementedException();
+      if(!joined)
+      {
+         return;
+      }
+
+      log.debug(this + " leaving distributed queue " + getChannelID());
+
+      // multicast the intention to leave the queue
+      RpcServerCall rpcServerCall =
+            new RpcServerCall(getChannelID(), "leave",
+                              new Object[] {getPeerIdentity()},
+                              new String[] {"org.jboss.messaging.core.distributed.PeerIdentity"});
+
+      // TODO use the timout when I'll change the send() signature or deal with the timeout
+      rpcServerCall.remoteInvoke(dispatcher, TIMEOUT);
+      log.debug("synchronous remote invocation ended");
+
+      // unregister my pipe output
+      rpcServer.unregister(pipeID);
+      rpcServer.unregister(getChannelID(), this);
+      joined = false;
    }
 
    public PeerIdentity getPeerIdentity()
@@ -226,20 +280,24 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
       return joined;
    }
 
-   public List getView()
+   public Set getView()
    {
-      List result = new ArrayList();
+      if (!joined)
+      {
+         return Collections.EMPTY_SET;
+      }
+
+      Set result = new HashSet();
 
       for(Iterator i = iterator(); i.hasNext(); )
       {
          Object receiver = i.next();
-         if (receiver instanceof DistributedPipe)
+         if (receiver instanceof RemotePeer)
          {
-            // TODO
+            RemotePeer rp = (RemotePeer)receiver;
+            result.add(rp.getPeerIdentity());
          }
       }
-
-      // TODO define order in view
 
       result.add(getPeerIdentity());
       return result;
@@ -259,15 +317,18 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
    // Private -------------------------------------------------------
 
    /**
-    * Create the distributed pipe to the peer that acknowledged. \
+    * Create the distributed pipe to the peer that acknowledged.
     */
    private void pipeToPeer(Acknowledgment ack)
    {
       // I will never receive an acknowledgment from myself, since my server objects are not
       // registered yet, so I can safely link to peer.
 
-      DistributedPipe p = new DistributedPipe(ack.getPipeID(), dispatcher, ack.getAddress());
-      add(p);
+      PeerIdentity remotePeerIdentity = ack.getPeerIdentity();
+      DistributedPipe p =
+         new DistributedPipe(ack.getPipeID(), dispatcher, remotePeerIdentity.getAddress());
+      RemotePeer rp = new RemotePeer(remotePeerIdentity, p);
+      add(rp);
    }
 
    private Serializable generateUniqueID()

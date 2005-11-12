@@ -56,11 +56,18 @@ public class RpcServer
    // Attributes ----------------------------------------------------
 
    protected Map servers;
+   protected String name;
 
    // Constructors --------------------------------------------------
 
    public RpcServer()
    {
+      this("");
+   }
+
+   public RpcServer(String name)
+   {
+      this.name = name;
       servers = new HashMap();
    }
 
@@ -92,6 +99,7 @@ public class RpcServer
                             Object[] args, String[] signature)
          throws Exception
    {
+      if (log.isTraceEnabled()) { log.trace(this + ": method " + methodName + " invoked on category " + category); }
 
       Class[] parameterTypes = new Class[signature.length];
       for (int i = 0; i < signature.length; i++)
@@ -104,15 +112,18 @@ public class RpcServer
          Object o = servers.get(category);
          if (o == null)
          {
+            if (log.isTraceEnabled()) { log.trace(this + ": category " + category + " not found"); }
             return Collections.EMPTY_SET;
          }
          Set equivalents = null;
          if (o instanceof Set)
          {
+            if (log.isTraceEnabled()) { log.trace(this + ": sub-servers found for category " + category); }
             equivalents = (Set)o;
          }
          else
          {
+            if (log.isTraceEnabled()) { log.trace(this + ": unique server found for category " + category); }
             // deal with unique servers in a consistent manner
             equivalents = new HashSet();
             equivalents.add(o);
@@ -122,24 +133,25 @@ public class RpcServer
          {
             ServerFacade subordinate = (ServerFacade)i.next();
             Serializable id = subordinate.getID();
+            Method method = null;
             try
             {
-               Method method = subordinate.getClass().getMethod(methodName, parameterTypes);
-               Object result = method.invoke(subordinate, args);
-               results.add(new SubordinateServerResponse(id, result));
+               method = subordinate.getClass().getMethod(methodName, parameterTypes);
 
-               if (log.isTraceEnabled())
-               {
-                  log.trace("RpcServer invocation of " + method.getName() +
-                            "() on category=" + category + ", delegate=" + id + " successful");
-               }
+               if (log.isTraceEnabled()) { log.trace(this + " invokes " + method.getName() + " on " + category + "." + id); }
+               Object result = method.invoke(subordinate, args);
+               if (log.isTraceEnabled()) { log.trace(this + ": " + method.getName() + " invocation successful"); }
+
+               results.add(new SubordinateServerResponse(id, result));
             }
             catch(Throwable t)
             {
-               log.debug("RpcServer invocation on category =" + category + ", delegate =" + id + "failed", t);
+               if (log.isTraceEnabled()) { log.trace(this + ": " + method.getName() + " invocation failed", t); }
                results.add(new SubordinateServerResponse(id, t));
             }
          }
+
+         if (log.isTraceEnabled() && results.isEmpty()) { log.trace(this + ": no target server found for " + methodName); }
          return results;
       }
    }
@@ -256,6 +268,21 @@ public class RpcServer
    }
 
    /**
+    * Unregister the whole category.
+    *
+    * @return true if the category was sucessfully unregistered or false if the specified category
+    *         was not found.
+    */
+   public boolean unregister(Serializable category)
+   {
+      synchronized(servers)
+      {
+         return servers.remove(category) != null;
+      }
+   }
+
+
+   /**
     * @param category - the server category.
     * @return a Set of equivalent server subordinates, or an empty Set if no servers were registered
     *         under that ID. If the server delegate was registered as unique, an one-element
@@ -288,7 +315,7 @@ public class RpcServer
 
    public String toString()
    {
-      return servers.toString();
+      return "RpcServer[" + name + "]";
    }
 
 

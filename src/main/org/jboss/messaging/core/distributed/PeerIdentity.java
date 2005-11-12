@@ -145,7 +145,7 @@ public class PeerIdentity implements Externalizable
 
    private volatile int hashCode = 0;
 
-   public int hasCode()
+   public int hashCode()
    {
       if (hashCode == 0)
       {

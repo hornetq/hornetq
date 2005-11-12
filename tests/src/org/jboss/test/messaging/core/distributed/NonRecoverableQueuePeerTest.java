@@ -55,11 +55,11 @@ public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
 
       channel = new QueuePeer("test", ms, dispatcher);
 
-      if (jchannel2 != null)
-      {
-         ms2 = new TransactionalMessageStore("message-store-2");
-         channel2 = new QueuePeer("test", ms2, dispatcher2);
-      }
+      ms2 = new TransactionalMessageStore("message-store-2");
+      ms3 = new TransactionalMessageStore("message-store-3");
+
+      channel2 = new QueuePeer("test", ms2, dispatcher2);
+      channel3 = new QueuePeer("test", ms3, dispatcher3);
 
       log.debug("setup done");
    }
@@ -70,12 +70,13 @@ public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
       channel = null;
 
       ms2 = null;
-      if (channel2 != null)
-      {
-         channel2.close();
-      }
+      channel2.close();
       channel2 = null;
 
+      ms3 = null;
+      channel3.close();
+      channel3 = null;
+      
       super.tearDown();
    }
 

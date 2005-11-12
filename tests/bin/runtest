@@ -60,7 +60,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
-TARGET_TEST=testPeerInGroupOfOne
+#TARGET_TEST=testPeerInGroupOfTwo
 #TARGET_TEST=testUnreliableChannelReliableMessageNACKingReceiver
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
 #TARGET_TEST=testNonRecoverableChannel_26_1

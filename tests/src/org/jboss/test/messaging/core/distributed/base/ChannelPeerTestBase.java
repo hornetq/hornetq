@@ -32,7 +32,7 @@ import org.jboss.messaging.core.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
-import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -48,9 +48,18 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static final String props =
-         "UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=32):"+
-         "PING(timeout=3050;num_initial_members=6):"+
+   // Static --------------------------------------------------------
+
+   /**
+    * @param PING_timeout in ms
+    * @param PING_num_initial_members
+    */
+   public static String generateProperties(int PING_timeout,
+                                           int PING_num_initial_members)
+   {
+      return
+         "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32):"+
+         "PING(timeout=" + PING_timeout + ";num_initial_members=" + PING_num_initial_members + "):"+
          "FD(timeout=3000):"+
          "VERIFY_SUSPECT(timeout=1500):"+
          "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800):"+
@@ -59,15 +68,16 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
          "FRAG:"+
          "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)";
 
-   // Static --------------------------------------------------------
-   
+
+   }
+
    // Attributes ----------------------------------------------------
 
-   protected JChannel jchannel, jchannel2;
-   protected RpcDispatcher dispatcher, dispatcher2;
+   protected JChannel jchannel, jchannel2, jchannel3;
+   protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected MessageStore ms2;
-   protected Channel channel2;
+   protected MessageStore ms2, ms3;
+   protected Channel channel2, channel3;
 
    // Constructors --------------------------------------------------
 
@@ -76,25 +86,35 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       super(name);
    }
 
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
-      connectJChannel();
+
+      jchannel = new JChannel(generateProperties(50, 1));
+      jchannel2 = new JChannel(generateProperties(900000, 1));
+      jchannel3 = new JChannel(generateProperties(900000, 2));
+
+      dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer("1"));
+      dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer("2"));
+      dispatcher3 = new RpcDispatcher(jchannel3, null, null, new RpcServer("3"));
+
+      // connect only the first JChannel
+      jchannel.connect("testGroup");
+
+      assertEquals(1, jchannel.getView().getMembers().size());
+
    }
 
    public void tearDown() throws Exception
    {
-      if (jchannel.isOpen())
-      {
-         jchannel.close();
-      }
+      jchannel.close();
+      jchannel2.close();
+      jchannel3.close();
 
       super.tearDown();
    }
-
 
    public void testJGroupsChannelNotConnected() throws Exception
    {
@@ -121,72 +141,225 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
 
       assertTrue(jchannel.isConnected());
 
+      PeerIdentity peerIdentity = peer.getPeerIdentity();
+      assertEquals(channel.getChannelID(), peerIdentity.getDistributedID());
+
       peer.join();
 
       assertTrue(peer.hasJoined());
 
-      PeerIdentity pid = peer.getPeerIdentity();
-      assertEquals(channel.getChannelID(), pid.getDistributedID());
-      assertNotNull(pid.getPeerID());
-      assertNotNull(pid.getAddress());
+      assertEquals(peerIdentity, peer.getPeerIdentity());
 
-      List view = peer.getView();
+      Set view = peer.getView();
 
       assertEquals(1, view.size());
-      assertEquals(pid, view.get(0));
+      assertTrue(view.contains(peerIdentity));
 
-//      peer.leave();
-//
-//      assertFalse(peer.hasJoined());
-//
-//      pid = peer.getPeerIdentity();
-//      assertEquals(channel.getChannelID(), pid.getDistributedID());
-//      assertNull(pid.getPeerID());
-//      assertNull(pid.getAddress());
-//
-//      view = peer.getView();
-//      assertEquals(0, view.size());
+      peer.leave();
+
+      assertFalse(peer.hasJoined());
+
+      assertEquals(peerIdentity, peer.getPeerIdentity());
+
+      view = peer.getView();
+      assertEquals(0, view.size());
    }
 
    public void testPeerInGroupOfTwo() throws Exception
    {
-      connectJChannel2();
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
 
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      try
-      {
+      // make sure both jchannel joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
 
+      Peer peer = (Peer)channel;
+      Peer peer2 = (Peer)channel2;
 
-      }
-      finally
-      {
-         jchannel2.close();
-      }
+      PeerIdentity peerIdentity = peer.getPeerIdentity();
+      PeerIdentity peer2Identity = peer2.getPeerIdentity();
+
+      assertEquals(channel.getChannelID(), peerIdentity.getDistributedID());
+      assertEquals(channel.getChannelID(), peer2Identity.getDistributedID());
+      assertFalse(peerIdentity.getPeerID().equals(peer2Identity.getPeerID()));
+
+      peer.join();
+      log.debug("peer has joined");
+
+      assertTrue(peer.hasJoined());
+
+      Set view = peer.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peerIdentity));
+
+      peer2.join();
+      log.debug("peer2 has joined");
+
+      assertTrue(peer2.hasJoined());
+
+      view = peer.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      view = peer2.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      peer.leave();
+      log.debug("peer has left");
+
+      assertFalse(peer.hasJoined());
+
+      view = peer.getView();
+      assertEquals(0, view.size());
+      view = peer2.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peer2Identity));
+
+      peer2.leave();
+      log.debug("peer2 has left");
+
+      assertFalse(peer2.hasJoined());
+
+      view = peer.getView();
+      assertEquals(0, view.size());
+      view = peer2.getView();
+      assertEquals(0, view.size());
    }
 
+   public void testPeerInGroupOfThree() throws Exception
+   {
+      jchannel2.connect("testGroup");
+      jchannel3.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(2000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+      assertTrue(jchannel3.isConnected());
+
+      // make sure all three jchannels joined the group
+      assertEquals(3, jchannel.getView().getMembers().size());
+      assertEquals(3, jchannel2.getView().getMembers().size());
+      assertEquals(3, jchannel3.getView().getMembers().size());
+
+      Peer peer = (Peer)channel;
+      Peer peer2 = (Peer)channel2;
+      Peer peer3 = (Peer)channel3;
+
+      PeerIdentity peerIdentity = peer.getPeerIdentity();
+      PeerIdentity peer2Identity = peer2.getPeerIdentity();
+      PeerIdentity peer3Identity = peer3.getPeerIdentity();
+
+      assertEquals(channel.getChannelID(), peerIdentity.getDistributedID());
+      assertEquals(channel.getChannelID(), peer2Identity.getDistributedID());
+      assertEquals(channel.getChannelID(), peer3Identity.getDistributedID());
+
+      assertFalse(peerIdentity.getPeerID().equals(peer2Identity.getPeerID()));
+      assertFalse(peerIdentity.getPeerID().equals(peer3Identity.getPeerID()));
+      assertFalse(peer2Identity.getPeerID().equals(peer3Identity.getPeerID()));
+
+      peer.join();
+      log.debug("peer has joined");
+
+      assertTrue(peer.hasJoined());
+
+      Set view = peer.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peerIdentity));
+
+      peer2.join();
+      log.debug("peer2 has joined");
+
+      assertTrue(peer2.hasJoined());
+
+      view = peer.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      view = peer2.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      peer3.join();
+      log.debug("peer3 has joined");
+
+      assertTrue(peer3.hasJoined());
+
+      view = peer.getView();
+      assertEquals(3, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      view = peer2.getView();
+      assertEquals(3, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      view = peer3.getView();
+      assertEquals(3, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      peer.leave();
+      log.debug("peer has left");
+
+      assertFalse(peer.hasJoined());
+
+      view = peer.getView();
+      assertEquals(0, view.size());
+
+      view = peer2.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      view = peer3.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      peer2.leave();
+      log.debug("peer2 has left");
+
+      assertFalse(peer2.hasJoined());
+
+      view = peer2.getView();
+      assertEquals(0, view.size());
+
+      view = peer3.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peer3Identity));
+
+      peer3.leave();
+      log.debug("peer3 has left");
+
+      assertFalse(peer3.hasJoined());
+
+      view = peer3.getView();
+      assertEquals(0, view.size());
+
+   }
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-
-   private void connectJChannel() throws Exception
-   {
-      jchannel = new JChannel(props);
-      dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer());
-      jchannel.connect("testGroup");
-   }
-
-   private void connectJChannel2() throws Exception
-   {
-      jchannel2 = new JChannel(props);
-      dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer());
-      jchannel2.connect("testGroup");
-   }
-
 
    // Inner classes -------------------------------------------------
 }

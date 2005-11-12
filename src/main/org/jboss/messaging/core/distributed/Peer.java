@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.distributed;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -46,9 +46,9 @@ public interface Peer
    boolean hasJoined();
 
    /**
-    * Returns a List of PeerIdentity instances corresponding to peers that are part of the group.
-    * It may return an empty list (in case the peer didn't join the group yet), but never null.
+    * Returns a Set of PeerIdentity instances corresponding to peers that are part of the group.
+    * It may return an empty set (in case the peer didn't join the group yet), but never null.
     */
-   List getView();
+   Set getView();
 
 }

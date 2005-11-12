@@ -83,10 +83,6 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
-   <category name="org.jboss.jms.server.endpoint">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-
    <category name="org.jboss.messaging">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
@@ -100,7 +96,17 @@
    </category>
 
 
+   <!--
 
+   <category name="org.jgroups.protocols.PING">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
+   <category name="org.jgroups.protocols.UDP">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
+   -->
 
 
    <!-- ======================= -->

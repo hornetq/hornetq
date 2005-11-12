@@ -27,6 +27,7 @@ import org.jgroups.blocks.GroupRequest;
 import org.jgroups.util.RspList;
 import org.jgroups.util.Rsp;
 import org.jgroups.Address;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
  */
 public class RpcServerCall extends MethodCall
 {
+   private static final Logger log = Logger.getLogger(RpcServerCall.class);
+
    protected Serializable serverCategory;
 
    /**
@@ -116,6 +119,8 @@ public class RpcServerCall extends MethodCall
       Vector dests = null;
       int mode = GroupRequest.GET_ALL;
       Collection results = new ArrayList();
+
+      if (log.isTraceEnabled()) { log.trace("calling " + this + " on dispatcher"); }
 
       RspList rspList = dispatcher.callRemoteMethods(dests, this, mode, timeout);
 

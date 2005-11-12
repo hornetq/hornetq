@@ -41,13 +41,16 @@ public interface QueueFacade extends ServerFacade
     * Remote method invoked by a queue peer on all other queue peers when joining the distributed
     * queue.
     *
-    * @param address - the address of the new peer.
-    * @param id - the new peer's peer id.
-    * @param pipeID - the id of pipe the new peer listens on.
+    * @param remoteAddress - the address of the new peer.
+    * @param remotePeerID - the new peer's peer id.
+    * @param remotePipeID - the id of pipe the new peer listens on.
     *
     * @exception Exception - negative acknowledgment. The join is vetoed (willingly or unwillingly)
     *            by this member.
     */
-   Acknowledgment join(Address address, Serializable id, Serializable pipeID) throws Throwable;
+   Acknowledgment join(Address remoteAddress, Serializable remotePeerID, Serializable remotePipeID)
+      throws Throwable;
+
+   void leave(PeerIdentity remotePeerIdentity);
 
 }

@@ -26,7 +26,6 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.distributed.QueuePeer;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
@@ -116,6 +115,11 @@ public class DistributedPipe implements Receiver
    public Address getOutputAddress()
    {
       return outputAddress;
+   }
+
+   public Serializable getID()
+   {
+      return id;
    }
 
    public String toString()
