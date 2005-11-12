@@ -23,8 +23,13 @@ package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.Message;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
+
+import javax.jms.Destination;
 
 /**
  * A simple Message implementation.
@@ -165,4 +170,19 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    {
       return "M["+messageID+"]";
    }
+   
+   // Externalizable implementation ---------------------------------
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      super.writeExternal(out);
+      out.writeObject(payload);
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      super.readExternal(in);
+      payload = (Serializable)in.readObject();
+   }
+   
 }

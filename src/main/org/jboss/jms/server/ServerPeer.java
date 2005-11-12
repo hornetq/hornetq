@@ -55,7 +55,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
@@ -173,7 +173,7 @@ public class ServerPeer
 
       mbeanServer = findMBeanServer();
 
-      pm = new HSQLDBPersistenceManager();
+      pm = new JDBCPersistenceManager();
       
       txRepository = new TransactionRepository(pm);
      

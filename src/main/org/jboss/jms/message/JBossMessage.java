@@ -764,6 +764,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    // Public --------------------------------------------------------
 
+   public boolean isJMSCorrelationIDBytes()
+   {
+      return isCorrelationIDBytes;
+   }
    
    public int getType()
    {
@@ -853,8 +857,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          writeString(out, correlationID);
       }
       writeString(out, connectionID);
-      out.writeInt(priority);
-      out.writeObject(payload);
    }
 
 
@@ -888,8 +890,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          correlationID = readString(in);
       }
       connectionID = readString(in);
-      priority = in.readInt();
-      payload = (Serializable)in.readObject();
    }
 
    // Package protected ---------------------------------------------

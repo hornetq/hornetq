@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.logging.Logger;
 
@@ -39,7 +41,7 @@ import org.jboss.logging.Logger;
  * partially based on org.jboss.mq.pm.Tx by
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
- * @version $Revision$
+ * @version $Revision 1.1$
  */
 public class Transaction
 {
@@ -51,17 +53,15 @@ public class Transaction
    
    protected int state;
    
-   protected long txID;
+   protected int txID;
+   
+   protected Xid xid;
    
    protected List postCommitTasks;
    
    protected List postRollbackTasks;
    
    protected PersistenceManager pm;
-   
-   
-   //FIXME These two attributes can be combined
-   //protected boolean checkPersisted;
    
    //True if the transaction has resulted in a tx record being inserted in the db
    protected boolean insertedTXRecord;
@@ -108,10 +108,11 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction(long id, PersistenceManager mgr)
+   Transaction(int id, Xid xid, PersistenceManager mgr)
    {
       state = STATE_ACTIVE;
       txID = id;
+      this.xid = xid;
       pm = mgr;
       postCommitTasks = new ArrayList();
       postRollbackTasks = new ArrayList();
@@ -129,7 +130,11 @@ public class Transaction
       return txID;
    }
    
-   
+   public Xid getXid()
+   {
+      return xid;
+   }
+      
    public void addPostCommitTask(Runnable task)
    {
       postCommitTasks.add(task);

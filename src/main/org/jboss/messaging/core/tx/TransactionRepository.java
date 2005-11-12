@@ -23,6 +23,8 @@ package org.jboss.messaging.core.tx;
 
 import java.util.Map;
 
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.logging.Logger;
 
@@ -34,7 +36,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * This class maintains JMS Server local transactions
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision$
+ * @version $Revision 1.1 $
  */
 public class TransactionRepository
 {
@@ -46,7 +48,7 @@ public class TransactionRepository
    
    protected Map globalToLocalMap;
    
-   protected long txIdSequence;
+   protected int txIdSequence;
    
    protected PersistenceManager pm;
 
@@ -62,7 +64,7 @@ public class TransactionRepository
    
    // Public --------------------------------------------------------
    
-   public Transaction getPreparedTx(Object xid) throws TransactionException
+   public Transaction getPreparedTx(Xid xid) throws TransactionException
    {
       Transaction tx = (Transaction)globalToLocalMap.get(xid);
       if (tx == null)
@@ -76,20 +78,23 @@ public class TransactionRepository
       return tx;
    }
    
-   public Transaction createTransaction(Object xid) throws TransactionException
+   public Transaction createTransaction(Xid xid) throws TransactionException
    {
       if (globalToLocalMap.containsKey(xid))
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = createTransaction();
+      Transaction tx = new Transaction(generateTxId(), xid, pm);
+      
+      if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
+      
       globalToLocalMap.put(xid, tx);
       return tx;
    }
    
    public Transaction createTransaction() throws TransactionException
    {
-      Transaction tx = new Transaction(generateTxId(), pm);
+      Transaction tx = new Transaction(generateTxId(), null, pm);
 
       if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
 
@@ -105,7 +110,7 @@ public class TransactionRepository
    
    // Protected -----------------------------------------------------
    
-   protected synchronized long generateTxId()
+   protected synchronized int generateTxId()
    {
       return txIdSequence++;
    }

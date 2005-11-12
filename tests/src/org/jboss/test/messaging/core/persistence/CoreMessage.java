@@ -19,25 +19,31 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.tx;
+package org.jboss.test.messaging.core.persistence;
 
-/**
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version $Revision$
- */
-public class TransactionException extends Exception
+import java.io.Serializable;
+import java.util.Map;
+
+import org.jboss.messaging.core.message.MessageSupport;
+
+public class CoreMessage extends MessageSupport
 {
-   private static final long serialVersionUID = 2461082362655828741L;
 
-   public TransactionException(String msg)
+   private static final long serialVersionUID = -6387757311548920642L;
+   
+   public CoreMessage(Serializable messageID,
+         boolean reliable,
+         long expiration,
+         long timestamp,
+         int priority,
+         Map headers,
+         Serializable payload)
    {
-      super(msg);
+      super(messageID, reliable, expiration, timestamp, priority, headers, payload);
    }
    
-   public TransactionException(String msg, Throwable t)
-   {
-      super(msg, t);
-   }
+   public CoreMessage()
+   {}
+   
+
 }

@@ -18,7 +18,7 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.State;
 import org.jboss.messaging.core.message.Factory;
-import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -79,7 +79,7 @@ public abstract class StateTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-aop,-remoting,-security");
       sc.start();
 
-      pm = new HSQLDBPersistenceManager();
+      pm = new JDBCPersistenceManager();
       tr = new TransactionRepository(pm);
 
       // message store to be initialized by subclasses

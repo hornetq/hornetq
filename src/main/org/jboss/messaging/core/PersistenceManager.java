@@ -38,34 +38,30 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public interface PersistenceManager
 {
-   void add(Serializable channelID, Delivery d) throws Exception;
+   void storeMessage(Message m) throws Exception;
+   
+   boolean removeMessage(String messageID) throws Exception;
 
-   boolean remove(Serializable channelID, Delivery d, Transaction tx)  throws Exception;
+   Message retrieveMessage(Serializable messageID) throws Exception;
+      
+   void addDelivery(Serializable channelID, Delivery d) throws Exception;
 
-   /**
-    * @return a List of StorageIdentifiers for all messages for which there are active deliveries.
-    */
+   boolean removeDelivery(Serializable channelID, Delivery d, Transaction tx)  throws Exception;
+
+   void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
+
+   boolean removeReference(Serializable channelID, MessageReference ref) throws Exception;
+
+   List messageRefs(Serializable storeID, Serializable channelID) throws Exception;
+   
    List deliveries(Serializable storeID, Serializable channelID) throws Exception;
 
-   void add(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
-
-   boolean remove(Serializable channelID, MessageReference ref) throws Exception;
-
-   /**
-    * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
-    */
-   List messages(Serializable storeID, Serializable channelID) throws Exception;
-
-   void store(Message m) throws Exception;
-   
-   void remove(String messageID) throws Exception;
-
-   Message retrieve(Serializable messageID) throws Exception;
-   
    void removeAllMessageData(Serializable channelID) throws Exception;
    
    void commitTx(Transaction tx) throws Exception;
    
    void rollbackTx(Transaction tx) throws Exception;
+   
+   List retrievePreparedTransactions() throws Exception;
 
 }

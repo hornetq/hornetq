@@ -97,7 +97,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
          {
             try
             {
-               pm.store((Message)r);
+               pm.storeMessage((Message)r);
                if (log.isTraceEnabled()) { log.trace("Store message " + r); }
             }
             catch (Exception e)
@@ -143,7 +143,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
       Message m = null;
       try
       {
-         m = pm.retrieve(messageID);
+         m = pm.retrieveMessage(messageID);
          if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage:" + m); }
       }
       catch(Throwable t)
@@ -158,7 +158,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
    {
       super.remove(ref);
       
-      pm.remove((String)ref.getMessageID());
+      pm.removeMessage((String)ref.getMessageID());
       
    }
 

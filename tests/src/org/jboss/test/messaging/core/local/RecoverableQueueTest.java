@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.persistence.HSQLDBPersistenceManager;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 
 /**
@@ -40,7 +40,7 @@ public class RecoverableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private HSQLDBPersistenceManager pm;
+   private JDBCPersistenceManager pm;
 
    // Constructors --------------------------------------------------
 
@@ -55,7 +55,7 @@ public class RecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      pm = new HSQLDBPersistenceManager();
+      pm = new JDBCPersistenceManager();
       ms = new PersistentMessageStore("persistent-message-store", pm);
 
       channel = new Queue("test", ms, pm);

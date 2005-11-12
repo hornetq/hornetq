@@ -91,7 +91,7 @@ public class RecoverableState extends NonRecoverableState
          {
             //Reliable message in a recoverable state - also add to db
             if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-            pm.add(channelID, ref, tx);
+            pm.addReference(channelID, ref, tx);
          }
    
          if (tx != null)
@@ -116,7 +116,7 @@ public class RecoverableState extends NonRecoverableState
             //Reliable message in a recoverable state - also add to db
             if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database"); }
             // TODO Q1 - have a method that enforces ordering
-            pm.add(channelID, ref, null);
+            pm.addReference(channelID, ref, null);
             if (log.isTraceEnabled()) { log.trace("added " + ref + " to database"); }
          }
       }
@@ -138,7 +138,7 @@ public class RecoverableState extends NonRecoverableState
    
          if (ref.isReliable())
          {
-            boolean database = pm.remove(channelID, ref);
+            boolean database = pm.removeReference(channelID, ref);
             if (database && log.isTraceEnabled()) { log.trace("removed " + ref + " from database"); }
             return database;
          }
@@ -163,7 +163,7 @@ public class RecoverableState extends NonRecoverableState
 
          if (removed.isReliable())
          {
-            boolean database = pm.remove(channelID, removed);
+            boolean database = pm.removeReference(channelID, removed);
             if (!database)
             {
                throw new IllegalStateException("reference " + removed + " not found in database");
@@ -192,7 +192,7 @@ public class RecoverableState extends NonRecoverableState
          if (d.getReference().isReliable())
          {
             // also add delivery to persistent storage (reliable delivery in recoverable state)
-            pm.add(channelID, d);
+            pm.addDelivery(channelID, d);
             if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
          }
       }
@@ -214,7 +214,7 @@ public class RecoverableState extends NonRecoverableState
    
          if (d.getReference().isReliable())
          {
-            boolean database = pm.remove(channelID, d, tx);
+            boolean database = pm.removeDelivery(channelID, d, tx);
             if (database && log.isTraceEnabled()) { log.trace("removed " + d + " from database " + (tx == null ? "non-transactionally" : " on transaction " + tx)); }
             return database;
          }
@@ -235,7 +235,7 @@ public class RecoverableState extends NonRecoverableState
     */
    public void load() throws Exception
    {
-      List refs = pm.messages(storeID, channelID);
+      List refs = pm.messageRefs(storeID, channelID);
       
       Iterator iter = refs.iterator();
       while (iter.hasNext())

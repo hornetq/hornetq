@@ -230,6 +230,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       out.writeLong(timestamp);
       writeMap(out, headers);
       out.writeBoolean(redelivered);
+      out.writeInt(priority);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -241,7 +242,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       timestamp = in.readLong();
       headers = readMap(in);
       redelivered = in.readBoolean();
-      
+      priority = in.readInt();
    }
    
    // Public --------------------------------------------------------
