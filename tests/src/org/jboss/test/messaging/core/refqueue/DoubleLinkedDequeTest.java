@@ -46,7 +46,6 @@ public class DoubleLinkedDequeTest extends MessagingTestCase
    protected Object d;
    protected Object e;  
    
-   
    public DoubleLinkedDequeTest(String name)
    {
       super(name);
