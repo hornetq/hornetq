@@ -51,13 +51,8 @@ public class MessageProducerTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected Connection producerConnection, consumerConnection;
-   protected Session producerSession, consumerSession;
-   protected MessageProducer topicProducer;
-   protected MessageConsumer topicConsumer;
-   protected MessageConsumer topicConsumer2;
-   protected MessageProducer queueProducer;
-   protected MessageConsumer queueConsumer;
+   protected ConnectionFactory cf;
+
    protected Destination topic;
    protected Destination topic2;
    protected Destination queue;
@@ -73,7 +68,6 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-
       super.setUp();
 
       ServerManagement.init("all");
@@ -85,31 +79,19 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.deployQueue("Queue");
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       topic = (Destination)ic.lookup("/topic/Topic");
       topic2 = (Destination)ic.lookup("/topic/Topic2");
       queue = (Destination)ic.lookup("/queue/Queue");
 
-      producerConnection = cf.createConnection();
-      consumerConnection = cf.createConnection();
-
-      producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      topicProducer = producerSession.createProducer(topic);
-      topicConsumer = consumerSession.createConsumer(topic);
-      topicConsumer2 = consumerSession.createConsumer(topic2);
-
-      queueProducer = producerSession.createProducer(queue);
-      queueConsumer = consumerSession.createConsumer(queue);
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      producerConnection.close();
-      consumerConnection.close();
-
       ServerManagement.undeployTopic("Topic");
+      ServerManagement.undeployTopic("Topic2");
+      ServerManagement.undeployQueue("Queue");
       ServerManagement.deInit();
 
       super.tearDown();
@@ -120,12 +102,31 @@ public class MessageProducerTest extends MessagingTestCase
     */
    public void testSimpleSend() throws Exception
    {
-      consumerConnection.start();
-      TextMessage m = producerSession.createTextMessage("test");
-      queueProducer.send(m);
-      TextMessage r = (TextMessage)queueConsumer.receive(3000);
-      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-      assertEquals("test", r.getText());
+      Connection pconn = cf.createConnection();
+      Connection cconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(queue);
+         MessageConsumer c = cs.createConsumer(queue);
+
+         cconn.start();
+
+         TextMessage m = ps.createTextMessage("test");
+         p.send(m);
+
+         TextMessage r = (TextMessage)c.receive(3000);
+
+         assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+         assertEquals("test", r.getText());
+      }
+      finally
+      {
+         pconn.close();
+         cconn.close();
+      }
    }
 
    /**
@@ -133,130 +134,205 @@ public class MessageProducerTest extends MessagingTestCase
     */
    public void testTransactedSend() throws Exception
    {
-      consumerConnection.start();
+      Connection pconn = cf.createConnection();
+      Connection cconn = cf.createConnection();
 
-      Session transactedSession = producerConnection.createSession(true, -1);
-      MessageProducer prod = transactedSession.createProducer(queue);
+      try
+      {
+         cconn.start();
 
-      TextMessage m = transactedSession.createTextMessage("test");
-      prod.send(m);
+         Session ts = pconn.createSession(true, -1);
+         Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ts.createProducer(queue);
+         MessageConsumer c = cs.createConsumer(queue);
 
-      transactedSession.commit();
+         TextMessage m = ts.createTextMessage("test");
+         p.send(m);
 
-      TextMessage r = (TextMessage)queueConsumer.receive();
-      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-      assertEquals("test", r.getText());
+         ts.commit();
+
+         TextMessage r = (TextMessage)c.receive();
+
+         assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+         assertEquals("test", r.getText());
+      }
+      finally
+      {
+         pconn.close();
+         cconn.close();
+      }
    }
 
    public void testPersistentSendToTopic() throws Exception
    {
-      consumerConnection.start();
-      
-      final TextMessage m1 = producerSession.createTextMessage("test");
-      
-      Thread t = 
-      
-      new Thread(new Runnable()
+
+      Connection pconn = cf.createConnection();
+      Connection cconn = cf.createConnection();
+
+      try
       {
-         public void run()
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         final MessageProducer p = ps.createProducer(topic);
+         MessageConsumer c = cs.createConsumer(topic);
+
+         cconn.start();
+
+         final TextMessage m1 = ps.createTextMessage("test");
+
+         Thread t = new Thread(new Runnable()
          {
-            try
+            public void run()
             {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-               topicProducer.send(m1);
+               try
+               {
+                  // this is needed to make sure the main thread has enough time to block
+                  Thread.sleep(1000);
+                  p.send(m1);
+               }
+               catch(Exception e)
+               {
+                  log.error(e);
+               }
             }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "Producer");
-      
-      t.start();
-      
-      
-      TextMessage m2 = (TextMessage)topicConsumer.receive(5000);
-      assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
-      assertEquals("test", m2.getText());
-      
-      
-      t.join();
-      
+         }, "Producer Thread");
+
+         t.start();
+
+         TextMessage m2 = (TextMessage)c.receive(5000);
+
+         assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
+         assertEquals("test", m2.getText());
+
+         t.join();
+      }
+      finally
+      {
+         pconn.close();
+         cconn.close();
+      }
    }
 
-   /* Test sending via anonymous producer */
+   /**
+    *  Test sending via anonymous producer
+    * */
    public void testSendDestination() throws Exception
    {
-      final Message m1 = producerSession.createMessage();
+      Connection pconn = cf.createConnection();
+      Connection cconn = cf.createConnection();
 
-      consumerConnection.start();
-      
-      final MessageProducer anonProducer = producerSession.createProducer(null);
-
-      new Thread(new Runnable()
+      try
       {
-         public void run()
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c2 = cs.createConsumer(topic2);
+         final Message m1 = ps.createMessage();
+
+         cconn.start();
+
+         final MessageProducer anonProducer = ps.createProducer(null);
+
+         new Thread(new Runnable()
          {
-            try
+            public void run()
             {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-               anonProducer.send(topic2, m1);
+               try
+               {
+                  // this is needed to make sure the main thread has enough time to block
+                  Thread.sleep(1000);
+                  anonProducer.send(topic2, m1);
+               }
+               catch(Exception e)
+               {
+                  log.error(e);
+               }
             }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "Producer").start();
+         }, "Producer Thread").start();
 
-      Message m2 = topicConsumer2.receive(3000);
-      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
-      
-      log.debug("ending test");
-      
+         Message m2 = c2.receive(3000);
+         assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+
+         log.debug("ending test");
+      }
+      finally
+      {
+         pconn.close();
+         cconn.close();
+      }
    }
-
 
    public void testSendForeignMessage() throws Exception
    {
-      // send a message that is not created by the session
+      Connection pconn = cf.createConnection();
+      Connection cconn = cf.createConnection();
 
-      consumerConnection.start();
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(queue);
+         MessageConsumer c = cs.createConsumer(queue);
 
-      Message m = new SimpleJMSMessage();
-      queueProducer.send(m);
+         // send a message that is not created by the session
 
-      Message rec = queueConsumer.receive(3000);
-      assertEquals(m.getJMSMessageID(), rec.getJMSMessageID());
+         cconn.start();
+
+         Message m = new SimpleJMSMessage();
+         p.send(m);
+
+         Message rec = c.receive(3000);
+         assertEquals(m.getJMSMessageID(), rec.getJMSMessageID());
+
+      }
+      finally
+      {
+         pconn.close();
+         cconn.close();
+      }
    }
-
 
    public void testGetDestination() throws Exception
    {
-      Destination dest = topicProducer.getDestination();
-      assertEquals(dest, topic);
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+         Destination dest = p.getDestination();
+         assertEquals(dest, topic);
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testGetDestinationOnClosedProducer() throws Exception
    {
-      topicProducer.close();
+      Connection pconn = cf.createConnection();
 
       try
       {
-         topicProducer.getDestination();
-         fail("should throw exception");
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+         p.close();
+
+         try
+         {
+            p.getDestination();
+            fail("should throw exception");
+         }
+         catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
       }
-      catch(javax.jms.IllegalStateException e)
+      finally
       {
-         // OK
+         pconn.close();
       }
    }
-
-
-
-
 
    //
    // disabled MessageID tests
@@ -264,22 +340,45 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void testGetDisableMessageID() throws Exception
    {
-      assertFalse(topicProducer.getDisableMessageID());
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         assertFalse(p.getDisableMessageID());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testGetDisableMessageIDOnClosedProducer() throws Exception
    {
-
-      topicProducer.close();
+      Connection pconn = cf.createConnection();
 
       try
       {
-         topicProducer.getDisableMessageID();
-         fail("should throw exception");
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.close();
+
+         try
+         {
+            p.getDisableMessageID();
+            fail("should throw exception");
+         }
+         catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
       }
-      catch(javax.jms.IllegalStateException e)
+      finally
       {
-         // OK
+         pconn.close();
       }
    }
 
@@ -289,54 +388,93 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void testDefaultTimestampDisabled() throws Exception
    {
-      assertFalse(topicProducer.getDisableMessageTimestamp());
-      assertFalse(queueProducer.getDisableMessageTimestamp());
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer tp = ps.createProducer(topic);
+         MessageProducer qp = ps.createProducer(queue);
+         assertFalse(tp.getDisableMessageTimestamp());
+         assertFalse(qp.getDisableMessageTimestamp());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testSetTimestampDisabled() throws Exception
    {
-      consumerConnection.start();
+      Connection pconn = cf.createConnection();
+      Connection cconn = cf.createConnection();
 
-      queueProducer.setDisableMessageTimestamp(true);
-      assertTrue(queueProducer.getDisableMessageTimestamp());
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(queue);
+         MessageConsumer c = cs.createConsumer(queue);
 
-      queueProducer.send(producerSession.createMessage());
-      Message m = queueConsumer.receive(3000);
+         cconn.start();
 
-      assertEquals(0l, m.getJMSTimestamp());
+         p.setDisableMessageTimestamp(true);
+         assertTrue(p.getDisableMessageTimestamp());
 
-      queueProducer.setDisableMessageTimestamp(false);
-      assertFalse(queueProducer.getDisableMessageTimestamp());
+         p.send(ps.createMessage());
 
-      long t1 = System.currentTimeMillis();
-      queueProducer.send(producerSession.createMessage());
-      m = queueConsumer.receive(3000);
-      long t2 = System.currentTimeMillis();
+         Message m = c.receive(3000);
 
-      long timestamp = m.getJMSTimestamp();
+         assertEquals(0l, m.getJMSTimestamp());
 
-      assertTrue(timestamp >= t1);
-      assertTrue(timestamp <= t2);
+         p.setDisableMessageTimestamp(false);
+         assertFalse(p.getDisableMessageTimestamp());
 
+         long t1 = System.currentTimeMillis();
+
+         p.send(ps.createMessage());
+
+         m = c.receive(3000);
+
+         long t2 = System.currentTimeMillis();
+         long timestamp = m.getJMSTimestamp();
+
+         assertTrue(timestamp >= t1);
+         assertTrue(timestamp <= t2);
+      }
+      finally
+      {
+         pconn.close();
+         cconn.close();
+      }
    }
 
    public void testGetTimestampDisabledOnClosedProducer() throws Exception
    {
-
-      topicProducer.close();
+      Connection pconn = cf.createConnection();
 
       try
       {
-         topicProducer.getDisableMessageTimestamp();
-         fail("should throw exception");
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.close();
+
+         try
+         {
+            p.getDisableMessageTimestamp();
+            fail("should throw exception");
+         }
+         catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
       }
-      catch(javax.jms.IllegalStateException e)
+      finally
       {
-         // OK
+         pconn.close();
       }
    }
-
-
 
    //
    // DeliverMode tests
@@ -344,32 +482,68 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void testDefaultDeliveryMode() throws Exception
    {
-      assertEquals(DeliveryMode.PERSISTENT, topicProducer.getDeliveryMode());
-      assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer tp = ps.createProducer(topic);
+         MessageProducer qp = ps.createProducer(queue);
+
+         assertEquals(DeliveryMode.PERSISTENT, tp.getDeliveryMode());
+         assertEquals(DeliveryMode.PERSISTENT, qp.getDeliveryMode());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testSetDeliveryMode() throws Exception
    {
-      topicProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      assertEquals(DeliveryMode.NON_PERSISTENT, topicProducer.getDeliveryMode());
+      Connection pconn = cf.createConnection();
 
-      topicProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      assertEquals(DeliveryMode.PERSISTENT, topicProducer.getDeliveryMode());
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         assertEquals(DeliveryMode.NON_PERSISTENT, p.getDeliveryMode());
+
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         assertEquals(DeliveryMode.PERSISTENT, p.getDeliveryMode());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testGetDeliveryModeOnClosedProducer() throws Exception
    {
-
-      topicProducer.close();
+      Connection pconn = cf.createConnection();
 
       try
       {
-         topicProducer.getDeliveryMode();
-         fail("should throw exception");
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.close();
+
+         try
+         {
+            p.getDeliveryMode();
+            fail("should throw exception");
+         }
+         catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
       }
-      catch(javax.jms.IllegalStateException e)
+      finally
       {
-         // OK
+         pconn.close();
       }
    }
 
@@ -379,32 +553,68 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void testDefaultPriority() throws Exception
    {
-      assertEquals(4, topicProducer.getPriority());
-      assertEquals(4, queueProducer.getPriority());
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer tp = ps.createProducer(topic);
+         MessageProducer qp = ps.createProducer(queue);
+
+         assertEquals(4, tp.getPriority());
+         assertEquals(4, qp.getPriority());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testSetPriority() throws Exception
    {
-      topicProducer.setPriority(9);
-      assertEquals(9, topicProducer.getPriority());
+      Connection pconn = cf.createConnection();
 
-      topicProducer.setPriority(0);
-      assertEquals(0, topicProducer.getPriority());
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.setPriority(9);
+         assertEquals(9, p.getPriority());
+
+         p.setPriority(0);
+         assertEquals(0, p.getPriority());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testGetPriorityOnClosedProducer() throws Exception
    {
-
-      topicProducer.close();
+      Connection pconn = cf.createConnection();
 
       try
       {
-         topicProducer.getPriority();
-         fail("should throw exception");
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.close();
+
+         try
+         {
+            p.getPriority();
+            fail("should throw exception");
+         }
+         catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
       }
-      catch(javax.jms.IllegalStateException e)
+      finally
       {
-         // OK
+         pconn.close();
       }
    }
 
@@ -414,38 +624,70 @@ public class MessageProducerTest extends MessagingTestCase
 
    public void testDefaultTimeToLive() throws Exception
    {
-      assertEquals(0l, topicProducer.getTimeToLive());
-      assertEquals(0l, queueProducer.getTimeToLive());
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer tp = ps.createProducer(topic);
+         MessageProducer qp = ps.createProducer(queue);
+
+         assertEquals(0l, tp.getTimeToLive());
+         assertEquals(0l, qp.getTimeToLive());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testSetTimeToLive() throws Exception
    {
-      topicProducer.setTimeToLive(100l);
-      assertEquals(100l, topicProducer.getTimeToLive());
+      Connection pconn = cf.createConnection();
 
-      topicProducer.setTimeToLive(0l);
-      assertEquals(0l, topicProducer.getTimeToLive());
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.setTimeToLive(100l);
+         assertEquals(100l, p.getTimeToLive());
+
+         p.setTimeToLive(0l);
+         assertEquals(0l, p.getTimeToLive());
+      }
+      finally
+      {
+         pconn.close();
+      }
    }
 
    public void testGetTimeToLiveOnClosedProducer() throws Exception
    {
-
-      topicProducer.close();
+      Connection pconn = cf.createConnection();
 
       try
       {
-         topicProducer.setTimeToLive(100l);
-         fail("should throw exception");
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = ps.createProducer(topic);
+
+         p.close();
+
+         try
+         {
+            p.setTimeToLive(100l);
+            fail("should throw exception");
+         }
+         catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
       }
-      catch(javax.jms.IllegalStateException e)
+      finally
       {
-         // OK
+         pconn.close();
       }
    }
-
-   
-
-
 
    // Package protected ---------------------------------------------
    
