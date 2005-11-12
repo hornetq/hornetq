@@ -109,10 +109,58 @@ public class PeerIdentity implements Externalizable
       return address;
    }
 
+   public boolean equals(Object o)
+   {
+      if (this == o)
+      {
+         return true;
+      }
+
+      if (!(o instanceof PeerIdentity))
+      {
+         return false;
+      }
+
+      PeerIdentity that = (PeerIdentity)o;
+
+      if (distributedID == null && that.distributedID != null)
+      {
+         return false;
+      }
+
+      if (peerID == null && that.peerID != null)
+      {
+         return false;
+      }
+
+      if (address == null && that.address != null)
+      {
+         return false;
+      }
+
+      return (distributedID == that.distributedID || distributedID.equals(that.distributedID)) &&
+             (peerID == that.peerID || peerID.equals(that.peerID)) &&
+             (address == that.address || address.equals(that.address));
+   }
+
+   private volatile int hashCode = 0;
+
+   public int hasCode()
+   {
+      if (hashCode == 0)
+      {
+         int result = 17;
+         result = 37 * result + (distributedID == null ? 0 : distributedID.hashCode());
+         result = 37 * result + (peerID == null ? 0 : peerID.hashCode());
+         result = 37 * result + (address == null ? 0 : address.hashCode());
+         hashCode = result;
+      }
+      return hashCode;
+   }
+
    public String toString()
    {
       return identityToString(distributedID, peerID, address);
-
    }
 
    // Package protected ---------------------------------------------

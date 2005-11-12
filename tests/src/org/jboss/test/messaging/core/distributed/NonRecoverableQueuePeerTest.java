@@ -19,17 +19,11 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed.base;
+package org.jboss.test.messaging.core.distributed;
 
-
-import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.distributed.Peer;
-import org.jboss.messaging.core.message.Factory;
-
-import java.util.List;
+import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
+import org.jboss.messaging.core.distributed.QueuePeer;
+import org.jboss.messaging.core.message.TransactionalMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -37,7 +31,7 @@ import java.util.List;
  *
  * $Id$
  */
-public abstract class DistributedQueueTestBase extends DistributedChannelTestBase
+public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -45,45 +39,57 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
    
    // Attributes ----------------------------------------------------
 
+
    // Constructors --------------------------------------------------
 
-   public DistributedQueueTestBase(String name)
+   public NonRecoverableQueuePeerTest(String name)
    {
       super(name);
    }
 
-
-   // Public --------------------------------------------------------
+   // QueuePeerTestBase overrides ---------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
+
+      channel = new QueuePeer("test", ms, dispatcher);
+
+      if (jchannel2 != null)
+      {
+         ms2 = new TransactionalMessageStore("message-store-2");
+         channel2 = new QueuePeer("test", ms2, dispatcher2);
+      }
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
+      channel.close();
+      channel = null;
+
+      ms2 = null;
+      if (channel2 != null)
+      {
+         channel2.close();
+      }
+      channel2 = null;
+
       super.tearDown();
    }
 
-
-   public void testSimpleSend() throws Exception
+   public void crashChannel() throws Exception
    {
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-      SimpleReceiver r = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
-      channelTwo.add(r);
-
-      ((Peer)channel).join();
-      channelTwo.join();
-
-      Delivery d = channel.handle(observer, Factory.createMessage("message0", false, "payload"), null);
-
-      assertTrue(d.isDone());
-      List l = r.getMessages();
-      assertEquals(1, l.size());
-      Message m = (Message)l.get(0);
-      assertEquals("payload", m.getPayload());
+      // doesn't matter
    }
 
+   public void recoverChannel() throws Exception
+   {
+      // doesn't matter
+   }
+
+   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    

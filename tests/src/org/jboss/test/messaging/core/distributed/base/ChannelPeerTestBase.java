@@ -23,23 +23,28 @@ package org.jboss.test.messaging.core.distributed.base;
 
 
 import org.jboss.test.messaging.core.base.ChannelTestBase;
-import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.message.TransactionalMessageStore;
+import org.jboss.messaging.core.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
+import java.util.List;
+
 
 /**
+ * The test strategy is to group at this level all peer-related tests. It assumes two distinct
+ * JGroups JChannel instances and two channel peers (channel and channel2)
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public abstract class DistributedChannelTestBase extends ChannelTestBase
+public abstract class ChannelPeerTestBase extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -58,16 +63,15 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    
    // Attributes ----------------------------------------------------
 
-   protected JChannel jchannel, jchannelTwo;
-   protected RpcDispatcher dispatcher, dispatcherTwo;
+   protected JChannel jchannel, jchannel2;
+   protected RpcDispatcher dispatcher, dispatcher2;
 
-   protected MessageStore msTwo;
-
-   protected DistributedQueue channelTwo;
+   protected MessageStore ms2;
+   protected Channel channel2;
 
    // Constructors --------------------------------------------------
 
-   public DistributedChannelTestBase(String name)
+   public ChannelPeerTestBase(String name)
    {
       super(name);
    }
@@ -78,25 +82,15 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      msTwo = new TransactionalMessageStore("message-store-2");
-
-      jchannel = new JChannel(props);
-      dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer());
-      jchannel.connect("testGroup");
-
-      jchannelTwo = new JChannel(props);
-      dispatcherTwo = new RpcDispatcher(jchannelTwo, null, null, new RpcServer());
-      jchannelTwo.connect("testGroup");
-
+      connectJChannel();
    }
 
    public void tearDown() throws Exception
    {
-      jchannel.close();
-      jchannelTwo.close();
-
-      msTwo = null;
+      if (jchannel.isOpen())
+      {
+         jchannel.close();
+      }
 
       super.tearDown();
    }
@@ -104,10 +98,14 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
 
    public void testJGroupsChannelNotConnected() throws Exception
    {
+      Peer peer = (Peer)channel;
+
+      assertTrue(jchannel.isConnected());
       jchannel.close();
+
       try
       {
-         ((Peer)channel).join();
+         peer.join();
          fail("should throw DistributedException");
       }
       catch(DistributedException e)
@@ -116,11 +114,79 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       }
    }
 
+
+   public void testPeerInGroupOfOne() throws Exception
+   {
+      Peer peer = (Peer)channel;
+
+      assertTrue(jchannel.isConnected());
+
+      peer.join();
+
+      assertTrue(peer.hasJoined());
+
+      PeerIdentity pid = peer.getPeerIdentity();
+      assertEquals(channel.getChannelID(), pid.getDistributedID());
+      assertNotNull(pid.getPeerID());
+      assertNotNull(pid.getAddress());
+
+      List view = peer.getView();
+
+      assertEquals(1, view.size());
+      assertEquals(pid, view.get(0));
+
+//      peer.leave();
+//
+//      assertFalse(peer.hasJoined());
+//
+//      pid = peer.getPeerIdentity();
+//      assertEquals(channel.getChannelID(), pid.getDistributedID());
+//      assertNull(pid.getPeerID());
+//      assertNull(pid.getAddress());
+//
+//      view = peer.getView();
+//      assertEquals(0, view.size());
+   }
+
+   public void testPeerInGroupOfTwo() throws Exception
+   {
+      connectJChannel2();
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      try
+      {
+
+
+      }
+      finally
+      {
+         jchannel2.close();
+      }
+   }
+
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   private void connectJChannel() throws Exception
+   {
+      jchannel = new JChannel(props);
+      dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer());
+      jchannel.connect("testGroup");
+   }
+
+   private void connectJChannel2() throws Exception
+   {
+      jchannel2 = new JChannel(props);
+      dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer());
+      jchannel2.connect("testGroup");
+   }
+
+
+   // Inner classes -------------------------------------------------
 }

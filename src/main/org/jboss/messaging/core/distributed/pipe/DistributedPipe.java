@@ -26,7 +26,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.messaging.core.distributed.QueuePeer;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
@@ -52,7 +52,7 @@ public class DistributedPipe implements Receiver
  {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DistributedQueue.class);
+   private static final Logger log = Logger.getLogger(DistributedPipe.class);
 
    private static final long TIMEOUT = 3000;
 

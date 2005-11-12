@@ -1085,14 +1085,13 @@ public class JDBCPersistenceManager implements PersistenceManager
       {
          List transactions = new ArrayList();
          
-         Message m = null;
          conn = ds.getConnection();
          st = conn.createStatement();
          rs = st.executeQuery(selectXATransactions);
          
          while (rs.next())
          {            
-            int transactionId = rs.getInt(1);
+            //int transactionId = rs.getInt(1);
             byte[] branchQual = this.getBytes(rs, 2, 0);
             int formatId = rs.getInt(3);
             byte[] globalTxId = this.getBytes(rs, 3, 0);
@@ -1199,7 +1198,6 @@ public class JDBCPersistenceManager implements PersistenceManager
    protected void createSchema() throws Exception
    {
       Connection conn = null;
-      String sql = null;
       TransactionWrapper tx = new TransactionWrapper();
 
       try

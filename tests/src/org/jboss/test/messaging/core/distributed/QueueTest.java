@@ -46,7 +46,7 @@ public class QueueTest extends MessagingTestCase
 //   // Attributes ----------------------------------------------------
 //
 //   private JChannel jChannelOne, jChannelTwo;
-//   private RpcDispatcher dispatcherOne, dispatcherTwo;
+//   private RpcDispatcher dispatcherOne, dispatcher2;
 //
    // Constructors --------------------------------------------------
 
@@ -67,7 +67,7 @@ public class QueueTest extends MessagingTestCase
 //      dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
 //
 //      jChannelTwo = new JChannel(props);
-//      dispatcherTwo = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
+//      dispatcher2 = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
 //
 //      // Don't connect the channels yet.
 //   }
@@ -141,7 +141,7 @@ public class QueueTest extends MessagingTestCase
 //      jChannelTwo.connect("testGroup");
 //
 //      Queue queuePeerOne = new Queue(dispatcherOne, "AQueue");
-//      Queue queuePeerTwo = new Queue(dispatcherTwo, "AQueue");
+//      Queue queuePeerTwo = new Queue(dispatcher2, "AQueue");
 //      queuePeerOne.start();
 //      queuePeerTwo.start();
 //

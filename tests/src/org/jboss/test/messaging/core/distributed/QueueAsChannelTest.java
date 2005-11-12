@@ -46,7 +46,7 @@ public class QueueAsChannelTest extends TransactionalChannelSupportTest
 //   // Attributes ----------------------------------------------------
 //
 //   private JChannel jChannelOne, jChannelTwo;
-//   private RpcDispatcher dispatcherOne, dispatcherTwo;
+//   private RpcDispatcher dispatcherOne, dispatcher2;
 //
    // Constructors --------------------------------------------------
 
@@ -65,7 +65,7 @@ public class QueueAsChannelTest extends TransactionalChannelSupportTest
 //      dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
 //
 //      jChannelTwo = new JChannel(props);
-//      dispatcherTwo = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
+//      dispatcher2 = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
 //
 //      jChannelOne.connect("ReplicatorTestGroup");
 //      jChannelTwo.connect("ReplicatorTestGroup");
@@ -76,7 +76,7 @@ public class QueueAsChannelTest extends TransactionalChannelSupportTest
 //      ((Queue)channel).start();
 //
 //      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
-//      Queue outputPeer = new Queue(dispatcherTwo, "QueueID");
+//      Queue outputPeer = new Queue(dispatcher2, "QueueID");
 //      ((Queue)outputPeer).add(receiverOne);
 //      ((Queue)outputPeer).start();
 //

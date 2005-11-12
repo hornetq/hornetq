@@ -22,7 +22,6 @@
 package org.jboss.messaging.core.distributed.util;
 
 import org.jgroups.Address;
-import org.jboss.messaging.core.distributed.util.RpcServer;
 
 import java.io.Serializable;
 

@@ -38,6 +38,8 @@ import org.jgroups.Address;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A distributed queue peer.
@@ -47,11 +49,11 @@ import java.util.Iterator;
  *
  * $Id$
  */
-public class DistributedQueue extends Queue implements Peer, QueueFacade
+public class QueuePeer extends Queue implements Peer, QueueFacade
  {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DistributedQueue.class);
+   private static final Logger log = Logger.getLogger(QueuePeer.class);
 
    private static final long TIMEOUT = 3000;
 
@@ -70,20 +72,18 @@ public class DistributedQueue extends Queue implements Peer, QueueFacade
    // Constructors --------------------------------------------------
 
    /**
-    * An non-recoverable distributed queue.
+    * An non-recoverable queue peer.
     */
-   public DistributedQueue(String name,
-                           MessageStore ms,
-                           RpcDispatcher dispatcher)
+   public QueuePeer(String name, MessageStore ms, RpcDispatcher dispatcher)
    {
       this(name, ms, null, dispatcher);
    }
 
 
-   public DistributedQueue(String name,
-                           MessageStore ms, 
-                           PersistenceManager pm,
-                           RpcDispatcher dispatcher)
+   /**
+    * A recoverable queue peer.
+    */
+   public QueuePeer(String name, MessageStore ms, PersistenceManager pm, RpcDispatcher dispatcher)
    {
       super(name, ms, pm);
 
@@ -129,11 +129,6 @@ public class DistributedQueue extends Queue implements Peer, QueueFacade
    }
 
    // Peer implementation -------------------------------------------
-
-   public PeerIdentity getPeerIdentity()
-   {
-      return new PeerIdentity(getChannelID(), peerID, dispatcher.getChannel().getLocalAddress());
-   }
 
    /**
     * Connects the peer to the distributed queue. The underlying JChannel must be connected at the
@@ -211,11 +206,6 @@ public class DistributedQueue extends Queue implements Peer, QueueFacade
       joined = true;
    }
 
-   public synchronized boolean hasJoined()
-   {
-      return joined;
-   }
-
    /**
     * Stops the peer and disconnects it from the distributed queue.
     *
@@ -226,11 +216,40 @@ public class DistributedQueue extends Queue implements Peer, QueueFacade
       throw new NotYetImplementedException();
    }
 
+   public PeerIdentity getPeerIdentity()
+   {
+      return new PeerIdentity(getChannelID(), peerID, dispatcher.getChannel().getLocalAddress());
+   }
+
+   public synchronized boolean hasJoined()
+   {
+      return joined;
+   }
+
+   public List getView()
+   {
+      List result = new ArrayList();
+
+      for(Iterator i = iterator(); i.hasNext(); )
+      {
+         Object receiver = i.next();
+         if (receiver instanceof DistributedPipe)
+         {
+            // TODO
+         }
+      }
+
+      // TODO define order in view
+
+      result.add(getPeerIdentity());
+      return result;
+   }
+
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "DistributedQueue[" + getPeerIdentity() + "]";
+      return "QueuePeer[" + getPeerIdentity() + "]";
    }
 
    // Package protected ---------------------------------------------

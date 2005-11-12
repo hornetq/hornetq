@@ -52,8 +52,14 @@ public interface PersistenceManager
 
    boolean removeReference(Serializable channelID, MessageReference ref) throws Exception;
 
+   /**
+    * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
+    */
    List messageRefs(Serializable storeID, Serializable channelID) throws Exception;
-   
+
+   /**
+    * @return a List of StorageIdentifiers for all messages for which there are active deliveries.
+    */
    List deliveries(Serializable storeID, Serializable channelID) throws Exception;
 
    void removeAllMessageData(Serializable channelID) throws Exception;

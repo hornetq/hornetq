@@ -21,11 +21,10 @@
 */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
-import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.distributed.DistributedQueue;
-import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jgroups.stack.IpAddress;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -33,70 +32,58 @@ import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
  *
  * $Id$
  */
-public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
+public class PeerIdentityTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-   
    // Attributes ----------------------------------------------------
-
-   private JDBCPersistenceManager pm;
 
    // Constructors --------------------------------------------------
 
-    public RecoverableDistributedQueueTest(String name)
+   public PeerIdentityTest(String name)
    {
       super(name);
    }
 
+   // Protected -----------------------------------------------------
+
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
+   protected void setUp() throws Exception
    {
       super.setUp();
-
-      pm = new JDBCPersistenceManager();
-      ms = new PersistentMessageStore("persistent-message-store", pm);
-
-      channel = new DistributedQueue("test", ms, pm, dispatcher);
-      channelTwo = new DistributedQueue("test", msTwo, pm, dispatcherTwo);
-      
-      tr.setPersistenceManager(pm);
    }
 
-   public void tearDown() throws Exception
+   protected void tearDown() throws Exception
    {
-      channel.close();
-      channel = null;
-
-      channelTwo.close();
-      channelTwo = null;
-
-      pm.stop();
-      ms = null;
-
       super.tearDown();
    }
 
-   public void crashChannel() throws Exception
+   public void testEquals1() throws Exception
    {
-      channel.close();
-      channel = null;
+      PeerIdentity id1 =
+            new PeerIdentity("distributedID", "peerID", new IpAddress("localhost", 777));
+      PeerIdentity id2 =
+            new PeerIdentity("distributedID", "peerID", new IpAddress("localhost", 777));
 
+      assertEquals(id1, id2);
    }
 
-   public void recoverChannel() throws Exception
+   public void testEquals2() throws Exception
    {
-      channel = new Queue("test", ms, pm);
+      PeerIdentity id1 = new PeerIdentity(null, null, null);
+      PeerIdentity id2 = new PeerIdentity(null, null, null);
+
+      assertEquals(id1, id2);
+   }
+
+   public void testEquals3() throws Exception
+   {
+      PeerIdentity id1 = new PeerIdentity("distributedID", null, null);
+      PeerIdentity id2 = new PeerIdentity("distributedID", null, null);
+
+      assertEquals(id1, id2);
    }
 
 
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
 }

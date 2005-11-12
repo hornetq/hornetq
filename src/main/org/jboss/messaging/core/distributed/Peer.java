@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.distributed;
 
+import java.util.List;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -29,10 +31,6 @@ package org.jboss.messaging.core.distributed;
  */
 public interface Peer
 {
-   PeerIdentity getPeerIdentity();
-
-   boolean hasJoined();
-
    /**
     * Join distributed entity.
     */
@@ -42,4 +40,15 @@ public interface Peer
     * Leave distributed entity.
     */
    void leave() throws DistributedException;
+
+   PeerIdentity getPeerIdentity();
+
+   boolean hasJoined();
+
+   /**
+    * Returns a List of PeerIdentity instances corresponding to peers that are part of the group.
+    * It may return an empty list (in case the peer didn't join the group yet), but never null.
+    */
+   List getView();
+
 }

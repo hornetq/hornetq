@@ -46,7 +46,7 @@ public class ReplicatorAsChannelTest extends TransactionalChannelSupportTest
 //
 //   // used by the local test cases
 //   private JChannel jChannelOne, jChannelTwo;
-//   private RpcDispatcher dispatcherOne, dispatcherTwo;
+//   private RpcDispatcher dispatcherOne, dispatcher2;
 //
    // Constructors --------------------------------------------------
 
@@ -65,14 +65,14 @@ public class ReplicatorAsChannelTest extends TransactionalChannelSupportTest
 //      dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
 //
 //      jChannelTwo = new JChannel(props);
-//      dispatcherTwo = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
+//      dispatcher2 = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
 //
 //      jChannelOne.connect("ReplicatorTestGroup");
 //      jChannelTwo.connect("ReplicatorTestGroup");
 //
 //      // Create a receiver and a Replicator to be tested by the superclass tests
 //      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
-//      ReplicatorOutput output = new ReplicatorOutput(dispatcherTwo, "ReplicatorID", receiverOne);
+//      ReplicatorOutput output = new ReplicatorOutput(dispatcher2, "ReplicatorID", receiverOne);
 //      output.start();
 //      channel = new Replicator(dispatcherOne, "ReplicatorID");
 //      ((Replicator)channel).start();

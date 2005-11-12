@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.TransactionManager;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.Channel;
@@ -44,13 +43,14 @@ import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleChannel;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TxManager;
 import org.jboss.util.id.GUID;
 
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 {

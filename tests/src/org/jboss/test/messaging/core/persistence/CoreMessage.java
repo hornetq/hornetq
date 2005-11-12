@@ -26,24 +26,30 @@ import java.util.Map;
 
 import org.jboss.messaging.core.message.MessageSupport;
 
+/**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ */
 public class CoreMessage extends MessageSupport
 {
 
    private static final long serialVersionUID = -6387757311548920642L;
    
    public CoreMessage(Serializable messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         int priority,
-         Map headers,
-         Serializable payload)
+                      boolean reliable,
+                      long expiration,
+                      long timestamp,
+                      int priority,
+                      Map headers,
+                      Serializable payload)
    {
       super(messageID, reliable, expiration, timestamp, priority, headers, payload);
    }
-   
-   public CoreMessage()
-   {}
-   
 
+   public CoreMessage()
+   {
+
+   }
 }

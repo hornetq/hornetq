@@ -21,8 +21,11 @@
 */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
-import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.distributed.QueuePeer;
+import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -30,7 +33,7 @@ import org.jboss.messaging.core.distributed.DistributedQueue;
  *
  * $Id$
  */
-public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
+public class RecoverableQueuePeerTest extends QueuePeerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -38,23 +41,35 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
    
    // Attributes ----------------------------------------------------
 
+   private JDBCPersistenceManager pm;
+   private JDBCPersistenceManager pm2;
 
    // Constructors --------------------------------------------------
 
-   public NonRecoverableDistributedQueueTest(String name)
+    public RecoverableQueuePeerTest(String name)
    {
       super(name);
    }
 
-   // DistributedQueueTestBase overrides ---------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new DistributedQueue("test", ms, dispatcher);
-      channelTwo = new DistributedQueue("test", msTwo, dispatcherTwo);
+      pm = new JDBCPersistenceManager();
+      ms = new PersistentMessageStore("persistent-message-store", pm);
 
+      channel = new QueuePeer("test", ms, pm, dispatcher);
+
+      pm2 = new JDBCPersistenceManager();
+      ms = new PersistentMessageStore("persistent-message-store", pm2);
+
+      channel2 = new QueuePeer("test", ms2, pm2, dispatcher2);
+      
+      tr.setPersistenceManager(pm);
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -62,23 +77,27 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
       channel.close();
       channel = null;
 
-      channelTwo.close();
-      channelTwo = null;
+      channel2.close();
+      channel2 = null;
+
+      pm.stop();
+      ms = null;
 
       super.tearDown();
    }
 
    public void crashChannel() throws Exception
    {
-      // doesn't matter
+      channel.close();
+      channel = null;
+
    }
 
    public void recoverChannel() throws Exception
    {
-      // doesn't matter
+      channel = new Queue("test", ms, pm);
    }
 
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    

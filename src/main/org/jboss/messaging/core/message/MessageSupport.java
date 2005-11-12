@@ -29,7 +29,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.jms.Destination;
 
 /**
  * A simple Message implementation.

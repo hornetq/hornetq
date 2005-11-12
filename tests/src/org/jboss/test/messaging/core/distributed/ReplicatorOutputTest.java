@@ -45,7 +45,7 @@ public class ReplicatorOutputTest extends MessagingTestCase
 //   // Attributes ----------------------------------------------------
 //
 //   private JChannel jChannelOne, jChannelTwo;
-//   private RpcDispatcher dispatcherOne, dispatcherTwo;
+//   private RpcDispatcher dispatcherOne, dispatcher2;
 //
    // Constructors --------------------------------------------------
 
@@ -66,7 +66,7 @@ public class ReplicatorOutputTest extends MessagingTestCase
 //      dispatcherOne = new RpcDispatcher(jChannelOne, null, null, new RpcServer());
 //
 //      jChannelTwo = new JChannel(props);
-//      dispatcherTwo = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
+//      dispatcher2 = new RpcDispatcher(jChannelTwo, null, null, new RpcServer());
 //
 //      // Don't connect the channels yet.
 //   }

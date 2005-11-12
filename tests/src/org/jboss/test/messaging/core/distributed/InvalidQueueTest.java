@@ -27,10 +27,11 @@ import org.jboss.test.messaging.MessagingTestCase;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class InvalidQueueTest extends MessagingTestCase
 {
-
 
    // Constructors --------------------------------------------------
 
