@@ -49,9 +49,11 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.jms.QueueBrowser;
+import javax.jms.InvalidDestinationException;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -244,7 +246,33 @@ public class MessageConsumerTest extends MessagingTestCase
       assertEquals(tm.getText(), m.getText());
    }
 
+   //
+   // Invalid destination test
+   //
 
+   public void testCreateConsumerOnInexistentDestination() throws Exception
+   {
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            ps.createConsumer(new JBossTopic("NoSuchTopic"));
+            fail("should throw exception");
+         }
+         catch(InvalidDestinationException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         pconn.close();
+      }
+   }
 
    //
    // closed consumer tests

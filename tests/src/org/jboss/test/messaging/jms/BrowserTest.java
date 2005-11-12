@@ -36,6 +36,7 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -120,6 +121,30 @@ public class BrowserTest extends MessagingTestCase
       catch(InvalidDestinationException e)
       {
          // OK
+      }
+   }
+
+   public void testCreateBrowserOnInexistentQueue() throws Exception
+   {
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            ps.createBrowser(new JBossQueue("NoSuchQueue"));
+            fail("should throw exception");
+         }
+         catch(InvalidDestinationException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         pconn.close();
       }
    }
 

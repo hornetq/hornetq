@@ -129,8 +129,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
    // SessionDelegate implementation --------------------------------
 
-   public ProducerDelegate createProducerDelegate(Destination jmsDestination)
-         throws JMSException
+   public ProducerDelegate createProducerDelegate(Destination jmsDestination) throws JMSException
    {
       if (closed)
       {
@@ -144,6 +143,11 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       if (jmsDestination != null)
       {
          destination = dm.getCoreDestination(jmsDestination);
+
+         if (destination == null)
+         {
+            throw new InvalidDestinationException("No such destination: " + jmsDestination);
+         }
       }
      
       log.debug("got producer's destination: " + destination);
@@ -236,7 +240,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       Distributor destination = dm.getCoreDestination(jmsDestination);
       if (destination == null)
       {
-         throw new InvalidDestinationException("Cannot find destination " + jmsDestination);
+         throw new InvalidDestinationException("No such destination: " + jmsDestination);
       }
      
       // create the MessageConsumer dynamic proxy
@@ -533,7 +537,12 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
 	  
       Distributor destination = dm.getCoreDestination(jmsDestination);
-      
+
+      if (destination == null)
+      {
+         throw new InvalidDestinationException("No such destination: " + jmsDestination);
+      }
+
       if (!(destination instanceof Queue))
       {
          throw new IllegalStateException("Cannot browse a topic");
@@ -784,7 +793,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
       if (subscription == null)
       {
          throw new InvalidDestinationException("Cannot find durable subscription with name " +
-            subscriptionName + " to unsubscribe");
+                                               subscriptionName + " to unsubscribe");
       }
       
       boolean removed = 

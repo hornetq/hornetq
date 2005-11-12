@@ -30,11 +30,13 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
+import javax.jms.InvalidDestinationException;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.destination.JBossTopic;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -324,6 +326,30 @@ public class MessageProducerTest extends MessagingTestCase
             fail("should throw exception");
          }
          catch(javax.jms.IllegalStateException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         pconn.close();
+      }
+   }
+
+   public void testCreateProducerOnInexistentDestination() throws Exception
+   {
+      Connection pconn = cf.createConnection();
+
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            ps.createProducer(new JBossTopic("NoSuchTopic"));
+            fail("should throw exception");
+         }
+         catch(InvalidDestinationException e)
          {
             // OK
          }
