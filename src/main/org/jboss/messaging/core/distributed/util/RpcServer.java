@@ -133,20 +133,20 @@ public class RpcServer
          {
             ServerFacade subordinate = (ServerFacade)i.next();
             Serializable id = subordinate.getID();
-            Method method = null;
+            
             try
             {
-               method = subordinate.getClass().getMethod(methodName, parameterTypes);
+               Method method = subordinate.getClass().getMethod(methodName, parameterTypes);
 
-               if (log.isTraceEnabled()) { log.trace(this + " invokes " + method.getName() + " on " + category + "." + id); }
+               if (log.isTraceEnabled()) { log.trace(this + " invokes " + methodName + " on " + category + "." + id); }
                Object result = method.invoke(subordinate, args);
-               if (log.isTraceEnabled()) { log.trace(this + ": " + method.getName() + " invocation successful"); }
+               if (log.isTraceEnabled()) { log.trace(this + ": " + methodName + " invocation successful"); }
 
                results.add(new SubordinateServerResponse(id, result));
             }
             catch(Throwable t)
             {
-               if (log.isTraceEnabled()) { log.trace(this + ": " + method.getName() + " invocation failed", t); }
+               if (log.isTraceEnabled()) { log.trace(this + ": " + methodName + " invocation failed", t); }
                results.add(new SubordinateServerResponse(id, t));
             }
          }

@@ -22,14 +22,11 @@
 package org.jboss.test.messaging.core.distributed.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.distributed.util.ServerFacade;
-import org.jboss.messaging.core.distributed.util.RpcServerCall;
-import org.jboss.messaging.core.distributed.util.ServerFacade;
 import org.jboss.messaging.core.distributed.util.ServerResponse;
-import org.jboss.messaging.core.distributed.util.ServerResponse;
-import org.jboss.messaging.core.distributed.util.SubordinateServerResponse;
 import org.jboss.messaging.core.distributed.util.SubordinateServerResponse;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
@@ -48,20 +45,10 @@ import java.io.Serializable;
 public class RpcServerTest extends MessagingTestCase
 {
 
-   private String props =
-         "UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=32):"+
-         "PING(timeout=3050;num_initial_members=6):"+
-         "FD(timeout=3000):"+
-         "VERIFY_SUSPECT(timeout=1500):"+
-         "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800):"+
-         "UNICAST(timeout=600,1200,2400,4800):"+
-         "pbcast.STABLE(desired_avg_gossip=10000):"+
-         "FRAG:"+
-         "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)";
-
    // Constructors --------------------------------------------------
 
-   RpcServer rpcServer;
+   protected RpcServer rpcServer;
+   protected String jchannelProps;
 
    public RpcServerTest(String name)
    {
@@ -73,7 +60,10 @@ public class RpcServerTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      rpcServer = new RpcServer();
+      rpcServer = new RpcServer("test");
+      jchannelProps = JGroupsUtil.generateProperties(50, 0);
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -165,10 +155,12 @@ public class RpcServerTest extends MessagingTestCase
    public void testArgumentClassNotFound_Remote() throws Exception
    {
       RpcServer rpcServer = new RpcServer();
-      JChannel jChannel = new JChannel(props);
+      JChannel jChannel = new JChannel(jchannelProps);
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, rpcServer);
       jChannel.connect("testGroup");
+
       assertTrue(jChannel.isConnected());
+      assertEquals(1, jChannel.getView().getMembers().size());
 
       RpcServerCall call =
             new RpcServerCall("nosuchcategory",
@@ -196,10 +188,12 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testNoSuchServer_Remote() throws Exception
    {
-      JChannel jChannel = new JChannel(props);
+      JChannel jChannel = new JChannel(jchannelProps);
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, rpcServer);
       jChannel.connect("testGroup");
+
       assertTrue(jChannel.isConnected());
+      assertEquals(1, jChannel.getView().getMembers().size());
 
       RpcServerCall call =
             new RpcServerCall("nosuchcategory",
@@ -217,11 +211,10 @@ public class RpcServerTest extends MessagingTestCase
    {
       assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
-      Collection c =
-            rpcServer.invoke("someCategory",
-                             "extraMethod",
-                             new Object[] { new Integer(1)},
-                             new String[] { "java.lang.Integer"});
+      Collection c = rpcServer.invoke("someCategory",
+                                      "extraMethod",
+                                      new Object[] { new Integer(1)},
+                                      new String[] { "java.lang.Integer"});
 
       assertEquals(1, c.size());
       SubordinateServerResponse r = (SubordinateServerResponse)c.iterator().next();
@@ -257,10 +250,12 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testNoSuchMethodName_Remote() throws Exception
    {
-      JChannel jChannel = new JChannel(props);
+      JChannel jChannel = new JChannel(jchannelProps);
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, rpcServer);
       jChannel.connect("testGroup");
+
       assertTrue(jChannel.isConnected());
+      assertEquals(1, jChannel.getView().getMembers().size());
 
       assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
@@ -328,10 +323,12 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testNoSuchMethodSignature_Remote() throws Exception
    {
-      JChannel jChannel = new JChannel(props);
+      JChannel jChannel = new JChannel(jchannelProps);
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, rpcServer);
       jChannel.connect("testGroup");
+
       assertTrue(jChannel.isConnected());
+      assertEquals(1, jChannel.getView().getMembers().size());
 
       assertTrue(rpcServer.register("someCategory", new Subordinate("SIMPLE")));
 
@@ -376,10 +373,13 @@ public class RpcServerTest extends MessagingTestCase
 
    public void testInvocationOnOneServer_Remote() throws Exception
    {
-      JChannel jChannel = new JChannel(props);
+      JChannel jChannel = new JChannel(jchannelProps);
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, rpcServer);
       jChannel.connect("testGroup");
+
       assertTrue(jChannel.isConnected());
+      assertEquals(1, jChannel.getView().getMembers().size());
+
       String id = "ONE";
       String state = "something";
       Subordinate so = new Subordinate(id);
@@ -443,10 +443,13 @@ public class RpcServerTest extends MessagingTestCase
    public void testInvocationOnEquivalentServers_Remote() throws Exception
    {
 
-      JChannel jChannel = new JChannel(props);
+      JChannel jChannel = new JChannel(jchannelProps);
       RpcDispatcher dispatcher = new RpcDispatcher(jChannel, null, null, rpcServer);
       jChannel.connect("testGroup");
+
       assertTrue(jChannel.isConnected());
+      assertEquals(1, jChannel.getView().getMembers().size());
+      
       String idOne = "ONE", idTwo = "TWO";
       Subordinate soOne = new Subordinate(idOne);
       Subordinate soTwo = new Subordinate(idTwo);

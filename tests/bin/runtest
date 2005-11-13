@@ -59,14 +59,18 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
 #TARGET_TEST=testPeerInGroupOfTwo
 #TARGET_TEST=testUnreliableChannelReliableMessageNACKingReceiver
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
 #TARGET_TEST=testNonRecoverableChannel_26_1
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 
-
+#
+# distributed utils
+#
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.util.RpcServerTest
+#TARGET_TEST=testNoSuchMethodName_Local
 
 
 #

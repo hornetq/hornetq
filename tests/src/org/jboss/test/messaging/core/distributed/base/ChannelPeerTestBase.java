@@ -23,6 +23,7 @@ package org.jboss.test.messaging.core.distributed.base;
 
 
 import org.jboss.test.messaging.core.base.ChannelTestBase;
+import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
@@ -50,27 +51,6 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
 
    // Static --------------------------------------------------------
 
-   /**
-    * @param PING_timeout in ms
-    * @param PING_num_initial_members
-    */
-   public static String generateProperties(int PING_timeout,
-                                           int PING_num_initial_members)
-   {
-      return
-         "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32):"+
-         "PING(timeout=" + PING_timeout + ";num_initial_members=" + PING_num_initial_members + "):"+
-         "FD(timeout=3000):"+
-         "VERIFY_SUSPECT(timeout=1500):"+
-         "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800):"+
-         "UNICAST(timeout=600,1200,2400,4800):"+
-         "pbcast.STABLE(desired_avg_gossip=10000):"+
-         "FRAG:"+
-         "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)";
-
-
-   }
-
    // Attributes ----------------------------------------------------
 
    protected JChannel jchannel, jchannel2, jchannel3;
@@ -92,9 +72,9 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
    {
       super.setUp();
 
-      jchannel = new JChannel(generateProperties(50, 1));
-      jchannel2 = new JChannel(generateProperties(900000, 1));
-      jchannel3 = new JChannel(generateProperties(900000, 2));
+      jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
+      jchannel2 = new JChannel(JGroupsUtil.generateProperties(900000, 1));
+      jchannel3 = new JChannel(JGroupsUtil.generateProperties(900000, 2));
 
       dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer("1"));
       dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer("2"));
