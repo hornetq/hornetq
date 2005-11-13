@@ -22,6 +22,7 @@
 	<classpathentry kind="lib" path="/thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="src/resources/jcommon-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="src/resources/jfreechart-1.0.0-rc1.jar"/>
-	<classpathentry kind="output" path="output/eclipse-classes"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/thirdparty/apache-logging/lib/commons-logging.jar"/>
+	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
