@@ -3596,6 +3596,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       ((Peer)channel2).join();
 
       // the channel has no remote receivers
+      assertFalse(channel.iterator().hasNext());
       assertFalse(channel2.iterator().hasNext());
 
       Message m = Factory.createMessage("message0", false, "payload");
@@ -3619,72 +3620,111 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertEquals("message0", sm.getMessageID());
    }
 
-//   //////////
-//   ////////// Multiple message
-//   //////////
-//
-//   public void testRecoverableDistributedChannel_2() throws Exception
-//   {
-//      if (!channel.isRecoverable())
-//      {
-//         // we test only recoverable channels now
-//         return;
-//      }
-//
-//      // the channel has no receivers
-//      assertFalse(channel.iterator().hasNext());
-//
-//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-//
-//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-//      {
-//         messages[i] = Factory.createMessage("message" + i, false, "payload" + i);
-//
-//         // non-transacted send, non-reliable message, multiple messages
-//         Delivery delivery = channel.handle(observer, messages[i], null);
-//
-//         assertTrue(delivery.isDone());
-//      }
-//
-//      assertEqualSets(messages, channel.browse());
-//   }
-//
-//   ////////
-//   //////// Reliable message
-//   ////////
-//
-//   //////////
-//   ////////// One message
-//   //////////
-//
-//   public void testRecoverableDistributedChannel_3() throws Exception
-//   {
-//      if (!channel.isRecoverable())
-//      {
-//         // we test only recoverable channels now
-//         return;
-//      }
-//
-//      // the channel has no receivers
-//      assertFalse(channel.iterator().hasNext());
-//
-//      Message m = Factory.createMessage("message0", true, "payload");
-//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-//
-//      // non-transacted send, reliable message, one message
-//      Delivery delivery = channel.handle(observer, m, null);
-//
-//      assertTrue(delivery.isDone());
-//
-//      List stored = channel.browse();
-//      assertEquals(1, stored.size());
-//
-//      Message sm = (Message)stored.iterator().next();
-//      assertTrue(sm.isReliable());
-//      assertEquals("message0", sm.getMessageID());
-//   }
-//
+   //////////
+   ////////// Multiple message
+   //////////
+
+   public void testRecoverableDistributedChannel_2() throws Exception
+   {
+      if (!channel.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannel joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ((Peer)channel).join();
+      ((Peer)channel2).join();
+
+      // the channel has no remote receivers
+      assertFalse(channel.iterator().hasNext());
+      assertFalse(channel2.iterator().hasNext());
+
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         messages[i] = Factory.createMessage("message" + i, false, "payload" + i);
+
+         // non-transacted send, non-reliable message, multiple messages
+         Delivery delivery = channel.handle(observer, messages[i], null);
+
+         assertTrue(delivery.isDone());
+      }
+
+      assertEqualSets(messages, channel.browse());
+      assertEqualSets(messages, channel2.browse());
+   }
+
+   ////////
+   //////// Reliable message
+   ////////
+
+   //////////
+   ////////// One message
+   //////////
+
+   public void testRecoverableDistributedChannel_3() throws Exception
+   {
+      if (!channel.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannel joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ((Peer)channel).join();
+      ((Peer)channel2).join();
+
+      // the channel has no remote receivers
+      assertFalse(channel.iterator().hasNext());
+      assertFalse(channel2.iterator().hasNext());
+
+      Message m = Factory.createMessage("message0", true, "payload");
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      // non-transacted send, reliable message, one message
+      Delivery delivery = channel.handle(observer, m, null);
+
+      assertTrue(delivery.isDone());
+
+      List stored = channel.browse();
+      assertEquals(1, stored.size());
+      Message sm = (Message)stored.iterator().next();
+      assertTrue(sm.isReliable());
+      assertEquals("message0", sm.getMessageID());
+
+      stored = channel2.browse();
+      assertEquals(1, stored.size());
+      sm = (Message)stored.iterator().next();
+      assertTrue(sm.isReliable());
+      assertEquals("message0", sm.getMessageID());
+
+   }
+
 //   //////////
 //   ////////// Multiple message
 //   //////////

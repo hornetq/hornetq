@@ -36,7 +36,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.message.UnreliableMessageStore;
+import org.jboss.messaging.core.message.MemoryMessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -75,7 +75,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       super.setUp();
       ServerManagement.init("all");
       
-      ms = new UnreliableMessageStore(new GUID().toString());
+      ms = new MemoryMessageStore(new GUID().toString());
       channel = new SimpleChannel(new GUID().toString(), ms);
       
       pm = new JDBCPersistenceManager();

@@ -75,7 +75,6 @@ public class DistributedPipeOutput implements PipeOutputFacade
 
    public Delivery handle(Routable r)
    {
-
       if (log.isTraceEnabled()) { log.trace(this + " handles " + r); }
 
       // Mark the message as being received from a remote endpoint
@@ -89,6 +88,7 @@ public class DistributedPipeOutput implements PipeOutputFacade
          throw new IllegalStateException("Cannot handle asynchronous deliveries at this end");
       }
 
+      if (log.isTraceEnabled()) { log.trace(this + " is relaying " + d); }
       return d;
    }
 

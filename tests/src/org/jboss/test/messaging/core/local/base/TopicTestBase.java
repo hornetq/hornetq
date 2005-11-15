@@ -30,7 +30,7 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.message.Factory;
-import org.jboss.messaging.core.message.UnreliableMessageStore;
+import org.jboss.messaging.core.message.MemoryMessageStore;
 
 import java.util.List;
 
@@ -64,7 +64,7 @@ public abstract class TopicTestBase extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ms = new UnreliableMessageStore("store1");
+      ms = new MemoryMessageStore("store1");
    }
 
    public void tearDown() throws Exception

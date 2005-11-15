@@ -47,6 +47,12 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.persistence.JDBCUtilTest
 
 #
+# core - message
+#
+TARGET_CLASS=org.jboss.test.messaging.core.message.MemoryMessageStoreTest
+TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
+
+#
 # distributed core
 #
 
@@ -61,8 +67,8 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
 #TARGET_TEST=testPeerInGroupOfTwo
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
-#TARGET_TEST=testPeerInGroupOfOne
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
+#TARGET_TEST=testRecoverableDistributedChannel_3
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 
 #

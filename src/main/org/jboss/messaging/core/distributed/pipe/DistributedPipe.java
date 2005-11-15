@@ -36,7 +36,7 @@ import java.io.Serializable;
 
 /**
  * The input end of a distributed pipe that synchronously forwards messages to a receiver in a
- * different address space.
+ * different address space. A distributed pipe <i>is not</i> a channel.
  *
  * The output end of the pipe its identified by a JGroups address and the pipe ID. Multiple
  * distributed pipes can share the same DistributedPipeOutput instance (and implicitly the pipeID),

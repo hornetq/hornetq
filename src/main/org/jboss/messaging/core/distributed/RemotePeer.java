@@ -75,6 +75,11 @@ public class RemotePeer implements Receiver
       return remotePeerIdentity;
    }
 
+   public String toString()
+   {
+      return "RemotePeer[" + remotePeerIdentity + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

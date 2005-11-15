@@ -30,7 +30,7 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.Factory;
-import org.jboss.messaging.core.message.TransactionalMessageStore;
+import org.jboss.messaging.core.message.MemoryMessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 
@@ -94,7 +94,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       tr = new TransactionRepository(null);
       ic.close();
 
-      ms = new TransactionalMessageStore("message-store");
+      ms = new MemoryMessageStore("message-store");
    }
 
    public void tearDown() throws Exception

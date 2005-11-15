@@ -35,7 +35,7 @@ import org.jboss.messaging.core.Routable;
  *
  * $Id$
  */
-public class PersistentMessageStore extends TransactionalMessageStore
+public class PersistentMessageStore extends MemoryMessageStore
 {
    // Constants -----------------------------------------------------
 
@@ -66,7 +66,7 @@ public class PersistentMessageStore extends TransactionalMessageStore
    {
       if (r.isReference())
       {
-         if (log.isTraceEnabled()) { log.trace("Routable is already a reference"); }
+         if (log.isTraceEnabled()) { log.trace("routable " + r + " is already a reference"); }
          return (MessageReference)r;
       }
       
@@ -74,39 +74,30 @@ public class PersistentMessageStore extends TransactionalMessageStore
       
       if (ref != null)
       {        
-         if (log.isTraceEnabled()) { log.trace("Retrieved it from memory cache"); }
+         if (log.isTraceEnabled()) { log.trace("retrieved " + ref + " from memory cache"); }
          return ref;
       }
       
-      /*
-      if (r.isRecoverable())
-      {
-         //Maybe it's on disk already?
-         Message m = retrieveMessage(r.getMessageID());
-         if (m != null)
-         {
-            ref = super.createReference(m);
-         }
-      }
-      */
-           
       if (ref == null)
       {
          //Message doesn't exist either in memory on disc
+         if (log.isTraceEnabled()) { log.trace(this + " referencing " + r); }
+
          if (r.isReliable())
          {
             try
             {
                pm.storeMessage((Message)r);
-               if (log.isTraceEnabled()) { log.trace("Store message " + r); }
+               if (log.isTraceEnabled()) { log.trace("stored " + r + " on disk"); }
             }
             catch (Exception e)
             {
-               log.error("Failed to store message", e);
+               log.error("Failed to store message " + r, e);
                return null;
             }
          }
-         ref= super.createReference(r);
+
+         ref = super.createReference(r);
       }
       return ref;
    }
@@ -165,11 +156,15 @@ public class PersistentMessageStore extends TransactionalMessageStore
 
    // Public --------------------------------------------------------
 
+   public String toString()
+   {
+      return "PersistentStore[" + getStoreID() + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
 
-  
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

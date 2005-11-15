@@ -40,22 +40,12 @@ public interface MessageStore
    boolean isReliable();
 
    /**
-    * Return a MessageReference instance if already cached.
-    * Otherwise create a new one
-    * 
-    * @param r
-    * @return
+    * Return a MessageReference instance if already cached. Otherwise create a new one.
     */
    MessageReference reference(Routable r);
 
    /**
-    *  Get a pre-existing MessageReference
-    *  
-    * @param messageID
-    * @return
+    * Get a pre-existing MessageReference.
     */
    MessageReference getReference(Serializable messageID);
-   
-   
-
 }

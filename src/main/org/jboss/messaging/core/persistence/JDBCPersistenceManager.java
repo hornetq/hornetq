@@ -89,44 +89,53 @@ public class JDBCPersistenceManager implements PersistenceManager
 
    protected static final int BYTES_AS_BLOB = 3; 
    
-   protected String insertDelivery = "INSERT INTO DELIVERY (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) " +
-                                                   "VALUES (?, ?, ?, ?, ?)";
+   protected String insertDelivery =
+      "INSERT INTO DELIVERY (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) " +
+      "VALUES (?, ?, ?, ?, ?)";
    
-   protected String deleteDelivery = "DELETE FROM DELIVERY WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
+   protected String deleteDelivery =
+      "DELETE FROM DELIVERY WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
    
-   protected String updateDelivery = "UPDATE DELIVERY SET TRANSACTIONID=?, STATE='-' " +
-                                                   "WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
+   protected String updateDelivery =
+      "UPDATE DELIVERY SET TRANSACTIONID=?, STATE='-' " +
+      "WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
    
-   protected String insertMessageRef = "INSERT INTO MESSAGE_REFERENCE " +
-                                                      "(CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) " +
-                                                      "VALUES (?, ?, ?, ?, ?)";
+   protected String insertMessageRef =
+      "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) " +
+      "VALUES (?, ?, ?, ?, ?)";
    
-   protected String deleteMessageRef = "DELETE FROM MESSAGE_REFERENCE WHERE " + 
-                                                      "CHANNELID=? AND MESSAGEID=? AND STATE='C'";
+   protected String deleteMessageRef =
+      "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
    
-   protected String commitDelivery = "DELETE FROM DELIVERY WHERE STATE='-' AND TRANSACTIONID=?";
+   protected String commitDelivery =
+      "DELETE FROM DELIVERY WHERE STATE='-' AND TRANSACTIONID=?";
    
-   protected String commitMessageRef = "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID=? " +
-                                                      "WHERE STATE='+' AND TRANSACTIONID=?";
+   protected String commitMessageRef =
+      "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID=? WHERE STATE='+' AND TRANSACTIONID=?";
    
-   protected String rollbackDelivery = "UPDATE DELIVERY SET STATE='C', TRANSACTIONID=? " + "" +
-                                                     "WHERE STATE='-' AND TRANSACTIONID=?";
+   protected String rollbackDelivery =
+      "UPDATE DELIVERY SET STATE='C', TRANSACTIONID=? WHERE STATE='-' AND TRANSACTIONID=?";
    
-   protected String rollbackMessageRef = "DELETE FROM MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'";
+   protected String rollbackMessageRef =
+      "DELETE FROM MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'";
    
-   protected String selectChannelDeliveries = "SELECT MESSAGEID FROM DELIVERY " +
-                                                     "WHERE CHANNELID=? AND STOREID=?";
+   protected String selectChannelDeliveries =
+      "SELECT MESSAGEID FROM DELIVERY WHERE CHANNELID=? AND STOREID=?";
    
-   protected String deleteChannelDeliveries = "DELETE FROM DELIVERY WHERE CHANNELID=?";
+   protected String deleteChannelDeliveries =
+      "DELETE FROM DELIVERY WHERE CHANNELID=?";
    
-   protected String deleteChannelMessageRefs = "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=?";
+   protected String deleteChannelMessageRefs =
+      "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=?";
    
-   protected String selectChannelMessageRefs = "SELECT MESSAGEID FROM MESSAGE_REFERENCE " +
-                                                                   "WHERE CHANNELID=? AND STOREID=? AND STATE='C'";
+   protected String selectChannelMessageRefs =
+      "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STOREID=? AND STATE='C'";
    
-   protected String deleteMessage = "DELETE FROM MESSAGE WHERE MESSAGEID=?";
+   protected String deleteMessage =
+      "DELETE FROM MESSAGE WHERE MESSAGEID=?";
    
-   protected String insertMessage = "INSERT INTO MESSAGE VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+   protected String insertMessage =
+      "INSERT INTO MESSAGE VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
    
    protected String selectMessage = "SELECT " +
                                       "MESSAGEID, " +
@@ -146,14 +155,20 @@ public class JDBCPersistenceManager implements PersistenceManager
                                       "JMSPROPERTIES " +
                                       "FROM MESSAGE WHERE MESSAGEID = ?";
    
-   protected String createTransaction = "CREATE TABLE TRANSACTION ( TRANSACTIONID INTEGER, PRIMARY KEY (TRANSACTIONID) )";
+   protected String createTransaction =
+      "CREATE TABLE TRANSACTION ( TRANSACTIONID INTEGER, PRIMARY KEY (TRANSACTIONID) )";
    
    protected String createTransactionXA = 
-      "CREATE TABLE TRANSACTION ( TRANSACTIONID INTEGER, BRANCH_QUAL OBJECT, FORMAT_ID INTEGER, GLOBAL_TXID OBJECT, PRIMARY KEY (TRANSACTIONID) )";
+      "CREATE TABLE TRANSACTION ( TRANSACTIONID INTEGER, BRANCH_QUAL OBJECT, FORMAT_ID INTEGER, " +
+      "GLOBAL_TXID OBJECT, PRIMARY KEY (TRANSACTIONID) )";
    
-   protected String createDelivery = "CREATE TABLE DELIVERY (CHANNELID VARCHAR(256), MESSAGEID VARCHAR(256), STOREID VARCHAR(256), TRANSACTIONID INTEGER, STATE CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))";
+   protected String createDelivery =
+      "CREATE TABLE DELIVERY (CHANNELID VARCHAR(256), MESSAGEID VARCHAR(256), " +
+      "STOREID VARCHAR(256), TRANSACTIONID INTEGER, STATE CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))";
    
-   protected String createMessageReference = "CREATE TABLE MESSAGE_REFERENCE (CHANNELID VARCHAR(256), MESSAGEID VARCHAR(256), STOREID VARCHAR(256), TRANSACTIONID INTEGER, STATE CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))";
+   protected String createMessageReference =
+      "CREATE TABLE MESSAGE_REFERENCE (CHANNELID VARCHAR(256), MESSAGEID VARCHAR(256), " +
+      "STOREID VARCHAR(256), TRANSACTIONID INTEGER, STATE CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))";
    
    protected String createMessage = "CREATE TABLE MESSAGE (" +
                                     "MESSAGEID VARCHAR(256), " +
@@ -173,15 +188,19 @@ public class JDBCPersistenceManager implements PersistenceManager
                                     "JMSPROPERTIES OBJECT, " +
                                     "PRIMARY KEY (MESSAGEID))";
    
-   protected String insertTransactionXA = "INSERT INTO TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) values(?, ?, ?, ?)";
+   protected String insertTransactionXA =
+      "INSERT INTO TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
+      "VALUES(?, ?, ?, ?)";
 
-   protected String insertTransaction = "INSERT INTO TRANSACTION (TRANSACTIONID) VALUES (?)";
+   protected String insertTransaction =
+      "INSERT INTO TRANSACTION (TRANSACTIONID) VALUES (?)";
    
-   protected String deleteTransaction = "DELETE FROM TRANSACTION WHERE TRANSACTIONID = ?";
+   protected String deleteTransaction =
+      "DELETE FROM TRANSACTION WHERE TRANSACTIONID = ?";
    
-   protected String selectXATransactions = 
-                        "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM TRANSACTION " +
-                        "WHERE FORMAT_ID <> NULL";
+   protected String selectXATransactions =
+      "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM TRANSACTION " +
+      "WHERE FORMAT_ID <> NULL";
    
    // Static --------------------------------------------------------
    
@@ -953,10 +972,11 @@ public class JDBCPersistenceManager implements PersistenceManager
          ps.setObject(15, jmsProperties);
          int result = ps.executeUpdate();
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertMessage) + " inserted " + result + " row(s)"); }
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertMessage, m.getMessageID()) + " inserted " + result + " row(s)"); }
       }
       catch (SQLException e)
       {
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertMessage, m.getMessageID()) + " failed"); }
          wrap.exceptionOccurred();
          throw e;
       }

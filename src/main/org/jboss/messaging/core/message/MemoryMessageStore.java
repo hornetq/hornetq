@@ -34,41 +34,44 @@ import org.jboss.messaging.core.Routable;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * 
  * A MessageStore implementation that stores messages in an in-memory cache.
  * 
  * This message store dishes out WeakMessageReference instances, which contain WeakReferences to
- * Message instances. This means the message can removed from the message store and gc'd without
- * the MessageReference realeasing it's reference.
- * Messages can be removed when, say, memory gets low (TODO)
+ * Message instances. This means the message can be removed from the message store and gc'd without
+ * the MessageReference realeasing its reference.
+ * Messages can be removed when, say, memory gets low. (TODO)
  * Messages and message refs are also automatically removed when the MessageReference instance is
  * garbage collected by hooking into the MessageReferences finalizer.
- * This means any non referenced messages are automatically removed from the message store
+ * This means any non referenced messages are automatically removed from the message store.
+ *
  * TODO - do spillover onto disc at low memory by reusing jboss mq message cache.
- * 
- * 
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
  * $Id$
  */
-public class UnreliableMessageStore implements MessageStore
+public class MemoryMessageStore implements MessageStore
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(UnreliableMessageStore.class);
+   private static final Logger log = Logger.getLogger(MemoryMessageStore.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   private Map messageRefs;
-   private Map messages;
    private Serializable storeID;
+
+   // <messageID - MessageReference>
+   private Map messageRefs;
+   // <messageID - Message>
+   private Map messages;
 
    // Constructors --------------------------------------------------
 
-   public UnreliableMessageStore(Serializable storeID)
+   public MemoryMessageStore(Serializable storeID)
    {
       messageRefs = new ConcurrentReaderHashMap();
       messages = new ConcurrentReaderHashMap();
@@ -92,10 +95,12 @@ public class UnreliableMessageStore implements MessageStore
    {
       if (r.isReference())
       {
-         if (log.isTraceEnabled()) { log.trace("Routable is already a reference"); }
+         if (log.isTraceEnabled()) { log.trace("routable " + r + " is already a reference"); }
          return (MessageReference)r;
       }
-      
+
+      if (log.isTraceEnabled()) { log.trace(this + " referencing " + r); }
+
       MessageReference ref = getReference(r.getMessageID());
       if (ref == null)
       {
@@ -104,27 +109,34 @@ public class UnreliableMessageStore implements MessageStore
       return ref;      
    }
    
-   protected MessageReference createReference(Routable r)
-   {
-      messages.remove(r.getMessageID());
-      MessageReference ref = new WeakMessageReference((Message)r, this);
-      messageRefs.put(r.getMessageID(), new WeakReference(ref));
-      messages.put(r.getMessageID(), r);
-      if (log.isTraceEnabled()) { log.trace("Added message and ref to cache: " + r.getMessageID()); }
-      return ref;
-   }
-   
    public boolean isReliable()
    {
       return false;
    }
-   
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "UnreliableStore[" + storeID + "]";
+   }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   protected MessageReference createReference(Routable r)
+   {
+      Object id = r.getMessageID();
+
+      messages.remove(id); // TODO Why?
+
+      MessageReference ref = new WeakMessageReference((Message)r, this);
+      messageRefs.put(id, new WeakReference(ref));
+      messages.put(id, r);
+      if (log.isTraceEnabled()) { log.trace("added message and reference to cache for " + r.getMessageID()); }
+      return ref;
+   }
 
    protected Message retrieve(Serializable messageID)
    {
@@ -139,12 +151,11 @@ public class UnreliableMessageStore implements MessageStore
       //so we can remove it and the message from the maps
       if (log.isTraceEnabled())
       {
-         log.trace("Removing message " + ref.getMessageID() + " from in memory cache");
+         log.trace("removing " + ref.getMessageID() + " from in memory cache");
       }
       
       messageRefs.remove(ref.getMessageID());
       messages.remove(ref.getMessageID());       
-      
    }
    
 

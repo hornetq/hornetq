@@ -19,11 +19,13 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.message;
 
-import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
-import org.jboss.messaging.core.distributed.QueuePeer;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,72 +33,52 @@ import org.jboss.messaging.core.message.MemoryMessageStore;
  *
  * $Id$
  */
-public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
+public class PersistentMessageStoreTest extends MessageStoreTestBase
 {
    // Constants -----------------------------------------------------
 
+   protected Logger log = Logger.getLogger(PersistentMessageStoreTest.class);
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
+   protected PersistenceManager pm;
 
    // Constructors --------------------------------------------------
 
-   public NonRecoverableQueuePeerTest(String name)
+   public PersistentMessageStoreTest(String name)
    {
       super(name);
    }
 
-   // QueuePeerTestBase overrides ---------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new QueuePeer("test", ms, dispatcher);
-
-      ms2 = new MemoryMessageStore("message-store-2");
-      ms3 = new MemoryMessageStore("message-store-3");
-
-      channel2 = new QueuePeer("test", ms2, dispatcher2);
-      channel3 = new QueuePeer("test", ms3, dispatcher3);
+      pm = new JDBCPersistenceManager();
+      ms = new PersistentMessageStore("test-persitent-store", pm);
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      channel.close();
-      channel = null;
+      ms = null;
+      pm = null;
 
-      ms2 = null;
-      channel2.close();
-      channel2 = null;
-
-      ms3 = null;
-      channel3.close();
-      channel3 = null;
-      
       super.tearDown();
    }
 
-   public void crashChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   public void recoverChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   // Public --------------------------------------------------------
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
+
+
 }

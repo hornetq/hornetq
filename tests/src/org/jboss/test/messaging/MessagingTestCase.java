@@ -29,7 +29,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
-import org.jgroups.blocks.NotificationBus.Consumer;
 
 import junit.framework.TestCase;
 
@@ -96,8 +95,7 @@ public class MessagingTestCase extends TestCase
       {
          if (conn!= null) conn.close();
       }
-      
-   }
+  }
 
    // Private -------------------------------------------------------
    

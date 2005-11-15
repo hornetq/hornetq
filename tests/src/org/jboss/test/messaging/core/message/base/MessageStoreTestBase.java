@@ -19,11 +19,13 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.message.base;
 
-import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
-import org.jboss.messaging.core.distributed.QueuePeer;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.MessageStore;
+
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,72 +33,54 @@ import org.jboss.messaging.core.message.MemoryMessageStore;
  *
  * $Id$
  */
-public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
+public abstract class MessageStoreTestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
+   protected ServiceContainer sc;
+
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
-   public NonRecoverableQueuePeerTest(String name)
+   public MessageStoreTestBase(String name)
    {
       super(name);
    }
 
-   // QueuePeerTestBase overrides ---------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new QueuePeer("test", ms, dispatcher);
-
-      ms2 = new MemoryMessageStore("message-store-2");
-      ms3 = new MemoryMessageStore("message-store-3");
-
-      channel2 = new QueuePeer("test", ms2, dispatcher2);
-      channel3 = new QueuePeer("test", ms3, dispatcher3);
-
-      log.debug("setup done");
+      sc = new ServiceContainer("all,-aop,-remoting,-security");
+      sc.start();
    }
 
    public void tearDown() throws Exception
    {
-      channel.close();
-      channel = null;
+      sc.stop();
+      sc = null;
 
-      ms2 = null;
-      channel2.close();
-      channel2 = null;
-
-      ms3 = null;
-      channel3.close();
-      channel3 = null;
-      
       super.tearDown();
    }
 
-   public void crashChannel() throws Exception
+   public void testNoop()
    {
-      // doesn't matter
+      
    }
-
-   public void recoverChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
+
 }

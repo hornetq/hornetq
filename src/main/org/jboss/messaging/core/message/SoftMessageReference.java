@@ -62,7 +62,7 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
     */
    public static boolean keepSoftReference = false;
 
-   protected transient UnreliableMessageStore ms;
+   protected transient MemoryMessageStore ms;
    private SoftReference softReference;
 
    // Constructors --------------------------------------------------
@@ -75,7 +75,7 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
    }
 
    SoftMessageReference(Serializable messageID, boolean reliable,
-                        long expirationTime, UnreliableMessageStore ms)
+                        long expirationTime, MemoryMessageStore ms)
    {
       super(messageID, reliable, expirationTime);
 
@@ -87,7 +87,7 @@ public class SoftMessageReference extends RoutableSupport implements MessageRefe
    /**
     * Creates a reference based on a given message.
     */
-   public SoftMessageReference(Message m, UnreliableMessageStore ms)
+   public SoftMessageReference(Message m, MemoryMessageStore ms)
    {
       this(m.getMessageID(), m.isReliable(), m.getExpiration(), ms);
 

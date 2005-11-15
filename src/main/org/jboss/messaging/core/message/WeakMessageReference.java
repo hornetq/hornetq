@@ -49,7 +49,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    // Attributes ----------------------------------------------------
 
-   protected transient UnreliableMessageStore ms;
+   protected transient MemoryMessageStore ms;
    private WeakReference ref;
    
    // Constructors --------------------------------------------------
@@ -66,9 +66,8 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    /**
     * Creates a reference based on a given message.
     */
-   public WeakMessageReference(Message m, UnreliableMessageStore ms)
+   public WeakMessageReference(Message m, MemoryMessageStore ms)
    {
-      //this(m.getMessageID(), m.isReliable(), m.getExpiration(), ms);
       this(m.getMessageID(), m.isReliable(), m.getExpiration(), m.getTimestamp(), m.getHeaders(), m.isRedelivered(), m.getPriority(), ms);
 
       for(Iterator i = m.getHeaderNames().iterator(); i.hasNext(); )
@@ -81,8 +80,8 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    }
    
    protected WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
-         long timestamp, Map headers, boolean redelivered, int priority,
-         UnreliableMessageStore ms)
+                                  long timestamp, Map headers, boolean redelivered,
+                                  int priority, MemoryMessageStore ms)
    {
       super(messageID, reliable, expiration, timestamp, priority, headers);
       this.redelivered = redelivered;
@@ -105,7 +104,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
 
    public Message getMessage()
    {
-      if (log.isTraceEnabled()) { log.trace("Getting message from reference " + ref); }
+      if (log.isTraceEnabled()) { log.trace("getting message from reference " + ref); }
       
       if (ref == null)
       {
@@ -113,6 +112,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       }
       
       Message m = (Message)ref.get();
+
       if (m == null)
       {
          m = ms.retrieve(messageID);
@@ -129,14 +129,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       {
          return true;
       }
-      if (o instanceof String)
-      {
-         if (o.equals((String)this.messageID))
-         {
-            return true;
-         }
-      }
-      
+
       if (!(o instanceof WeakMessageReference))
       {
          return false;
@@ -167,15 +160,12 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
 
    // Package protected ---------------------------------------------
 
-
    // Protected -----------------------------------------------------
 
    protected void finalize() throws Throwable
    {
-      if (log.isTraceEnabled())
-      {
-         log.trace("Finalizing simplemessagereference");
-      }
+      if (log.isTraceEnabled()) { log.trace("finalizing " + this); }
+
       try
       {
          ms.remove(this);

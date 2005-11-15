@@ -202,11 +202,11 @@ public class ChannelSupport implements Channel
 
    public boolean add(Receiver r)
    {
-      if (log.isTraceEnabled()) { log.trace("attempting to add receiver to channel[" + getChannelID() + "]: " + r); }
+      if (log.isTraceEnabled()) { log.trace(this + ": attempting to add receiver to channel[" + getChannelID() + "]: " + r); }
       
       boolean added = router.add(r);
 
-      if (log.isTraceEnabled()) { log.trace("receiver " + (added ? "" : "NOT ") + " added"); }
+      if (log.isTraceEnabled()) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
       return added;
    }
 
@@ -409,7 +409,7 @@ public class ChannelSupport implements Channel
          return null;
       }
 
-      if (log.isTraceEnabled()){ log.trace("handling non-transactionally " + r); }
+      if (log.isTraceEnabled()){ log.trace(this + " handling non-transactionally " + r); }
 
       MessageReference ref = ref(r);
       Set deliveries = Collections.EMPTY_SET;

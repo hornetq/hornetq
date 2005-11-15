@@ -254,6 +254,8 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
 
       rpcServer.register(getChannelID(), this);
       joined = true;
+
+      log.debug(this + " successfully joined distributed queue " + getChannelID());
    }
 
    /**
