@@ -23,8 +23,10 @@ package org.jboss.messaging.core.distributed;
 
 import org.jgroups.Address;
 import org.jboss.messaging.core.distributed.util.ServerFacade;
+import org.jboss.messaging.core.Filter;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Exposes methods to be invoked remotely by queue peers.
@@ -51,6 +53,8 @@ public interface QueueFacade extends ServerFacade
    Acknowledgment join(Address remoteAddress, Serializable remotePeerID, Serializable remotePipeID)
       throws Throwable;
 
-   void leave(PeerIdentity remotePeerIdentity);
+   void leave(PeerIdentity originator);
+
+   List remoteBrowse(PeerIdentity originator, Filter filter);
 
 }

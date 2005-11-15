@@ -23,6 +23,7 @@ package org.jboss.messaging.core;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.distributed.RemotePeer;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -226,7 +227,16 @@ public class ChannelSupport implements Channel
 
    public Iterator iterator()
    {
-      return router.iterator();
+      List l = new ArrayList();
+      for(Iterator i = router.iterator(); i.hasNext();)
+      {
+         Object o = i.next();
+         if (!(o instanceof RemotePeer))
+         {
+            l.add(o);
+         }
+      }
+      return l.iterator();
    }
 
    // Channel implementation ----------------------------------------

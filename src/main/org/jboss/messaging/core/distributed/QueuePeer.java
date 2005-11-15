@@ -24,6 +24,7 @@ package org.jboss.messaging.core.distributed;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.distributed.util.ServerResponse;
@@ -40,6 +41,8 @@ import java.util.Iterator;
 import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A distributed queue peer.
@@ -136,24 +139,24 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
    }
 
 
-   public void leave(PeerIdentity remotePeerIdentity)
+   public void leave(PeerIdentity originator)
    {
-      if (getPeerIdentity().equals(remotePeerIdentity))
+      if (getPeerIdentity().equals(originator))
       {
          // ignore my own requests
          return;
       }
 
-      log.debug("peer " + remotePeerIdentity + " wants to leave");
+      log.debug(this +": peer " + originator + " wants to leave");
 
       // TODO synchronization
-      for(Iterator i = iterator(); i.hasNext(); )
+      for(Iterator i = router.iterator(); i.hasNext(); )
       {
          Object receiver = i.next();
          if (receiver instanceof RemotePeer)
          {
             RemotePeer rp = (RemotePeer)receiver;
-            if (rp.getPeerIdentity().equals(remotePeerIdentity))
+            if (rp.getPeerIdentity().equals(originator))
             {
                i.remove();
                break;
@@ -161,6 +164,19 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
          }
       }
    }
+
+   public List remoteBrowse(PeerIdentity originator, Filter f)
+   {
+      if (getPeerIdentity().equals(originator))
+      {
+         // ignore my own requests
+         return Collections.EMPTY_LIST;
+      }
+
+      if (log.isTraceEnabled()) { log.trace(this + " got remote browse request" + (f == null ? "" : ", filter = " + f)); }
+      return super.browse(f);
+   }
+
 
    // Peer implementation -------------------------------------------
 
@@ -289,7 +305,7 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
 
       Set result = new HashSet();
 
-      for(Iterator i = iterator(); i.hasNext(); )
+      for(Iterator i = router.iterator(); i.hasNext(); )
       {
          Object receiver = i.next();
          if (receiver instanceof RemotePeer)
@@ -301,6 +317,63 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
 
       result.add(getPeerIdentity());
       return result;
+   }
+
+   // Channel overloads ---------------------------------------------
+
+   public List browse(Filter f)
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " browse" + (f == null ? "" : ", filter = " + f)); }
+
+      // multicast the browsing request
+      RpcServerCall rpcServerCall =
+            new RpcServerCall(getChannelID(), "remoteBrowse",
+                              new Object[] {getPeerIdentity(), f},
+                              new String[] {"org.jboss.messaging.core.distributed.PeerIdentity",
+                                            "org.jboss.messaging.core.Filter"});
+
+      // TODO use the timout when I'll change the send() signature or deal with the timeout
+      Collection responses = rpcServerCall.remoteInvoke(dispatcher, TIMEOUT);
+
+      if (log.isTraceEnabled()) { log.trace(this + " received " + responses.size() + " response(s) on browse request"); }
+
+      List messages = new ArrayList();
+      ServerResponse r = null;
+
+      try
+      {
+         for(Iterator i = responses.iterator(); i.hasNext(); )
+         {
+            r = (ServerResponse)i.next();
+
+            if (log.isTraceEnabled()) { log.trace(this + " received: " + r); }
+
+            Object o = r.getInvocationResult();
+            if (o instanceof Throwable)
+            {
+               throw (Throwable)o;
+            }
+
+            List l = (List)o;
+            messages.addAll(l);
+         }
+      }
+      catch(Throwable t)
+      {
+         String msg = RpcServer.
+               subordinateToString(r.getCategory(), r.getSubordinateID(), r.getAddress()) +
+               " failed to handle the browse request";
+
+         log.error(msg, t);
+         // TODO currently I just throw an unchecked exception, but I should modify browse() signature to throw a Throwable
+         //throw new DistributedException(msg, t);
+         throw new RuntimeException(msg, t);
+      }
+
+      List local = super.browse(f);
+      messages.addAll(local);
+
+      return messages;
    }
 
    // Public --------------------------------------------------------

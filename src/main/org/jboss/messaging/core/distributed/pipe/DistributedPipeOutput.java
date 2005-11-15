@@ -76,7 +76,7 @@ public class DistributedPipeOutput implements PipeOutputFacade
    public Delivery handle(Routable r)
    {
 
-      if (log.isTraceEnabled()) { log.trace("handle(" + r + ")"); }
+      if (log.isTraceEnabled()) { log.trace(this + " handles " + r); }
 
       // Mark the message as being received from a remote endpoint
       r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
@@ -101,7 +101,7 @@ public class DistributedPipeOutput implements PipeOutputFacade
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("Output[");
+      StringBuffer sb = new StringBuffer("PipeOutput[");
       sb.append(pipeID);
       sb.append("]");
       return sb.toString();

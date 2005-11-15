@@ -53,7 +53,7 @@ public class DistributedPipe implements Receiver
 
    private static final Logger log = Logger.getLogger(DistributedPipe.class);
 
-   private static final long TIMEOUT = 3000;
+   private static final long TIMEOUT = 3600000;
 
    // Static --------------------------------------------------------
    
@@ -77,24 +77,26 @@ public class DistributedPipe implements Receiver
 
    public Delivery handle(DeliveryObserver observer, Routable r, Transaction tx)
    {
-
       // TODO for the time being, this end always makes synchonous calls and always returns "done"
-      // TODO deliveries
+      //      deliveries. Syncronous/asynchronous calls should be configurable.
 
       // Check if the message was sent remotely; in this case, I must not resend it to avoid
       // endless loops among peers or deadlock on distributed RPC if deadlock detection is not
       // enabled.
-      
-      //Convert a message reference back into a Message before sending remotely
+      if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
+      {
+         if (log.isTraceEnabled()) { log.trace("rejecting remote routable " + r); }
+         return null;
+      }
+
+      if (log.isTraceEnabled()) { log.trace(this + " handling " + r + (tx == null ? " non-transactionally" : " in transaction " + tx)); }
+
+      // Convert a message reference back into a Message before sending remotely
+      // TODO If the remote peer shares the same message store, there's no point converting dereferencing the message
       if (r.isReference())
       {
          MessageReference ref = (MessageReference)r;
          r = ref.getMessage();
-      }
-
-      if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
-      {
-         return null;
       }
 
       try
@@ -105,7 +107,7 @@ public class DistributedPipe implements Receiver
       }
       catch(Throwable e)
       {
-         log.error("Remote call handle() on " + id + ":" + outputAddress + " failed", e);
+         log.error("Remote call handle() on " + this + " failed", e);
          return null;
       }
    }

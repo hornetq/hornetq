@@ -43,6 +43,7 @@ public class RecoverableQueuePeerTest extends QueuePeerTestBase
 
    private JDBCPersistenceManager pm;
    private JDBCPersistenceManager pm2;
+   private JDBCPersistenceManager pm3;
 
    // Constructors --------------------------------------------------
 
@@ -58,15 +59,17 @@ public class RecoverableQueuePeerTest extends QueuePeerTestBase
       super.setUp();
 
       pm = new JDBCPersistenceManager();
+      pm2 = new JDBCPersistenceManager();
+      pm3 = new JDBCPersistenceManager();
+
       ms = new PersistentMessageStore("persistent-message-store", pm);
+      ms2 = new PersistentMessageStore("persistent-message-store2", pm2);
+      ms3 = new PersistentMessageStore("persistent-message-store3", pm3);
 
       channel = new QueuePeer("test", ms, pm, dispatcher);
-
-      pm2 = new JDBCPersistenceManager();
-      ms = new PersistentMessageStore("persistent-message-store", pm2);
-
       channel2 = new QueuePeer("test", ms2, pm2, dispatcher2);
-      
+      channel3 = new QueuePeer("test", ms3, pm3, dispatcher3);
+
       tr.setPersistenceManager(pm);
 
       log.debug("setup done");
@@ -80,8 +83,17 @@ public class RecoverableQueuePeerTest extends QueuePeerTestBase
       channel2.close();
       channel2 = null;
 
+      channel3.close();
+      channel3 = null;
+
       pm.stop();
       ms = null;
+
+      pm2.stop();
+      ms2 = null;
+
+      pm3.stop();
+      ms3 = null;
 
       super.tearDown();
    }

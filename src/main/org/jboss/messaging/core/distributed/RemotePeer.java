@@ -58,7 +58,7 @@ public class RemotePeer implements Receiver
       this.remotePeerIdentity = remotePeerIdentity;
       this.p = p;
 
-      if (log.isTraceEnabled()) { log.trace("createdr remote peer for " + remotePeerIdentity); }
+      if (log.isTraceEnabled()) { log.trace("created remote peer for " + remotePeerIdentity); }
    }
 
    // Receiver implementation ---------------------------------------

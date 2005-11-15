@@ -36,10 +36,13 @@ public interface Distributor
 
    boolean contains(Receiver receiver);
 
+   /**
+    * @return an iterator of local receivers
+    */
    Iterator iterator();
 
    /**
-    * Add the receiver to this distributor.
+    * Add a local receiver to this distributor.
     *
     * @return true if the distributor did not already contain the specified receiver and the
     *         receiver was added to the distributor, false otherwise.
@@ -47,7 +50,7 @@ public interface Distributor
    boolean add(Receiver receiver);
 
    /**
-    * Remove the receiver from this distributor.
+    * Remove a local receiver from this distributor.
     *
     * @return true if this distributor contained the specified receiver.
     */
