@@ -108,7 +108,22 @@ public class Factory
       return m;
 
    }
-   
+
+
+
+   public static Message createMessage(Serializable messageID,
+                                       boolean reliable,
+                                       long expiration,
+                                       long timestamp,
+                                       int priority,
+                                       Map coreHeaders,
+                                       Serializable payload)
+   {
+      return createMessage(messageID, reliable, expiration, timestamp, coreHeaders, payload,
+                           JBossMessage.TYPE, null, priority, null, true, null, true, null, null);
+
+   }
+
    public static Message createMessage(Serializable messageID)
    {
       return createMessage(messageID, false, 0, 0, null, null,

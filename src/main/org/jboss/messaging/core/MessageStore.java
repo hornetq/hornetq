@@ -37,7 +37,21 @@ public interface MessageStore
 {
    Serializable getStoreID();
 
-   boolean isReliable();
+   boolean isRecoverable();
+
+   /**
+    * A non-recoverable message store cannot guarantee recoverability for reliable messages so by
+    * default it won't accept reliable messages. If specifically configured to do so, it must
+    * unequivocally indicates that it accepts reliable messages by returning true as result of this
+    * method.
+    *
+    * A recoverable message store must always accept reliable messages, so this method must always
+    * return true for a recoverable message store.
+    *
+    * @return false if the channel doesn't accept reliable messages.
+    */
+   public boolean acceptReliableMessages();
+
 
    /**
     * Return a MessageReference instance if already cached. Otherwise create a new one.

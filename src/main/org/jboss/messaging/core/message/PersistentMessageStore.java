@@ -51,13 +51,13 @@ public class PersistentMessageStore extends MemoryMessageStore
 
    public PersistentMessageStore(Serializable storeID, PersistenceManager pm)
    {
-      super(storeID);
+      super(storeID, true);
       this.pm = pm;
    }
 
    // MessageStore overrides ----------------------------------------
 
-   public boolean isReliable()
+   public boolean isRecoverable()
    {
       return true;
    }
@@ -80,7 +80,7 @@ public class PersistentMessageStore extends MemoryMessageStore
       
       if (ref == null)
       {
-         //Message doesn't exist either in memory on disc
+         // Message doesn't exist either in memory or on disc
          if (log.isTraceEnabled()) { log.trace(this + " referencing " + r); }
 
          if (r.isReliable())

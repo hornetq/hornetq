@@ -63,6 +63,7 @@ public class MemoryMessageStore implements MessageStore
    // Attributes ----------------------------------------------------
 
    private Serializable storeID;
+   private boolean acceptReliableMessages;
 
    // <messageID - MessageReference>
    private Map messageRefs;
@@ -73,9 +74,18 @@ public class MemoryMessageStore implements MessageStore
 
    public MemoryMessageStore(Serializable storeID)
    {
+      // by default, a memory message store DOES NOT accept reliable messages
+      this(storeID, false);
+   }
+
+   public MemoryMessageStore(Serializable storeID, boolean acceptReliableMessages)
+   {
+      this.storeID = storeID;
+      this.acceptReliableMessages = acceptReliableMessages;
       messageRefs = new ConcurrentReaderHashMap();
       messages = new ConcurrentReaderHashMap();
-      this.storeID = storeID;
+
+      log.debug(this + " initialized");
    }
 
    // MessageStore implementation -----------------------------------
@@ -84,19 +94,28 @@ public class MemoryMessageStore implements MessageStore
    {
       return storeID;
    }
-   
-   public MessageReference getReference(Serializable messageID)
+
+   public boolean isRecoverable()
    {
-      WeakReference ref = (WeakReference)messageRefs.get(messageID);
-      return ref == null ? null : (MessageReference)ref.get();
+      return false;
    }
-   
+
+   public boolean acceptReliableMessages()
+   {
+      return acceptReliableMessages;
+   }
+
    public MessageReference reference(Routable r)
    {
       if (r.isReference())
       {
          if (log.isTraceEnabled()) { log.trace("routable " + r + " is already a reference"); }
          return (MessageReference)r;
+      }
+
+      if (r.isReliable() && !acceptReliableMessages)
+      {
+          throw new IllegalStateException(this + " does not accept reliable messages (" + r + ")");
       }
 
       if (log.isTraceEnabled()) { log.trace(this + " referencing " + r); }
@@ -106,19 +125,20 @@ public class MemoryMessageStore implements MessageStore
       {
          ref = createReference(r);
       }
-      return ref;      
-   }
-   
-   public boolean isReliable()
-   {
-      return false;
+      return ref;
    }
 
+   public MessageReference getReference(Serializable messageID)
+   {
+      WeakReference ref = (WeakReference)messageRefs.get(messageID);
+      return ref == null ? null : (MessageReference)ref.get();
+   }
+   
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "UnreliableStore[" + storeID + "]";
+      return "MemoryStore[" + storeID + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -147,12 +167,9 @@ public class MemoryMessageStore implements MessageStore
    
    public void remove(MessageReference ref) throws Throwable
    {
-      //Nothing is reference the message reference any more
-      //so we can remove it and the message from the maps
-      if (log.isTraceEnabled())
-      {
-         log.trace("removing " + ref.getMessageID() + " from in memory cache");
-      }
+      //Nothing is referencing the message reference any more so we can remove it
+      // and the message from the maps
+      if (log.isTraceEnabled()) { log.trace("removing " + ref.getMessageID() + " from in memory cache"); }
       
       messageRefs.remove(ref.getMessageID());
       messages.remove(ref.getMessageID());       

@@ -9,7 +9,7 @@
 # core
 #
 
-TARGET_CLASS=org.jboss.test.messaging.core.SimpleDeliveryTest
+#TARGET_CLASS=org.jboss.test.messaging.core.SimpleDeliveryTest
 
 
 #
@@ -57,7 +57,7 @@ TARGET_CLASS=org.jboss.test.messaging.core.SimpleDeliveryTest
 # core - message
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.message.MemoryMessageStoreTest
-#TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
+TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
 
 #
 # distributed core
