@@ -34,9 +34,8 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -60,7 +59,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    protected Channel channel;
    
-   protected PersistenceManager pm;
+   protected JDBCPersistenceManager pm;
 
    // Constructors --------------------------------------------------
 
@@ -74,11 +73,11 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
       super.setUp();
       ServerManagement.init("all");
-      
-      ms = new MemoryMessageStore(new GUID().toString());
-      channel = new SimpleChannel(new GUID().toString(), ms);
-      
+
       pm = new JDBCPersistenceManager();
+      ms = new PersistentMessageStore("persistentMessageStore0", pm);
+      channel = new SimpleChannel("channel0", ms);
+      
    }
 
    public void tearDown() throws Exception
@@ -151,28 +150,36 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddRetrieveRemoveMessage() throws Exception
    {
-      Message[] messages = createMessages();     
-      
+      Message[] messages = createMessages();
+
       for (int i = 0; i < messages.length; i++)
       {
-         Message m = messages[i]; 
-            
+         Message m = messages[i];
+         String id = (String)m.getMessageID();
+
          pm.storeMessage(m);
-         
-         Message m2 = pm.retrieveMessage(m.getMessageID());
+         assertEquals(1, pm.getMessageReferenceCount(id));
+
+         Message m2 = pm.retrieveMessage(id);
          assertNotNull(m2);
          checkEqual(m, m2);
-         
-         boolean removed = pm.removeMessage((String)m.getMessageID());
-         
+         assertEquals(2, pm.getMessageReferenceCount(id));
+
+         boolean removed = pm.removeMessage(id);
          assertTrue(removed);
-         
-         Message m3 = pm.retrieveMessage(m.getMessageID());
+         assertEquals(1, pm.getMessageReferenceCount(id));
+
+         removed = pm.removeMessage(id);
+         assertTrue(removed);
+         assertEquals(0, pm.getMessageReferenceCount(id));
+
+         Message m3 = pm.retrieveMessage(id);
          assertNull(m3);
+
+         assertFalse(pm.removeMessage(id));
       }
-        
    }
-   
+
    public void testGetDeliveries() throws Exception
    {
       Message[] messages = createMessages();     

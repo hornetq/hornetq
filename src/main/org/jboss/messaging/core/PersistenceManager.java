@@ -27,8 +27,7 @@ import java.util.List;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * A PersistenceManager is responsible for managing persistent message state in
- * a persistent store.
+ * A PersistenceManager is responsible for managing persistent message state in a persistent store.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,8 +37,16 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public interface PersistenceManager
 {
+   /**
+    * If the message doesn't exist in the database, it physically adds it. Otherwise, it increments
+    * the reference count.
+    */
    void storeMessage(Message m) throws Exception;
-   
+
+   /**
+    * If the message's reference count is bigger than 1, it just decrements it. If it is 1, it
+    * physically removes the message from the database.
+    */
    boolean removeMessage(String messageID) throws Exception;
 
    Message retrieveMessage(Serializable messageID) throws Exception;

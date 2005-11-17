@@ -200,10 +200,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    ////// Multiple messages
    //////
 
-   ////////
-   //////// One strong reference
-   ////////
-
    public void testNonRecoverableMessageStore_2() throws Exception
    {
       if (ms.isRecoverable())
@@ -242,34 +238,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          assertNull(ms.getReference(m[i].getMessageID()));
-      }
-   }
-
-   ////////
-   //////// Two strong references
-   ////////
-
-   public void testNonRecoverableMessageStore_2_1() throws Exception
-   {
-      if (ms.isRecoverable())
-      {
-         // we only test non-recoverable message stores
-         return;
-      }
-
-      Message[] m = new Message[NUMBER_OF_MESSAGES];
-      MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
-      {
-         m[i] = Factory.
-            createMessage("message" + i, false, 700 + i, 800 + i, i % 10, headers, "payload" + i);
-
-         // non-recoverable store, non-reliable message, one message
-         refs[i] = ms.reference(m[i]);
-         assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
-
-         MessageReference ref2 = ms.reference(m[i]);
-         assertTrue(ref2 == refs[i]);
       }
    }
 
@@ -487,10 +455,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    ////// Multiple messages
    //////
 
-   ////////
-   //////// One strong reference
-   ////////
-
    public void testRecoverableMessageStore_2() throws Exception
    {
       if (!ms.isRecoverable())
@@ -529,35 +493,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          assertNull(ms.getReference(m[i].getMessageID()));
-      }
-   }
-
-   ////////
-   //////// Two strong references
-   ////////
-
-   public void testRecoverableMessageStore_2_1() throws Exception
-   {
-      if (!ms.isRecoverable())
-      {
-         // we only test recoverable message stores
-         return;
-      }
-
-      Message[] m = new Message[NUMBER_OF_MESSAGES];
-      MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
-      {
-         m[i] = Factory.
-            createMessage("message" + i, false, 700 + i, 800 + i, i % 10, headers, "payload" + i);
-
-         // recoverable store, non-reliable message, one message
-         refs[i] = ms.reference(m[i]);
-         assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
-
-         MessageReference ref2 = ms.reference(m[i]);
-
-         assertTrue(ref2 == refs[i]);
       }
    }
 
@@ -633,10 +568,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    ////// Multiple messages
    //////
 
-   ////////
-   //////// One strong reference
-   ////////
-
    public void testRecoverableMessageStore_4() throws Exception
    {
       if (!ms.isRecoverable())
@@ -675,34 +606,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          assertNull(ms.getReference(m[i].getMessageID()));
-      }
-   }
-
-   ////////
-   //////// Two strong references
-   ////////
-
-   public void testRecoverableMessageStore_4_1() throws Exception
-   {
-      if (!ms.isRecoverable())
-      {
-         // we only test recoverable message stores
-         return;
-      }
-
-      Message[] m = new Message[NUMBER_OF_MESSAGES];
-      MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
-      {
-         m[i] = Factory.
-            createMessage("message" + i, true, 700 + i, 800 + i, i % 10, headers, "payload" + i);
-
-         // recoverable store, non-reliable message, one message
-         refs[i] = ms.reference(m[i]);
-         assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
-
-         MessageReference ref2 =  ms.reference(m[i]);
-         assertTrue(ref2 == refs[i]);
       }
    }
 

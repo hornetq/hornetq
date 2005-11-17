@@ -19,12 +19,11 @@
 # local core
 #
 
-
 #TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
 #TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
 #TARGET_TEST=testNonRecoverableState_remove_2
 #TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState2Test
-#TARGET_TEST=testNonRecoverableState_remove_6
+#TARGET_TEST=testNonRecoverableState_17
 #TARGET_CLASS=org.jboss.test.messaging.core.RecoverableStateTest
 #TARGET_TEST=testRecoverableState_57
 
@@ -57,8 +56,16 @@
 # core - message
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.message.MemoryMessageStoreTest
-TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
+#TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
 #TARGET_TEST=testTwoStoresSameDatabase
+
+#
+# core - persistence
+#
+
+#TARGET_CLASS=org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest
+#TARGET_TEST=testAddRetrieveRemoveMessage
+
 #
 # distributed core
 #
@@ -73,9 +80,9 @@ TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
-#TARGET_TEST=testPeerInGroupOfTwo
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
-#TARGET_TEST=testRecoverableDistributedChannel_3
+#TARGET_TEST=testNonRecoverableDistributedChannel_9
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
+TARGET_TEST=testRecoverableDistributedChannel_3
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 
 #

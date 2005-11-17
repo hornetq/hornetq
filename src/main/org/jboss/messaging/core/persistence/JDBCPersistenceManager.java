@@ -1084,9 +1084,11 @@ public class JDBCPersistenceManager implements PersistenceManager
    }
 
    /**
-    * Retrieves the message from the MESSAGE table.
+    * Retrieves the message from the MESSAGE table and <i>increments the reference count</i> if
+    * required.
     */
-   public Message retrieveMessage(Serializable messageID) throws Exception
+   public Message retrieveMessage(Serializable messageID)
+         throws Exception
    {
       Connection conn = null;
       PreparedStatement ps = null;
@@ -1096,6 +1098,7 @@ public class JDBCPersistenceManager implements PersistenceManager
       try
       {
          Message m = null;
+         int referenceCount = 0;
          conn = ds.getConnection();
 
          ps = conn.prepareStatement(selectMessage);
@@ -1107,6 +1110,7 @@ public class JDBCPersistenceManager implements PersistenceManager
          if (rs.next())
          {
             m = (Message)rs.getObject("PAYLOAD");
+            referenceCount = rs.getInt("REFERENCECOUNT");
             count ++;
             /*
             m = Factory.createMessage(rs.getString("MESSAGEID"),
@@ -1128,6 +1132,17 @@ public class JDBCPersistenceManager implements PersistenceManager
          }
 
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectMessage, messageID) + " selected " + count + " row(s)"); }
+
+         if (m != null)
+         {
+            // increment the reference count
+            ps = conn.prepareStatement(updateReferenceCount);
+            ps.setInt(1, ++referenceCount);
+            ps.setString(2, (String)m.getMessageID());
+
+            ps.executeUpdate();
+            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), m.getMessageID()) + " executed successfully"); }
+         }
 
          return m;
       }

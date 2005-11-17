@@ -51,7 +51,7 @@ public class TopicTest extends TopicTestBase
    {
       super.setUp();
 
-     topic = new Topic("test");
+      topic = new Topic("test");
    }
 
    public void tearDown() throws Exception

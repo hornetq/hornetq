@@ -24,13 +24,16 @@ package org.jboss.test.messaging.core.local.base;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.Factory;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 
 import java.util.List;
 
@@ -46,6 +49,9 @@ public abstract class TopicTestBase extends MessagingTestCase
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+
+   protected ServiceContainer sc;
+   protected PersistenceManager pm;
 
    // TODO here I should have a Destination base class so I won't have to cast it to Distributor
    protected Receiver topic;
@@ -64,11 +70,20 @@ public abstract class TopicTestBase extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ms = new MemoryMessageStore("store1");
+
+      sc = new ServiceContainer("all,-aop,-remoting,-security");
+      sc.start();
+
+      pm = new JDBCPersistenceManager();
+      ms = new PersistentMessageStore("store1", pm);
    }
 
    public void tearDown() throws Exception
    {
+      pm = null;
+      ms = null;
+      sc.stop();
+      sc = null;
       super.tearDown();
    }
 

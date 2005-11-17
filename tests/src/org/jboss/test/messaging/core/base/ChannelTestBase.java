@@ -27,10 +27,12 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.Factory;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 
@@ -74,6 +76,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    
    // Attributes ----------------------------------------------------
 
+   // the MessageStore requires a PersistenceManager, othewise it will reject reliable messages
+   protected PersistenceManager msPersistenceManager;
    protected TransactionRepository tr;
    protected MessageStore ms;
 
@@ -94,7 +98,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       tr = new TransactionRepository(null);
       ic.close();
 
-      ms = new MemoryMessageStore("message-store");
+      msPersistenceManager = new JDBCPersistenceManager();
+      ms = new PersistentMessageStore("message-store", msPersistenceManager);
    }
 
    public void tearDown() throws Exception

@@ -108,14 +108,25 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       ref = null;
       System.gc();
 
-      assertNull(ms.getReference(m.getMessageID()));
-      assertCorrectReference(ms2.getReference(m.getMessageID()), ms2.getStoreID(), m);
+
+      // the reference is garbage collected and the message store is evicted ...
+
       assertEquals(1, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
 
-      // send ref2 out of scope and call a full GC
+      // ... but because the message is still in the database, trying to get a new reference
+      // is successful.
+
+      ref = ms.getReference(m.getMessageID());
+      assertCorrectReference(ref, ms.getStoreID(), m);
+      assertCorrectReference(ms2.getReference(m.getMessageID()), ms2.getStoreID(), m);
+      assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+
+      // send both references out of scope and call a full GC
+      ref = null;
       ref2 = null;
       System.gc();
 
+      assertNull(ms.getReference(m.getMessageID()));
       assertNull(ms2.getReference(m.getMessageID()));
       assertEquals(0, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
    }

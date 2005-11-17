@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
 import org.jboss.messaging.core.distributed.QueuePeer;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -38,7 +38,6 @@ public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
 
    // Constructors --------------------------------------------------
 
@@ -55,8 +54,8 @@ public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
 
       channel = new QueuePeer("test", ms, dispatcher);
 
-      ms2 = new MemoryMessageStore("message-store-2");
-      ms3 = new MemoryMessageStore("message-store-3");
+      ms2 = new PersistentMessageStore("message-store-2", msPersistenceManager);
+      ms3 = new PersistentMessageStore("message-store-3", msPersistenceManager);
 
       channel2 = new QueuePeer("test", ms2, dispatcher2);
       channel3 = new QueuePeer("test", ms3, dispatcher3);
