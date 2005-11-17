@@ -162,7 +162,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -386,7 +386,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -438,7 +438,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -506,7 +506,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -574,7 +574,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -632,7 +632,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -691,7 +691,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -760,7 +760,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -825,7 +825,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -900,7 +900,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -960,7 +960,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1025,7 +1025,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1076,7 +1076,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1136,7 +1136,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1187,7 +1187,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1242,7 +1242,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1315,7 +1315,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1363,7 +1363,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1434,7 +1434,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1499,7 +1499,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1556,7 +1556,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1615,7 +1615,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1694,7 +1694,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1770,7 +1770,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1836,7 +1836,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1906,7 +1906,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -1966,7 +1966,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2061,7 +2061,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2123,7 +2123,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2180,7 +2180,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2253,7 +2253,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2340,7 +2340,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2400,7 +2400,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2466,7 +2466,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2568,7 +2568,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2647,7 +2647,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2746,7 +2746,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2821,7 +2821,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2894,7 +2894,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -2963,7 +2963,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3052,7 +3052,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3136,7 +3136,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3200,7 +3200,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3268,7 +3268,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3325,7 +3325,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3391,7 +3391,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3448,7 +3448,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3509,7 +3509,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3588,7 +3588,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3640,7 +3640,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
@@ -3692,7 +3692,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
       assertTrue(jchannel2.isConnected());
 
-      // make sure both jchannel joined the group
+      // make sure both jchannels joined the group
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 

@@ -71,7 +71,6 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
 
    protected boolean joined = false;
 
-
    // Constructors --------------------------------------------------
 
    /**
@@ -81,7 +80,6 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
    {
       this(name, ms, null, dispatcher);
    }
-
 
    /**
     * A recoverable queue peer.
@@ -138,7 +136,6 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
       return new Acknowledgment(pi, p.getID());
    }
 
-
    public void leave(PeerIdentity originator)
    {
       if (getPeerIdentity().equals(originator))
@@ -176,7 +173,6 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
       if (log.isTraceEnabled()) { log.trace(this + " got remote browse request" + (f == null ? "" : ", filter = " + f)); }
       return super.browse(f);
    }
-
 
    // Peer implementation -------------------------------------------
 

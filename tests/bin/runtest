@@ -58,7 +58,7 @@
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.message.MemoryMessageStoreTest
 TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
-
+#TARGET_TEST=testTwoStoresSameDatabase
 #
 # distributed core
 #

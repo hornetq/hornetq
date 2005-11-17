@@ -105,7 +105,7 @@ public class PersistentMessageStore extends MemoryMessageStore
    
    public MessageReference getReference(Serializable messageID)
    {
-      if (log.isTraceEnabled()) { log.trace("Getting message ref for message ID: " + messageID);}
+      if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID);}
       
       //Try and get the reference from the in memory cache first
       MessageReference ref = super.getReference(messageID);
@@ -148,9 +148,10 @@ public class PersistentMessageStore extends MemoryMessageStore
    public void remove(MessageReference ref) throws Throwable
    {
       super.remove(ref);
-      
+
+      if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + ref.getMessageID() + " on disk"); }
       pm.removeMessage((String)ref.getMessageID());
-      
+      if (log.isTraceEnabled()) { log.trace(ref.getMessageID() + " removed (or reference count decremented) on disk"); }
    }
 
 

@@ -131,7 +131,9 @@ public class MemoryMessageStore implements MessageStore
    public MessageReference getReference(Serializable messageID)
    {
       WeakReference ref = (WeakReference)messageRefs.get(messageID);
-      return ref == null ? null : (MessageReference)ref.get();
+      MessageReference mref = ref == null ? null : (MessageReference)ref.get();
+      if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID + " from memory, returning " + mref);}
+      return mref;
    }
    
    // Public --------------------------------------------------------
@@ -154,7 +156,7 @@ public class MemoryMessageStore implements MessageStore
       MessageReference ref = new WeakMessageReference((Message)r, this);
       messageRefs.put(id, new WeakReference(ref));
       messages.put(id, r);
-      if (log.isTraceEnabled()) { log.trace("added message and reference to cache for " + r.getMessageID()); }
+      if (log.isTraceEnabled()) { log.trace("added message and reference to memory cache for " + r.getMessageID()); }
       return ref;
    }
 
@@ -169,7 +171,7 @@ public class MemoryMessageStore implements MessageStore
    {
       //Nothing is referencing the message reference any more so we can remove it
       // and the message from the maps
-      if (log.isTraceEnabled()) { log.trace("removing " + ref.getMessageID() + " from in memory cache"); }
+      if (log.isTraceEnabled()) { log.trace("removing " + ref.getMessageID() + " from memory cache"); }
       
       messageRefs.remove(ref.getMessageID());
       messages.remove(ref.getMessageID());       

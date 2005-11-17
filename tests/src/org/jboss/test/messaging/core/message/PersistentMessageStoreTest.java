@@ -24,7 +24,11 @@ package org.jboss.test.messaging.core.message;
 import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.message.Factory;
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 
 /**
@@ -45,6 +49,9 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
    protected PersistenceManager pm;
 
+   protected PersistenceManager pm2;
+   protected MessageStore ms2;
+
    // Constructors --------------------------------------------------
 
    public PersistentMessageStoreTest(String name)
@@ -61,6 +68,9 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       pm = new JDBCPersistenceManager();
       ms = new PersistentMessageStore("test-persitent-store", pm);
 
+      pm2 = new JDBCPersistenceManager();
+      ms2 = new PersistentMessageStore("test-persistent-store2", pm2);
+
       log.debug("setup done");
    }
 
@@ -72,6 +82,45 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       super.tearDown();
    }
 
+   /**
+    * In a distributed configuration, multiple persistent store may access the same database.
+    */
+   public void testTwoStoresSameDatabase() throws Exception
+   {
+      Message m = Factory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+
+      assertEquals(0, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
+
+      MessageReference ref = ms.reference(m);
+      log.debug("referenced " + m + " using " + ms);
+      assertCorrectReference(ref, ms.getStoreID(), m);
+      assertEquals(1, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
+
+      // add the same message to the second store
+      MessageReference ref2 = ms2.reference(m);
+      log.debug("referenced " + m + " using " + ms2);
+      assertCorrectReference(ref2, ms2.getStoreID(), m);
+      assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+
+      assertFalse(ref == ref2);
+
+      // send ref out of scope and call a full GC
+      ref = null;
+      System.gc();
+
+      assertNull(ms.getReference(m.getMessageID()));
+      assertCorrectReference(ms2.getReference(m.getMessageID()), ms2.getStoreID(), m);
+      assertEquals(1, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+
+      // send ref2 out of scope and call a full GC
+      ref2 = null;
+      System.gc();
+
+      assertNull(ms2.getReference(m.getMessageID()));
+      assertEquals(0, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -79,6 +128,4 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-
 }
