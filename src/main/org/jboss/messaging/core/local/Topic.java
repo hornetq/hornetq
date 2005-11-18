@@ -58,6 +58,13 @@ public class Topic implements CoreDestination
       router = new PointToMultipointRouter();
    }
 
+   // CoreDestination implementation --------------------------------
+
+   public String getName()
+   {
+      return name;
+   }
+
    // Public --------------------------------------------------------
    
    public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
@@ -91,11 +98,6 @@ public class Topic implements CoreDestination
       return router.remove(receiver);
    }
    
-   public String getName()
-   {
-      return name;
-   }
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

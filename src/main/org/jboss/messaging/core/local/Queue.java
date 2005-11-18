@@ -55,8 +55,6 @@ public class Queue extends ChannelSupport implements CoreDestination
       router = new PointToPointRouter();
    }
 
-   // Channel implementation ----------------------------------------
-   
    // CoreDestination implementation --------------------------------
    
    public String getName()
