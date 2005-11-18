@@ -80,9 +80,8 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
-#TARGET_TEST=testNonRecoverableDistributedChannel_9
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
-TARGET_TEST=testRecoverableDistributedChannel_3
+TARGET_TEST=testSimpleSend
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 
 #

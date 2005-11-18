@@ -23,7 +23,7 @@
    <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <param name="File" value="./jms.log"/>
+      <param name="File" value="./messaging-tests.trace.log"/>
       <param name="Append" value="false"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
@@ -47,8 +47,8 @@
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="Target" value="System.out"/>
 
-      <param name="Threshold" value="INFO"/>
       <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+      <param name="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
