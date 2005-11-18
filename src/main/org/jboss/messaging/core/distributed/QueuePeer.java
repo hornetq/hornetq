@@ -317,7 +317,7 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
       return result;
    }
 
-   // Channel overloads ---------------------------------------------
+   // Channel overrides ---------------------------------------------
 
    public List browse(Filter f)
    {
@@ -373,6 +373,13 @@ public class QueuePeer extends Queue implements Peer, QueueFacade
 
       return messages;
    }
+
+   // TODO - override deliver(Receiver r) for a clustered case
+//   public void deliver(Receiver r)
+//   {
+//      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
+//   }
+
 
    // Public --------------------------------------------------------
 

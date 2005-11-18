@@ -189,6 +189,7 @@ public class SimpleReceiver implements Receiver
          log.error("No channel, cannot request messages");
          return;
       }
+      log.info("receiver explicitely requesting message from the channel");
       channel.deliver(this);
    }
 

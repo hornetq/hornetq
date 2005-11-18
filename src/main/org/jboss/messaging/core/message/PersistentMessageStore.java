@@ -157,6 +157,11 @@ public class PersistentMessageStore extends InMemoryMessageStore
 
    // Public --------------------------------------------------------
 
+   public PersistenceManager getPersistenceManager()
+   {
+      return pm;
+   }
+
    public String toString()
    {
       return "PersistentStore[" + getStoreID() + "]";

@@ -37,7 +37,7 @@ public interface Distributor
    boolean contains(Receiver receiver);
 
    /**
-    * @return an iterator of local receivers
+    * @return an iterator of <i>local</i> receivers
     */
    Iterator iterator();
 
