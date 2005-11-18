@@ -30,7 +30,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
