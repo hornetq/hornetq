@@ -49,7 +49,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    // Attributes ----------------------------------------------------
 
-   protected transient MemoryMessageStore ms;
+   protected transient InMemoryMessageStore ms;
    private WeakReference ref;
    
    // Constructors --------------------------------------------------
@@ -66,7 +66,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    /**
     * Creates a reference based on a given message.
     */
-   public WeakMessageReference(Message m, MemoryMessageStore ms)
+   public WeakMessageReference(Message m, InMemoryMessageStore ms)
    {
       this(m.getMessageID(), m.isReliable(), m.getExpiration(), m.getTimestamp(), m.getHeaders(), m.isRedelivered(), m.getPriority(), ms);
 
@@ -81,7 +81,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    protected WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
                                   long timestamp, Map headers, boolean redelivered,
-                                  int priority, MemoryMessageStore ms)
+                                  int priority, InMemoryMessageStore ms)
    {
       super(messageID, reliable, expiration, timestamp, priority, headers);
       this.redelivered = redelivered;

@@ -35,7 +35,7 @@ import org.jboss.messaging.core.Routable;
  *
  * $Id$
  */
-public class PersistentMessageStore extends MemoryMessageStore
+public class PersistentMessageStore extends InMemoryMessageStore
 {
    // Constants -----------------------------------------------------
 

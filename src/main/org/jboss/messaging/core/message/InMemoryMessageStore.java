@@ -52,11 +52,11 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class MemoryMessageStore implements MessageStore
+public class InMemoryMessageStore implements MessageStore
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MemoryMessageStore.class);
+   private static final Logger log = Logger.getLogger(InMemoryMessageStore.class);
 
    // Static --------------------------------------------------------
    
@@ -72,13 +72,13 @@ public class MemoryMessageStore implements MessageStore
 
    // Constructors --------------------------------------------------
 
-   public MemoryMessageStore(Serializable storeID)
+   public InMemoryMessageStore(Serializable storeID)
    {
       // by default, a memory message store DOES NOT accept reliable messages
       this(storeID, false);
    }
 
-   public MemoryMessageStore(Serializable storeID, boolean acceptReliableMessages)
+   public InMemoryMessageStore(Serializable storeID, boolean acceptReliableMessages)
    {
       this.storeID = storeID;
       this.acceptReliableMessages = acceptReliableMessages;

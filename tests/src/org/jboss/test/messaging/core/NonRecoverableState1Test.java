@@ -7,7 +7,7 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.core.base.StateTestBase;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.message.InMemoryMessageStore;
 import org.jboss.messaging.core.NonRecoverableState;
 
 
@@ -34,7 +34,7 @@ public class NonRecoverableState1Test extends StateTestBase
    {
       super.setUp();
 
-      ms = new MemoryMessageStore("ms0");
+      ms = new InMemoryMessageStore("ms0");
       channel = new SimpleChannel("test-channel", ms);
 
       // the state DOES not accept reliable messages

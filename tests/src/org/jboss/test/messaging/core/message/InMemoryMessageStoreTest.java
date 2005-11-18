@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.message;
 
 import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.MemoryMessageStore;
+import org.jboss.messaging.core.message.InMemoryMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,11 +31,11 @@ import org.jboss.messaging.core.message.MemoryMessageStore;
  *
  * $Id$
  */
-public class MemoryMessageStoreTest extends MessageStoreTestBase
+public class InMemoryMessageStoreTest extends MessageStoreTestBase
 {
    // Constants -----------------------------------------------------
 
-   protected Logger log = Logger.getLogger(MemoryMessageStoreTest.class);
+   protected Logger log = Logger.getLogger(InMemoryMessageStoreTest.class);
 
    // Static --------------------------------------------------------
 
@@ -43,7 +43,7 @@ public class MemoryMessageStoreTest extends MessageStoreTestBase
 
    // Constructors --------------------------------------------------
 
-   public MemoryMessageStoreTest(String name)
+   public InMemoryMessageStoreTest(String name)
    {
       super(name);
    }
@@ -54,7 +54,7 @@ public class MemoryMessageStoreTest extends MessageStoreTestBase
    {
       super.setUp();
 
-      ms = new MemoryMessageStore("test-memory-store");
+      ms = new InMemoryMessageStore("test-memory-store");
 
       log.debug("setup done");
    }
