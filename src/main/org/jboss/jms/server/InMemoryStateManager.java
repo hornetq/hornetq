@@ -66,13 +66,7 @@ public class InMemoryStateManager implements StateManager
       {
          subs = new ConcurrentReaderHashMap();
          subscriptions.put(clientID, subs);
-      }
-      
-      if (subs.get(subscriptionName) != null)
-      {
-         throw new IllegalStateException("Client with client id " + clientID + " already has " +
-                                         "a subscription with name " + subscriptionName);
-      }
+      }           
  
       DurableSubscription subscription =
             internalCreateDurableSubscription(clientID, subscriptionName, topicName, selector);

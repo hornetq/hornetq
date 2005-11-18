@@ -13,7 +13,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -45,31 +50,32 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
    
    private static final Logger log = Logger.getLogger(JDBCStateManager.class);
    
-   private static final String CREATE_USER_TABLE =
+   private String createUserTable =
       "CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128),"
          + " PRIMARY KEY(USERID))";
 
-   private static final String CREATE_ROLE_TABLE = "CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, USERID VARCHAR(32) NOT NULL,"
+   private String createRoleTable = "CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, USERID VARCHAR(32) NOT NULL,"
          + " PRIMARY KEY(USERID, ROLEID))";
 
-   private static final String CREATE_SUBSCRIPTION_TABLE = "CREATE TABLE JMS_SUBSCRIPTION (CLIENTID VARCHAR(128) NOT NULL, NAME VARCHAR(128) NOT NULL,"
+   private String createSubscriptionTable = "CREATE TABLE JMS_SUBSCRIPTION (CLIENTID VARCHAR(128) NOT NULL, NAME VARCHAR(128) NOT NULL,"
          + " TOPIC VARCHAR(255) NOT NULL, SELECTOR VARCHAR(255)," + " PRIMARY KEY(CLIENTID, NAME))";
    
-   private static final String GET_SUBSCRIPTION = 
+   private String selectSubscription = 
       "SELECT NAME, TOPIC, SELECTOR FROM JMS_SUBSCRIPTION WHERE CLIENTID=? AND NAME=?";
    
-   private static final String INSERT_SUBSCRIPTION = 
+   private String insertSubscription = 
       "INSERT INTO JMS_SUBSCRIPTION (CLIENTID, NAME, TOPIC, SELECTOR) VALUES (?, ?, ?, ?)";
    
-   private static final String DELETE_SUBSCRIPTION = 
+   private String deleteSubscription = 
       "DELETE FROM JMS_SUBSCRIPTION WHERE CLIENTID=? AND NAME=?";
    
-   private static final String GET_PRECONFCLIENTID = 
+   private String selectPreConfClientId = 
       "SELECT CLIENTID FROM JMS_USER WHERE USERID=?";
    
-   private static final String GET_SUBSCRIPTIONS = 
+   private String selectSubscriptionsForTopic = 
       "SELECT CLIENTID, NAME, SELECTOR FROM JMS_SUBSCRIPTION WHERE TOPIC=?";
    
+
       
    // Static --------------------------------------------------------
 
@@ -82,6 +88,11 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
    protected Properties sqlProperties;
 
    protected ObjectName connectionManagerName;
+   
+   protected boolean createTablesOnStartup;
+   
+   protected List populateTables;
+   
 
    
    
@@ -93,6 +104,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
       
       sqlProperties = new Properties();
    
+      populateTables = new ArrayList();
    }
    
    // MBean operations ----------------------------------------------
@@ -156,7 +168,12 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
       {
          ctx.close();
       }
-      initDB();
+      
+      initSqlProperties();
+      if (createTablesOnStartup)
+      {
+         createSchema();
+      }
    }
    
    
@@ -185,8 +202,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("GET_SUBSCRIPTION",
-                                                                 GET_SUBSCRIPTION));
+            ps = conn.prepareStatement(selectSubscription);
             
             ps.setString(1, clientID);
             
@@ -252,8 +268,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("INSERT_SUBSCRIPTION",
-                                                                 INSERT_SUBSCRIPTION));
+            ps = conn.prepareStatement(insertSubscription);
             
             ps.setString(1, clientID);
             
@@ -313,8 +328,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("DELETE_SUBSCRIPTION",
-                                                                 DELETE_SUBSCRIPTION));
+            ps = conn.prepareStatement(deleteSubscription);
             
             ps.setString(1, clientID);
             
@@ -373,8 +387,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("GET_PRECONFCLIENTID",
-                                                                 GET_PRECONFCLIENTID));
+            ps = conn.prepareStatement(selectPreConfClientId);
             
             ps.setString(1, username);
             
@@ -434,8 +447,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          {
             conn = ds.getConnection();
             
-            ps = conn.prepareStatement(sqlProperties.getProperty("GET_SUBSCRIPTIONS",
-                                                                 GET_SUBSCRIPTIONS));
+            ps = conn.prepareStatement(selectSubscriptionsForTopic);
             
             ps.setString(1, topicName);
             
@@ -495,13 +507,30 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
    
    // Protected -----------------------------------------------------
    
-   protected void initDB() throws Exception
-   {      
-//      if (!"true".equalsIgnoreCase(sqlProperties.getProperty("CREATE_TABLES_ON_STARTUP")))
-//      {
-//         return;
-//      }
+   protected void initSqlProperties()
+   {
+      createUserTable = sqlProperties.getProperty("CREATE_USER_TABLE", createUserTable);
+      createRoleTable = sqlProperties.getProperty("CREATE_ROLE_TABLE", createRoleTable);
+      createSubscriptionTable = sqlProperties.getProperty("CREATE_SUBSCRIPTION_TABLE", createSubscriptionTable);
+      selectSubscription = sqlProperties.getProperty("SELECT_SUBSCRIPTION", selectSubscription);
+      insertSubscription = sqlProperties.getProperty("INSERT_SUBSCRIPTION", insertSubscription);
+      deleteSubscription = sqlProperties.getProperty("DELETE_SUBSCRIPTION", deleteSubscription);
+      selectPreConfClientId = sqlProperties.getProperty("SELECT_PRECONF_CLIENTID", selectPreConfClientId);
+      selectSubscriptionsForTopic = sqlProperties.getProperty("SELECT_SUBSCRIPTIONS_FOR_TOPIC", selectSubscriptionsForTopic);
+      createTablesOnStartup = sqlProperties.getProperty("CREATE_TABLES_ON_STARTUP", "true").equalsIgnoreCase("true");
       
+      for (Iterator i = sqlProperties.entrySet().iterator(); i.hasNext();)
+      {
+         Map.Entry entry = (Map.Entry) i.next();
+         String key = (String) entry.getKey();
+         if (key.startsWith("POPULATE.TABLES."))
+            populateTables.add(entry.getValue());
+      }
+      
+   }
+   
+   protected void createSchema() throws Exception
+   {      
       Connection conn = null;      
       TransactionWrapper tx = new TransactionWrapper();
 
@@ -512,32 +541,52 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating JMS_USERS table"); }            
-            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_USER_TABLE",
-                                                                           CREATE_USER_TABLE));
+            conn.createStatement().executeUpdate(createUserTable);
          }
          catch (SQLException e) 
-         {}
+         {
+            log.debug("Failed to create users table: " + createUserTable, e);
+         }
                   
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating JMS_ROLES table"); }
-            conn.createStatement().executeUpdate(sqlProperties.getProperty("CREATE_ROLE_TABLE",
-                                                                           CREATE_ROLE_TABLE));
+            conn.createStatement().executeUpdate(createRoleTable);
          }
          catch (SQLException e) 
-         {}
+         {
+            log.debug("Failed to create roles table: " + createRoleTable, e);
+         }
          
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating JMS_SUBSCRIPTIONS table"); }
             conn.createStatement().
-                  executeUpdate(sqlProperties.getProperty("CREATE_SUBSCRIPTION_TABLE",
-                                                          CREATE_SUBSCRIPTION_TABLE));
+                  executeUpdate(createSubscriptionTable);
          }
          catch (SQLException e) 
-         {}
+         {
+            log.debug("Failed to create subscriptions table: " + createSubscriptionTable, e);
+         }
          
-         //TODO indexes
+         
+         //Insert user-role data
+         Iterator iter = populateTables.iterator();
+         String nextQry = null;
+         while (iter.hasNext())
+         {
+            Statement st = null;
+            try
+            {
+               nextQry = (String) iter.next();               
+               st = conn.createStatement();              
+               st.executeUpdate(nextQry);
+            }
+            catch (SQLException ignored)
+            {
+               log.debug("Error populating tables: " + nextQry, ignored);
+            }
+         }
 
       }
       finally

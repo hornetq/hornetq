@@ -90,6 +90,11 @@ public class Topic implements CoreDestination
    {
       return router.remove(receiver);
    }
+   
+   public String getName()
+   {
+      return name;
+   }
 
    // Package protected ---------------------------------------------
    

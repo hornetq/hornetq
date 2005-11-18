@@ -105,7 +105,7 @@ public class Subscription extends Pipe
    {
       return selector;
    }
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

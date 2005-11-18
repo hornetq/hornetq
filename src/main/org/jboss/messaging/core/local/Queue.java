@@ -56,6 +56,13 @@ public class Queue extends ChannelSupport implements CoreDestination
    }
 
    // Channel implementation ----------------------------------------
+   
+   // CoreDestination implementation --------------------------------
+   
+   public String getName()
+   {
+      return (String)channelID;
+   }
 
    // Public --------------------------------------------------------
 

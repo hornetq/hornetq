@@ -91,7 +91,7 @@ public class AsfInterceptor
    }
 
    public Object invoke(Invocation invocation) throws Throwable
-   {
+   { 
       if (!(invocation instanceof MethodInvocation))
       {
          return invocation.invokeNext();

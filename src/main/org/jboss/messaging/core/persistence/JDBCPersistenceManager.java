@@ -212,6 +212,9 @@ public class JDBCPersistenceManager implements PersistenceManager
       "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM TRANSACTION " +
       "WHERE FORMAT_ID <> NULL";
    
+   protected String createIdxMessageRefTx = "CREATE INDEX MESSAGE_REF_TX ON MESSAGE_REFERENCE (STATE, TRANSACTIONID)";
+
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -1396,7 +1399,9 @@ public class JDBCPersistenceManager implements PersistenceManager
                conn.createStatement().executeUpdate(createTransaction);
             }
          }
-         catch (SQLException e) {
+         catch (SQLException e)
+         {
+            log.debug("Failed to create transaction table: " + (storeXid ? createTransactionXA : createTransaction), e);
          }
                   
          try
@@ -1404,22 +1409,42 @@ public class JDBCPersistenceManager implements PersistenceManager
             if (log.isTraceEnabled()) { log.trace("Creating DELIVERY table"); }            
             conn.createStatement().executeUpdate(createDelivery);
          }
-         catch (SQLException e) {}
+         catch (SQLException e)
+         {
+            log.debug("Failed to create delivery table: " + createDelivery, e);
+         }
          
          try
          {
             if (log.isTraceEnabled()) { log.trace("Creating MESSAGE_REFERENCE table"); }            
             conn.createStatement().executeUpdate(createMessageReference);
          }
-         catch (SQLException e) {}
+         catch (SQLException e)
+         {
+            log.debug("Failed to create message reference table: " + createMessageReference, e);
+         }
 
          if (log.isTraceEnabled()) { log.trace("Creating MESSAGE table"); }
          try
          {
             conn.createStatement().executeUpdate(createMessage);         
          }
-         catch (SQLException e) {}
+         catch (SQLException e)
+         {
+            log.debug("Failed to create message table: " + createMessage, e);
+         }
          
+         if (log.isTraceEnabled()) { log.trace("Creating indexes"); }
+         
+         try
+         {
+            conn.createStatement().executeUpdate(createIdxMessageRefTx);         
+         }
+         catch (SQLException e)
+         {
+            log.debug("Failed to create index: " + createIdxMessageRefTx, e);
+         }
+             
       }
       finally
       {
@@ -1463,8 +1488,10 @@ public class JDBCPersistenceManager implements PersistenceManager
       insertTransaction = sqlProperties.getProperty("INSERT_TRANSACTION", insertTransaction);
       deleteTransaction = sqlProperties.getProperty("DELETE_TRANSACTION", deleteTransaction); 
       selectXATransactions = sqlProperties.getProperty("SELECT_XA_TRANSACTIONS", selectXATransactions);
+      createIdxMessageRefTx = sqlProperties.getProperty("CREATE_IDX_MESSAGE_REF_TX", createIdxMessageRefTx);
       createTablesOnStartup = sqlProperties.getProperty("CREATE_TABLES_ON_STARTUP", "true").equalsIgnoreCase("true");
       storeXid = sqlProperties.getProperty("STORE_XID", "true").equalsIgnoreCase("true");
+      
    }
    
    protected void insertTx(Connection conn, Transaction tx) throws Exception

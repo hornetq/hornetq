@@ -31,4 +31,5 @@ package org.jboss.messaging.core;
  */
 public interface CoreDestination extends Distributor, Receiver
 {
+   String getName();
 }

@@ -178,16 +178,16 @@ class CoreDestinationManager
    /**
     * Remove an AbstractDestination.
     */
-   Distributor removeCoreDestination(boolean isQueue, String name)
+   CoreDestination removeCoreDestination(boolean isQueue, String name)
    {
   
       if (isQueue)
       {
-         return (Distributor)queueMap.remove(name);
+         return (CoreDestination)queueMap.remove(name);
       }
       else
       {
-         return (Distributor)topicMap.remove(name);
+         return (CoreDestination)topicMap.remove(name);
       }
       
    }

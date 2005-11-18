@@ -342,6 +342,7 @@ public class ChannelSupport implements Channel
       state = null;
       channelID = null;
    }
+  
 
    // Public --------------------------------------------------------
 
