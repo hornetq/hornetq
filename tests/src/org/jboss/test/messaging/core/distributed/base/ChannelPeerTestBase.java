@@ -26,6 +26,7 @@ import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
@@ -34,6 +35,7 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.Factory;
@@ -7317,6 +7319,54 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       sm = (Message)messages.iterator().next();
       assertTrue(sm.isReliable());
       assertEquals("message0", sm.getMessageID());
+   }
+
+   //
+   //
+   //
+
+   /**
+    * Tests that sends a Filter between address spaces.
+    */
+   public void testRemoteBrowse() throws Exception
+   {
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannels joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ((Peer)channel).join();
+      ((Peer)channel2).join();
+
+      // the channel has no receivers
+      assertFalse(channel.iterator().hasNext());
+      assertFalse(channel2.iterator().hasNext());
+
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      Message red = Factory.createMessage("message0", false, "payload0");
+      red.putHeader("color", "red");
+      Message green = Factory.createMessage("message1", false, "payload1");
+      green.putHeader("color", "green");
+
+      // non-transacted send, non-reliable message, one message
+      assertTrue(channel.handle(observer, red, null).isDone());
+      assertTrue(channel.handle(observer, green, null).isDone());
+
+      Filter redFilter = new SimpleFilter("color", "red");
+
+      List messages = channel2.browse(redFilter);
+      assertEquals(1, messages.size());
+      Message m = (Message)messages.get(0);
+      assertEquals("message0", m.getMessageID());
+      assertEquals("payload0", m.getPayload());
    }
 
    // Package protected ---------------------------------------------

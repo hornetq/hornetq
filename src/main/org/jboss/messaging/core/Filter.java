@@ -21,17 +21,23 @@
   */
 package org.jboss.messaging.core;
 
+import java.io.Serializable;
+
 
 /**
  * A filter encapsulates the logic of whether to accept a message or not. Filters are used when
  * browsing to restrict the messages browsed, or when routing messages.
  *
+ * A filter must be serializable because it can be sent between two address spaces as argument
+ * of a distributed RPC.
+ *
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface Filter
+public interface Filter extends Serializable
 {
 	/**
 	 * Tests whether the routable should be accepted.
