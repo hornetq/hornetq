@@ -21,13 +21,11 @@
 */
 package org.jboss.test.messaging.core.distributed.base;
 
-
-import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.distributed.QueuePeer;
+import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.message.Factory;
+import org.jboss.test.messaging.core.SimpleReceiver;
 
 import java.util.List;
 
@@ -65,26 +63,62 @@ public abstract class QueuePeerTestBase extends ChannelPeerTestBase
       super.tearDown();
    }
 
-   // TODO: reenable this
+   /**
+    * Three a distributed queue with three peers queue
+    */
+   public void testSimpleSend() throws Exception
+   {
+      jchannel2.connect("testGroup");
+      jchannel3.connect("testGroup");
 
-//   public void testSimpleSend() throws Exception
-//   {
-//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-//      SimpleReceiver r = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
-//      channel2.add(r);
-//
-//      ((Peer)channel).join();
-//      channel2.join();
-//
-//      Delivery d =
-//            channel.handle(observer, Factory.createMessage("message0", false, "payload"), null);
-//
-//      assertTrue(d.isDone());
-//      List l = r.getMessages();
-//      assertEquals(1, l.size());
-//      Message m = (Message)l.get(0);
-//      assertEquals("payload", m.getPayload());
-//   }
+      // allow the group time to form
+      Thread.sleep(2000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+      assertTrue(jchannel3.isConnected());
+
+      // make sure all three jchannels joined the group
+      assertEquals(3, jchannel.getView().getMembers().size());
+      assertEquals(3, jchannel2.getView().getMembers().size());
+      assertEquals(3, jchannel3.getView().getMembers().size());
+
+      QueuePeer peer = (QueuePeer)channel;
+      QueuePeer peer2 = (QueuePeer)channel2;
+      QueuePeer peer3 = (QueuePeer)channel3;
+
+      SimpleReceiver r2 = new SimpleReceiver("receiver2", SimpleReceiver.ACKING);
+      SimpleReceiver r3 = new SimpleReceiver("receiver3", SimpleReceiver.ACKING);
+
+      peer2.add(r2);
+      peer3.add(r3);
+
+      peer.join();
+      peer2.join();
+      peer3.join();
+
+      // send a non-reliable message
+      Message m = Factory.createMessage("message0", false, "payload");
+      assertTrue(peer.handle(null, m, null).isDone());
+
+      assertTrue(peer.browse().isEmpty());
+
+      List emptyList = r2.getMessages();
+      List messageList = r3.getMessages();
+
+      if (messageList.isEmpty())
+      {
+         List tmp = emptyList;
+         emptyList = messageList;
+         messageList = tmp;
+      }
+
+      assertTrue(emptyList.isEmpty());
+      assertEquals(1, messageList.size());
+      assertEquals("message0", ((Message)messageList.get(0)).getMessageID());
+      assertEquals("payload", ((Message)messageList.get(0)).getPayload());
+
+   }
 
 
    // Package protected ---------------------------------------------
