@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.distributed.util;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 import org.jgroups.Address;
 
 import java.util.Map;
@@ -138,7 +139,7 @@ public class RpcServer
             {
                Method method = subordinate.getClass().getMethod(methodName, parameterTypes);
 
-               if (log.isTraceEnabled()) { log.trace(this + " invokes " + methodName + " on " + category + "." + id); }
+               if (log.isTraceEnabled()) { log.trace(this + " invokes " + methodName + " on " + category + "." + Util.guidToString((String)id)); }
                Object result = method.invoke(subordinate, args);
                if (log.isTraceEnabled()) { log.trace(this + ": " + methodName + " invocation successful"); }
 
@@ -322,12 +323,13 @@ public class RpcServer
    /**
     * Helper method that returns a human readable label for a server delegate, to be used in logs.
     */
-   public static String subordinateToString(Serializable category, Serializable subordinateID,
+   public static String subordinateToString(Serializable category,
+                                            Serializable subordinateID,
                                             Address address)
    {
       StringBuffer sb = new StringBuffer();
       sb.append(category).append(":");
-      sb.append(subordinateID).append(":");
+      sb.append(Util.guidToString((String)subordinateID)).append(":");
       sb.append(address);
       
       return sb.toString();

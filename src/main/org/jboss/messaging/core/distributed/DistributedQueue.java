@@ -26,6 +26,7 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.util.SelectiveIterator;
+import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -43,7 +44,7 @@ import java.util.List;
  *
  * $Id$
  */
-public class DistributedQueue extends Queue implements DistributedDestination
+public class DistributedQueue extends Queue implements DistributedChannel, DistributedDestination
  {
    // Constants -----------------------------------------------------
 
@@ -103,6 +104,24 @@ public class DistributedQueue extends Queue implements DistributedDestination
 //      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
 //   }
 
+   // DistributedChannel implementation -----------------------------
+
+   public void join() throws DistributedException
+   {
+      peer.join();
+   }
+
+   public void leave() throws DistributedException
+   {
+      peer.leave();
+   }
+
+   public List localBrowse(Filter filter)
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " local browse" + (filter == null ? "" : ", filter = " + filter)); }
+      return super.browse(filter);
+   }
+
    // DistributedDestination implementation -------------------------
 
    // TODO I don't really need this method to be public. It must pe package protected
@@ -150,16 +169,6 @@ public class DistributedQueue extends Queue implements DistributedDestination
 
    // Public --------------------------------------------------------
 
-   public void join() throws DistributedException
-   {
-      peer.join();
-   }
-
-   public void leave() throws DistributedException
-   {
-      peer.leave();
-   }
-
    public QueuePeer getPeer()
    {
       return peer;
@@ -167,7 +176,8 @@ public class DistributedQueue extends Queue implements DistributedDestination
 
    public String toString()
    {
-      return "DistributedQueue[" + getChannelID() + "]";
+      return "DistributedQueue[" + getChannelID() + ":" +
+             Util.guidToString((String)peer.getID()) + "]";
    }
 
    // Package protected ---------------------------------------------

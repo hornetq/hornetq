@@ -23,6 +23,7 @@ package org.jboss.messaging.core.distributed;
 
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
+import org.jboss.messaging.util.Util;
 
 import java.io.Serializable;
 import java.io.Externalizable;
@@ -49,7 +50,7 @@ public class PeerIdentity implements Externalizable
                                          Serializable peerID,
                                          Address address)
    {
-      return distributedID + ":" + peerID + ":" + address;
+      return distributedID + ":" + Util.guidToString((String)peerID) + ":" + address;
    }
 
    // Attributes ----------------------------------------------------

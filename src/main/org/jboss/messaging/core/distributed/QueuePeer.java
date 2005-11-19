@@ -101,7 +101,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
          return;
       }
 
-      super.join(); // do the generic stuff first
+      super.leave(); // do the generic stuff first
 
       // unregister my pipe output
       rpcServer.unregister(pipeID);
@@ -142,6 +142,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (getPeerIdentity().equals(originator))
       {
          // ignore my own requests
+         if (log.isTraceEnabled()) { log.trace(this + " got leave request from myself, ignoring ..."); }
          return;
       }
 
@@ -155,11 +156,12 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (getPeerIdentity().equals(originator))
       {
          // ignore my own requests
+         if (log.isTraceEnabled()) { log.trace(this + " got remote browse request from myself, ignoring ..."); }
          return Collections.EMPTY_LIST;
       }
 
       if (log.isTraceEnabled()) { log.trace(this + " got remote browse request" + (filter == null ? "" : ", filter = " + filter)); }
-      return queue.browse(filter);
+      return queue.localBrowse(filter);
    }
 
    // Public --------------------------------------------------------
@@ -176,6 +178,8 @@ public class QueuePeer extends PeerSupport implements QueueFacade
     */
    public List doRemoteBrowse(Filter filter)
    {
+      if (log.isTraceEnabled()) { log.trace(this + " remote browse" + (filter == null ? "" : ", filter = " + filter)); }
+
       RpcServerCall rpcServerCall =
             new RpcServerCall(queue.getDestinationID(), "remoteBrowse",
                               new Object[] {getPeerIdentity(), filter},
