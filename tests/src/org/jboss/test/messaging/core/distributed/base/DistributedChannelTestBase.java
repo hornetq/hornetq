@@ -55,7 +55,7 @@ import java.util.Iterator;
  *
  * $Id$
  */
-public abstract class ChannelPeerTestBase extends ChannelTestBase
+public abstract class DistributedChannelTestBase extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -71,7 +71,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
 
    // Constructors --------------------------------------------------
 
-   public ChannelPeerTestBase(String name)
+   public DistributedChannelTestBase(String name)
    {
       super(name);
    }
@@ -132,7 +132,7 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       assertTrue(jchannel.isConnected());
 
       PeerIdentity peerIdentity = peer.getPeerIdentity();
-      assertEquals(channel.getChannelID(), peerIdentity.getDistributedID());
+      assertEquals(channel.getChannelID(), peerIdentity.getGroupID());
 
       peer.join();
 
@@ -175,8 +175,8 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       PeerIdentity peerIdentity = peer.getPeerIdentity();
       PeerIdentity peer2Identity = peer2.getPeerIdentity();
 
-      assertEquals(channel.getChannelID(), peerIdentity.getDistributedID());
-      assertEquals(channel.getChannelID(), peer2Identity.getDistributedID());
+      assertEquals(channel.getChannelID(), peerIdentity.getGroupID());
+      assertEquals(channel.getChannelID(), peer2Identity.getGroupID());
       assertFalse(peerIdentity.getPeerID().equals(peer2Identity.getPeerID()));
 
       peer.join();
@@ -250,9 +250,9 @@ public abstract class ChannelPeerTestBase extends ChannelTestBase
       PeerIdentity peer2Identity = peer2.getPeerIdentity();
       PeerIdentity peer3Identity = peer3.getPeerIdentity();
 
-      assertEquals(channel.getChannelID(), peerIdentity.getDistributedID());
-      assertEquals(channel.getChannelID(), peer2Identity.getDistributedID());
-      assertEquals(channel.getChannelID(), peer3Identity.getDistributedID());
+      assertEquals(channel.getChannelID(), peerIdentity.getGroupID());
+      assertEquals(channel.getChannelID(), peer2Identity.getGroupID());
+      assertEquals(channel.getChannelID(), peer3Identity.getGroupID());
 
       assertFalse(peerIdentity.getPeerID().equals(peer2Identity.getPeerID()));
       assertFalse(peerIdentity.getPeerID().equals(peer3Identity.getPeerID()));

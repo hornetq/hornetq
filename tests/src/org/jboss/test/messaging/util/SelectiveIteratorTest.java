@@ -19,71 +19,83 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jgroups.stack.IpAddress;
+import org.jboss.messaging.util.SelectiveIterator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
-public class PeerIdentityTest extends MessagingTestCase
+public class SelectiveIteratorTest extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    // Constructors --------------------------------------------------
 
-   public PeerIdentityTest(String name)
+   public SelectiveIteratorTest(String name)
    {
       super(name);
    }
 
-   // Protected -----------------------------------------------------
-
    // Public --------------------------------------------------------
 
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
    }
 
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
 
-   public void testEquals1() throws Exception
+   public void testHasNext1()
    {
-      PeerIdentity id1 =
-            new PeerIdentity("groupID", "peerID", new IpAddress("localhost", 777));
-      PeerIdentity id2 =
-            new PeerIdentity("groupID", "peerID", new IpAddress("localhost", 777));
+      List l = new ArrayList();
+      l.add("a");
+      l.add(new Integer(1));
+      l.add("b");
 
-      assertEquals(id1, id2);
+      SelectiveIterator si = new SelectiveIterator(l.iterator(), Integer.class);
+
+      assertTrue(si.hasNext());
+      assertEquals("a", si.next());
+      assertTrue(si.hasNext());
+      assertEquals("b", si.next());
+      assertFalse(si.hasNext());
    }
 
-   public void testEquals2() throws Exception
+   public void testHasNext2()
    {
-      PeerIdentity id1 = new PeerIdentity(null, null, null);
-      PeerIdentity id2 = new PeerIdentity(null, null, null);
+      List l = new ArrayList();
+      l.add("a");
+      l.add("b");
+      l.add("c");
 
-      assertEquals(id1, id2);
+      SelectiveIterator si = new SelectiveIterator(l.iterator(), String.class);
+
+      assertFalse(si.hasNext());
    }
 
-   public void testEquals3() throws Exception
+   public void testRemove()
    {
-      PeerIdentity id1 = new PeerIdentity("groupID", null, null);
-      PeerIdentity id2 = new PeerIdentity("groupID", null, null);
+      SelectiveIterator si =
+         new SelectiveIterator(Collections.EMPTY_LIST.iterator(), String.class);
 
-      assertEquals(id1, id2);
+      try
+      {
+         si.remove();
+         fail("If you implement remove(), provide tests");
+      }
+      catch(UnsupportedOperationException e)
+      {
+
+      }
    }
-
 
 }

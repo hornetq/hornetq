@@ -21,9 +21,10 @@
   */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.Filter;
+import org.jgroups.Address;
+import org.jboss.messaging.core.distributed.util.ServerFacade;
 
-import java.util.List;
+import java.io.Serializable;
 
 /**
  * Exposes methods to be invoked remotely by queue peers.
@@ -33,7 +34,22 @@ import java.util.List;
  *
  * $Id$
  */
-public interface QueueFacade extends DistributedDestinationFacade
+public interface DistributedDestinationFacade extends ServerFacade
 {
-   List remoteBrowse(PeerIdentity originator, Filter filter);
+   /**
+    * Remote method invoked by a queue peer on all other queue peers when joining the distributed
+    * queue.
+    *
+    * @param remoteAddress - the address of the new peer.
+    * @param remotePeerID - the new peer's peer id.
+    * @param remotePipeID - the id of pipe the new peer listens on.
+    *
+    * @exception Exception - negative acknowledgment. The join is vetoed (willingly or unwillingly)
+    *            by this member.
+    */
+   Acknowledgment join(Address remoteAddress, Serializable remotePeerID, Serializable remotePipeID)
+      throws Throwable;
+
+   void leave(PeerIdentity originator);
+
 }

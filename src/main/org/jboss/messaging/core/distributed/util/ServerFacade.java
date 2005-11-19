@@ -29,5 +29,8 @@ import java.io.Serializable;
  */
 public interface ServerFacade
 {
+   /**
+    * Return the ID under which server object is registered with the RpcServer.
+    */
    public Serializable getID();
 }

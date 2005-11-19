@@ -21,10 +21,10 @@
 */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jgroups.stack.IpAddress;
-
+import org.jboss.messaging.core.message.InMemoryMessageStore;
+import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,58 +32,66 @@ import org.jgroups.stack.IpAddress;
  *
  * $Id$
  */
-public class PeerIdentityTest extends MessagingTestCase
+public class QueuePeerTest extends PeerTestBase
 {
    // Constants -----------------------------------------------------
 
+   // Static --------------------------------------------------------
+   
    // Attributes ----------------------------------------------------
+
+   protected MessageStore ms;
+   protected DistributedQueue queue, queue2, queue3;
 
    // Constructors --------------------------------------------------
 
-   public PeerIdentityTest(String name)
+   public QueuePeerTest(String name)
    {
       super(name);
    }
 
-   // Protected -----------------------------------------------------
-
    // Public --------------------------------------------------------
 
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
+
+      ms = new InMemoryMessageStore("persistent-message-store");
+      queue = new DistributedQueue("test", ms, dispatcher);
+      queue2 = new DistributedQueue("test", ms, dispatcher2);
+      queue3 = new DistributedQueue("test", ms, dispatcher3);
+
+      peer = queue.getPeer();
+      peer2 = queue2.getPeer();
+      peer3 = queue3.getPeer();
+
+      log.debug("setup done");
    }
 
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
+      queue.leave();
+      queue.close();
+      queue = null;
+
+      queue2.leave();
+      queue2.close();
+      queue2 = null;
+
+      queue3.leave();
+      queue3.close();
+      queue3 = null;
+
+      ms = null;
+
       super.tearDown();
    }
 
-   public void testEquals1() throws Exception
-   {
-      PeerIdentity id1 =
-            new PeerIdentity("groupID", "peerID", new IpAddress("localhost", 777));
-      PeerIdentity id2 =
-            new PeerIdentity("groupID", "peerID", new IpAddress("localhost", 777));
-
-      assertEquals(id1, id2);
-   }
-
-   public void testEquals2() throws Exception
-   {
-      PeerIdentity id1 = new PeerIdentity(null, null, null);
-      PeerIdentity id2 = new PeerIdentity(null, null, null);
-
-      assertEquals(id1, id2);
-   }
-
-   public void testEquals3() throws Exception
-   {
-      PeerIdentity id1 = new PeerIdentity("groupID", null, null);
-      PeerIdentity id2 = new PeerIdentity("groupID", null, null);
-
-      assertEquals(id1, id2);
-   }
-
-
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
 }

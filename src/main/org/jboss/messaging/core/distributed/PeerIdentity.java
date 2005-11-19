@@ -54,7 +54,7 @@ public class PeerIdentity implements Externalizable
 
    // Attributes ----------------------------------------------------
 
-   protected Serializable distributedID;
+   protected Serializable groupID;
    protected Serializable peerID;
    protected Address address;
 
@@ -67,9 +67,9 @@ public class PeerIdentity implements Externalizable
    {
    }
 
-   public PeerIdentity(Serializable distributedID, Serializable peerID, Address address)
+   public PeerIdentity(Serializable groupID, Serializable peerID, Address address)
    {
-      this.distributedID = distributedID;
+      this.groupID = groupID;
       this.peerID = peerID;
       this.address = address;
    }
@@ -78,7 +78,7 @@ public class PeerIdentity implements Externalizable
 
    public void writeExternal(ObjectOutput out) throws IOException
    {
-      out.writeObject(distributedID);
+      out.writeObject(groupID);
       out.writeObject(peerID);
       address.writeExternal(out);
    }
@@ -86,7 +86,7 @@ public class PeerIdentity implements Externalizable
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
 
-      distributedID = (Serializable)in.readObject();
+      groupID = (Serializable)in.readObject();
       peerID = (Serializable)in.readObject();
       address = new IpAddress(); // TODO ?
       address.readExternal(in);
@@ -94,9 +94,9 @@ public class PeerIdentity implements Externalizable
 
    // Public --------------------------------------------------------
 
-   public Serializable getDistributedID()
+   public Serializable getGroupID()
    {
-      return distributedID;
+      return groupID;
    }
 
    public Serializable getPeerID()
@@ -123,7 +123,7 @@ public class PeerIdentity implements Externalizable
 
       PeerIdentity that = (PeerIdentity)o;
 
-      if (distributedID == null && that.distributedID != null)
+      if (groupID == null && that.groupID != null)
       {
          return false;
       }
@@ -138,7 +138,7 @@ public class PeerIdentity implements Externalizable
          return false;
       }
 
-      return (distributedID == that.distributedID || distributedID.equals(that.distributedID)) &&
+      return (groupID == that.groupID || groupID.equals(that.groupID)) &&
              (peerID == that.peerID || peerID.equals(that.peerID)) &&
              (address == that.address || address.equals(that.address));
    }
@@ -150,7 +150,7 @@ public class PeerIdentity implements Externalizable
       if (hashCode == 0)
       {
          int result = 17;
-         result = 37 * result + (distributedID == null ? 0 : distributedID.hashCode());
+         result = 37 * result + (groupID == null ? 0 : groupID.hashCode());
          result = 37 * result + (peerID == null ? 0 : peerID.hashCode());
          result = 37 * result + (address == null ? 0 : address.hashCode());
          hashCode = result;
@@ -160,7 +160,7 @@ public class PeerIdentity implements Externalizable
 
    public String toString()
    {
-      return identityToString(distributedID, peerID, address);
+      return identityToString(groupID, peerID, address);
    }
 
    // Package protected ---------------------------------------------

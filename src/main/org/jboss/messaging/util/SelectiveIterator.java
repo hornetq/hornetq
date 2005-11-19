@@ -19,66 +19,74 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.util;
 
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.distributed.pipe.DistributedPipe;
-import org.jboss.messaging.core.tx.Transaction;
-
-import org.jboss.logging.Logger;
+import java.util.Iterator;
 
 /**
- * A representative of a remote peer.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class RemotePeer implements Receiver
+public class SelectiveIterator implements Iterator
  {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(RemotePeer.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   protected DistributedPipe p;
-   protected PeerIdentity remotePeerIdentity;
+   protected Iterator delegate;
+   protected Object next;
+   protected Class excluded;
 
    // Constructors --------------------------------------------------
 
-   public RemotePeer(PeerIdentity remotePeerIdentity, DistributedPipe p)
+   public SelectiveIterator(Iterator delegate, Class excluded)
    {
-      this.remotePeerIdentity = remotePeerIdentity;
-      this.p = p;
-
-      if (log.isTraceEnabled()) { log.trace("created remote peer for " + remotePeerIdentity); }
+      this.delegate = delegate;
+      this.excluded = excluded;
    }
 
-   // Receiver implementation ---------------------------------------
+   // Iterator implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   public void remove()
    {
-      return p.handle(observer, routable, tx);
+      throw new UnsupportedOperationException();
+   }
+
+   public boolean hasNext()
+   {
+      if (!delegate.hasNext())
+      {
+         return false;
+      }
+
+      Object o = delegate.next();
+      if (excluded.isInstance(o))
+      {
+         return hasNext();
+      }
+      else
+      {
+         next = o;
+         return true;
+      }
+   }
+
+   public Object next()
+   {
+      if (next != null)
+      {
+         Object o = next;
+         next = null;
+         return o;
+      }
+      return delegate.next();
    }
 
    // Public --------------------------------------------------------
-
-   public PeerIdentity getPeerIdentity()
-   {
-      return remotePeerIdentity;
-   }
-
-   public String toString()
-   {
-      return "RemotePeer[" + remotePeerIdentity + "]";
-   }
 
    // Package protected ---------------------------------------------
    
@@ -87,5 +95,4 @@ public class RemotePeer implements Receiver
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

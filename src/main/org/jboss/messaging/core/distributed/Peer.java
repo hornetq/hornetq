@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.distributed;
 
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,15 +32,7 @@ import java.util.Set;
  */
 public interface Peer
 {
-   /**
-    * Join distributed entity.
-    */
-   void join() throws DistributedException;
-
-   /**
-    * Leave distributed entity.
-    */
-   void leave() throws DistributedException;
+   Serializable getGroupID();
 
    PeerIdentity getPeerIdentity();
 
@@ -51,4 +44,18 @@ public interface Peer
     */
    Set getView();
 
+   /**
+    * Connects the peer to the distributed destination. The underlying JChannel must be connected
+    * at the time of the call.
+    *
+    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
+    */
+   void join() throws DistributedException;
+
+   /**
+    * Stops the peer and disconnects it from the distributed destination.
+    *
+    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
+    */
+   void leave() throws DistributedException;
 }

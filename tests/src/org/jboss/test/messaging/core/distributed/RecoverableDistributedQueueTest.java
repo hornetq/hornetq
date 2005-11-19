@@ -24,8 +24,8 @@ package org.jboss.test.messaging.core.distributed;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.distributed.QueuePeer;
-import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
+import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -33,7 +33,7 @@ import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
  *
  * $Id$
  */
-public class RecoverableQueuePeerTest extends QueuePeerTestBase
+public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -47,7 +47,7 @@ public class RecoverableQueuePeerTest extends QueuePeerTestBase
 
    // Constructors --------------------------------------------------
 
-    public RecoverableQueuePeerTest(String name)
+    public RecoverableDistributedQueueTest(String name)
    {
       super(name);
    }
@@ -66,9 +66,9 @@ public class RecoverableQueuePeerTest extends QueuePeerTestBase
       ms2 = new PersistentMessageStore("persistent-message-store2", pm2);
       ms3 = new PersistentMessageStore("persistent-message-store3", pm3);
 
-      channel = new QueuePeer("test", ms, pm, dispatcher);
-      channel2 = new QueuePeer("test", ms2, pm2, dispatcher2);
-      channel3 = new QueuePeer("test", ms3, pm3, dispatcher3);
+      channel = new DistributedQueue("test", ms, pm, dispatcher);
+      channel2 = new DistributedQueue("test", ms2, pm2, dispatcher2);
+      channel3 = new DistributedQueue("test", ms3, pm3, dispatcher3);
 
       tr.setPersistenceManager(pm);
 

@@ -21,8 +21,8 @@
 */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.core.distributed.base.QueuePeerTestBase;
-import org.jboss.messaging.core.distributed.QueuePeer;
+import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
+import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 
 /**
@@ -31,7 +31,7 @@ import org.jboss.messaging.core.message.PersistentMessageStore;
  *
  * $Id$
  */
-public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
+public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -41,24 +41,24 @@ public class NonRecoverableQueuePeerTest extends QueuePeerTestBase
 
    // Constructors --------------------------------------------------
 
-   public NonRecoverableQueuePeerTest(String name)
+   public NonRecoverableDistributedQueueTest(String name)
    {
       super(name);
    }
 
-   // QueuePeerTestBase overrides ---------------------------
+   // DistributedQueueTestBase overrides ---------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new QueuePeer("test", ms, dispatcher);
+      channel = new DistributedQueue("test", ms, dispatcher);
 
       ms2 = new PersistentMessageStore("message-store-2", msPersistenceManager);
       ms3 = new PersistentMessageStore("message-store-3", msPersistenceManager);
 
-      channel2 = new QueuePeer("test", ms2, dispatcher2);
-      channel3 = new QueuePeer("test", ms3, dispatcher3);
+      channel2 = new DistributedQueue("test", ms2, dispatcher2);
+      channel3 = new DistributedQueue("test", ms3, dispatcher3);
 
       log.debug("setup done");
    }

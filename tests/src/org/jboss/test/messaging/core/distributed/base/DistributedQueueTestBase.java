@@ -21,8 +21,7 @@
 */
 package org.jboss.test.messaging.core.distributed.base;
 
-import org.jboss.messaging.core.distributed.QueuePeer;
-import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.Factory;
 import org.jboss.test.messaging.core.SimpleReceiver;
@@ -35,7 +34,7 @@ import java.util.List;
  *
  * $Id$
  */
-public abstract class QueuePeerTestBase extends ChannelPeerTestBase
+public abstract class DistributedQueueTestBase extends DistributedChannelTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -45,7 +44,7 @@ public abstract class QueuePeerTestBase extends ChannelPeerTestBase
 
    // Constructors --------------------------------------------------
 
-   public QueuePeerTestBase(String name)
+   public DistributedQueueTestBase(String name)
    {
       super(name);
    }
@@ -83,9 +82,9 @@ public abstract class QueuePeerTestBase extends ChannelPeerTestBase
       assertEquals(3, jchannel2.getView().getMembers().size());
       assertEquals(3, jchannel3.getView().getMembers().size());
 
-      QueuePeer peer = (QueuePeer)channel;
-      QueuePeer peer2 = (QueuePeer)channel2;
-      QueuePeer peer3 = (QueuePeer)channel3;
+      DistributedQueue peer = (DistributedQueue)channel;
+      DistributedQueue peer2 = (DistributedQueue)channel2;
+      DistributedQueue peer3 = (DistributedQueue)channel3;
 
       SimpleReceiver r2 = new SimpleReceiver("receiver2", SimpleReceiver.ACKING);
       SimpleReceiver r3 = new SimpleReceiver("receiver3", SimpleReceiver.ACKING);

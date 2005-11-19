@@ -21,19 +21,28 @@
   */
 package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.Filter;
-
-import java.util.List;
+import java.util.Set;
+import java.io.Serializable;
 
 /**
- * Exposes methods to be invoked remotely by queue peers.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface QueueFacade extends DistributedDestinationFacade
+interface DistributedDestination
 {
-   List remoteBrowse(PeerIdentity originator, Filter filter);
+
+   Serializable getDestinationID();
+
+   /**
+    * Remove any reference to the specified remote peer.
+    */
+   void removeRemotePeer(PeerIdentity remotePeerIdentity);
+
+   /**
+    * Return a set containing PeerIdentities of the remote peers.
+    */
+   Set getRemotePeers();
+
 }

@@ -4,6 +4,10 @@
 #
 #
 
+#
+# util
+#
+#TARGET_CLASS=org.jboss.test.messaging.util.SelectiveIteratorTest
 
 #
 # core
@@ -79,9 +83,11 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableQueuePeerTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableQueuePeerTest
-TARGET_TEST=testSimpleSend
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueuePeerTest
+TARGET_TEST=testPeerInGroupOfTwo
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
+#TARGET_TEST=testSimpleSend
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 
 #

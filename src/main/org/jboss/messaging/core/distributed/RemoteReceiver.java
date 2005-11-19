@@ -21,82 +21,64 @@
   */
 package org.jboss.messaging.core.distributed;
 
-import java.io.Serializable;
-import java.io.ObjectOutput;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.Externalizable;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.distributed.pipe.DistributedPipe;
+import org.jboss.messaging.core.tx.Transaction;
+
+import org.jboss.logging.Logger;
 
 /**
- * The acknowledgment returned by a peer accepting a new peer to join a distributed structure.
+ * A representative of a remote receiver.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class Acknowledgment implements Externalizable
-{
+public class RemoteReceiver implements Receiver
+ {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(RemoteReceiver.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   protected PeerIdentity peerIdentity;
-   protected Serializable pipeID;
+   protected DistributedPipe p;
+   protected PeerIdentity remotePeerIdentity;
 
    // Constructors --------------------------------------------------
 
-   /**
-    * For externalization.
-    */
-   public Acknowledgment()
+   public RemoteReceiver(PeerIdentity remotePeerIdentity, DistributedPipe p)
    {
+      this.remotePeerIdentity = remotePeerIdentity;
+      this.p = p;
+
+      if (log.isTraceEnabled()) { log.trace("created remote peer for " + remotePeerIdentity); }
    }
 
-   public Acknowledgment(PeerIdentity peerIdentity)
-   {
-      this(peerIdentity, null);
-   }
+   // Receiver implementation ---------------------------------------
 
-   /**
-    * @param peerIdentity - the identity of acknowledging peer.
-    * @param pipeID - the id of the distributed pipe the acknowledging peer can be contacted at.
-    */
-   public Acknowledgment(PeerIdentity peerIdentity, Serializable pipeID)
+   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
-      this.peerIdentity = peerIdentity;
-      this.pipeID = pipeID;
-   }
-
-   // Externalizable implementation ---------------------------------
-
-   public void writeExternal(ObjectOutput out) throws IOException
-   {
-      peerIdentity.writeExternal(out);
-      out.writeObject(pipeID);
-   }
-
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-      peerIdentity = new PeerIdentity();
-      peerIdentity.readExternal(in);
-      pipeID = (Serializable)in.readObject();
+      return p.handle(observer, routable, tx);
    }
 
    // Public --------------------------------------------------------
 
    public PeerIdentity getPeerIdentity()
    {
-      return peerIdentity;
+      return remotePeerIdentity;
    }
 
-   public Serializable getPipeID()
+   public String toString()
    {
-      return pipeID;
+      return "RemoteReceiver[" + remotePeerIdentity + "]";
    }
-
 
    // Package protected ---------------------------------------------
    
@@ -105,4 +87,5 @@ public class Acknowledgment implements Externalizable
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 }
