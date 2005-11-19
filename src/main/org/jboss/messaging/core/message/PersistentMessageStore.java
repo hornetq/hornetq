@@ -102,7 +102,6 @@ public class PersistentMessageStore extends InMemoryMessageStore
       return ref;
    }
 
-   
    public MessageReference getReference(Serializable messageID)
    {
       if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID);}
@@ -116,7 +115,9 @@ public class PersistentMessageStore extends InMemoryMessageStore
          return ref;
       }
 
-      //Try and retrieve it from persistent storage
+      // Try and retrieve it from persistent storage
+      // TODO We make a database trip even if the message is non-reliable, but I see no way to avoid
+      // TODO this by only knowing the messageID ...
       Message m = retrieveMessage(messageID);
 
       if (m != null)
@@ -149,9 +150,12 @@ public class PersistentMessageStore extends InMemoryMessageStore
    {
       super.remove(ref);
 
-      if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + ref.getMessageID() + " on disk"); }
-      pm.removeMessage((String)ref.getMessageID());
-      if (log.isTraceEnabled()) { log.trace(ref.getMessageID() + " removed (or reference count decremented) on disk"); }
+      if (ref.isReliable())
+      {
+         if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + ref.getMessageID() + " on disk"); }
+         pm.removeMessage((String)ref.getMessageID());
+         if (log.isTraceEnabled()) { log.trace(ref.getMessageID() + " removed (or reference count decremented) on disk"); }
+      }
    }
 
 

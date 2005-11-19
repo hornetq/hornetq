@@ -403,7 +403,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = Factory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = Factory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -440,7 +440,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = Factory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = Factory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
