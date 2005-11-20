@@ -38,7 +38,7 @@ import java.util.Map;
  * 
  * $Id$
  */
-public class Factory
+public class MessageFactory
 {
    // Constants -----------------------------------------------------
 

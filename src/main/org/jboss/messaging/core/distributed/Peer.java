@@ -58,4 +58,11 @@ public interface Peer
     * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
     */
    void leave() throws DistributedException;
+
+   /**
+    * Return a Set of PeerIdentity instances corresponding to peers that are part of the group,
+    * as a result of a <i>dynamic<i> query. Returns an empty set if the peer is not currently
+    * part of any group.
+    */
+   Set ping() throws DistributedException;
 }

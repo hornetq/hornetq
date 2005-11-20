@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core.message;
 import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Message;
@@ -87,7 +87,7 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
     */
    public void testTwoStoresSameDatabase() throws Exception
    {
-      Message m = Factory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
 
       assertEquals(0, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
 

@@ -24,6 +24,7 @@ package org.jboss.messaging.core.distributed.pipe;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
 
 import java.io.Serializable;
@@ -101,8 +102,8 @@ public class DistributedPipeOutput implements PipeOutputFacade
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("PipeOutput[");
-      sb.append(pipeID);
+      StringBuffer sb = new StringBuffer("DistributedPipeOutput[");
+      sb.append(Util.guidToString(pipeID));
       sb.append("]");
       return sb.toString();
    }

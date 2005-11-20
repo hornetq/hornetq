@@ -104,6 +104,20 @@ public class DistributedQueue extends Queue implements DistributedChannel, Distr
 //      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
 //   }
 
+   public void close()
+   {
+      try
+      {
+         leave();
+      }
+      catch(Exception e)
+      {
+         log.error("Distributed channel was not cleanly closed", e);
+      }
+
+      super.close();
+   }
+
    // DistributedChannel implementation -----------------------------
 
    public void join() throws DistributedException
@@ -120,6 +134,11 @@ public class DistributedQueue extends Queue implements DistributedChannel, Distr
    {
       if (log.isTraceEnabled()) { log.trace(this + " local browse" + (filter == null ? "" : ", filter = " + filter)); }
       return super.browse(filter);
+   }
+
+   public Peer getPeer()
+   {
+      return peer;
    }
 
    // DistributedDestination implementation -------------------------
@@ -169,15 +188,9 @@ public class DistributedQueue extends Queue implements DistributedChannel, Distr
 
    // Public --------------------------------------------------------
 
-   public QueuePeer getPeer()
-   {
-      return peer;
-   }
-
    public String toString()
    {
-      return "DistributedQueue[" + getChannelID() + ":" +
-             Util.guidToString((String)peer.getID()) + "]";
+      return "DistributedQueue[" + getChannelID() + ":" + Util.guidToString(peer.getID()) + "]";
    }
 
    // Package protected ---------------------------------------------

@@ -33,7 +33,7 @@ import java.util.List;
  *
  * $Id$
  */
-public interface QueueFacade extends DistributedDestinationFacade
+public interface QueueFacade extends PeerFacade
 {
    List remoteBrowse(PeerIdentity originator, Filter filter);
 }

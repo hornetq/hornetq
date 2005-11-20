@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.util;
 
+import java.io.Serializable;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -33,8 +35,17 @@ public class Util
 
    // Static --------------------------------------------------------
 
-   public static String guidToString(String s)
+   public static String guidToString(Object o)
    {
+      if (o == null)
+      {
+         return "null";
+      }
+      if (!(o instanceof String))
+      {
+         return o.toString();
+      }
+      String s = (String)o;
       int idx = s.lastIndexOf('-', s.lastIndexOf('-') - 1);
       if (idx < 0)
       {

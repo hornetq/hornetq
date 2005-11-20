@@ -28,6 +28,7 @@ import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.Address;
@@ -128,8 +129,8 @@ public class DistributedPipe implements Receiver
    {
       StringBuffer sb = new StringBuffer();
 
-      sb.append("Pipe[");
-      sb.append(id);
+      sb.append("DistributedPipe[");
+      sb.append(Util.guidToString(id));
       sb.append(" -> ");
       sb.append(outputAddress);
       sb.append("]");

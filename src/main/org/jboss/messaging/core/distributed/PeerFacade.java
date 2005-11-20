@@ -34,7 +34,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public interface DistributedDestinationFacade extends ServerFacade
+public interface PeerFacade extends ServerFacade
 {
    /**
     * Remote method invoked by a queue peer on all other queue peers when joining the distributed
@@ -51,5 +51,7 @@ public interface DistributedDestinationFacade extends ServerFacade
       throws Throwable;
 
    void leave(PeerIdentity originator);
+
+   PeerIdentity ping(PeerIdentity originator);
 
 }

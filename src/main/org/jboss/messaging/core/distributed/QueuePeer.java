@@ -122,7 +122,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
       PeerIdentity remotePeerIdentity = new PeerIdentity(destID, remotePeerID, remoteAddress);
 
-      log.debug("peer " + remotePeerIdentity + " wants to join");
+      log.debug(this + ": peer " + remotePeerIdentity + " wants to join");
 
       DistributedPipe p =  new DistributedPipe(remotePipeID, dispatcher, remoteAddress);
       RemoteReceiver rr = new RemoteReceiver(remotePeerIdentity, p);
@@ -162,6 +162,12 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
       if (log.isTraceEnabled()) { log.trace(this + " got remote browse request" + (filter == null ? "" : ", filter = " + filter)); }
       return queue.localBrowse(filter);
+   }
+
+   public PeerIdentity ping(PeerIdentity originator)
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " answering ping request from " + originator); }
+      return getPeerIdentity();
    }
 
    // Public --------------------------------------------------------

@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.distributed.base;
 
 import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 
 import java.util.List;
@@ -97,7 +97,7 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
       peer3.join();
 
       // send a non-reliable message
-      Message m = Factory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createMessage("message0", false, "payload");
       assertTrue(peer.handle(null, m, null).isDone());
 
       assertTrue(peer.browse().isEmpty());

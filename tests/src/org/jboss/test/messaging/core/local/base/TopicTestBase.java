@@ -32,7 +32,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
-import org.jboss.messaging.core.message.Factory;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 
 import java.util.List;
@@ -96,7 +96,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       ((Distributor)topic).add(r1);
       ((Distributor)topic).add(r2);
 
-      Delivery d = topic.handle(observer, ms.reference(Factory.createMessage("message0", false, "payload")), null);
+      Delivery d = topic.handle(observer, ms.reference(MessageFactory.createMessage("message0", false, "payload")), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
@@ -120,7 +120,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       assertTrue(((Distributor)topic).add(r1));
       assertTrue(((Distributor)topic).add(r2));
 
-      Delivery d = topic.handle(observer, ms.reference(Factory.createMessage("message0", true, "payload")), null);
+      Delivery d = topic.handle(observer, ms.reference(MessageFactory.createMessage("message0", true, "payload")), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();

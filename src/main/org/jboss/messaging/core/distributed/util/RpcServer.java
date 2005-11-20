@@ -139,7 +139,7 @@ public class RpcServer
             {
                Method method = subordinate.getClass().getMethod(methodName, parameterTypes);
 
-               if (log.isTraceEnabled()) { log.trace(this + " invokes " + methodName + " on " + category + "." + Util.guidToString((String)id)); }
+               if (log.isTraceEnabled()) { log.trace(this + " invokes " + methodName + " on " + category + "." + Util.guidToString(id)); }
                Object result = method.invoke(subordinate, args);
                if (log.isTraceEnabled()) { log.trace(this + ": " + methodName + " invocation successful"); }
 
@@ -195,8 +195,8 @@ public class RpcServer
             }
             result = equivalents.add(subordinate);
          }
-         log.debug("register " + category + " -> " + subordinate.getID() + "[" +
-                   subordinate.getClass().getName() + "]: " + result);
+
+         log.debug(this + ": register " + Util.guidToString(category) + " -> " + subordinate.getClass().getName() + "(" + Util.guidToString(subordinate.getID()) + "): " + result);
          return result;
       }
    }
@@ -231,8 +231,8 @@ public class RpcServer
             servers.put(category, subordinate);
             result = true;
          }
-         log.debug("registerUnique " + category + " -> " + subordinate.getID() + "[" +
-                   subordinate.getClass().getName() + "]: " + result);
+
+         log.debug(this + ": register unique " + Util.guidToString(category) + " -> " + subordinate.getClass().getName() + "(" + Util.guidToString(subordinate.getID()) +"): " + result);
          return result;
       }
    }
@@ -328,8 +328,8 @@ public class RpcServer
                                             Address address)
    {
       StringBuffer sb = new StringBuffer();
-      sb.append(category).append(":");
-      sb.append(Util.guidToString((String)subordinateID)).append(":");
+      sb.append(Util.guidToString(category)).append(":");
+      sb.append(Util.guidToString(subordinateID)).append(":");
       sb.append(address);
       
       return sb.toString();

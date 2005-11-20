@@ -50,7 +50,7 @@ public class PeerIdentity implements Externalizable
                                          Serializable peerID,
                                          Address address)
    {
-      return distributedID + ":" + Util.guidToString((String)peerID) + ":" + address;
+      return distributedID + ":" + Util.guidToString(peerID) + ":" + address;
    }
 
    // Attributes ----------------------------------------------------

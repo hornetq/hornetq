@@ -23,8 +23,12 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.messaging.core.message.InMemoryMessageStore;
 import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.messaging.core.distributed.DistributedChannel;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
+import org.jgroups.blocks.RpcDispatcher;
+
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -41,7 +45,6 @@ public class QueuePeerTest extends PeerTestBase
    // Attributes ----------------------------------------------------
 
    protected MessageStore ms;
-   protected DistributedQueue queue, queue2, queue3;
 
    // Constructors --------------------------------------------------
 
@@ -57,30 +60,28 @@ public class QueuePeerTest extends PeerTestBase
       super.setUp();
 
       ms = new InMemoryMessageStore("persistent-message-store");
-      queue = new DistributedQueue("test", ms, dispatcher);
-      queue2 = new DistributedQueue("test", ms, dispatcher2);
-      queue3 = new DistributedQueue("test", ms, dispatcher3);
 
-      peer = queue.getPeer();
-      peer2 = queue2.getPeer();
-      peer3 = queue3.getPeer();
+      channel = createDistributedChannel("test", dispatcher);
+      channel2 = createDistributedChannel("test", dispatcher2);
+      channel3 = createDistributedChannel("test", dispatcher3);
+
+      peer = channel.getPeer();
+      peer2 = channel2.getPeer();
+      peer3 = channel3.getPeer();
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      queue.leave();
-      queue.close();
-      queue = null;
+      channel.close();
+      channel = null;
 
-      queue2.leave();
-      queue2.close();
-      queue2 = null;
+      channel2.close();
+      channel2 = null;
 
-      queue3.leave();
-      queue3.close();
-      queue3 = null;
+      channel3.close();
+      channel3 = null;
 
       ms = null;
 
@@ -90,7 +91,12 @@ public class QueuePeerTest extends PeerTestBase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
+   protected DistributedChannel createDistributedChannel(Serializable channelID, RpcDispatcher d)
+   {
+      return new DistributedQueue((String)channelID, ms, d);
+   }
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

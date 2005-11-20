@@ -48,11 +48,16 @@ public interface DistributedChannel
     */
    void leave() throws DistributedException;
 
+   void close() throws DistributedException;
+
    /**
     * @return a List containing messages being held <i>locally</i> by the channel. The list includes
     *         messages in process of being delivered and messages for which delivery hasn't been
     *         attempted yet.
     * @see org.jboss.messaging.core.Channel#browse(Filter)
     */
-   public List localBrowse(Filter filter);
+   List localBrowse(Filter filter);
+
+   Peer getPeer();
+
 }

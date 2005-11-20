@@ -27,11 +27,13 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.DistributedChannel;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * The test strategy is to group at this level all peer-related tests. It assumes two distinct
@@ -53,6 +55,7 @@ public abstract class PeerTestBase extends MessagingTestCase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
+   protected DistributedChannel channel, channel2, channel3;
    protected Peer peer, peer2, peer3;
 
    // Constructors --------------------------------------------------
@@ -107,8 +110,7 @@ public abstract class PeerTestBase extends MessagingTestCase
       }
    }
 
-
-   public void testPeerInGroupOfOne() throws Exception
+   public void testGroupOfOne() throws Exception
    {
       assertTrue(jchannel.isConnected());
 
@@ -126,6 +128,10 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertEquals(1, view.size());
       assertTrue(view.contains(peerIdentity));
 
+      Set ping = peer.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+
       peer.leave();
 
       assertFalse(peer.hasJoined());
@@ -134,9 +140,15 @@ public abstract class PeerTestBase extends MessagingTestCase
 
       view = peer.getView();
       assertEquals(0, view.size());
+
+      ping = peer.ping();
+      assertTrue(ping.isEmpty());
+
+      // call leave twice
+      peer.leave();
    }
 
-   public void testPeerInGroupOfTwo() throws Exception
+   public void testGroupOfTwo() throws Exception
    {
       jchannel2.connect("testGroup");
 
@@ -166,6 +178,10 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertEquals(1, view.size());
       assertTrue(view.contains(peerIdentity));
 
+      Set ping = peer.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+
       peer2.join();
       log.debug("peer2 has joined");
 
@@ -176,10 +192,20 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertTrue(view.contains(peerIdentity));
       assertTrue(view.contains(peer2Identity));
 
+      ping = peer.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+
       view = peer2.getView();
       assertEquals(2, view.size());
       assertTrue(view.contains(peerIdentity));
       assertTrue(view.contains(peer2Identity));
+
+      ping = peer2.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
 
       peer.leave();
       log.debug("peer has left");
@@ -188,9 +214,20 @@ public abstract class PeerTestBase extends MessagingTestCase
 
       view = peer.getView();
       assertEquals(0, view.size());
+
+      ping = peer.ping();
+      assertTrue(ping.isEmpty());
+
       view = peer2.getView();
       assertEquals(1, view.size());
       assertTrue(view.contains(peer2Identity));
+
+      ping = peer2.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peer2Identity));
+
+      // call leave twice
+      peer.leave();
 
       peer2.leave();
       log.debug("peer2 has left");
@@ -199,11 +236,114 @@ public abstract class PeerTestBase extends MessagingTestCase
 
       view = peer.getView();
       assertEquals(0, view.size());
+
+      ping = peer.ping();
+      assertTrue(ping.isEmpty());
+
       view = peer2.getView();
       assertEquals(0, view.size());
+
+      ping = peer2.ping();
+      assertTrue(ping.isEmpty());
+
+      // call leave twice
+      peer2.leave();
    }
 
-   public void testPeerInGroupOfThree() throws Exception
+   public void testGroupOfTwo_OneJChannel() throws Exception
+   {
+      assertTrue(jchannel.isConnected());
+      assertEquals(1, jchannel.getView().getMembers().size());
+
+      channel2.close();
+
+      // create a new distributed channel2 in top of the *same* dispatcher
+      DistributedChannel channel2 = createDistributedChannel(peer.getGroupID(), dispatcher);
+      peer2 = channel2.getPeer();
+
+      PeerIdentity peerIdentity = peer.getPeerIdentity();
+      PeerIdentity peer2Identity = peer2.getPeerIdentity();
+
+      assertEquals(peer.getGroupID(), peerIdentity.getGroupID());
+      assertEquals(peer.getGroupID(), peer2Identity.getGroupID());
+      assertFalse(peerIdentity.getPeerID().equals(peer2Identity.getPeerID()));
+
+      peer.join();
+      log.debug("peer has joined");
+
+      assertTrue(peer.hasJoined());
+
+      Set view = peer.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peerIdentity));
+
+      Set ping = peer.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+
+      peer2.join();
+      log.debug("peer2 has joined");
+
+      assertTrue(peer2.hasJoined());
+
+      view = peer.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      ping = peer.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+
+      view = peer2.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      ping = peer2.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+
+      peer.leave();
+      log.debug("peer has left");
+
+      assertFalse(peer.hasJoined());
+
+      view = peer.getView();
+      assertTrue(view.isEmpty());
+
+      ping = peer.ping();
+      assertTrue(ping.isEmpty());
+
+      view = peer2.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peer2Identity));
+
+      ping = peer2.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peer2Identity));
+
+      peer2.leave();
+      log.debug("peer2 has left");
+
+      assertFalse(peer2.hasJoined());
+
+      view = peer.getView();
+      assertTrue(view.isEmpty());
+
+      ping = peer.ping();
+      assertTrue(ping.isEmpty());
+
+      view = peer2.getView();
+      assertTrue(view.isEmpty());
+
+      ping = peer2.ping();
+      assertTrue(ping.isEmpty());
+   }
+
+   public void testGroupOfThree() throws Exception
    {
       jchannel2.connect("testGroup");
       jchannel3.connect("testGroup");
@@ -241,6 +381,10 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertEquals(1, view.size());
       assertTrue(view.contains(peerIdentity));
 
+      Set ping = peer.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+
       peer2.join();
       log.debug("peer2 has joined");
 
@@ -251,10 +395,20 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertTrue(view.contains(peerIdentity));
       assertTrue(view.contains(peer2Identity));
 
+      ping = peer.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+
       view = peer2.getView();
       assertEquals(2, view.size());
       assertTrue(view.contains(peerIdentity));
       assertTrue(view.contains(peer2Identity));
+
+      ping = peer2.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
 
       peer3.join();
       log.debug("peer3 has joined");
@@ -267,17 +421,35 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertTrue(view.contains(peer2Identity));
       assertTrue(view.contains(peer3Identity));
 
+      ping = peer.ping();
+      assertEquals(3, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
       view = peer2.getView();
       assertEquals(3, view.size());
       assertTrue(view.contains(peerIdentity));
       assertTrue(view.contains(peer2Identity));
       assertTrue(view.contains(peer3Identity));
 
+      ping = peer2.ping();
+      assertEquals(3, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
       view = peer3.getView();
       assertEquals(3, view.size());
       assertTrue(view.contains(peerIdentity));
       assertTrue(view.contains(peer2Identity));
       assertTrue(view.contains(peer3Identity));
+
+      ping = peer3.ping();
+      assertEquals(3, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
 
       peer.leave();
       log.debug("peer has left");
@@ -285,17 +457,30 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertFalse(peer.hasJoined());
 
       view = peer.getView();
-      assertEquals(0, view.size());
+      assertTrue(view.isEmpty());
+
+      ping = peer.ping();
+      assertTrue(view.isEmpty());
 
       view = peer2.getView();
       assertEquals(2, view.size());
       assertTrue(view.contains(peer2Identity));
       assertTrue(view.contains(peer3Identity));
 
+      ping = peer2.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
       view = peer3.getView();
       assertEquals(2, view.size());
       assertTrue(view.contains(peer2Identity));
       assertTrue(view.contains(peer3Identity));
+
+      ping = peer3.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
 
       peer2.leave();
       log.debug("peer2 has left");
@@ -303,11 +488,18 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertFalse(peer2.hasJoined());
 
       view = peer2.getView();
-      assertEquals(0, view.size());
+      assertTrue(view.isEmpty());
+
+      ping = peer2.ping();
+      assertTrue(view.isEmpty());
 
       view = peer3.getView();
       assertEquals(1, view.size());
       assertTrue(view.contains(peer3Identity));
+
+      ping = peer3.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peer3Identity));
 
       peer3.leave();
       log.debug("peer3 has left");
@@ -315,14 +507,194 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertFalse(peer3.hasJoined());
 
       view = peer3.getView();
-      assertEquals(0, view.size());
+      assertTrue(view.isEmpty());
 
+      ping = peer3.ping();
+      assertTrue(view.isEmpty());
    }
+
+   public void testGroupOfThree_TwoPeersShareAChannel() throws Exception
+   {
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannels joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      channel3.close();
+
+      // create a new distributed channel3 in top of the *same* dispatcher
+      DistributedChannel channel3 = createDistributedChannel(peer.getGroupID(), dispatcher);
+      peer3 = channel3.getPeer();
+
+      // the first jchannel already joined the group
+
+      PeerIdentity peerIdentity = peer.getPeerIdentity();
+      PeerIdentity peer2Identity = peer2.getPeerIdentity();
+      PeerIdentity peer3Identity = peer3.getPeerIdentity();
+
+      assertEquals(peer.getGroupID(), peerIdentity.getGroupID());
+      assertEquals(peer.getGroupID(), peer2Identity.getGroupID());
+      assertEquals(peer.getGroupID(), peer3Identity.getGroupID());
+
+      assertFalse(peerIdentity.getPeerID().equals(peer2Identity.getPeerID()));
+      assertFalse(peerIdentity.getPeerID().equals(peer3Identity.getPeerID()));
+      assertFalse(peer2Identity.getPeerID().equals(peer3Identity.getPeerID()));
+
+      peer.join();
+      log.debug("peer has joined");
+
+      assertTrue(peer.hasJoined());
+
+      Set view = peer.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peerIdentity));
+
+      Set ping = peer.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+
+      peer2.join();
+      log.debug("peer2 has joined");
+
+      assertTrue(peer2.hasJoined());
+
+      view = peer.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      ping = peer.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+
+      view = peer2.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+
+      ping = peer2.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+
+      peer3.join();
+      log.debug("peer3 has joined");
+
+      assertTrue(peer3.hasJoined());
+
+      view = peer.getView();
+      assertEquals(3, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      ping = peer.ping();
+      assertEquals(3, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
+      view = peer2.getView();
+      assertEquals(3, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      ping = peer2.ping();
+      assertEquals(3, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
+      view = peer3.getView();
+      assertEquals(3, view.size());
+      assertTrue(view.contains(peerIdentity));
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      ping = peer3.ping();
+      assertEquals(3, ping.size());
+      assertTrue(ping.contains(peerIdentity));
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
+      peer.leave();
+      log.debug("peer has left");
+
+      assertFalse(peer.hasJoined());
+
+      view = peer.getView();
+      assertTrue(view.isEmpty());
+
+      ping = peer.ping();
+      assertTrue(view.isEmpty());
+
+      view = peer2.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      ping = peer2.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
+      view = peer3.getView();
+      assertEquals(2, view.size());
+      assertTrue(view.contains(peer2Identity));
+      assertTrue(view.contains(peer3Identity));
+
+      ping = peer3.ping();
+      assertEquals(2, ping.size());
+      assertTrue(ping.contains(peer2Identity));
+      assertTrue(ping.contains(peer3Identity));
+
+      peer2.leave();
+      log.debug("peer2 has left");
+
+      assertFalse(peer2.hasJoined());
+
+      view = peer2.getView();
+      assertTrue(view.isEmpty());
+
+      ping = peer2.ping();
+      assertTrue(view.isEmpty());
+
+      view = peer3.getView();
+      assertEquals(1, view.size());
+      assertTrue(view.contains(peer3Identity));
+
+      ping = peer3.ping();
+      assertEquals(1, ping.size());
+      assertTrue(ping.contains(peer3Identity));
+
+      peer3.leave();
+      log.debug("peer3 has left");
+
+      assertFalse(peer3.hasJoined());
+
+      view = peer3.getView();
+      assertTrue(view.isEmpty());
+
+      ping = peer3.ping();
+      assertTrue(view.isEmpty());
+   }
+
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
+   protected abstract DistributedChannel createDistributedChannel(Serializable id, RpcDispatcher d);
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

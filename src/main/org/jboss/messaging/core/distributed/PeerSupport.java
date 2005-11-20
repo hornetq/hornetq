@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * The class that mediates the access of a distributed destination instance to the group. Provides
@@ -43,13 +44,13 @@ import java.util.Set;
  *
  * $Id$
  */
-abstract class PeerSupport implements Peer, DistributedDestinationFacade
+abstract class PeerSupport implements Peer, PeerFacade
  {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PeerSupport.class);
 
-   protected static final long TIMEOUT = 3000;
+   protected static final long TIMEOUT = 30000000; // TODO make this configurable
 
    // Static --------------------------------------------------------
    
@@ -122,7 +123,7 @@ abstract class PeerSupport implements Peer, DistributedDestinationFacade
          throw new DistributedException("The JGroups channel not connected");
       }
 
-      log.debug(this + " joining distributed queue " + destination.getDestinationID());
+      log.debug(this + " joining distributed destination " + destination.getDestinationID());
 
       RpcServerCall rpcServerCall = createJoinCall();
 
@@ -181,20 +182,69 @@ abstract class PeerSupport implements Peer, DistributedDestinationFacade
       log.debug("synchronous remote invocation ended");
    }
 
+   public Set ping() throws DistributedException
+   {
+      if (!joined)
+      {
+         return Collections.EMPTY_SET;
+      }
 
-   // DistributedDestinationFacade implementation -------------------
+      log.debug(this + " multicasting ping request");
+
+      Set result = new HashSet();
+
+      RpcServerCall rpcServerCall =
+            new RpcServerCall(destination.getDestinationID(), "ping",
+                              new Object[] {getPeerIdentity()},
+                              new String[] {"org.jboss.messaging.core.distributed.PeerIdentity"});
+
+      // TODO use the timout when I'll change the send() signature or deal with the timeout
+      Collection responses = rpcServerCall.remoteInvoke(dispatcher, TIMEOUT);
+
+      log.debug(this + " received " + responses.size() + " response(s)");
+
+      ServerResponse r = null;
+      try
+      {
+         for(Iterator i = responses.iterator(); i.hasNext(); )
+         {
+            r = (ServerResponse)i.next();
+            log.debug(this + " received: " + r);
+
+            Object o = r.getInvocationResult();
+            if (o instanceof Throwable)
+            {
+               throw (Throwable)o;
+            }
+
+            PeerIdentity pid = (PeerIdentity)o;
+            result.add(pid);
+         }
+      }
+      catch(Throwable t)
+      {
+         String msg = RpcServer.
+               subordinateToString(r.getCategory(), r.getSubordinateID(), r.getAddress()) +
+               " failed to answer ping request";
+         log.error(msg, t);
+         throw new DistributedException(msg, t);
+      }
+
+      return result;
+   }
+
+   // PeerFacade implementation ------------------------------------
 
    public Serializable getID()
    {
-      //return destination.getDestinationID();
-      return peerID; // TODO ?
+      return peerID;
    }
 
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    
-   // Protected ----------------------------------------------------
+   // Protected -----------------------------------------------------
 
    protected abstract void addRemotePeer(Acknowledgment ack);
 

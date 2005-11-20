@@ -201,7 +201,7 @@ public class ChannelSupport implements Channel
 
    public boolean add(Receiver r)
    {
-      if (log.isTraceEnabled()) { log.trace(this + ": attempting to add receiver to channel[" + getChannelID() + "]: " + r); }
+      if (log.isTraceEnabled()) { log.trace(this + ": attempting to add receiver " + r); }
       
       boolean added = router.add(r);
 
