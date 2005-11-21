@@ -22,11 +22,13 @@
 package org.jboss.messaging.core.distributed;
 
 import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.messaging.util.Util;
+import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -37,86 +39,41 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * A distributed queue.
+ * A distributed topic.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class DistributedQueue extends Queue implements DistributedDestination
+public class DistributedTopic extends Topic implements DistributedDestination
  {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DistributedQueue.class);
+   private static final Logger log = Logger.getLogger(DistributedTopic.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   protected QueuePeer peer;
+   protected TopicPeer peer;
    protected ViewKeeper viewKeeper;
 
    // Constructors --------------------------------------------------
 
-   /**
-    * An non-recoverable queue peer.
-    */
-   public DistributedQueue(String name, MessageStore ms, RpcDispatcher dispatcher)
+   public DistributedTopic(String name, RpcDispatcher dispatcher)
    {
-      this(name, ms, null, dispatcher);
+      super(name);
+      viewKeeper = new TopicViewKeeper();
+      peer = new TopicPeer(this, dispatcher);
    }
 
-   /**
-    * A recoverable queue peer.
-    */
-   public DistributedQueue(String name, MessageStore ms, PersistenceManager pm,
-                           RpcDispatcher dispatcher)
-   {
-      super(name, ms, pm);
-      viewKeeper = new QueueViewKeeper();
-      peer = new QueuePeer(this, dispatcher);
-   }
-
-   // Queue overrides -----------------------------------------------
+   // Topic overrides -----------------------------------------------
 
    public Iterator iterator()
    {
-      return new SelectiveIterator(super.iterator(), RemoteReceiver.class);
-   }
-
-   // Channel overrides ---------------------------------------------
-
-   public List browse(Filter f)
-   {
-      if (log.isTraceEnabled()) { log.trace(this + " browse" + (f == null ? "" : ", filter = " + f)); }
-
-      List messages = peer.doRemoteBrowse(f);
-
-      List local = super.browse(f);
-      messages.addAll(local);
-
-      return messages;
-   }
-
-   // TODO - override deliver(Receiver r) for a clustered case
-//   public void deliver(Receiver r)
-//   {
-//      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
-//   }
-
-   public void close()
-   {
-      try
-      {
-         leave();
-      }
-      catch(Exception e)
-      {
-         log.error("Distributed queue was not cleanly closed", e);
-      }
-
-      super.close();
+      //return new SelectiveIterator(super.iterator(), RemoteReceiver.class);
+      throw new NotYetImplementedException();
    }
 
    // DistributedDestination implementation --------------------------
@@ -131,6 +88,13 @@ public class DistributedQueue extends Queue implements DistributedDestination
       peer.leave();
    }
 
+   public void close() throws DistributedException
+   {
+      leave();
+      // TODO - additional cleanup
+   }
+
+
    public Peer getPeer()
    {
       return peer;
@@ -138,15 +102,9 @@ public class DistributedQueue extends Queue implements DistributedDestination
 
    // Public --------------------------------------------------------
 
-   public List localBrowse(Filter filter)
-   {
-      if (log.isTraceEnabled()) { log.trace(this + " local browse" + (filter == null ? "" : ", filter = " + filter)); }
-      return super.browse(filter);
-   }
-
    public String toString()
    {
-      return "DistributedQueue[" + getChannelID() + ":" + Util.guidToString(peer.getID()) + "]";
+      return "DistributedTopic[" + getName() + ":" + Util.guidToString(peer.getID()) + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -165,11 +123,11 @@ public class DistributedQueue extends Queue implements DistributedDestination
    /**
     * The inner class that manages the local representation of the distributed destination view.
     */
-   private class QueueViewKeeper implements ViewKeeper
+   private class TopicViewKeeper implements ViewKeeper
    {
       // Constants -----------------------------------------------------
 
-      private final Logger log = Logger.getLogger(QueueViewKeeper.class);
+      private final Logger log = Logger.getLogger(TopicViewKeeper.class);
 
       // Static --------------------------------------------------------
 
@@ -181,49 +139,51 @@ public class DistributedQueue extends Queue implements DistributedDestination
 
       public Serializable getGroupID()
       {
-         return getChannelID();
+         return getName();
       }
 
       public void removeRemotePeer(PeerIdentity remotePeerIdentity)
       {
          if (log.isTraceEnabled()) { log.trace(this + " removing remote peer " + remotePeerIdentity); }
 
-         // TODO synchronization
-         for(Iterator i = router.iterator(); i.hasNext(); )
-         {
-            Object receiver = i.next();
-            if (receiver instanceof RemoteReceiver)
-            {
-               RemoteReceiver rr = (RemoteReceiver)receiver;
-               if (rr.getPeerIdentity().equals(remotePeerIdentity))
-               {
-                  i.remove();
-                  break;
-               }
-            }
-         }
+         throw new NotYetImplementedException();
+//         // TODO synchronization
+//         for(Iterator i = router.iterator(); i.hasNext(); )
+//         {
+//            Object receiver = i.next();
+//            if (receiver instanceof RemoteReceiver)
+//            {
+//               RemoteReceiver rr = (RemoteReceiver)receiver;
+//               if (rr.getPeerIdentity().equals(remotePeerIdentity))
+//               {
+//                  i.remove();
+//                  break;
+//               }
+//            }
+//         }
       }
 
       public Set getRemotePeers()
       {
-         Set result = new HashSet();
-         for(Iterator i = router.iterator(); i.hasNext(); )
-         {
-            Object receiver = i.next();
-            if (receiver instanceof RemoteReceiver)
-            {
-               RemoteReceiver rr = (RemoteReceiver)receiver;
-               result.add(rr.getPeerIdentity());
-            }
-         }
-         return result;
+//         Set result = new HashSet();
+//         for(Iterator i = router.iterator(); i.hasNext(); )
+//         {
+//            Object receiver = i.next();
+//            if (receiver instanceof RemoteReceiver)
+//            {
+//               RemoteReceiver rr = (RemoteReceiver)receiver;
+//               result.add(rr.getPeerIdentity());
+//            }
+//         }
+//         return result;
+         throw new NotYetImplementedException();
       }
 
       // Public --------------------------------------------------------
 
       public String toString()
       {
-         return "DistributedQueue[" + getChannelID() + ":" +
+         return "DistributedTopic[" + getName() + ":" +
                 Util.guidToString(peer.getID()) + "].ViewKeeper";
       }
 

@@ -21,12 +21,8 @@
 */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.messaging.core.message.InMemoryMessageStore;
-import org.jboss.messaging.core.distributed.DistributedQueue;
-import org.jboss.messaging.core.distributed.DistributedDestination;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
-import org.jgroups.blocks.RpcDispatcher;
+import org.jboss.test.messaging.core.distributed.base.DistributedTopicTestBase;
+import org.jboss.messaging.core.distributed.DistributedTopic;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -34,7 +30,7 @@ import org.jgroups.blocks.RpcDispatcher;
  *
  * $Id$
  */
-public class QueuePeerTest extends PeerTestBase
+public class DistributedTopicTest extends DistributedTopicTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -42,42 +38,46 @@ public class QueuePeerTest extends PeerTestBase
    
    // Attributes ----------------------------------------------------
 
-   protected MessageStore ms;
-
    // Constructors --------------------------------------------------
 
-   public QueuePeerTest(String name)
+   public DistributedTopicTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // DistributedQueueTestBase overrides ---------------------------
 
    public void setUp() throws Exception
    {
-      ms = new InMemoryMessageStore("in-memory-message-store");
-
       super.setUp();
+
+      topic = new DistributedTopic("test", dispatcher);
+      topic2 = new DistributedTopic("test", dispatcher2);
+      topic3 = new DistributedTopic("test", dispatcher3);
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      ms = null;
+      ((DistributedTopic)topic).close();
+      topic = null;
+
+      topic2.close();
+      topic2 = null;
+
+      topic3.close();
+      topic3 = null;
 
       super.tearDown();
    }
 
+   // Public --------------------------------------------------------
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-
-   protected DistributedDestination createDistributedDestination(String name, RpcDispatcher d)
-   {
-      return new DistributedQueue(name, ms, d);
-   }
-
+   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

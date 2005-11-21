@@ -19,22 +19,22 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.local.base;
+package org.jboss.test.messaging.core.distributed.base;
 
-import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.core.distributed.JGroupsUtil;
+import org.jboss.test.messaging.core.local.base.TopicTestBase;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.messaging.core.distributed.util.RpcServer;
+import org.jboss.messaging.core.distributed.DistributedTopic;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
-import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jgroups.JChannel;
+import org.jgroups.blocks.RpcDispatcher;
 
 import java.util.List;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -42,7 +42,7 @@ import java.util.List;
  *
  * $Id$
  */
-public abstract class TopicTestBase extends MessagingTestCase
+public abstract class DistributedTopicTestBase extends TopicTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -50,92 +50,129 @@ public abstract class TopicTestBase extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected ServiceContainer sc;
-   protected PersistenceManager pm;
+   protected JChannel jchannel, jchannel2, jchannel3;
+   protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected CoreDestination topic;
-   
-   protected MessageStore ms;
+   protected DistributedTopic topic2, topic3;
 
    // Constructors --------------------------------------------------
-   
-   public TopicTestBase(String name)
+
+   public DistributedTopicTestBase(String name)
    {
       super(name);
    }
-   
+
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      sc = new ServiceContainer("all,-aop,-remoting,-security");
-      sc.start();
+      jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
+      jchannel2 = new JChannel(JGroupsUtil.generateProperties(900000, 1));
+      jchannel3 = new JChannel(JGroupsUtil.generateProperties(900000, 2));
 
-      pm = new JDBCPersistenceManager();
-      ms = new PersistentMessageStore("store1", pm);
+      dispatcher = new RpcDispatcher(jchannel, null, null, new RpcServer("1"));
+      dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer("2"));
+      dispatcher3 = new RpcDispatcher(jchannel3, null, null, new RpcServer("3"));
+
+      // connect only the first JChannel
+      jchannel.connect("testGroup");
+
+      assertEquals(1, jchannel.getView().getMembers().size());
    }
 
    public void tearDown() throws Exception
    {
-      pm = null;
-      ms = null;
-      sc.stop();
-      sc = null;
+      jchannel.close();
+      jchannel2.close();
+      jchannel3.close();
+
       super.tearDown();
    }
 
-   public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
+
+   public void testUnreliableMessageTwoRemoteReceivers() throws Exception
    {
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannels joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ((DistributedTopic)topic).join();
+      topic2.join();
+
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
+
       topic.add(r1);
-      topic.add(r2);
+      topic2.add(r2);
 
       Message m = MessageFactory.createMessage("message0", false, "payload");
       Delivery d = topic.handle(observer, ms.reference(m), null);
+      log.debug("message sent");
 
       assertTrue(d.isDone());
+
       List l1 = r1.getMessages();
       List l2 = r2.getMessages();
 
       assertEquals(1, l1.size());
-      m = (Message)l1.get(0);
-      assertEquals("payload", m.getPayload());
+      assertEquals("payload", ((Message)l1.get(0)).getPayload());
 
       assertEquals(1, l2.size());
-      m = (Message)l2.get(0);
-      assertEquals("payload", m.getPayload());
+      assertEquals("payload", ((Message)l2.get(0)).getPayload());
    }
 
-
-   public void testReliableSynchronousDeliveryTwoReceivers() throws Exception
+   public void testReliableMessageTwoRemoteReceivers() throws Exception
    {
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannels joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ((DistributedTopic)topic).join();
+      topic2.join();
+
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
-      assertTrue(topic.add(r1));
-      assertTrue(topic.add(r2));
+
+      topic.add(r1);
+      topic2.add(r2);
 
       Message m = MessageFactory.createMessage("message0", true, "payload");
       Delivery d = topic.handle(observer, ms.reference(m), null);
+      log.debug("message sent");
 
       assertTrue(d.isDone());
+
       List l1 = r1.getMessages();
       List l2 = r2.getMessages();
 
       assertEquals(1, l1.size());
-      m = (Message)l1.get(0);
-      assertEquals("payload", m.getPayload());
+      assertEquals("payload", ((Message)l1.get(0)).getPayload());
 
       assertEquals(1, l2.size());
-      m = (Message)l2.get(0);
-      assertEquals("payload", m.getPayload());
+      assertEquals("payload", ((Message)l2.get(0)).getPayload());
    }
-
 
    // Package protected ---------------------------------------------
    

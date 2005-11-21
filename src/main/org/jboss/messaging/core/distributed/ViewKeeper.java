@@ -21,30 +21,30 @@
   */
 package org.jboss.messaging.core.distributed;
 
+import java.util.Set;
+import java.io.Serializable;
+
 /**
+ * TODO change the name if I can think of a better one
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface DistributedDestination
+interface ViewKeeper
 {
-   /**
-    * Connects this peer to the distributed channel.
-    *
-    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
-    */
-   void join() throws DistributedException;
+
+   Serializable getGroupID();
 
    /**
-    * Stops this peer and disconnects it from the distributed channel.
-    *
-    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
+    * Remove any reference to the specified remote peer.
     */
-   void leave() throws DistributedException;
+   void removeRemotePeer(PeerIdentity remotePeerIdentity);
 
-   void close() throws DistributedException;
-
-   Peer getPeer();
+   /**
+    * Return a set containing PeerIdentities of the remote peers.
+    */
+   Set getRemotePeers();
 
 }

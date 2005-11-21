@@ -108,6 +108,9 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       ref = null;
       System.gc();
 
+      // TODO - do I need to keep this here?
+      // wait a while (?) for garbage collection (on a multi-processor machine)
+      Thread.sleep(3000);
 
       // the reference is garbage collected and the message store is evicted ...
 

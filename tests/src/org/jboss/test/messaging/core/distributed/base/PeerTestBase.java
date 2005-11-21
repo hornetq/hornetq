@@ -27,17 +27,16 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jboss.messaging.core.distributed.DistributedChannel;
+import org.jboss.messaging.core.distributed.DistributedDestination;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.util.Set;
-import java.io.Serializable;
 
 /**
  * The test strategy is to group at this level all peer-related tests. It assumes two distinct
- * JGroups JChannel instances and two channel peers (channel and channel2)
+ * JGroups JChannel instances and two destination peers (destination and destination2)
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -55,7 +54,7 @@ public abstract class PeerTestBase extends MessagingTestCase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected DistributedChannel channel, channel2, channel3;
+   protected DistributedDestination destination, destination2, destination3;
    protected Peer peer, peer2, peer3;
 
    // Constructors --------------------------------------------------
@@ -79,6 +78,14 @@ public abstract class PeerTestBase extends MessagingTestCase
       dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer("2"));
       dispatcher3 = new RpcDispatcher(jchannel3, null, null, new RpcServer("3"));
 
+      destination = createDistributedDestination("test", dispatcher);
+      destination2 = createDistributedDestination("test", dispatcher2);
+      destination3 = createDistributedDestination("test", dispatcher3);
+
+      peer = destination.getPeer();
+      peer2 = destination2.getPeer();
+      peer3 = destination3.getPeer();
+
       // connect only the first JChannel
       jchannel.connect("testGroup");
 
@@ -87,6 +94,15 @@ public abstract class PeerTestBase extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
+      destination.close();
+      destination = null;
+
+      destination2.close();
+      destination2 = null;
+
+      destination3.close();
+      destination3 = null;
+      
       jchannel.close();
       jchannel2.close();
       jchannel3.close();
@@ -255,11 +271,12 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertTrue(jchannel.isConnected());
       assertEquals(1, jchannel.getView().getMembers().size());
 
-      channel2.close();
+      destination2.close();
 
-      // create a new distributed channel2 in top of the *same* dispatcher
-      DistributedChannel channel2 = createDistributedChannel(peer.getGroupID(), dispatcher);
-      peer2 = channel2.getPeer();
+      // create a new destination2 in top of the *same* dispatcher
+      DistributedDestination destination2 =
+            createDistributedDestination((String)peer.getGroupID(), dispatcher);
+      peer2 = destination2.getPeer();
 
       PeerIdentity peerIdentity = peer.getPeerIdentity();
       PeerIdentity peer2Identity = peer2.getPeerIdentity();
@@ -527,11 +544,12 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      channel3.close();
+      destination3.close();
 
-      // create a new distributed channel3 in top of the *same* dispatcher
-      DistributedChannel channel3 = createDistributedChannel(peer.getGroupID(), dispatcher);
-      peer3 = channel3.getPeer();
+      // create a new destination3 in top of the *same* dispatcher
+      DistributedDestination destination3 =
+            createDistributedDestination((String)peer.getGroupID(), dispatcher);
+      peer3 = destination3.getPeer();
 
       // the first jchannel already joined the group
 
@@ -693,7 +711,8 @@ public abstract class PeerTestBase extends MessagingTestCase
    
    // Protected -----------------------------------------------------
 
-   protected abstract DistributedChannel createDistributedChannel(Serializable id, RpcDispatcher d);
+   protected abstract DistributedDestination
+         createDistributedDestination(String name, RpcDispatcher d);
 
    // Private -------------------------------------------------------
 

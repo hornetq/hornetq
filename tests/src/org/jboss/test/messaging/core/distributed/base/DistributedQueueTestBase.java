@@ -63,7 +63,7 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
    }
 
    /**
-    * Three a distributed queue with three peers queue
+    * Three a distributed queue with three peers
     */
    public void testSimpleSend() throws Exception
    {

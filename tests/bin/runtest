@@ -85,13 +85,16 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueuePeerTest
-#TARGET_TEST=testGroupOfThree_TwoPeersShareAChannel
+TARGET_TEST=testGroupOfOne
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.TopicPeerTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
 #TARGET_TEST=testNonRecoverableDistributedChannel_1
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
 #TARGET_TEST=testSimpleSend
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.DistributedTopicTest
+
 
 #
 # distributed utils

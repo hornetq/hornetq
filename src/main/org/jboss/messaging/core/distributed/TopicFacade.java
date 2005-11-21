@@ -25,39 +25,14 @@ import org.jboss.messaging.core.Filter;
 
 import java.util.List;
 
-
 /**
+ * Exposes methods to be invoked remotely by topic peers.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface DistributedChannel
+public interface TopicFacade extends PeerFacade
 {
-   /**
-    * Connects this peer to the distributed channel.
-    *
-    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
-    */
-   void join() throws DistributedException;
-
-   /**
-    * Stops this peer and disconnects it from the distributed channel.
-    *
-    * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
-    */
-   void leave() throws DistributedException;
-
-   void close() throws DistributedException;
-
-   /**
-    * @return a List containing messages being held <i>locally</i> by the channel. The list includes
-    *         messages in process of being delivered and messages for which delivery hasn't been
-    *         attempted yet.
-    * @see org.jboss.messaging.core.Channel#browse(Filter)
-    */
-   List localBrowse(Filter filter);
-
-   Peer getPeer();
-
 }

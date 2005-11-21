@@ -64,7 +64,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
    public QueuePeer(DistributedQueue queue, RpcDispatcher dispatcher)
    {
-      super(queue, dispatcher);
+      super(queue.getViewKeeper(), dispatcher);
       this.pipeID = new GUID().toString();
       this.queue = queue;
    }
@@ -88,10 +88,10 @@ public class QueuePeer extends PeerSupport implements QueueFacade
                                          "to registers using id=" + pipeID);
       }
 
-      rpcServer.register(queue.getDestinationID(), this);
+      rpcServer.register(queue.getName(), this);
       joined = true;
 
-      log.debug(this + " successfully joined distributed queue " + queue.getDestinationID());
+      log.debug(this + " successfully joined distributed queue " + queue.getName());
    }
 
    public synchronized void leave() throws DistributedException
@@ -105,7 +105,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
       // unregister my pipe output
       rpcServer.unregister(pipeID);
-      rpcServer.unregister(queue.getDestinationID(), this);
+      rpcServer.unregister(queue.getName(), this);
       joined = false;
    }
 
@@ -118,7 +118,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       // I will never receive my own call, since the server objects are not registered
       // at the time of call
 
-      Serializable destID = queue.getDestinationID();
+      Serializable destID = queue.getName();
 
       PeerIdentity remotePeerIdentity = new PeerIdentity(destID, remotePeerID, remoteAddress);
 
@@ -148,7 +148,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
       log.debug(this +": peer " + originator + " wants to leave");
 
-      queue.removeRemotePeer(originator);
+      viewKeeper.removeRemotePeer(originator);
    }
 
    public List remoteBrowse(PeerIdentity originator, Filter filter)
@@ -187,7 +187,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (log.isTraceEnabled()) { log.trace(this + " remote browse" + (filter == null ? "" : ", filter = " + filter)); }
 
       RpcServerCall rpcServerCall =
-            new RpcServerCall(queue.getDestinationID(), "remoteBrowse",
+            new RpcServerCall(queue.getName(), "remoteBrowse",
                               new Object[] {getPeerIdentity(), filter},
                               new String[] {"org.jboss.messaging.core.distributed.PeerIdentity",
                                             "org.jboss.messaging.core.Filter"});
@@ -248,7 +248,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
    protected RpcServerCall createJoinCall()
    {
-      return new RpcServerCall(destination.getDestinationID(), "join",
+      return new RpcServerCall(queue.getName(), "join",
                                new Object[] {dispatcher.getChannel().getLocalAddress(),
                                              peerID,
                                              pipeID},

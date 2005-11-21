@@ -58,7 +58,7 @@ abstract class PeerSupport implements Peer, PeerFacade
    
    protected RpcDispatcher dispatcher;
    protected RpcServer rpcServer;
-   DistributedDestination destination;
+   protected ViewKeeper viewKeeper;
    protected Serializable peerID;
 
    protected boolean joined = false;
@@ -68,7 +68,7 @@ abstract class PeerSupport implements Peer, PeerFacade
    /**
     * @throws IllegalStateException in case the dispatcher is not configured with an RpcServer
     */
-   public PeerSupport(DistributedDestination destination, RpcDispatcher dispatcher)
+   public PeerSupport(ViewKeeper viewKeeper, RpcDispatcher dispatcher)
    {
       Object so = dispatcher.getServerObject();
       if (!(so instanceof RpcServer))
@@ -78,10 +78,7 @@ abstract class PeerSupport implements Peer, PeerFacade
 
       this.dispatcher = dispatcher;
       rpcServer = (RpcServer)so;
-
-      this.destination = destination;
-
-      // TODO - Do I need to have two different ids? Can't I just use one?
+      this.viewKeeper = viewKeeper;
       this.peerID = generateUniqueID();
       joined = false;
    }
@@ -90,7 +87,7 @@ abstract class PeerSupport implements Peer, PeerFacade
 
    public Serializable getGroupID()
    {
-      return destination.getDestinationID();
+      return viewKeeper.getGroupID();
    }
 
    public PeerIdentity getPeerIdentity()
@@ -110,8 +107,7 @@ abstract class PeerSupport implements Peer, PeerFacade
          return Collections.EMPTY_SET;
       }
 
-      Set result = destination.getRemotePeers();
-
+      Set result = viewKeeper.getRemotePeers();
       result.add(getPeerIdentity());
       return result;
    }
@@ -123,11 +119,11 @@ abstract class PeerSupport implements Peer, PeerFacade
          throw new DistributedException("The JGroups channel not connected");
       }
 
-      log.debug(this + " joining distributed destination " + destination.getDestinationID());
+      log.debug(this + " joining group " + viewKeeper.getGroupID());
 
       RpcServerCall rpcServerCall = createJoinCall();
 
-      // multicast the intention to join the queue
+      // multicast the intention to join the group
       // TODO use the timout when I'll change the send() signature or deal with the timeout
       Collection responses = rpcServerCall.remoteInvoke(dispatcher, TIMEOUT);
 
@@ -169,17 +165,17 @@ abstract class PeerSupport implements Peer, PeerFacade
 
    public synchronized void leave() throws DistributedException
    {
-      log.debug(this + " leaving distributed destination " + destination.getDestinationID());
+      log.debug(this + " leaving group " + viewKeeper.getGroupID());
 
-      // multicast the intention to leave the queue
+      // multicast the intention to leave the group
       RpcServerCall rpcServerCall =
-            new RpcServerCall(destination.getDestinationID(), "leave",
+            new RpcServerCall(viewKeeper.getGroupID(), "leave",
                               new Object[] {getPeerIdentity()},
                               new String[] {"org.jboss.messaging.core.distributed.PeerIdentity"});
 
       // TODO use the timout when I'll change the send() signature or deal with the timeout
       rpcServerCall.remoteInvoke(dispatcher, TIMEOUT);
-      log.debug("synchronous remote invocation ended");
+      if (log.isTraceEnabled()) { log.trace("synchronous remote invocation ended"); }
    }
 
    public Set ping() throws DistributedException
@@ -194,7 +190,7 @@ abstract class PeerSupport implements Peer, PeerFacade
       Set result = new HashSet();
 
       RpcServerCall rpcServerCall =
-            new RpcServerCall(destination.getDestinationID(), "ping",
+            new RpcServerCall(viewKeeper.getGroupID(), "ping",
                               new Object[] {getPeerIdentity()},
                               new String[] {"org.jboss.messaging.core.distributed.PeerIdentity"});
 

@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.messaging.core.message.InMemoryMessageStore;
-import org.jboss.messaging.core.distributed.DistributedQueue;
 import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.DistributedTopic;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jgroups.blocks.RpcDispatcher;
@@ -34,7 +34,7 @@ import org.jgroups.blocks.RpcDispatcher;
  *
  * $Id$
  */
-public class QueuePeerTest extends PeerTestBase
+public class TopicPeerTest extends PeerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -46,7 +46,7 @@ public class QueuePeerTest extends PeerTestBase
 
    // Constructors --------------------------------------------------
 
-   public QueuePeerTest(String name)
+   public TopicPeerTest(String name)
    {
       super(name);
    }
@@ -75,7 +75,7 @@ public class QueuePeerTest extends PeerTestBase
 
    protected DistributedDestination createDistributedDestination(String name, RpcDispatcher d)
    {
-      return new DistributedQueue(name, ms, d);
+      return new DistributedTopic(name, d);
    }
 
    // Private -------------------------------------------------------
