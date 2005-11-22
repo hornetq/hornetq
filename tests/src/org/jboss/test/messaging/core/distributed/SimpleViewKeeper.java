@@ -29,6 +29,7 @@ import org.jboss.logging.Logger;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.io.Serializable;
 
 /**
@@ -48,15 +49,15 @@ public class SimpleViewKeeper implements ViewKeeper
    // Attributes ----------------------------------------------------
 
    protected Serializable groupID;
-   // set of PeerIdentity instances
-   protected Set identities;
+   // set of RemotePeers
+   protected Set remotePeers;
 
    // Constructors --------------------------------------------------
 
    public SimpleViewKeeper(Serializable groupID)
    {
       this.groupID = groupID;
-      identities = Collections.synchronizedSet(new HashSet());
+      remotePeers = Collections.synchronizedSet(new HashSet());
    }
 
    // ViewKeeper implementation -------------------------------------
@@ -69,26 +70,45 @@ public class SimpleViewKeeper implements ViewKeeper
    public void addRemotePeer(RemotePeer remotePeer)
    {
       log.debug("adding " + remotePeer.getPeerIdentity());
-      identities.add(remotePeer.getPeerIdentity());
+      remotePeers.add(remotePeer);
 
    }
 
    public void removeRemotePeer(PeerIdentity remotePeerIdentity)
    {
       log.debug("removing remote peer " + remotePeerIdentity);
-      identities.remove(remotePeerIdentity);
+      for(Iterator i = remotePeers.iterator(); i.hasNext(); )
+      {
+         RemotePeer rp = (RemotePeer)i.next();
+         if (rp.getPeerIdentity().equals(remotePeerIdentity))
+         {
+            i.remove();
+            break;
+         }
+      }
    }
 
    public Set getRemotePeers()
    {
+      Set identities = new HashSet();
+      for(Iterator i = remotePeers.iterator(); i.hasNext(); )
+      {
+         RemotePeer rp = (RemotePeer)i.next();
+         identities.add(rp.getPeerIdentity());
+      }
       return identities;
+   }
+
+   public Iterator iterator()
+   {
+      return remotePeers.iterator();
    }
 
    // Public --------------------------------------------------------
 
    public void clear()
    {
-      identities.clear();
+      remotePeers.clear();
    }
 
    public String toString()

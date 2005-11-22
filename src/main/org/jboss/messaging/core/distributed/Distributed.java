@@ -27,7 +27,7 @@ package org.jboss.messaging.core.distributed;
  *
  * $Id$
  */
-public interface DistributedDestination
+public interface Distributed
 {
    /**
     * Connects this peer to the distributed destination.

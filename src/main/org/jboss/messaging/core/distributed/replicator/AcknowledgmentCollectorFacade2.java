@@ -19,47 +19,18 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.messaging.core.distributed.replicator;
 
-import java.util.Set;
-import java.util.Iterator;
-import java.util.HashSet;
+import org.jboss.messaging.core.distributed.util.ServerFacade;
+
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
-class CompositeDelivery extends SimpleDelivery
+interface AcknowledgmentCollectorFacade2 extends ServerFacade
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-
-   private Set deliveries;
-
-   // Constructors --------------------------------------------------
-
-   public CompositeDelivery(DeliveryObserver observer, Set deliveries)
-   {
-      for(Iterator i = deliveries.iterator(); i.hasNext(); )
-      {
-         Delivery d = (Delivery)i.next();
-         d.setObserver(observer);
-      }
-      this.deliveries = new HashSet(deliveries);
-   }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
+   public void acknowledge(Serializable messageID, Serializable outputPeerID,
+                           Serializable receiverID, Boolean positive);
 }

@@ -19,72 +19,45 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed.queue;
+package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.distributed.RemotePeerInfo;
+import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 
-import java.io.Serializable;
-import java.io.ObjectOutput;
-import java.io.IOException;
-import java.io.ObjectInput;
+import org.jboss.logging.Logger;
 
 /**
- * @see RemotePeerInfo
+ * A representative of a remote replicator output peer.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class QueuePeerInfo extends RemotePeerInfo
-{
+public class RemoteReplicatorOutput extends RemotePeer
+ {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(RemoteReplicatorOutput.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   protected Serializable pipeID;
-
    // Constructors --------------------------------------------------
 
-   /**
-    * For externalization.
-    */
-   public QueuePeerInfo()
+   public RemoteReplicatorOutput(PeerIdentity remotePeerIdentity)
    {
-   }
+      super(remotePeerIdentity);
 
-   /**
-    * @param peerIdentity - the identity of acknowledging peer.
-    * @param pipeID - the id of the distributed pipe the acknowledging peer can be contacted at.
-    */
-   public QueuePeerInfo(PeerIdentity peerIdentity, Serializable pipeID)
-   {
-      this.peerIdentity = peerIdentity;
-      this.pipeID = pipeID;
-   }
-
-   // Externalizable implementation ---------------------------------
-
-   public void writeExternal(ObjectOutput out) throws IOException
-   {
-      super.writeExternal(out);
-      out.writeObject(pipeID);
-   }
-
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-      super.readExternal(in);
-      pipeID = (Serializable)in.readObject();
+      if (log.isTraceEnabled()) { log.trace("created remote replicator for " + remotePeerIdentity); }
    }
 
    // Public --------------------------------------------------------
 
-   public Serializable getPipeID()
+   public String toString()
    {
-      return pipeID;
+      return "RemoteReplicatorOutput[" + remotePeerIdentity + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -94,4 +67,5 @@ public class QueuePeerInfo extends RemotePeerInfo
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 }

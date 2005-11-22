@@ -25,8 +25,7 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.distributed.queue.QueuePeer;
-import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.DistributedException;
@@ -51,7 +50,7 @@ import java.util.List;
  *
  * $Id$
  */
-public class DistributedQueue extends Queue implements DistributedDestination
+public class DistributedQueue extends Queue implements Distributed
  {
    // Constants -----------------------------------------------------
 
@@ -126,7 +125,7 @@ public class DistributedQueue extends Queue implements DistributedDestination
       super.close();
    }
 
-   // DistributedDestination implementation --------------------------
+   // Distributed implementation --------------------------
 
    public void join() throws DistributedException
    {
@@ -231,6 +230,11 @@ public class DistributedQueue extends Queue implements DistributedDestination
             }
          }
          return result;
+      }
+
+      public Iterator iterator()
+      {
+         return router.iterator();
       }
 
       // Public --------------------------------------------------------

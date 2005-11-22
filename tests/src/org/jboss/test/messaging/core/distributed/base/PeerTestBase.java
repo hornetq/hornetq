@@ -27,7 +27,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * The test strategy is to group at this level all peer-related tests. It assumes two distinct
- * JGroups JChannel instances and two destination peers (destination and destination2)
+ * JGroups JChannel instances and two destination peers (destination and distributed2)
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -54,7 +54,7 @@ public abstract class PeerTestBase extends MessagingTestCase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected DistributedDestination destination, destination2, destination3;
+   protected Distributed distributed, distributed2, distributed3;
    protected Peer peer, peer2, peer3;
 
    // Constructors --------------------------------------------------
@@ -78,13 +78,13 @@ public abstract class PeerTestBase extends MessagingTestCase
       dispatcher2 = new RpcDispatcher(jchannel2, null, null, new RpcServer("2"));
       dispatcher3 = new RpcDispatcher(jchannel3, null, null, new RpcServer("3"));
 
-      destination = createDistributedDestination("test", dispatcher);
-      destination2 = createDistributedDestination("test", dispatcher2);
-      destination3 = createDistributedDestination("test", dispatcher3);
+      distributed = createDistributedDestination("test", dispatcher);
+      distributed2 = createDistributedDestination("test", dispatcher2);
+      distributed3 = createDistributedDestination("test", dispatcher3);
 
-      peer = destination.getPeer();
-      peer2 = destination2.getPeer();
-      peer3 = destination3.getPeer();
+      peer = distributed.getPeer();
+      peer2 = distributed2.getPeer();
+      peer3 = distributed3.getPeer();
 
       // connect only the first JChannel
       jchannel.connect("testGroup");
@@ -94,20 +94,52 @@ public abstract class PeerTestBase extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      destination.close();
-      destination = null;
+      distributed.close();
+      distributed = null;
 
-      destination2.close();
-      destination2 = null;
+      distributed2.close();
+      distributed2 = null;
 
-      destination3.close();
-      destination3 = null;
+      distributed3.close();
+      distributed3 = null;
       
       jchannel.close();
       jchannel2.close();
       jchannel3.close();
 
       super.tearDown();
+   }
+
+   public void testNullRpcServer() throws Exception
+   {
+      JChannel jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
+      RpcDispatcher dispatcher = new RpcDispatcher(jchannel, null, null, null);
+
+      try
+      {
+         createDistributedDestination("test", dispatcher);
+         fail("should throw IllegalStateException");
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+      }
+   }
+
+   public void testNoRpcServer() throws Exception
+   {
+      JChannel jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
+      RpcDispatcher dispatcher = new RpcDispatcher(jchannel, null, null, new Object());
+
+      try
+      {
+         createDistributedDestination("test", dispatcher);
+         fail("should throw IllegalStateException");
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+      }
    }
 
    public void testJGroupsChannelNotConnected() throws Exception
@@ -271,10 +303,10 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertTrue(jchannel.isConnected());
       assertEquals(1, jchannel.getView().getMembers().size());
 
-      destination2.close();
+      distributed2.close();
 
-      // create a new destination2 in top of the *same* dispatcher
-      DistributedDestination destination2 =
+      // create a new distributed2 in top of the *same* dispatcher
+      Distributed destination2 =
             createDistributedDestination((String)peer.getGroupID(), dispatcher);
       peer2 = destination2.getPeer();
 
@@ -544,10 +576,10 @@ public abstract class PeerTestBase extends MessagingTestCase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      destination3.close();
+      distributed3.close();
 
-      // create a new destination3 in top of the *same* dispatcher
-      DistributedDestination destination3 =
+      // create a new distributed3 in top of the *same* dispatcher
+      Distributed destination3 =
             createDistributedDestination((String)peer.getGroupID(), dispatcher);
       peer3 = destination3.getPeer();
 
@@ -711,8 +743,7 @@ public abstract class PeerTestBase extends MessagingTestCase
    
    // Protected -----------------------------------------------------
 
-   protected abstract DistributedDestination
-         createDistributedDestination(String name, RpcDispatcher d);
+   protected abstract Distributed createDistributedDestination(String name, RpcDispatcher d);
 
    // Private -------------------------------------------------------
 

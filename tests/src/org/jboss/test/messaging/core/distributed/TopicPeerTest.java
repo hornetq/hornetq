@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.messaging.core.message.InMemoryMessageStore;
-import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.MessageStore;
@@ -74,7 +74,7 @@ public class TopicPeerTest extends PeerTestBase
    
    // Protected -----------------------------------------------------
 
-   protected DistributedDestination createDistributedDestination(String name, RpcDispatcher d)
+   protected Distributed createDistributedDestination(String name, RpcDispatcher d)
    {
       return new DistributedTopic(name, d);
    }

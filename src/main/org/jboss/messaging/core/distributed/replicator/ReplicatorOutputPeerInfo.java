@@ -19,25 +19,24 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed.queue;
+package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 
-import java.io.Serializable;
 import java.io.ObjectOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
 
 /**
- * @see RemotePeerInfo
+ * @see org.jboss.messaging.core.distributed.RemotePeerInfo
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class QueuePeerInfo extends RemotePeerInfo
+public class ReplicatorOutputPeerInfo extends RemotePeerInfo
 {
    // Constants -----------------------------------------------------
 
@@ -45,25 +44,18 @@ public class QueuePeerInfo extends RemotePeerInfo
    
    // Attributes ----------------------------------------------------
 
-   protected Serializable pipeID;
-
    // Constructors --------------------------------------------------
 
    /**
     * For externalization.
     */
-   public QueuePeerInfo()
+   public ReplicatorOutputPeerInfo()
    {
    }
 
-   /**
-    * @param peerIdentity - the identity of acknowledging peer.
-    * @param pipeID - the id of the distributed pipe the acknowledging peer can be contacted at.
-    */
-   public QueuePeerInfo(PeerIdentity peerIdentity, Serializable pipeID)
+   public ReplicatorOutputPeerInfo(PeerIdentity peerIdentity)
    {
-      this.peerIdentity = peerIdentity;
-      this.pipeID = pipeID;
+      super(peerIdentity);
    }
 
    // Externalizable implementation ---------------------------------
@@ -71,21 +63,14 @@ public class QueuePeerInfo extends RemotePeerInfo
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      out.writeObject(pipeID);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      pipeID = (Serializable)in.readObject();
    }
 
    // Public --------------------------------------------------------
-
-   public Serializable getPipeID()
-   {
-      return pipeID;
-   }
 
    // Package protected ---------------------------------------------
    

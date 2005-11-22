@@ -38,6 +38,7 @@ import java.util.Iterator;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * 
  * $Id$
  */
 public class PointToMultipointRouter implements Router

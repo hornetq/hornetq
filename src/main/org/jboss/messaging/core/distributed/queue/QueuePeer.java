@@ -172,9 +172,9 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       rpcServer.unregister(queue.getName(), this);
    }
 
-   protected RemotePeer createRemotePeer(RemotePeerInfo peerInfo)
+   protected RemotePeer createRemotePeer(RemotePeerInfo thatPeerInfo)
    {
-      QueuePeerInfo qpi = (QueuePeerInfo)peerInfo;
+      QueuePeerInfo qpi = (QueuePeerInfo)thatPeerInfo;
       PeerIdentity remotePeerIdentity = qpi.getPeerIdentity();
 
       if (log.isTraceEnabled()) { log.trace(this + " adding remote peer " + remotePeerIdentity); }

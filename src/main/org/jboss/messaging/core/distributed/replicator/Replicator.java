@@ -25,19 +25,26 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerSupport;
 import org.jboss.messaging.core.distributed.ViewKeeper;
-import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.RemotePeer;
-import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.ChannelListener;
-import org.jgroups.Address;
+
+import java.util.Set;
+import java.util.Iterator;
+import java.util.Collections;
+import java.util.HashSet;
+import java.io.Serializable;
 
 
 /**
@@ -56,7 +63,7 @@ import org.jgroups.Address;
  *
  * $Id$
  */
-public class Replicator extends PeerSupport implements DistributedDestination, Receiver
+public class Replicator extends PeerSupport implements Distributed, Receiver
 {
    // Constants -----------------------------------------------------
 
@@ -66,8 +73,8 @@ public class Replicator extends PeerSupport implements DistributedDestination, R
    
    // Attributes ----------------------------------------------------
 
-   protected ChannelListener channelListener;
-//   protected AcknowledgmentCollector collector;
+   protected AcknowledgmentCollector collector;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
@@ -75,12 +82,13 @@ public class Replicator extends PeerSupport implements DistributedDestination, R
     * Creates a replicator peer. The peer is not initially connected to the distributed replication
     * group.
     */
-   public Replicator(ViewKeeper viewKeeper, RpcDispatcher dispatcher)
+   public Replicator(ViewKeeper viewKeeper, RpcDispatcher dispatcher, MessageStore ms)
    {
       super(viewKeeper, dispatcher);
+      this.ms = ms;
    }
 
-   // DistributedDestination implementation -------------------------
+   // Distributed implementation -------------------------
 
    public Peer getPeer()
    {
@@ -96,10 +104,72 @@ public class Replicator extends PeerSupport implements DistributedDestination, R
 
    public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
-      throw new NotYetImplementedException();
+      if (!joined)
+      {
+         return null;
+      }
+
+      if (log.isTraceEnabled()) { log.trace(this + " handles " + routable); }
+
+      Set outputs = getOutputs();
+      if (outputs.isEmpty())
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " has no outputs, rejecting message"); }
+         return null;
+      }
+
+      MessageReference ref = ms.reference(routable);
+
+      ref.putHeader(Routable.REPLICATOR_ID, getReplicatorID());
+      ref.putHeader(Routable.COLLECTOR_ID, collector.getID());
+
+      CompositeDelivery d = new CompositeDelivery(observer, ref, outputs);
+      collector.startCollecting(d);
+
+      try
+      {
+         dispatcher.getChannel().send(null, null, routable);
+         if (log.isTraceEnabled()) { log.trace(this + " sent " + routable); }
+      }
+      catch(Throwable t)
+      {
+         log.error("Failed to put the message on the channel", t);
+         collector.remove(d);
+         return null;
+      }
+
+      return d;
    }
 
    // Public --------------------------------------------------------
+
+   public Serializable getReplicatorID()
+   {
+      return getGroupID();
+   }
+
+   /**
+    * Return a set of PeerIdentities corresponding to the replicator's outputs. The set may be empty
+    * but never null.
+    */
+   public Set getOutputs()
+   {
+      Set outputs = Collections.EMPTY_SET;
+      for(Iterator i = viewKeeper.iterator(); i.hasNext(); )
+      {
+         RemotePeer rp = (RemotePeer)i.next();
+         if (rp instanceof RemoteReplicatorOutput)
+         {
+            if (outputs.isEmpty())
+            {
+               outputs = new HashSet();
+            }
+            outputs.add(rp);
+         }
+      }
+      return outputs;
+   }
+
 
    public String toString()
    {
@@ -114,87 +184,52 @@ public class Replicator extends PeerSupport implements DistributedDestination, R
 
    protected void doJoin() throws DistributedException
    {
-//      collector = new AcknowledgmentCollector(this);
-//
-//      if (!rpcServer.registerUnique(peerID, collector))
-//      {
-//         throw new IllegalStateException("There is already another server delegate registered " +
-//                                         "under the category " + peerID);
-//      }
-//
-//      collector.start();
+      collector = new AcknowledgmentCollector(new GUID().toString());
+
+      if (!rpcServer.registerUnique(peerID, collector))
+      {
+         throw new IllegalStateException("There is already another server delegate registered " +
+                                         "under category " + peerID);
+      }
 
       rpcServer.register(viewKeeper.getGroupID(), this);
 
-      if (channelListener == null)
-      {
-         channelListener = new ChannelListenerImpl();
-         dispatcher.addChannelListener(channelListener);
-      }
    }
 
    protected void doLeave() throws DistributedException
    {
       rpcServer.unregister(viewKeeper.getGroupID(), this);
-//      rpcServer.unregister(peerID, collector);
-//      collector.stop();
-//      collector = null;
+      collector = null;
    }
 
-   protected RemotePeer createRemotePeer(RemotePeerInfo ack)
+   protected RemotePeer createRemotePeer(RemotePeerInfo thatPeerInfo)
    {
-      throw new NotYetImplementedException();
+      PeerIdentity remotePeerIdentity = thatPeerInfo.getPeerIdentity();
+      if (log.isTraceEnabled()) { log.trace(this + " adding remote peer " + remotePeerIdentity); }
+
+      if (thatPeerInfo instanceof ReplicatorPeerInfo)
+      {
+         return new RemoteReplicator(remotePeerIdentity);
+      }
+      else if (thatPeerInfo instanceof ReplicatorOutputPeerInfo)
+      {
+         return new RemoteReplicatorOutput(remotePeerIdentity);
+      }
+      else
+      {
+         throw new IllegalArgumentException("Unknown RemotePeerInfo type " + thatPeerInfo);
+      }
    }
 
    protected RemotePeerInfo getRemotePeerInfo()
    {
-      return new RemotePeerInfo(getPeerIdentity());
+      return new ReplicatorPeerInfo(getPeerIdentity());
    }
 
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
 
-   protected class ChannelListenerImpl implements ChannelListener
-   {
-      public void channelConnected(org.jgroups.Channel channel)
-      {
-//         log.debug(Replicator.this + " channel connected");
-//         try
-//         {
-//            start();
-//         }
-//         catch(Exception e)
-//         {
-//            log.error("the replicator cannot be restarted", e);
-//         }
-         throw new NotYetImplementedException();
-      }
-
-      public void channelDisconnected(org.jgroups.Channel channel)
-      {
-//         log.debug(Replicator.this + " channel disconnected");
-//         stop();
-         throw new NotYetImplementedException();
-      }
-
-      public void channelClosed(org.jgroups.Channel channel)
-      {
-//         log.debug(Replicator.this + " channel closed");
-//         stop();
-         throw new NotYetImplementedException();
-      }
-
-      public void channelShunned()
-      {
-         log.debug(Replicator.this + " channel shunned");
-      }
-
-      public void channelReconnected(Address address)
-      {
-         log.debug(Replicator.this + " channel reconnected");
-      }
-   }
 }
 
 
@@ -204,7 +239,7 @@ public class Replicator extends PeerSupport implements DistributedDestination, R
 //      //
 //      // TODO: I totally override ChannelSupport.acknowledge() because I am not using
 //      //       localAcknowledgmentStore and super.acknowledge() will throw NPE. However,
-//      //       when AcknowledgmentCollector will implement AcknolwedgmentStore, I will
+//      //       when AcknowledgmentCollector2 will implement AcknolwedgmentStore, I will
 //      //       just delegate to super.acknowledge()
 //      //
 //      collector.acknowledge(messageID, receiverID);
@@ -227,7 +262,7 @@ public class Replicator extends PeerSupport implements DistributedDestination, R
 //         r.putHeader(Routable.REPLICATOR_INPUT_ID, peerID);
 //
 //         Set view = topology.getView();
-//         AcknowledgmentCollector.Ticket ticket = null;
+//         AcknowledgmentCollector2.Ticket ticket = null;
 //
 //         collector.lock();
 //

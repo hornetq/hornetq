@@ -43,7 +43,7 @@ public interface Routable extends Serializable
 {
    static final String REMOTE_ROUTABLE = "REMOTE_ROUTABLE";
    static final String REPLICATOR_ID = "REPLICATOR_ID";
-   static final String REPLICATOR_INPUT_ID = "REPLICATOR_INPUT_ID";
+   static final String COLLECTOR_ID = "COLLECTOR_ID";
 
    Serializable getMessageID();
 

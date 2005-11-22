@@ -28,7 +28,7 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.messaging.core.distributed.DistributedException;
-import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Channel;
@@ -111,7 +111,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
 
       try
       {
-         ((DistributedDestination)channel).join();
+         ((Distributed)channel).join();
          fail("should throw DistributedException");
       }
       catch(DistributedException e)
@@ -168,8 +168,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -222,8 +222,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -290,8 +290,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -358,8 +358,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -416,8 +416,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -475,8 +475,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -544,8 +544,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -609,8 +609,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -684,8 +684,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -744,8 +744,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -809,8 +809,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -860,8 +860,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -920,8 +920,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -971,8 +971,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -1026,8 +1026,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -1099,8 +1099,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1147,8 +1147,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1218,8 +1218,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1283,8 +1283,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1340,8 +1340,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1399,8 +1399,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1478,8 +1478,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1554,8 +1554,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1620,8 +1620,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1690,8 +1690,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1750,8 +1750,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -1845,8 +1845,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -1907,8 +1907,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -1964,8 +1964,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2037,8 +2037,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2124,8 +2124,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2184,8 +2184,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2250,8 +2250,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2352,8 +2352,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2431,8 +2431,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2530,8 +2530,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2605,8 +2605,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2678,8 +2678,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2747,8 +2747,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2836,8 +2836,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2920,8 +2920,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -2984,8 +2984,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -3052,8 +3052,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -3109,8 +3109,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -3175,8 +3175,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -3232,8 +3232,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -3293,8 +3293,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the channel
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -3372,8 +3372,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3424,8 +3424,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3476,8 +3476,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3542,8 +3542,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3598,8 +3598,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3657,8 +3657,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3716,8 +3716,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3775,8 +3775,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3829,8 +3829,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3893,8 +3893,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -3944,8 +3944,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -4004,8 +4004,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -4055,8 +4055,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -4110,8 +4110,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no remote receivers
       assertFalse(channel.iterator().hasNext());
@@ -4183,8 +4183,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4233,8 +4233,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4290,8 +4290,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4341,8 +4341,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4400,8 +4400,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4461,8 +4461,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4526,8 +4526,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4588,8 +4588,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4650,8 +4650,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4722,8 +4722,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4782,8 +4782,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4850,8 +4850,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4909,8 +4909,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -4972,8 +4972,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an ACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
@@ -5053,8 +5053,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5115,8 +5115,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5173,8 +5173,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5244,8 +5244,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5330,8 +5330,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5391,8 +5391,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5459,8 +5459,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5546,8 +5546,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5610,8 +5610,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5668,8 +5668,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5739,8 +5739,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5824,8 +5824,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5885,8 +5885,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -5953,8 +5953,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6040,8 +6040,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6110,8 +6110,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6185,8 +6185,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6255,8 +6255,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6325,8 +6325,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6405,8 +6405,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6464,8 +6464,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6532,8 +6532,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6591,8 +6591,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6654,8 +6654,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // add an NACKING receiver to the remote channel peer
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
@@ -6731,8 +6731,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -6791,8 +6791,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -6854,8 +6854,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -6932,8 +6932,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -6992,8 +6992,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -7052,8 +7052,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
@@ -7123,8 +7123,8 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(2, jchannel.getView().getMembers().size());
       assertEquals(2, jchannel2.getView().getMembers().size());
 
-      ((DistributedDestination)channel).join();
-      ((DistributedDestination)channel2).join();
+      ((Distributed)channel).join();
+      ((Distributed)channel2).join();
 
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());

@@ -61,8 +61,14 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       throw new NotYetImplementedException();
    }
 
-
    // Public --------------------------------------------------------
+
+   public void waitForCancellation(int cancellationCount, long timeout)
+   {
+      
+   }
+
+
 
    // Package protected ---------------------------------------------
    

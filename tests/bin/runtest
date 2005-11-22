@@ -93,7 +93,7 @@
 #TARGET_TEST=testGroupOfTwo
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
 #TARGET_TEST=testNonRecoverableDistributedChannel_1
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
 #TARGET_TEST=testSimpleSend
 
 #
@@ -105,8 +105,9 @@ TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQue
 #
 # core.distributed.replicator
 #
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest;
-#TARGET_TEST=testGroupOfOne
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest;
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest;
+TARGET_TEST=testReplicator_2
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #

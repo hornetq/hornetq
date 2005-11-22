@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.distributed;
 
 import java.util.Set;
+import java.util.Iterator;
 import java.io.Serializable;
 
 /**
@@ -47,5 +48,10 @@ public interface ViewKeeper
     * Return a set containing PeerIdentities of the remote peers.
     */
    Set getRemotePeers();
+
+   /**
+    * Return a RemotePeer iterator.
+    */
+   Iterator iterator();
 
 }

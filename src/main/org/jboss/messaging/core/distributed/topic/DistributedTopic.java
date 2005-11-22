@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.distributed.topic;
 
 import org.jboss.messaging.core.local.Topic;
-import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
@@ -45,7 +45,7 @@ import java.util.Set;
  *
  * $Id$
  */
-public class DistributedTopic extends Topic implements DistributedDestination
+public class DistributedTopic extends Topic implements Distributed
  {
    // Constants -----------------------------------------------------
 
@@ -75,7 +75,7 @@ public class DistributedTopic extends Topic implements DistributedDestination
       throw new NotYetImplementedException();
    }
 
-   // DistributedDestination implementation --------------------------
+   // Distributed implementation --------------------------
 
    public void join() throws DistributedException
    {
@@ -154,6 +154,11 @@ public class DistributedTopic extends Topic implements DistributedDestination
       }
 
       public Set getRemotePeers()
+      {
+         throw new NotYetImplementedException();
+      }
+
+      public Iterator iterator()
       {
          throw new NotYetImplementedException();
       }

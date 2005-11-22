@@ -19,14 +19,12 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.message.InMemoryMessageStore;
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.distributed.Distributed;
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
+import org.jboss.test.messaging.core.distributed.SimpleViewKeeper;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**
@@ -35,7 +33,7 @@ import org.jgroups.blocks.RpcDispatcher;
  *
  * $Id$
  */
-public class QueuePeerTest extends PeerTestBase
+public class ReplicatorOutputTest extends PeerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -43,11 +41,13 @@ public class QueuePeerTest extends PeerTestBase
    
    // Attributes ----------------------------------------------------
 
-   protected MessageStore ms;
+   protected SimpleViewKeeper viewKeeper;
+
+   protected ReplicatorOutput replicatorOutput, replicatorOutput2, replicatorOutput3;
 
    // Constructors --------------------------------------------------
 
-   public QueuePeerTest(String name)
+   public ReplicatorOutputTest(String name)
    {
       super(name);
    }
@@ -56,17 +56,23 @@ public class QueuePeerTest extends PeerTestBase
 
    public void setUp() throws Exception
    {
-      ms = new InMemoryMessageStore("in-memory-message-store");
-
+      viewKeeper = new SimpleViewKeeper("replicator0");
       super.setUp();
+
+      replicatorOutput = (ReplicatorOutput)distributed;
+      replicatorOutput2 = (ReplicatorOutput)distributed2;
+      replicatorOutput3 = (ReplicatorOutput)distributed3;
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      ms = null;
-
+      replicatorOutput = null;
+      replicatorOutput2 = null;
+      replicatorOutput3 = null;
+      viewKeeper.clear();
+      viewKeeper = null;
       super.tearDown();
    }
 
@@ -76,7 +82,7 @@ public class QueuePeerTest extends PeerTestBase
 
    protected Distributed createDistributedDestination(String name, RpcDispatcher d)
    {
-      return new DistributedQueue(name, ms, d);
+      return new ReplicatorOutput(name, d, null);
    }
 
    // Private -------------------------------------------------------

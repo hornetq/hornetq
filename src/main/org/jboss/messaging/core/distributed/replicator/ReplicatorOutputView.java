@@ -19,79 +19,89 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed.queue;
+package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.ViewKeeper;
+import org.jboss.messaging.core.distributed.RemotePeer;
 
 import java.io.Serializable;
-import java.io.ObjectOutput;
-import java.io.IOException;
-import java.io.ObjectInput;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
- * @see RemotePeerInfo
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class QueuePeerInfo extends RemotePeerInfo
+public class ReplicatorOutputView implements ViewKeeper
 {
    // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-   
    // Attributes ----------------------------------------------------
 
-   protected Serializable pipeID;
+   private Serializable replicatorID;
+   private Set remotePeers;
 
    // Constructors --------------------------------------------------
 
-   /**
-    * For externalization.
-    */
-   public QueuePeerInfo()
+   public ReplicatorOutputView(Serializable replicatorID)
    {
+      this.replicatorID = replicatorID;
+      this.remotePeers = new HashSet();
    }
 
-   /**
-    * @param peerIdentity - the identity of acknowledging peer.
-    * @param pipeID - the id of the distributed pipe the acknowledging peer can be contacted at.
-    */
-   public QueuePeerInfo(PeerIdentity peerIdentity, Serializable pipeID)
+   // ViewKeeper implementation -------------------------------------
+
+   public Serializable getGroupID()
    {
-      this.peerIdentity = peerIdentity;
-      this.pipeID = pipeID;
+      return replicatorID;
    }
 
-   // Externalizable implementation ---------------------------------
-
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void addRemotePeer(RemotePeer remotePeer)
    {
-      super.writeExternal(out);
-      out.writeObject(pipeID);
+      remotePeers.add(remotePeer);
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void removeRemotePeer(PeerIdentity remotePeerIdentity)
    {
-      super.readExternal(in);
-      pipeID = (Serializable)in.readObject();
+      for(Iterator i = remotePeers.iterator(); i.hasNext(); )
+      {
+         RemotePeer rp = (RemotePeer)i.next();
+         if (rp.getPeerIdentity().equals(remotePeerIdentity))
+         {
+            i.remove();
+            break;
+         }
+      }
+   }
+
+   public Set getRemotePeers()
+   {
+      Set ids = new HashSet();
+      for(Iterator i = remotePeers.iterator(); i.hasNext(); )
+      {
+         RemotePeer rp = (RemotePeer)i.next();
+         ids.add(rp.getPeerIdentity());
+      }
+      return ids;
+   }
+
+   public Iterator iterator()
+   {
+      return remotePeers.iterator();
    }
 
    // Public --------------------------------------------------------
 
-   public Serializable getPipeID()
-   {
-      return pipeID;
-   }
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 }

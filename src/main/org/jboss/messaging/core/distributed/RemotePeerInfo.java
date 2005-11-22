@@ -27,7 +27,8 @@ import java.io.ObjectInput;
 import java.io.Externalizable;
 
 /**
- * The acknowledgment returned by a peer accepting a new peer to join a distributed structure.
+ * A PeerInfo instance contains enough information to allow a peer to establish a logical connection
+ * to the peer that sent that information.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>

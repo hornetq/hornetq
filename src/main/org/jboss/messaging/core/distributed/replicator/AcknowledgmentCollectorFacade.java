@@ -22,15 +22,19 @@
 package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.distributed.util.ServerFacade;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 
 import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 interface AcknowledgmentCollectorFacade extends ServerFacade
 {
-   public void acknowledge(Serializable messageID, Serializable outputPeerID,
-                           Serializable receiverID, Boolean positive);
+   void acknowledge(PeerIdentity originator, Serializable messageID);
+
+   void cancel(PeerIdentity originator, Serializable messageID);
 }
