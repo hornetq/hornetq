@@ -66,9 +66,11 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       super.setUp();
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       ms = new PersistentMessageStore("test-persitent-store", pm);
 
       pm2 = new JDBCPersistenceManager();
+      pm2.start();
       ms2 = new PersistentMessageStore("test-persistent-store2", pm2);
 
       log.debug("setup done");

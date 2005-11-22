@@ -56,6 +56,7 @@ public class RecoverableQueueTest extends QueueTestBase
       super.setUp();
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       ms = new PersistentMessageStore("persistent-message-store", pm);
 
       channel = new Queue("test", ms, pm);

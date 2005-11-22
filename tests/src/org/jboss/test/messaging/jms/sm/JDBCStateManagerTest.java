@@ -68,8 +68,7 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
    
    protected StateManager createStateManager() throws Exception
    {
-      JDBCStateManager sm = new JDBCStateManager(ServerManagement.getServerPeer());
-      sm.start();
+      sm = ServerManagement.getServerPeer().getStateManager();
       return sm;
    }
    

@@ -60,8 +60,11 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
       super.setUp();
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       pm2 = new JDBCPersistenceManager();
+      pm2.start();
       pm3 = new JDBCPersistenceManager();
+      pm3.start();
 
       ms = new PersistentMessageStore("persistent-message-store", pm);
       ms2 = new PersistentMessageStore("persistent-message-store2", pm2);

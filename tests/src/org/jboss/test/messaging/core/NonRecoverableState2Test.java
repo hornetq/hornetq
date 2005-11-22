@@ -41,6 +41,7 @@ public class NonRecoverableState2Test extends StateTestBase
 
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       ms = new PersistentMessageStore("ms0", pm);
       channel = new SimpleChannel("test-channel", ms);
 

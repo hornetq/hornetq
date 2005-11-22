@@ -46,9 +46,7 @@ public class TransactionRepository
 
    // Attributes ----------------------------------------------------
    
-   protected Map globalToLocalMap;
-   
-   protected int txIdSequence;
+   protected Map globalToLocalMap;     
    
    protected PersistenceManager pm;
 
@@ -59,10 +57,11 @@ public class TransactionRepository
    public TransactionRepository(PersistenceManager pm)
    {
       globalToLocalMap = new ConcurrentReaderHashMap();
-      this.pm = pm;
+      this.pm = pm;  
    }
    
    // Public --------------------------------------------------------
+      
    
    public Transaction getPreparedTx(Xid xid) throws TransactionException
    {
@@ -84,7 +83,7 @@ public class TransactionRepository
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(generateTxId(), xid, pm);
+      Transaction tx = new Transaction(xid, pm);
       
       if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
       
@@ -94,7 +93,7 @@ public class TransactionRepository
    
    public Transaction createTransaction() throws TransactionException
    {
-      Transaction tx = new Transaction(generateTxId(), null, pm);
+      Transaction tx = new Transaction(null, pm);
 
       if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
 
@@ -109,11 +108,7 @@ public class TransactionRepository
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
-   protected synchronized int generateTxId()
-   {
-      return txIdSequence++;
-   }
+      
    
    // Private -------------------------------------------------------
    

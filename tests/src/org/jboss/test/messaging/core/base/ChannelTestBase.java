@@ -99,6 +99,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       ic.close();
 
       msPersistenceManager = new JDBCPersistenceManager();
+      msPersistenceManager.start();
       ms = new PersistentMessageStore("message-store", msPersistenceManager);
    }
 

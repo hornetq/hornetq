@@ -173,7 +173,9 @@ public class ServerPeer
 
       mbeanServer = findMBeanServer();
 
-      pm = new JDBCPersistenceManager();
+      JDBCPersistenceManager jpm = new JDBCPersistenceManager();
+      jpm.start();
+      pm = jpm;
       
       txRepository = new TransactionRepository(pm);
      

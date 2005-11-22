@@ -51,9 +51,11 @@ public class Transaction
 
    // Attributes ----------------------------------------------------
    
-   protected int state;
+   protected long longTxID;
    
-   protected int txID;
+   protected String guidTxID;
+   
+   protected int state;
    
    protected Xid xid;
    
@@ -108,10 +110,9 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction(int id, Xid xid, PersistenceManager mgr)
+   Transaction(Xid xid, PersistenceManager mgr)
    {
       state = STATE_ACTIVE;
-      txID = id;
       this.xid = xid;
       pm = mgr;
       postCommitTasks = new ArrayList();
@@ -123,12 +124,7 @@ public class Transaction
    public int getState()
    {
       return state;
-   }
-   
-   public long getID()
-   {
-      return txID;
-   }
+   }      
    
    public Xid getXid()
    {
@@ -144,8 +140,7 @@ public class Transaction
    {
       postRollbackTasks.add(task);
    }
-   
-   
+      
    public void commit() throws Exception
    {
       if (state == STATE_ROLLBACK_ONLY)
@@ -216,11 +211,38 @@ public class Transaction
       insertedTXRecord = true;
       return inserted;
    }
+   
+   public void setGuidTxID(String guid)
+   {
+      this.guidTxID = guid;
+   }
+   
+   public String getGuidTxId()
+   {
+      return guidTxID;
+   }
+   
+   public long getLongTxId()
+   {
+      return longTxID;
+   }
+   
+   public void setLongTxId(long id)
+   {
+      this.longTxID = id;
+   }
 
    public String toString()
    {
       StringBuffer sb = new StringBuffer("TX(");
-      sb.append(txID);
+      if (this.guidTxID != null)
+      {
+         sb.append(this.guidTxID);
+      }
+      else
+      {
+         sb.append(this.longTxID);
+      }
       sb.append("):");
       sb.append(stateToString(state));
       return sb.toString();

@@ -264,13 +264,13 @@ public class NonRecoverableState implements State
     * Add an AddRefsTask, if it doesn't exist already and return its handle.
     */
    protected AddReferenceTask addAddReferenceTask(Transaction tx)
-   {
-      Long key = new Long(tx.getID());
-      AddReferenceTask task = (AddReferenceTask)txToAddReferenceTasks.get(key);
+   {            
+      //TODO we could avoid this lookup by letting the tx object store the AddReferenceTask
+      AddReferenceTask task = (AddReferenceTask)txToAddReferenceTasks.get(tx);
       if (task == null)
       {
-         task = new AddReferenceTask();
-         txToAddReferenceTasks.put(key, task);
+         task = new AddReferenceTask(tx);
+         txToAddReferenceTasks.put(tx, task);
          tx.addPostCommitTask(task);
       }
       return task;
@@ -281,12 +281,12 @@ public class NonRecoverableState implements State
     */
    protected RemoveDeliveryTask addRemoveDeliveryTask(Transaction tx)
    {
-      Long key = new Long(tx.getID());
-      RemoveDeliveryTask task = (RemoveDeliveryTask)txToRemoveDeliveryTasks.get(key);
+      //TODO we could avoid this lookup by letting the tx object store the RemoveDeliveryTask
+      RemoveDeliveryTask task = (RemoveDeliveryTask)txToRemoveDeliveryTasks.get(tx);
       if (task == null)
       {
-         task = new RemoveDeliveryTask();
-         txToRemoveDeliveryTasks.put(key, task);
+         task = new RemoveDeliveryTask(tx);
+         txToRemoveDeliveryTasks.put(tx, task);
          tx.addPostCommitTask(task);
       }
       return task;
@@ -299,6 +299,13 @@ public class NonRecoverableState implements State
    public class AddReferenceTask implements Runnable
    {
       private List refs = new ArrayList();
+      
+      private Transaction tx;
+      
+      AddReferenceTask(Transaction tx)
+      {
+         this.tx = tx;
+      }
 
       void addReference(MessageReference ref)
       {
@@ -318,6 +325,8 @@ public class NonRecoverableState implements State
          //doing unnecessary work
          //We could provide a flag to determine whether deliver() or deliverOnlyOne() is called
          channel.deliver();         
+         
+         txToAddReferenceTasks.remove(tx);
       }            
    }
 
@@ -325,6 +334,13 @@ public class NonRecoverableState implements State
    public class RemoveDeliveryTask implements Runnable
    {
       private List dels = new ArrayList();
+      
+      private Transaction tx;
+      
+      RemoveDeliveryTask(Transaction tx)
+      {
+         this.tx = tx;
+      }
 
       void addDelivery(Delivery d)
       {
@@ -339,6 +355,7 @@ public class NonRecoverableState implements State
             if (log.isTraceEnabled()) { log.trace("removing " + d + " from non-recoverable state"); }
             deliveries.remove(d.getReference().getMessageID());
          }
+         txToRemoveDeliveryTasks.remove(tx);
       }            
    }
 

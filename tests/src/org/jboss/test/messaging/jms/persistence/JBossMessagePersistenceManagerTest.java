@@ -56,11 +56,11 @@ public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersisten
       super.tearDown();
    }
   
-   protected void checkEqual(Message m1, Message m2) throws Exception
+   protected void checkEquivalent(Message m1, Message m2) throws Exception
    {
-      super.checkEqual(m1, m2);
+      super.checkEquivalent(m1, m2);
      
-      if (!(m1 instanceof javax.jms.Message) && !(m2 instanceof javax.jms.Message))
+      if (!(m1 instanceof JBossMessage) && !(m2 instanceof JBossMessage))
       {
          fail();
       }
@@ -88,44 +88,39 @@ public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersisten
       assertEquals(jm1.getJMSReplyTo(), jm2.getJMSReplyTo());
       assertEquals(jm1.getJMSTimestamp(), jm2.getJMSTimestamp());
 
-      checkHeadersEquals(jm1.getJMSProperties(), jm2.getJMSProperties());
+      checkMapsEquivalent(jm1.getJMSProperties(), jm2.getJMSProperties());
       
- 
+
    }
    
-   protected Message[] createMessages() throws Exception
+   protected Message createMessage(int i) throws Exception
    {
-      Message[] messages = new Message[10];
-      //Create some messages with a good range of attribute values
-      for (int i = 0; i < 10; i++)
-      {
-         
-         Map coreHeaders = generateHeadersFilledWithCrap(true);         
-         
-         Map jmsProperties = generateHeadersFilledWithCrap(false);
-                  
-         JBossMessage m = 
-            new JBossMessage(new GUID().toString(),
-               true,
-               System.currentTimeMillis() + 1000 * 60 * 60,
-               System.currentTimeMillis(),
-               coreHeaders,
-               new WibblishObject(),
-               i % 2 == 0 ? new GUID().toString() : null,
-               i,
-               genCorrelationID(i),
-               i % 2 == 0,
-               new GUID().toString(),
-               i % 2 == 1,
-               new GUID().toString(),
-               jmsProperties);
-         m.setJMSRedelivered(i % 2 == 0);
-         messages[i] = m;
-      }
-      return messages;
+      Map coreHeaders = generateFilledMap(true);         
+      
+      Map jmsProperties = generateFilledMap(false);
+               
+      JBossMessage m = 
+         new JBossMessage(new GUID().toString(),
+            true,
+            System.currentTimeMillis() + 1000 * 60 * 60,
+            System.currentTimeMillis(),
+            coreHeaders,
+            new WibblishObject(),
+            i % 2 == 0 ? new GUID().toString() : null,
+            i,
+            genCorrelationID(i),
+            i % 2 == 0,
+            new GUID().toString(),
+            i % 2 == 1,
+            new GUID().toString(),
+            jmsProperties);
+      m.setJMSRedelivered(i % 2 == 0);
+      
+
+      return m;
    }
    
-   private Object genCorrelationID(int i)
+   protected Object genCorrelationID(int i)
    {
       if (i % 3 == 0)
       {

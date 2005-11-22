@@ -80,6 +80,7 @@ public abstract class StateTestBase extends MessagingTestCase
       sc.start();
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       tr = new TransactionRepository(pm);
 
       // message store to be initialized by subclasses

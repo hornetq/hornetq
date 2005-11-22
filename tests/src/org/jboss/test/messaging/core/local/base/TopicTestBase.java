@@ -74,6 +74,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       sc.start();
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       ms = new PersistentMessageStore("store1", pm);
    }
 

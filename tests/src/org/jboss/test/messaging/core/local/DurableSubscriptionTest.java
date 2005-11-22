@@ -57,6 +57,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
       super.setUp();
 
       pm = new JDBCPersistenceManager();
+      pm.start();
       ms = new PersistentMessageStore("persistent-message-store", pm);
       tr.setPersistenceManager(pm);
 

@@ -76,5 +76,7 @@ public interface PersistenceManager
    void rollbackTx(Transaction tx) throws Exception;
    
    List retrievePreparedTransactions() throws Exception;
+   
+   void start() throws Exception;
 
 }
