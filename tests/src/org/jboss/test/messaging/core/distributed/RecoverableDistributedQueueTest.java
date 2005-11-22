@@ -24,7 +24,8 @@ package org.jboss.test.messaging.core.distributed;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
 
 /**

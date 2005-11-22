@@ -84,17 +84,30 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueuePeerTest
-TARGET_TEST=testGroupOfOne
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.TopicPeerTest
+
+#
+# core.distributed.queue
+#
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueuePeerTest
+#TARGET_TEST=testGroupOfTwo
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
 #TARGET_TEST=testNonRecoverableDistributedChannel_1
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
 #TARGET_TEST=testSimpleSend
+
+#
+# core.distributed.topic
+#
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.TopicPeerTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.DistributedTopicTest
 
+#
+# core.distributed.replicator
+#
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest;
+#TARGET_TEST=testGroupOfOne
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #
 # distributed utils

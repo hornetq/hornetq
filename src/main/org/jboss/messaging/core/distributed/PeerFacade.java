@@ -21,10 +21,7 @@
   */
 package org.jboss.messaging.core.distributed;
 
-import org.jgroups.Address;
 import org.jboss.messaging.core.distributed.util.ServerFacade;
-
-import java.io.Serializable;
 
 /**
  * Exposes methods to be invoked remotely by queue peers.
@@ -37,20 +34,20 @@ import java.io.Serializable;
 public interface PeerFacade extends ServerFacade
 {
    /**
-    * Remote method invoked by a queue peer on all other queue peers when joining the distributed
-    * queue.
+    * Method invocation received by all group peers when a new peer wants to join the group.
     *
-    * @param remoteAddress - the address of the new peer.
-    * @param remotePeerID - the new peer's peer id.
-    * @param remotePipeID - the id of pipe the new peer listens on.
+    * @return a RemotePeerInfo representing the current peer. The new peer may use this information
+    *         to create a RemotePeer representation of this peer. 
     *
-    * @exception Exception - negative acknowledgment. The join is vetoed (willingly or unwillingly)
+    * @exception Throwable - negative acknowledgment. The join is vetoed (willingly or unwillingly)
     *            by this member.
     */
-   Acknowledgment join(Address remoteAddress, Serializable remotePeerID, Serializable remotePipeID)
-      throws Throwable;
+   RemotePeerInfo include(RemotePeerInfo newPeerInfo) throws Throwable;
 
-   void leave(PeerIdentity originator);
+   /**
+    * Method invocation received by all group peers when a peer wants to leave the group.
+    */
+   void exclude(PeerIdentity originator);
 
    PeerIdentity ping(PeerIdentity originator);
 

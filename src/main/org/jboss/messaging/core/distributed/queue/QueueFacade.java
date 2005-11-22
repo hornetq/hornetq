@@ -19,9 +19,11 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.distributed.PeerFacade;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 
 import java.util.List;
 

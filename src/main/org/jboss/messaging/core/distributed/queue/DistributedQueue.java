@@ -19,12 +19,19 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.distributed.queue.QueuePeer;
+import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.ViewKeeper;
+import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.Peer;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
@@ -82,7 +89,7 @@ public class DistributedQueue extends Queue implements DistributedDestination
 
    public Iterator iterator()
    {
-      return new SelectiveIterator(super.iterator(), RemoteReceiver.class);
+      return new SelectiveIterator(super.iterator(), RemotePeer.class);
    }
 
    // Channel overrides ---------------------------------------------
@@ -184,6 +191,13 @@ public class DistributedQueue extends Queue implements DistributedDestination
          return getChannelID();
       }
 
+      public void addRemotePeer(RemotePeer remotePeer)
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " adding remote peer " + remotePeer); }
+
+         router.add((RemoteQueue)remotePeer);
+      }
+
       public void removeRemotePeer(PeerIdentity remotePeerIdentity)
       {
          if (log.isTraceEnabled()) { log.trace(this + " removing remote peer " + remotePeerIdentity); }
@@ -192,10 +206,10 @@ public class DistributedQueue extends Queue implements DistributedDestination
          for(Iterator i = router.iterator(); i.hasNext(); )
          {
             Object receiver = i.next();
-            if (receiver instanceof RemoteReceiver)
+            if (receiver instanceof RemotePeer)
             {
-               RemoteReceiver rr = (RemoteReceiver)receiver;
-               if (rr.getPeerIdentity().equals(remotePeerIdentity))
+               RemotePeer rp = (RemotePeer)receiver;
+               if (rp.getPeerIdentity().equals(remotePeerIdentity))
                {
                   i.remove();
                   break;
@@ -210,9 +224,9 @@ public class DistributedQueue extends Queue implements DistributedDestination
          for(Iterator i = router.iterator(); i.hasNext(); )
          {
             Object receiver = i.next();
-            if (receiver instanceof RemoteReceiver)
+            if (receiver instanceof RemotePeer)
             {
-               RemoteReceiver rr = (RemoteReceiver)receiver;
+               RemotePeer rr = (RemotePeer)receiver;
                result.add(rr.getPeerIdentity());
             }
          }

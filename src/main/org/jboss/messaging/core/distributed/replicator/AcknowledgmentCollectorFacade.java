@@ -19,20 +19,18 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.distributed.util.ServerFacade;
 
-import java.util.List;
+import java.io.Serializable;
 
 /**
- * Exposes methods to be invoked remotely by topic peers.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
-public interface TopicFacade extends PeerFacade
+interface AcknowledgmentCollectorFacade extends ServerFacade
 {
+   public void acknowledge(Serializable messageID, Serializable outputPeerID,
+                           Serializable receiverID, Boolean positive);
 }

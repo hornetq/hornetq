@@ -79,7 +79,8 @@ public class ReplicatorTopology
 
    public Serializable getID()
    {
-      return peer.getPeerID();
+//      return peer.getPeerID();
+      throw new NotYetImplementedException();
    }
 
    public void outputPeerJoins(Serializable joiningPeerID, Address address) throws Exception
@@ -168,45 +169,46 @@ public class ReplicatorTopology
 
    public void aquireInitialTopology(RpcDispatcher dispatcher) throws DistributedException
    {
-      // Only output peers register IdentityDelegates
-      RpcServerCall call = new RpcServerCall(peer.getReplicatorID(),
-                                             "getIdentity",
-                                             new Object[] {},
-                                             new String[] {});
-      // TODO - deal with the timeout
-      Collection c = call.remoteInvoke(dispatcher, 30000);
-
-      try
-      {
-         for(Iterator i = c.iterator(); i.hasNext(); )
-         {
-            Object o = i.next();
-            if (o instanceof Throwable)
-            {
-               throw (Throwable)o;
-            }
-            o = ((ServerResponse)o).getInvocationResult();
-            if (o instanceof NoSuchMethodException)
-            {
-               // just ignore it, it means that I reached a input peer that doesn't answer
-               // identity calls
-               continue;
-            }
-            PeerIdentity outputPeerIdentity = (PeerIdentity)o;
-            synchronized(topology)
-            {
-               topology.put(outputPeerIdentity.getPeerID(), outputPeerIdentity.getAddress());
-            }
-            setChanged();
-            notifyObservers();
-         }
-      }
-      catch(Throwable t)
-      {
-         throw new DistributedException("Failed to acquire the intial topology", t);
-      }
-
-      log.debug("Initial topology: " + topology);
+//      // Only output peers register IdentityDelegates
+//      RpcServerCall call = new RpcServerCall(peer.getReplicatorID(),
+//                                             "getIdentity",
+//                                             new Object[] {},
+//                                             new String[] {});
+//      // TODO - deal with the timeout
+//      Collection c = call.remoteInvoke(dispatcher, 30000);
+//
+//      try
+//      {
+//         for(Iterator i = c.iterator(); i.hasNext(); )
+//         {
+//            Object o = i.next();
+//            if (o instanceof Throwable)
+//            {
+//               throw (Throwable)o;
+//            }
+//            o = ((ServerResponse)o).getInvocationResult();
+//            if (o instanceof NoSuchMethodException)
+//            {
+//               // just ignore it, it means that I reached a input peer that doesn't answer
+//               // identity calls
+//               continue;
+//            }
+//            PeerIdentity outputPeerIdentity = (PeerIdentity)o;
+//            synchronized(topology)
+//            {
+//               topology.put(outputPeerIdentity.getPeerID(), outputPeerIdentity.getAddress());
+//            }
+//            setChanged();
+//            notifyObservers();
+//         }
+//      }
+//      catch(Throwable t)
+//      {
+//         throw new DistributedException("Failed to acquire the intial topology", t);
+//      }
+//
+//      log.debug("Initial topology: " + topology);
+      throw new NotYetImplementedException();
    }
 
    public void registerTopologyListener(Observer observer)
@@ -225,10 +227,11 @@ public class ReplicatorTopology
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("Topology[");
-      sb.append(peer.getPeerID());
-      sb.append("]");
-      return sb.toString();
+//      StringBuffer sb = new StringBuffer("Topology[");
+//      sb.append(peer.getPeerID());
+//      sb.append("]");
+//      return sb.toString();
+      throw new NotYetImplementedException();
    }
 
    // Package protected ---------------------------------------------

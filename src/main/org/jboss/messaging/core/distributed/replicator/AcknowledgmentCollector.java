@@ -22,14 +22,10 @@
 package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.util.Lockable;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.distributed.util.RpcServerCall;
-import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -40,15 +36,10 @@ import java.util.HashSet;
 import java.util.Collections;
 
 /**
- * TODO - have AcknoweldgmentCollector implement AcknowledgmentStore. Currently the
- *        AcknowledgmentCollector only keeps the id of the receivers that NACKed.
- *        An AcknowledgmentStore keeps Acknowledgments (ACKs, NACKs and Channel NACKs).
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class AcknowledgmentCollector
-      extends Lockable implements AcknowledgmentCollectorServerDelegate
+public class AcknowledgmentCollector extends Lockable implements AcknowledgmentCollectorFacade
 {
    // Constants -----------------------------------------------------
 
@@ -82,12 +73,13 @@ public class AcknowledgmentCollector
       nonCommitted = Collections.synchronizedMap(new HashMap());
    }
 
-   // AcknowledgmentCollectorServerDelegate implementation ----------
+   // AcknowledgmentCollectorFacade implementation ----------
 
    public Serializable getID()
    {
-      // unique collector per peer
-      return peer.getPeerID();
+//      // unique collector per peer
+//      return peer.getPeerID();
+      throw new NotYetImplementedException();
    }
 
    public void acknowledge(Serializable messageID, Serializable outputPeerID,
@@ -355,6 +347,10 @@ public class AcknowledgmentCollector
    }
 
 
+   public void start()
+   {
+      throw new NotYetImplementedException();
+   }
 
    /**
     * Frees up resources.
@@ -370,10 +366,11 @@ public class AcknowledgmentCollector
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("Collector[");
-      sb.append(peer.getPeerID());
-      sb.append("]");
-      return sb.toString();
+//      StringBuffer sb = new StringBuffer("Collector[");
+//      sb.append(peer.getPeerID());
+//      sb.append("]");
+//      return sb.toString();
+      throw new NotYetImplementedException();
    }
 
    // Package protected ---------------------------------------------
@@ -388,101 +385,102 @@ public class AcknowledgmentCollector
    protected boolean deliver(RpcDispatcher dispatcher)
    {
 
-      // try redelivery several times
-      redelivery: for(int redeliveryCnt = 0; redeliveryCnt < DELIVERY_RETRIES; redeliveryCnt++)
-      {
-         try
-         {
-            try
-            {
-               Thread.sleep(redeliveryCnt * 200);
-            }
-            catch(InterruptedException e)
-            {
-               log.warn(e);
-            }
-
-            lock();
-
-            if (unacked.isEmpty())
-            {
-               return true;
-            }
-
-            if (log.isTraceEnabled()) { log.trace(this + " deliver(), attempt " + (redeliveryCnt + 1)); }
-
-            // TODO scan the collector the other way around and try to redeliver synchronously
-            // TODO more than one message to the current output peer
-            for(Iterator i = unacked.keySet().iterator(); i.hasNext();)
-            {
-               Ticket t = (Ticket)i.next();
-               Routable r = t.getRoutable();
-
-               if (r.isExpired())
-               {
-                  i.remove();
-                  continue;
-               }
-
-               Set outputPeerIDs = (Set)unacked.get(t);
-
-               for(Iterator j = outputPeerIDs.iterator(); j.hasNext(); )
-               {
-                  Serializable peerID = (Serializable)j.next();
-                  Address address = peer.getTopology().getAddress(peerID);
-
-                  // try unicast delivery
-
-                  String methodName = "handle";
-                  RpcServerCall call =
-                        new RpcServerCall(peerID,
-                                          methodName,
-                                          new Object[] {r},
-                                          new String[] {"org.jboss.messaging.core.Routable"});
-
-                  try
-                  {
-                     if (log.isTraceEnabled()) { log.trace("Calling remotely " + methodName +
-                                                           "() on " + address + "." + peerID); }
-
-                     if(((Boolean)call.remoteInvoke(dispatcher, address, 3000)).booleanValue())
-                     {
-                        j.remove();
-                     }
-                     else
-                     {
-                        continue redelivery;
-                     }
-                  }
-                  catch(Throwable tr)
-                  {
-                     log.warn("Remote call " + methodName + "() on " + address +  "." + peerID +
-                              " failed", tr);
-                     continue redelivery;
-                  }
-               }
-               if (outputPeerIDs.isEmpty())
-               {
-                  i.remove();
-               }
-            }
-         }
-         finally
-         {
-            unlock();
-         }
-      }
-
-      lock();
-
-      try
-      {
-         return unacked.isEmpty();
-      }
-      finally
-      {
-         unlock();
-      }
+//      // try redelivery several times
+//      redelivery: for(int redeliveryCnt = 0; redeliveryCnt < DELIVERY_RETRIES; redeliveryCnt++)
+//      {
+//         try
+//         {
+//            try
+//            {
+//               Thread.sleep(redeliveryCnt * 200);
+//            }
+//            catch(InterruptedException e)
+//            {
+//               log.warn(e);
+//            }
+//
+//            lock();
+//
+//            if (unacked.isEmpty())
+//            {
+//               return true;
+//            }
+//
+//            if (log.isTraceEnabled()) { log.trace(this + " deliver(), attempt " + (redeliveryCnt + 1)); }
+//
+//            // TODO scan the collector the other way around and try to redeliver synchronously
+//            // TODO more than one message to the current output peer
+//            for(Iterator i = unacked.keySet().iterator(); i.hasNext();)
+//            {
+//               Ticket t = (Ticket)i.next();
+//               Routable r = t.getRoutable();
+//
+//               if (r.isExpired())
+//               {
+//                  i.remove();
+//                  continue;
+//               }
+//
+//               Set outputPeerIDs = (Set)unacked.get(t);
+//
+//               for(Iterator j = outputPeerIDs.iterator(); j.hasNext(); )
+//               {
+//                  Serializable peerID = (Serializable)j.next();
+//                  Address address = peer.getTopology().getAddress(peerID);
+//
+//                  // try unicast delivery
+//
+//                  String methodName = "handle";
+//                  RpcServerCall call =
+//                        new RpcServerCall(peerID,
+//                                          methodName,
+//                                          new Object[] {r},
+//                                          new String[] {"org.jboss.messaging.core.Routable"});
+//
+//                  try
+//                  {
+//                     if (log.isTraceEnabled()) { log.trace("Calling remotely " + methodName +
+//                                                           "() on " + address + "." + peerID); }
+//
+//                     if(((Boolean)call.remoteInvoke(dispatcher, address, 3000)).booleanValue())
+//                     {
+//                        j.remove();
+//                     }
+//                     else
+//                     {
+//                        continue redelivery;
+//                     }
+//                  }
+//                  catch(Throwable tr)
+//                  {
+//                     log.warn("Remote call " + methodName + "() on " + address +  "." + peerID +
+//                              " failed", tr);
+//                     continue redelivery;
+//                  }
+//               }
+//               if (outputPeerIDs.isEmpty())
+//               {
+//                  i.remove();
+//               }
+//            }
+//         }
+//         finally
+//         {
+//            unlock();
+//         }
+//      }
+//
+//      lock();
+//
+//      try
+//      {
+//         return unacked.isEmpty();
+//      }
+//      finally
+//      {
+//         unlock();
+//      }
+      throw new NotYetImplementedException();
 
    }
 

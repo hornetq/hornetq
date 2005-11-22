@@ -21,9 +21,15 @@
 */
 package org.jboss.test.messaging.core.distributed;
 
-import org.jboss.test.messaging.core.distributed.base.DistributedTopicTestBase;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.messaging.core.distributed.ViewKeeper;
+import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.logging.Logger;
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collections;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,55 +37,70 @@ import org.jboss.messaging.core.distributed.topic.DistributedTopic;
  *
  * $Id$
  */
-public class DistributedTopicTest extends DistributedTopicTestBase
+public class SimpleViewKeeper implements ViewKeeper
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(SimpleViewKeeper.class);
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
+
+   protected Serializable groupID;
+   // set of PeerIdentity instances
+   protected Set identities;
 
    // Constructors --------------------------------------------------
 
-   public DistributedTopicTest(String name)
+   public SimpleViewKeeper(Serializable groupID)
    {
-      super(name);
+      this.groupID = groupID;
+      identities = Collections.synchronizedSet(new HashSet());
    }
 
-   // DistributedQueueTestBase overrides ---------------------------
+   // ViewKeeper implementation -------------------------------------
 
-   public void setUp() throws Exception
+   public Serializable getGroupID()
    {
-      super.setUp();
-
-      topic = new DistributedTopic("test", dispatcher);
-      topic2 = new DistributedTopic("test", dispatcher2);
-      topic3 = new DistributedTopic("test", dispatcher3);
-
-      log.debug("setup done");
+      return groupID;
    }
 
-   public void tearDown() throws Exception
+   public void addRemotePeer(RemotePeer remotePeer)
    {
-      ((DistributedTopic)topic).close();
-      topic = null;
+      log.debug("adding " + remotePeer.getPeerIdentity());
+      identities.add(remotePeer.getPeerIdentity());
 
-      topic2.close();
-      topic2 = null;
+   }
 
-      topic3.close();
-      topic3 = null;
+   public void removeRemotePeer(PeerIdentity remotePeerIdentity)
+   {
+      log.debug("removing remote peer " + remotePeerIdentity);
+      identities.remove(remotePeerIdentity);
+   }
 
-      super.tearDown();
+   public Set getRemotePeers()
+   {
+      return identities;
    }
 
    // Public --------------------------------------------------------
+
+   public void clear()
+   {
+      identities.clear();
+   }
+
+   public String toString()
+   {
+      return "SimpleViewKeeper[" + groupID + "]";
+   }
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

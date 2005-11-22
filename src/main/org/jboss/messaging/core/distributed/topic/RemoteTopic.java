@@ -19,65 +19,61 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.topic;
 
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.distributed.pipe.DistributedPipe;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.distributed.replicator.Replicator;
+import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.tx.Transaction;
 
 import org.jboss.logging.Logger;
 
 /**
- * A representative of a remote receiver.
+ * A representative of a distributed topic peer.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class RemoteReceiver implements Receiver
+public class RemoteTopic extends RemotePeer implements Receiver
  {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(RemoteReceiver.class);
+   private static final Logger log = Logger.getLogger(RemoteTopic.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   protected DistributedPipe p;
-   protected PeerIdentity remotePeerIdentity;
+   protected Replicator r;
 
    // Constructors --------------------------------------------------
 
-   public RemoteReceiver(PeerIdentity remotePeerIdentity, DistributedPipe p)
+   public RemoteTopic(PeerIdentity remotePeerIdentity, Replicator r)
    {
-      this.remotePeerIdentity = remotePeerIdentity;
-      this.p = p;
+      super(remotePeerIdentity);
+      this.r = r;
 
-      if (log.isTraceEnabled()) { log.trace("created remote peer for " + remotePeerIdentity); }
+      if (log.isTraceEnabled()) { log.trace("created topic remote receiver for " + remotePeerIdentity); }
    }
 
    // Receiver implementation ---------------------------------------
 
    public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
-      return p.handle(observer, routable, tx);
+      return r.handle(observer, routable, tx);
    }
 
    // Public --------------------------------------------------------
 
-   public PeerIdentity getPeerIdentity()
-   {
-      return remotePeerIdentity;
-   }
-
    public String toString()
    {
-      return "RemoteReceiver[" + remotePeerIdentity + "]";
+      return "RemoteTopic[" + remotePeerIdentity + "]";
    }
 
    // Package protected ---------------------------------------------

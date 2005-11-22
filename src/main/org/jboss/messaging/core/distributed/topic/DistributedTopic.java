@@ -19,14 +19,15 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.topic;
 
-import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.util.SelectiveIterator;
+import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.ViewKeeper;
+import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.Peer;
+import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
@@ -35,8 +36,6 @@ import org.jgroups.blocks.RpcDispatcher;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * A distributed topic.
@@ -142,40 +141,20 @@ public class DistributedTopic extends Topic implements DistributedDestination
          return getName();
       }
 
+      public void addRemotePeer(RemotePeer remotePeer)
+      {
+         throw new NotYetImplementedException();
+      }
+
       public void removeRemotePeer(PeerIdentity remotePeerIdentity)
       {
          if (log.isTraceEnabled()) { log.trace(this + " removing remote peer " + remotePeerIdentity); }
 
          throw new NotYetImplementedException();
-//         // TODO synchronization
-//         for(Iterator i = router.iterator(); i.hasNext(); )
-//         {
-//            Object receiver = i.next();
-//            if (receiver instanceof RemoteReceiver)
-//            {
-//               RemoteReceiver rr = (RemoteReceiver)receiver;
-//               if (rr.getPeerIdentity().equals(remotePeerIdentity))
-//               {
-//                  i.remove();
-//                  break;
-//               }
-//            }
-//         }
       }
 
       public Set getRemotePeers()
       {
-//         Set result = new HashSet();
-//         for(Iterator i = router.iterator(); i.hasNext(); )
-//         {
-//            Object receiver = i.next();
-//            if (receiver instanceof RemoteReceiver)
-//            {
-//               RemoteReceiver rr = (RemoteReceiver)receiver;
-//               result.add(rr.getPeerIdentity());
-//            }
-//         }
-//         return result;
          throw new NotYetImplementedException();
       }
 

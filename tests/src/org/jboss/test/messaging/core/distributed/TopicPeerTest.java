@@ -23,7 +23,8 @@ package org.jboss.test.messaging.core.distributed;
 
 import org.jboss.messaging.core.message.InMemoryMessageStore;
 import org.jboss.messaging.core.distributed.DistributedDestination;
-import org.jboss.messaging.core.distributed.DistributedTopic;
+import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jgroups.blocks.RpcDispatcher;

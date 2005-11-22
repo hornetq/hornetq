@@ -21,7 +21,8 @@
 */
 package org.jboss.test.messaging.core.distributed.base;
 
-import org.jboss.messaging.core.distributed.DistributedQueue;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;

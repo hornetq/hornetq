@@ -30,14 +30,14 @@ package org.jboss.messaging.core.distributed;
 public interface DistributedDestination
 {
    /**
-    * Connects this peer to the distributed channel.
+    * Connects this peer to the distributed destination.
     *
     * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
     */
    void join() throws DistributedException;
 
    /**
-    * Stops this peer and disconnects it from the distributed channel.
+    * Stops this peer and disconnects it from the distributed destination.
     *
     * @exception DistributedException - a wrapper for exceptions thrown by the distributed layer.
     */

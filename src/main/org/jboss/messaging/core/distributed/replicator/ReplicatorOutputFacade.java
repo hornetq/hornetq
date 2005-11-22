@@ -22,25 +22,20 @@
 package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.distributed.util.ServerFacade;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.distributed.util.ServerFacade;
-
 
 /**
- * Wraps togeter the methods to be invoked remotely by a replicator input.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-interface ReplicatorOutputServerDelegate extends ServerFacade
+interface ReplicatorOutputFacade extends ServerFacade
 {
-
-   /**
-    * The metohd to be called remotely by the replicator input in case of an unacknowledged
-    * message re-delivery attempt. The redelivery attempts are unicast, not multicast.
-    *
-    * @return the acknowledgement as returned by the associated receiver.
-    */
-   public boolean handle(Routable r);
-
+//   /**
+//    * The metohd to be called remotely by the replicator input in case of an unacknowledged
+//    * message re-delivery attempt. The redelivery attempts are unicast, not multicast.
+//    *
+//    * @return the acknowledgement as returned by the associated receiver.
+//    */
+//   public boolean handle(Routable r);
 }

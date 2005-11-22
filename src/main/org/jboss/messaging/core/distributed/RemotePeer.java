@@ -19,21 +19,46 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed.replicator;
-
-import org.jboss.messaging.core.distributed.util.ServerFacade;
-import org.jboss.messaging.core.distributed.util.ServerFacade;
-
-import java.io.Serializable;
+package org.jboss.messaging.core.distributed;
 
 /**
- * Methods to be invoked remotely by the ReplicatorOutput instances.
+ * A representative of a remote peer.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-interface AcknowledgmentCollectorServerDelegate extends ServerFacade
-{
-   public void acknowledge(Serializable messageID, Serializable outputPeerID,
-                           Serializable receiverID, Boolean positive);
+public abstract class RemotePeer
+ {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+
+   protected PeerIdentity remotePeerIdentity;
+
+   // Constructors --------------------------------------------------
+
+   public RemotePeer(PeerIdentity remotePeerIdentity)
+   {
+      this.remotePeerIdentity = remotePeerIdentity;
+   }
+
+   // Public --------------------------------------------------------
+
+   public PeerIdentity getPeerIdentity()
+   {
+      return remotePeerIdentity;
+   }
+
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

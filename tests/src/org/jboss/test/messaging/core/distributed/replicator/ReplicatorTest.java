@@ -19,11 +19,13 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed.replicator;
 
-import org.jboss.test.messaging.core.distributed.base.DistributedTopicTestBase;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.messaging.core.distributed.DistributedDestination;
+import org.jboss.messaging.core.distributed.replicator.Replicator;
+import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
+import org.jboss.test.messaging.core.distributed.SimpleViewKeeper;
+import org.jgroups.blocks.RpcDispatcher;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,7 +33,7 @@ import org.jboss.messaging.core.distributed.topic.DistributedTopic;
  *
  * $Id$
  */
-public class DistributedTopicTest extends DistributedTopicTestBase
+public class ReplicatorTest extends PeerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -39,46 +41,40 @@ public class DistributedTopicTest extends DistributedTopicTestBase
    
    // Attributes ----------------------------------------------------
 
+   protected SimpleViewKeeper viewKeeper;
+
    // Constructors --------------------------------------------------
 
-   public DistributedTopicTest(String name)
+   public ReplicatorTest(String name)
    {
       super(name);
    }
 
-   // DistributedQueueTestBase overrides ---------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
+      viewKeeper = new SimpleViewKeeper("replicator0");
       super.setUp();
-
-      topic = new DistributedTopic("test", dispatcher);
-      topic2 = new DistributedTopic("test", dispatcher2);
-      topic3 = new DistributedTopic("test", dispatcher3);
-
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      ((DistributedTopic)topic).close();
-      topic = null;
-
-      topic2.close();
-      topic2 = null;
-
-      topic3.close();
-      topic3 = null;
-
+      viewKeeper.clear();
+      viewKeeper = null;
       super.tearDown();
    }
-
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
+   protected DistributedDestination createDistributedDestination(String name, RpcDispatcher d)
+   {
+      return new Replicator(viewKeeper, d);
+   }
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   
