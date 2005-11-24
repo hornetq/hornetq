@@ -31,7 +31,6 @@ import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.JDBCStateManager;
 import org.jboss.jms.server.StateManager;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.test.messaging.tools.ServerManagement;
