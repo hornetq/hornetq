@@ -40,14 +40,15 @@ import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
 import java.util.Random;
+import java.util.Set;
+import java.util.Iterator;
 
 
 
 /**
  * A Replicator is a distributed receiver that replicates synchronously or asynchronously a message
- * to multiple receivers living  <i>in different address spaces</i> synchronously or asynchronously.
- * A replicator could have multiple inputs and multiple outputs. Messages sent by an input are
- * replicated to every output.
+ * to multiple receivers living  <i>in different address spaces</i>. A replicator could have
+ * multiple inputs and multiple outputs. Messages sent by an input are replicated to every output.
  * <p>
  * The replication of messages is done efficiently by multicasting, but message acknowledment is
  * handled by the replicator (so far) in a point-to-point manner. For that reason, each replicator
@@ -96,6 +97,10 @@ public class ReplicatorOutput
          channelListener = new ChannelListenerImpl();
          dispatcher.addChannelListener(channelListener);
       }
+
+      // delegate to the existing listener, if any
+      MessageListener delegateListener = dispatcher.getMessageListener();
+      dispatcher.setMessageListener(new MessageListenerImpl(delegateListener));
    }
 
    protected void doLeave() throws DistributedException
@@ -135,8 +140,7 @@ public class ReplicatorOutput
 
    public Serializable getID()
    {
-//      return peerID;
-      throw new NotYetImplementedException();
+      return peerID;
    }
 
    public boolean handle(Routable m)
@@ -438,6 +442,16 @@ public class ReplicatorOutput
 
    protected class ChannelListenerImpl implements ChannelListener
    {
+      // Constants -----------------------------------------------------
+
+      // Static --------------------------------------------------------
+
+      // Attributes ----------------------------------------------------
+
+      // Constructors --------------------------------------------------
+
+      // ChannelListener implementation --------------------------------
+
       public void channelConnected(org.jgroups.Channel channel)
       {
          log.debug(ReplicatorOutput.this + " channel connected");
@@ -472,114 +486,148 @@ public class ReplicatorOutput
       {
          log.debug(ReplicatorOutput.this + " channel reconnected");
       }
-   }
 
+      // Public --------------------------------------------------------
+
+      // Package protected ---------------------------------------------
+
+      // Protected -----------------------------------------------------
+
+      // Private -------------------------------------------------------
+
+      // Inner classes -------------------------------------------------
+   }
 
    protected class MessageListenerImpl implements MessageListener
    {
+      // Constants -----------------------------------------------------
+
+      // Static --------------------------------------------------------
+
+      // Attributes ----------------------------------------------------
+
+      protected MessageListener delegate;
+
+      // Constructors --------------------------------------------------
+
+      public MessageListenerImpl(MessageListener delegate)
+      {
+         this.delegate = delegate;
+      }
 
       // MessageListener implementation --------------------------------
 
       public void receive(org.jgroups.Message jgroupsMessage)
       {
+         boolean handled = false;
          Object  o = jgroupsMessage.getObject();
 
-         if (!(o instanceof Routable))
-         {
-            if (log.isTraceEnabled()) { log.trace(this + " received a non-routable (" + o + "), discarding ..."); }
-            return;
-         }
-
-         Routable r = (Routable)o;
-         Object replicatorID = r.getHeader(Routable.REPLICATOR_ID);
-         if (!getGroupID().equals(replicatorID))
-         {
-            if (log.isTraceEnabled()) { log.trace(this + " received a routable from a different replicator (" + replicatorID + "), discarding ..."); }
-            return;
-         }
-
-         if (log.isTraceEnabled()) { log.trace(this + " received message " + r); }
-
-
-         r.removeHeader(Routable.REPLICATOR_ID);
-         Serializable collectorID = r.removeHeader(Routable.COLLECTOR_ID);
-
-         // Mark the message as being received from a remote endpoint
-         r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
-
-         Delivery d = null;
          try
          {
-            if (receiver != null)
+            if (!(o instanceof Routable))
             {
-               d = receiver.handle(null, r, null);
+               if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " received a non-routable (" + o + "), discarding"); }
+               return;
+            }
+
+            Routable r = (Routable)o;
+            Object replicatorID = r.getHeader(Routable.REPLICATOR_ID);
+            if (!getGroupID().equals(replicatorID))
+            {
+               if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " received a routable from a different replicator (" + replicatorID + "), discarding"); }
+               return;
+            }
+
+            if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " received message " + r); }
+
+            r.removeHeader(Routable.REPLICATOR_ID);
+
+            Serializable collectorID = r.removeHeader(Routable.COLLECTOR_ID);
+            Address collectorAddress = null;
+            Set ids = viewKeeper.getRemotePeers();
+            for(Iterator i = ids.iterator(); i.hasNext(); )
+            {
+               PeerIdentity pid = (PeerIdentity)i.next();
+               if (pid.getPeerID().equals(collectorID))
+               {
+                  collectorAddress = pid.getAddress();
+                  break;
+               }
+            }
+            if (collectorAddress == null)
+            {
+               // TODO - something is wrong, take action
+            }
+
+            if (receiver == null)
+            {
+               // no receiver to forward to, asynchronously cancel the replicator's delivery
+               try
+               {
+                  Acknowledgment ack = new Acknowledgment(getID(), r.getMessageID(), false);
+                  dispatcher.getChannel().send(collectorAddress, null, ack);
+                  if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " sent NACK back"); }
+                  handled = true;
+                  return;
+               }
+               catch(Throwable t)
+               {
+                  log.error("Failed to put the acknowledment on the channel", t);
+               }
+            }
+
+            // Mark the message as being received from a remote endpoint
+            r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+
+            boolean a = true;
+            if (a) { throw new NotYetImplementedException(); }
+
+            try
+            {
+               Delivery d = receiver.handle(null, r, null);
+               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled " + r + " and returned " + d); }
+            }
+            catch(Throwable t)
+            {
+               log.warn(ReplicatorOutput.this + "'s receiver is broken", t);
             }
          }
-         catch(Throwable t)
+         finally
          {
-            log.warn(this + "'s receiver is broken", t);
+            if (!handled && delegate != null)
+            {
+               // forward the message to delegate
+               delegate.receive(jgroupsMessage);
+            }
          }
-
-
-//         MessageAcknowledgment ack = new MessageAcknowledgment(jgroupsMessage.getSrc(),
-//                                                               inputPeerID, receiverID,
-//                                                               r.getMessageID(), acked);
-//         while(true)
-//         {
-//            try
-//            {
-//               acknowledgmentQueue.put(ack);
-//               break;
-//            }
-//            catch(InterruptedException e)
-//            {
-//               log.warn("Thread interrupted while trying to put an acknowledgment in queue", e);
-//            }
-//         }
-//         // do not forward the message to the delegate listener
-//         return;
-//
-//         if (delegateListener != null)
-//         {
-//            delegateListener.receive(jgroupsMessage);
-//         }
       }
 
       public byte[] getState()
       {
-//      if (delegateListener != null)
-//      {
-//         return delegateListener.getState();
-//      }
-//      return null;
-         throw new NotYetImplementedException();
+         if (delegate != null)
+         {
+            return delegate.getState();
+         }
+         return null;
       }
 
       public void setState(byte[] state)
       {
-//      if (delegateListener != null)
-//      {
-//         delegateListener.setState(state);
-//      }
-         throw new NotYetImplementedException();
+         if (delegate != null)
+         {
+            delegate.setState(state);
+         }
       }
 
+      // Public --------------------------------------------------------
 
-   }
+      // Package protected ---------------------------------------------
 
+      // Protected -----------------------------------------------------
 
-   protected class IdentityServerDelegateImpl implements IdentityServerDelegate
-   {
-      public Serializable getID()
-      {
-//         return peerID;
-         throw new NotYetImplementedException();
-      }
+      // Private -------------------------------------------------------
 
-      public PeerIdentity getIdentity()
-      {
-//         return new PeerIdentity(replicatorID, peerID, dispatcher.getChannel().getLocalAddress());
-         throw new NotYetImplementedException();
-      }
+      // Inner classes -------------------------------------------------
+
    }
 }

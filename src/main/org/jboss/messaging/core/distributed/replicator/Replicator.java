@@ -49,9 +49,8 @@ import java.io.Serializable;
 
 /**
  * A Replicator is a distributed receiver that replicates synchronously or asynchronously a message
- * to multiple receivers living  <i>in different address spaces</i> synchronously or asynchronously.
- * A replicator could have multiple inputs and multiple outputs. Messages sent by an input are
- * replicated to every output.
+ * to multiple receivers living  <i>in different address spaces</i>. A replicator could have
+ * multiple inputs and multiple outputs. Messages sent by an input are replicated to every output.
  * <p>
  * The replication of messages is done efficiently by multicasting, but message acknowledment is
  * handled by the replicator (so far) in a point-to-point manner. For that reason, each replicator
@@ -120,16 +119,16 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
       MessageReference ref = ms.reference(routable);
 
-      ref.putHeader(Routable.REPLICATOR_ID, getReplicatorID());
-      ref.putHeader(Routable.COLLECTOR_ID, collector.getID());
-
       CompositeDelivery d = new CompositeDelivery(observer, ref, outputs);
       collector.startCollecting(d);
+
+      routable.putHeader(Routable.REPLICATOR_ID, getReplicatorID());
+      routable.putHeader(Routable.COLLECTOR_ID, collector.getID());
 
       try
       {
          dispatcher.getChannel().send(null, null, routable);
-         if (log.isTraceEnabled()) { log.trace(this + " sent " + routable); }
+         if (log.isTraceEnabled()) { log.trace(this + " multicast " + routable); }
       }
       catch(Throwable t)
       {
@@ -164,7 +163,7 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
             {
                outputs = new HashSet();
             }
-            outputs.add(rp);
+            outputs.add(rp.getPeerIdentity());
          }
       }
       return outputs;
@@ -184,7 +183,8 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
    protected void doJoin() throws DistributedException
    {
-      collector = new AcknowledgmentCollector(new GUID().toString());
+      collector = new AcknowledgmentCollector(new GUID().toString(), dispatcher);
+      collector.start();
 
       if (!rpcServer.registerUnique(peerID, collector))
       {
@@ -199,6 +199,7 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
    protected void doLeave() throws DistributedException
    {
       rpcServer.unregister(viewKeeper.getGroupID(), this);
+      collector.stop();
       collector = null;
    }
 

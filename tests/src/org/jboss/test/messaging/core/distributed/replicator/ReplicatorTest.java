@@ -133,6 +133,10 @@ public class ReplicatorTest extends PeerTestBase
    ////// One message
    //////
 
+   ////////
+   //////// Non-reliable message
+   ////////
+
    public void testReplicator_2() throws Exception
    {
       assertTrue(jchannel.isConnected());
@@ -161,8 +165,10 @@ public class ReplicatorTest extends PeerTestBase
       assertTrue(identities.contains(replicator.getPeerIdentity()));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createMessage("message0", false, "payload");
       Delivery delivery = replicator.handle(observer, m, null);
+
+      observer.waitForCancellation(delivery, 3000);
 
       assertTrue(delivery.isCancelled());
    }

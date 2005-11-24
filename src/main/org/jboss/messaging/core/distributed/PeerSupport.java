@@ -181,7 +181,7 @@ public abstract class PeerSupport implements Peer, PeerFacade
          viewKeeper.addRemotePeer(rp);
       }
 
-      doJoin(); // do destination-specific join
+      doJoin(); // do peer-specific join
 
       joined = true;
 

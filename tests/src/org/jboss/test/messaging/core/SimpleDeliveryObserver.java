@@ -36,11 +36,14 @@ import org.jboss.logging.Logger;
 public class SimpleDeliveryObserver implements DeliveryObserver
 {
    // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(SimpleDeliveryObserver.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+
+   protected Delivery toBeCancelled;
 
    // Constructors --------------------------------------------------
 
@@ -53,7 +56,12 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
    public synchronized boolean cancel(Delivery d)
    {
-      throw new NotYetImplementedException();
+      if (toBeCancelled == d)
+      {
+         toBeCancelled = null;
+         notifyAll();
+      }
+      return true;
    }
 
    public synchronized void redeliver(Delivery d, Receiver r)
@@ -63,12 +71,37 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
    // Public --------------------------------------------------------
 
-   public void waitForCancellation(int cancellationCount, long timeout)
+   /**
+    * Waits until the delivery is cancelled, or timeout expires. If the delivery is already
+    * cancelled, exits immediately.
+    */
+   public synchronized void waitForCancellation(Delivery delivery, long timeout) throws Exception
    {
-      
+      if (delivery.isCancelled())
+      {
+         log.info("the delivery already cancelled, exiting");
+         return;
+      }
+
+      if (toBeCancelled != null)
+      {
+         throw new IllegalStateException("already waiting for another delivery cancellation");
+      }
+
+      toBeCancelled = delivery;
+
+      this.wait(timeout);
+
+      if (toBeCancelled == null)
+      {
+         log.info("delivery cancelled");
+      }
+      else
+      {
+         toBeCancelled = null;
+         log.warn("exiting with timeout");
+      }
    }
-
-
 
    // Package protected ---------------------------------------------
    

@@ -78,7 +78,6 @@
 
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.SharedPipeOutputTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorOutputTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
