@@ -68,10 +68,10 @@
      <property name="messaging.version.major" value="1"/>
      <property name="messaging.version.minor" value="0"/>
      <property name="messaging.version.revision" value="0"/>
-     <property name="messaging.version.tag" value="alpha-pr2"/>
+     <property name="messaging.version.tag" value="alpha-pr3"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR2"/>
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR3"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
@@ -459,11 +459,19 @@
       <mkdir dir="${build.classes}/xmdesc"/>
 
       <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
-         tofile="${build.classes}/META-INF/jboss-service.xml"/>
+            tofile="${build.classes}/META-INF/jboss-service.xml"/>
+
+      <!-- copy all other deployment descriptors from ${source.etc}/server/default/deploy -->
+      <copy todir="${build.classes}">
+         <fileset dir="${source.etc}/server/default/deploy/"
+            includes="*.xml"
+            excludes="jboss-messaging-service.xml"/>
+      </copy>
+
       <copy todir="${build.classes}/xmdesc">
          <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
       </copy>
-      <copy file="${source.etc}/jms-aop.xml" todir="${build.classes}"/>
+      <copy todir="${build.classes}" file="${source.etc}/jms-aop.xml"/>
    </target>
 
    <!-- Create a non-scoped sar that relies on dependencies from default/lib -->
@@ -487,8 +495,29 @@
       <copy file="${jboss.aop.lib}/jboss-aop.jar" todir="${build.classes}"/>
       <copy file="${jboss.aspects.lib}/jboss-aspect-library.jar" todir="${build.classes}"/>
       <copy file="${current.jboss.remoting.lib}/jboss-remoting.jar" todir="${build.classes}"/>
-      <!-- copy jboss.jar because I need InvocationMarsahller both on the server and on the client-side -->
-      <copy file="${jboss.server.lib}/jboss.jar" todir="${build.classes}"/>
+      <copy file="${jboss.serialization.lib}/jboss-serialization.jar" todir="${build.classes}"/>
+
+      <!-- I need InvocationMarshaller both on server and client side, and versions prior to
+           JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
+           org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
+           like javaURLContextFactory, which will mess up JNDI and other things.
+      -->
+      <mkdir dir="${build.classes}/tmp"/>
+      <unjar src="${jboss.server.lib}/jboss.jar"
+         dest="${build.classes}/tmp">
+         <patternset>
+            <include name="org/jboss/invocation/unified/**"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.classes}/jboss-unified-invoker.jar">
+         <fileset dir="${build.classes}/tmp">
+            <include name="**"/>
+         </fileset>
+      </jar>
+      <delete dir="${build.classes}/tmp"/>
+
+      <copy todir="${build.classes}" file="${source.etc}/server/default/config/users.properties"/>
+      <copy todir="${build.classes}" file="${source.etc}/server/default/config/roles.properties"/>
 
       <!-- enable scoping -->
       <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">

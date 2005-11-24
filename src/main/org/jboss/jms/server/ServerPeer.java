@@ -615,7 +615,11 @@ public class ServerPeer
       //Bind in global JNDI namespace      
       ic.rebind(CONNECTION_FACTORY_JNDI_NAME, cf);
       ic.rebind(XACONNECTION_FACTORY_JNDI_NAME, cf);
-      
+
+      ic.rebind("java:/" + CONNECTION_FACTORY_JNDI_NAME, cf);
+      ic.rebind("java:/" + XACONNECTION_FACTORY_JNDI_NAME, cf);
+
+
       //And now the connection factories and links as required by the TCK
       //See section 4.4.15 of the TCK user guide.
       //FIXME - these should be removed when connection factories are deployable via mbeans
@@ -679,6 +683,9 @@ public class ServerPeer
 
       ic.unbind(CONNECTION_FACTORY_JNDI_NAME);
       ic.unbind(XACONNECTION_FACTORY_JNDI_NAME);
+
+      ic.unbind("java:/" + CONNECTION_FACTORY_JNDI_NAME);
+      ic.unbind("java:/" + XACONNECTION_FACTORY_JNDI_NAME);
 
    }
 

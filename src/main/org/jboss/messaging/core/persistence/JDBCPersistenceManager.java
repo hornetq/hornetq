@@ -1436,8 +1436,10 @@ public class JDBCPersistenceManager implements PersistenceManager
 
    public void start() throws Exception
    {
+      log.debug("starting JDBCPersistenceManager");
+
       initSqlProperties();
-      
+
       InitialContext ic = new InitialContext();
       mgr = (TransactionManager)ic.lookup("java:/TransactionManager");
 
