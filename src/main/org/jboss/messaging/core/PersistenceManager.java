@@ -79,4 +79,6 @@ public interface PersistenceManager
    
    void start() throws Exception;
 
+   void stop() throws Exception;
+
 }
