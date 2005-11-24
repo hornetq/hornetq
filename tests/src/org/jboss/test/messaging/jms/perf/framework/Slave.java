@@ -24,9 +24,14 @@ public class Slave
       log.info("Slave starting");
       
       int port;
+      String ip = null;
       try
       {
          port = Integer.parseInt(args[0]);
+         if (args.length == 2)
+         {
+            ip = args[1];
+         }
       }
       catch (Exception e)
       {
@@ -34,19 +39,27 @@ public class Slave
          return;
       }
       
-      new Slave().run(port);
+      new Slave().run(port, ip);
    }
    
    private Slave()
    {   
    }
    
-   private void run(int port)
+   private void run(int port, String ip)
    {
       try
       {
          connector = new Connector();
-         InvokerLocator locator = new InvokerLocator("socket://localhost:" + port);
+         InvokerLocator locator;
+         if (ip == null)
+         {
+            locator =  new InvokerLocator("socket://0.0.0.0:" + port);
+         }
+         else
+         {
+            locator =  new InvokerLocator("socket://" + ip + ":" + port);
+         }
          connector.setInvokerLocator(locator.getLocatorURI());
          log.info("Invoker locator: " + locator.getLocatorURI());
          

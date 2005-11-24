@@ -121,7 +121,7 @@
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
-   <property name="perf.distro" value="${module.output}/perf-distro"/>
+   <property name="perf.jar" value="jboss-messaging-perf.jar"/>
    <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
@@ -510,7 +510,7 @@
       </junit>
    </target> 
    
-   <!--
+   
    <target name="perfchart" depends="tests-jar">      
       	<mkdir dir="perf-output"/>
       	
@@ -523,46 +523,20 @@
             </classpath>
       	</java>      
    </target>
-   -->
-   <target name="perf-distro"
+   
+   <target name="perf-jar"
 	      depends="compile"
-	      description="Creates the distribution for the performance tests">
-
-	 <delete dir="${perf.distro}/lib"/>
-	 <mkdir dir="${perf.distro}/lib"/>
+	      description="Creates the jar for the performance tests">
 
 	 <!-- Build the perf jar -->
-	 <jar jarfile="${perf.distro}/lib/perf.jar">
+	 <jar jarfile="${build.tests.lib}/${perf.jar}">
 	    <fileset dir="${build.tests.classes}">
 	       <include name="org/jboss/test/messaging/jms/perf/**"/>	       
 	       <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
 	    </fileset>
 	 </jar>
-	 
-	 
-	 <copy file="../../thirdparty/apache-log4j/lib/log4j.jar" tofile="${perf.distro}/lib/log4j.jar"/>
-	 <copy file="../../j2ee/output/lib/jboss-j2ee.jar" tofile="${perf.distro}/lib/jboss-j2ee.jar"/>
-	 <copy file="../../j2se/output/lib/jboss-j2se.jar" tofile="${perf.distro}/lib/jboss-j2se.jar"/>
-	 <copy file="../../thirdparty/jboss/remoting/lib/jboss-remoting.jar" tofile="${perf.distro}/lib/jboss-remoting.jar"/>
-	 <copy file="../../common/output/lib/jboss-common.jar" tofile="${perf.distro}/lib/jboss-common.jar"/>
-	 <copy file="../../thirdparty/jboss/remoting/lib/jboss-serialization.jar" tofile="${perf.distro}/lib/jboss-serialization.jar"/>
-	<!-- <copy file="../output/lib/jboss-messaging.jar" tofile="${perf.distro}/lib/jboss-messaging.jar"/> -->
-	 <copy file="../../aop/output/lib/jboss-aop.jar" tofile="${perf.distro}/lib/jboss-aop.jar"/>
-	 <copy file="../../thirdparty/apache-httpclient/lib/commons-httpclient.jar" tofile="${perf.distro}/lib/commons-httpclient.jar"/>
-	 <copy file="../../thirdparty/sun-servlet/lib/servlet-api.jar" tofile="${perf.distro}/lib/servlet-api.jar"/>
-	 <copy file="../../thirdparty/oswego-concurrent/lib/concurrent.jar" tofile="${perf.distro}/lib/concurrent.jar"/>
-	 
-	 <copy file="../src/resources/hsqldb.jar" tofile="${perf.distro}/lib/hsqldb.jar"/>	
-	 
-	 <copy file="etc/log4j.xml" tofile="${perf.distro}/log4j.xml"/>
-	 <copy file="runperf.bat" tofile="${perf.distro}/runperf.bat"/>
-	 <copy file="runslave.bat" tofile="${perf.distro}/runslave.bat"/>
-	 
-	 <copy file="perf-jndi.properties" tofile="${perf.distro}/perf-jndi.properties"/>
-	 <copy file="jbossmessaging-perf.properties" tofile="${perf.distro}/jbossmessaging-perf.properties"/>
-	 
-	 
-    </target>
+	 	
+   </target>
      
 
    <target name="print-testclasspath">

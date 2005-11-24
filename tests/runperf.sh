@@ -1,24 +1,20 @@
 #!/bin/sh
 #
-# Interactive command line JMS client.
+# Run the performance runner
 #
 
-${JAVA_HOME}/java -Dperf.jndiProperties=perf-jndi.properties -Dperf.properties=jbossmessaging-perf.properties -cp \
-lib/perf-runner.jar:\
-lib/log4j.jar:\
+${JAVA_HOME}/bin/java -Dperf.jndiProperties=perf-jndi.properties -Dperf.properties=jbossmessaging-perf.properties -cp \
+"output/lib/jboss-messaging-perf.jar:\
+../../thirdparty/apache-log4j/lib/log4j.jar:\
 etc:\
-lib/jboss-j2ee.jar:\
-lib/jboss-j2se.jar:\
-lib/jboss-remoting.jar:\
-lib/jboss-common.jar:\
-lib/jboss-serialization.jar:\
-lib/jboss-aop.jar:\
-lib/hsqldb.jar:\
-lib/perf.jar:\
-lib/commons-httpclient.jar:\
-lib/servlet-api.jar:\
-lib/concurrent.jar:\
-.\
+../../j2ee/output/lib/jboss-j2ee.jar:\
+../../thirdparty/jboss/remoting/lib/jboss-remoting.jar:\
+../../common/output/lib/jboss-common.jar:\
+../../thirdparty/jboss/remoting/lib/jboss-serialization.jar:\
+../output/lib/jboss-messaging.jar:\
+/dev/jboss-head/build/output/jboss-5.0.0alpha/client/jbossall-client.jar:\
+../../aop/output/lib/jboss-aop.jar:\
+../src/resources/hsqldb.jar" \
 org.jboss.test.messaging.jms.perf.framework.PerfRunner
 
 
