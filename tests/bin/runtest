@@ -104,9 +104,11 @@
 #
 # core.distributed.replicator
 #
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDeliveryTest
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest;
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest;
-TARGET_TEST=testReplicator_2
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest;
+#TARGET_TEST=testReplicator_2
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
 
 #

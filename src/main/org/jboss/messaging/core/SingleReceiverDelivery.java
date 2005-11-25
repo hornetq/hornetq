@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * A message delivery. It can be "done" or active.
  * 
@@ -30,16 +32,16 @@ package org.jboss.messaging.core;
  *
  * $Id$
  */
-public interface Delivery
+public interface SingleReceiverDelivery extends Delivery
 {
-   MessageReference getReference();
+   void acknowledge(Transaction tx) throws Throwable;
 
-   boolean isDone();
-   
-   boolean isCancelled();
+   boolean cancel() throws Throwable;
 
-   void setObserver(DeliveryObserver observer);
-
-   DeliveryObserver getObserver();
-
+   /**
+    * Initiate a new delivery, possibly canceling this current one.
+    *
+    * @param r - the receiver to redeliver to.
+    */
+   void redeliver(Receiver r) throws Throwable;
 }

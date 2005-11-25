@@ -47,6 +47,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.SingleReceiverDelivery;
 import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
@@ -374,7 +375,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       {         
          while (iter.hasNext())
          {
-            Delivery del = (Delivery)iter.next();
+            SingleReceiverDelivery del = (SingleReceiverDelivery)iter.next();
             if (del.getReference().getMessageID().equals(messageID))
             {
                if (del.cancel())
@@ -473,7 +474,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
  
       for(Iterator i = deliveries.iterator(); i.hasNext(); )
       {
-         Delivery d = (Delivery)i.next();
+         SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
          try
          {
             d.cancel();
@@ -508,7 +509,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       {
          for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
-            Delivery d = (Delivery)i.next();
+            SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
             if (d.getReference().getMessageID().equals(messageID))
             {
                d.acknowledge(tx);
@@ -534,7 +535,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          
          for (int i = deliveries.size() - 1; i >= 0; i--)
          {   
-            Delivery d = (Delivery)deliveries.get(i);
+            SingleReceiverDelivery d = (SingleReceiverDelivery)deliveries.get(i);
             try
             {
                boolean cancelled = d.cancel();

@@ -19,19 +19,19 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core;
+package org.jboss.test.messaging.core.distributed.replicator;
 
-import org.jboss.test.messaging.core.base.SingleReceiverDeliveryTestBase;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.distributed.replicator.CompositeDelivery;
 
 /**
+ * Test a composite delivery that DOES NOT get cancelled when receives a message rejection.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
  */
-public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
+public class CompositeDelivery2Test extends CompositeDeliveryTest
 {
    // Constants -----------------------------------------------------
 
@@ -39,11 +39,9 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
    
    // Attributes ----------------------------------------------------
 
-   protected DeliveryObserver observer;
-
    // Constructors --------------------------------------------------
 
-   public SimpleDeliveryTest(String name)
+   public CompositeDelivery2Test(String name)
    {
       super(name);
    }
@@ -54,8 +52,8 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
    {
       super.setUp();
 
-      observer = new SimpleDeliveryObserver();
-      delivery = new SimpleDelivery(observer, null, false);
+      // overwrites the delivery created by superclass
+      delivery = new CompositeDelivery(observer, ref, false);
 
       log.debug("setup done");
    }
@@ -63,7 +61,6 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
    public void tearDown() throws Exception
    {
       delivery = null;
-      observer = null;
       super.tearDown();
    }
 
@@ -72,7 +69,7 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

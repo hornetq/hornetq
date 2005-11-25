@@ -44,6 +44,7 @@ public class SimpleDeliveryObserver implements DeliveryObserver
    // Attributes ----------------------------------------------------
 
    protected Delivery toBeCancelled;
+   protected Delivery toBeAcknowledged;
 
    // Constructors --------------------------------------------------
 
@@ -52,6 +53,11 @@ public class SimpleDeliveryObserver implements DeliveryObserver
    public synchronized void acknowledge(Delivery d, Transaction tx)
    {
       log.info("Delivery " + d + " was acknowledged");
+      if (toBeAcknowledged == d)
+      {
+         toBeAcknowledged = null;
+         notifyAll();
+      }
    }
 
    public synchronized boolean cancel(Delivery d)
@@ -70,6 +76,11 @@ public class SimpleDeliveryObserver implements DeliveryObserver
    }
 
    // Public --------------------------------------------------------
+
+   public synchronized void waitForCancellation(Delivery delivery) throws Exception
+   {
+      waitForCancellation(delivery, 0);
+   }
 
    /**
     * Waits until the delivery is cancelled, or timeout expires. If the delivery is already
@@ -90,7 +101,14 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
       toBeCancelled = delivery;
 
-      this.wait(timeout);
+      if (timeout <= 0)
+      {
+         this.wait();
+      }
+      else
+      {
+         this.wait(timeout);
+      }
 
       if (toBeCancelled == null)
       {
@@ -100,6 +118,55 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       {
          toBeCancelled = null;
          log.warn("exiting with timeout");
+      }
+   }
+
+   public synchronized boolean waitForAcknowledgment(Delivery delivery) throws Exception
+   {
+      return waitForAcknowledgment(delivery, 0);
+   }
+
+   /**
+    * Waits until the delivery is positively acknowledged (done), or timeout expires. If the
+    * delivery is already done, exits immediately.
+    * @return true if a positive acknowledgment was received before or during the method call,
+    *         false if the method exists with timeout.
+    */
+   public synchronized boolean waitForAcknowledgment(Delivery delivery, long timeout)
+         throws Exception
+   {
+      if (delivery.isDone())
+      {
+         log.info("the delivery already acknowledged, exiting");
+         return true;
+      }
+
+      if (toBeAcknowledged != null)
+      {
+         throw new IllegalStateException("already waiting for another delivery acknowlegment");
+      }
+
+      toBeAcknowledged = delivery;
+
+      if (timeout <= 0)
+      {
+         this.wait();
+      }
+      else
+      {
+         this.wait(timeout);
+      }
+
+      if (toBeAcknowledged == null)
+      {
+         log.info("delivery acknowledged");
+         return true;
+      }
+      else
+      {
+         toBeAcknowledged = null;
+         log.warn("exiting with timeout");
+         return false;
       }
    }
 

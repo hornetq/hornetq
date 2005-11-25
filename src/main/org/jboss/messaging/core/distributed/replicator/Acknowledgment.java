@@ -41,14 +41,14 @@ public class Acknowledgment implements Serializable
 
    protected Serializable replicatorOutputID;
    protected Serializable messageID;
-   protected boolean positive;
+   protected boolean accepted;
 
    // Constructors --------------------------------------------------
 
-   public Acknowledgment(Serializable replicatorOutputID, Serializable messageID, boolean b)
+   public Acknowledgment(Serializable replicatorOutputID, Serializable messageID, boolean accepted)
    {
       this.messageID = messageID;
-      this.positive = b;
+      this.accepted = accepted;
       this.replicatorOutputID = replicatorOutputID;
    }
 
@@ -59,9 +59,9 @@ public class Acknowledgment implements Serializable
       return messageID;
    }
 
-   public boolean isPositive()
+   public boolean isAccepted()
    {
-      return positive;
+      return accepted;
    }
 
    public Serializable getReplicatorOutputID()

@@ -19,7 +19,11 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.messaging.core.distributed.replicator;
+
+import org.jboss.messaging.core.Delivery;
+
+import java.util.Iterator;
 
 /**
  * A message delivery. It can be "done" or active.
@@ -30,16 +34,34 @@ package org.jboss.messaging.core;
  *
  * $Id$
  */
-public interface Delivery
+public interface MultipleReceiversDelivery extends Delivery
 {
-   MessageReference getReference();
 
-   boolean isDone();
-   
-   boolean isCancelled();
+   boolean cancelOnMessageRejection();
 
-   void setObserver(DeliveryObserver observer);
+   /**
+    * @return true if the acknowledgment was acted upon, false if it doesn't come from any receivers
+    *         monitored by this delivery and it was ignored.
+    * @throws Throwable
+    */
+   boolean handle(Acknowledgment ack) throws Throwable;
 
-   DeliveryObserver getObserver();
+   /**
+    * @param receiver either a direct reference or an ID of the receiver that is expected to
+    *        send acknowledgments back.
+    */
+   void add(Object receiver);
+
+   /**
+    * @param receiver either a direct reference or an ID of the receiver that is expected to
+    *        send acknowledgments back.
+    */
+   boolean remove(Object receiver);
+
+
+   /**
+    * Return an iterator of direct receiver references or receiver IDs.
+    */
+   Iterator iterator();
 
 }

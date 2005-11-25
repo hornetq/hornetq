@@ -29,6 +29,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.SingleReceiverDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 
@@ -136,7 +137,7 @@ public class SimpleReceiver implements Receiver
          MessageReference ref = (MessageReference)r;
          Message m = ref.getMessage();
          
-         Delivery delivery = new SimpleDelivery(observer, ref, done);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, done);
          messages.add(new Object[] {m, done ? null : delivery});
 
          if (immediateAsynchronousAcknowledgment)
@@ -247,14 +248,14 @@ public class SimpleReceiver implements Receiver
    public void acknowledge(Routable r, Transaction tx) throws Throwable
    {
       Object[] touple = null;
-      Delivery d = null;
+      SingleReceiverDelivery d = null;
       for (Iterator i = messages.iterator(); i.hasNext(); )
       {
          Object[] o = (Object[])i.next();
          Message m = (Message)o[0];
          if (m == r)
          {
-            d = (Delivery)o[1];
+            d = (SingleReceiverDelivery)o[1];
             touple = o;
             break;
          }

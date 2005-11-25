@@ -160,31 +160,18 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
             }
 
             Acknowledgment ack = (Acknowledgment)o;
-            Object replicatorOutputID = ack.getReplicatorOutputID();
             Object messageID = ack.getMessageID();
-
             CompositeDelivery d = (CompositeDelivery)deliveries.get(messageID);
 
             if (d != null)
             {
-               if (!ack.isPositive())
+               try
                {
-                  // TODO - review this, this mean that only one output with a null receiver makes a whole replicator unusable
-                  // one negative acknowledgment cancels the whole delivery
-                  try
-                  {
-                     handled = true;
-                     d.cancel();
-                  }
-                  catch(Throwable t)
-                  {
-                     // TODO
-                     log.error(t);
-                  }
+                  handled = d.handle(ack);
                }
-               else
+               catch(Throwable t)
                {
-                  throw new NotYetImplementedException();
+                  log.error("delivery failed to handle acknowledgment " + ack, t);
                }
             }
          }

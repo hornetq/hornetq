@@ -23,11 +23,14 @@
 
 package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.logging.Logger;
 
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -35,22 +38,165 @@ import java.util.Set;
  *
  * $Id$
  */
-class CompositeDelivery extends SimpleDelivery
+public class CompositeDelivery implements MultipleReceiversDelivery
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(CompositeDelivery.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
+   protected DeliveryObserver observer;
+   protected MessageReference reference;
+   // <PeerIdentity>
    protected Set outputIdentities;
+   protected boolean cancelOnMessagesRejection;
+   protected boolean cancelled;
+   protected boolean done;
 
    // Constructors --------------------------------------------------
 
-   public CompositeDelivery(DeliveryObserver observer, MessageReference ref, Set outputs)
+   public CompositeDelivery(DeliveryObserver observer, 
+                            MessageReference reference, 
+                            boolean cancelOnMessagesRejection)
    {
-      super(observer, ref);
-      outputIdentities = outputs;
+      this(observer, reference,cancelOnMessagesRejection, null);
+   }
+
+
+   public CompositeDelivery(DeliveryObserver observer,
+                            MessageReference reference,
+                            boolean cancelOnMessagesRejection,
+                            Set outputs)
+   {
+      this.observer = observer;
+      this.reference = reference;
+      this.cancelOnMessagesRejection = cancelOnMessagesRejection;
+      if (outputs == null)
+      {
+         outputIdentities = new HashSet();
+      }
+      else
+      {
+         outputIdentities = outputs;
+      }
+      cancelled = false;
+      done = false;
+   }
+
+   // MultipleReceiversDelivery implementation ---------------------
+
+   public boolean cancelOnMessageRejection()
+   {
+      return cancelOnMessagesRejection;
+   }
+
+   public boolean handle(Acknowledgment ack) throws Throwable
+   {
+      boolean handled = false;
+      Object messageID = ack.getMessageID();
+
+      if (reference.getMessageID().equals(messageID))
+      {
+         // not my acknowledgment, ignore it
+         log.debug("discarding acknowledgment for unknown message: " + ack);
+      }
+
+      if (log.isTraceEnabled()) { log.trace(this + " handling " + ack); }
+
+      Object outputID = ack.getReplicatorOutputID();
+
+      // TODO What happens if a delivery for a message is cancelled and the sender immediately
+      //      resends the message. Each delivery should have its own unique id, to avoid confusion
+      //
+      // TODO Deal with the case the view change in the middle of a delivery
+      //
+      // TODO What happens if a peer cancels the delivery, but the message is delivered to others already
+      //
+      for(Iterator i = outputIdentities.iterator(); i.hasNext();)
+      {
+         PeerIdentity pid = (PeerIdentity)i.next();
+         if (pid.getPeerID().equals(outputID))
+         {
+            if (!ack.isAccepted())
+            {
+               // message rejected
+               if (cancelOnMessagesRejection)
+               {
+                  cancelled = true;
+                  break;
+               }
+            }
+
+            i.remove();
+            handled = true;
+            break;
+         }
+      }
+
+      if (cancelled)
+      {
+         cancelDelivery();
+      }
+
+      if (outputIdentities.isEmpty())
+      {
+         acknowledgeDelivery();
+      }
+
+      return handled;
+  }
+
+   public MessageReference getReference()
+   {
+      return reference;
+   }
+
+   public boolean isDone()
+   {
+      return done;
+   }
+
+   public boolean isCancelled()
+   {
+      return cancelled;
+   }
+
+   public void setObserver(DeliveryObserver observer)
+   {
+      this.observer = observer;
+   }
+
+   public DeliveryObserver getObserver()
+   {
+      return observer;
+   }
+
+   public void add(Object receiver)
+   {
+      if (!(receiver instanceof PeerIdentity))
+      {
+         throw new IllegalArgumentException("The argument should be a PeerIdentity");
+      }
+
+      outputIdentities.add(receiver);
+   }
+
+   public boolean remove(Object receiver)
+   {
+      if (!(receiver instanceof PeerIdentity))
+      {
+         throw new IllegalArgumentException("The argument should be a PeerIdentity");
+      }
+
+      return outputIdentities.remove(receiver);
+   }
+
+   public Iterator iterator()
+   {
+      return outputIdentities.iterator();
    }
 
    // Public --------------------------------------------------------
@@ -60,6 +206,25 @@ class CompositeDelivery extends SimpleDelivery
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+
+   private void cancelDelivery()
+   {
+      cancelled = true;
+      try
+      {
+         observer.cancel(this);
+      }
+      catch(Throwable t)
+      {
+
+      }
+   }
+
+   private void acknowledgeDelivery()
+   {
+      done = true;
+      observer.acknowledge(this, null);
+   }
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes -------------------------------------------------
 }

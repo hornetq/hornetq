@@ -119,7 +119,9 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
       MessageReference ref = ms.reference(routable);
 
-      CompositeDelivery d = new CompositeDelivery(observer, ref, outputs);
+
+      // TODO cancelOnMessagesRejection=false is only valid for topics
+      CompositeDelivery d = new CompositeDelivery(observer, ref, false, outputs);
       collector.startCollecting(d);
 
       routable.putHeader(Routable.REPLICATOR_ID, getReplicatorID());

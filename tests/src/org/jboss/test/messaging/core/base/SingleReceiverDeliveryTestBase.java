@@ -8,8 +8,7 @@
 
 package org.jboss.test.messaging.core.base;
 
-import org.jboss.messaging.core.Delivery;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.messaging.core.SingleReceiverDelivery;
 
 
 /**
@@ -18,7 +17,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  *
  * $Id$
  */
-public abstract class DeliveryTestBase extends MessagingTestCase
+public abstract class SingleReceiverDeliveryTestBase extends DeliveryTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -26,11 +25,9 @@ public abstract class DeliveryTestBase extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected Delivery delivery;
-
    // Constructors --------------------------------------------------
 
-   public DeliveryTestBase(String name)
+   public SingleReceiverDeliveryTestBase(String name)
    {
       super(name);
    }
@@ -45,6 +42,15 @@ public abstract class DeliveryTestBase extends MessagingTestCase
    public void tearDown() throws Exception
    {
       super.tearDown();
+   }
+
+   public void testAcknowledgment() throws Throwable
+   {
+      assertFalse(delivery.isDone());
+
+      ((SingleReceiverDelivery)delivery).acknowledge(null);
+
+      assertTrue(delivery.isDone());
    }
 
    // Package protected ---------------------------------------------
