@@ -27,6 +27,7 @@ import java.io.Serializable;
  * A "lightweight" message representative.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -34,5 +35,9 @@ import java.io.Serializable;
 public interface MessageReference extends Routable
 {
    Serializable getStoreID();
+   
+   void acquireReference();
+   
+   void releaseReference();
 
 }

@@ -94,25 +94,28 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       assertEquals(0, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
 
       MessageReference ref = ms.reference(m);
+      ref.acquireReference();
       log.debug("referenced " + m + " using " + ms);
       assertCorrectReference(ref, ms.getStoreID(), m);
       assertEquals(1, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
 
       // add the same message to the second store
       MessageReference ref2 = ms2.reference(m);
+      ref2.acquireReference();
       log.debug("referenced " + m + " using " + ms2);
       assertCorrectReference(ref2, ms2.getStoreID(), m);
       assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
 
       assertFalse(ref == ref2);
 
-      // send ref out of scope and call a full GC
-      ref = null;
-      System.gc();
+//      // send ref out of scope and call a full GC
+//      ref = null;
+//      System.gc();
+      ref.releaseReference();
 
       // TODO - do I need to keep this here?
       // wait a while (?) for garbage collection (on a multi-processor machine)
-      Thread.sleep(3000);
+      //Thread.sleep(3000);
 
       // the reference is garbage collected and the message store is evicted ...
 
@@ -122,14 +125,17 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       // is successful.
 
       ref = ms.getReference(m.getMessageID());
+      ref.acquireReference();
       assertCorrectReference(ref, ms.getStoreID(), m);
       assertCorrectReference(ms2.getReference(m.getMessageID()), ms2.getStoreID(), m);
       assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
 
-      // send both references out of scope and call a full GC
-      ref = null;
-      ref2 = null;
-      System.gc();
+//      // send both references out of scope and call a full GC
+//      ref = null;
+//      ref2 = null;
+//      System.gc();
+      ref.releaseReference();
+      ref2.releaseReference();
 
       assertNull(ms.getReference(m.getMessageID()));
       assertNull(ms2.getReference(m.getMessageID()));

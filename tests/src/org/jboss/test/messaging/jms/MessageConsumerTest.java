@@ -455,7 +455,7 @@ public class MessageConsumerTest extends MessagingTestCase
       consumerConnection.start();
 
       TextMessage m =  (TextMessage)queueConsumer.receive(1500);
-      assertEquals(m.getText(), "One");
+      assertEquals("One", m.getText());
 
       queueConsumer.close();
       consumerSession.commit();
@@ -483,9 +483,9 @@ public class MessageConsumerTest extends MessagingTestCase
           
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
           MessageProducer prod = sess.createProducer(queue);
-          TextMessage tm1 = sess.createTextMessage("hello1");
-          TextMessage tm2 = sess.createTextMessage("hello2");
-          TextMessage tm3 = sess.createTextMessage("hello3");
+          TextMessage tm1 = sess.createTextMessage("a");
+          TextMessage tm2 = sess.createTextMessage("b");
+          TextMessage tm3 = sess.createTextMessage("c");
           prod.send(tm1);
           prod.send(tm2);
           prod.send(tm3);
@@ -493,9 +493,9 @@ public class MessageConsumerTest extends MessagingTestCase
           
           MessageConsumer cons1 = sess.createConsumer(queue);
           
-          TextMessage rm1 = (TextMessage)cons1.receive(1500);
+          TextMessage rm1 = (TextMessage)cons1.receive();
           assertNotNull(rm1);
-          assertEquals("hello1", rm1.getText());
+          assertEquals("a", rm1.getText());
           
           cons1.close();
           
@@ -505,11 +505,11 @@ public class MessageConsumerTest extends MessagingTestCase
           
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm2);
-          assertEquals("hello2", rm2.getText());
+          assertEquals("b", rm2.getText());
           
           TextMessage rm3 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm3);
-          assertEquals("hello3", rm3.getText());
+          assertEquals("c", rm3.getText());
           
           TextMessage rm4 = (TextMessage)cons2.receive(1500);
           assertNull(rm4);        
@@ -1019,22 +1019,26 @@ public class MessageConsumerTest extends MessagingTestCase
 
           MessageConsumer c2 = s.createConsumer(queue);
           final Set received = new HashSet();
-          c2.setMessageListener(new MessageListener()
+          
+          class Listener implements MessageListener
           {
+             Latch latch = new Latch();
+             
              public void onMessage(Message m)
              {
-                received.add(m);
-                received.notify();
+                received.add(m); 
+                latch.release();
              }
-          });
-
-          synchronized(received)
-          {
-             received.wait(3000);
           }
+          
+          Listener list = new Listener();
+          c2.setMessageListener(list);
+
+          list.latch.acquire();
           assertEquals(1, received.size());
           Message r = (Message)received.iterator().next();
           assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+          
        }
        finally
        {

@@ -7,6 +7,11 @@
  */
 package org.jboss.test.messaging.jms.perf.framework;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import javax.jms.Connection;
@@ -48,10 +53,32 @@ public abstract class BaseThroughputJob extends BaseJob
    
    protected long initTime;
    
-   public Object getResult()
+   protected Throwable[] throwables;
+         
+   public JobResult getResult()
    {
-      return !failed ? new JobTimings(initTime, testTime) : null;
+      log.info("Getting result");
+      JobResult res = new JobResult();
+      res.failed = failed;
+      if (res.failed)
+      {
+         log.info("Failed");
+         res.throwables = throwables;
+      }
+      else
+      {
+         log.info("Didn't fail");
+         res.initTime = initTime;
+         res.testTime = testTime;
+      }
+      
+      return res;
    }
+   
+//   public Throwable[] getThrowables()
+//   {
+//      return throwables;
+//   }
    
    public void run()
    {
@@ -66,9 +93,9 @@ public abstract class BaseThroughputJob extends BaseJob
          tearDown();
          log.info("================Finished running job");
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         log.error("Failed to run test", e);
+         log.error("Failed to run test", t);
       }
    }
    
@@ -108,21 +135,39 @@ public abstract class BaseThroughputJob extends BaseJob
       
       System.out.println("*********************************************Test time is:" + testTime);
       
+      List throwablesList = new ArrayList();
+      
       for (int i = 0; i < numSessions; i++)
       {
          Servitor servitor = servitors[i];
          servitor.deInit();
          if (servitor.isFailed())
          {
+            log.info("Servitor failed");
             failed = true;
+            if (servitor.getThrowable() != null)
+            {
+               log.info("Got a throwable: " + servitor.getThrowable());
+               throwablesList.add(servitor.getThrowable());
+            }
          }
-      }    
+      } 
       
-      if (testTime == 0)
+      if (!throwablesList.isEmpty())
       {
-         failed = true;
-         log.error("!!!!!!!!!!!!!! testTime is zero");
+         throwables = new Throwable[throwablesList.size()];
+         
+         Iterator iter = throwablesList.iterator();
+         int i = 0;
+         while (iter.hasNext())
+         {
+            throwables[i++] = (Throwable)iter.next();
+         }         
       }
+      
+      log.info("Throwables array is: " + throwables);
+      
+            
    }
    
    abstract class AbstractServitor implements Servitor
@@ -130,6 +175,8 @@ public abstract class BaseThroughputJob extends BaseJob
       protected boolean failed; 
       
       protected int numMessages;
+      
+      protected Throwable throwable;
       
       AbstractServitor(int numMessages)
       {         
@@ -139,6 +186,11 @@ public abstract class BaseThroughputJob extends BaseJob
       public boolean isFailed()
       {
          return failed;
+      }
+      
+      public Throwable getThrowable()
+      {
+         return throwable;
       }
    }
    

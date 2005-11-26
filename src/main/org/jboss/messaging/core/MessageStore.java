@@ -55,6 +55,8 @@ public interface MessageStore
 
    /**
     * Return a MessageReference instance if already cached. Otherwise create a new one.
+    * FIXME - Surely reference() should have Message as a parameter not Routable - after all it is a Message store
+    * not a Routable store
     */
    MessageReference reference(Routable r);
 

@@ -20,9 +20,9 @@ public class RunRequest implements ServerRequest
       this.job = test;
    }
    
-   public Object execute()
+   public JobResult execute()
    {
-      job.run();
+      job.run();      
       return job.getResult();
    }
 }

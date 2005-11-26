@@ -85,15 +85,10 @@ public class SimpleChannel implements Channel
       return ms;
    }
 
-   public void deliver()
+   public void deliver(Receiver receiver)
    {
       log.trace("");
       deliveryNotification = true;
-   }
-
-   public void deliver(Receiver receiver)
-   {
-      throw new NotYetImplementedException();
    }
 
    public void close()
@@ -130,6 +125,16 @@ public class SimpleChannel implements Channel
    public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       throw new NotYetImplementedException();
+   }
+   
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
    }
 
    // Distributor implementation ------------------------------------

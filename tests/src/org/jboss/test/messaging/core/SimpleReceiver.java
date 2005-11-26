@@ -31,6 +31,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.SingleReceiverDelivery;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.logging.Logger;
 
 import java.util.Map;
@@ -170,6 +171,16 @@ public class SimpleReceiver implements Receiver
          }
       }
    }
+   
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
+   }
 
    // Public --------------------------------------------------------
 
@@ -276,7 +287,7 @@ public class SimpleReceiver implements Receiver
       // make sure I get rid of message if the transaction is rolled back
       if (tx != null)
       {
-         tx.addPostCommitTask(new PostAcknowledgeCommitTask(touple));
+         tx.addCallback(new PostAcknowledgeCommitTask(touple));
       }
    }
 
@@ -323,7 +334,7 @@ public class SimpleReceiver implements Receiver
 
    // Inner classes -------------------------------------------------
 
-   private class PostAcknowledgeCommitTask implements Runnable
+   private class PostAcknowledgeCommitTask implements TxCallback
    {
       private Object[] touple;
 
@@ -336,9 +347,14 @@ public class SimpleReceiver implements Receiver
          this.touple = touple;
       }
 
-      public void run()
+      public void afterRollback()
       {
-         // clear the delivery
+         
+      }
+      
+      public void afterCommit()
+      {
+//       clear the delivery
          touple[1] = null;
       }
    }

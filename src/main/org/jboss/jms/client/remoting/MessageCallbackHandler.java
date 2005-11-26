@@ -64,7 +64,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
                                     Message m)
          throws JMSException
    {
-      preDeliver(sess, receiverID, m, isConnectionConsumer);
+      preDeliver(sess, receiverID, m, isConnectionConsumer);           
       
       try
       {      
@@ -72,6 +72,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       catch (RuntimeException e)
       {
+         log.error("RuntimeException was thrown from onMessage, the message will be redelivered", e);
+         
          //See JMS1.1 spec 4.5.2
          int ackMode = sess.getAcknowledgeMode();
          
@@ -79,7 +81,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             //Cancel the message - this means it will be immediately redelivered
 
-            cons.cancelMessage(m.getJMSMessageID());           
+            cons.cancelMessage(m.getJMSMessageID());    
          }
          else
          {
@@ -154,6 +156,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    protected volatile boolean waiting;
    
    protected Thread activateThread;
+   
+   protected int deliveryAttempts;
 
    // Constructors --------------------------------------------------
 
@@ -215,7 +219,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             if (!handled)
             {
                //There is no-one waiting for our message so we cancel it
-               cancelMessage(m);
+               if (!closed)
+               {
+                  cancelMessage(m);
+               }
             }              
          }
          catch(InterruptedException e)
@@ -245,7 +252,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             if (!stopping)
             {               
                JBossMessage m = getMessage(0);
-            
+               
                callOnMessage(consumerDelegate, sessionDelegate, listener,
                              receiverID, isConnectionConsumer, m);
                
@@ -552,7 +559,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          //if the corresponding server consumer delegate is already closed
          //in which case the deliveries will be cancelled anyway
          String msg = "Failed to cancel message";
-         log.warn(msg);         
+         log.warn(msg, e);         
       }
    }
    

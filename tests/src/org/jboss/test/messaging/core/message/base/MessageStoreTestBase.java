@@ -156,15 +156,18 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       // get reachable reference
       ref = ms.getReference(m.getMessageID());
+      ref.acquireReference();
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      // send reference out of scope and request garbage collection
-      WeakReference control = new WeakReference(ref);
-      ref = null;
-      System.gc();
-
-      // make sure the unreachable reference has been garbage collected
-      assertNull(control.get());
+//      // send reference out of scope and request garbage collection
+//      WeakReference control = new WeakReference(ref);
+//      ref = null;
+//      System.gc();
+//
+//      // make sure the unreachable reference has been garbage collected
+//      assertNull(control.get());
+      
+      ref.releaseReference();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -225,12 +228,16 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = ms.getReference(m[i].getMessageID());
+         ref.acquireReference();
          assertCorrectReference(ref, ms.getStoreID(), m[i]);
+         ref.releaseReference();
       }
 
-      // send references are out of scope, request garbage collection
-      refs = null;
-      System.gc();
+//      // send references are out of scope, request garbage collection
+//      refs = null;
+//      System.gc();
+      
+      
 
       // there are no strong references to the message reference anymore, so the message store
       // should be cleaned of everything that pertains to those message
@@ -411,15 +418,17 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       // get reachable reference
       ref = ms.getReference(m.getMessageID());
+      ref.acquireReference();
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      // send reference out of scope and request garbage collection
-      WeakReference control = new WeakReference(ref);
-      ref = null;
-      System.gc();
+//      // send reference out of scope and request garbage collection
+//      WeakReference control = new WeakReference(ref);
+//      ref = null;
+//      System.gc();
+      ref.releaseReference();
 
       // make sure the unreachable reference has been garbage collected
-      assertNull(control.get());
+      //assertNull(control.get());
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -480,12 +489,14 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = ms.getReference(m[i].getMessageID());
+         ref.acquireReference();
          assertCorrectReference(ref, ms.getStoreID(), m[i]);
+         ref.releaseReference();
       }
 
-      // send references are out of scope, request garbage collection
-      refs = null;
-      System.gc();
+//      // send references are out of scope, request garbage collection
+//      refs = null;
+//      System.gc();
 
       // there are no strong references to the message reference anymore, so the message store
       // should be cleaned of everything that pertains to those message
@@ -524,15 +535,17 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       // get reachable reference
       ref = ms.getReference(m.getMessageID());
+      ref.acquireReference();
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      // send reference out of scope and request garbage collection
-      WeakReference control = new WeakReference(ref);
-      ref = null;
-      System.gc();
+//      // send reference out of scope and request garbage collection
+//      WeakReference control = new WeakReference(ref);
+//      ref = null;
+//      System.gc();
+      ref.releaseReference();
 
       // make sure the unreachable reference has been garbage collected
-      assertNull(control.get());
+      //assertNull(control.get());
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -593,12 +606,14 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = ms.getReference(m[i].getMessageID());
+         ref.acquireReference();
          assertCorrectReference(ref, ms.getStoreID(), m[i]);
+         ref.releaseReference();
       }
 
-      // send references are out of scope, request garbage collection
-      refs = null;
-      System.gc();
+//      // send references are out of scope, request garbage collection
+//      refs = null;
+//      System.gc();
 
       // there are no strong references to the message reference anymore, so the message store
       // should be cleaned of everything that pertains to those message

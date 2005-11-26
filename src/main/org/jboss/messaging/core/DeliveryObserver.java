@@ -41,5 +41,5 @@ public interface DeliveryObserver
     *
     * @param r - the receiver to redeliver to.
     */
-   void redeliver(Delivery old, Receiver r) throws Throwable;
+   //void redeliver(Delivery old, Receiver r) throws Throwable;
 }

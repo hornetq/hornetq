@@ -22,7 +22,6 @@
 package org.jboss.messaging.core.message;
 
 import java.io.Serializable;
-import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
@@ -31,7 +30,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Routable;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * A MessageStore implementation that stores messages in an in-memory cache.
@@ -65,9 +64,7 @@ public class InMemoryMessageStore implements MessageStore
    private Serializable storeID;
    private boolean acceptReliableMessages;
 
-   // <messageID - MessageReference>
-   private Map messageRefs;
-   // <messageID - Message>
+   // <messageID - MessageHolder>
    private Map messages;
 
    // Constructors --------------------------------------------------
@@ -82,8 +79,7 @@ public class InMemoryMessageStore implements MessageStore
    {
       this.storeID = storeID;
       this.acceptReliableMessages = acceptReliableMessages;
-      messageRefs = new ConcurrentReaderHashMap();
-      messages = new ConcurrentReaderHashMap();
+      messages = new ConcurrentHashMap();
 
       log.debug(this + " initialized");
    }
@@ -123,16 +119,19 @@ public class InMemoryMessageStore implements MessageStore
       MessageReference ref = getReference(r.getMessageID());
       if (ref == null)
       {
-         ref = createReference(r);
+         ref = createReference((Message)r);
       }
       return ref;
    }
 
    public MessageReference getReference(Serializable messageID)
    {
-      WeakReference ref = (WeakReference)messageRefs.get(messageID);
-      MessageReference mref = ref == null ? null : (MessageReference)ref.get();
+      MessageHolder holder = (MessageHolder)messages.get(messageID);
+      
+      MessageReference mref = holder == null ? null : holder.ref;
+      
       if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID + " from memory, returning " + mref);}
+      
       return mref;
    }
    
@@ -147,16 +146,14 @@ public class InMemoryMessageStore implements MessageStore
 
    // Protected -----------------------------------------------------
 
-   protected MessageReference createReference(Routable r)
+   protected MessageReference createReference(Message m)
    {
-      Object id = r.getMessageID();
-
-      messages.remove(id); // TODO Why?
-
-      MessageReference ref = new WeakMessageReference((Message)r, this);
-      messageRefs.put(id, new WeakReference(ref));
-      messages.put(id, r);
-      if (log.isTraceEnabled()) { log.trace("added message and reference to memory cache for " + r.getMessageID()); }
+      MessageReference ref = new WeakMessageReference(m, this);
+      
+      messages.put(m.getMessageID(), new MessageHolder(ref, m));
+      
+      if (log.isTraceEnabled()) { log.trace("added message and reference to memory cache for " + m.getMessageID()); }
+      
       return ref;
    }
 
@@ -172,9 +169,8 @@ public class InMemoryMessageStore implements MessageStore
       //Nothing is referencing the message reference any more so we can remove it
       // and the message from the maps
       if (log.isTraceEnabled()) { log.trace("removing " + ref.getMessageID() + " from memory cache"); }
-      
-      messageRefs.remove(ref.getMessageID());
-      messages.remove(ref.getMessageID());       
+            
+      messages.remove(ref.getMessageID());               
    }
    
 
@@ -182,5 +178,17 @@ public class InMemoryMessageStore implements MessageStore
    
    // Inner classes -------------------------------------------------   
    
-     
+   private class MessageHolder
+   {
+      MessageReference ref;
+      
+      Message msg;
+      
+      MessageHolder(MessageReference ref, Message msg)
+      {
+         this.ref = ref;
+         this.msg = msg;
+      }           
+   }
+        
 }

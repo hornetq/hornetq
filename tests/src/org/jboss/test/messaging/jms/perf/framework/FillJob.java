@@ -33,9 +33,22 @@ public class FillJob extends BaseJob
    
    protected MessageFactory mf;
    
-   public Object getResult()
+   protected Throwable throwable;
+   
+   public JobResult getResult()
    {
-      return new JobTimings(-1, -1);
+      JobResult res = new JobResult();
+      res.failed = failed;
+      if (failed)
+      {
+         res.throwables = new Throwable[] { throwable };
+      }
+      return res;
+   }
+   
+   public Throwable[] getThrowables()
+   {
+      return new Throwable[] { throwable };
    }
    
    public void logInfo()
@@ -77,9 +90,10 @@ public class FillJob extends BaseJob
          log.info("==========================Finished running job");
            
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          log.error("Failed to fill destination", e);
+         throwable = e;
          failed = true;
       }
       finally

@@ -11,9 +11,7 @@ package org.jboss.test.messaging.jms.perf.framework;
  */
 public interface Job extends Runnable
 {
-   boolean isFailed();
-   
-   Object getResult();
+   JobResult getResult();
    
    String getSlaveURL();
    

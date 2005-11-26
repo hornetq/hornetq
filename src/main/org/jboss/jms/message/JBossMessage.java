@@ -303,9 +303,14 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          String name = (String)props.nextElement();
          
          Object prop = foreign.getObjectProperty(name);
-         this.setObjectProperty(name, prop);
-         
-        
+         if ("JMSXDeliveryCount".equals(name))
+         {
+            deliveryCount = foreign.getIntProperty("JMSXDeliveryCount");
+         }
+         else
+         {
+            this.setObjectProperty(name, prop);
+         }                
       }
    }
    
@@ -487,7 +492,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public boolean propertyExists(String name) throws JMSException
    {
-      return properties.containsKey(name);
+      return properties.containsKey(name) || "JMSXDeliveryCount".equals(name);
    }
 
    public boolean getBooleanProperty(String name) throws JMSException
@@ -536,6 +541,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public int getIntProperty(String name) throws JMSException
    {
+      if ("JMSXDeliveryCount".equals(name))
+      {
+         return deliveryCount;
+      }
+      
       Object value = properties.get(name);
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
@@ -636,7 +646,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public Enumeration getPropertyNames() throws JMSException
    {
-      Enumeration names = Collections.enumeration(properties.keySet());
+      HashSet set = new HashSet();
+      set.addAll(properties.keySet());
+      set.add("JMSXDeliveryCount");
+      Enumeration names = Collections.enumeration(set);
       return names;
    }
 
@@ -918,7 +931,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       if (name.regionMatches(false, 0, "JMSX", 0, 4) &&
             !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"))
       {
-         throw new JMSException("Only JMSXGroupId and JMSXGroupSeq are supported");
+         throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq");
       }           
    }
    

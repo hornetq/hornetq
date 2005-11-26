@@ -141,6 +141,16 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
       return d;
    }
+   
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
+   }
 
    // Public --------------------------------------------------------
 

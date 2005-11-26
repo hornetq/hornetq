@@ -66,7 +66,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
    {
       if (r.isReference())
       {
-         if (log.isTraceEnabled()) { log.trace("routable " + r + " is already a reference"); }
+         if (log.isTraceEnabled()) { log.trace("message " + r + " is already a reference"); }
          return (MessageReference)r;
       }
       
@@ -97,7 +97,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
             }
          }
 
-         ref = super.createReference(r);
+         ref = super.createReference((Message)r);
       }
       return ref;
    }

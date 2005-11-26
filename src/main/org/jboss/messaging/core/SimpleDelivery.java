@@ -121,11 +121,6 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       return observer.cancel(this);
    }
 
-   public void redeliver(Receiver r) throws Throwable
-   {
-      observer.redeliver(this, r);
-   }
-
    // Public --------------------------------------------------------
 
    public String toString()

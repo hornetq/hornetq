@@ -50,7 +50,10 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    // Attributes ----------------------------------------------------
 
    protected transient InMemoryMessageStore ms;
+   
    private WeakReference ref;
+   
+   private int refCount;
    
    // Constructors --------------------------------------------------
 
@@ -100,6 +103,37 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    public Serializable getStoreID()
    {
       return ms.getStoreID();
+   }
+   
+   public synchronized void acquireReference()
+   {
+      refCount++;
+      if (log.isTraceEnabled()) { log.trace("Incrementing ref count, is now:" + refCount); }
+   }
+   
+   public synchronized void releaseReference()
+   {      
+      --refCount;
+      
+      if (log.isTraceEnabled()) { log.trace("Decrementing ref count, is now:" + refCount);}
+   
+      if (refCount == 0)
+      {
+         try
+         {
+            if (log.isTraceEnabled())
+            {
+               log.trace("Message " + this.getMessageID() + " is no longer referenced, removing it from message store");
+            }
+            ms.remove(this);
+         }
+         catch (Throwable t)
+         {
+            //Why the heck does this method throw throwable!!
+            //FIXME Revisit exception handling
+            log.error("Failed to remove message", t);
+         }
+      }
    }
 
    public Message getMessage()
@@ -160,21 +194,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
 
    // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   protected void finalize() throws Throwable
-   {
-      if (log.isTraceEnabled()) { log.trace("finalizing " + this); }
-
-      try
-      {
-         ms.remove(this);
-      }
-      finally
-      {
-         super.finalize();
-      }
-   }
+   // Protected -----------------------------------------------------   
    
    // Private -------------------------------------------------------
 

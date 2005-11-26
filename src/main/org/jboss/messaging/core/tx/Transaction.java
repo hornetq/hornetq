@@ -59,9 +59,7 @@ public class Transaction
    
    protected Xid xid;
    
-   protected List postCommitTasks;
-   
-   protected List postRollbackTasks;
+   protected List callbacks;;
    
    protected PersistenceManager pm;
    
@@ -115,8 +113,7 @@ public class Transaction
       state = STATE_ACTIVE;
       this.xid = xid;
       pm = mgr;
-      postCommitTasks = new ArrayList();
-      postRollbackTasks = new ArrayList();
+      callbacks = new ArrayList();
    }
    
    // Public --------------------------------------------------------
@@ -131,15 +128,10 @@ public class Transaction
       return xid;
    }
       
-   public void addPostCommitTask(Runnable task)
+   public void addCallback(TxCallback callback)
    {
-      postCommitTasks.add(task);
-   }
-   
-   public void addPostRollbackTask(Runnable task)
-   {
-      postRollbackTasks.add(task);
-   }
+      callbacks.add(callback);
+   }   
       
    public void commit() throws Exception
    {
@@ -163,11 +155,11 @@ public class Transaction
          pm.commitTx(this);
       }
       
-      Iterator iter = postCommitTasks.iterator();
+      Iterator iter = callbacks.iterator();
       while (iter.hasNext())
       {
-         Runnable task = (Runnable)iter.next();
-         task.run();
+         TxCallback callback = (TxCallback)iter.next();
+         callback.afterCommit();
       }
    }
    
@@ -189,11 +181,11 @@ public class Transaction
          pm.rollbackTx(this);
       }
       
-      Iterator iter = postRollbackTasks.iterator();
+      Iterator iter = callbacks.iterator();
       while (iter.hasNext())
       {
-         Runnable task = (Runnable)iter.next();
-         task.run();
+         TxCallback callback = (TxCallback)iter.next();
+         callback.afterRollback();
       }
    }
 

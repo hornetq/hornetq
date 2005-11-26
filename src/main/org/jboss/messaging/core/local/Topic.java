@@ -72,6 +72,16 @@ public class Topic implements CoreDestination
       router.handle(sender, r, tx);
       return new SimpleDelivery(true);
    }
+   
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
+   }
 
    public boolean add(Receiver receiver)
    {

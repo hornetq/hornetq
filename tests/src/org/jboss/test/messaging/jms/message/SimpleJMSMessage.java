@@ -49,6 +49,11 @@ public class SimpleJMSMessage implements Message
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
+   
+   public SimpleJMSMessage()
+   {
+      properties.put("JMSXDeliveryCount", new Integer(0));
+   }
 
    // Message implementation ----------------------------------------
 
@@ -240,48 +245,88 @@ public class SimpleJMSMessage implements Message
 
    public boolean getBooleanProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof Boolean))
+      {
+         throw new JMSException("Not boolean");
+      }
       return ((Boolean)properties.get(name)).booleanValue();
    }
 
 
    public byte getByteProperty(String name) throws JMSException
    {
-       return ((Byte)properties.get(name)).byteValue();
+      Object prop = properties.get(name);
+      if (!(prop instanceof Byte))
+      {
+         throw new JMSException("Not byte");
+      }
+      return ((Byte)properties.get(name)).byteValue();
    }
 
 
    public short getShortProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof Short))
+      {
+         throw new JMSException("Not short");
+      }
       return ((Short)properties.get(name)).shortValue();
    }
 
 
    public int getIntProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof Integer))
+      {
+         throw new JMSException("Not int");
+      }
       return ((Integer)properties.get(name)).intValue();
    }
 
 
    public long getLongProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof Long))
+      {
+         throw new JMSException("Not long");
+      }
       return ((Long)properties.get(name)).longValue();
    }
 
 
    public float getFloatProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof Float))
+      {
+         throw new JMSException("Not float");
+      }
       return ((Float)properties.get(name)).floatValue();
    }
 
 
    public double getDoubleProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof Double))
+      {
+         throw new JMSException("Not double");
+      }
       return ((Double)properties.get(name)).doubleValue();
    }
 
 
    public String getStringProperty(String name) throws JMSException
    {
+      Object prop = properties.get(name);
+      if (!(prop instanceof String))
+      {
+         throw new JMSException("Not string");
+      }
       return (String)properties.get(name);
    }
 

@@ -69,6 +69,16 @@ public class RemoteTopic extends RemotePeer implements Receiver
       return r.handle(observer, routable, tx);
    }
 
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
+   }
+   
    // Public --------------------------------------------------------
 
    public String toString()

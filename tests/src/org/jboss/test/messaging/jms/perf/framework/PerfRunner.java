@@ -209,6 +209,15 @@ public class PerfRunner
                   
          pm = new JDBCPersistenceManager(dbURL);
          pm.start();
+         
+         log.info("Draining queues");
+         drainQueue(queueName);         
+         for (int i = 0; i < scaleNumber; i++)
+         {
+            drainQueue(queueNamePrefix + i);
+         }
+         drainSubscription(topicName, subscriptionName, clientID);
+         log.info("Drained queues");
       }
       catch (Exception e)
       {
@@ -229,6 +238,36 @@ public class PerfRunner
       return exec;
    }
    
+   protected boolean checkResult(JobResult res, String test)
+   {
+      if (res.failed)
+      {
+         log.error("Test " + test + " failed");
+         if (res.throwables != null)
+         {
+            for (int i = 0; i < res.throwables.length; i++)
+            {
+               log.error(res.throwables[i]);
+            }
+         }
+         return false;
+      }
+      return true;
+   }
+   
+   protected boolean checkResults(JobResult[] res, String test)
+   {
+      boolean ok = true;
+      for (int i = 0; i < res.length; i++)
+      {
+         if (!checkResult(res[i], test))
+         {
+            ok = false;
+         }
+      }
+      return ok;
+   }
+   
    /*
     * Send numMessages non-persistent messages of standardMessageSize bytes each to single queue non transactionally.
     * The queue has no consumers.
@@ -236,27 +275,37 @@ public class PerfRunner
     */
    public void testQueue1()
    {
-      log.info("Running test Queue1");
-      
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      SenderJob sender = createDefaultSenderJob(queueName);
-      sender.setNumMessages(numMessages);
-      sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
-      sender.setTransacted(false);
-      sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      long result = runJob(sender).getTestTime();
-      
-      Execution execution = createExecution("Queue1");
-      
-      execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue1 finished");
+      try
+      {
+         log.info("Running test Queue1");
+         
+         SenderJob sender = createDefaultSenderJob(queueName);
+         sender.setNumMessages(numMessages);
+         sender.setMsgSize(standardMessageSize);
+         sender.setMf(new BytesMessageMessageFactory());
+         sender.setTransacted(false);
+         sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         JobResult res = runJob(sender);
+         if (!checkResult(res, "Queue1"))
+         {
+            return;
+         }
+         
+         long result = res.testTime;
+         
+         Execution execution = createExecution("Queue1");
+         
+         execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue1 finished");
+      }
+      finally
+      {
+         //drain the queue
+         drainQueue(queueName);
+      }
    }
    
    /*
@@ -268,25 +317,35 @@ public class PerfRunner
    {
       log.info("Running test Queue2");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      SenderJob sender = createDefaultSenderJob(queueName);
-      sender.setNumMessages(numMessages);
-      sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
-      sender.setTransacted(false);
-      sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      long result = runJob(sender).getTestTime();
-      
-      Execution execution = createExecution("Queue2");
-      
-      execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue2 finished");
+      try
+      {
+         SenderJob sender = createDefaultSenderJob(queueName);
+         sender.setNumMessages(numMessages);
+         sender.setMsgSize(standardMessageSize);
+         sender.setMf(new BytesMessageMessageFactory());
+         sender.setTransacted(false);
+         sender.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         JobResult res = runJob(sender);
+         
+         if (!checkResult(res, "Queue2"))
+         {
+            return;
+         }
+         
+         long result = res.testTime;
+         
+         Execution execution = createExecution("Queue2");
+         
+         execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue2 finished");
+      }
+      finally
+      {
+         drainQueue(queueName);
+      }
    }
    
    
@@ -300,26 +359,37 @@ public class PerfRunner
    {
       log.info("Running test Queue3");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, true, DeliveryMode.NON_PERSISTENT, Session.SESSION_TRANSACTED);
-      
-      SenderJob sender = createDefaultSenderJob(queueName);
-      sender.setNumMessages(numMessages);
-      sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
-      sender.setTransacted(true);
-      sender.setTransactionSize(100);
-      sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      long result = runJob(sender).getTestTime();
-      
-      Execution execution = createExecution("Queue3");
-      
-      execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue3 finished");
+      try
+      {
+         SenderJob sender = createDefaultSenderJob(queueName);
+         sender.setNumMessages(numMessages);
+         sender.setMsgSize(standardMessageSize);
+         sender.setMf(new BytesMessageMessageFactory());
+         sender.setTransacted(true);
+         sender.setTransactionSize(100);
+         sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         JobResult res = runJob(sender);
+         
+         if (!checkResult(res, "Queue3"))
+         {
+            return;
+         }
+         
+         long result = res.testTime;
+         
+         Execution execution = createExecution("Queue3");
+         
+         execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue3 finished");
+     
+      }
+      finally
+      {
+         drainQueue(queueName);
+      }
    }
    
    
@@ -333,26 +403,36 @@ public class PerfRunner
    {
       log.info("Running test Queue4");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, true, DeliveryMode.PERSISTENT, Session.SESSION_TRANSACTED);
-      
-      SenderJob sender = createDefaultSenderJob(queueName);
-      sender.setNumMessages(numMessages);
-      sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
-      sender.setTransacted(true);
-      sender.setTransactionSize(100);
-      sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      long result = runJob(sender).getTestTime();
-      
-      Execution execution = createExecution("Queue4");
-      
-      execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue4 finished");
+      try
+      {
+         SenderJob sender = createDefaultSenderJob(queueName);
+         sender.setNumMessages(numMessages);
+         sender.setMsgSize(standardMessageSize);
+         sender.setMf(new BytesMessageMessageFactory());
+         sender.setTransacted(true);
+         sender.setTransactionSize(100);
+         sender.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         JobResult res = runJob(sender);
+         
+         if (!checkResult(res, "Queue4"))
+         {
+            return;
+         }
+         
+         long result = res.testTime;
+         
+         Execution execution = createExecution("Queue4");
+         
+         execution.addMeasurement(new Measurement("msgsSentPerSec", 1000 * (double)numMessages / result));
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue4 finished");
+      }
+      finally
+      {
+         drainQueue(queueName);
+      }
    }
    
    /*
@@ -363,11 +443,7 @@ public class PerfRunner
    public void testQueue5()
    {
       log.info("Running test Queue5");
-      
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
+            
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -382,7 +458,12 @@ public class PerfRunner
       receiver.setTransacted(false);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
+      
+      if (!checkResults(results, "Queue5"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -393,7 +474,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       
       Execution execution = createExecution("Queue5");
@@ -414,10 +495,6 @@ public class PerfRunner
    {
       log.info("Running test Queue6");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -432,7 +509,12 @@ public class PerfRunner
       receiver.setTransacted(false);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
+      
+      if (!checkResults(results, "Queue6"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -443,7 +525,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       
       Execution execution = createExecution("Queue6");
@@ -463,10 +545,6 @@ public class PerfRunner
    {
       log.info("Running test Queue7");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, true, DeliveryMode.NON_PERSISTENT, Session.SESSION_TRANSACTED);
-      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -484,7 +562,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
+      
+      if (!checkResults(results, "Queue7"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -495,7 +578,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       
       Execution execution = createExecution("Queue7");
@@ -515,10 +598,6 @@ public class PerfRunner
    {
       log.info("Running test Queue8");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, true, DeliveryMode.PERSISTENT, Session.SESSION_TRANSACTED);
-      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -536,7 +615,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
+      
+      if (!checkResults(results, "Queue8"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -547,7 +631,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       
       Execution execution = createExecution("Queue8");
@@ -567,10 +651,6 @@ public class PerfRunner
    {
       log.info("Running test Queue9");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.DUPS_OK_ACKNOWLEDGE);
-      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -586,7 +666,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
+      
+      if (!checkResults(results, "Queue9"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -597,7 +682,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       
       Execution execution = createExecution("Queue9");
@@ -617,10 +702,6 @@ public class PerfRunner
    {
       log.info("Running test Queue10");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.DUPS_OK_ACKNOWLEDGE);
-      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -636,7 +717,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
+      
+      if (!checkResults(results, "Queue10"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -647,7 +733,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       
       Execution execution = createExecution("Queue10");
@@ -667,10 +753,6 @@ public class PerfRunner
    {
       log.info("Running test Queue11");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       //Now fill it with numMessages messages
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -684,11 +766,16 @@ public class PerfRunner
       receiver.setTransacted(false);
       receiver.setNumMessages(numMessages);
       
-      JobTimings result = runJob(receiver);
+      JobResult result = runJob(receiver);
+      
+      if (!checkResult(result, "Queue11"))
+      {
+         return;
+      }
       
       Execution execution = createExecution("Queue11");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.getTestTime()));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
       pm.saveExecution(execution);
       
       log.info("Test Queue11 finished");
@@ -702,11 +789,6 @@ public class PerfRunner
    {
       log.info("Running test Queue12");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       //Now fill it with numMessages messages
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -720,11 +802,16 @@ public class PerfRunner
       receiver.setTransacted(false);
       receiver.setNumMessages(numMessages);
       
-      JobTimings result = runJob(receiver);
+      JobResult result = runJob(receiver);
+      
+      if (!checkResult(result, "Queue12"))
+      {
+         return;
+      }
       
       Execution execution = createExecution("Queue12");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.getTestTime()));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
       pm.saveExecution(execution);
       
       log.info("Test Queue12 finished");
@@ -737,11 +824,7 @@ public class PerfRunner
    public void testQueue13()
    {
       log.info("Running test Queue13");
-      
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, true, DeliveryMode.PERSISTENT, Session.SESSION_TRANSACTED);
-      
+
       //Now fill it with numMessages messages
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -755,11 +838,16 @@ public class PerfRunner
       receiver.setTransactionSize(100);
       receiver.setNumMessages(numMessages);
       
-      JobTimings result = runJob(receiver);
+      JobResult result = runJob(receiver);
+      
+      if (!checkResult(result, "Queue13"))
+      {
+         return;
+      }
       
       Execution execution = createExecution("Queue13");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.getTestTime()));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
       pm.saveExecution(execution);
       
       log.info("Test Queue13 finished");
@@ -772,10 +860,6 @@ public class PerfRunner
    public void testQueue14()
    {
       log.info("Running test Queue14");
-      
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, true, DeliveryMode.NON_PERSISTENT, Session.SESSION_TRANSACTED);
       
       //Now fill it with numMessages messages
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
@@ -790,11 +874,16 @@ public class PerfRunner
       receiver.setTransactionSize(100);
       receiver.setNumMessages(numMessages);
       
-      JobTimings result = runJob(receiver);
+      JobResult result = runJob(receiver);
+      
+      if (!checkResult(result, "Queue14"))
+      {
+         return;
+      }
       
       Execution execution = createExecution("Queue14");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.getTestTime()));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
       pm.saveExecution(execution);
       
       log.info("Test Queue14 finished");
@@ -809,10 +898,6 @@ public class PerfRunner
    {
       log.info("Running test Queue15");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       //Now fill it with numMessages messages
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -830,11 +915,16 @@ public class PerfRunner
       receiver.setSelector(selector);
       receiver.setNumMessages(numMessages);
       
-      JobTimings result = runJob(receiver);
+      JobResult result = runJob(receiver);
+      
+      if (!checkResult(result, "Queue15"))
+      {
+         return;
+      }
       
       Execution execution = createExecution("Queue15");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.getTestTime()));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
       pm.saveExecution(execution);
       
       log.info("Test Queue15 finished");
@@ -848,10 +938,6 @@ public class PerfRunner
    {
       log.info("Running test Queue16");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       //Now fill it with numMessages messages
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -870,11 +956,16 @@ public class PerfRunner
       receiver.setSelector(selector);
       receiver.setNumMessages(numMessages);
       
-      JobTimings result = runJob(receiver);
+      JobResult result = runJob(receiver);
+      
+      if (!checkResult(result, "Queue16"))
+      {
+         return;
+      }
       
       Execution execution = createExecution("Queue16");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.getTestTime()));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
       pm.saveExecution(execution);
       
       log.info("Test Queue16 finished");
@@ -887,26 +978,35 @@ public class PerfRunner
    {
       log.info("Running test Queue17");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      //Now fill it with numMessages messages
-      FillJob fillJob = createDefaultFillJob(queueName, numMessages);
-      fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
-      fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
-      runJob(fillJob);
-      
-      BrowserJob job  = createDefaultBrowserJob(queueName);
-      JobTimings result = runJob(job);
-      
-      Execution execution = createExecution("Queue17");
-      
-      execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / result.getTestTime()));
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue17 finished");
+      try
+      {
+         
+         //Now fill it with numMessages messages
+         FillJob fillJob = createDefaultFillJob(queueName, numMessages);
+         fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
+         fillJob.setMsgSize(standardMessageSize);
+         fillJob.setMf(new BytesMessageMessageFactory());
+         runJob(fillJob);
+         
+         BrowserJob job  = createDefaultBrowserJob(queueName);
+         JobResult result = runJob(job);
+         
+         if (!checkResult(result, "Queue17"))
+         {
+            return;
+         }
+         
+         Execution execution = createExecution("Queue17");
+         
+         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / result.testTime));
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue17 finished");
+      }
+      finally
+      {
+         drainQueue(queueName);
+      }
    }
    
    /*
@@ -916,27 +1016,35 @@ public class PerfRunner
    {
       log.info("Running test Queue18");
       
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      //Now fill it with numMessages messages
-      FillJob fillJob = createDefaultFillJob(queueName, numMessages);
-      fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
-      runJob(fillJob);
-      
-      BrowserJob job  = createDefaultBrowserJob(queueName);
-      JobTimings result = runJob(job);
-      
-      Execution execution = createExecution("Queue18");
-      
-      execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / result.getTestTime()));
-      
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue18 finished");
+      try
+      {
+         //Now fill it with numMessages messages
+         FillJob fillJob = createDefaultFillJob(queueName, numMessages);
+         fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         fillJob.setMsgSize(standardMessageSize);
+         fillJob.setMf(new BytesMessageMessageFactory());
+         runJob(fillJob);
+         
+         BrowserJob job  = createDefaultBrowserJob(queueName);
+         JobResult result = runJob(job);
+         
+         if (!checkResult(result, "Queue18"))
+         {
+            return;
+         }
+         
+         Execution execution = createExecution("Queue18");
+         
+         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / result.testTime));
+         
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue18 finished");
+      }
+      finally
+      {
+         drainQueue(queueName);
+      }
    }
    
    /*
@@ -945,31 +1053,38 @@ public class PerfRunner
    public void testQueue19()
    {
       log.info("Running test Queue19");
-      
-      //First drain the destination
-      runJob(createDefaultDrainJob(queueName));
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      //Now fill it with numMessages messages
-      FillJob fillJob = createDefaultFillJob(queueName, numMessages);
-      fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
-      runJob(fillJob);
-      
-      //This should always be true
-      String selector = "JMSMessageID IS NOT NULL AND NonExistentProperty IS NULL";
-
-      BrowserJob job  = createDefaultBrowserJob(queueName);
-      job.setSelector(selector);
-      JobTimings result = runJob(job);
-      
-      Execution execution = createExecution("Queue19");
-      
-      execution.addMeasurement(new Measurement("timeTaken", result.getTestTime()));
-      pm.saveExecution(execution);
-      
-      log.info("Test Queue19 finished");
+      try
+      {
+         //Now fill it with numMessages messages
+         FillJob fillJob = createDefaultFillJob(queueName, numMessages);
+         fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         fillJob.setMsgSize(standardMessageSize);
+         fillJob.setMf(new BytesMessageMessageFactory());
+         runJob(fillJob);
+         
+         //This should always be true
+         String selector = "JMSMessageID IS NOT NULL AND NonExistentProperty IS NULL";
+   
+         BrowserJob job  = createDefaultBrowserJob(queueName);
+         job.setSelector(selector);
+         JobResult result = runJob(job);
+         
+         if (!checkResult(result, "Queue19"))
+         {
+            return;
+         }
+         
+         Execution execution = createExecution("Queue19");
+         
+         execution.addMeasurement(new Measurement("timeTaken", result.testTime));
+         pm.saveExecution(execution);
+         
+         log.info("Test Queue19 finished");
+      }
+      finally
+      {
+         drainQueue(queueName);
+      }
    }
    
    public void testQueue20()
@@ -985,8 +1100,6 @@ public class PerfRunner
    public void testTopic1()
    {
       log.info("Running test Topic1");
-      
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
       
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
@@ -1004,7 +1117,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic1"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1015,7 +1133,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       
       Execution execution = createExecution("Topic1");
@@ -1035,9 +1153,6 @@ public class PerfRunner
    {
       log.info("Running test Topic2");
       
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -1054,7 +1169,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic2"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1065,7 +1185,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic2");
       
@@ -1085,8 +1205,6 @@ public class PerfRunner
    {
       log.info("Running test Topic3");
       
-      warmupDestination(topicName, standardMessageSize, true, DeliveryMode.NON_PERSISTENT, Session.SESSION_TRANSACTED);      
-      
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -1104,7 +1222,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic3"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1115,7 +1238,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic3");
       
@@ -1134,9 +1257,6 @@ public class PerfRunner
    {
       log.info("Running test Topic4");
       
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.SESSION_TRANSACTED);
-      
-      
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -1154,7 +1274,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic4"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1165,7 +1290,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic4");
       
@@ -1184,9 +1309,6 @@ public class PerfRunner
    {
       log.info("Running test Topic5");
       
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.DUPS_OK_ACKNOWLEDGE);
-      
-      
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -1203,7 +1325,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic5"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1214,7 +1341,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic5");
       
@@ -1233,8 +1360,6 @@ public class PerfRunner
    {
       log.info("Running test Topic6");
       
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.DUPS_OK_ACKNOWLEDGE);      
-      
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -1251,7 +1376,12 @@ public class PerfRunner
       receiver.setNumMessages(numMessages);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic6"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1262,7 +1392,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic6");
       
@@ -1283,9 +1413,6 @@ public class PerfRunner
    {
       log.info("Running test Topic7");
       
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
-      
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
@@ -1307,7 +1434,12 @@ public class PerfRunner
       receiver.setSelector(selector);
       receiver.setNumMessages(numMessages);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic7"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1318,7 +1450,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic7");
       
@@ -1337,9 +1469,6 @@ public class PerfRunner
    public void testTopic8()
    {
       log.info("Running test Topic8");
-      
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
@@ -1364,7 +1493,12 @@ public class PerfRunner
       
       receiver.setSelector(selector);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic8"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1375,7 +1509,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic8");
       
@@ -1393,9 +1527,6 @@ public class PerfRunner
    public void testTopic9()
    {
       log.info("Running test Topic9");
-      
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       
       //First drain the durable subscription
       DrainJob drainJob = createDefaultDrainJob(topicName);
@@ -1421,7 +1552,12 @@ public class PerfRunner
       receiver.setClientID(clientID);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic9"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1432,7 +1568,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].testTime;
       
       Execution execution = createExecution("Topic9");
       
@@ -1450,9 +1586,6 @@ public class PerfRunner
    public void testTopic10()
    {
       log.info("Running test Topic10");
-      
-      warmupDestination(topicName, standardMessageSize, true, DeliveryMode.PERSISTENT, Session.SESSION_TRANSACTED);
-      
       
       //First drain the durable subscription
       DrainJob drainJob = createDefaultDrainJob(topicName);
@@ -1479,7 +1612,12 @@ public class PerfRunner
       receiver.setClientID(clientID);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {receiver, sender});
+      JobResult[] results = runJobs(new Job[] {receiver, sender});
+      
+      if (!checkResults(results, "Topic10"))
+      {
+         return;
+      }
       
       /*
        * NB.
@@ -1490,7 +1628,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
       
       Execution execution = createExecution("Topic10");
       
@@ -1517,12 +1655,8 @@ public class PerfRunner
    public void testMessageSizeThroughput()
    {
       log.info("Running test testMessageSizeThroughput");
-      
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-            
+          
       Execution execution = createExecution("MessageSizeThroughput");
-      
-      //int[] msgsSize = new int[] {0, standardMessageSize, 16384, 65536, 262144, 1048576, 8388608};
       
       int[] msgsSize = new int[] {0, 8192, 16384, 32768, 65536};
       
@@ -1550,7 +1684,12 @@ public class PerfRunner
          receiver.setNumMessages(numMessages);
          receiver.setSlaveURL(slaveURLs[1]);
          
-         JobTimings[] results = runJobs(new Job[] {sender, receiver});
+         JobResult[] results = runJobs(new Job[] {sender, receiver});
+         
+         if (!checkResults(results, "testMessageSizeThroughput"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -1561,7 +1700,7 @@ public class PerfRunner
           * to run the tests as to be negligible.
           */
          
-         long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+         long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].testTime;
          
          Measurement measure = new Measurement("throughput", 1000 * (double)numMessages / totalTimeTaken);
          measure.setVariableValue("messageSize", msgSize);
@@ -1589,18 +1728,7 @@ public class PerfRunner
       for (int i = 1; i <= scaleNumber; i++)
       {
          log.trace("Running with " + i + " queue(s)");
-         
-         warmupDestination(queueNamePrefix + (i-1), standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-         
-         //First drain the destinations
-         log.trace("Draining destinations");
-         for (int j = 0; j < i; j++)
-         {
-            runJob(createDefaultDrainJob(queueNamePrefix + j));
-            
-         }
-         log.trace("Destinations drained");
-         
+             
          //Create the jobs
          
          Job[] jobs = new Job[2 * i];
@@ -1626,7 +1754,12 @@ public class PerfRunner
             receiver.setSlaveURL(slaveURLs[j % this.numSlaves]);
          }
          
-         JobTimings[] results = runJobs(jobs);
+         JobResult[] results = runJobs(jobs);
+         
+         if (!checkResults(results, "QueueScale1"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -1641,11 +1774,11 @@ public class PerfRunner
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
-            JobTimings senderResult = results[j * 2];
-            JobTimings receiverResult = results[j * 2 + 1];
-            long timeOfFirstSend = senderResult.getInitTime();
+            JobResult senderResult = results[j * 2];
+            JobResult receiverResult = results[j * 2 + 1];
+            long timeOfFirstSend = senderResult.initTime;
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.getInitTime() + receiverResult.getTestTime();
+            long timeOfLastReceive = receiverResult.initTime + receiverResult.testTime;
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1667,26 +1800,18 @@ public class PerfRunner
    /* Send numMessages non-persistent messages of size standardMessageSize bytes, non transactionally to queue
     * Concurrent receive messages from queue non-transactionally with ack mode AUTO_ACKNOWLEDGE.
     * Measure the throughput as the number of distinct connections is increased.
-    * Each conncetion is made from separate job
+    * Each connection is made from separate job
     */
    public void testQueueScale2()
    {
       log.info("Running test testQueueScale2");
-      
-      warmupDestination(this.queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-            
+             
       Execution execution = createExecution("QueueScale2");
       
       for (int i = 1; i <= scaleNumber; i++)
       {
          log.trace("Running with " + i + " connection(s)");
-         
-         
-         //First drain the destinations
-         log.trace("Draining destination");
-         runJob(createDefaultDrainJob(this.queueName));
-         log.trace("Destination drained");
-         
+       
          //Create the jobs
          
          Job[] jobs = new Job[i + 1];
@@ -1712,7 +1837,12 @@ public class PerfRunner
          receiver.setNumMessages(numMessages * i);
          receiver.setSlaveURL(slaveURLs[i % this.numSlaves]);
          
-         JobTimings[] results = runJobs(jobs);
+         JobResult[] results = runJobs(jobs);
+         
+         if (!checkResults(results, "QueueScale2"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -1724,11 +1854,11 @@ public class PerfRunner
           */
          
          long minTimeOfFirstSend = Long.MAX_VALUE;
-         long maxTimeOfLastReceive = results[i].getTestTime() + results[i].getInitTime();
+         long maxTimeOfLastReceive = results[i].testTime + results[i].initTime;
          for (int j = 0; j < i; j++)
          {
-            JobTimings senderResult = results[j];
-            long timeOfFirstSend = senderResult.getInitTime();
+            JobResult senderResult = results[j];
+            long timeOfFirstSend = senderResult.initTime;
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
          }
          
@@ -1763,11 +1893,6 @@ public class PerfRunner
       {
          log.trace("Running with " + i + " session(s)");
          
-         //First drain the destination
-         runJob(createDefaultDrainJob(queueName));
-         warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-         
-         
          SenderJob sender = createDefaultSenderJob(queueName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
@@ -1784,7 +1909,12 @@ public class PerfRunner
          receiver.setNumMessages(numMessages * i);
          
          
-         JobTimings[] results = runJobs(new Job[] {sender, receiver});
+         JobResult[] results = runJobs(new Job[] {sender, receiver});
+         
+         if (!checkResults(results, "QueueScale3"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -1795,7 +1925,7 @@ public class PerfRunner
           * to run the tests as to be negligible.
           */
          
-         long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+         long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
          
          int totalMessages = i * numMessages;
          
@@ -1823,9 +1953,6 @@ public class PerfRunner
       for (int i = 1; i <= scaleNumber; i++)
       {                 
          log.trace("Running with " + i + " topic(s)");
-         
-         warmupDestination(topicNamePrefix + i, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-         
          
          //Create the jobs
          
@@ -1855,7 +1982,12 @@ public class PerfRunner
             
          }
          
-         JobTimings[] results = runJobs(jobs);
+         JobResult[] results = runJobs(jobs);
+         
+         if (!checkResults(results, "TopicScale1"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -1870,11 +2002,11 @@ public class PerfRunner
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
-            JobTimings senderResult = results[j * 2 + 1];
-            JobTimings receiverResult = results[j * 2];
-            long timeOfFirstSend = senderResult.getInitTime();
+            JobResult senderResult = results[j * 2 + 1];
+            JobResult receiverResult = results[j * 2];
+            long timeOfFirstSend = senderResult.initTime;
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.getInitTime() + receiverResult.getTestTime();
+            long timeOfLastReceive = receiverResult.initTime + receiverResult.testTime;
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1901,8 +2033,6 @@ public class PerfRunner
    public void testTopicScale2()
    {
       log.info("Running test testTopicScale2");
-      
-      warmupDestination(this.topicName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
             
       Execution execution = createExecution("TopicScale2");
       
@@ -1937,7 +2067,12 @@ public class PerfRunner
          sender.setSlaveURL(slaveURLs[i % this.numSlaves]);
          sender.setInitialPause(initialPause);
          
-         JobTimings[] results = runJobs(jobs);
+         JobResult[] results = runJobs(jobs);
+         
+         if (!checkResults(results, "TopicScale2"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -1948,15 +2083,12 @@ public class PerfRunner
           * to run the tests as to be negligible.
           */
          
-         long minTimeOfFirstSend = results[i].getInitTime();
+         long minTimeOfFirstSend = results[i].initTime;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
-            //JobTimings senderResult = results[j * 2];
-            JobTimings receiverResult = results[j];
-            //long timeOfFirstSend = senderResult.getInitTime();
-            //minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.getInitTime() + receiverResult.getTestTime();
+            JobResult receiverResult = results[j];
+            long timeOfLastReceive = receiverResult.initTime + receiverResult.testTime;
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1984,8 +2116,6 @@ public class PerfRunner
    {
       log.info("Running test testTopicScale3");
       
-      warmupDestination(topicName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
-      
       Execution execution = createExecution("TopicScale3");
             
       for (int i = 1; i <= scaleNumber; i++)
@@ -2008,10 +2138,13 @@ public class PerfRunner
          receiver.setNumConnections(1);
          receiver.setNumSessions(i);
          receiver.setNumMessages(numMessages);
+                          
+         JobResult[] results = runJobs(new Job[] {receiver, sender});
          
-         
-         
-         JobTimings[] results = runJobs(new Job[] {receiver, sender});
+         if (!checkResults(results, "TopicScale3"))
+         {
+            return;
+         }
          
          /*
           * NB.
@@ -2022,7 +2155,7 @@ public class PerfRunner
           * to run the tests as to be negligible.
           */
          
-         long totalTimeTaken = results[0].getTestTime() + results[0].getInitTime() - results[1].getInitTime();
+         long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
          
          int totalMessages = numMessages;
          
@@ -2040,13 +2173,14 @@ public class PerfRunner
    
    //TODO Browser scalability 
    
+   //TODO Topic scale with sclaing number of consumers but also number of producers
+   
+   //TODO as above but with durable subscriptions and persistent messages
+   
    
    public void testMessageTypes()
    {
       log.info("Running test MessageTypes");
-      
-      // First drain the destination     
-      warmupDestination(queueName, standardMessageSize, false, DeliveryMode.NON_PERSISTENT, Session.AUTO_ACKNOWLEDGE);
       
       Execution execution = createExecution("MessageTypes");
       
@@ -2064,9 +2198,7 @@ public class PerfRunner
    }
    
    protected void runMessageTypeJob(Execution execution, MessageFactory mf, String messageType, int type)
-   {
-      runJob(createDefaultDrainJob(queueName));
-
+   {      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(4096);
@@ -2081,7 +2213,7 @@ public class PerfRunner
       receiver.setTransacted(false);
       receiver.setSlaveURL(slaveURLs[1]);
       
-      JobTimings[] results = runJobs(new Job[] {sender, receiver});
+      JobResult[] results = runJobs(new Job[] {sender, receiver});
       
       /*
        * NB.
@@ -2092,7 +2224,7 @@ public class PerfRunner
        * to run the tests as to be negligible.
        */
       
-      long totalTimeTaken = results[1].getTestTime() + results[1].getInitTime() - results[0].getInitTime();
+      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
       
       Measurement measure = new Measurement("msgsSentPerSec", 1000 * (double)numMessages / totalTimeTaken);
       
@@ -2101,16 +2233,15 @@ public class PerfRunner
    }
 
 
-   protected JobTimings runJob(Job job)
+   protected JobResult runJob(Job job)
    {
-      JobTimings timings = sendRequestToSlave(job.getSlaveURL(), new RunRequest(job));
-      return timings;
+      return sendRequestToSlave(job.getSlaveURL(), new RunRequest(job));
    }
    
    /*
     * Run the jobs concurrently
     */
-   protected JobTimings[] runJobs(Job[] jobs)
+   protected JobResult[] runJobs(Job[] jobs)
    {      
       JobRunner[] runners = new JobRunner[jobs.length];
       for (int i = 0; i < jobs.length; i++)
@@ -2130,10 +2261,10 @@ public class PerfRunner
          catch (InterruptedException e)
          {}
       } 
-      JobTimings[] results = new JobTimings[jobs.length];
+      JobResult[] results = new JobResult[jobs.length];
       for (int i = 0; i < jobs.length; i++)
       {
-         results[i] = runners[i].result;
+         results[i] = jobs[i].getResult();
       }
       return results;
       
@@ -2143,7 +2274,7 @@ public class PerfRunner
    {
       Job job;
       
-      JobTimings result;
+      JobResult result;
       
       Thread thread;
 
@@ -2158,38 +2289,32 @@ public class PerfRunner
       }
    }
    
-   protected void warmupDestination(String destName, int msgSize, boolean transacted, int deliveryMode, int ackMode)
+   
+   protected boolean drainQueue(String queueName)
    {
-      log.trace("Warming up destination");
-
-      SenderJob sender = createDefaultSenderJob(destName);
-      sender.setNumMessages(numWarmupMessages);
-      sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
-      sender.setTransacted(transacted);
-      if (transacted)
-      {       
-         sender.setTransactionSize(50);
-      }
-      sender.setDeliveryMode(deliveryMode);
-      sender.setInitialPause(initialPause);
-      
-      ReceiverJob receiver = createDefaultReceiverJob(destName);
-      
-      receiver.setTransacted(transacted);
-      if (!transacted)
+      Job drainJob = createDefaultDrainJob(queueName);
+      JobResult res = runJob(drainJob);
+      if (res.failed)
       {
-         receiver.setAckMode(ackMode);
+         log.error("Failed to drain queue", res.throwables[0]);
+         return false;
       }
-      else
+      return true;
+   }
+   
+   protected boolean drainSubscription(String topicName, String subName, String clientID)
+   {
+      DrainJob drainJob = createDefaultDrainJob(topicName);
+      drainJob.setClientID(clientID);
+      drainJob.setSubName(subName);
+      
+      JobResult res = runJob(drainJob);
+      if (res.failed)
       {
-         receiver.setTransactionSize(numWarmupMessages);
+         log.error("Failed to drain subscription", res.throwables[0]);
+         return false;
       }
-      receiver.setNumMessages(numWarmupMessages);
-      
-      runJobs(new Job[] {sender, receiver});
-      
-      log.trace("Warmed-up destination");
+      return true;
    }
    
    protected SenderJob createDefaultSenderJob(String destName)
@@ -2225,20 +2350,15 @@ public class PerfRunner
    }
    
    
-   protected JobTimings sendRequestToSlave(String slaveURL, ServerRequest request)
+   protected JobResult sendRequestToSlave(String slaveURL, ServerRequest request)
    {
       try
       {
          InvokerLocator locator = new InvokerLocator(slaveURL);
          Client client = new Client(locator, "perftest");
          Object res = client.invoke(request);
-         
-         if (res == null)
-         {
-            log.error("Job Failed!!!!!!!!!!!!!!!");
-         }
-         
-         return (JobTimings)res;
+                           
+         return (JobResult)res;
       }
       catch (Throwable t)
       {

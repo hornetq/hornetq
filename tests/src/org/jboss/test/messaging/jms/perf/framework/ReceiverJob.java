@@ -89,6 +89,7 @@ public class ReceiverJob extends BaseThroughputJob
       
       public void deInit()
       {
+         log.info("de-Initialising");
          try
          {             
             if (subName != null)
@@ -98,15 +99,17 @@ public class ReceiverJob extends BaseThroughputJob
             
             sess.close();  
          }      
-         catch (Exception e)
+         catch (Throwable e)
          {
-            log.error("!!!!!!!!!!!!!!!!!!Close failed", e);
+            log.error("deInit failed", e);
+            throwable = e;
             failed = true;
          }
       }
       
       public void init()
       {
+         log.info("initialising");
          try
          {
             Connection conn = getNextConnection();
@@ -134,9 +137,10 @@ public class ReceiverJob extends BaseThroughputJob
                cons = sess.createDurableSubscriber((Topic)dest, subName, selector, noLocal);
             }
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
-            log.error("Receiver failed", e);
+            log.error("Init failed", e);
+            throwable = e;
             failed = true;
          }
      
@@ -173,17 +177,14 @@ public class ReceiverJob extends BaseThroughputJob
                                                          
             }  
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
-            log.error("!!!!!!!!!!!!!!!Receiver failed", e);
+            log.error("Receiver failed", e);
+            throwable = e;
             failed = true;
          }
       }
       
-      public boolean isFailed()
-      {
-         return failed;
-      }
    }
    
    

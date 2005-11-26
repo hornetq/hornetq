@@ -112,6 +112,16 @@ public class DistributedPipe implements Receiver
          return null;
       }
    }
+   
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
+   }
 
    // Public --------------------------------------------------------
 

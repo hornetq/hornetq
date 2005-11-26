@@ -900,7 +900,7 @@ public class JDBCPersistenceManager implements PersistenceManager
       try
       {
          conn = ds.getConnection();
-
+         
          // get the reference count from the database
          // TODO Probably this can be done smarter than that incrementing directly in the database
          ps = conn.prepareStatement(selectMessageReferenceCount);
@@ -1060,7 +1060,7 @@ public class JDBCPersistenceManager implements PersistenceManager
     * Removes the message from the MESSAGE table.
     */
    public boolean removeMessage(String messageID) throws Exception
-   {
+   {      
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
@@ -1073,6 +1073,7 @@ public class JDBCPersistenceManager implements PersistenceManager
          ps = conn.prepareStatement(selectMessageReferenceCount);
          ps.setString(1, messageID);
 
+         //TODO this can be combined into one query
          int referenceCount = 0;
          ResultSet rs = ps.executeQuery();
          if (rs.next())
@@ -1439,11 +1440,13 @@ public class JDBCPersistenceManager implements PersistenceManager
       log.debug("starting JDBCPersistenceManager");
 
       initSqlProperties();
-
+      
       InitialContext ic = new InitialContext();
-      mgr = (TransactionManager)ic.lookup("java:/TransactionManager");
-
+      
       ds = (DataSource)ic.lookup("java:/DefaultDS");
+      
+      mgr = (TransactionManager)ic.lookup("java:/TransactionManager");
+      
       ic.close();
 
       if (createTablesOnStartup)

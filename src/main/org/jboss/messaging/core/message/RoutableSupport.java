@@ -79,6 +79,7 @@ abstract class RoutableSupport implements Routable, Externalizable
    protected Map headers;
    protected boolean redelivered;
    protected int priority;
+   protected int deliveryCount;
 
    // Constructors --------------------------------------------------
 
@@ -145,6 +146,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       this.timestamp = other.timestamp;
       this.headers = new HashMap(other.headers);
       this.redelivered = other.redelivered;
+      this.deliveryCount = other.deliveryCount;
       this.priority = other.priority;
    }
 
@@ -178,6 +180,16 @@ abstract class RoutableSupport implements Routable, Externalizable
    public void setRedelivered(boolean redelivered)
    {
       this.redelivered = redelivered;
+   }
+   
+   public int getDeliveryCount()
+   {
+      return deliveryCount;
+   }
+   
+   public void incDeliveryCount()
+   {
+      deliveryCount++;
    }
 
    public Serializable putHeader(String name, Serializable value)
@@ -231,6 +243,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       writeMap(out, headers);
       out.writeBoolean(redelivered);
       out.writeInt(priority);
+      out.writeInt(deliveryCount);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -243,6 +256,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       headers = readMap(in);
       redelivered = in.readBoolean();
       priority = in.readInt();
+      deliveryCount = in.readInt();
    }
    
    // Public --------------------------------------------------------

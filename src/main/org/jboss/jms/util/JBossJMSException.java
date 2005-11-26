@@ -57,13 +57,16 @@ public class JBossJMSException extends JMSException
    public JBossJMSException(String reason, String errorCode, Throwable cause)
    {
       super(reason, errorCode);
-      if (cause instanceof Exception)
+      if (cause != null)
       {
-         setLinkedException((Exception)cause);
-      }
-      else
-      {
-         setLinkedException(new Exception(cause));
+         if (cause instanceof Exception)
+         {
+            setLinkedException((Exception)cause);
+         }
+         else
+         {
+            setLinkedException(new Exception(cause));
+         }
       }
    }
 

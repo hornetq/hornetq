@@ -31,6 +31,9 @@ public class DrainJob extends BaseJob
    
    protected String clientID;
    
+   protected Throwable throwable;
+   
+   
    public DrainJob(String slaveURL, Properties jndiProperties, String destinationName, String connectionFactoryJndiName,
          String subName, String clientID)
    {
@@ -39,9 +42,21 @@ public class DrainJob extends BaseJob
       this.clientID = clientID;
    }
    
-   public Object getResult()
+
+   public JobResult getResult()
    {
-      return new JobTimings(-1, -1);
+      JobResult res = new JobResult();
+      res.failed = failed;
+      if (failed)
+      {
+         res.throwables = new Throwable[] { throwable };
+      }
+      return res;
+   }
+   
+   public Throwable[] getThrowables()
+   {
+      return new Throwable[] { throwable };
    }
    
    public void run()
@@ -99,9 +114,10 @@ public class DrainJob extends BaseJob
          
          log.info("Finished running job===================");         
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          log.error("Failed to drain destination", e);
+         throwable = e;
          failed = true;
       }
       finally
@@ -115,6 +131,7 @@ public class DrainJob extends BaseJob
             catch (Exception e)
             {
                log.error("Failed to close connection", e);
+               throwable = e;
                failed = true;
             }
          }

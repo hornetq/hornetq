@@ -13,6 +13,6 @@ import java.io.Serializable;
  */
 public interface ServerRequest extends Serializable
 {
-   Object execute();
+   JobResult execute();
     
 }

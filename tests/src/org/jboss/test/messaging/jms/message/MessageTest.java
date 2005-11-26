@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.naming.InitialContext;
 import javax.jms.*;
@@ -330,7 +331,7 @@ public class MessageTest extends MessagingTestCase
          propNames.add(propName);
       }
 
-      assertEquals(8, propNames.size());
+      assertEquals(9, propNames.size());
 
       assertTrue(propNames.contains("myBool"));
       assertTrue(propNames.contains("myByte"));
@@ -598,7 +599,11 @@ public class MessageTest extends MessagingTestCase
 
       m2.clearProperties();
 
-      assertFalse(m2.getPropertyNames().hasMoreElements());
+      Enumeration en2 = m2.getPropertyNames();
+      assertTrue(en2.hasMoreElements());
+      en2.nextElement();
+      assertFalse(en2.hasMoreElements());
+
 
 
 

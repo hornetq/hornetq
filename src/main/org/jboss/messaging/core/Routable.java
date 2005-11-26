@@ -51,7 +51,7 @@ public interface Routable extends Serializable
     * If it is a Message instance, then it returns itself, otherwise it will return the Message
     * corresponding to this MessageReference.
     */
-   Message getMessage();
+   Message getMessage(); //FIXME Shouldn't this method be on MessageReference interface rather than this interface??
 
    boolean isReference();
 
@@ -83,6 +83,13 @@ public interface Routable extends Serializable
    boolean isRedelivered();
 
    void setRedelivered(boolean redelivered);
+   
+   /**
+    * @return the number of times delivery has been attempted for this routable
+    */
+   int getDeliveryCount();
+   
+   void incDeliveryCount();
 
    /**
     * Binds a header. If the header map previously contained a mapping for this name, the old value

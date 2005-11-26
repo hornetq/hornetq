@@ -37,11 +37,5 @@ public interface SingleReceiverDelivery extends Delivery
    void acknowledge(Transaction tx) throws Throwable;
 
    boolean cancel() throws Throwable;
-
-   /**
-    * Initiate a new delivery, possibly canceling this current one.
-    *
-    * @param r - the receiver to redeliver to.
-    */
-   void redeliver(Receiver r) throws Throwable;
+   
 }

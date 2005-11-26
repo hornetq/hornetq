@@ -88,12 +88,8 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
    MessageStore getMessageStore();
 
    /**
-    * Initiates delivery of messages for which delivery hasn't been attempted yet.
-    */
-   void deliver();
-
-   /**
     * Synchronously returns the "oldest" message stored by the channel to the receiver.
+    * If receiver is null, it delivers the message to the first available receiver
     */
    void deliver(Receiver receiver);
 

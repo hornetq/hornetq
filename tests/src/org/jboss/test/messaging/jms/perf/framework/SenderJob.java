@@ -81,19 +81,22 @@ public class SenderJob extends BaseThroughputJob
       
       public void deInit()
       {
+         log.info("De-initialising");
          try
          {
             sess.close();
          }      
-         catch (Exception e)
+         catch (Throwable e)
          {
-            log.error("!!!!!!!!!!!!!!!!!!!!!Close failed", e);
+            log.error("Failed to deInit()", e);
+            throwable = e;
             failed = true;
          }
       }
       
       public void init()
       {
+         log.info("Initialising");
          try
          {
             Connection conn = getNextConnection();
@@ -115,9 +118,10 @@ public class SenderJob extends BaseThroughputJob
             
             Thread.sleep(initialPause);
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
-            log.error("!!!!!!!!!!!!!!!!!!!!!!!!Sender failed", e);
+            log.error("Failed to init", e);
+            throwable = e;
             failed = true;
          }
       }
@@ -154,17 +158,14 @@ public class SenderJob extends BaseThroughputJob
             }
 
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
-            log.error("!!!!!!!!!!!!!!!!!!!!!!!!Sender failed", e);
+            log.error("Sender failed", e);
+            throwable = e;
             failed = true;
          }
       }
-      
-      public boolean isFailed()
-      {
-         return failed;
-      }
+
    } 
    
 

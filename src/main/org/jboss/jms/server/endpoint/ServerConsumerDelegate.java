@@ -37,6 +37,7 @@ import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
@@ -53,6 +54,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 
 
 /**
@@ -72,8 +74,11 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerConsumerDelegate.class);
+   
 
    // Static --------------------------------------------------------
+   
+   private static final int MAX_DELIVERY_ATTEMPTS = 10;
 
    // Attributes ----------------------------------------------------
 
@@ -104,9 +109,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    protected volatile boolean grabbing;
    
-   protected Object deliveryLock;
-   
    protected Message toGrab;
+   
+   protected ReentrantLock lock;
    
    // Constructors --------------------------------------------------
 
@@ -133,98 +138,110 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       this.deliveries = new ArrayList();
       this.started = sessionEndpoint.connectionEndpoint.started;
       this.channel.add(this);
-      this.deliveryLock = new Object();
+      this.lock = new ReentrantLock();      
    }
 
    // Receiver implementation --------------------------------------- 
+  
+   public void acquireLock()
+   {
+      try
+      {
+         lock.acquire();
+      }
+      catch (InterruptedException e)
+      {
+         log.error("Lock interrupted", e);
+      }
+   }
    
+   public void releaseLock()
+   {
+      lock.release();
+   }
 
    
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      //Check if we're ready to handle this reference
-      //We do the check outside of the synchronized block for performance reasons
-      //Then we do the check again once we are inside the block
-      //We don't want a lot of threads blocking on the mutex
+      if (log.isTraceEnabled()) { log.trace("Attempting to handle ref: " + reference.getMessageID()); }
+      
       if (!wantReference())
       {
          return null;
       }
       
-      //Serialize delivery for this consumer
-      synchronized (deliveryLock)
+      try
       {
-         //Need to check again - the state may have changed
-         //while a thread was blocked on the mutex
          
-         if (!wantReference())
+         if (log.isTraceEnabled()) { log.trace("Delivering ref " + reference.getMessageID()); }
+                 
+         Delivery delivery = null;
+         Message message = reference.getMessage();
+         
+         boolean accept = this.accept(message);
+         if (!accept)
          {
+            if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
             return null;
          }
          
-         try
+         //TODO This should really go in core
+         message.incDeliveryCount();
+         
+
+         //TODO - We need to put the message in a DLQ
+         //For now we just ack it otherwise the message will keep being retried
+         //and we'll never get anywhere
+         if (message.getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
          {
-            Delivery delivery = null;
-            Message message = reference.getMessage();
-   
-            try
-            {
-               message = JBossMessage.copy((javax.jms.Message)message);
-               if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
-            }
-            catch(JMSException e)
-            {
-               // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
-               String msg = "Cannot make a copy of the message";
-               log.error(msg, e);
-               throw new java.lang.IllegalStateException(msg);
-            }
-   
-            boolean accept = this.accept(message);
-            if (!accept)
-            {
-               if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
-               return null;
-            }
-   
-            if (reference.isRedelivered())
-            {
-               message.setRedelivered(true);
-               if (log.isTraceEnabled()) { log.trace("set the redelivered flag to true"); }
-            }
-   
-            delivery = new SimpleDelivery(observer, (MessageReference)reference);
-            deliveries.add(delivery);
-            
-            if (!grabbing)
-            {
-               //We want to asynchronously deliver the message to the consumer
-               //deliver the message on a different thread than the core thread that brought it here
-               
-               try
-               {
-                  if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }
-                  threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
-               }
-               catch (InterruptedException e)
-               {
-                  log.warn("Thread interrupted", e);
-               }
-            }
-            else
-            {
-               //The message is being "grabbed" and returned for receiveNoWait semantics
-               toGrab = message;
-            }
-   
+            log.warn("Message has exceed maximum delivery attempts and will be removed " + message);
+            delivery = new SimpleDelivery(observer, (MessageReference)reference, true);
             return delivery;
          }
-         finally
+                
+         try
          {
-            //we set 'ready' to false since the consumer can only deal with messages one at a time
-            // i.e. we don't buffer them on the client side
-            ready = false;
+            message = JBossMessage.copy((javax.jms.Message)message);
+            if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
          }
+         catch(JMSException e)
+         {
+            // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
+            String msg = "Cannot make a copy of the message";
+            log.error(msg, e);
+            throw new java.lang.IllegalStateException(msg);
+         }
+                 
+         delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
+         deliveries.add(delivery);
+         
+         if (!grabbing)
+         {
+            //We want to asynchronously deliver the message to the consumer
+            //deliver the message on a different thread than the core thread that brought it here
+            
+            try
+            {
+               if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }
+               threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
+            }
+            catch (InterruptedException e)
+            {
+               log.warn("Thread interrupted", e);
+            }
+         }
+         else
+         {
+            //The message is being "grabbed" and returned for receiveNoWait semantics
+            toGrab = message;
+         }
+   
+         return delivery;     
+      }
+      finally
+      {
+         ready = false;
+         grabbing = false;
       }
    }
 
@@ -267,8 +284,9 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
    public void close() throws JMSException
    {
-      synchronized (deliveryLock)
+      try
       {
+         acquireLock();
          if (closed)
          {
             throw new IllegalStateException("Consumer is already closed");
@@ -282,6 +300,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          //This is because it may still contain deliveries that may well be acknowledged after
          //the consumer has closed. This is perfectly valid.
          disconnect();
+      }
+      finally
+      {
+         releaseLock();
       }
    }
        
@@ -369,40 +391,47 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
  
    public void cancelMessage(Serializable messageID) throws JMSException
    {      
-      boolean cancelled = false;
-      Iterator iter = deliveries.iterator();
       try
       {         
-         while (iter.hasNext())
-         {
-            SingleReceiverDelivery del = (SingleReceiverDelivery)iter.next();
-            if (del.getReference().getMessageID().equals(messageID))
+         acquireLock();
+         boolean cancelled = false;
+         Iterator iter = deliveries.iterator();
+         try
+         {         
+            while (iter.hasNext())
             {
-               if (del.cancel())
+               SingleReceiverDelivery del = (SingleReceiverDelivery)iter.next();
+               if (del.getReference().getMessageID().equals(messageID))
                {
-                  cancelled = true;
-                  iter.remove();
-                  break;
-               }
-               else
-               {
-                  throw new JMSException("Failed to cancel delivery: " + messageID);
+                  if (del.cancel())
+                  {
+                     cancelled = true;
+                     iter.remove();
+                     break;
+                  }
+                  else
+                  {
+                     throw new JMSException("Failed to cancel delivery: " + messageID);
+                  }
                }
             }
          }
+         catch (Throwable t)
+         {
+            throw new JBossJMSException("Failed to cancel message", t);
+         }
+         if (!cancelled)
+         {
+            throw new IllegalStateException("Cannot find delivery to cancel");
+         }
+         else
+         {         
+            promptDelivery();
+         }
       }
-      catch (Throwable t)
+      finally
       {
-         log.error("Failed to cancel message", t);
-         throw new IllegalStateException("Failed to cancel message");
-      }
-      if (!cancelled)
-      {
-         throw new IllegalStateException("Cannot find delivery to cancel");
-      }
-      else
-      {         
-         promptDelivery();
+         releaseLock();
       }
    }
    
@@ -413,46 +442,59 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
     */
    public javax.jms.Message getMessageNow() throws JMSException
    {      
-      synchronized (deliveryLock)
+      
+      try
       {
-         try
-         {
-            
-            grabbing = true;
-            
-            //This will always deliver a message (if there is one) on the same thread
-            promptDelivery();
-            
-            javax.jms.Message ret = (javax.jms.Message)toGrab;
-            
-            return ret;
-         }
-         finally
-         {
-            toGrab = null;
-            
-            grabbing = false;
-         }         
+         acquireLock();
+         
+         grabbing = true;
+         
+         //This will always deliver a message (if there is one) on the same thread
+         promptDelivery();
+         
+         javax.jms.Message ret = (javax.jms.Message)toGrab;
+         
+         return ret;
       }
+      finally
+      {
+         toGrab = null;
+         
+         grabbing = false;
+         
+         releaseLock();
+      }         
+      
    }
    
    public synchronized void deactivate() throws JMSException
    {
-      synchronized (deliveryLock)
+      try
       {
+         acquireLock();
          ready = false;
          if (log.isTraceEnabled()) { log.trace("set ready to false"); }
+      }
+      finally
+      {
+         releaseLock();
       }
    }
   
    
    public void activate() throws JMSException
    {
-      synchronized (deliveryLock)
+      try
       {
+         acquireLock();
+         
          ready = true;
          
          promptDelivery();
+      }
+      finally
+      {
+         releaseLock();
       }
    }
 
@@ -472,33 +514,43 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    {
       if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + channel);
  
-      for(Iterator i = deliveries.iterator(); i.hasNext(); )
+      try
       {
-         SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
-         try
+         acquireLock();
+         
+         
+         for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
-            d.cancel();
+            SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
+            try
+            {
+               d.cancel();
+            }
+            catch(Throwable t)
+            {
+               throw new JBossJMSException("Failed to cancel delivery", t);
+            }
+            i.remove();
          }
-         catch(Throwable t)
+         
+         if (!disconnected)
          {
-            log.error("Cannot cancel delivery: " + d, t);
+            close();
          }
-         i.remove();
+         
+         this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
+   
+         if (this.channel instanceof Subscription)
+         {
+            ((Subscription)channel).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
+         }
+         
+         this.sessionEndpoint.consumers.remove(this.id);
       }
-      
-      if (!disconnected)
+      finally
       {
-         close();
+         lock.release();
       }
-      
-      this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
-
-      if (this.channel instanceof Subscription)
-      {
-         ((Subscription)channel).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
-      }
-      
-      this.sessionEndpoint.consumers.remove(this.id);
    }  
    
    void acknowledge(String messageID, Transaction tx)
@@ -507,6 +559,8 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
 
       try
       {
+         acquireLock();
+         
          for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
             SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
@@ -521,12 +575,17 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
       {
          log.error("Message " + messageID + "cannot be acknowledged to the source");
       }
+      finally
+      {
+         lock.release();
+      }
    }
    
    void cancelAllDeliveries() throws JMSException
    {
-      synchronized (deliveryLock)
+      try
       {
+         acquireLock();
       
          if (log.isTraceEnabled()) { log.trace(this + " cancels deliveries"); }
          
@@ -552,22 +611,34 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
             }            
          }
          deliveries.clear();
+         promptDelivery();
       }
-
-      promptDelivery();
+      finally
+      {
+         releaseLock();
+      }
+   
    }
    
    void setStarted(boolean started)
    {
       if (log.isTraceEnabled()) { log.trace("setStarted: " + started); } 
       
-      this.started = started;   
-      
-      if (started)
+      try
       {
-         //need to prompt delivery
-
-         promptDelivery();
+         acquireLock();
+                  
+         this.started = started;   
+         
+         if (started)
+         {
+            //need to prompt delivery   
+            promptDelivery();
+         }
+      }
+      finally
+      {
+         releaseLock();
       }
    }
 
@@ -575,13 +646,10 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
    protected void promptDelivery()
    {
-      synchronized (deliveryLock)
+      if (ready || grabbing)
       {
-         if (ready || grabbing)
-         {
-            channel.deliver(this);
-         }
-      }
+         channel.deliver(this);
+      }      
    }
    
    /**

@@ -101,7 +101,7 @@ public class ChannelSupport implements Channel
 
       if (tx == null)
       {
-         return handleNoTx(sender, null, r);
+         return handleNoTx(sender, null, ref, false);
       }
 
       if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
@@ -109,6 +109,7 @@ public class ChannelSupport implements Channel
       try
       {
          state.add(ref, tx);
+         ref.acquireReference();
       }
       catch (Throwable t)
       {
@@ -119,6 +120,17 @@ public class ChannelSupport implements Channel
       // I might as well return null, the sender shouldn't care
       return new SimpleDelivery(sender, ref, true);
    }
+   
+   public void acquireLock()
+   {
+      //NOOP
+   }
+   
+   public void releaseLock()
+   {
+      //NOOP
+   }
+   
    
    // DeliveryObserver implementation --------------------------
 
@@ -136,6 +148,7 @@ public class ChannelSupport implements Channel
       try
       {
          state.remove(d, tx);
+         
       }
       catch (Throwable t)
       {
@@ -160,41 +173,17 @@ public class ChannelSupport implements Channel
 
       // mark it as redelivered
       ref.setRedelivered(true);
+      ref.getMessage().setRedelivered(true);
+      
+      //FIXME -
+      //Again - if we crash between removing the delivery and adding back the reference
+      //we lose the message!!! - Tim
 
       // add the message at the top of the list
       state.addFirst(ref);
 
       if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
       return true;
-   }
-
-   public void redeliver(Delivery old, Receiver r) throws Throwable
-   {
-      if (log.isTraceEnabled()) { log.trace(this + " redelivery request for delivery " + old + " by receiver " + r); }
-
-      // TODO must be done atomically
-   
-      if (state.remove(old, null))
-      {
-         if (log.isTraceEnabled()) { log.trace(this + " old delivery was active, canceled it"); }
-         
-         MessageReference ref = old.getReference();
-         
-         //FIXME - What if the message is only redelivered for one particular
-         //receiver - won't this set it globally?
-         if (log.isTraceEnabled()) { log.trace("Setting redelivered to true"); }
-         ref.setRedelivered(true);
-
-         Delivery newd = r.handle(this, ref, null);
-
-         if (newd == null || newd.isDone())
-         {
-            return;
-         }
-
-         // TODO race condition: what if the receiver acknowledges right here v ?
-         state.add(newd);
-      }
    }
 
    // Distributor implementation ------------------------------------
@@ -272,51 +261,57 @@ public class ChannelSupport implements Channel
       return ms;
    }
 
-   public void deliver()
-   {
-      if (log.isTraceEnabled()){ log.trace("attempting to deliver " + this + "'s messages"); }
-
-      List messages = state.undelivered(null);
-      for(Iterator i = messages.iterator(); i.hasNext(); )
-      {
-
-         MessageReference r = (MessageReference)i.next();
-
-         try
-         {
-
-            state.remove(r);
-         }
-         catch (Throwable t)
-         {
-            log.error("Failed to remove ref", t);
-            return;
-         }
-
-         // TODO for a reliable message this is dangerous, I can lose the persistent message if I crash now?
-         if (log.isTraceEnabled()){ log.trace("removed " + r + " from state"); }
-         
-         handleNoTx(null, null, r);
-      }
-   }
 
    public void deliver(Receiver r)
    {
       if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
+              
+      doDeliver(r);     
+   }
+   
+   protected void doDeliver(Receiver r)
+   {            
+      handleNoTx(null, r, null, true);      
+   }
+   
 
-      try
+   protected void obtainLocks(Receiver r)
+   {
+      if (r != null)
       {
-         MessageReference ref = state.remove();
-
-         // TODO for a reliable message this is dangerous, I can lose the persistent message if I crash now?
-
-         handleNoTx(null, r, ref);
+         //Get lock on this receiver
+         r.acquireLock();
       }
-      catch(Throwable t)
+      else
       {
-         log.error("delivery failed", t);
+         Iterator iter = router.iterator();
+         while (iter.hasNext())
+         {
+            Receiver rec = (Receiver)iter.next();
+            rec.acquireLock();
+         }
       }
    }
+   
+   protected void releaseLocks(Receiver r)
+   {
+      //Release locks
+      if (r != null)
+      {
+         //Get lock on this receiver
+         r.releaseLock();
+      }
+      else
+      {
+         Iterator iter = router.iterator();
+         while (iter.hasNext())
+         {
+            Receiver rec = (Receiver)iter.next();
+            rec.releaseLock();
+         }
+      }
+   }
+   
    
 
    public void close()
@@ -344,25 +339,18 @@ public class ChannelSupport implements Channel
    protected MessageReference ref(Routable r)
    {
       MessageReference ref = null;
-      
-      if (r.isReference())
+
+      //Convert to reference
+      try
       {
-         return (MessageReference)r;
+         ref = ms.reference(r);
+         return ref;
       }
-      else
+      catch (Throwable t)
       {
-         //Convert to reference
-         try
-         {
-            ref = ms.reference(r);
-            return ref;
-         }
-         catch (Throwable t)
-         {
-            log.error("Failed to reference routable", t);
-            return null;
-         }
-      }
+         log.error("Failed to reference routable", t);
+         return null;
+      }      
    }
    
    
@@ -379,106 +367,150 @@ public class ChannelSupport implements Channel
    /**
     * @param sender - may be null, in which case the returned acknowledgment will probably be ignored.
     */
-   private Delivery handleNoTx(DeliveryObserver sender, Receiver receiver, Routable r)
+   private Delivery handleNoTx(DeliveryObserver sender, Receiver receiver, MessageReference ref, boolean delivery)
    {
       checkClosed();
-
-      if (r == null)
+      
+      try
       {
-         return null;
-      }
-
-      // don't even attempt synchronous delivery for a reliable message when we have an
-      // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
-      // situation where we need to reliably store an active delivery of a reliable message, which
-      // in these conditions cannot be done.
-
-      if (r.isReliable() && !state.acceptReliableMessages())
-      {
-         log.error("Cannot handle reliable message " + r +
-                   " because the channel has a non-recoverable state!");
-         return null;
-      }
-
-      if (log.isTraceEnabled()){ log.trace(this + " handling non-transactionally " + r); }
-
-      MessageReference ref = ref(r);
-      Set deliveries = Collections.EMPTY_SET;
-
-      if (receiver == null)
-      {
-         deliveries = router.handle(this, ref, null);
-      }
-      else
-      {
-         try
+         //We obtain locks on all receivers (for JMS there is only one)
+         //during the process of delivery.
+         //This is to prevent multiple related race conditions in which delivery happens at the same
+         //time as message handling.
+          
+         obtainLocks(receiver);
+            
+         if (delivery)
          {
-            Delivery d = receiver.handle(this, ref, null);
-
-            if (d != null && !d.isCancelled())
+            try
             {
-               deliveries = new HashSet(1);
-               deliveries.add(d);
+               ref = state.remove();
+               
+               //TODO for a reliable message this is dangerous, I can lose the persistent message if I crash now?
+               //Yes, this also applies when you cancel - Tim :(
+
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to get ref from state", t);
             }
          }
-         catch(Throwable t)
+   
+         if (ref == null)
          {
-            // broken receiver - log the exception and ignore it
-            log.error("The receiver " + receiver + " is broken", t);
-         }
-      }
-
-      if (deliveries.isEmpty())
-      {
-         // no receivers, receivers that don't accept the message or broken receivers
-         
-         if (log.isTraceEnabled()){ log.trace("No deliveries returned for message; there are no receivers"); }
-         
-         try
-         {
-            state.add(ref, null);
-            if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
-
-         }
-         catch(Throwable t)
-         {
-            // this channel cannot safely hold the message, so it doesn't accept it
-            log.error("Cannot handle the message", t);
             return null;
          }
-      }
-      else
-      {
-         // there are receivers
-         try
+   
+         // don't even attempt synchronous delivery for a reliable message when we have an
+         // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
+         // situation where we need to reliably store an active delivery of a reliable message, which
+         // in these conditions cannot be done.
+   
+         if (ref.isReliable() && !state.acceptReliableMessages())
          {
-            
-            for (Iterator i = deliveries.iterator(); i.hasNext(); )
+            log.error("Cannot handle reliable message " + ref +
+                      " because the channel has a non-recoverable state!");
+            return null;
+         }
+   
+         if (log.isTraceEnabled()){ log.trace(this + " handling non-transactionally " + ref); }
+         
+         Set deliveries = Collections.EMPTY_SET;
+   
+         if (receiver == null)
+         {
+            deliveries = router.handle(this, ref, null);
+         }
+         else
+         {
+            try
             {
-               Delivery d = (Delivery)i.next();
-               if (!d.isDone())
+               Delivery d = receiver.handle(this, ref, null);
+   
+               if (d != null && !d.isCancelled())
                {
-                  state.add(d);
+                  deliveries = new HashSet(1);
+                  deliveries.add(d);
                }
             }
-          
+            catch(Throwable t)
+            {
+               // broken receiver - log the exception and ignore it
+               log.error("The receiver " + receiver + " is broken", t);
+            }
          }
-         catch(Throwable t)
+   
+         if (deliveries.isEmpty())
          {
-            log.error(this + " cannot manage delivery, passing responsibility to the sender", t);
-
-            // cannot manage this delivery, pass the responsibility to the sender
-            // cannot split delivery, because in case of crash, the message must be recoverable
-            // from one and only one channel
-
-            // TODO this is untested
-            return new CompositeDelivery(sender, deliveries);
+            // no receivers, receivers that don't accept the message or broken receivers
+            
+            if (log.isTraceEnabled()){ log.trace("No deliveries returned for message; there are no receivers"); }
+            
+            try
+            {
+               if (delivery)
+               {
+                  //Add the ref back at the front of the queue
+                  state.addFirst(ref);
+                  //No need to add a reference we already have one
+               }
+               else
+               {
+                  if (log.isTraceEnabled()) { log.trace("Not a redelivery, adding to state"); }
+                  state.add(ref, null);
+                  ref.acquireReference();
+               }
+               
+               if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
+   
+            }
+            catch(Throwable t)
+            {
+               // this channel cannot safely hold the message, so it doesn't accept it
+               log.error("Cannot handle the message", t);
+               return null;
+            }
          }
-         
+         else
+         {
+            // there are receivers
+            try
+            {
+               
+               for (Iterator i = deliveries.iterator(); i.hasNext(); )
+               {
+                  Delivery d = (Delivery)i.next();
+                  if (!d.isDone())
+                  {
+                     state.add(d);
+                     if (!delivery)
+                     {
+                        ref.acquireReference();
+                     }
+                  }
+               }          
+            }
+            catch(Throwable t)
+            {
+               log.error(this + " cannot manage delivery, passing responsibility to the sender", t);
+   
+               // cannot manage this delivery, pass the responsibility to the sender
+               // cannot split delivery, because in case of crash, the message must be recoverable
+               // from one and only one channel
+   
+               // TODO this is untested
+               return new CompositeDelivery(sender, deliveries);
+            }
+            
+         }
+   
+         // the channel can safely assume responsibility for delivery
+         return new SimpleDelivery(true);
       }
-
-      // the channel can safely assume responsibility for delivery
-      return new SimpleDelivery(true);
+      finally
+      {
+         releaseLocks(receiver);
+      }
    }
 
 
@@ -493,11 +525,12 @@ public class ChannelSupport implements Channel
          if (state.remove(d, null))
          {
             if (log.isTraceEnabled()) { log.trace(this + " delivery " + d + " completed and forgotten"); }
+            d.getReference().releaseReference();            
          }
       }
       catch(Throwable t)
       {
-         // a non transactional remove shound't throw any transaction
+         // a non transactional remove shouldn't throw any transaction
          log.error(this + " failed to remove delivery", t);
       }
    }

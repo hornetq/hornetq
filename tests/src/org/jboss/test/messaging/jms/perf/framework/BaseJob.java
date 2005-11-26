@@ -46,33 +46,7 @@ public abstract class BaseJob implements Job, Serializable
       this.destName = destinationName;
       this.connectionFactoryJndiName = connectionFactoryJndiName;
    }
-   
-
-   protected String sub(Map variables, String value)
-   {
-      if (value == null)
-      {
-         return null;
-      }
-      
-      if (variables == null)
-      {
-         return value;
-      }
-      
-      value = value.trim();
-      
-      if (value.startsWith("@"))
-      {
-         String variable = value.substring(1);
-         String newValue = (String)variables.get(variable);
-         if (newValue != null)
-         {
-            value = newValue;
-         }
-      }
-      return value;
-   }
+ 
    
    protected void setup() throws Exception
    { 
@@ -97,11 +71,6 @@ public abstract class BaseJob implements Job, Serializable
       ic.close();
    }
    
-   public boolean isFailed()
-   {
-      return failed;
-   }
-
    /**
     * Set the destName.
     * 
