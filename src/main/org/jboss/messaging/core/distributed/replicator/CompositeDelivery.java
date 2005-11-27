@@ -98,40 +98,34 @@ public class CompositeDelivery implements MultipleReceiversDelivery
       boolean handled = false;
       Object messageID = ack.getMessageID();
 
-      if (reference.getMessageID().equals(messageID))
+      if (!reference.getMessageID().equals(messageID))
       {
          // not my acknowledgment, ignore it
-         log.debug("discarding acknowledgment for unknown message: " + ack);
+         log.debug(this + " discarding acknowledgment for unknown message: " + ack);
       }
 
       if (log.isTraceEnabled()) { log.trace(this + " handling " + ack); }
 
       Object outputID = ack.getReplicatorOutputID();
 
-      // TODO What happens if a delivery for a message is cancelled and the sender immediately
-      //      resends the message. Each delivery should have its own unique id, to avoid confusion
-      //
-      // TODO Deal with the case the view change in the middle of a delivery
-      //
-      // TODO What happens if a peer cancels the delivery, but the message is delivered to others already
-      //
       for(Iterator i = outputIdentities.iterator(); i.hasNext();)
       {
          PeerIdentity pid = (PeerIdentity)i.next();
          if (pid.getPeerID().equals(outputID))
          {
-            if (!ack.isAccepted())
+
+            int state = ack.getState();
+            if (state == Acknowledgment.REJECTED && cancelOnMessagesRejection ||
+                state == Acknowledgment.CANCELLED)
             {
-               // message rejected
-               if (cancelOnMessagesRejection)
-               {
-                  cancelled = true;
-                  break;
-               }
+               if (log.isTraceEnabled()) { log.trace(this + " cancelled"); }
+               cancelled = true;
+               break;
             }
 
             i.remove();
             handled = true;
+            if (log.isTraceEnabled()) { log.trace(this + " expecting acknowledgments from " + outputIdentities.size() + " more peers"); }
             break;
          }
       }
@@ -201,6 +195,11 @@ public class CompositeDelivery implements MultipleReceiversDelivery
 
    // Public --------------------------------------------------------
 
+   public String toString()
+   {
+      return "CompositeDelivery[" + reference.getMessageID()+ ", " + outputIdentities.size() + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -212,18 +211,21 @@ public class CompositeDelivery implements MultipleReceiversDelivery
       cancelled = true;
       try
       {
+         if (log.isTraceEnabled()) { log.trace(this + " cancelling on observer"); }
          observer.cancel(this);
       }
       catch(Throwable t)
       {
-
+         log.error("Failed to cancel", t);
       }
    }
 
    private void acknowledgeDelivery()
    {
       done = true;
+      if (log.isTraceEnabled()) { log.trace(this + " acknowledging on observer"); }
       observer.acknowledge(this, null);
+
    }
    
    // Inner classes -------------------------------------------------

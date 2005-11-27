@@ -19,40 +19,22 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed;
+package org.jboss.messaging.core.distributed.util;
 
-import java.util.Set;
-import java.util.Iterator;
-import java.io.Serializable;
+import org.jgroups.MessageListener;
 
 /**
- * TODO change the name if I can think of a better one
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
-public interface ViewKeeper
+public interface DelegatingMessageListener extends MessageListener
 {
-   Serializable getGroupID();
-
-
-   void addRemotePeer(RemotePeer remotePeer);
+   MessageListener getDelegate();
 
    /**
-    * Remove any reference to the specified remote peer.
+    * Removes the given listener from this instance's delegate chain.
+    * 
+    * @return true if the listener was found and removed, false if the listener was not found.
     */
-   RemotePeer removeRemotePeer(PeerIdentity remotePeerIdentity);
-
-   /**
-    * Return a set containing PeerIdentities of the remote peers.
-    */
-   Set getRemotePeers();
-
-   /**
-    * Return a RemotePeer iterator.
-    */
-   Iterator iterator();
-
+   boolean remove(MessageListener listener);
 }

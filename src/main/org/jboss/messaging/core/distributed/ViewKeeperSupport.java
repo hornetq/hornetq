@@ -19,11 +19,8 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.distributed.ViewKeeper;
-import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.logging.Logger;
 
 import java.util.Set;
@@ -40,11 +37,11 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class SimpleViewKeeper implements ViewKeeper
+public abstract class ViewKeeperSupport implements ViewKeeper
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SimpleViewKeeper.class);
+   private static final Logger log = Logger.getLogger(ViewKeeperSupport.class);
 
    // Static --------------------------------------------------------
 
@@ -57,7 +54,7 @@ public class SimpleViewKeeper implements ViewKeeper
 
    // Constructors --------------------------------------------------
 
-   public SimpleViewKeeper(Serializable groupID)
+   public ViewKeeperSupport(Serializable groupID)
    {
       this.groupID = groupID;
       remotePeers = Collections.synchronizedMap(new HashMap());
@@ -73,19 +70,19 @@ public class SimpleViewKeeper implements ViewKeeper
    public void addRemotePeer(RemotePeer remotePeer)
    {
       PeerIdentity pid = remotePeer.getPeerIdentity();
-      log.debug("adding " + pid);
       if (remotePeers.keySet().contains(pid))
       {
-         throw new IllegalStateException("ADDED TWICE: " + pid);
+         throw new IllegalStateException(pid + " already added");
       }
       remotePeers.put(pid, remotePeer);
-
+      if (log.isTraceEnabled()) { log.trace(this + " added " + remotePeer); }
    }
 
    public RemotePeer removeRemotePeer(PeerIdentity remotePeerIdentity)
    {
-      log.debug("removing remote peer " + remotePeerIdentity);
-      return (RemotePeer)remotePeers.remove(remotePeerIdentity);
+      RemotePeer removed = (RemotePeer)remotePeers.remove(remotePeerIdentity);
+      if (log.isTraceEnabled()) { log.trace(this + " removed " + this); }
+      return removed;
    }
 
    public Set getRemotePeers()
@@ -105,20 +102,15 @@ public class SimpleViewKeeper implements ViewKeeper
 
    // Public --------------------------------------------------------
 
-   public void clear()
-   {
-      remotePeers.clear();
-   }
-
-   public String toString()
-   {
-      return "SimpleViewKeeper[" + groupID + "]";
-   }
+   /**
+    * Must return a string that contains the groupID and the associated peer ID.
+    */
+   public abstract String toString();
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

@@ -19,16 +19,15 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed.replicator;
 
 import org.jboss.test.messaging.core.TransactionalChannelSupportTest;
-
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class QueueAsChannelTest extends TransactionalChannelSupportTest
+public class ReplicatorAsChannelTest extends TransactionalChannelSupportTest
 {
 //   // Constants -----------------------------------------------------
 //
@@ -45,12 +44,13 @@ public class QueueAsChannelTest extends TransactionalChannelSupportTest
 //
 //   // Attributes ----------------------------------------------------
 //
+//   // used by the local test cases
 //   private JChannel jChannelOne, jChannelTwo;
 //   private RpcDispatcher dispatcherOne, dispatcher2;
 //
    // Constructors --------------------------------------------------
 
-   public QueueAsChannelTest(String name)
+   public ReplicatorAsChannelTest(String name)
    {
       super(name);
    }
@@ -70,22 +70,18 @@ public class QueueAsChannelTest extends TransactionalChannelSupportTest
 //      jChannelOne.connect("ReplicatorTestGroup");
 //      jChannelTwo.connect("ReplicatorTestGroup");
 //
-//      // Create a Queue and a receiver to be tested by the superclass tests
-//
-//      channel = new Queue(dispatcherOne, "QueueID");
-//      ((Queue)channel).start();
-//
+//      // Create a receiver and a Replicator to be tested by the superclass tests
 //      receiverOne = new ReceiverImpl("ReceiverOne", ReceiverImpl.HANDLING);
-//      Queue outputPeer = new Queue(dispatcher2, "QueueID");
-//      ((Queue)outputPeer).add(receiverOne);
-//      ((Queue)outputPeer).start();
+//      ReplicatorOutput output = new ReplicatorOutput(dispatcher2, "ReplicatorID", receiverOne);
+//      output.start();
+//      channel = new Replicator(dispatcherOne, "ReplicatorID");
+//      ((Replicator)channel).start();
 //
 //      super.setUp();
 //   }
 //
 //   public void tearDown() throws Exception
 //   {
-//
 //      channel = null;
 //      receiverOne = null;
 //
@@ -100,9 +96,9 @@ public class QueueAsChannelTest extends TransactionalChannelSupportTest
 //   // This test class runs all ChannelSupportTest tests
 //   //
 //
-
    public void testNoop()
    {
    }
+
 
 }

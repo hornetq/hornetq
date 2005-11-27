@@ -24,6 +24,8 @@ package org.jboss.messaging.core.distributed.replicator;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.util.DelegatingMessageListener;
+import org.jboss.messaging.core.distributed.util.DelegatingMessageListenerSupport;
 import org.jboss.logging.Logger;
 import org.jgroups.MessageListener;
 import org.jgroups.blocks.RpcDispatcher;
@@ -52,8 +54,10 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
 
    protected Serializable id;
    protected RpcDispatcher dispatcher;
+   protected MessageListener collectorMessageListener;
    // <messageID - CompositeDelivery>
    protected Map deliveries;
+
 
    // Constructors --------------------------------------------------
 
@@ -61,6 +65,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
    {
       this.id = id;
       this.dispatcher = dispatcher;
+      this.collectorMessageListener = null;
       deliveries = new HashMap();
    }
 
@@ -85,23 +90,37 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
 
    // Public --------------------------------------------------------
 
-   public void start()
+   public synchronized void start()
    {
+      if (collectorMessageListener != null)
+      {
+         // already started
+         return;
+      }
+
       // delegate to the existing listener, if any
       MessageListener delegateListener = dispatcher.getMessageListener();
-      dispatcher.setMessageListener(new MessageListenerImpl(delegateListener));
+      collectorMessageListener = new CollectorMessageListener(delegateListener);
+      dispatcher.setMessageListener(collectorMessageListener);
    }
 
-   public void stop()
+   public synchronized void stop()
    {
-      MessageListener l = dispatcher.getMessageListener();
+      if (collectorMessageListener == null)
+      {
+         return;
+      }
 
-      //TODO - when multiple collectors/outputs share the same dispatcher here I can have a
-      //       chain of MessageListenerImpls; handle this
-      throw new NotYetImplementedException();
+      DelegatingMessageListener dl = (DelegatingMessageListener)dispatcher.getMessageListener();
 
-//      MessageListenerImpl l = (MessageListenerImpl)
-//      dispatcher.setMessageListener(l.getDelegate());
+      if (dl == collectorMessageListener)
+      {
+         dispatcher.setMessageListener(dl.getDelegate());
+      }
+      else
+      {
+         dl.remove(collectorMessageListener);
+      }
    }
 
    public void startCollecting(CompositeDelivery d)
@@ -128,7 +147,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
    
    // Inner classes -------------------------------------------------
 
-   protected class MessageListenerImpl implements MessageListener
+   protected class CollectorMessageListener extends DelegatingMessageListenerSupport
    {
       // Constants -----------------------------------------------------
 
@@ -136,13 +155,11 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
 
       // Attributes ----------------------------------------------------
 
-      protected MessageListener delegate;
-
       // Constructors --------------------------------------------------
 
-      public MessageListenerImpl(MessageListener delegate)
+      public CollectorMessageListener(MessageListener delegate)
       {
-         this.delegate = delegate;
+         super(delegate);
       }
 
       // MessageListener implementation --------------------------------
@@ -156,10 +173,14 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
          {
             if (!(o instanceof Acknowledgment))
             {
-               return; // discard
+               if (log.isTraceEnabled()) { log.trace(this + " discarding " + o); }
+               return;
             }
 
             Acknowledgment ack = (Acknowledgment)o;
+
+            if (log.isTraceEnabled()) { log.trace(this + " received " + ack); }
+
             Object messageID = ack.getMessageID();
             CompositeDelivery d = (CompositeDelivery)deliveries.get(messageID);
 
@@ -204,9 +225,9 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
 
       // Public --------------------------------------------------------
 
-      public MessageListener getDelegate()
+      public String toString()
       {
-         return delegate;
+         return AcknowledgmentCollector.this + ".Listner";
       }
 
       // Package protected ---------------------------------------------

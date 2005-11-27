@@ -68,7 +68,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
 
    public QueuePeer(DistributedQueue queue, RpcDispatcher dispatcher)
    {
-      super(queue.getViewKeeper(), dispatcher);
+      super(new GUID().toString(), queue.getViewKeeper(), dispatcher);
       this.pipeID = new GUID().toString();
       this.queue = queue;
    }
@@ -150,7 +150,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       return messages;
    }
 
-   // Protected -----------------------------------------------------
+   // PeerSupport overrides -----------------------------------------
 
    protected void doJoin() throws DistributedException
    {
@@ -188,6 +188,8 @@ public class QueuePeer extends PeerSupport implements QueueFacade
    {
       return new QueuePeerInfo(getPeerIdentity(), pipeID);
    }
+
+   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 

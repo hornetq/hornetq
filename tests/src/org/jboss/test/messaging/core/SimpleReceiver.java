@@ -133,7 +133,7 @@ public class SimpleReceiver implements Receiver
          }
 
          boolean done = ACKING.equals(state) ? true : false;
-         log.info("Receiver [" + name + "] is " + (done ? "ACKing" : "NACKing") +  " message " + r);
+         log.info(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + r);
          
          MessageReference ref = (MessageReference)r;
          Message m = ref.getMessage();
@@ -258,6 +258,8 @@ public class SimpleReceiver implements Receiver
 
    public void acknowledge(Routable r, Transaction tx) throws Throwable
    {
+      log.debug(this + " acknowledging "  + r);
+
       Object[] touple = null;
       SingleReceiverDelivery d = null;
       for (Iterator i = messages.iterator(); i.hasNext(); )
@@ -274,22 +276,57 @@ public class SimpleReceiver implements Receiver
 
       if (touple == null)
       {
-         throw new IllegalStateException("The message " + r + "hasn't been received yet!");
+         throw new IllegalStateException("The message " + r + " hasn't been received yet!");
       }
 
       if (d == null)
       {
-         throw new IllegalStateException("The message " + r +" has already been acknowledged!");
+         throw new IllegalStateException("The message " + r + " has already been acknowledged!");
       }
 
       d.acknowledge(tx);
 
+      log.info(this + " acknowledged "  + r);
+
       // make sure I get rid of message if the transaction is rolled back
       if (tx != null)
       {
-         tx.addCallback(new PostAcknowledgeCommitTask(touple));
+         tx.addCallback(new PostAcknowledgeCommitCallback(touple));
       }
    }
+
+   public void cancel(Routable r) throws Throwable
+   {
+      Object[] touple = null;
+      SingleReceiverDelivery d = null;
+      for (Iterator i = messages.iterator(); i.hasNext(); )
+      {
+         Object[] o = (Object[])i.next();
+         Message m = (Message)o[0];
+         if (m == r)
+         {
+            d = (SingleReceiverDelivery)o[1];
+            touple = o;
+            i.remove();
+            break;
+         }
+      }
+
+      if (touple == null)
+      {
+         throw new IllegalStateException("The message " + r + " hasn't been received yet!");
+      }
+
+      if (d == null)
+      {
+         throw new IllegalStateException("The message " + r + " has already been acknowledged!");
+      }
+
+      d.cancel();
+
+      log.info(this + " cancelled "  + r);
+   }
+
 
    public void setState(String state)
    {
@@ -334,7 +371,7 @@ public class SimpleReceiver implements Receiver
 
    // Inner classes -------------------------------------------------
 
-   private class PostAcknowledgeCommitTask implements TxCallback
+   private class PostAcknowledgeCommitCallback implements TxCallback
    {
       private Object[] touple;
 
@@ -342,7 +379,7 @@ public class SimpleReceiver implements Receiver
       /**
        * @param touple - touple[0] contains the message, touple[1] contains the delivery
        */
-      public PostAcknowledgeCommitTask(Object[] touple)
+      public PostAcknowledgeCommitCallback(Object[] touple)
       {
          this.touple = touple;
       }

@@ -33,22 +33,35 @@ public class Acknowledgment implements Serializable
 {
    // Constants -----------------------------------------------------
 
+   public static final int REJECTED = 0;
+   public static final int ACCEPTED = 1;
+   public static final int CANCELLED = 20;
+
    private static final long serialVersionUID = -3953217132447293L;
 
    // Static --------------------------------------------------------
-   
+
+   public static String stateToString(int state)
+   {
+      return state == REJECTED ? "REJECTED" :
+             state == ACCEPTED ? "ACCEPTED" :
+             state == CANCELLED ? "CANCELLED" :
+             "UNKNOWN";
+   }
+
    // Attributes ----------------------------------------------------
 
    protected Serializable replicatorOutputID;
    protected Serializable messageID;
-   protected boolean accepted;
+   protected int state;
 
    // Constructors --------------------------------------------------
 
-   public Acknowledgment(Serializable replicatorOutputID, Serializable messageID, boolean accepted)
+   public Acknowledgment(Serializable replicatorOutputID, Serializable messageID, int state)
    {
+      validateState(state);
       this.messageID = messageID;
-      this.accepted = accepted;
+      this.state = state;
       this.replicatorOutputID = replicatorOutputID;
    }
 
@@ -59,9 +72,9 @@ public class Acknowledgment implements Serializable
       return messageID;
    }
 
-   public boolean isAccepted()
+   public int getState()
    {
-      return accepted;
+      return state;
    }
 
    public Serializable getReplicatorOutputID()
@@ -69,11 +82,27 @@ public class Acknowledgment implements Serializable
       return replicatorOutputID;
    }
 
+   public String toString()
+   {
+      return "Acknowlegment[" + messageID + ", " + stateToString(state) + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+
+   private void validateState(int state)
+   {
+      if (state != REJECTED &&
+          state != ACCEPTED &&
+          state != CANCELLED)
+      {
+         throw new IllegalArgumentException("unknown state: " + state);
+      }
+
+   }
 
    // Inner classes -------------------------------------------------
 }

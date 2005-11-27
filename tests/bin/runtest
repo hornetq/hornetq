@@ -76,40 +76,42 @@
 # distributed core
 #
 
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.SharedPipeOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorTimeoutExceptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.InvalidQueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueueAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PipeAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.pipe.SharedPipeOutputTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTimeoutExceptionTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ToEraseReplicatorOutputTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.InvalidQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueueAsChannelTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.pipe.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
 
 #
 # core.distributed.queue
 #
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.QueuePeerTest
-#TARGET_TEST=testGroupOfTwo
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.NonRecoverableDistributedQueueTest
-#TARGET_TEST=testNonRecoverableDistributedChannel_1
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.RecoverableDistributedQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueuePeerTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.RecoverableDistributedQueueTest
+#TARGET_TEST=testRecoverableDistributedChannel_3
 #TARGET_TEST=testSimpleSend
 
 #
 # core.distributed.topic
 #
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.TopicPeerTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.DistributedTopicTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.TopicPeerTest
+#TARGET_TEST=testTwoPeers_1
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
+TARGET_TEST=testSimplestDistributeTopic_1
 
 #
 # core.distributed.replicator
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDeliveryTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest;
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest;
-#TARGET_TEST=testReplicator_2
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.ReplicatorAsChannelTest
+#TARGET_TEST=testDelivery_5
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
+#TARGET_TEST=testReplicator_4
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
 
 #
 # distributed utils

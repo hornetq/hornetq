@@ -19,11 +19,12 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed.queue;
 
-import org.jboss.test.messaging.core.distributed.base.DistributedTopicTestBase;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
+import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,7 +32,7 @@ import org.jboss.messaging.core.distributed.topic.DistributedTopic;
  *
  * $Id$
  */
-public class DistributedTopicTest extends DistributedTopicTestBase
+public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -41,7 +42,7 @@ public class DistributedTopicTest extends DistributedTopicTestBase
 
    // Constructors --------------------------------------------------
 
-   public DistributedTopicTest(String name)
+   public NonRecoverableDistributedQueueTest(String name)
    {
       super(name);
    }
@@ -52,25 +53,41 @@ public class DistributedTopicTest extends DistributedTopicTestBase
    {
       super.setUp();
 
-      topic = new DistributedTopic("test", dispatcher);
-      topic2 = new DistributedTopic("test", dispatcher2);
-      topic3 = new DistributedTopic("test", dispatcher3);
+      channel = new DistributedQueue("test", ms, dispatcher);
+
+      ms2 = new PersistentMessageStore("message-store-2", msPersistenceManager);
+      ms3 = new PersistentMessageStore("message-store-3", msPersistenceManager);
+
+      channel2 = new DistributedQueue("test", ms2, dispatcher2);
+      channel3 = new DistributedQueue("test", ms3, dispatcher3);
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      ((DistributedTopic)topic).close();
-      topic = null;
+      channel.close();
+      channel = null;
 
-      topic2.close();
-      topic2 = null;
+      ms2 = null;
+      channel2.close();
+      channel2 = null;
 
-      topic3.close();
-      topic3 = null;
-
+      ms3 = null;
+      channel3.close();
+      channel3 = null;
+      
       super.tearDown();
+   }
+
+   public void crashChannel() throws Exception
+   {
+      // doesn't matter
+   }
+
+   public void recoverChannel() throws Exception
+   {
+      // doesn't matter
    }
 
    // Public --------------------------------------------------------

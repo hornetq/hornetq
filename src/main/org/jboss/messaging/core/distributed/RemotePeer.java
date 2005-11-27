@@ -29,7 +29,7 @@ package org.jboss.messaging.core.distributed;
  *
  * $Id$
  */
-public abstract class RemotePeer
+public class RemotePeer
  {
    // Constants -----------------------------------------------------
 
@@ -41,6 +41,10 @@ public abstract class RemotePeer
 
    // Constructors --------------------------------------------------
 
+   public RemotePeer()
+   {
+   }
+
    public RemotePeer(PeerIdentity remotePeerIdentity)
    {
       this.remotePeerIdentity = remotePeerIdentity;
@@ -51,6 +55,11 @@ public abstract class RemotePeer
    public PeerIdentity getPeerIdentity()
    {
       return remotePeerIdentity;
+   }
+
+   public String toString()
+   {
+      return "RemotePeer[" + remotePeerIdentity + "]";
    }
 
    // Package protected ---------------------------------------------

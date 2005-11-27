@@ -76,7 +76,8 @@
    </category>
    
    <category name="org.jboss.test">
-         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <!-- <priority value="INFO"/> -->
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
    <category name="org.jboss.jms">
@@ -84,8 +85,22 @@
    </category>
 
    <category name="org.jboss.messaging">
+      <!-- <priority value="INFO"/> -->
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
+
+   <!--
+   <category name="org.jboss.messaging.core.distributed.replicator.AcknowledgmentCollector">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   <category name="org.jboss.messaging.core.distributed.replicator.CompositeDelivery">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   <category name="org.jboss.messaging.core.distributed.replicator.ReplicatorOutput">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+   -->
+
 
    <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">
       <priority value="WARN"/>

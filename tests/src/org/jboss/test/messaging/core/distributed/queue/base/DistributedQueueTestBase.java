@@ -19,13 +19,14 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed.base;
+package org.jboss.test.messaging.core.distributed.queue.base;
 
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.core.distributed.base.DistributedChannelTestBase;
 
 import java.util.List;
 

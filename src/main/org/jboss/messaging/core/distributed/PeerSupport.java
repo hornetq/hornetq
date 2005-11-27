@@ -25,7 +25,6 @@ import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.distributed.util.RpcServerCall;
 import org.jboss.messaging.core.distributed.util.ServerResponse;
 import org.jboss.logging.Logger;
-import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
@@ -68,20 +67,34 @@ public abstract class PeerSupport implements Peer, PeerFacade
    // Constructors --------------------------------------------------
 
    /**
+    * Use this to create a PeerSupport with an internal ViewKeeper.
+    *
     * @throws IllegalStateException in case the dispatcher is not configured with an RpcServer
     */
-   public PeerSupport(ViewKeeper viewKeeper, RpcDispatcher dispatcher)
+   public PeerSupport(Serializable peerID, Serializable groupID, RpcDispatcher dispatcher)
+   {
+      this(peerID, new PeerViewKeeper(peerID, groupID), dispatcher);
+   }
+
+   /**
+    * Use this to create a PeerSupport with an external ViewKeeper.
+    *
+    * @param viewKeeper must contain the valid group ID. This peer support will use the group ID
+    *        obtained from the viewKeeper to connect to the group.
+    *
+    * @throws IllegalStateException in case the dispatcher is not configured with an RpcServer
+    */
+   public PeerSupport(Serializable peerID, ViewKeeper viewKeeper, RpcDispatcher dispatcher)
    {
       Object so = dispatcher.getServerObject();
       if (!(so instanceof RpcServer))
       {
          throw new IllegalStateException("RpcDispatcher must have a pre-installed RpcServer");
       }
-
-      this.dispatcher = dispatcher;
       rpcServer = (RpcServer)so;
+      this.dispatcher = dispatcher;
+      this.peerID = peerID;
       this.viewKeeper = viewKeeper;
-      this.peerID = generateUniqueID();
       joined = false;
    }
 
@@ -100,6 +113,11 @@ public abstract class PeerSupport implements Peer, PeerFacade
    public synchronized boolean hasJoined()
    {
       return joined;
+   }
+
+   public RpcDispatcher getDispatcher()
+   {
+      return dispatcher;
    }
 
    public Set getView()
@@ -321,15 +339,18 @@ public abstract class PeerSupport implements Peer, PeerFacade
    protected abstract void doJoin() throws DistributedException;
    protected abstract void doLeave() throws DistributedException;
 
+   /**
+    * Create a local representation of a remote peer.
+    */
    protected abstract RemotePeer createRemotePeer(RemotePeerInfo newRemotePeerInfo);
+
+   /**
+    * Create a representation of myself to be returned to other peers that need this information.
+    */
    protected abstract RemotePeerInfo getRemotePeerInfo();
 
    // Private -------------------------------------------------------
 
-   private Serializable generateUniqueID()
-   {
-      return new GUID().toString();
-   }
-
    // Inner classes -------------------------------------------------
+
 }

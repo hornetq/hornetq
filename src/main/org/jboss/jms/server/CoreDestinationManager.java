@@ -143,7 +143,7 @@ class CoreDestinationManager
       else
       {
          // TODO I am using LocalTopics for the time being, switch to distributed Topics
-         cd = new Topic(name);
+         cd = new Topic(name, sp.getMessageStore());
          
          topicMap.put(name, cd);
          

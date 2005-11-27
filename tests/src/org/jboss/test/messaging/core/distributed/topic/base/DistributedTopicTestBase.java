@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed.base;
+package org.jboss.test.messaging.core.distributed.topic.base;
 
 import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.test.messaging.core.local.base.TopicTestBase;
@@ -27,10 +27,13 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -54,6 +57,9 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
+   protected PersistenceManager pm2, pm3;
+   protected MessageStore ms2, ms3;
+
    protected DistributedTopic topic2, topic3;
 
    // Constructors --------------------------------------------------
@@ -68,6 +74,14 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    public void setUp() throws Exception
    {
       super.setUp();
+
+      pm2 = new JDBCPersistenceManager();
+      pm2.start();
+      ms2 = new PersistentMessageStore("store2", pm2);
+
+      pm3 = new JDBCPersistenceManager();
+      pm3.start();
+      ms3 = new PersistentMessageStore("store1", pm3);
 
       jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
       jchannel2 = new JChannel(JGroupsUtil.generateProperties(900000, 1));
@@ -89,11 +103,24 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       jchannel2.close();
       jchannel3.close();
 
+      pm2.stop();
+      pm2 = null;
+      ms2 = null;
+
+      pm3.stop();
+      pm3 = null;
+      ms3 = null;
+
       super.tearDown();
    }
 
 
-   public void testUnreliableMessageTwoRemoteReceivers() throws Exception
+
+   /**
+    * A distributed topic of two peers, using two different physical JGroups and connected to two
+    * ACKING receivers. Unreliable message.
+    */
+   public void testSimplestDistributeTopic_1() throws Exception
    {
       jchannel2.connect("testGroup");
 
@@ -122,6 +149,8 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       Delivery d = topic.handle(observer, ms.reference(m), null);
       log.debug("message sent");
 
+      observer.waitForAcknowledgment(d);
+
       assertTrue(d.isDone());
 
       List l1 = r1.getMessages();
@@ -134,7 +163,11 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       assertEquals("payload", ((Message)l2.get(0)).getPayload());
    }
 
-   public void testReliableMessageTwoRemoteReceivers() throws Exception
+   /**
+    * A distributed topic of two peers, using two different physical JGroups and connected to two
+    * ACKING receivers. Reliable message.
+    */
+   public void testSimplestDistributeTopic_2() throws Exception
    {
       jchannel2.connect("testGroup");
 

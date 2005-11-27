@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.distributed;
 
+import org.jgroups.blocks.RpcDispatcher;
+
 import java.util.Set;
 import java.io.Serializable;
 
@@ -37,6 +39,8 @@ public interface Peer
    PeerIdentity getPeerIdentity();
 
    boolean hasJoined();
+
+   RpcDispatcher getDispatcher();
 
    /**
     * Returns a Set of PeerIdentity instances corresponding to peers that are part of the group.

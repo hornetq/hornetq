@@ -19,15 +19,11 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.messaging.core.distributed;
 
-import org.jboss.messaging.core.message.InMemoryMessageStore;
-import org.jboss.messaging.core.distributed.Distributed;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
-import org.jgroups.blocks.RpcDispatcher;
+import org.jboss.messaging.util.Util;
+
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -35,51 +31,37 @@ import org.jgroups.blocks.RpcDispatcher;
  *
  * $Id$
  */
-public class TopicPeerTest extends PeerTestBase
+class PeerViewKeeper extends ViewKeeperSupport
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
-   protected MessageStore ms;
+   protected Serializable peerID;
 
    // Constructors --------------------------------------------------
 
-   public TopicPeerTest(String name)
+   public PeerViewKeeper(Serializable peerID, Serializable groupID)
    {
-      super(name);
+      super(groupID);
+      this.peerID = peerID;
    }
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
+   public String toString()
    {
-      ms = new InMemoryMessageStore("in-memory-message-store");
-
-      super.setUp();
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ms = null;
-
-      super.tearDown();
+      return "ViewKeeper[" + Util.guidToString(groupID) + "."  + Util.guidToString(peerID) + "]";
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
-   protected Distributed createDistributedDestination(String name, RpcDispatcher d)
-   {
-      return new DistributedTopic(name, d);
-   }
-
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
+
 }

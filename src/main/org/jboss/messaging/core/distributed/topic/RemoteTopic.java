@@ -26,47 +26,38 @@ import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
-import org.jboss.messaging.core.distributed.RemotePeer;
-import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.tx.Transaction;
 
-import org.jboss.logging.Logger;
-
 /**
- * A representative of a distributed topic peer.
+ * A representative of a distributed topic.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class RemoteTopic extends RemotePeer implements Receiver
+public class RemoteTopic implements Receiver
  {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(RemoteTopic.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
 
-   protected Replicator r;
+   protected Replicator replicator;
 
    // Constructors --------------------------------------------------
 
-   public RemoteTopic(PeerIdentity remotePeerIdentity, Replicator r)
+   public RemoteTopic(Replicator replicator)
    {
-      super(remotePeerIdentity);
-      this.r = r;
-
-      if (log.isTraceEnabled()) { log.trace("created topic remote receiver for " + remotePeerIdentity); }
+      this.replicator = replicator;
    }
 
    // Receiver implementation ---------------------------------------
 
    public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
-      return r.handle(observer, routable, tx);
+      return replicator.handle(observer, routable, tx);
    }
 
    public void acquireLock()
@@ -83,7 +74,7 @@ public class RemoteTopic extends RemotePeer implements Receiver
 
    public String toString()
    {
-      return "RemoteTopic[" + remotePeerIdentity + "]";
+      return "RemoteTopic[" + replicator.getGroupID() + "]";
    }
 
    // Package protected ---------------------------------------------

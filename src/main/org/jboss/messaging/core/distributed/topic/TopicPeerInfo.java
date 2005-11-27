@@ -19,103 +19,56 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.local;
+package org.jboss.messaging.core.distributed.topic;
 
-import java.util.Iterator;
+import org.jboss.messaging.core.distributed.RemotePeerInfo;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 
-
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Router;
-import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.tx.Transaction;
+import java.io.Serializable;
+import java.io.ObjectOutput;
+import java.io.IOException;
+import java.io.ObjectInput;
 
 /**
+ * @see org.jboss.messaging.core.distributed.RemotePeerInfo
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
-public class Topic implements CoreDestination
+public class TopicPeerInfo extends RemotePeerInfo
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected Router router;
-   protected String name;
-   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
-   public Topic(String name, MessageStore ms)
+   /**
+    * For externalization.
+    */
+   public TopicPeerInfo()
    {
-      this.name = name;
-      this.ms = ms;
-      router = new PointToMultipointRouter();
    }
 
-   // CoreDestination implementation --------------------------------
-
-   public String getName()
+   /**
+    * @param peerIdentity - the identity of acknowledging peer.
+    */
+   public TopicPeerInfo(PeerIdentity peerIdentity)
    {
-      return name;
+      super(peerIdentity);
    }
 
    // Public --------------------------------------------------------
-   
-   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
-   {
-      router.handle(sender, r, tx);
-      return new SimpleDelivery(true);
-   }
-   
-   public void acquireLock()
-   {
-      //NOOP
-   }
-   
-   public void releaseLock()
-   {
-      //NOOP
-   }
 
-   public boolean add(Receiver receiver)
-   {
-      return router.add(receiver);
-   }
-
-   public void clear()
-   {
-      router.clear();
-   }
-
-   public boolean contains(Receiver receiver)
-   {
-      return router.contains(receiver);
-   }
-
-   public Iterator iterator()
-   {
-      return router.iterator();
-   }
-
-   public boolean remove(Receiver receiver)
-   {
-      return router.remove(receiver);
-   }
-   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

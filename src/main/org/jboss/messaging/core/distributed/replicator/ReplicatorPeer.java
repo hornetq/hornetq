@@ -21,24 +21,27 @@
   */
 package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.PeerIdentity;
-
+import org.jboss.messaging.core.distributed.PeerSupport;
+import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.logging.Logger;
+import org.jgroups.blocks.RpcDispatcher;
+
+import java.io.Serializable;
+
 
 /**
- * A representative of a remote replicator peer.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class RemoteReplicator extends RemotePeer
- {
+abstract class ReplicatorPeer extends PeerSupport
+{
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(RemoteReplicator.class);
+   private static final Logger log = Logger.getLogger(ReplicatorPeer.class);
 
    // Static --------------------------------------------------------
    
@@ -46,25 +49,41 @@ public class RemoteReplicator extends RemotePeer
 
    // Constructors --------------------------------------------------
 
-   public RemoteReplicator(PeerIdentity remotePeerIdentity)
+   public ReplicatorPeer(Serializable peerID, Serializable groupID, RpcDispatcher dispatcher)
    {
-      super(remotePeerIdentity);
-      if (log.isTraceEnabled()) { log.trace(this + " created"); }
+      super(peerID, groupID, dispatcher);
    }
 
    // Public --------------------------------------------------------
 
-   public String toString()
+   // Package protected ---------------------------------------------
+
+   // PeerSupport overrides -----------------------------------------
+
+   protected RemotePeer createRemotePeer(RemotePeerInfo thatPeerInfo)
    {
-      return "RemoteReplicator[" + remotePeerIdentity + "]";
+      PeerIdentity remotePeerIdentity = thatPeerInfo.getPeerIdentity();
+      
+      if (log.isTraceEnabled()) { log.trace(this + " adding remote peer " + remotePeerIdentity); }
+
+      if (thatPeerInfo instanceof ReplicatorPeerInfo)
+      {
+         return new RemoteReplicator(remotePeerIdentity);
+      }
+      else if (thatPeerInfo instanceof ReplicatorOutputPeerInfo)
+      {
+         return new RemoteReplicatorOutput(remotePeerIdentity);
+      }
+      else
+      {
+         throw new IllegalArgumentException("Unknown RemotePeerInfo: " + thatPeerInfo);
+      }
    }
 
-   // Package protected ---------------------------------------------
-   
    // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
 
+   // Private -------------------------------------------------------
+   
    // Inner classes -------------------------------------------------
 
 }

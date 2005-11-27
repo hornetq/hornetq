@@ -26,16 +26,16 @@ import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
-import org.jboss.messaging.core.distributed.RemotePeer;
-import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.ViewKeeperSupport;
+import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.util.Util;
-import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * A distributed topic.
@@ -60,19 +60,19 @@ public class DistributedTopic extends Topic implements Distributed
 
    // Constructors --------------------------------------------------
 
-   public DistributedTopic(String name, RpcDispatcher dispatcher)
+   public DistributedTopic(String name, MessageStore ms, RpcDispatcher dispatcher)
    {
-      super(name);
-      viewKeeper = new TopicViewKeeper();
-      peer = new TopicPeer(this, dispatcher);
+      super(name, ms);
+      viewKeeper = new TopicViewKeeper(name);
+      peer = new TopicPeer(new GUID().toString(), this, dispatcher);
+      log.debug(this + " created");
    }
 
    // Topic overrides -----------------------------------------------
 
    public Iterator iterator()
    {
-      //return new SelectiveIterator(super.iterator(), RemoteReceiver.class);
-      throw new NotYetImplementedException();
+      return new SelectiveIterator(super.iterator(), RemoteTopic.class);
    }
 
    // Distributed implementation --------------------------
@@ -80,11 +80,13 @@ public class DistributedTopic extends Topic implements Distributed
    public void join() throws DistributedException
    {
       peer.join();
+      log.debug(this + " successfully joined the group");
    }
 
    public void leave() throws DistributedException
    {
       peer.leave();
+      log.debug(this + " successfully left the group");
    }
 
    public void close() throws DistributedException
@@ -92,7 +94,6 @@ public class DistributedTopic extends Topic implements Distributed
       leave();
       // TODO - additional cleanup
    }
-
 
    public Peer getPeer()
    {
@@ -108,12 +109,50 @@ public class DistributedTopic extends Topic implements Distributed
 
    // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
+   MessageStore getMessageStore()
+   {
+      return ms;
+   }
 
-   protected ViewKeeper getViewKeeper()
+   void addRemoteTopic()
+   {
+      // The distributed topic is represented on each peer by a *single* RemoteTopic instance,
+      // because the RemoteTopic instance will delegate to a multicasting replicator.
+
+      for(Iterator i = router.iterator(); i.hasNext(); )
+      {
+         if (i.next() instanceof RemoteTopic)
+         {
+            if (log.isTraceEnabled()) { log.trace(this + ": remote topic already registered, returning"); }
+            return;
+         }
+      }
+      RemoteTopic remoteTopic = new RemoteTopic(peer.getReplicator());
+      router.add(remoteTopic);
+      if (log.isTraceEnabled()) { log.trace(this + " added access to the distributed topic "); }
+   }
+
+   void removeRemoteTopic()
+   {
+      for(Iterator i = router.iterator(); i.hasNext(); )
+      {
+         Object o = i.next();
+         if (o instanceof RemoteTopic)
+         {
+            if (log.isTraceEnabled()) { log.trace(this + " removing " + o); }
+            i.remove();
+            return;
+         }
+      }
+      log.warn(this + ": NO remote topic to remove");
+   }
+
+   ViewKeeper getViewKeeper()
    {
       return viewKeeper;
    }
+
+   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 
@@ -122,11 +161,9 @@ public class DistributedTopic extends Topic implements Distributed
    /**
     * The inner class that manages the local representation of the distributed destination view.
     */
-   private class TopicViewKeeper implements ViewKeeper
+   private class TopicViewKeeper extends ViewKeeperSupport
    {
       // Constants -----------------------------------------------------
-
-      private final Logger log = Logger.getLogger(TopicViewKeeper.class);
 
       // Static --------------------------------------------------------
 
@@ -134,33 +171,9 @@ public class DistributedTopic extends Topic implements Distributed
 
       // Constructors --------------------------------------------------
 
-      // ViewKeeper implementation -------------------------------------
-
-      public Serializable getGroupID()
+      public TopicViewKeeper(Serializable name)
       {
-         return getName();
-      }
-
-      public void addRemotePeer(RemotePeer remotePeer)
-      {
-         throw new NotYetImplementedException();
-      }
-
-      public void removeRemotePeer(PeerIdentity remotePeerIdentity)
-      {
-         if (log.isTraceEnabled()) { log.trace(this + " removing remote peer " + remotePeerIdentity); }
-
-         throw new NotYetImplementedException();
-      }
-
-      public Set getRemotePeers()
-      {
-         throw new NotYetImplementedException();
-      }
-
-      public Iterator iterator()
-      {
-         throw new NotYetImplementedException();
+         super(name);
       }
 
       // Public --------------------------------------------------------
@@ -174,11 +187,6 @@ public class DistributedTopic extends Topic implements Distributed
       // Package protected ---------------------------------------------
 
       // Protected -----------------------------------------------------
-
-      protected ViewKeeper getViewKeeper()
-      {
-         return viewKeeper;
-      }
 
       // Private -------------------------------------------------------
 

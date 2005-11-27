@@ -19,79 +19,60 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.distributed.replicator;
+package org.jboss.messaging.core.distributed.util;
 
-import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jboss.messaging.core.distributed.ViewKeeper;
-import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jgroups.MessageListener;
 
-import java.io.Serializable;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
-public class ReplicatorOutputView implements ViewKeeper
+public abstract class DelegatingMessageListenerSupport implements DelegatingMessageListener
 {
-   // Constants -----------------------------------------------------
-
    // Attributes ----------------------------------------------------
 
-   private Serializable replicatorID;
-   private Set remotePeers;
+   protected MessageListener delegate;
 
    // Constructors --------------------------------------------------
 
-   public ReplicatorOutputView(Serializable replicatorID)
+   public DelegatingMessageListenerSupport(MessageListener delegate)
    {
-      this.replicatorID = replicatorID;
-      this.remotePeers = new HashSet();
+      this.delegate = delegate;
    }
 
-   // ViewKeeper implementation -------------------------------------
+   // DelegatingMessageListener implementation ----------------------
 
-   public Serializable getGroupID()
+   public MessageListener getDelegate()
    {
-      return replicatorID;
+      return delegate;
    }
 
-   public void addRemotePeer(RemotePeer remotePeer)
+   public boolean remove(MessageListener listener)
    {
-      remotePeers.add(remotePeer);
-   }
-
-   public void removeRemotePeer(PeerIdentity remotePeerIdentity)
-   {
-      for(Iterator i = remotePeers.iterator(); i.hasNext(); )
+      if (delegate == null)
       {
-         RemotePeer rp = (RemotePeer)i.next();
-         if (rp.getPeerIdentity().equals(remotePeerIdentity))
+         return false;
+      }
+
+      if (delegate == listener)
+      {
+         if (delegate instanceof DelegatingMessageListener)
          {
-            i.remove();
-            break;
+            // restore the chain
+            delegate = ((DelegatingMessageListener)delegate).getDelegate();
          }
+         else
+         {
+            delegate = null;
+         }
+         return true;
       }
-   }
-
-   public Set getRemotePeers()
-   {
-      Set ids = new HashSet();
-      for(Iterator i = remotePeers.iterator(); i.hasNext(); )
+      else if (delegate instanceof DelegatingMessageListener)
       {
-         RemotePeer rp = (RemotePeer)i.next();
-         ids.add(rp.getPeerIdentity());
+         return ((DelegatingMessageListener)delegate).remove(listener);
       }
-      return ids;
-   }
-
-   public Iterator iterator()
-   {
-      return remotePeers.iterator();
+      return false;
    }
 
    // Public --------------------------------------------------------

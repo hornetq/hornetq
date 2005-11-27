@@ -23,9 +23,7 @@ package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.logging.Logger;
 
 /**
@@ -70,11 +68,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       return true;
    }
 
-   public synchronized void redeliver(Delivery d, Receiver r)
-   {
-      throw new NotYetImplementedException();
-   }
-
    // Public --------------------------------------------------------
 
    public synchronized void waitForCancellation(Delivery delivery) throws Exception
@@ -86,12 +79,12 @@ public class SimpleDeliveryObserver implements DeliveryObserver
     * Waits until the delivery is cancelled, or timeout expires. If the delivery is already
     * cancelled, exits immediately.
     */
-   public synchronized void waitForCancellation(Delivery delivery, long timeout) throws Exception
+   public synchronized boolean waitForCancellation(Delivery delivery, long timeout) throws Exception
    {
       if (delivery.isCancelled())
       {
          log.info("the delivery already cancelled, exiting");
-         return;
+         return true;
       }
 
       if (toBeCancelled != null)
@@ -113,11 +106,13 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       if (toBeCancelled == null)
       {
          log.info("delivery cancelled");
+         return true;
       }
       else
       {
          toBeCancelled = null;
-         log.warn("exiting with timeout");
+         log.warn("exiting on timeout");
+         return false;
       }
    }
 
@@ -165,7 +160,7 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       else
       {
          toBeAcknowledged = null;
-         log.warn("exiting with timeout");
+         log.warn("exiting on timeout");
          return false;
       }
    }

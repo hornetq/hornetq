@@ -23,16 +23,22 @@ package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jboss.messaging.core.distributed.PeerSupport;
-import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.Peer;
+import org.jboss.messaging.core.distributed.util.DelegatingMessageListener;
+import org.jboss.messaging.core.distributed.util.DelegatingMessageListenerSupport;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 import org.jgroups.MessageListener;
 import org.jgroups.ChannelListener;
 import org.jgroups.Address;
@@ -61,10 +67,13 @@ import java.util.Iterator;
  * $Id$
  */
 public class ReplicatorOutput
-      extends PeerSupport
+      extends ReplicatorPeer
       implements Distributed, ReplicatorOutputFacade, Runnable
 {
    // Constants -----------------------------------------------------
+
+   public static final String REPLICATOR_OUTPUT_COLLECTOR_ADDRESS =
+         "REPLICATOR_OUTPUT_COLLECTOR_ADDRESS";
 
    private static final Logger log = Logger.getLogger(ReplicatorOutput.class);
 
@@ -72,56 +81,20 @@ public class ReplicatorOutput
    
    // Attributes ----------------------------------------------------
 
+   protected MessageStore ms;
    protected Receiver receiver;
    protected ChannelListener channelListener;
-   protected MessageListener messageListener;
-
+   protected DelegatingMessageListener messageListener;
 
    // Constructors --------------------------------------------------
 
-   public ReplicatorOutput(Serializable replicatorID, RpcDispatcher dispatcher, Receiver receiver)
+   public ReplicatorOutput(Serializable replicatorID, RpcDispatcher dispatcher,
+                           MessageStore ms, Receiver receiver)
    {
-      super(new ReplicatorOutputView(replicatorID), dispatcher);
-
+      super(new GUID().toString(), replicatorID, dispatcher);
+      this.ms = ms;
       this.receiver = receiver;
       log.debug(this + " created");
-   }
-
-   // PeerSupport overrides -----------------------------------------
-
-
-   protected void doJoin() throws DistributedException
-   {
-      if (channelListener == null)
-      {
-         channelListener = new ChannelListenerImpl();
-         dispatcher.addChannelListener(channelListener);
-      }
-
-      // delegate to the existing listener, if any
-      MessageListener delegateListener = dispatcher.getMessageListener();
-      dispatcher.setMessageListener(new MessageListenerImpl(delegateListener));
-   }
-
-   protected void doLeave() throws DistributedException
-   {
-      dispatcher.removeChannelListener(channelListener);
-      channelListener = null;
-   }
-
-   protected RemotePeer createRemotePeer(RemotePeerInfo newRemotePeerInfo)
-   {
-      if (!(newRemotePeerInfo instanceof ReplicatorPeerInfo))
-      {
-         return null;
-      }
-
-      return new RemoteReplicator(newRemotePeerInfo.getPeerIdentity());
-   }
-
-   protected RemotePeerInfo getRemotePeerInfo()
-   {
-      return new ReplicatorOutputPeerInfo(getPeerIdentity());
    }
 
    // Distributed implementation ------------------------------------
@@ -366,6 +339,47 @@ public class ReplicatorOutput
 
    // Package protected ---------------------------------------------
 
+   // PeerSupport overrides -----------------------------------------
+
+   protected void doJoin() throws DistributedException
+   {
+      if (channelListener == null)
+      {
+         channelListener = new ChannelListenerImpl();
+         dispatcher.addChannelListener(channelListener);
+      }
+
+      // delegate to the existing listener, if any
+      messageListener = new MessageListenerImpl(dispatcher.getMessageListener());
+      dispatcher.setMessageListener(messageListener);
+
+      rpcServer.register(viewKeeper.getGroupID(), this);
+   }
+
+   protected void doLeave() throws DistributedException
+   {
+      rpcServer.unregister(viewKeeper.getGroupID(), this);
+
+      dispatcher.removeChannelListener(channelListener);
+      channelListener = null;
+
+      // remove the message listener from dispatcher
+      DelegatingMessageListener dl = (DelegatingMessageListener)dispatcher.getMessageListener();
+      if (dl == messageListener)
+      {
+         dispatcher.setMessageListener(dl.getDelegate());
+      }
+      else
+      {
+         dl.remove(messageListener);
+      }
+   }
+
+   protected RemotePeerInfo getRemotePeerInfo()
+   {
+      return new ReplicatorOutputPeerInfo(getPeerIdentity());
+   }
+
    // Protected -----------------------------------------------------
 
    // TODO distributed core refactoring
@@ -498,7 +512,8 @@ public class ReplicatorOutput
       // Inner classes -------------------------------------------------
    }
 
-   protected class MessageListenerImpl implements MessageListener
+   protected class MessageListenerImpl
+         extends DelegatingMessageListenerSupport implements DeliveryObserver
    {
       // Constants -----------------------------------------------------
 
@@ -506,27 +521,24 @@ public class ReplicatorOutput
 
       // Attributes ----------------------------------------------------
 
-      protected MessageListener delegate;
-
       // Constructors --------------------------------------------------
 
       public MessageListenerImpl(MessageListener delegate)
       {
-         this.delegate = delegate;
+         super(delegate);
       }
 
       // MessageListener implementation --------------------------------
 
       public void receive(org.jgroups.Message jgroupsMessage)
       {
-         boolean handled = false;
          Object  o = jgroupsMessage.getObject();
 
          try
          {
             if (!(o instanceof Routable))
             {
-               if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " received a non-routable (" + o + "), discarding"); }
+               if (log.isTraceEnabled()) { log.trace(this + " discarding non-routable (" + o + ")"); }
                return;
             }
 
@@ -534,15 +546,13 @@ public class ReplicatorOutput
             Object replicatorID = r.getHeader(Routable.REPLICATOR_ID);
             if (!getGroupID().equals(replicatorID))
             {
-               if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " received a routable from a different replicator (" + replicatorID + "), discarding"); }
+               if (log.isTraceEnabled()) { log.trace(this + " discarding routable from a different replicator (" + replicatorID + ")"); }
                return;
             }
 
-            if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " received message " + r); }
+            if (log.isTraceEnabled()) { log.trace(this + " received message " + r); }
 
-            r.removeHeader(Routable.REPLICATOR_ID);
-
-            Serializable collectorID = r.removeHeader(Routable.COLLECTOR_ID);
+            Object collectorID = r.getHeader(Routable.COLLECTOR_ID);
             Address collectorAddress = null;
             Set ids = viewKeeper.getRemotePeers();
             for(Iterator i = ids.iterator(); i.hasNext(); )
@@ -554,49 +564,67 @@ public class ReplicatorOutput
                   break;
                }
             }
+
             if (collectorAddress == null)
             {
-               // TODO - something is wrong, take action
+               log.error("Collector " + Util.guidToString(collectorID) +
+                         " not found among the peers of " + ReplicatorOutput.this);
+               return;
             }
 
             if (receiver == null)
             {
-               // no receiver to forward to, asynchronously cancel the replicator's delivery
-               try
-               {
-                  Acknowledgment ack = new Acknowledgment(getID(), r.getMessageID(), false);
-                  dispatcher.getChannel().send(collectorAddress, null, ack);
-                  if (log.isTraceEnabled()) { log.trace(ReplicatorOutput.this + " sent NACK back"); }
-                  handled = true;
-                  return;
-               }
-               catch(Throwable t)
-               {
-                  log.error("Failed to put the acknowledment on the channel", t);
-               }
+               // no receiver to forward to, asynchronously reject the message
+               sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
+               return;
             }
 
-            // Mark the message as being received from a remote endpoint
-            r.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+            MessageReference ref = ms.reference(r);
 
-            boolean a = true;
-            if (a) { throw new NotYetImplementedException(); }
+            // Mark the reference as being received from a remote endpoint
+            ref.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
+            ref.removeHeader(Routable.REPLICATOR_ID);
+            ref.removeHeader(Routable.COLLECTOR_ID);
 
+            Delivery d = null;
             try
             {
-               Delivery d = receiver.handle(null, r, null);
-               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled " + r + " and returned " + d); }
+               ref.putHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS, collectorAddress);
+               d = receiver.handle(this, ref, null);
+               if (log.isTraceEnabled()) { log.trace(this + ": receiver " + receiver + " handled " + r + " and returned " + d); }
             }
             catch(Throwable t)
             {
                log.warn(ReplicatorOutput.this + "'s receiver is broken", t);
+               // broken receiver, asynchronously reject the message
+               sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
             }
+
+            if (d.isDone())
+            {
+               acknowledge(d, null);
+            }
+            else if (d.isCancelled())
+            {
+               try
+               {
+                  cancel(d);
+               }
+               catch(Throwable t)
+               {
+                  // will never throw Throwable
+               }
+            }
+
+            if (log.isTraceEnabled()) { log.trace(this + " starts waiting asynchronous acknowledgment from " + receiver); }
          }
          finally
          {
-            if (!handled && delegate != null)
+            if (delegate != null)
             {
-               // forward the message to delegate
+               // forward the message to delegate, there may be other ReplicatorOutput listeners
+               // entitled to get the message or other generic listeners
+               if (log.isTraceEnabled()) { log.trace(this + " forwards message to " + delegate); }
                delegate.receive(jgroupsMessage);
             }
          }
@@ -619,13 +647,67 @@ public class ReplicatorOutput
          }
       }
 
+      // DeliveryObserver implementation -------------------------------
+
+      public void acknowledge(Delivery d, Transaction tx)
+      {
+         if (tx != null)
+         {
+            throw new NotYetImplementedException();
+         }
+
+         if (log.isTraceEnabled()) { log.trace(this + " received acknowledgment for " + d); }
+
+         MessageReference ref = d.getReference();
+         Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
+         sendAsynchronousResponse(collectorAddress, ref.getMessageID(), Acknowledgment.ACCEPTED);
+      }
+
+      public boolean cancel(Delivery d) throws Throwable
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " received cancellation for " + d); }
+
+         MessageReference ref = d.getReference();
+         Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
+         return sendAsynchronousResponse(collectorAddress, ref.getMessageID(),
+                                         Acknowledgment.CANCELLED);
+      }
+
       // Public --------------------------------------------------------
+
+      public String toString()
+      {
+         return ReplicatorOutput.this + ".Listener";
+      }
 
       // Package protected ---------------------------------------------
 
       // Protected -----------------------------------------------------
 
       // Private -------------------------------------------------------
+
+      private boolean sendAsynchronousResponse(Address collectorAddress,
+                                               Serializable messageID,
+                                               int state)
+      {
+         if (collectorAddress == null)
+         {
+            throw new IllegalArgumentException("null collectorAddress");
+         }
+
+         try
+         {
+            Acknowledgment ack = new Acknowledgment(getID(), messageID, state);
+            dispatcher.getChannel().send(collectorAddress, null, ack);
+            if (log.isTraceEnabled()) { log.trace(this + " sent " + Acknowledgment.stateToString(state) + " to " + collectorAddress + " for " + messageID); }
+            return true;
+         }
+         catch(Throwable t)
+         {
+            log.error("Failed to put the acknowledment on the channel", t);
+            return false;
+         }
+      }
 
       // Inner classes -------------------------------------------------
 

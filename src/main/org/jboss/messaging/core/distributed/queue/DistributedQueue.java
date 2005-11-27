@@ -130,11 +130,13 @@ public class DistributedQueue extends Queue implements Distributed
    public void join() throws DistributedException
    {
       peer.join();
+      log.debug(this + " successfully joined the group");
    }
 
    public void leave() throws DistributedException
    {
       peer.leave();
+      log.debug(this + " successfully left the group");
    }
 
    public Peer getPeer()
@@ -197,7 +199,7 @@ public class DistributedQueue extends Queue implements Distributed
          router.add((RemoteQueue)remotePeer);
       }
 
-      public void removeRemotePeer(PeerIdentity remotePeerIdentity)
+      public RemotePeer removeRemotePeer(PeerIdentity remotePeerIdentity)
       {
          if (log.isTraceEnabled()) { log.trace(this + " removing remote peer " + remotePeerIdentity); }
 
@@ -211,10 +213,11 @@ public class DistributedQueue extends Queue implements Distributed
                if (rp.getPeerIdentity().equals(remotePeerIdentity))
                {
                   i.remove();
-                  break;
+                  return rp;
                }
             }
          }
+         return null;
       }
 
       public Set getRemotePeers()
@@ -241,8 +244,7 @@ public class DistributedQueue extends Queue implements Distributed
 
       public String toString()
       {
-         return "DistributedQueue[" + getChannelID() + ":" +
-                Util.guidToString(peer.getID()) + "].ViewKeeper";
+         return "DistributedQueue[" + getChannelID() + "." + Util.guidToString(peer.getID()) + "].ViewKeeper";
       }
 
       // Package protected ---------------------------------------------

@@ -51,10 +51,10 @@ public abstract class TopicTestBase extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected ServiceContainer sc;
-   protected PersistenceManager pm;
 
    protected CoreDestination topic;
-   
+
+   protected PersistenceManager pm;
    protected MessageStore ms;
 
    // Constructors --------------------------------------------------
@@ -75,7 +75,7 @@ public abstract class TopicTestBase extends MessagingTestCase
 
       pm = new JDBCPersistenceManager();
       pm.start();
-      ms = new PersistentMessageStore("store1", pm);
+      ms = new PersistentMessageStore("persistent-store", pm);
    }
 
    public void tearDown() throws Exception

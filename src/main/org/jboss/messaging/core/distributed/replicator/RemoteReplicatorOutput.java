@@ -49,8 +49,7 @@ public class RemoteReplicatorOutput extends RemotePeer
    public RemoteReplicatorOutput(PeerIdentity remotePeerIdentity)
    {
       super(remotePeerIdentity);
-
-      if (log.isTraceEnabled()) { log.trace("created remote replicator for " + remotePeerIdentity); }
+      if (log.isTraceEnabled()) { log.trace(this + " created"); }
    }
 
    // Public --------------------------------------------------------

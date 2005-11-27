@@ -29,13 +29,10 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.DistributedException;
-import org.jboss.messaging.core.distributed.PeerSupport;
-import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.RemotePeer;
-import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
@@ -62,7 +59,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class Replicator extends PeerSupport implements Distributed, Receiver
+public class Replicator extends ReplicatorPeer implements Distributed, Receiver
 {
    // Constants -----------------------------------------------------
 
@@ -74,17 +71,29 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
    protected AcknowledgmentCollector collector;
    protected MessageStore ms;
+   protected boolean cancelOnMessageRejection;
 
    // Constructors --------------------------------------------------
 
    /**
     * Creates a replicator peer. The peer is not initially connected to the distributed replication
     * group.
+    *
+    * @param cancelOnMessageRejection - if 'true', the replicator will cancel an on-going delivery
+    *        on first asynchronous message rejection it receives from its outputs. If false,
+    *        message rejections are ignored.
     */
-   public Replicator(ViewKeeper viewKeeper, RpcDispatcher dispatcher, MessageStore ms)
+   public Replicator(Serializable replicatorID, RpcDispatcher dispatcher,
+                     MessageStore ms, boolean cancelOnMessageRejection)
    {
-      super(viewKeeper, dispatcher);
+      super(new GUID().toString(), replicatorID, dispatcher);
       this.ms = ms;
+      this.cancelOnMessageRejection = cancelOnMessageRejection;
+
+      log.debug(this + " created: viewKeeper: " + viewKeeper +
+                ", dispatcher: " + dispatcher +
+                ", message store: " + ms +
+                ", cancelOnMessageRejection: " + cancelOnMessageRejection);
    }
 
    // Distributed implementation -------------------------
@@ -119,9 +128,7 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
       MessageReference ref = ms.reference(routable);
 
-
-      // TODO cancelOnMessagesRejection=false is only valid for topics
-      CompositeDelivery d = new CompositeDelivery(observer, ref, false, outputs);
+      CompositeDelivery d = new CompositeDelivery(observer, ref, cancelOnMessageRejection, outputs);
       collector.startCollecting(d);
 
       routable.putHeader(Routable.REPLICATOR_ID, getReplicatorID());
@@ -159,6 +166,11 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
       return getGroupID();
    }
 
+   public boolean doesCancelOnMessageRejection()
+   {
+      return cancelOnMessageRejection;
+   }
+
    /**
     * Return a set of PeerIdentities corresponding to the replicator's outputs. The set may be empty
     * but never null.
@@ -189,13 +201,11 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
 
    // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
    // PeerSupport overrides -----------------------------------------
 
    protected void doJoin() throws DistributedException
    {
-      collector = new AcknowledgmentCollector(new GUID().toString(), dispatcher);
+      collector = new AcknowledgmentCollector(getID(), dispatcher);
       collector.start();
 
       if (!rpcServer.registerUnique(peerID, collector))
@@ -215,29 +225,12 @@ public class Replicator extends PeerSupport implements Distributed, Receiver
       collector = null;
    }
 
-   protected RemotePeer createRemotePeer(RemotePeerInfo thatPeerInfo)
-   {
-      PeerIdentity remotePeerIdentity = thatPeerInfo.getPeerIdentity();
-      if (log.isTraceEnabled()) { log.trace(this + " adding remote peer " + remotePeerIdentity); }
-
-      if (thatPeerInfo instanceof ReplicatorPeerInfo)
-      {
-         return new RemoteReplicator(remotePeerIdentity);
-      }
-      else if (thatPeerInfo instanceof ReplicatorOutputPeerInfo)
-      {
-         return new RemoteReplicatorOutput(remotePeerIdentity);
-      }
-      else
-      {
-         throw new IllegalArgumentException("Unknown RemotePeerInfo type " + thatPeerInfo);
-      }
-   }
-
    protected RemotePeerInfo getRemotePeerInfo()
    {
       return new ReplicatorPeerInfo(getPeerIdentity());
    }
+
+   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
    

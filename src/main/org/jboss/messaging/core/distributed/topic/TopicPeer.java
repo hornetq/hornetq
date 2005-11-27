@@ -21,12 +21,14 @@
   */
 package org.jboss.messaging.core.distributed.topic;
 
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.distributed.PeerSupport;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
+import org.jboss.messaging.core.distributed.ViewKeeper;
+import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
+import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -49,20 +51,22 @@ public class TopicPeer extends PeerSupport implements TopicFacade
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected Serializable replicatorID;
+
    protected DistributedTopic topic;
+
+   protected Serializable replicatorID;
+   protected ViewKeeper replicatorViewKeeper;
+   protected Replicator replicator;
+   protected ReplicatorOutput replicatorOutput;
 
    // Constructors --------------------------------------------------
 
-   public TopicPeer(DistributedTopic topic, RpcDispatcher dispatcher)
+   public TopicPeer(Serializable peerID, DistributedTopic topic, RpcDispatcher dispatcher)
    {
-      super(topic.getViewKeeper(), dispatcher);
-      this.replicatorID = topic.getName() + "." + "Replicator";
+      super(peerID, topic.getViewKeeper(), dispatcher);
+      this.replicatorID = topic.getName() + ".Replicator";
       this.topic = topic;
    }
-
-   // TopicFacade implementation ------------------------------------
 
    // Public --------------------------------------------------------
 
@@ -73,27 +77,57 @@ public class TopicPeer extends PeerSupport implements TopicFacade
 
    // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
+   Replicator getReplicator()
+   {
+      return replicator;
+   }
+
+   // PeerSupport overrides -----------------------------------------
 
    protected void doJoin() throws DistributedException
    {
-      throw new NotYetImplementedException();
+      replicator = new Replicator(replicatorID, dispatcher, topic.getMessageStore(), false);
+      replicator.join();
+      log.debug(replicator + " successfully joined the group");
+
+      topic.addRemoteTopic();
+
+      replicatorOutput =
+         new ReplicatorOutput(replicatorID, dispatcher, topic.getMessageStore(), topic);
+      replicatorOutput.join();
+      log.debug(replicatorOutput + " successfully joined the group");
+
+      rpcServer.register(topic.getName(), this);
+      if (log.isTraceEnabled()) { log.trace(this + " registered"); }
    }
 
    protected void doLeave() throws DistributedException
    {
-      throw new NotYetImplementedException();
+      topic.removeRemoteTopic();
+
+      replicatorOutput.leave();
+      log.debug(replicatorOutput + " successfully left the group");
+
+      replicator.leave();
+      log.debug(replicator + " successfully left the group");
+
+      rpcServer.unregister(topic.getName(), this);
+      if (log.isTraceEnabled()) { log.trace(this + " unregistered"); }
    }
 
-   protected RemotePeer createRemotePeer(RemotePeerInfo newRemotePeerInfo)
+   protected RemotePeer createRemotePeer(RemotePeerInfo thatPeerInfo)
    {
-      throw new NotYetImplementedException();
+      TopicPeerInfo tpi = (TopicPeerInfo)thatPeerInfo;
+      PeerIdentity pid = tpi.getPeerIdentity();
+      return new RemotePeer(pid);
    }
 
    protected RemotePeerInfo getRemotePeerInfo()
    {
-      throw new NotYetImplementedException();
+      return new TopicPeerInfo(getPeerIdentity());
    }
+
+   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 

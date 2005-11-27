@@ -45,9 +45,6 @@ import java.util.List;
 import java.util.Iterator;
 
 /**
- * The test strategy is to group at this level all peer-related tests. It assumes two distinct
- * JGroups JChannel instances and two destination peers (destination and channel2)
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
@@ -3503,19 +3500,16 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertTrue(sm.isReliable());
       assertEquals("message0", sm.getMessageID());
 
-      // cleanup references and garbage collect
-      stored = null;
-      sm = null;
-      System.gc();
-
-      // TODO - do I need to keep this here?
-      // wait a while (?) for garbage collection (on a multi-processor machine)
-      Thread.sleep(3000);
-
-      int cnt =((JDBCPersistenceManager)msPersistenceManager).
-            getMessageReferenceCount(m.getMessageID());
-
-      assertEquals(1, cnt);
+      // TODO find a way to find out whether the reference was cleared or not
+//      // cleanup references and garbage collect
+//      stored = null;
+//      sm = null;
+//      System.gc();
+//
+//      int cnt =((JDBCPersistenceManager)msPersistenceManager).
+//            getMessageReferenceCount(m.getMessageID());
+//
+//      assertEquals(1, cnt);
    }
 
    //////////

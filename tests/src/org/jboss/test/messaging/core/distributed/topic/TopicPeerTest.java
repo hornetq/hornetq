@@ -19,18 +19,21 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.local;
+package org.jboss.test.messaging.core.distributed.topic;
 
-import org.jboss.test.messaging.core.local.base.TopicTestBase;
-import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.distributed.Distributed;
+import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
+import org.jgroups.blocks.RpcDispatcher;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
-public class TopicTest extends TopicTestBase
+public class TopicPeerTest extends PeerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -40,42 +43,34 @@ public class TopicTest extends TopicTestBase
 
    // Constructors --------------------------------------------------
 
-   public TopicTest(String name)
+   public TopicPeerTest(String name)
    {
       super(name);
    }
 
-   // ChannelTestBase overrides  ------------------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      topic = new Topic("test", ms);
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      topic = null;
       super.tearDown();
    }
-
-   public void crashChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   public void recoverChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
+   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
+   {
+      return new DistributedTopic(name, ms, d);
+   }
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

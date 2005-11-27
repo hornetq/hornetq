@@ -58,7 +58,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
    public static final int NUMBER_OF_MESSAGES = 100;
 
-   // Static --------------------------------------------------------
+   // Static --------------------------------------------------------       
 
    /**
     * Makes sure the given reference refers the given message.

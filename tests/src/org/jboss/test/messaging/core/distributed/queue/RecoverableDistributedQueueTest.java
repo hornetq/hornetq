@@ -19,11 +19,14 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed.queue;
 
-import org.jboss.test.messaging.core.distributed.base.DistributedQueueTestBase;
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,7 +34,7 @@ import org.jboss.messaging.core.message.PersistentMessageStore;
  *
  * $Id$
  */
-public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
+public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -39,26 +42,39 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
    
    // Attributes ----------------------------------------------------
 
+   private JDBCPersistenceManager pm;
+   private JDBCPersistenceManager pm2;
+   private JDBCPersistenceManager pm3;
+
    // Constructors --------------------------------------------------
 
-   public NonRecoverableDistributedQueueTest(String name)
+    public RecoverableDistributedQueueTest(String name)
    {
       super(name);
    }
 
-   // DistributedQueueTestBase overrides ---------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new DistributedQueue("test", ms, dispatcher);
+      pm = new JDBCPersistenceManager();
+      pm.start();
+      pm2 = new JDBCPersistenceManager();
+      pm2.start();
+      pm3 = new JDBCPersistenceManager();
+      pm3.start();
 
-      ms2 = new PersistentMessageStore("message-store-2", msPersistenceManager);
-      ms3 = new PersistentMessageStore("message-store-3", msPersistenceManager);
+      ms = new PersistentMessageStore("persistent-message-store", pm);
+      ms2 = new PersistentMessageStore("persistent-message-store2", pm2);
+      ms3 = new PersistentMessageStore("persistent-message-store3", pm3);
 
-      channel2 = new DistributedQueue("test", ms2, dispatcher2);
-      channel3 = new DistributedQueue("test", ms3, dispatcher3);
+      channel = new DistributedQueue("test", ms, pm, dispatcher);
+      channel2 = new DistributedQueue("test", ms2, pm2, dispatcher2);
+      channel3 = new DistributedQueue("test", ms3, pm3, dispatcher3);
+
+      tr.setPersistenceManager(pm);
 
       log.debug("setup done");
    }
@@ -68,28 +84,36 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
       channel.close();
       channel = null;
 
-      ms2 = null;
       channel2.close();
       channel2 = null;
 
-      ms3 = null;
       channel3.close();
       channel3 = null;
-      
+
+      pm.stop();
+      ms = null;
+
+      pm2.stop();
+      ms2 = null;
+
+      pm3.stop();
+      ms3 = null;
+
       super.tearDown();
    }
 
    public void crashChannel() throws Exception
    {
-      // doesn't matter
+      channel.close();
+      channel = null;
+
    }
 
    public void recoverChannel() throws Exception
    {
-      // doesn't matter
+      channel = new Queue("test", ms, pm);
    }
 
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    

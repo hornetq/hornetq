@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed;
+package org.jboss.test.messaging.core.distributed.replicator;
 
 import org.jboss.test.messaging.MessagingTestCase;
 
@@ -27,7 +27,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class ReplicatorOutputTest extends MessagingTestCase
+public class ToEraseReplicatorOutputTest extends MessagingTestCase
 {
 //   // Constants -----------------------------------------------------
 //
@@ -49,7 +49,7 @@ public class ReplicatorOutputTest extends MessagingTestCase
 //
    // Constructors --------------------------------------------------
 
-   public ReplicatorOutputTest(String name)
+   public ToEraseReplicatorOutputTest(String name)
    {
       super(name);
    }
@@ -186,7 +186,7 @@ public class ReplicatorOutputTest extends MessagingTestCase
 //   //       java junit.textui.TestRunner fully.qualified.test.class.name
 //   public static void main(String[] args) throws Exception
 //   {
-//      TestRunner.run(ReplicatorOutputTest.class);
+//      TestRunner.run(ToEraseReplicatorOutputTest.class);
 //   }
    public void testNoop()
    {
