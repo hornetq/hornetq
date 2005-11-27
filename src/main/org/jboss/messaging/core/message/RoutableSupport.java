@@ -187,7 +187,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       return deliveryCount;
    }
    
-   public void incDeliveryCount()
+   public void incrementDeliveryCount()
    {
       deliveryCount++;
    }

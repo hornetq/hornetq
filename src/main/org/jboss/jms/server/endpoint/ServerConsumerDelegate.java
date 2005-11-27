@@ -77,7 +77,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
    
 
    // Static --------------------------------------------------------
-   
+
    private static final int MAX_DELIVERY_ATTEMPTS = 10;
 
    // Attributes ----------------------------------------------------
@@ -186,7 +186,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
          }
          
          //TODO This should really go in core
-         message.incDeliveryCount();
+         message.incrementDeliveryCount();
          
 
          //TODO - We need to put the message in a DLQ

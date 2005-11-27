@@ -96,8 +96,8 @@ public class RecoverableState extends NonRecoverableState
    
          if (tx != null)
          {
-            addAddReferenceTask(tx);
-            if (log.isTraceEnabled()) { log.trace("added an Add task to transaction " + tx); }
+            addAddReferenceCallback(tx);
+            if (log.isTraceEnabled()) { log.trace("added an Add callback to transaction " + tx); }
          }
       }
    }

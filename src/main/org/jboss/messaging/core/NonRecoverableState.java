@@ -60,8 +60,8 @@ public class NonRecoverableState implements State
    
    protected Map deliveries;
 
-   protected Map txToAddReferenceTasks;
-   protected Map txToRemoveDeliveryTasks;
+   protected Map txToAddReferenceCallbacks;
+   protected Map txToRemoveDeliveryCallbacks;
 
    protected Channel channel;
    protected boolean acceptReliableMessages;
@@ -74,8 +74,8 @@ public class NonRecoverableState implements State
       this.acceptReliableMessages = acceptReliableMessages;
       messageRefs = new BasicSynchronizedPrioritizedDeque(new BasicPrioritizedDeque(10));
       deliveries = new ConcurrentHashMap();
-      txToAddReferenceTasks = new ConcurrentHashMap();
-      txToRemoveDeliveryTasks = new ConcurrentHashMap();
+      txToAddReferenceCallbacks = new ConcurrentHashMap();
+      txToRemoveDeliveryCallbacks = new ConcurrentHashMap();
    }
 
    // State implementation -----------------------------------
@@ -118,9 +118,9 @@ public class NonRecoverableState implements State
       }
       else
       {
-         //Transactional so add to post commit task
-         AddReferenceCallback task = addAddReferenceTask(tx);
-         task.addReference(ref);
+         //Transactional so add to post commit callback
+         AddReferenceCallback callback = addAddReferenceCallback(tx);
+         callback.addReference(ref);
          if (log.isTraceEnabled()) { log.trace("added transactionally " + ref + " in memory"); }
       }
    }
@@ -176,9 +176,9 @@ public class NonRecoverableState implements State
    {
       if (tx != null)
       {
-         //Transactional so add a post commit task to remove after tx commit
-         RemoveDeliveryCallback task = addRemoveDeliveryTask(tx);
-         task.addDelivery(d);
+         //Transactional so add a post commit callback to remove after tx commit
+         RemoveDeliveryCallback callback = addRemoveDeliveryCallback(tx);
+         callback.addDelivery(d);
          if (log.isTraceEnabled()) { log.trace("added " + d + " to memory on transaction " + tx); }
          return true;
       }
@@ -262,32 +262,32 @@ public class NonRecoverableState implements State
    // Protected -----------------------------------------------------
 
    /**
-    * Add an AddRefsTask, if it doesn't exist already and return its handle.
+    * Add an AddReferenceCallback, if it doesn't exist already and return its handle.
     */
-   protected AddReferenceCallback addAddReferenceTask(Transaction tx)
+   protected AddReferenceCallback addAddReferenceCallback(Transaction tx)
    {            
-      //TODO we could avoid this lookup by letting the tx object store the AddReferenceTask
-      AddReferenceCallback calback = (AddReferenceCallback)txToAddReferenceTasks.get(tx);
+      //TODO we could avoid this lookup by letting the tx object store the AddReferenceCallback
+      AddReferenceCallback calback = (AddReferenceCallback)txToAddReferenceCallbacks.get(tx);
       if (calback == null)
       {
          calback = new AddReferenceCallback(tx);
-         txToAddReferenceTasks.put(tx, calback);
+         txToAddReferenceCallbacks.put(tx, calback);
          tx.addCallback(calback);
       }
       return calback;
    }
 
    /**
-    * Add a RemoveDeliveryTask, if it doesn't exist already and return its handle.
+    * Add a RemoveDeliveryCallback, if it doesn't exist already and return its handle.
     */
-   protected RemoveDeliveryCallback addRemoveDeliveryTask(Transaction tx)
+   protected RemoveDeliveryCallback addRemoveDeliveryCallback(Transaction tx)
    {
-      //TODO we could avoid this lookup by letting the tx object store the RemoveDeliveryTask
-      RemoveDeliveryCallback callback = (RemoveDeliveryCallback)txToRemoveDeliveryTasks.get(tx);
+      //TODO we could avoid this lookup by letting the tx object store the RemoveDeliveryCallback
+      RemoveDeliveryCallback callback = (RemoveDeliveryCallback)txToRemoveDeliveryCallbacks.get(tx);
       if (callback == null)
       {
          callback = new RemoveDeliveryCallback(tx);
-         txToRemoveDeliveryTasks.put(tx, callback);
+         txToRemoveDeliveryCallbacks.put(tx, callback);
          tx.addCallback(callback);
       }
       return callback;
@@ -329,7 +329,7 @@ public class NonRecoverableState implements State
             channel.deliver(null);
          }
 
-         txToAddReferenceTasks.remove(tx);
+         txToAddReferenceCallbacks.remove(tx);
       } 
       
       public void afterRollback()
@@ -340,7 +340,7 @@ public class NonRecoverableState implements State
             if (log.isTraceEnabled()) { log.trace("After rollback-Releasing reference for " + ref); }
             ref.releaseReference();
          }
-         txToAddReferenceTasks.remove(tx);
+         txToAddReferenceCallbacks.remove(tx);
       }
    }
 
@@ -370,7 +370,7 @@ public class NonRecoverableState implements State
             deliveries.remove(d.getReference().getMessageID());
             d.getReference().releaseReference();
          }
-         txToRemoveDeliveryTasks.remove(tx);
+         txToRemoveDeliveryCallbacks.remove(tx);
       }   
       
       public void afterRollback()
@@ -380,7 +380,7 @@ public class NonRecoverableState implements State
             Delivery d = (Delivery)i.next();
             if (log.isTraceEnabled()) { log.trace("Releasing reference for " + d.getReference()); }            
          }
-         txToRemoveDeliveryTasks.remove(tx);
+         txToRemoveDeliveryCallbacks.remove(tx);
       }
    }
 

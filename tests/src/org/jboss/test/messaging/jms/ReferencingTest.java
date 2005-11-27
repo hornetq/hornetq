@@ -38,6 +38,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ReferencingTest extends MessagingTestCase
 {

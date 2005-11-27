@@ -115,11 +115,6 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
 
-   public void redeliver(Delivery old, Receiver r) throws Throwable
-   {
-      throw new NotYetImplementedException();
-   }
-
    // Receiver implementation ---------------------------------------
 
    public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)

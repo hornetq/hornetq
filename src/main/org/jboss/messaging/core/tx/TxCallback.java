@@ -27,6 +27,7 @@ package org.jboss.messaging.core.tx;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * $Id$
  */
 public interface TxCallback
 {
