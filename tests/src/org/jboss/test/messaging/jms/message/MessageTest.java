@@ -25,13 +25,33 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import javax.naming.InitialContext;
-import javax.jms.*;
+import javax.jms.Destination;
+import javax.jms.Connection;
+import javax.jms.Session;
+import javax.jms.MessageProducer;
+import javax.jms.MessageConsumer;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageNotWriteableException;
+import javax.jms.MessageFormatException;
+import javax.jms.JMSException;
+import javax.jms.BytesMessage;
+import javax.jms.MapMessage;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+import javax.jms.MessageEOFException;
 
 import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.message.*;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

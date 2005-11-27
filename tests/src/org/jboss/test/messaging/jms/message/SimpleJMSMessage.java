@@ -26,7 +26,6 @@ import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.DeliveryMode;
 
-import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
