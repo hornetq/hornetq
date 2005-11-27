@@ -264,7 +264,7 @@ public class ChannelSupport implements Channel
 
    public void deliver(Receiver r)
    {
-      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
+      if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "delivery requested on " + this); }
               
       doDeliver(r);     
    }

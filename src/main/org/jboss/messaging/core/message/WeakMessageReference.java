@@ -138,7 +138,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
 
    public Message getMessage()
    {
-      if (log.isTraceEnabled()) { log.trace("getting message from reference " + ref); }
+      if (log.isTraceEnabled()) { log.trace(this + ": getting message from reference " + ref); }
       
       if (ref == null)
       {

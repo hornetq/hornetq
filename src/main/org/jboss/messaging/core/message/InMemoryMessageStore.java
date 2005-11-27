@@ -130,7 +130,7 @@ public class InMemoryMessageStore implements MessageStore
       
       MessageReference mref = holder == null ? null : holder.ref;
       
-      if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID + " from memory, returning " + mref);}
+      if (log.isTraceEnabled()) { log.trace("getting reference for " + messageID + " from memory, returning " + mref);}
       
       return mref;
    }
