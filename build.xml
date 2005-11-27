@@ -600,7 +600,7 @@
    <target name="release-bundle"
       depends="release-structure, sar-scoped, source, source-zip, examples">
 
-      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.sar"/>
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
 
       <zip destfile="${build.lib}/JBossMessaging-${module.version}.zip"
