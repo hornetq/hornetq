@@ -85,6 +85,8 @@ public class MessageProducerTest extends MessagingTestCase
       topic = (Destination)ic.lookup("/topic/Topic");
       topic2 = (Destination)ic.lookup("/topic/Topic2");
       queue = (Destination)ic.lookup("/queue/Queue");
+      
+      drainDestination(cf, queue);
 
       log.debug("setup done");
    }

@@ -75,6 +75,7 @@ public class PersistenceTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       queue = (Queue)initialContext.lookup("/queue/Queue");
       topic = (Topic)initialContext.lookup("/topic/Topic");
+      drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception

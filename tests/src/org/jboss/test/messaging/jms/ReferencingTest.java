@@ -75,6 +75,8 @@ public class ReferencingTest extends MessagingTestCase
       ServerManagement.deployQueue("Queue");
 
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
+      
+      drainDestination(cf, queue);
      
    }
 
@@ -90,6 +92,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testAutoAck1() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -118,6 +122,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testAutoAck2() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -148,6 +154,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testClientAck1() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -182,6 +190,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testClientAck2() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -218,6 +228,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testRedelivery() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -265,6 +277,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testTransactionCommit() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -298,6 +312,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testTransactionRollback() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();
@@ -341,6 +357,8 @@ public class ReferencingTest extends MessagingTestCase
    
    public void cancelTest() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       MessageStore store = ServerManagement.getServerPeer().getMessageStore();
       
       Connection conn = cf.createConnection();

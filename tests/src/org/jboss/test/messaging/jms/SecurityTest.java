@@ -117,10 +117,7 @@ public class SecurityTest extends MessagingTestCase
       oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
       ServerManagement.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
  
-      log.info("========= Start test: " + getName());
-      
-      
-      
+            
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -130,13 +127,13 @@ public class SecurityTest extends MessagingTestCase
       securedTopic = (Topic)ic.lookup("/topic/securedTopic");
       unsecuredTopic = (Topic)ic.lookup("/topic/unsecuredTopic");
       
-      log.info("Got connection factory:" + cf);
+      drainDestination(cf, testQueue);
+            
      
    }
    
    protected void tearDown() throws Exception
-   {
-      log.info("========== Stop test: " + getName());     
+   {      
       ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
       ServerManagement.undeployQueue("testQueue");
       ServerManagement.undeployQueue("testTopic");

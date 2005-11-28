@@ -496,6 +496,7 @@
       <copy file="${jboss.aspects.lib}/jboss-aspect-library.jar" todir="${build.classes}"/>
       <copy file="${current.jboss.remoting.lib}/jboss-remoting.jar" todir="${build.classes}"/>
       <copy file="${jboss.serialization.lib}/jboss-serialization.jar" todir="${build.classes}"/>
+      <copy file="${javassist.javassist.lib}/javassist.jar" todir="${build.classes}"/>      
 
       <!-- I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
@@ -619,7 +620,7 @@
       <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
    </target>
 
-	<target name="deploy" depends="sar">
+   <target name="deploy" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
          todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
    </target>
@@ -630,6 +631,7 @@
 
    <target name="test">
    </target>
+   
 
 </project>
 

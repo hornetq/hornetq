@@ -87,6 +87,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
+      drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception

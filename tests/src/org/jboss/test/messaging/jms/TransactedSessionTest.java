@@ -76,6 +76,8 @@ public class TransactedSessionTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       queue = (Destination)initialContext.lookup("/queue/Queue");
       topic = (Destination)initialContext.lookup("/topic/Topic");
+      
+      drainDestination(cf, queue);
 
       log.debug("setup done");
    }

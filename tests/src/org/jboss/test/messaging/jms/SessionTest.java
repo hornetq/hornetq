@@ -88,6 +88,8 @@ public class SessionTest extends MessagingTestCase
       ServerManagement.deployQueue("TestQueue");
       queue = (Queue)initialContext.lookup("/queue/TestQueue");
       
+      drainDestination(cf, queue);
+      
       log.debug("Done setup()");
             
    }

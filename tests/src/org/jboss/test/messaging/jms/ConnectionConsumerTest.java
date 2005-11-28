@@ -83,7 +83,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
       log.debug("setup done");
       
-      //super.drainDestination(cf, queue);
+      super.drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
