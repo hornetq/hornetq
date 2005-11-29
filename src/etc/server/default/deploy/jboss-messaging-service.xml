@@ -79,10 +79,10 @@
       -->
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
-			<security>				
-            			<role name="Administrator" read="true" write="true" create="true"/>
-			</security>
-		</attribute>
+		<security>				
+			<role name="guest" read="true" write="true" create="true"/>
+		</security>
+      </attribute>
    </mbean>
    
   
