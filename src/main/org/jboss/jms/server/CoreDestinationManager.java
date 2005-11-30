@@ -133,6 +133,7 @@ class CoreDestinationManager
          }
          catch (Exception e)
          {
+            log.error("Failed to load queue state", e);
             JMSException e2 = new JMSException("Failed to load queue state");
             e2.setLinkedException(e);
             throw e2;
@@ -164,6 +165,7 @@ class CoreDestinationManager
             }
             catch (Exception e)
             {
+               log.error("Failed to load queue state", e);
                JMSException e2 = new JMSException("Failed to load durable subscription state");
                e2.setLinkedException(e);
                throw e2;

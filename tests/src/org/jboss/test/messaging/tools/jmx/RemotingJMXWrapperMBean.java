@@ -43,4 +43,6 @@ public interface RemotingJMXWrapperMBean
 
    ServerInvocationHandler addInvocationHandler(String s, ServerInvocationHandler h)
          throws Exception;
+   
+   void removeInvocationHandler(String s) throws Exception;
 }

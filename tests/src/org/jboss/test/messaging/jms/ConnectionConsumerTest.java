@@ -89,7 +89,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
       super.tearDown();
    }
 

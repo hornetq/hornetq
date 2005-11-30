@@ -45,7 +45,7 @@ public class CoreMessage extends MessageSupport
                       Map headers,
                       Serializable payload)
    {
-      super(messageID, reliable, expiration, timestamp, priority, headers, payload);
+      super(messageID, reliable, expiration, timestamp, priority, 0, 0, headers, payload);
    }
 
    public CoreMessage()

@@ -152,18 +152,18 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    // the delegate is set only on incoming messages, but we make it transient nonetheless
    protected transient SessionDelegate delegate;
 
-   protected boolean propertiesWritable = true;
+   protected transient boolean propertiesReadOnly = false;
+   
+   protected transient boolean bodyReadOnly = false;
 
    protected Map properties;
-   
-   protected boolean isCorrelationIDBytes;
    
    protected String correlationID;
    
    protected byte[] correlationIDBytes;
    
    protected String connectionID;
-
+   
    // Constructors --------------------------------------------------
 
    public JBossMessage()
@@ -173,37 +173,40 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public JBossMessage(String messageID)
    {
-      this(messageID, true, 0, System.currentTimeMillis(),
-           null, null, null, 4, null, true, null, true, null, null);
+      this(messageID, true, 0, System.currentTimeMillis(), 4, 0,
+           null, null, null, null, true, null, true, null, null, null);
    }
 
    public JBossMessage(String messageID,
                        boolean reliable,
                        long expiration,
                        long timestamp,
+                       int priority,
+                       int deliveryCount,
                        Map coreHeaders,
                        Serializable payload,
                        String jmsType,
-                       int priority,
                        Object correlationID,
                        boolean destinationIsQueue,
                        String destination,
                        boolean replyToIsQueue,
                        String replyTo,
+                       String connectionID,
                        Map jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload);
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, 0, coreHeaders, payload);
 
       this.jmsType = jmsType;      
 
       if (correlationID instanceof byte[])
-      {
-         isCorrelationIDBytes = true;
+      {         
          correlationIDBytes = (byte[])correlationID;
+         this.correlationID = null;
       }
       else
       {
          this.correlationID = (String)correlationID;
+         this.correlationIDBytes = null;
       }
 
       if (destination != null)
@@ -239,7 +242,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          properties = new HashMap(jmsProperties);
       }
 
-      redelivered = false;
+      this.connectionID = connectionID;
    }
 
    protected JBossMessage(JBossMessage other)
@@ -249,18 +252,16 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       this.replyToDestination = other.replyToDestination;
       this.jmsType = other.jmsType;
       this.delegate = other.delegate;
-      //this.messageWritable = other.messageWritable;
-      this.propertiesWritable = other.propertiesWritable;
-      this.properties = new HashMap(other.properties);
-      this.isCorrelationIDBytes = other.isCorrelationIDBytes;
+      this.propertiesReadOnly = other.propertiesReadOnly;
+      this.bodyReadOnly = other.bodyReadOnly;
+      this.properties = new HashMap(other.properties);      
       this.correlationID = other.correlationID;
-      if (this.isCorrelationIDBytes)
+      if (other.correlationIDBytes != null)
       {
          this.correlationIDBytes = new byte[other.correlationIDBytes.length];
          System.arraycopy(other.correlationIDBytes, 0, this.correlationIDBytes, 0, other.correlationIDBytes.length);
       }
-      this.connectionID = other.connectionID;
-      
+      this.connectionID = other.connectionID;      
    }
 
    /**
@@ -346,7 +347,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      if (!isCorrelationIDBytes)
+      if (this.correlationIDBytes == null)
       {
          throw new JMSException("CorrelationID is a String for this message");
       }
@@ -360,18 +361,18 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          throw new JMSException("Please specify a non-zero length byte[]");
       }
       correlationIDBytes = correlationID;
-      isCorrelationIDBytes = true;
+      correlationID = null;
    }
 
    public void setJMSCorrelationID(String correlationID) throws JMSException
    {
       this.correlationID = correlationID;
-      isCorrelationIDBytes = false;
+      correlationIDBytes = null;
    }
 
    public String getJMSCorrelationID() throws JMSException
    {
-      if (isCorrelationIDBytes)
+      if (this.correlationIDBytes != null)
       {
          throw new JMSException("CorrelationID is a byte[] for this message");
       }
@@ -473,7 +474,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public void clearProperties() throws JMSException
    {
       properties.clear();
-      propertiesWritable = true;
+      propertiesReadOnly = false;
    }
 
    public void acknowledge() throws JMSException
@@ -486,8 +487,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void clearBody() throws JMSException
    {
-      //this.messageWritable = true;
-      //this.bodyWritable = true;
+      this.payload = null;
+      this.bodyReadOnly = false;
    }
 
    public boolean propertyExists(String name) throws JMSException
@@ -655,7 +656,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setBooleanProperty(String name, boolean value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Boolean b = Primitives.valueOf(value);
       checkProperty(name, b);
@@ -664,7 +665,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setByteProperty(String name, byte value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Byte b = new Byte(value);
       checkProperty(name, b);
@@ -673,7 +674,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setShortProperty(String name, short value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Short s = new Short(value);
       checkProperty(name, s);
@@ -682,7 +683,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setIntProperty(String name, int value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Integer i = new Integer(value);
       checkProperty(name, i);
@@ -691,7 +692,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setLongProperty(String name, long value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Long l = new Long(value);
       checkProperty(name, l);
@@ -700,7 +701,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setFloatProperty(String name, float value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Float f = new Float(value);
       checkProperty(name, f);
@@ -709,7 +710,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setDoubleProperty(String name, double value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       Double d = new Double(value);
       checkProperty(name, d);
@@ -718,7 +719,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setStringProperty(String name, String value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
       checkProperty(name, value);
       this.properties.put(name, value);
@@ -726,7 +727,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setObjectProperty(String name, Object value) throws JMSException
    {
-      if (!propertiesWritable)
+      if (propertiesReadOnly)
       {
          throw new MessageNotWriteableException("Properties are read-only");
       }
@@ -776,12 +777,13 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    }
 
    // Public --------------------------------------------------------
-
-   public boolean isJMSCorrelationIDBytes()
-   {
-      return isCorrelationIDBytes;
-   }
    
+   public void doBeforeReceipt()
+   {
+      this.propertiesReadOnly = true;
+      this.bodyReadOnly = true;
+   }
+
    public int getType()
    {
       return JBossMessage.TYPE;
@@ -799,13 +801,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       return properties;
    }
-
-   /** Do any other stuff required to be done after sending the message */
-   public void afterSend() throws JMSException
-   {            
-      this.propertiesWritable = false;
-   }
-
    
    public String getConnectionID()
    {
@@ -831,6 +826,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       return new JBossMessage(this);
    }
+   
+   public boolean isCorrelationIDBytes()
+   {
+      return this.correlationIDBytes != null;
+   }
 
    // org.jboss.messaging.core.Message implementation ---------------
 
@@ -848,27 +848,20 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       out.writeObject(destination);
       out.writeObject(replyToDestination);
       writeString(out, jmsType);
-      out.writeBoolean(propertiesWritable);
-
       writeMap(out, properties);
-      
-      out.writeBoolean(isCorrelationIDBytes);
-      if (isCorrelationIDBytes)
+            
+      if (correlationIDBytes == null)
       {
-         if (correlationIDBytes == null)
-         {
-            out.writeInt(-1);
-         }
-         else
-         {
-            out.writeInt(correlationIDBytes.length);
-            out.write(correlationIDBytes);
-         }
+         out.writeInt(-1);
       }
       else
       {
-         writeString(out, correlationID);
+         out.writeInt(correlationIDBytes.length);
+         out.write(correlationIDBytes);
       }
+   
+      writeString(out, correlationID);
+      
       writeString(out, connectionID);
    }
 
@@ -880,28 +873,22 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
       destination = (Destination) in.readObject();
       replyToDestination = (Destination) in.readObject();
-      jmsType = readString(in);
-      propertiesWritable = in.readBoolean();
+      jmsType = readString(in);     
       properties = readMap(in);
       
-      isCorrelationIDBytes = in.readBoolean();
-      if (isCorrelationIDBytes)
+      int length = in.readInt();
+      if (length == -1)
       {
-         int length = in.readInt();
-         if (length == -1)
-         {
-            correlationIDBytes = null;
-         }
-         else
-         {
-            correlationIDBytes = new byte[length];
-            in.readFully(correlationIDBytes);
-         }
+         correlationIDBytes = null;
       }
       else
       {
-         correlationID = readString(in);
+         correlationIDBytes = new byte[length];
+         in.readFully(correlationIDBytes);
       }
+      
+      correlationID = readString(in);
+         
       connectionID = readString(in);
    }
 

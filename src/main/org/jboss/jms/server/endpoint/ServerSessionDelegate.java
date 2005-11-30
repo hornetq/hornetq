@@ -110,8 +110,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
    private InvokerCallbackHandler callbackHandler;
    
    private boolean closed;
-
-
+   
    // Constructors --------------------------------------------------
 
    public ServerSessionDelegate(String sessionID, ServerConnectionDelegate connectionEndpoint,
@@ -916,7 +915,7 @@ public class ServerSessionDelegate extends Lockable implements SessionDelegate
 
          }
       }
-   }
+   }   
 
    // Protected -----------------------------------------------------
 

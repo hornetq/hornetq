@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
@@ -54,6 +53,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.XidImpl;
@@ -102,8 +102,8 @@ public class JDBCPersistenceManager implements PersistenceManager
       "WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
    
    protected String insertMessageRef =
-      "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE) " +
-      "VALUES (?, ?, ?, ?, ?)";
+      "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE, ORD) " +
+      "VALUES (?, ?, ?, ?, ?, ?)";
    
    protected String deleteMessageRef =
       "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
@@ -130,10 +130,14 @@ public class JDBCPersistenceManager implements PersistenceManager
       "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=?";
    
    protected String selectChannelMessageRefs =
-      "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STOREID=? AND STATE='C'";
+      "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STOREID=? AND STATE='C' ORDER BY ORD";
    
    protected String insertMessage =
-      "INSERT INTO MESSAGE VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO MESSAGE (MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, DELIVERYCOUNT, " +
+      "COREHEADERS, PAYLOAD, " +
+      "TYPE, JMSTYPE, CORRELATIONID, DESTINATIONISQUEUE, " +
+      "DESTINATION, REPLYTOISQUEUE, REPLYTO, CONNECTIONID, JMSPROPERTIES, REFERENCECOUNT) " + 
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
    protected String deleteMessage =
       "DELETE FROM MESSAGE WHERE MESSAGEID=?";
@@ -144,16 +148,18 @@ public class JDBCPersistenceManager implements PersistenceManager
       "RELIABLE, " +
       "EXPIRATION, " +
       "TIMESTAMP, " +
+      "PRIORITY, " +
+      "DELIVERYCOUNT, " +
       "COREHEADERS, " +
       "PAYLOAD, " +
       "TYPE, " +
       "JMSTYPE, " +
-      "PRIORITY, " +
       "CORRELATIONID, " +
       "DESTINATIONISQUEUE, " +
       "DESTINATION, " +
       "REPLYTOISQUEUE, " +
       "REPLYTO, " +
+      "CONNECTIONID, " +
       "JMSPROPERTIES, " +
       "REFERENCECOUNT " +
       "FROM MESSAGE WHERE MESSAGEID = ?";
@@ -174,7 +180,7 @@ public class JDBCPersistenceManager implements PersistenceManager
    
    protected String createMessageReference =
       "CREATE TABLE MESSAGE_REFERENCE (CHANNELID VARCHAR(256), MESSAGEID VARCHAR(256), " +
-      "STOREID VARCHAR(256), TRANSACTIONID BIGINT, STATE CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))";
+      "STOREID VARCHAR(256), TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, PRIMARY KEY(CHANNELID, MESSAGEID))";
    
    protected String createMessage =
       "CREATE TABLE MESSAGE (" +
@@ -182,18 +188,20 @@ public class JDBCPersistenceManager implements PersistenceManager
       "RELIABLE CHAR(1), " +
       "EXPIRATION BIGINT, " +
       "TIMESTAMP BIGINT, " +
+      "PRIORITY TINYINT, " + 
+      "DELIVERYCOUNT INTEGER, " +
       "COREHEADERS OBJECT, " +
       "PAYLOAD OBJECT, " +
       "TYPE INTEGER, " +
-      "JMSTYPE VARCHAR(256), " +
-      "PRIORITY TINYINT, " +
+      "JMSTYPE VARCHAR(255), " +
       "CORRELATIONID OBJECT, " +
       "DESTINATIONISQUEUE CHAR(1), " +
-      "DESTINATION VARCHAR(256), " +
+      "DESTINATION VARCHAR(255), " +
       "REPLYTOISQUEUE CHAR(1), " +
-      "REPLYTO VARCHAR(256), " +
+      "REPLYTO VARCHAR(255), " +
+      "CONNECTIONID VARCHAR(255), " +
       "JMSPROPERTIES OBJECT, " +
-      "REFERENCECOUNT INTEGER, " +
+      "REFERENCECOUNT TINYINT, " +
       "PRIMARY KEY (MESSAGEID))";
 
    protected String insertTransactionXA =
@@ -384,7 +392,7 @@ public class JDBCPersistenceManager implements PersistenceManager
     */
    public void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Adding " + ref + " for channel "  + channelID + (tx == null ? " non-transactionally" : " in transaction: " + tx));}
+      if (log.isTraceEnabled()) { log.trace("Adding message reference " + ref + " for channel "  + channelID + (tx == null ? " non-transactionally" : " in transaction: " + tx));}
 
       Connection conn = null;
       PreparedStatement ps = null;
@@ -433,13 +441,14 @@ public class JDBCPersistenceManager implements PersistenceManager
             }
          }
          ps.setString(5, (String)state);
+         ps.setLong(6, ref.getOrdering());
 
          int inserted = ps.executeUpdate();
          
          if (log.isTraceEnabled())
          {
             log.trace(JDBCUtil.statementToString(insertMessageRef, channelID, ref.getMessageID(), ref.getStoreID(),
-                  getTxId(tx), state) + " inserted " + inserted + " row(s)");
+                  getTxId(tx), state, new Long(ref.getOrdering())) + " inserted " + inserted + " row(s)");
          }
       }
       catch (SQLException e)
@@ -919,58 +928,47 @@ public class JDBCPersistenceManager implements PersistenceManager
          {
             // physically insert the row in the database
 
+            //First set the fields from org.jboss.messaging.core.Routable
             ps = conn.prepareStatement(insertMessage);
             ps.setString(1, id);
             ps.setString(2, m.isReliable() ? "Y" : "N");
             ps.setLong(3, m.getExpiration());
             ps.setLong(4, m.getTimestamp());
-            ps.setObject(5, ((MessageSupport)m).getHeaders());
-            //stat.setObject(6, m.getPayload());
-
-
-            /*
-            * FIXME - Tidy this up
-            *
-            * I have changed this for now to serialize the whole message rather than just the payload.
-            * This is because the message contains hidden protected fields e.g. bodyWriteOnly which
-            * are part of it's state.
-            * This can probably be done in a more elegant way
-            * Just saving the payload and a few fields doesn't persist these fields
-            * so when they are read back, the state is wrong.
-            * This has been causing a lot of previouly passing TCK tests to fail.
-            *
-            */
-
-            ps.setObject(6, m);
-
+            ps.setInt(5, m.getPriority());
+            ps.setInt(6, m.getDeliveryCount());
+            
+            ps.setObject(7, ((MessageSupport)m).getHeaders());
+            
+            //Now set the fields from org.jboss.messaging.core.Message
+            ps.setObject(8, m.getPayload());
+            
+            //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
             int type = -1;
             String jmsType = null;
-            int priority = -1;
             Object correlationID = null;
             boolean destIsQueue = false;
             String dest = null;
             boolean replyToIsQueue = false;
             String replyTo = null;
             Map jmsProperties = null;
+            String connectionID = null;
 
             if (m instanceof JBossMessage)
             {
                JBossMessage jbm = (JBossMessage)m;
                type = jbm.getType();
                jmsType = jbm.getJMSType();
-               priority = jbm.getJMSPriority();
-
-               // TODO TODO_CORRID
-               try
+               connectionID = jbm.getConnectionID();
+               
+               if (jbm.isCorrelationIDBytes())
+               {
+                  correlationID = jbm.getJMSCorrelationIDAsBytes();
+               }
+               else
                {
                   correlationID = jbm.getJMSCorrelationID();
                }
-               catch(JMSException e)
-               {
-                  // is this exception really supposed to be thrown?
-                  correlationID = jbm.getJMSCorrelationIDAsBytes();
-               }
-
+               
                Destination d = jbm.getJMSDestination();
                if (d != null)
                {
@@ -1001,16 +999,16 @@ public class JDBCPersistenceManager implements PersistenceManager
                jmsProperties = jbm.getJMSProperties();
             }
 
-            ps.setInt(7, type);
-            ps.setString(8, jmsType);
-            ps.setInt(9, priority);
-            ps.setObject(10, correlationID);
-            ps.setString(11, destIsQueue ? "Y" : "N");
-            ps.setString(12, dest);
-            ps.setString(13, replyToIsQueue ? "Y" : "N");
-            ps.setString(14, replyTo);
-            ps.setObject(15, jmsProperties);
-            ps.setInt(16, 1);
+            ps.setInt(9, type);
+            ps.setString(10, jmsType);
+            ps.setObject(11, correlationID);                        
+            ps.setString(12, destIsQueue ? "Y" : "N");
+            ps.setString(13, dest);
+            ps.setString(14, replyToIsQueue ? "Y" : "N");
+            ps.setString(15, replyTo);
+            ps.setString(16, connectionID);
+            ps.setObject(17, jmsProperties);
+            ps.setInt(18, 1);
 
             int result = ps.executeUpdate();
             if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
@@ -1165,27 +1163,27 @@ public class JDBCPersistenceManager implements PersistenceManager
 
          int count = 0;
          if (rs.next())
-         {
-            m = (Message)rs.getObject("PAYLOAD");
-            referenceCount = rs.getInt("REFERENCECOUNT");
-            count ++;
-            /*
-            m = Factory.createMessage(rs.getString("MESSAGEID"),
-                                      rs.getBoolean("RELIABLE"),
-                                      rs.getLong("EXPIRATION"),
-                                      rs.getLong("TIMESTAMP"),
-                                      (Map)rs.getObject("COREHEADERS"),
-                                      (Serializable)rs.getObject("PAYLOAD"),
-                                      rs.getInt("TYPE"),
-                                      rs.getString("JMSTYPE"),
-                                      rs.getInt("PRIORITY"),
-                                      rs.getObject("CORRELATIONID"),
-                                      rs.getBoolean("DESTINATIONISQUEUE"),
-                                      rs.getString("DESTINATION"),
-                                      rs.getBoolean("REPLYTOISQUEUE"),
-                                      rs.getString("REPLYTO"),
-                                      (Map)rs.getObject("JMSPROPERTIES"));
-              */                        
+         {            
+            m = MessageFactory.createMessage(rs.getString(1), //message id
+                                      rs.getString(2).equals("Y"), //reliable
+                                      rs.getLong(3), //expiration
+                                      rs.getLong(4), //timestamp
+                                      rs.getInt(5), //priority
+                                      rs.getInt(6), //delivery count
+                                      (Map)rs.getObject(7), //core headers
+                                      (Serializable)rs.getObject(8), //payload
+                                      rs.getInt(9), //type
+                                      rs.getString(10), //jms type
+                                      rs.getObject(11), //correlation id
+                                      rs.getString(12).equals("Y"), //destination is queue
+                                      rs.getString(13), //destination
+                                      rs.getString(14).equals("Y"), //reply to is queue
+                                      rs.getString(15), //reply to
+                                      rs.getString(16), // connection id
+                                      (Map)rs.getObject(17)); // jms properties
+            
+            referenceCount = rs.getInt(18);
+            count ++;                                    
          }
 
          if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectMessage, messageID) + " selected " + count + " row(s)"); }

@@ -21,14 +21,14 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import org.jboss.logging.Logger;
-import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.server.ServerPeer;
-
+import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.Destination;
 import javax.jms.Message;
+
+import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

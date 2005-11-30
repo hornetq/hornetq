@@ -47,6 +47,9 @@ import org.jboss.messaging.core.Routable;
  */
 public class Selector implements Filter
 {
+   /** The serialVersionUID */
+   private static final long serialVersionUID = 1456143116781848968L;
+
    /** The logging interface */
    static Logger cat = Logger.getLogger(Selector.class);
    

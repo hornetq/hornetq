@@ -100,8 +100,7 @@ public class JMSCorrelationIDHeaderTest extends MessageTest
       m5.setJMSCorrelationIDAsBytes(bytes);
       
       queueProducer.send(m5);
-      Message m6 = queueConsumer.receive();
-      log.trace("Correlation id bytes:" + m6.getJMSCorrelationIDAsBytes());
+      Message m6 = queueConsumer.receive();      
       assertByteArraysEqual(bytes, m6.getJMSCorrelationIDAsBytes());
       
       try

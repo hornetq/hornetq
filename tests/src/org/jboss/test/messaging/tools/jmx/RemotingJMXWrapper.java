@@ -72,7 +72,7 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
          return;
       }
 
-      connector.stop();
+      connector.stop();      
       connector = null;
    }
 
@@ -103,6 +103,11 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
          return connector.addInvocationHandler(s, h);
       }
       return null;
+   }
+   
+   public void removeInvocationHandler(String s) throws Exception
+   {
+      connector.removeInvocationHandler(s);
    }
 
    // Public --------------------------------------------------------

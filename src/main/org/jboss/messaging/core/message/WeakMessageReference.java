@@ -71,7 +71,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
     */
    public WeakMessageReference(Message m, InMemoryMessageStore ms)
    {
-      this(m.getMessageID(), m.isReliable(), m.getExpiration(), m.getTimestamp(), m.getHeaders(), m.isRedelivered(), m.getPriority(), ms);
+      this(m.getMessageID(), m.isReliable(), m.getExpiration(), m.getTimestamp(), m.getHeaders(), m.isRedelivered(), m.getPriority(), m.getOrdering(), ms);
 
       for(Iterator i = m.getHeaderNames().iterator(); i.hasNext(); )
       {
@@ -84,9 +84,9 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    protected WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
                                   long timestamp, Map headers, boolean redelivered,
-                                  int priority, InMemoryMessageStore ms)
+                                  int priority, long ordering, InMemoryMessageStore ms)
    {
-      super(messageID, reliable, expiration, timestamp, priority, headers);
+      super(messageID, reliable, expiration, timestamp, priority, 0, ordering, headers);
       this.redelivered = redelivered;
       this.ms = ms;
    }

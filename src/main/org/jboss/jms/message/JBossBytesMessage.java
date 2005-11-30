@@ -70,9 +70,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    // Attributes ----------------------------------------------------
 
-   //Message body can either be write-only or read-only, bodyWriteOnly = false means the body is-read only
-   protected boolean bodyWriteOnly = true;
-
    private transient ByteArrayOutputStream ostream;
 
    private transient DataOutputStream p;
@@ -91,27 +88,28 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    }
 
    public JBossBytesMessage(String messageID,
-                            boolean reliable,
-                            long expiration,
-                            long timestamp,
-                            Map coreHeaders,
-                            Serializable payload,
-                            String jmsType,
-                            int priority,
-                            Object correlationID,
-                            boolean destinationIsQueue,
-                            String destination,
-                            boolean replyToIsQueue,
-                            String replyTo,
-                            Map jmsProperties)
+         boolean reliable,
+         long expiration,
+         long timestamp,
+         int priority,
+         int deliveryCount,
+         Map coreHeaders,
+         Serializable payload,
+         String jmsType,
+         Object correlationID,
+         boolean destinationIsQueue,
+         String destination,
+         boolean replyToIsQueue,
+         String replyTo,
+         String connectionID,
+         Map jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
-            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
-            replyTo, jmsProperties);
-
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
+            jmsType, correlationID, destinationIsQueue, destination, replyToIsQueue, replyTo, connectionID,
+            jmsProperties);
+   
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
-      bodyWriteOnly = false;
    }
 
    protected JBossBytesMessage(JBossBytesMessage other) throws JMSException
@@ -119,8 +117,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       super(other);
       
       if (log.isTraceEnabled()) { log.trace("Creating new JBossBytesMessage from other JBossBytesMessage"); }
-      
-      bodyWriteOnly = other.bodyWriteOnly;
       
       if (other.payload != null)
       {
@@ -408,7 +404,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeBoolean(boolean value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -424,7 +420,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeByte(byte value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -440,7 +436,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeShort(short value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -456,7 +452,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeChar(char value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -472,7 +468,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeInt(int value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -488,7 +484,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeLong(long value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -504,7 +500,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeFloat(float value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -520,7 +516,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeDouble(double value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -536,7 +532,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeUTF(String value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -552,7 +548,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeBytes(byte[] value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -568,7 +564,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeBytes(byte[] value, int offset, int length) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -584,7 +580,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void writeObject(Object value) throws JMSException
    {
-      if (!bodyWriteOnly)
+      if (bodyReadOnly)
       {
          throw new MessageNotWriteableException("the message body is read-only");
       }
@@ -648,7 +644,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       if (log.isTraceEnabled()) log.trace("reset()");
       try
       {
-         if (bodyWriteOnly)
+         if (!bodyReadOnly)
          {
             if (log.isTraceEnabled())  { log.trace("Flushing ostream to array"); }
 
@@ -663,7 +659,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          istream = null;
          m = null;
          p = null;
-         bodyWriteOnly = false;
+         bodyReadOnly = true;
       }
       catch (IOException e)
       {
@@ -677,7 +673,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    {
       try
       {
-         if (bodyWriteOnly)
+         if (!bodyReadOnly)
          {
             ostream.close();
          }
@@ -702,20 +698,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       istream = null;
       m = null;
       
-      bodyWriteOnly = true;
-
       super.clearBody();
    }
    
-   /** Do any other stuff required to be done after sending the message */
-   public void afterSend() throws JMSException
-   {      
-      super.afterSend();
-      
-      //Message must be reset after sending
-      reset();
-   }
-
    public long getBodyLength() throws JMSException
    {
       checkRead();
@@ -728,7 +713,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    {
       byte[] arrayToSend = null;
       
-      if (bodyWriteOnly)
+      if (!bodyReadOnly)
       {
          p.flush();
          arrayToSend = ostream.toByteArray();
@@ -738,7 +723,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          arrayToSend = (byte[])payload;
       }
       super.writeExternal(out);
-      out.writeBoolean(bodyWriteOnly);
       if (arrayToSend == null)
       {
          out.writeInt(0); //pretend to be empty array
@@ -753,7 +737,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      bodyWriteOnly = in.readBoolean();
       int length = in.readInt();
       if (length < 0)
       {
@@ -779,7 +762,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
     */
    private void checkRead() throws JMSException
    {
-      if (bodyWriteOnly)
+      if (!bodyReadOnly)
       {
          throw new MessageNotReadableException("readByte while the buffer is writeonly");
       }

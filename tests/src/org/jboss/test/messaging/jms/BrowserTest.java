@@ -25,7 +25,6 @@ package org.jboss.test.messaging.jms;
 import java.util.Enumeration;
 
 import javax.jms.Connection;
-import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -36,7 +35,6 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.destination.JBossQueue;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -101,7 +99,7 @@ public class BrowserTest extends MessagingTestCase
 	{
       connection.stop();
       connection = null;
-		ServerManagement.deInit();
+		//ServerManagement.deInit();
 		super.tearDown();
 	}
 	

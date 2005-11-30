@@ -80,6 +80,7 @@ abstract class RoutableSupport implements Routable, Externalizable
    protected boolean redelivered;
    protected int priority;
    protected int deliveryCount;
+   protected long ordering;
 
    // Constructors --------------------------------------------------
 
@@ -113,6 +114,8 @@ abstract class RoutableSupport implements Routable, Externalizable
            timeToLive == Long.MAX_VALUE ? 0 : System.currentTimeMillis() + timeToLive,
            System.currentTimeMillis(),
            4,
+           0,
+           0,
            null);
    }
 
@@ -121,6 +124,8 @@ abstract class RoutableSupport implements Routable, Externalizable
                           long expiration, 
                           long timestamp,
                           int priority,
+                          int deliveryCount,
+                          long ordering,
                           Map headers)
    {
       this.messageID = messageID;
@@ -128,6 +133,9 @@ abstract class RoutableSupport implements Routable, Externalizable
       this.expiration = expiration;
       this.timestamp = timestamp;
       this.priority = priority;
+      this.deliveryCount = deliveryCount;
+      this.redelivered = deliveryCount >= 1;
+      this.ordering = ordering;
       if (headers == null)
       {
          this.headers = new HashMap();
@@ -148,6 +156,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       this.redelivered = other.redelivered;
       this.deliveryCount = other.deliveryCount;
       this.priority = other.priority;
+      this.ordering = other.ordering;
    }
 
    // Routable implementation ---------------------------------------
@@ -179,7 +188,7 @@ abstract class RoutableSupport implements Routable, Externalizable
 
    public void setRedelivered(boolean redelivered)
    {
-      this.redelivered = redelivered;
+      this.redelivered = redelivered;      
    }
    
    public int getDeliveryCount()
@@ -189,7 +198,7 @@ abstract class RoutableSupport implements Routable, Externalizable
    
    public void incrementDeliveryCount()
    {
-      deliveryCount++;
+      deliveryCount++;      
    }
 
    public Serializable putHeader(String name, Serializable value)
@@ -231,6 +240,16 @@ abstract class RoutableSupport implements Routable, Externalizable
    {
       this.priority = priority;
    }
+   
+   public long getOrdering()
+   {
+      return ordering;
+   }
+   
+   public void setOrdering(long ordering)
+   {
+      this.ordering = ordering;
+   }
 
    // Externalizable implementation ---------------------------------
    
@@ -244,6 +263,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       out.writeBoolean(redelivered);
       out.writeInt(priority);
       out.writeInt(deliveryCount);
+      out.writeLong(ordering);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -257,6 +277,7 @@ abstract class RoutableSupport implements Routable, Externalizable
       redelivered = in.readBoolean();
       priority = in.readInt();
       deliveryCount = in.readInt();
+      ordering = in.readLong();
    }
    
    // Public --------------------------------------------------------

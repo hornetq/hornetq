@@ -84,7 +84,7 @@ public class TransactedSessionTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
       TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.OPERATIONAL);
       super.tearDown();
    }

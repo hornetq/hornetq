@@ -264,6 +264,7 @@ public class ServiceContainer
       {
          System.setProperty("java.naming.factory.initial", jndiNamingFactory);
       }
+            
       log.debug("ServiceContainer stopped");
    }
 
@@ -478,6 +479,7 @@ public class ServiceContainer
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
       log.debug("started " + REMOTING_OBJECT_NAME);
    }
+   
    
    private void startSecurityManager() throws Exception
    {

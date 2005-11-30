@@ -73,7 +73,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
       super.tearDown();
    }
    
@@ -469,11 +469,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          fail();
       }
       
-      if (!m1.getClass().equals(m2.getClass()))
-      {
-         fail();
-      }
-      
       //Attributes from org.jboss.messaging.core.Message
       assertEquals(m1.getMessageID(), m2.getMessageID());
       assertEquals(m1.isReference(), m2.isReference());
@@ -487,7 +482,23 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       Map m2Headers = m2.getHeaders();
       checkMapsEquivalent(m1Headers, m2Headers);
       checkMapsEquivalent(m2Headers, m1Headers);
-      assertEquals(m1.getPayload(), m2.getPayload());
+      
+      if (m1.getPayload() instanceof byte[] && m2.getPayload() instanceof byte[])
+      {
+         this.checkByteArraysEqual((byte[])m1.getPayload(), (byte[])m2.getPayload());
+      }
+      else if (m1.getPayload() instanceof Map && m2.getPayload() instanceof Map)
+      {
+         this.checkMapsEquivalent((Map)m1.getPayload(), (Map)m2.getPayload());
+      }
+      else if (m1.getPayload() instanceof List && m2.getPayload() instanceof List)
+      {
+         this.checkListsEquivalent((List)m1.getPayload(), (List)m2.getPayload());
+      }
+      else
+      {      
+         assertEquals(m1.getPayload(), m2.getPayload());
+      }
       
    }
    
@@ -506,6 +517,26 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          else
          {
             assertEquals(entry1.getValue(), value2);
+         }
+      }
+   }
+   
+   protected void checkListsEquivalent(List l1, List l2)
+   {      
+      Iterator iter1 = l1.iterator();
+      Iterator iter2 = l2.iterator();
+      while (iter1.hasNext())
+      {
+         Object o1 = iter1.next();
+         Object o2 = iter2.next();
+         
+         if (o1 instanceof byte[])
+         {
+            checkByteArraysEqual((byte[])o1, (byte[])o2);
+         }
+         else
+         {
+            assertEquals(o1, o2);
          }
       }
    }
@@ -548,7 +579,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          switch (k)
          {
             case 0:
-               headers.put(new GUID().toString(), new GUID().toString());
+               headers.put(new GUID().toString(), randString(1000));
             case 1:
                headers.put(new GUID().toString(), randByte());
             case 2:
@@ -609,10 +640,25 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       return new Double(Math.random() * 1000000);
    }
    
+   protected String randString(int length)
+   {
+      StringBuffer buf = new StringBuffer(length);
+      for (int i = 0; i < length; i++)
+      {
+         buf.append(randChar().charValue());
+      }
+      return buf.toString();
+   }
+   
    protected byte[] randByteArray()
    {
-      String s = new GUID().toString();
+      String s = randString(1000);
       return s.getBytes();
+   }
+   
+   protected Character randChar()
+   {
+      return new Character((char)randShort().shortValue());
    }
    
    protected void checkByteArraysEqual(byte[] b1, byte[] b2)

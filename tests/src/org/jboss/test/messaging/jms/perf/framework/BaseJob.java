@@ -7,7 +7,6 @@
 package org.jboss.test.messaging.jms.perf.framework;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.jms.ConnectionFactory;

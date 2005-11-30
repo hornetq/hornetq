@@ -57,9 +57,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Attributes ----------------------------------------------------
 
-   protected boolean bodyReadOnly = false;
-
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -69,23 +66,25 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    }
 
    public JBossTextMessage(String messageID,
-                           boolean reliable,
-                           long expiration,
-                           long timestamp,
-                           Map coreHeaders,
-                           Serializable payload,
-                           String jmsType,
-                           int priority,
-                           Object correlationID,
-                           boolean destinationIsQueue,
-                           String destination,
-                           boolean replyToIsQueue,
-                           String replyTo,
-                           Map jmsProperties)
+         boolean reliable,
+         long expiration,
+         long timestamp,
+         int priority,
+         int deliveryCount,
+         Map coreHeaders,
+         Serializable payload,
+         String jmsType,
+         Object correlationID,
+         boolean destinationIsQueue,
+         String destination,
+         boolean replyToIsQueue,
+         String replyTo,
+         String connectionID,
+         Map jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
-            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
-            replyTo, jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
+            jmsType, correlationID, destinationIsQueue, destination, replyToIsQueue, replyTo, connectionID,
+            jmsProperties);
    }
 
    public JBossTextMessage(JBossTextMessage other)
@@ -131,24 +130,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       return (String)payload;
    }
 
-   // JBossMessage overrides ----------------------------------------
-
-   public void clearBody() throws JMSException
-   {
-      payload = null;
-      bodyReadOnly = false;
-      super.clearBody();
-   }
-   
-   /** Do any other stuff required to be done after sending the message */
-   public void afterSend() throws JMSException
-   {      
-      super.afterSend();
-      
-      //Message body must be made read-only
-      bodyReadOnly = true;
-   }
-
    // Externalizable implementation ---------------------------------
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -156,8 +137,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super.readExternal(in);
       
       if (log.isTraceEnabled()) { log.trace("in readExternal"); }
-      
-      bodyReadOnly = in.readBoolean();
       
       byte type = in.readByte();
       
@@ -171,50 +150,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       {
          payload = in.readUTF();
 
-         /*
-          
-          TODO
-          
-          Do we care about this any more?
-          Do we support JDK 1.3.x ???
-          
-          // apply workaround for string > 64K bug in jdk's 1.3.*
-
-          // Read the no. of chunks this message is split into, allocate
-          // a StringBuffer that can hold all chunks, read the chunks
-          // into the buffer and set 'content' accordingly
-          int chunksToRead = in.readInt();
-          int bufferSize = chunkSize * chunksToRead;
-
-          // special handling for single chunk
-          if (chunksToRead == 1)
-          {
-          // The text size is likely to be much smaller than the chunkSize
-          // so set bufferSize to the min of the input stream available
-          // and the maximum buffer size. Since the input stream
-          // available() can be <= 0 we check for that and default to
-          // a small msg size of 256 bytes.
-
-          int inSize = in.available();
-          if (inSize <= 0)
-          {
-          inSize = 256;
-          }
-
-          bufferSize = Math.min(inSize, bufferSize);
-          }
-
-          // read off all of the chunks
-          StringBuffer sb = new StringBuffer(bufferSize);
-
-          for (int i = 0; i < chunksToRead; i++)
-          {
-          sb.append(in.readUTF());
-          }
-
-          content = sb.toString();
-          
-          */
       }
    }
 
@@ -224,8 +159,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       
       if (log.isTraceEnabled()) { log.trace("in writeExternal"); }
       
-      out.writeBoolean(bodyReadOnly);
-
       if (payload == null)
       {
          out.writeByte(NULL);
@@ -234,46 +167,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       {
          out.write(STRING);
          out.writeUTF((String)payload);
-
-         /*
-          
-          TODO
-          
-          Do we care about this any more?
-          Do we support JDK1.3.x
-          
-          // apply workaround for string > 64K bug in jdk's 1.3.*
-
-          // Split content into chunks of size 'chunkSize' and assemble
-          // the pieces into a List ...
-
-          // FIXME: could calculate the number of chunks first, then
-          //        write as we chunk for efficiency
-
-          ArrayList v = new ArrayList();
-          int contentLength = content.length();
-
-          while (contentLength > 0)
-          {
-          int beginCopy = (v.size()) * chunkSize;
-          int endCopy = contentLength <= chunkSize ? beginCopy + contentLength : beginCopy + chunkSize;
-
-          String theChunk = content.substring(beginCopy, endCopy);
-          v.add(theChunk);
-
-          contentLength -= chunkSize;
-          }
-
-          // Write out the type (OBJECT), the no. of chunks and finally
-          // all chunks that have been assembled previously
-          out.writeByte(OBJECT);
-          out.writeInt(v.size());
-
-          for (int i = 0; i < v.size(); i++)
-          {
-          out.writeUTF((String) v.get(i));
-          }
-          */
       }
    }
 

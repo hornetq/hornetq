@@ -136,7 +136,7 @@ public class ServerManagement
    {
       if (sc != null)
       {
-         throw new Exception("server already started!");
+         return;
       }
       sc = new ServiceContainer(config, tm);
       sc.start();

@@ -68,8 +68,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    protected boolean isByteArray = false;
 
-   protected boolean bodyReadOnly = false;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -79,30 +77,31 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    }
 
    public JBossObjectMessage(String messageID,
-                             boolean reliable,
-                             long expiration,
-                             long timestamp,
-                             Map coreHeaders,
-                             Serializable payload,
-                             String jmsType,
-                             int priority,
-                             Object correlationID,
-                             boolean destinationIsQueue,
-                             String destination,
-                             boolean replyToIsQueue,
-                             String replyTo,
-                             Map jmsProperties)
+                              boolean reliable,
+                              long expiration,
+                              long timestamp,
+                              int priority,
+                              int deliveryCount,
+                              Map coreHeaders,
+                              Serializable payload,
+                              String jmsType,
+                              Object correlationID,
+                              boolean destinationIsQueue,
+                              String destination,
+                              boolean replyToIsQueue,
+                              String replyTo,
+                              String connectionID,
+                              Map jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
-            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
-            replyTo, jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
+            jmsType, correlationID, destinationIsQueue, destination, replyToIsQueue, replyTo, connectionID,
+            jmsProperties);
    }
 
 
    public JBossObjectMessage(JBossObjectMessage other)
    {
       super(other);
-      this.bodyReadOnly = other.bodyReadOnly;
       this.isByteArray = other.isByteArray;
       if (other.payload != null)
       {
@@ -230,33 +229,16 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    // JBossMessage overrides ----------------------------------------
 
-   public void clearBody() throws JMSException
-   {
-      payload = null;
-      bodyReadOnly = false;
-      super.clearBody();
-   }
-   
    public JBossMessage doClone()
    {
       return new JBossObjectMessage(this);
    }
    
-   /** Do any other stuff required to be done after sending the message */
-   public void afterSend() throws JMSException
-   {      
-      super.afterSend();
-      
-      //Message body must be made read-only
-      bodyReadOnly = true;
-   }
-
    // Externalizable implementation ---------------------------------
 
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      out.writeBoolean(bodyReadOnly);
       out.writeBoolean(isByteArray);
       if (payload == null)
       {
@@ -272,7 +254,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      bodyReadOnly = in.readBoolean();
       isByteArray = in.readBoolean();
       int length = in.readInt();
       if (length < 0)

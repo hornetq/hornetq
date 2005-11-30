@@ -61,7 +61,7 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    {
       super.tearDown();
       
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
    }
    
    public void testCreateGetRemoveDurableSubscription() throws Exception

@@ -8,8 +8,6 @@
 package org.jboss.test.messaging.jms.perf.framework;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;

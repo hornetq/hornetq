@@ -23,6 +23,6 @@ package org.jboss.test.messaging.jms.perf.framework;
 
 public class JobException extends Exception
 {
-
-
+   /** The serialVersionUID */
+   private static final long serialVersionUID = 8341061820260094679L;
 }

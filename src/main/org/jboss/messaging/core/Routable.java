@@ -90,6 +90,12 @@ public interface Routable extends Serializable
    int getDeliveryCount();
    
    void incrementDeliveryCount();
+   
+   /**
+    * @return the ordering of the message. Needed when it is required to preserve some kind
+    * of order across messages sends
+    */
+   long getOrdering();
 
    /**
     * Binds a header. If the header map previously contained a mapping for this name, the old value

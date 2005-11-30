@@ -32,6 +32,7 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.logging.Logger;
 
 /**
  * Constructs various things that can be created entirely or partially on the client.
@@ -47,8 +48,13 @@ public class FactoryInterceptor implements Interceptor, Serializable
    private final static long serialVersionUID = -2377273484834534832L;
 
    // Static --------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(FactoryInterceptor.class);
+   
 
    // Attributes ----------------------------------------------------
+   
+   protected long ordering;
 
    // Constructors --------------------------------------------------
 
@@ -70,37 +76,47 @@ public class FactoryInterceptor implements Interceptor, Serializable
          String methodName = m.getName();
          if ("createMessage".equals(methodName))
          {
-            return new JBossMessage();
+            JBossMessage jbm = new JBossMessage();
+            jbm.setOrdering(ordering++);
+            return jbm;
          }
          else if ("createBytesMessage".equals(methodName))
          {
-            return new JBossBytesMessage();
+            JBossMessage jbm = new JBossBytesMessage();
+            jbm.setOrdering(ordering++);
+            return jbm;
          }
          else if ("createMapMessage".equals(methodName))
          {
-            return new JBossMapMessage();
+            JBossMessage jbm = new JBossMapMessage();
+            jbm.setOrdering(ordering++);
+            return jbm;
          }
          else if ("createObjectMessage".equals(methodName))
          {
-         	JBossObjectMessage msg = new JBossObjectMessage();
+            JBossObjectMessage jbm = new JBossObjectMessage();
+            jbm.setOrdering(ordering++);
          	if (mi.getArguments() != null)
          	{
-         		msg.setObject((Serializable)mi.getArguments()[0]);
+         		jbm.setObject((Serializable)mi.getArguments()[0]);
          	}
-         	return msg;
+         	return jbm;
          }
          else if ("createStreamMessage".equals(methodName))
          {
-            return new JBossStreamMessage();
+            JBossMessage jbm = new JBossStreamMessage();
+            jbm.setOrdering(ordering++);
+            return jbm;
          }
          else if ("createTextMessage".equals(methodName))
          {
-         	JBossTextMessage msg = new JBossTextMessage();
+            JBossTextMessage jbm = new JBossTextMessage();
+            jbm.setOrdering(ordering++);
          	if (mi.getArguments() != null)
          	{
-         		msg.setText((String)mi.getArguments()[0]);
+         		jbm.setText((String)mi.getArguments()[0]);
          	}
-         	return msg;
+         	return jbm;
          }
       }
 

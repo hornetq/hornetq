@@ -21,11 +21,11 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
+import java.util.ArrayList;
 import java.util.Map;
 
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.messaging.core.Message;
-import org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest;
 import org.jboss.util.id.GUID;
 
 
@@ -35,13 +35,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersistenceManagerTest
+public class JBossStreamMessagePersistenceManagerTest extends JBossMessagePersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossMessagePersistenceManagerTest(String name)
+   public JBossStreamMessagePersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -56,42 +56,6 @@ public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersisten
       super.tearDown();
    }
   
-   protected void checkEquivalent(Message m1, Message m2) throws Exception
-   {
-      super.checkEquivalent(m1, m2);
-     
-      if (!(m1 instanceof JBossMessage) && !(m2 instanceof JBossMessage))
-      {
-         fail();
-      }
-      
-      JBossMessage jm1 = (JBossMessage)m1;
-      JBossMessage jm2 = (JBossMessage)m2;
-      
-      assertEquals(jm1.isCorrelationIDBytes(), jm2.isCorrelationIDBytes());
-      if (jm1.isCorrelationIDBytes())
-      {
-         checkByteArraysEqual(jm1.getJMSCorrelationIDAsBytes(), jm2.getJMSCorrelationIDAsBytes());
-      }
-      else
-      {
-         assertEquals(jm1.getJMSCorrelationID(), jm2.getJMSCorrelationID());
-      }
-            
-      assertEquals(jm1.getJMSMessageID(), jm2.getJMSMessageID());
-      assertEquals(jm1.getJMSRedelivered(), jm2.getJMSRedelivered());
-      assertEquals(jm1.getJMSType(), jm2.getJMSType());
-      assertEquals(jm1.getJMSDeliveryMode(), jm2.getJMSDeliveryMode());
-      assertEquals(jm1.getJMSDestination(), jm2.getJMSDestination());
-      assertEquals(jm1.getJMSExpiration(), jm2.getJMSExpiration());
-      assertEquals(jm1.getJMSPriority(), jm2.getJMSPriority());
-      assertEquals(jm1.getJMSReplyTo(), jm2.getJMSReplyTo());
-      assertEquals(jm1.getJMSTimestamp(), jm2.getJMSTimestamp());
-
-      checkMapsEquivalent(jm1.getJMSProperties(), jm2.getJMSProperties());
-      
-
-   }
    
    protected Message createMessage(int i) throws Exception
    {
@@ -99,15 +63,15 @@ public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersisten
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossMessage m = 
-         new JBossMessage(new GUID().toString(),
+      JBossStreamMessage m = 
+         new JBossStreamMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,
             i + 2,
             coreHeaders,
-            new WibblishObject(),
+            new ArrayList(),
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
             i % 2 == 0,
@@ -115,29 +79,20 @@ public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersisten
             i % 2 == 1,
             new GUID().toString(),
             new GUID().toString(),
-            jmsProperties);            
-
-      return m;
+            jmsProperties);        
+      m.writeBoolean(randBool().booleanValue());
+      m.writeByte(randByte().byteValue());
+      m.writeBytes(randByteArray());
+      m.writeChar(randChar().charValue());
+      m.writeDouble(randDouble().doubleValue());
+      m.writeFloat(randFloat().floatValue());
+      m.writeInt(randInt().intValue());
+      m.writeLong(randLong().longValue());
+      m.writeShort(randShort().shortValue());
+      m.writeString(randString(1000));
+      return m;      
    }
    
-   protected Object genCorrelationID(int i)
-   {
-      if (i % 3 == 0)
-      {
-         return null;
-      }
-      else if (i % 3 == 1)
-      {
-         return new GUID().toString();
-      }
-      else if (i % 3 == 2)
-      {
-         return randByteArray();
-      }
-      return null;
-   }
-   
- 
 }
 
 

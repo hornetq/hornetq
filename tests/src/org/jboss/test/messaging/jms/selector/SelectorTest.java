@@ -86,7 +86,7 @@ public class SelectorTest extends MessagingTestCase
    {
       conn.close();
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
       super.tearDown();
    }
 

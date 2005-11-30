@@ -201,9 +201,6 @@ public class ProducerInterceptor implements Interceptor, Serializable
          
          JBossMessage copy = JBossMessage.copy(m);
                  
-         if (log.isTraceEnabled()) { log.trace("Calling afterSend"); }
-         copy.afterSend();                                  
-
          // send the copy down the stack
          args[1] = copy;
       }

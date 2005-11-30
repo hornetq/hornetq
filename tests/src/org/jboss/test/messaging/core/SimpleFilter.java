@@ -21,11 +21,11 @@
 */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Filter;
-import org.jboss.logging.Logger;
-
 import java.io.Serializable;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Routable;
 
 /**
  * A simple test Filter that accepts a message based on the presence of a certain header value.

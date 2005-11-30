@@ -72,7 +72,6 @@ public class SecurityInterceptor implements Interceptor
          MethodInvocation mi = (MethodInvocation)invocation;
          Method m = mi.getMethod();
          String methodName = m.getName();
-         JMSAdvisor jmsAdvisor = (JMSAdvisor)mi.getAdvisor();
          
          if ("createConsumerDelegate".equals(methodName))
          {

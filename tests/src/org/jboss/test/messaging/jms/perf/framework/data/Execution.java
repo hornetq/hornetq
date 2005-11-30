@@ -8,14 +8,10 @@ package org.jboss.test.messaging.jms.perf.framework.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.jms.perf.framework.PerfRunner;
 
 
 public class Execution implements Serializable

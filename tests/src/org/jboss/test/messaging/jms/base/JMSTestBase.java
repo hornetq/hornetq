@@ -100,7 +100,7 @@ public class JMSTestBase extends MessagingTestCase
       conn.close();
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
 
       super.tearDown();
    }

@@ -154,7 +154,7 @@ public class MessageConsumerTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue2");
 
 
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
 
       super.tearDown();
    }
@@ -1132,17 +1132,17 @@ public class MessageConsumerTest extends MessagingTestCase
             (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
       Collection listeners = invocationHandler.getListeners();
 
-      assertEquals(2, listeners.size());  // topicConsumer's and queueConsumer's
+      assertEquals(3, listeners.size());  // topicConsumer's and queueConsumer's
 
       MessageConsumer c = consumerSession.createConsumer(queue);
 
       listeners = invocationHandler.getListeners();
-      assertEquals(3, listeners.size());
+      assertEquals(4, listeners.size());
 
       c.close();
 
       listeners = invocationHandler.getListeners();
-      assertEquals(2, listeners.size());
+      assertEquals(3, listeners.size());
 
    }
    

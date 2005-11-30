@@ -89,7 +89,7 @@ public class XATest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
       super.tearDown();
    }
 

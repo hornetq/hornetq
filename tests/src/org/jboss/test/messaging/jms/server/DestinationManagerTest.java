@@ -77,7 +77,7 @@ public class DestinationManagerTest extends MessagingTestCase
       ServerManagement.undeployQueue("SomeName");
       ServerManagement.undeployTopic("SomeName");
       
-      ServerManagement.deInit();
+      //ServerManagement.deInit();
       //destinationManager = null;
       super.tearDown();
       

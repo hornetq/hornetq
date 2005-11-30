@@ -7,17 +7,14 @@
 package org.jboss.test.messaging.jms.perf.framework;
 
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 
 import javax.jms.Connection;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
-import javax.jms.Topic;
 
 import org.jboss.logging.Logger;
 
@@ -26,6 +23,9 @@ import org.jboss.logging.Logger;
  */
 public class BrowserJob extends BaseThroughputJob
 {
+   /** The serialVersionUID */
+   private static final long serialVersionUID = -6915148242521181606L;
+
    private static final Logger log = Logger.getLogger(BrowserJob.class);
 
    protected String selector;

@@ -25,6 +25,9 @@ import java.io.Serializable;
 
 public class JobResult implements Serializable
 {
+   /** The serialVersionUID */
+   private static final long serialVersionUID = -6238059261642836113L;
+
    public long initTime;
    
    public long testTime;

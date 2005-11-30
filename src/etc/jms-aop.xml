@@ -12,7 +12,7 @@
    <interceptor class="org.jboss.jms.client.container.ObjectOverrideInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.ClosedInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.HierarchyInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.jms.client.container.FactoryInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.FactoryInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.ConsumerInterceptor" scope="PER_CLASS"/>
    <interceptor class="org.jboss.jms.client.container.InvokerInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ReceiverInterceptor" scope="PER_CLASS"/>

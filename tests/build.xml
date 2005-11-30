@@ -32,8 +32,8 @@
    <property name="module.name" value="jms"/>
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="1.0.0"/>
-   
-   
+
+
    <property environment="ENV"/>
 
    <!-- ========= -->
@@ -66,11 +66,11 @@
       <path refid="sun.servlet.classpath"/>
       <path refid="apache.commons.classpath"/>
 
-      <path location="../src/resources/hsqldb.jar"/>      
-      <path location="../src/resources/jcommon-1.0.0-rc1.jar"/> 
-      <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/> 
-      
-      
+      <path location="../src/resources/hsqldb.jar"/>
+      <path location="../src/resources/jcommon-1.0.0-rc1.jar"/>
+      <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>
+
+
    </path>
 
    <!-- ======= -->
@@ -102,7 +102,7 @@
 
       <!-- these are only required to compile test support -->
       <path refid="jboss.jca.classpath"/>
-      
+
    </path>
 
 
@@ -120,7 +120,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
-   <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>   
+   <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
    <property name="perf.jar" value="jboss-messaging-perf.jar"/>
    <property name="build.tests.remote" value="false"/>
 
@@ -162,7 +162,7 @@
       <!-- Build the tests jar -->
       <jar jarfile="${build.tests.lib}/${build.tests.archive}">
          <fileset dir="${build.tests.classes}">
-            <include name="org/jboss/test/messaging/**"/>            
+            <include name="org/jboss/test/messaging/**"/>
          </fileset>
       </jar>
    </target>
@@ -179,8 +179,8 @@
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="2400000"/>
-   
-   
+
+
    <property name="junit.timeout2" value="2400000"/>
 
    <property name="junit.showoutput" value="true"/>
@@ -228,22 +228,22 @@
             <fileset dir="${build.tests.classes}">
 
                <include name="**/messaging/**/*Test.class"/>
-               
+
                <exclude name="**/messaging/**/performance/**"/>
-               
+
                <exclude name="**/jms/managed/**"/>
                <exclude name="**/jms/**/perf/**"/>
             </fileset>
          </batchtest>
       </junit>
    </target>
-   
+
    <target name="jmstests"
            depends="tests-jar, prepare-testdirs"
            description="Runs the jms tests only">
 
       <antcall target="print-testclasspath"/>
-      
+
       <echo message="${junit.timeout2}"/>
 
       <junit printsummary="${junit.printsummary}"
@@ -268,7 +268,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
 
-               <include name="**/messaging/jms/*Test.class"/>
+               <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/managed/**"/>
                <exclude name="**/jms/**/perf/**"/>
             </fileset>
@@ -330,13 +330,12 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout2}">
-             
-            
-           <!--
+
+<!--
          <jvmarg value="-Xdebug"/>
          <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
-	 -->
-        
+-->
+
          <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <classpath>
@@ -361,7 +360,7 @@
          </test>
       </junit>
    </target>
-   
+
 
    <target name="compile-stylesheets">
       <mkdir dir="${build.tests.stylesheets}"/>
@@ -385,7 +384,7 @@
             />
       </junitreport>
    </target>
-   
+
    <target name="jmsreport" depends="jmstests, compile-stylesheets">
       <mkdir dir="${build.tests.reports}/html"/>
 
@@ -399,7 +398,7 @@
             />
       </junitreport>
    </target>
-   
+
 	<target name="corereport" depends="coretests, compile-stylesheets">
 	 <mkdir dir="${build.tests.reports}/html"/>
 
@@ -413,7 +412,7 @@
 	       />
 	 </junitreport>
    </target>
-   
+
    <target name="build-report" >
    	 <junitreport todir="${build.tests.reports}">
    	    <fileset dir="${build.tests.reports}">
@@ -464,22 +463,22 @@
          </fileset>
       </jar>
    </target>
-   
-   
+
+
      <target name="deployejb" depends="tests-ejb-jar">
          <copy file="${build.tests.lib}/${build.tests.ejbarchive}"
             todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
       </target>
-   
+
       <target name="undeployejb">
          <delete file="${ENV.JBOSS_HOME}/server/default/deploy/${build.tests.ejbarchive}"/>
    </target>
-   
-   
+
+
 
    <target name="performance-tests"
            depends="tests-jar, prepare-testdirs"
-           description="Runs performance tests">      
+           description="Runs performance tests">
 
       <junit printsummary="${junit.printsummary}"
              fork="true"
@@ -488,13 +487,13 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="3600000">
-             
+
          <!--
          <jvmarg value="-Xdebug"/>
-         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>         
+         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
          -->
          <jvmarg value="-Xmx512M"/>
-         
+
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -505,15 +504,15 @@
                fork="${junit.batchtest.fork}"
                todir="${junit.batchtest.todir}"
                haltonfailure="false"
-               haltonerror="false">              
+               haltonerror="false">
          </test>
       </junit>
-   </target> 
-   
-   
-   <target name="perfchart" depends="tests-jar">      
+   </target>
+
+
+   <target name="perfchart" depends="tests-jar">
       	<mkdir dir="perf-output"/>
-      	
+
       	<java classname="org.jboss.test.messaging.jms.perf.chart.PerfCharter" fork="true">
       	   <jvmarg value="-Xmx512M"/>
               <classpath>
@@ -521,25 +520,25 @@
    	          <path refid="test.classpath"/>
    	          <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             </classpath>
-      	</java>      
+      	</java>
    </target>
-   
+
    <target name="perf-jar"
 	      depends="compile"
 	      description="Creates the jar for the performance tests">
-	      
+
 	 <mkdir dir="${build.tests.lib}"/>
 
 	 <!-- Build the perf jar -->
 	 <jar jarfile="${build.tests.lib}/${perf.jar}">
 	    <fileset dir="${build.tests.classes}">
-	       <include name="org/jboss/test/messaging/jms/perf/**"/>	       
+	       <include name="org/jboss/test/messaging/jms/perf/**"/>
 	       <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
 	    </fileset>
 	 </jar>
-	 	
+
    </target>
-     
+
 
    <target name="print-testclasspath">
       <pathconvert targetos="unix" property="test.classpath.property" refid="test.classpath"/>

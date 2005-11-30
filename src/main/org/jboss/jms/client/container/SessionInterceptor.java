@@ -59,7 +59,7 @@ public class SessionInterceptor implements Interceptor, Serializable
    protected int ackMode;
    
    protected ArrayList unacked = new ArrayList();
-
+      
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------

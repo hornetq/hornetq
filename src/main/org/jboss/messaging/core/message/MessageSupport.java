@@ -38,10 +38,14 @@ import java.util.Map;
  *
  * $Id$
  */
-public abstract class MessageSupport extends RoutableSupport implements Message
+public class MessageSupport extends RoutableSupport implements Message
 {
+   // Constants -----------------------------------------------------
+   private static final long serialVersionUID = -4474943687659785336L;
+   
    // Attributes ----------------------------------------------------
 
+   
    protected Serializable payload;
 
    // Constructors --------------------------------------------------
@@ -95,10 +99,12 @@ public abstract class MessageSupport extends RoutableSupport implements Message
                          long expiration,
                          long timestamp,
                          int priority,
+                         int deliveryCount,
+                         long ordering,
                          Map headers,
                          Serializable payload)
    {
-      super(messageID, reliable, expiration, timestamp, priority, headers);
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, ordering, headers);
       this.payload = payload;
    }
 
@@ -125,6 +131,11 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    public Serializable getPayload()
    {
       return payload;
+   }
+   
+   public void setPayload(Serializable payload)
+   {
+      this.payload = payload;
    }
 
    // Public --------------------------------------------------------

@@ -62,11 +62,6 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    // Attributes ----------------------------------------------------
 
-   //A Map message can either be in read-only or read-write mode
-   //Note this is different from other message types e.g. BytesMessage which
-   //can be either in read-only or write-only mode
-   protected boolean bodyReadOnly = false;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -77,23 +72,25 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    }
 
    public JBossMapMessage(String messageID,
-                          boolean reliable,
-                          long expiration,
-                          long timestamp,
-                          Map coreHeaders,
-                          Serializable payload,
-                          String jmsType,
-                          int priority,
-                          Object correlationID,
-                          boolean destinationIsQueue,
-                          String destination,
-                          boolean replyToIsQueue,
-                          String replyTo,
-                          Map jmsProperties)
+                           boolean reliable,
+                           long expiration,
+                           long timestamp,
+                           int priority,
+                           int deliveryCount,
+                           Map coreHeaders,
+                           Serializable payload,
+                           String jmsType,
+                           Object correlationID,
+                           boolean destinationIsQueue,
+                           String destination,
+                           boolean replyToIsQueue,
+                           String replyTo,
+                           String connectionID,
+                           Map jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, coreHeaders, payload,
-            jmsType, priority, correlationID, destinationIsQueue, destination, replyToIsQueue,
-            replyTo, jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
+            jmsType, correlationID, destinationIsQueue, destination, replyToIsQueue, replyTo, connectionID,
+            jmsProperties);
    }
 
    public JBossMapMessage(JBossMapMessage other)
@@ -496,9 +493,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    public void clearBody() throws JMSException
    {
-      payload = new HashMap();
-      bodyReadOnly = false;
       super.clearBody();
+      payload = new HashMap();
    }
    
    public JBossMessage doClone()
@@ -506,28 +502,17 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       return new JBossMapMessage(this);
    }
    
-   /** Do any other stuff required to be done after sending the message */
-   public void afterSend() throws JMSException
-   {      
-      super.afterSend();
-      
-      //Message body must be made read-only
-      bodyReadOnly = true;
-   }
-
    // Externalizable implementation ---------------------------------
 
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      out.writeBoolean(bodyReadOnly);
       writeMap(out, ((Map)payload));
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      bodyReadOnly = in.readBoolean();
       payload = (Serializable)readMap(in);
    }
 

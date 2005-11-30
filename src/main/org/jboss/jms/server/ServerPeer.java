@@ -107,7 +107,6 @@ public class ServerPeer
    protected ObjectName connector;
 
 
-
    protected ClientManager clientManager;
    protected StateManager stateManager;
    protected DestinationManagerImpl destinationManager;
@@ -169,8 +168,8 @@ public class ServerPeer
          return;
       }
 
-      log.debug(this + " starting");
-
+      log.info(this + " starting");
+      
       mbeanServer = findMBeanServer();
 
       JDBCPersistenceManager jpm = new JDBCPersistenceManager();
@@ -257,7 +256,7 @@ public class ServerPeer
       {
          return;
       }
-
+      
       log.debug(this + " stopping");
       
       tearDownConnectionFactories();
@@ -271,9 +270,11 @@ public class ServerPeer
       stateManager = null;
       
       // remove the JMS subsystem
-//      mbeanServer.invoke(connector, "removeInvocationHandler",
-//                         new Object[] {"JMS"},
-//                         new String[] {"java.lang.String"});
+      mbeanServer.invoke(connector, "removeInvocationHandler",
+                         new Object[] {"JMS"},
+                         new String[] {"java.lang.String"});
+                  
+      
 
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
@@ -593,16 +594,13 @@ public class ServerPeer
       log.debug("LocatorURI: " + getLocatorURI());
 
       // add the JMS subsystem
+
       mbeanServer.invoke(connector, "addInvocationHandler",
                          new Object[] {"JMS", new JMSServerInvocationHandler()},
                          new String[] {"java.lang.String",
-                                       "org.jboss.remoting.ServerInvocationHandler"});
-
-      // TODO what happens if there is a JMS subsystem already registered? Normally, nothing bad,
-      // TODO since it delegates to a static dispatcher, but make sure
-
-      // TODO if this is ServerPeer is stopped, the InvocationHandler will be left hanging
+                                       "org.jboss.remoting.ServerInvocationHandler"});         
       
+
    }
 
 

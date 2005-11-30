@@ -21,11 +21,10 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.messaging.util.NotYetImplementedException;
+import java.io.Serializable;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

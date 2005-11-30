@@ -712,6 +712,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          {
             jm.setSessionDelegate(sessionDelegate);
          }
+         m.doBeforeReceipt();
       }
       
       return m;
