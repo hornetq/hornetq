@@ -101,7 +101,7 @@ public class ChannelSupport implements Channel
 
       if (tx == null)
       {
-         return handleNoTx(sender, null, ref, false);
+         return handleNoTx(sender, null, ref);
       }
 
       if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
@@ -271,7 +271,7 @@ public class ChannelSupport implements Channel
    
    protected void doDeliver(Receiver r)
    {            
-      handleNoTx(null, r, null, true);      
+      handleNoTx(null, r, null);      
    }
    
 
@@ -365,12 +365,18 @@ public class ChannelSupport implements Channel
    }
 
    /**
-    * @param sender - may be null, in which case the returned acknowledgment will probably be ignored.
+    * @param sender - may be null, in which case the returned acknowledgment will probably be
+    *        ignored.
+    * @param ref - The reference of a new message being submitted to the channel. If this reference
+    *        is null, the channel must try to deliver the first stored and undelivered message. This
+    *        is used by in the implementation of the pull semantics.
     */
-   private Delivery handleNoTx(DeliveryObserver sender, Receiver receiver, MessageReference ref, boolean delivery)
+   private Delivery handleNoTx(DeliveryObserver sender, Receiver receiver, MessageReference ref)
    {
       checkClosed();
-      
+
+      boolean pull = false;
+
       try
       {
          //We obtain locks on all receivers (for JMS there is only one)
@@ -380,8 +386,10 @@ public class ChannelSupport implements Channel
           
          obtainLocks(receiver);
             
-         if (delivery)
+         if (ref == null)
          {
+            pull = true;
+
             try
             {
                ref = state.remove();
@@ -448,7 +456,7 @@ public class ChannelSupport implements Channel
             
             try
             {
-               if (delivery)
+               if (pull)
                {
                   //Add the ref back at the front of the queue
                   state.addFirst(ref);
@@ -483,7 +491,7 @@ public class ChannelSupport implements Channel
                   if (!d.isDone())
                   {
                      state.add(d);
-                     if (!delivery)
+                     if (!pull)
                      {
                         ref.acquireReference();
                      }
