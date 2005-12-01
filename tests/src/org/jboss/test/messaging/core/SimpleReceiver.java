@@ -59,6 +59,7 @@ public class SimpleReceiver implements Receiver
    public static final String ACKING = "ACKING";
    public static final String NACKING = "NACKING";
    public static final String BROKEN = "BROKEN";
+   public static final String REJECTING = "REJECTING";
 
    private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
 
