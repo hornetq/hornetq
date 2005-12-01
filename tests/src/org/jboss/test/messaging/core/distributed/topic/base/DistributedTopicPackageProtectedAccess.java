@@ -19,21 +19,20 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed.topic;
 
-import org.jboss.messaging.core.distributed.Distributed;
+package org.jboss.messaging.core.distributed.topic;
+
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
-import org.jgroups.blocks.RpcDispatcher;
 
 /**
+ * Useful for testing package protected features of DistributedTopic
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class TopicPeerTest extends PeerTestBase
+public class DistributedTopicPackageProtectedAccess
 {
    // Constants -----------------------------------------------------
 
@@ -41,36 +40,26 @@ public class TopicPeerTest extends PeerTestBase
    
    // Attributes ----------------------------------------------------
 
+   private DistributedTopic dt;
+
    // Constructors --------------------------------------------------
 
-   public TopicPeerTest(String name)
+   public DistributedTopicPackageProtectedAccess(DistributedTopic dt)
    {
-      super(name);
+      this.dt = dt;
    }
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
+   public RemoteTopic getRemoteTopic()
    {
-      super.setUp();
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
+      return dt.getRemoteTopic();
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-
-   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
-   {
-      return new DistributedTopic(name, ms, null, d);
-   }
-
+   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

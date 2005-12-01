@@ -89,10 +89,11 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
-   <!--
-   <category name="org.jboss.messaging.core.distributed.replicator.AcknowledgmentCollector">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   <category name="org.jboss.messaging.core.message">
+      <priority value="INFO"/>
    </category>
+
+   <!--
    <category name="org.jboss.messaging.core.distributed.replicator.CompositeDelivery">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>

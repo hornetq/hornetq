@@ -28,6 +28,7 @@ import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.ViewKeeperSupport;
 import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.logging.Logger;
@@ -57,12 +58,15 @@ public class DistributedTopic extends Topic implements Distributed
 
    protected TopicPeer peer;
    protected ViewKeeper viewKeeper;
+   protected PersistenceManager pm;
 
    // Constructors --------------------------------------------------
 
-   public DistributedTopic(String name, MessageStore ms, RpcDispatcher dispatcher)
+   public DistributedTopic(String name, MessageStore ms,
+                           PersistenceManager pm, RpcDispatcher dispatcher)
    {
       super(name, ms);
+      this.pm = pm;
       viewKeeper = new TopicViewKeeper(name);
       peer = new TopicPeer(new GUID().toString(), this, dispatcher);
       log.debug(this + " created");
@@ -119,17 +123,15 @@ public class DistributedTopic extends Topic implements Distributed
       // The distributed topic is represented on each peer by a *single* RemoteTopic instance,
       // because the RemoteTopic instance will delegate to a multicasting replicator.
 
-      for(Iterator i = router.iterator(); i.hasNext(); )
+      if (getRemoteTopic() != null)
       {
-         if (i.next() instanceof RemoteTopic)
-         {
-            if (log.isTraceEnabled()) { log.trace(this + ": remote topic already registered, returning"); }
-            return;
-         }
+         if (log.isTraceEnabled()) { log.trace(this + ": remote topic already registered, returning"); }
+         return;
       }
-      RemoteTopic remoteTopic = new RemoteTopic(peer.getReplicator());
+
+      RemoteTopic remoteTopic = new RemoteTopic(getName(), ms, pm, peer.getReplicator());
       router.add(remoteTopic);
-      if (log.isTraceEnabled()) { log.trace(this + " added access to the distributed topic "); }
+      if (log.isTraceEnabled()) { log.trace(this + " added access to the distributed topic"); }
    }
 
    void removeRemoteTopic()
@@ -145,6 +147,19 @@ public class DistributedTopic extends Topic implements Distributed
          }
       }
       log.warn(this + ": NO remote topic to remove");
+   }
+
+   RemoteTopic getRemoteTopic()
+   {
+      for(Iterator i = router.iterator(); i.hasNext(); )
+      {
+         Object o = i.next();
+         if (o instanceof RemoteTopic)
+         {
+            return (RemoteTopic)o;
+         }
+      }
+      return null;
    }
 
    ViewKeeper getViewKeeper()

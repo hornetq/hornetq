@@ -76,7 +76,7 @@ public class PointToMultipointRouter implements Router
             {
                Delivery d = receiver.handle(observer, routable, tx);
 
-               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled  " + routable + " and returned " + d); }
+               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
 
                if (d != null && !d.isCancelled())
                {

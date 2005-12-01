@@ -27,6 +27,8 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.messaging.core.distributed.topic.DistributedTopicPackageProtectedAccess;
+import org.jboss.messaging.core.distributed.topic.RemoteTopic;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.Delivery;
@@ -36,9 +38,6 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
-
-import java.util.List;
-
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -114,13 +113,35 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       super.tearDown();
    }
 
+   //
+   // One peer
+   //
 
+   // TODO
 
-   /**
-    * A distributed topic of two peers, using two different physical JGroups and connected to two
-    * ACKING receivers. Unreliable message.
-    */
-   public void testSimplestDistributeTopic_1() throws Exception
+   //
+   // Two peers
+   //
+
+   ////
+   //// One physical JGroups channel
+   ////
+
+   // TODO
+
+   ////
+   //// Two physical JGroups channels
+   ////
+
+   //////
+   ////// Two ACKING receivers
+   //////
+
+   ////////
+   //////// Unreliable message
+   ////////
+
+   public void testDistributeTopic_1() throws Exception
    {
       jchannel2.connect("testGroup");
 
@@ -135,78 +156,55 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       assertEquals(2, jchannel2.getView().getMembers().size());
 
       ((DistributedTopic)topic).join();
+      log.debug("topic joined");
+
       topic2.join();
+      log.debug("topic2 joined");
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+      DistributedTopicPackageProtectedAccess topicAccess =
+         new DistributedTopicPackageProtectedAccess((DistributedTopic)topic);
+      DistributedTopicPackageProtectedAccess topicAccess2 =
+         new DistributedTopicPackageProtectedAccess((DistributedTopic)topic2);
 
-      SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
-      SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
+      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+      assertTrue(topic.add(r));
 
-      topic.add(r1);
-      topic2.add(r2);
+      SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
+      assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      Delivery d = topic.handle(observer, ms.reference(m), null);
-      log.debug("message sent");
+      Message m = MessageFactory.createMessage("message0", false, "payload0");
 
-      observer.waitForAcknowledgment(d);
-
-      assertTrue(d.isDone());
-
-      List l1 = r1.getMessages();
-      List l2 = r2.getMessages();
-
-      assertEquals(1, l1.size());
-      assertEquals("payload", ((Message)l1.get(0)).getPayload());
-
-      assertEquals(1, l2.size());
-      assertEquals("payload", ((Message)l2.get(0)).getPayload());
-   }
-
-   /**
-    * A distributed topic of two peers, using two different physical JGroups and connected to two
-    * ACKING receivers. Reliable message.
-    */
-   public void testSimplestDistributeTopic_2() throws Exception
-   {
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((DistributedTopic)topic).join();
-      topic2.join();
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
-      SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
-
-      topic.add(r1);
-      topic2.add(r2);
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);
       log.debug("message sent");
 
       assertTrue(d.isDone());
 
-      List l1 = r1.getMessages();
-      List l2 = r2.getMessages();
+      assertEquals(1, r.getMessages().size());
+      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
 
-      assertEquals(1, l1.size());
-      assertEquals("payload", ((Message)l1.get(0)).getPayload());
+      assertEquals(1, r2.getMessages().size());
+      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
+      assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
 
-      assertEquals(1, l2.size());
-      assertEquals("payload", ((Message)l2.get(0)).getPayload());
+      // package protected access
+      RemoteTopic rt = topicAccess.getRemoteTopic();
+      RemoteTopic rt2 = topicAccess2.getRemoteTopic();
+
+      assertTrue(rt.browse().isEmpty());
+      assertTrue(rt2.browse().isEmpty());
    }
+
+
+   ////////
+   //////// Reliable message
+   ////////
+
+   //////
+   ////// One ACKING receiver, one NACKING receiver
+   //////
 
    // Package protected ---------------------------------------------
    

@@ -19,21 +19,19 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.distributed.topic;
+package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.distributed.Distributed;
-import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
-import org.jgroups.blocks.RpcDispatcher;
+import org.jboss.test.messaging.core.base.SingleReceiverDeliveryTestBase;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
+ * 
  * $Id$
  */
-public class TopicPeerTest extends PeerTestBase
+public class ReplicatorOutputDeliveryTest extends SingleReceiverDeliveryTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -41,36 +39,40 @@ public class TopicPeerTest extends PeerTestBase
    
    // Attributes ----------------------------------------------------
 
+   protected DeliveryObserver observer;
+
    // Constructors --------------------------------------------------
 
-   public TopicPeerTest(String name)
+   public ReplicatorOutputDeliveryTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // ChannelTestBase overrides  ------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
+
+      observer = new SimpleDeliveryObserver();
+      delivery = new ReplicatorOutputDelivery(observer, null, "replicatorOutput0", false);
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
+      delivery = null;
+      observer = null;
       super.tearDown();
    }
+
+   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-
-   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
-   {
-      return new DistributedTopic(name, ms, null, d);
-   }
-
+   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

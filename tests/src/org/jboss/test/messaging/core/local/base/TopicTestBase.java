@@ -35,7 +35,7 @@ import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -87,7 +87,6 @@ public abstract class TopicTestBase extends MessagingTestCase
       sc = null;
       super.tearDown();
    }
-
 
    /**
     * Rejecting receivers are ignored.
@@ -142,56 +141,101 @@ public abstract class TopicTestBase extends MessagingTestCase
       }
    }
 
-   public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
+
+
+   //
+   // Zero receivers
+   //
+
+   ////
+   //// Unreliable message
+   ////
+
+   public void testTopic_1() throws Exception
    {
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
-      SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
-      topic.add(r1);
-      topic.add(r2);
+      assertFalse(topic.iterator().hasNext());
 
       Message m = MessageFactory.createMessage("message0", false, "payload");
       Delivery d = topic.handle(observer, ms.reference(m), null);
 
       assertTrue(d.isDone());
-      List l1 = r1.getMessages();
-      List l2 = r2.getMessages();
-
-      assertEquals(1, l1.size());
-      m = (Message)l1.get(0);
-      assertEquals("payload", m.getPayload());
-
-      assertEquals(1, l2.size());
-      m = (Message)l2.get(0);
-      assertEquals("payload", m.getPayload());
    }
 
+   ////
+   //// Reliable message
+   ////
 
-   public void testReliableSynchronousDeliveryTwoReceivers() throws Exception
+   // a reliable message is not handled differently
+
+   //
+   // One receiver
+   //
+
+   ////
+   //// Unreliable message
+   ////
+
+   public void testTopic_2() throws Exception
    {
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-      SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
-      SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
-      assertTrue(topic.add(r1));
-      assertTrue(topic.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+      assertTrue(topic.add(r));
+
+      Iterator i = topic.iterator();
+      assertEquals(r, i.next());
+      assertFalse(i.hasNext());
+
+      Message m = MessageFactory.createMessage("message0", false, "payload0");
       Delivery d = topic.handle(observer, ms.reference(m), null);
 
       assertTrue(d.isDone());
-      List l1 = r1.getMessages();
-      List l2 = r2.getMessages();
 
-      assertEquals(1, l1.size());
-      m = (Message)l1.get(0);
-      assertEquals("payload", m.getPayload());
-
-      assertEquals(1, l2.size());
-      m = (Message)l2.get(0);
-      assertEquals("payload", m.getPayload());
+      assertEquals(1, r.getMessages().size());
+      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
    }
 
+   ////
+   //// Reliable message
+   ////
+
+   // a reliable message is not handled differently
+
+   //
+   // Two receivers
+   //
+   
+   public void testTopic_3() throws Exception
+   {
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+      SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
+
+      assertTrue(topic.add(r));
+      assertTrue(topic.add(r2));
+
+      Message m = MessageFactory.createMessage("message0", false, "payload0");
+      Delivery d = topic.handle(observer, ms.reference(m), null);
+
+      assertTrue(d.isDone());
+
+      assertEquals(1, r.getMessages().size());
+      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
+
+      assertEquals(1, r2.getMessages().size());
+      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
+      assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
+   }
+
+   ////
+   //// Reliable message
+   ////
+
+   // a reliable message is not handled differently
 
    // Package protected ---------------------------------------------
    

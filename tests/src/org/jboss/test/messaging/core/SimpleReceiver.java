@@ -127,6 +127,14 @@ public class SimpleReceiver implements Receiver
             return null;
          }
 
+         if (REJECTING.equals(state))
+         {
+
+            log.info(this + " is rejecting message " + r);
+            return null;
+         }
+
+
          if (BROKEN.equals(state))
          {
             throw new RuntimeException("THIS IS AN EXCEPTION THAT SIMULATES "+
@@ -364,7 +372,10 @@ public class SimpleReceiver implements Receiver
 
    private static void checkValid(String state)
    {
-      if (!ACKING.equals(state) && !NACKING.equals(state) && !BROKEN.equals(state))
+      if (!ACKING.equals(state) &&
+          !NACKING.equals(state) &&
+          !BROKEN.equals(state) &&
+          !REJECTING.equals(state))
       {
          throw new IllegalArgumentException("Unknown receiver state: " + state);
       }

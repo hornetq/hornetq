@@ -16,6 +16,8 @@
 #
 
 #TARGET_CLASS=org.jboss.test.messaging.core.SimpleDeliveryTest
+#TARGET_CLASS=org.jboss.test.messaging.core.ReplicatorOutputDeliveryTest
+
 
 
 #
@@ -39,7 +41,9 @@
 #TARGET_TEST=testAddReceiver_6
 #TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
+TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
+#TARGET_TEST=testNACKINGReceiver
+
 
 #TARGET_CLASS=org.jboss.test.messaging.core.DistributorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageReferenceSupportTest
@@ -100,7 +104,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.TopicPeerTest
 #TARGET_TEST=testTwoPeers_1
 TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
-TARGET_TEST=testSimplestDistributeTopic_1
+TARGET_TEST=testDistributeTopic_1
 
 #
 # core.distributed.replicator
@@ -110,7 +114,7 @@ TARGET_TEST=testSimplestDistributeTopic_1
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
-#TARGET_TEST=testReplicator_4
+#TARGET_TEST=testReplicator_47
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
 
 #

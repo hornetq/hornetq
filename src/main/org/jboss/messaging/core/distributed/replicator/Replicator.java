@@ -22,17 +22,20 @@
 package org.jboss.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
@@ -54,12 +57,17 @@ import java.io.Serializable;
  * peer must be able to synchronously reach any other peer. When it is configured to be synchronous,
  * the replicator works pretty much like a distributed PointToMultipointRouter.
  *
+ * The Replicator is NOT a Receiver. It returns a Set of deliveries instead of a single delivery.
+ *
+ * TODO: Refactor Replicator so it won't be forced to provide noop implementation for
+ *       Distributor's methods: http://jira.jboss.org/jira/browse/JBMESSAGING-192
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class Replicator extends ReplicatorPeer implements Distributed, Receiver
+public class Replicator extends ReplicatorPeer implements Distributed, Router
 {
    // Constants -----------------------------------------------------
 
@@ -96,7 +104,7 @@ public class Replicator extends ReplicatorPeer implements Distributed, Receiver
                 ", cancelOnMessageRejection: " + cancelOnMessageRejection);
    }
 
-   // Distributed implementation -------------------------
+   // Distributed implementation ------------------------------------
 
    public Peer getPeer()
    {
@@ -108,9 +116,16 @@ public class Replicator extends ReplicatorPeer implements Distributed, Receiver
       leave();
    }
 
-   // Receiver implementation ---------------------------------------
+   // Router implementation -----------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   /**
+    * Returns a Set of Deliveries, a delivery for each replicator output in the group. If there are
+    * no outputs, return an empty Set. If the replicator did not join the group yet, the message is
+    * rejected so null is returned.
+    *
+    * @param tx - not currently used
+    */
+   public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       if (!joined)
       {
@@ -120,43 +135,89 @@ public class Replicator extends ReplicatorPeer implements Distributed, Receiver
       if (log.isTraceEnabled()) { log.trace(this + " handles " + routable); }
 
       Set outputs = getOutputs();
+
       if (outputs.isEmpty())
       {
          if (log.isTraceEnabled()) { log.trace(this + " has no outputs, rejecting message"); }
-         return null;
+         return Collections.EMPTY_SET;
       }
 
+      Set deliveries = new HashSet();
       MessageReference ref = ms.reference(routable);
 
-      CompositeDelivery d = new CompositeDelivery(observer, ref, cancelOnMessageRejection, outputs);
-      collector.startCollecting(d);
+      for(Iterator i = outputs.iterator(); i.hasNext(); )
+      {
+         Delivery d = new ReplicatorOutputDelivery(observer, ref,
+                                                   ((PeerIdentity)i.next()).getPeerID(),
+                                                   cancelOnMessageRejection);
+         deliveries.add(d);
+      }
 
-      routable.putHeader(Routable.REPLICATOR_ID, getReplicatorID());
-      routable.putHeader(Routable.COLLECTOR_ID, collector.getID());
+      collector.startCollecting(deliveries);
+
+      // dereference it and send the message
+      Message message = ref.getMessage();
+
+      // TODO when sharing a peristent store, it is possible to only send references here
+
+      message.putHeader(Routable.REPLICATOR_ID, getReplicatorID());
+      message.putHeader(Routable.COLLECTOR_ID, collector.getID());
 
       try
       {
-         dispatcher.getChannel().send(null, null, routable);
-         if (log.isTraceEnabled()) { log.trace(this + " multicast " + routable); }
+         if (log.isTraceEnabled()) { log.trace(this + " sending " + message + " on the channel"); }
+         dispatcher.getChannel().send(null, null, message);
+         if (log.isTraceEnabled()) { log.trace(this + " multicast " + message); }
       }
       catch(Throwable t)
       {
          log.error("Failed to put the message on the channel", t);
-         collector.remove(d);
+         collector.remove(deliveries);
          return null;
       }
 
-      return d;
+      return deliveries;
    }
-   
-   public void acquireLock()
+
+   /**
+    * TODO http://jira.jboss.org/jira/browse/JBMESSAGING-192
+    */
+   public boolean contains(Receiver receiver)
    {
-      //NOOP
+      throw new UnsupportedOperationException();
    }
-   
-   public void releaseLock()
+
+   /**
+    * TODO http://jira.jboss.org/jira/browse/JBMESSAGING-192
+    */
+   public Iterator iterator()
    {
-      //NOOP
+      return Collections.EMPTY_SET.iterator();
+   }
+
+   /**
+    * TODO http://jira.jboss.org/jira/browse/JBMESSAGING-192
+    */
+   public boolean add(Receiver receiver)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * TODO http://jira.jboss.org/jira/browse/JBMESSAGING-192
+    */
+   public boolean remove(Receiver receiver)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * TODO http://jira.jboss.org/jira/browse/JBMESSAGING-192
+    */
+   public void clear()
+   {
+      // TODO http:
+      throw new UnsupportedOperationException();
    }
 
    // Public --------------------------------------------------------
@@ -205,7 +266,7 @@ public class Replicator extends ReplicatorPeer implements Distributed, Receiver
 
    protected void doJoin() throws DistributedException
    {
-      collector = new AcknowledgmentCollector(getID(), dispatcher);
+      collector = new AcknowledgmentCollector(getGroupID(), getID(), dispatcher);
       collector.start();
 
       if (!rpcServer.registerUnique(peerID, collector))

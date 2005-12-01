@@ -550,7 +550,7 @@ public class ReplicatorOutput
                return;
             }
 
-            if (log.isTraceEnabled()) { log.trace(this + " received message " + r); }
+            if (log.isTraceEnabled()) { log.trace(this + " received " + r); }
 
             Object collectorID = r.getHeader(Routable.COLLECTOR_ID);
             Address collectorAddress = null;
@@ -624,7 +624,7 @@ public class ReplicatorOutput
             {
                // forward the message to delegate, there may be other ReplicatorOutput listeners
                // entitled to get the message or other generic listeners
-               if (log.isTraceEnabled()) { log.trace(this + " forwards message to " + delegate); }
+               if (log.isTraceEnabled()) { log.trace(this + " forwards message to delegate listener " + delegate); }
                delegate.receive(jgroupsMessage);
             }
          }

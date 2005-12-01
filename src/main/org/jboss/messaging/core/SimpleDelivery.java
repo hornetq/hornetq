@@ -47,7 +47,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
    protected boolean done;
    protected boolean cancelled;
    protected DeliveryObserver observer;
-   protected MessageReference ref;
+   protected MessageReference reference;
 
    // Constructors --------------------------------------------------
 
@@ -61,15 +61,15 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       this(null, null, d);
    }
 
-   public SimpleDelivery(DeliveryObserver observer, MessageReference ref)
+   public SimpleDelivery(DeliveryObserver observer, MessageReference reference)
    {
-      this(observer, ref, false);
+      this(observer, reference, false);
    }
 
-   public SimpleDelivery(DeliveryObserver observer, MessageReference ref, boolean done)
+   public SimpleDelivery(DeliveryObserver observer, MessageReference reference, boolean done)
    {
       this.done = done;
-      this.ref = ref;
+      this.reference = reference;
       this.observer = observer;
    }
 
@@ -77,7 +77,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    public MessageReference getReference()
    {
-      return ref;
+      return reference;
    }
 
    public synchronized boolean isDone()
@@ -125,7 +125,8 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    public String toString()
    {
-      return "Delivery[" + ref + "](" + (isDone() ? "done" : "active" ) + ")";
+      return "Delivery[" + reference + "](" +
+         (cancelled ? "cancelled" : done ? "done" : "active") + ")";
    }
 
    // Package protected ---------------------------------------------

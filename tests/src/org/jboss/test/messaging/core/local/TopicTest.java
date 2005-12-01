@@ -60,16 +60,6 @@ public class TopicTest extends TopicTestBase
       super.tearDown();
    }
 
-   public void crashChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   public void recoverChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

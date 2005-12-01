@@ -21,22 +21,23 @@
   */
 package org.jboss.messaging.core.distributed.topic;
 
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
-import org.jboss.messaging.core.tx.Transaction;
+
 
 /**
- * A representative of a distributed topic.
+ * A local representative of a distributed topic. Each distributed topic peer instance has a
+ * remote topic instance connected to its router.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class RemoteTopic implements Receiver
+public class RemoteTopic extends ChannelSupport
+
  {
    // Constants -----------------------------------------------------
 
@@ -44,37 +45,22 @@ public class RemoteTopic implements Receiver
    
    // Attributes ----------------------------------------------------
 
-   protected Replicator replicator;
-
    // Constructors --------------------------------------------------
 
-   public RemoteTopic(Replicator replicator)
+   protected RemoteTopic(String topicName,
+                         MessageStore ms,
+                         PersistenceManager pm,
+                         Replicator replicator)
    {
-      this.replicator = replicator;
+      super(topicName + ".RemoteTopic", ms, pm, true);
+      this.router = replicator;
    }
 
-   // Receiver implementation ---------------------------------------
-
-   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
-   {
-      return replicator.handle(observer, routable, tx);
-   }
-
-   public void acquireLock()
-   {
-      //NOOP
-   }
-   
-   public void releaseLock()
-   {
-      //NOOP
-   }
-   
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "RemoteTopic[" + replicator.getGroupID() + "]";
+      return "RemoteTopic[" + ((Replicator)router).getGroupID() + "]";
    }
 
    // Package protected ---------------------------------------------

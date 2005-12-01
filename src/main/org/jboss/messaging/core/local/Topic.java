@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.local;
 
 import java.util.Iterator;
+import java.util.Set;
 
 
 import org.jboss.messaging.core.Delivery;
@@ -33,6 +34,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -43,6 +45,8 @@ import org.jboss.messaging.core.tx.Transaction;
 public class Topic implements CoreDestination
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(Topic.class);
 
    // Static --------------------------------------------------------
    
@@ -68,11 +72,24 @@ public class Topic implements CoreDestination
       return name;
    }
 
-   // Public --------------------------------------------------------
-   
+   // Receiver implementation ---------------------------------------
+
    public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
    {
-      router.handle(sender, r, tx);
+      if (log.isTraceEnabled()){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
+
+      Set deliveries = router.handle(sender, r, tx);
+
+      // must insure that all deliveries are completed, otherwise we risk losing messages
+      for(Iterator i = deliveries.iterator(); i.hasNext(); )
+      {
+         Delivery d = (Delivery)i.next();
+         if (d == null || !d.isDone())
+         {
+            log.error("the point to multipoint delivery was not completed correctly: " + d);
+            throw new IllegalStateException("Incomplete delivery");
+         }
+      }
       return new SimpleDelivery(true);
    }
    
@@ -85,6 +102,8 @@ public class Topic implements CoreDestination
    {
       //NOOP
    }
+
+   // Distributor implementation --------------------------------------
 
    public boolean add(Receiver receiver)
    {
@@ -110,7 +129,14 @@ public class Topic implements CoreDestination
    {
       return router.remove(receiver);
    }
-   
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "Topic[" + getName() + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

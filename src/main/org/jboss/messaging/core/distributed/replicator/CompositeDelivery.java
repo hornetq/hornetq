@@ -33,6 +33,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 /**
+ * TODO - remove this from repository. Including tests.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
@@ -197,7 +199,8 @@ public class CompositeDelivery implements MultipleReceiversDelivery
 
    public String toString()
    {
-      return "CompositeDelivery[" + reference.getMessageID()+ ", " + outputIdentities.size() + "]";
+      return "CompositeDelivery[" + reference.getMessageID()+ ", " + outputIdentities.size() +
+         "](" + (cancelled ? "cancelled" : done ? "done" : "active") + ")";
    }
 
    // Package protected ---------------------------------------------

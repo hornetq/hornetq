@@ -33,8 +33,12 @@ import org.jgroups.blocks.RpcDispatcher;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.Iterator;
 
 /**
+ * TODO: thread safety, synchronize. Right now is wide open.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
@@ -53,17 +57,21 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
    // Attributes ----------------------------------------------------
 
    protected Serializable id;
+   protected Serializable groupID;
    protected RpcDispatcher dispatcher;
    protected MessageListener collectorMessageListener;
-   // <messageID - CompositeDelivery>
+
+   // TODO this data structure is far from being efficient. Refactor.
+   // Map<messageID - Map<peerIdentity - ReplicatorOutputDelivery>>
    protected Map deliveries;
 
 
    // Constructors --------------------------------------------------
 
-   public AcknowledgmentCollector(Serializable id, RpcDispatcher dispatcher)
+   public AcknowledgmentCollector(Serializable groupID, Serializable id, RpcDispatcher dispatcher)
    {
       this.id = id;
+      this.groupID = groupID;
       this.dispatcher = dispatcher;
       this.collectorMessageListener = null;
       deliveries = new HashMap();
@@ -79,12 +87,16 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
    public void acknowledge(PeerIdentity originator, Serializable messageID)
    {
       if (log.isTraceEnabled()) { log.trace(this + " receives acknowledgment from " + originator + " for " + messageID); }
+
+      // Not really used, as acknowledgment is done asyncronously
       throw new NotYetImplementedException();
    }
 
    public void cancel(PeerIdentity originator, Serializable messageID)
    {
       if (log.isTraceEnabled()) { log.trace(this + " receives cancellation from " + originator + " for " + messageID); }
+
+      // Not really used, as cancellation is done asyncronously
       throw new NotYetImplementedException();
    }
 
@@ -123,20 +135,44 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
       }
    }
 
-   public void startCollecting(CompositeDelivery d)
+   /**
+    * @param dels - Set<ReplicatorOutputDelivery>.
+    */
+   public void startCollecting(Set dels)
    {
-      if (log.isTraceEnabled()) { log.trace(this + " starts collecting acknowledgments for " + d); }
-      deliveries.put(d.getReference().getMessageID(), d);
+
+      for(Iterator i = dels.iterator(); i.hasNext(); )
+      {
+         ReplicatorOutputDelivery d = (ReplicatorOutputDelivery)i.next();
+         Object messageID = d.getReference().getMessageID();
+
+         Map perMessageMap = (Map)deliveries.get(messageID);
+         if (perMessageMap == null)
+         {
+            perMessageMap = new HashMap();
+            deliveries.put(messageID, perMessageMap);
+         }
+
+         Object outputID = d.getOutputID();
+         perMessageMap.put(outputID, d);
+         if (log.isTraceEnabled()) { log.trace(this + " ready to collect acknowledgment for " + messageID + " from " + Util.guidToString(outputID)); }
+      }
    }
 
-   public void remove(CompositeDelivery d)
+   /**
+    * @param dels - Set<ReplicatorOutputDelivery>.
+    */
+   public void remove(Set dels)
    {
-      if (log.isTraceEnabled()) { log.trace(this + " removing " + d); }
+      for(Iterator i = dels.iterator(); i.hasNext(); )
+      {
+         remove((ReplicatorOutputDelivery)i.next());
+      }
    }
 
    public String toString()
    {
-      return "Collector[" + Util.guidToString(id) + "]";
+      return "Collector[" + groupID + "." + Util.guidToString(id) + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -144,7 +180,31 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
+   private ReplicatorOutputDelivery remove(ReplicatorOutputDelivery d)
+   {
+      Object messageID = d.getReference().getMessageID();
+      Map perMessageMap = (Map)deliveries.get(messageID);
+
+      if (perMessageMap == null)
+      {
+         return null;
+      }
+
+      ReplicatorOutputDelivery rem = (ReplicatorOutputDelivery)perMessageMap.remove(d.getOutputID());
+
+      if (log.isTraceEnabled()) { log.trace(rem == null ? "no such delivery to remove: " + d : "removed " + d); }
+
+      // very unlikely to have to deal with the same message again, so don't leave uncollectable garbage
+      if (perMessageMap.isEmpty())
+      {
+         if (log.isTraceEnabled()) { log.trace("all pending acknowledgments for message " + messageID + " received"); }
+         deliveries.remove(messageID);
+      }
+
+      return rem;
+   }
+
    // Inner classes -------------------------------------------------
 
    protected class CollectorMessageListener extends DelegatingMessageListenerSupport
@@ -182,18 +242,32 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
             if (log.isTraceEnabled()) { log.trace(this + " received " + ack); }
 
             Object messageID = ack.getMessageID();
-            CompositeDelivery d = (CompositeDelivery)deliveries.get(messageID);
+            Object outputID = ack.getReplicatorOutputID();
 
-            if (d != null)
+            Map perMessageMap = (Map)deliveries.get(messageID);
+
+            if (perMessageMap == null)
             {
-               try
-               {
-                  handled = d.handle(ack);
-               }
-               catch(Throwable t)
-               {
-                  log.error("delivery failed to handle acknowledgment " + ack, t);
-               }
+               if (log.isTraceEnabled()) { log.trace(this + ": no deliveries for message " + messageID); }
+               return;
+            }
+
+            ReplicatorOutputDelivery d = (ReplicatorOutputDelivery)perMessageMap.get(outputID);
+
+            if (d == null)
+            {
+               if (log.isTraceEnabled()) { log.trace(this + ": no deliveries waiting for output " + Util.guidToString(outputID)); }
+               return;
+            }
+
+            try
+            {
+               handled = d.handle(ack);
+               AcknowledgmentCollector.this.remove(d);
+            }
+            catch(Throwable t)
+            {
+               log.error("delivery failed to handle acknowledgment " + ack, t);
             }
          }
          finally
