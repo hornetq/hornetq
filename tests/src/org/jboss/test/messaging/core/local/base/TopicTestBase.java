@@ -30,6 +30,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
@@ -85,6 +86,60 @@ public abstract class TopicTestBase extends MessagingTestCase
       sc.stop();
       sc = null;
       super.tearDown();
+   }
+
+
+   /**
+    * Rejecting receivers are ignored.
+    */
+   public void testRejectingReceiver() throws Exception
+   {
+      SimpleReceiver rec = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
+      topic.add(rec);
+
+      Message m = MessageFactory.createMessage("message0", false, "payload");
+      MessageReference ref = ms.reference(m);
+
+      Delivery d = topic.handle(null, ref, null);
+      assertTrue(d.isDone());
+   }
+
+   /**
+    * Broken receivers are ignored.
+    */
+   public void testBrokenReceiver() throws Exception
+   {
+      SimpleReceiver rec = new SimpleReceiver("BROKEN", SimpleReceiver.BROKEN);
+      topic.add(rec);
+
+      Message m = MessageFactory.createMessage("message0", false, "payload");
+      MessageReference ref = ms.reference(m);
+
+      Delivery d = topic.handle(null, ref, null);
+      assertTrue(d.isDone());
+   }
+
+   /**
+    * No NACKING receiver must be allowed by a topic. If this situation occurs, the topic must
+    * throw IllegalStateException.
+    */
+   public void testNACKINGReceiver() throws Exception
+   {
+      SimpleReceiver rec = new SimpleReceiver("NACKING", SimpleReceiver.NACKING);
+      topic.add(rec);
+
+      Message m = MessageFactory.createMessage("message0", false, "payload");
+      MessageReference ref = ms.reference(m);
+
+      try
+      {
+         topic.handle(null, ref, null);
+         fail("this should throw exception");
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+      }
    }
 
    public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
