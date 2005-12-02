@@ -27,7 +27,6 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
-import org.jboss.messaging.core.distributed.topic.DistributedTopicPackageProtectedAccess;
 import org.jboss.messaging.core.distributed.topic.RemoteTopic;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;

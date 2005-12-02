@@ -20,9 +20,11 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 
-package org.jboss.messaging.core.distributed.topic;
+package org.jboss.test.messaging.core.distributed.topic.base;
 
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
+import org.jboss.messaging.core.distributed.topic.RemoteTopic;
+import org.jboss.util.NotImplementedException;
 
 /**
  * Useful for testing package protected features of DistributedTopic
@@ -53,7 +55,8 @@ public class DistributedTopicPackageProtectedAccess
 
    public RemoteTopic getRemoteTopic()
    {
-      return dt.getRemoteTopic();
+      throw new NotImplementedException("FIXME");
+      //return dt.getRemoteTopic();
    }
 
    // Package protected ---------------------------------------------
