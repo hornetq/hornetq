@@ -43,7 +43,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JBossJMSException;
@@ -103,42 +102,76 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
     * a JBossStreamMessage for a StreamMessage, a JBossTextMessage for a TextMessage and
     * a JBossMessage for a Message, if none of the above apply.
     */
-   public static JBossMessage copy(Message m) throws JMSException
+//   public static JBossMessage copy(Message m) throws JMSException
+//   {
+//
+//      if (log.isTraceEnabled()) { log.trace("Copying message"); }
+//
+//      JBossMessage copy = null;
+//      if (m instanceof JBossMessage)
+//      {
+//         copy = ((JBossMessage)m).doClone();
+//      }
+//      else if (m instanceof BytesMessage)
+//      {
+//         copy = new JBossBytesMessage((BytesMessage)m);
+//      }
+//      else if (m instanceof MapMessage)
+//      {
+//         copy = new JBossMapMessage((MapMessage)m);
+//      }
+//      else if (m instanceof ObjectMessage)
+//      {
+//         copy = new JBossObjectMessage((ObjectMessage)m);
+//      }
+//      else if (m instanceof StreamMessage)
+//      {
+//         copy = new JBossStreamMessage((StreamMessage)m);
+//      }
+//      else if (m instanceof TextMessage)
+//      {
+//         copy = new JBossTextMessage((TextMessage)m);
+//      }
+//      else if (m instanceof Message)
+//      {
+//         copy = new JBossMessage((Message)m);
+//      }
+//     
+//      return copy;
+//   }
+   
+   
+   
+   public static MessageDelegate createThinDelegate(JBossMessage m) throws JMSException
    {
-
-      if (log.isTraceEnabled()) { log.trace("Copying message"); }
-
-      JBossMessage copy = null;
-      if (m instanceof JBossMessage)
+      MessageDelegate del = null;
+      
+      if (m instanceof BytesMessage)
       {
-         copy = ((JBossMessage)m).doClone();
-      }
-      else if (m instanceof BytesMessage)
-      {
-         copy = new JBossBytesMessage((BytesMessage)m);
+         del = new BytesMessageDelegate((JBossBytesMessage)m);
       }
       else if (m instanceof MapMessage)
       {
-         copy = new JBossMapMessage((MapMessage)m);
+         del = new MapMessageDelegate((JBossMapMessage)m);
       }
       else if (m instanceof ObjectMessage)
       {
-         copy = new JBossObjectMessage((ObjectMessage)m);
+         del = new ObjectMessageDelegate((JBossObjectMessage)m);
       }
       else if (m instanceof StreamMessage)
       {
-         copy = new JBossStreamMessage((StreamMessage)m);
+         del = new StreamMessageDelegate((JBossStreamMessage)m);
       }
       else if (m instanceof TextMessage)
       {
-         copy = new JBossTextMessage((TextMessage)m);
-      }
-      else if (m instanceof Message)
+         del = new TextMessageDelegate((JBossTextMessage)m);
+      }      
+      else if (m instanceof JBossMessage)
       {
-         copy = new JBossMessage((Message)m);
+         del = new MessageDelegate(m);
       }
      
-      return copy;
+      return del;
    }
 
    // Attributes ----------------------------------------------------
@@ -148,9 +181,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    protected Destination replyToDestination;
 
    protected String jmsType;
-
-   // the delegate is set only on incoming messages, but we make it transient nonetheless
-   protected transient SessionDelegate delegate;
 
    protected transient boolean propertiesReadOnly = false;
    
@@ -245,29 +275,30 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       this.connectionID = connectionID;
    }
 
+   /**
+    * 
+    * Create a new JBossMessage by making a shallow copy of another
+    * 
+    * @param other The message to make a shallow copy from
+    */
    protected JBossMessage(JBossMessage other)
    {
       super(other);
       this.destination = other.destination;
       this.replyToDestination = other.replyToDestination;
       this.jmsType = other.jmsType;
-      this.delegate = other.delegate;
       this.propertiesReadOnly = other.propertiesReadOnly;
       this.bodyReadOnly = other.bodyReadOnly;
-      this.properties = new HashMap(other.properties);      
+      this.properties = other.properties;     
       this.correlationID = other.correlationID;
-      if (other.correlationIDBytes != null)
-      {
-         this.correlationIDBytes = new byte[other.correlationIDBytes.length];
-         System.arraycopy(other.correlationIDBytes, 0, this.correlationIDBytes, 0, other.correlationIDBytes.length);
-      }
+      this.correlationIDBytes = other.correlationIDBytes;
       this.connectionID = other.connectionID;      
    }
 
    /**
     * A copy constructor for non-JBoss Messaging JMS messages.
     */   
-   protected JBossMessage(Message foreign) throws JMSException
+   public JBossMessage(Message foreign) throws JMSException
    {
       super(foreign.getJMSMessageID());
 
@@ -475,14 +506,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       properties.clear();
       propertiesReadOnly = false;
-   }
-
-   public void acknowledge() throws JMSException
-   {
-      if (delegate != null)
-      {
-         delegate.acknowledgeSession();
-      }
    }
 
    public void clearBody() throws JMSException
@@ -783,16 +806,15 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       this.propertiesReadOnly = true;
       this.bodyReadOnly = true;
    }
+   
+   public void doAfterSend() throws JMSException
+   {      
+   }
 
    public int getType()
    {
       return JBossMessage.TYPE;
-   }
-
-   public void setSessionDelegate(SessionDelegate sd)
-   {
-      this.delegate = sd;
-   }
+   }   
 
    /**
     * @return a reference of the internal JMS property map.
@@ -800,6 +822,21 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public Map getJMSProperties()
    {
       return properties;
+   }
+   
+   public void setJMSProperties(Map props)
+   {
+      this.properties = props;
+   }
+   
+//   public void copyProperties(JBossMessage other)
+//   {
+//      this.properties = new HashMap(other.properties);
+//   }
+   
+   public void copyPayload(Object payload) throws JMSException
+   {
+      
    }
    
    public String getConnectionID()
@@ -822,7 +859,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       return sb.toString();
    }
    
-   public JBossMessage doClone() throws JMSException
+   public JBossMessage doShallowCopy() throws JMSException
    {
       return new JBossMessage(this);
    }
@@ -830,6 +867,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public boolean isCorrelationIDBytes()
    {
       return this.correlationIDBytes != null;
+   }
+   
+   public void acknowledge()
+   {
+      //do nothing - handled in thin delegate
    }
 
    // org.jboss.messaging.core.Message implementation ---------------

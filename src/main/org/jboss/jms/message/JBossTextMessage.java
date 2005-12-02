@@ -87,17 +87,21 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
             jmsProperties);
    }
 
+   /**
+    * 
+    * Make a shallow copy of another JBossTextMessage
+    * 
+    * @param other
+    */
    public JBossTextMessage(JBossTextMessage other)
    {
       super(other);
-      this.payload = other.payload;
-      this.bodyReadOnly = other.bodyReadOnly;
    }
 
    /**
     * A copy constructor for non-JBoss Messaging JMS TextMessages.
     */
-   protected JBossTextMessage(TextMessage foreign) throws JMSException
+   public JBossTextMessage(TextMessage foreign) throws JMSException
    {
       super(foreign);
       String text = foreign.getText();
@@ -172,7 +176,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // JBossMessage override -----------------------------------------------
    
-   public JBossMessage doClone()
+   public JBossMessage doShallowCopy()
    {
       return new JBossTextMessage(this);
    }

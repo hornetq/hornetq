@@ -112,56 +112,30 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       p = new DataOutputStream(ostream);
    }
 
-   protected JBossBytesMessage(JBossBytesMessage other) throws JMSException
+   /**
+    * 
+    * Make a shallow copy of another JBossBytesMessage
+    * 
+    * @param other
+    * @throws JMSException
+    */
+   public JBossBytesMessage(JBossBytesMessage other) throws JMSException
    {
       super(other);
       
       if (log.isTraceEnabled()) { log.trace("Creating new JBossBytesMessage from other JBossBytesMessage"); }
       
-      if (other.payload != null)
-      {
-         if (log.isTraceEnabled()) { log.trace("There's an internal array"); }
-         this.payload = new byte[((byte[])other.payload).length];
-         System.arraycopy((byte[])other.payload, 0, (byte[])this.payload, 0,
-                          ((byte[])other.payload).length);
-      }
-
-      // if the message is not reset, is essential to clone ostream too
-      if (other.ostream != null)
-      {
-         if (log.isTraceEnabled()) { log.trace("ostream isn't null"); }
-         this.ostream = new ByteArrayOutputStream(other.ostream.size());
-         try
-         {
-            this.ostream.write(other.ostream.toByteArray());
-         }
-         catch(Exception e)
-         {
-            throw new JBossJMSException("Failed to clone BytesMessage's ostream", e);
-         }         
-      }      
-      else
-      {
-         ostream = new ByteArrayOutputStream();
-      }
-      p = new DataOutputStream(this.ostream);
    }
 
-   /**
-    * A copy constructor for non-JBoss Messaging JMS byte messages.
-    * TODO - This should probably not actually be a copy constructor since
-    * it changes the state of the message being copied (it calls reset)- which is intrusive
-    * Possibly refactor into another method
-    */
-   protected JBossBytesMessage(BytesMessage foreign) throws JMSException
+   public JBossBytesMessage(BytesMessage foreign) throws JMSException
    {
       super(foreign);
       
+      foreign.reset();
+      
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
-      
-      foreign.reset();            
-                  
+                     
       byte[] buffer = new byte[1024];
       int n = foreign.readBytes(buffer);
       while (n != -1)
@@ -180,12 +154,31 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    }
 
 
-   public JBossMessage doClone() throws JMSException
+   public JBossMessage doShallowCopy() throws JMSException
    {
       return new JBossBytesMessage(this);
    }
    
-
+   public void doAfterSend() throws JMSException
+   {      
+      reset();
+   }
+   
+   public void copyPayload(Object payload) throws JMSException
+   {
+      reset();
+      byte[] otherBytes = (byte[])payload;
+      if (otherBytes == null)
+      {
+         this.setPayload(null);
+      }
+      else
+      {
+         this.payload = new byte[otherBytes.length];
+         System.arraycopy(otherBytes, 0, this.payload, 0, otherBytes.length);
+      }     
+   }
+   
 
    // BytesMessage implementation -----------------------------------
 

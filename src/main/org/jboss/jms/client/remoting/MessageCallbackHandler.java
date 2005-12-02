@@ -31,6 +31,7 @@ import org.jboss.jms.client.container.JMSMethodInvocation;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
@@ -251,7 +252,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             if (!stopping)
             {               
-               JBossMessage m = getMessage(0);
+               Message m = getMessage(0);
                
                callOnMessage(consumerDelegate, sessionDelegate, listener,
                              receiverID, isConnectionConsumer, m);
@@ -398,7 +399,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       
       long startTimestamp = System.currentTimeMillis();
       
-      JBossMessage m = null;
+      Message m = null;
       
       try
       {
@@ -472,7 +473,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             
             if (log.isTraceEnabled()) { log.trace("got " + m); }
                                
-            if (!m.isExpired())
+            if (!((MessageDelegate)m).getMessage().isExpired())
             {
                if (log.isTraceEnabled()) { log.trace("message " + m + " is not expired, returning it to the caller"); }
                
@@ -652,16 +653,16 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
 
    
    
-   protected JBossMessage getMessage(long timeout) throws InterruptedException, JMSException
+   protected Message getMessage(long timeout) throws InterruptedException, JMSException
    {
-      JBossMessage m = null;
+      Message m = null;
       
       //If it's receiveNoWait then get the message directly
       if (timeout == -1)
       {
          waiting = false;
          
-         m = (JBossMessage)getMessageNow();
+         m = getMessageNow();
           
       }
       else
@@ -678,12 +679,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             if (timeout == 0)
             {
                //Indefinite wait
-               m = (JBossMessage)buffer.take();
+               m = (Message)buffer.take();
             }            
             else
             {
                //wait with timeout
-               m = (JBossMessage)buffer.poll(timeout);
+               m = (Message)buffer.poll(timeout);
             }
          }
          finally
@@ -700,19 +701,23 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             }
          }
       }
-     
-      
+           
       if (m != null)
-      {
-         JBossMessage jm = (JBossMessage)m;  
+      {         
+         //We create a thin delegate to the message - which prevents it having to be
+         //unnecessarily copied
+         MessageDelegate del = JBossMessage.createThinDelegate((JBossMessage)m);
+         
          //if this is the handler for a connection consumer we don't want to set the session delegate
          //since this is only used for client acknowledgement which is illegal for a session
          //used for an MDB
          if (!this.isConnectionConsumer)
          {
-            jm.setSessionDelegate(sessionDelegate);
+            del.setSessionDelegate(sessionDelegate);
          }
-         m.doBeforeReceipt();
+         ((JBossMessage)m).doBeforeReceipt();
+         del.setReceived();
+         m = del;
       }
       
       return m;

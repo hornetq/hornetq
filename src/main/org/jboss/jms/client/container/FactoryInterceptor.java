@@ -26,12 +26,18 @@ import java.lang.reflect.Method;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.jms.message.BytesMessageDelegate;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.jms.message.MapMessageDelegate;
+import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.ObjectMessageDelegate;
+import org.jboss.jms.message.StreamMessageDelegate;
+import org.jboss.jms.message.TextMessageDelegate;
 import org.jboss.logging.Logger;
 
 /**
@@ -78,19 +84,19 @@ public class FactoryInterceptor implements Interceptor, Serializable
          {
             JBossMessage jbm = new JBossMessage();
             jbm.setOrdering(ordering++);
-            return jbm;
+            return new MessageDelegate(jbm);
          }
          else if ("createBytesMessage".equals(methodName))
          {
-            JBossMessage jbm = new JBossBytesMessage();
+            JBossBytesMessage jbm = new JBossBytesMessage();
             jbm.setOrdering(ordering++);
-            return jbm;
+            return new BytesMessageDelegate(jbm);
          }
          else if ("createMapMessage".equals(methodName))
          {
-            JBossMessage jbm = new JBossMapMessage();
+            JBossMapMessage jbm = new JBossMapMessage();
             jbm.setOrdering(ordering++);
-            return jbm;
+            return new MapMessageDelegate(jbm);
          }
          else if ("createObjectMessage".equals(methodName))
          {
@@ -100,13 +106,13 @@ public class FactoryInterceptor implements Interceptor, Serializable
          	{
          		jbm.setObject((Serializable)mi.getArguments()[0]);
          	}
-         	return jbm;
+         	return new ObjectMessageDelegate(jbm);
          }
          else if ("createStreamMessage".equals(methodName))
          {
-            JBossMessage jbm = new JBossStreamMessage();
+            JBossStreamMessage jbm = new JBossStreamMessage();
             jbm.setOrdering(ordering++);
-            return jbm;
+            return new StreamMessageDelegate(jbm);
          }
          else if ("createTextMessage".equals(methodName))
          {
@@ -116,7 +122,7 @@ public class FactoryInterceptor implements Interceptor, Serializable
          	{
          		jbm.setText((String)mi.getArguments()[0]);
          	}
-         	return jbm;
+         	return new TextMessageDelegate(jbm);
          }
       }
 

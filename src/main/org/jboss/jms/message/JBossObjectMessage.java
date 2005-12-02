@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
@@ -99,22 +100,27 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    }
 
 
+   /**
+    * 
+    * Make a shallow copy of another JBossObjectMessage
+    * @param other
+    */
    public JBossObjectMessage(JBossObjectMessage other)
    {
       super(other);
       this.isByteArray = other.isByteArray;
-      if (other.payload != null)
-      {
-         this.payload = new byte[((byte[])other.payload).length];
-         System.arraycopy((byte[])other.payload, 0, (byte[])this.payload, 0,
-                          ((byte[])other.payload).length);
-      }
+//      if (other.payload != null)
+//      {
+//         this.payload = new byte[((byte[])other.payload).length];
+//         System.arraycopy((byte[])other.payload, 0, (byte[])this.payload, 0,
+//                          ((byte[])other.payload).length);
+//      }
    }
 
    /**
     * A copy constructor for non-JBoss Messaging JMS ObjectMessages.
     */
-   protected JBossObjectMessage(ObjectMessage foreign) throws JMSException
+   public JBossObjectMessage(ObjectMessage foreign) throws JMSException
    {
       super(foreign);
 
@@ -132,6 +138,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    {
       return JBossObjectMessage.TYPE;
    }
+   
 
    // ObjectMessage implementation ----------------------------------
 
@@ -229,7 +236,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    // JBossMessage overrides ----------------------------------------
 
-   public JBossMessage doClone()
+   public JBossMessage doShallowCopy()
    {
       return new JBossObjectMessage(this);
    }

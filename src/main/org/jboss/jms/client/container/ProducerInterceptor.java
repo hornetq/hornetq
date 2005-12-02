@@ -33,6 +33,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
@@ -199,10 +200,23 @@ public class ProducerInterceptor implements Interceptor, Serializable
 
          if (log.isTraceEnabled()) { log.trace("Copying message"); }
          
-         JBossMessage copy = JBossMessage.copy(m);
+         JBossMessage toSend = null;
+         if (!(m instanceof MessageDelegate))
+         {
+            //It's a foreign message
+            toSend = new JBossMessage(m);
+         }
+         else
+         {
+            //Get the actual message
+            MessageDelegate del = (MessageDelegate)m;
+            toSend = del.getMessage();
+            toSend.doAfterSend();
+            del.setSent();
+         }
                  
          // send the copy down the stack
-         args[1] = copy;
+         args[1] = toSend;
       }
       else if ("setDisableMessageID".equals(methodName))
       {

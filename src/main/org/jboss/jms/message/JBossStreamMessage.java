@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
@@ -106,29 +107,27 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       
    }
 
-   protected JBossStreamMessage(JBossStreamMessage other)
+   /**
+    * 
+    * Make a shallow copy of another JBossStreamMessage
+    * 
+    * @param other
+    */
+   public JBossStreamMessage(JBossStreamMessage other)
    {
-      super(other);
-      this.payload = new ArrayList((List)other.payload);
-      this.position = other.position;
-      this.size = other.size;
-      this.offset = other.offset;
+      super(other);      
    }
 
-   /**
-    * A copy constructor for non-JBoss Messaging JMS StreamMessages.
-    * FIXME - Perhaps this shouldn't be done in a copy constructor since
-    * it changes the state of the copied object (calls reset)
-    * which is intrusive and perhapas not appropriate for a copy constructor
-    */
-   protected JBossStreamMessage(StreamMessage foreign) throws JMSException
+   public JBossStreamMessage(StreamMessage foreign) throws JMSException
    {
       super(foreign);
+      
+      foreign.reset();
+      
       payload = new ArrayList();
       position = 0;
       size = 0;
       offset = 0;
-      foreign.reset();
       try
       {
          while (true)
@@ -148,6 +147,17 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public int getType()
    {
       return JBossStreamMessage.TYPE;
+   }
+   
+   public void doAfterSend() throws JMSException
+   {      
+      reset();
+   }
+   
+   public void copyPayload(Object other) throws JMSException
+   {
+      reset();
+      payload = new ArrayList((List)other);
    }
 
    // StreamMessage implementation ----------------------------------
@@ -708,7 +718,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    }
    
-   public JBossMessage doClone()
+   public JBossMessage doShallowCopy()
    {
       return new JBossStreamMessage(this);
    }

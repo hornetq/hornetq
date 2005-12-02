@@ -331,7 +331,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		MessageConsumer consumer = consumerSess.createConsumer(queue);
 		conn.start();
 		
-		final int NUM_MESSAGES = 20;
+		final int NUM_MESSAGES = 1;
 		
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{

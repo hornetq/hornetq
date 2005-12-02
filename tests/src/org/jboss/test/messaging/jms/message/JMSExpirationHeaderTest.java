@@ -26,6 +26,8 @@ import javax.jms.Message;
 import javax.jms.DeliveryMode;
 
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.MessageDelegate;
+
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
@@ -175,7 +177,9 @@ public class JMSExpirationHeaderTest extends MessageTest
                Message m = queueProducerSession.createMessage();
                queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, -1);
 
-               if (!((JBossMessage)m).isExpired())
+               JBossMessage jbm = ((MessageDelegate)m).getMessage();
+               
+               if (!jbm.isExpired())
                {
                   log.error("The message " + m + " should have expired");
                   testFailed = true;

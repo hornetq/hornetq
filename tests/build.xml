@@ -276,6 +276,42 @@
       </junit>
    </target>
 
+   <target name="messagetests"
+              depends="tests-jar, prepare-testdirs"
+              description="Runs the jms tests only">
+
+         <antcall target="print-testclasspath"/>
+
+         <echo message="${junit.timeout2}"/>
+
+         <junit printsummary="${junit.printsummary}"
+                fork="${junit.fork}"
+                includeantruntime="${junit.includeantruntime}"
+                haltonerror="${junit.haltonerror}"
+                haltonfailure="${junit.haltonfailure}"
+                showoutput="${junit.showoutput}"
+                timeout="${junit.timeout2}">
+            <sysproperty key="remote" value="${build.tests.remote}"/>
+            <jvmarg value="-Xmx512M"/>
+            <classpath>
+               <pathelement location="${module.root}/etc"/>
+               <path refid="test.classpath"/>
+               <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+            </classpath>
+            <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+            <batchtest fork="${junit.batchtest.fork}"
+                       todir="${junit.batchtest.todir}"
+                       haltonfailure="${junit.batchtest.haltonfailure}"
+                       haltonerror="${junit.batchtest.haltonerror}">
+               <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+               <fileset dir="${build.tests.classes}">
+
+                  <include name="**/messaging/jms/message/**/*Test.class"/>
+               </fileset>
+            </batchtest>
+         </junit>
+   </target>
+
    <target name="coretests"
            depends="tests-jar, prepare-testdirs"
            description="Runs the jms tests only">
@@ -397,6 +433,20 @@
             styledir="${build.tests.stylesheets}"
             />
       </junitreport>
+   </target>
+
+  <target name="messagereport" depends="messagetests, compile-stylesheets">
+	 <mkdir dir="${build.tests.reports}/html"/>
+
+	 <junitreport todir="${build.tests.reports}">
+		<fileset dir="${build.tests.reports}">
+		   <include name="TEST-*.xml"/>
+		</fileset>
+		<report format="frames"
+		   todir="${build.tests.reports}/html"
+		   styledir="${build.tests.stylesheets}"
+		   />
+	 </junitreport>
    </target>
 
 	<target name="corereport" depends="coretests, compile-stylesheets">

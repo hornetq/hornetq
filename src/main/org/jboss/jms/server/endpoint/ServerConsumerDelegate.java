@@ -197,20 +197,7 @@ public class ServerConsumerDelegate implements Receiver, Filter, Closeable, Cons
             log.warn("Message has exceed maximum delivery attempts and will be removed " + message);
             delivery = new SimpleDelivery(observer, (MessageReference)reference, true);
             return delivery;
-         }
-                
-         try
-         {
-            message = JBossMessage.copy((javax.jms.Message)message);
-            if (log.isTraceEnabled()) { log.trace("dereferenced message: " + message); }
-         }
-         catch(JMSException e)
-         {
-            // TODO - review this, http://jira.jboss.org/jira/browse/JBMESSAGING-132
-            String msg = "Cannot make a copy of the message";
-            log.error(msg, e);
-            throw new java.lang.IllegalStateException(msg);
-         }
+         }                         
                  
          delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
          deliveries.add(delivery);

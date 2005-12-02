@@ -101,11 +101,14 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    }
 
    /**
-    * A copy constructor for non-JBoss Messaging JMS map messages.
+    * 
+    * Make a shallow copy of another JBossMapMessage
+    * @param foreign
+    * @throws JMSException
     */
-   protected JBossMapMessage(MapMessage foreign) throws JMSException
+   public JBossMapMessage(MapMessage foreign) throws JMSException
    {
-      super(foreign);
+      super(foreign);     
       payload = new HashMap();
       Enumeration names = foreign.getMapNames();
       while (names.hasMoreElements())
@@ -113,7 +116,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          String name = (String)names.nextElement();
          Object obj = foreign.getObject(name);
          this.setObject(name, obj);
-      }
+      } 
    }
 
    // Public --------------------------------------------------------
@@ -121,6 +124,12 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public int getType()
    {
       return JBossMapMessage.TYPE;
+   }
+   
+   
+   public void copyPayload(Object payload) throws JMSException
+   {      
+      this.payload = new HashMap((Map)payload);
    }
 
 
@@ -497,7 +506,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       payload = new HashMap();
    }
    
-   public JBossMessage doClone()
+   public JBossMessage doShallowCopy()
    {
       return new JBossMapMessage(this);
    }
