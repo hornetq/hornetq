@@ -24,8 +24,9 @@ package org.jboss.messaging.core;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * A message delivery. It can be "done" or active.
- * 
+ * A message delivery where the message has been delivered to only one receiver. It can be "done"
+ * or active. This type of delivery is returned by a stateless receiver.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Added tx support
  * @version <tt>$Revision$</tt>
