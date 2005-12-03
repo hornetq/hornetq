@@ -230,23 +230,38 @@ public class SimpleReceiver implements Receiver
       return l;
    }
 
+   public boolean waitForHandleInvocations(int count)
+   {
+      return waitForHandleInvocations(count, Long.MAX_VALUE);
+   }
+
    /**
     * Blocks until handle() is called for the specified number of times.
+    *
+    * @return true if the handle was invoked the specified number of times or false if the method
+    *         exited with timeout.
     */
-   public void waitForHandleInvocations(int count)
+   public boolean waitForHandleInvocations(int count, long timeout)
    {
+      long start = System.currentTimeMillis();
       synchronized(waitingArea)
       {
          while(true)
          {
             Integer invocations = (Integer)waitingArea.get(INVOCATION_COUNT);
+
             if (invocations.intValue() == count)
             {
-               return;
+               return true;
+            }
+            if (timeout <= 0)
+            {
+               return false;
             }
             try
             {
-               waitingArea.wait(1000);
+               waitingArea.wait(timeout);
+               timeout -= System.currentTimeMillis() - start;
             }
             catch(InterruptedException e)
             {

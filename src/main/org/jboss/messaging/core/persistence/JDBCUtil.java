@@ -53,6 +53,12 @@ public class JDBCUtil
    }
 
    public static String statementToString(String sql, Object arg1, Object arg2, Object arg3,
+                                          Object arg4)
+   {
+      return statementToString(sql, new Object[] { arg1, arg2, arg3, arg4 });
+   }
+
+   public static String statementToString(String sql, Object arg1, Object arg2, Object arg3,
                                           Object arg4, Object arg5)
    {
       return statementToString(sql, new Object[] { arg1, arg2, arg3, arg4, arg5 });
@@ -75,6 +81,10 @@ public class JDBCUtil
          if (cnt < args.length)
          {
             s = args[cnt++];
+            if ("".equals(s))
+            {
+               s = "''";
+            }
          }
          statement.append(s);
          pos = i + 1;

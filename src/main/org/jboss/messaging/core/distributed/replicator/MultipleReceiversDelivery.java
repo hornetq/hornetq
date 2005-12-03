@@ -26,6 +26,8 @@ import org.jboss.messaging.core.Delivery;
 import java.util.Iterator;
 
 /**
+ * TODO Get rid of that. Not used anymore.
+ *
  * A message delivery. It can be "done" or active.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

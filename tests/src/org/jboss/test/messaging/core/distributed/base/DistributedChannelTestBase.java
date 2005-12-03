@@ -35,7 +35,6 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jgroups.JChannel;

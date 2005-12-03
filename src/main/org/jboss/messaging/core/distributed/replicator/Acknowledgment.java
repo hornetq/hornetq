@@ -35,7 +35,7 @@ public class Acknowledgment implements Serializable
 
    public static final int REJECTED = 0;
    public static final int ACCEPTED = 1;
-   public static final int CANCELLED = 20;
+   public static final int CANCELLED = 2;
 
    private static final long serialVersionUID = -3953217132447293L;
 

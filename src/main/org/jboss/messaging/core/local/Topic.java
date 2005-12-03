@@ -90,7 +90,7 @@ public class Topic implements CoreDestination
             throw new IllegalStateException("Incomplete delivery");
          }
       }
-      return new SimpleDelivery(true);
+      return new SimpleDelivery(ms.reference(r), true);
    }
    
    public void acquireLock()
