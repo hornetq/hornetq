@@ -37,6 +37,8 @@ import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * A distributed topic.
@@ -105,6 +107,23 @@ public class DistributedTopic extends Topic implements Distributed
    }
 
    // Public --------------------------------------------------------
+
+   /**
+    * List of Messages in process of being delivered (for which this peer didn't get an
+    * acknowledgment) or partially rejected/cancelled by some peers from the view in which it was
+    * sent.
+    *
+    * TODO: i am not sure this method belongs here. Review.
+    */
+   public List browse()
+   {
+      RemoteTopic remoteTopic = getRemoteTopic();
+      if (remoteTopic == null)
+      {
+         return Collections.EMPTY_LIST;
+      }
+      return remoteTopic.browse();
+   }
 
    public String toString()
    {

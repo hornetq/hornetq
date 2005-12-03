@@ -29,6 +29,7 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Distributed;
@@ -145,15 +146,25 @@ public class Replicator extends ReplicatorPeer implements Distributed, Router
       Set deliveries = new HashSet();
       MessageReference ref = ms.reference(routable);
 
-      for(Iterator i = outputs.iterator(); i.hasNext(); )
-      {
-         Delivery d = new ReplicatorOutputDelivery(observer, ref,
-                                                   ((PeerIdentity)i.next()).getPeerID(),
-                                                   cancelOnMessageRejection);
-         deliveries.add(d);
-      }
+      // expect asynchronous acknowledgments only for reliable messages
 
-      collector.startCollecting(deliveries);
+      if (!routable.isReliable())
+      {
+         if (log.isTraceEnabled()) { log.trace("non-reliable message, acknowledged immediately"); }
+         deliveries.add(new SimpleDelivery(ref, true));
+      }
+      else
+      {
+         for(Iterator i = outputs.iterator(); i.hasNext(); )
+         {
+            Delivery d = new ReplicatorOutputDelivery(observer, ref,
+                                                      ((PeerIdentity)i.next()).getPeerID(),
+                                                      cancelOnMessageRejection);
+            deliveries.add(d);
+         }
+
+         collector.startCollecting(deliveries);
+      }
 
       // dereference it and send the message
       Message message = ref.getMessage();

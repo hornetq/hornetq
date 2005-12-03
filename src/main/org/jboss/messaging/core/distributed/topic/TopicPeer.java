@@ -29,6 +29,7 @@ import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
+import org.jboss.messaging.core.MessageStore;
 import org.jboss.logging.Logger;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -42,7 +43,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class TopicPeer extends PeerSupport implements TopicFacade
+class TopicPeer extends PeerSupport implements TopicFacade
  {
    // Constants -----------------------------------------------------
 
@@ -86,14 +87,15 @@ public class TopicPeer extends PeerSupport implements TopicFacade
 
    protected void doJoin() throws DistributedException
    {
-      replicator = new Replicator(replicatorID, dispatcher, topic.getMessageStore(), false);
+      MessageStore ms = topic.getMessageStore();
+      replicator = new Replicator(replicatorID, dispatcher, ms, false);
       replicator.join();
       log.debug(replicator + " successfully joined the group");
 
       topic.addRemoteTopic();
 
-      replicatorOutput =
-         new ReplicatorOutput(replicatorID, dispatcher, topic.getMessageStore(), topic);
+      replicatorOutput = new ReplicatorOutput(replicatorID, dispatcher, ms, topic);
+      replicatorOutput.ignore(replicator.getPeer().getPeerIdentity().getPeerID());
       replicatorOutput.join();
       log.debug(replicatorOutput + " successfully joined the group");
 

@@ -24,11 +24,6 @@ package org.jboss.messaging.core.distributed.topic;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 
-import java.io.Serializable;
-import java.io.ObjectOutput;
-import java.io.IOException;
-import java.io.ObjectInput;
-
 /**
  * @see org.jboss.messaging.core.distributed.RemotePeerInfo
  *
@@ -37,7 +32,7 @@ import java.io.ObjectInput;
  *
  * $Id$
  */
-public class TopicPeerInfo extends RemotePeerInfo
+class TopicPeerInfo extends RemotePeerInfo
 {
    // Constants -----------------------------------------------------
 

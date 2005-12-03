@@ -24,22 +24,30 @@ package org.jboss.messaging.core.distributed.topic;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.ChannelSupport;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
+import org.jboss.messaging.util.Util;
+import org.jboss.logging.Logger;
 
 
 /**
- * A local representative of a distributed topic. Each distributed topic peer instance has a
- * remote topic instance connected to its router.
+ * A local representative of a distributed topic. Each distributed topic peer instance has a remote
+ * topic instance connected to its router.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class RemoteTopic extends ChannelSupport
+class RemoteTopic extends ChannelSupport
 
  {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(RemoteTopic.class);
 
    // Static --------------------------------------------------------
    
@@ -56,11 +64,25 @@ public class RemoteTopic extends ChannelSupport
       this.router = replicator;
    }
 
+   // ChannelSupport overrides --------------------------------------
+
+   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
+   {
+      // discard a routable coming from a remote peer
+      if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " discards remote message " + r); }
+         return null;
+      }
+      return super.handle(sender, r, tx);
+   }
+
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "RemoteTopic[" + ((Replicator)router).getGroupID() + "]";
+      return "RemoteTopic[" + ((Replicator)router).getGroupID() + "." +
+         Util.guidToString(((Replicator)router).getPeer().getPeerIdentity().getPeerID()) + "]";
    }
 
    // Package protected ---------------------------------------------

@@ -85,6 +85,7 @@ public class ReplicatorOutput
    protected Receiver receiver;
    protected ChannelListener channelListener;
    protected DelegatingMessageListener messageListener;
+   protected Serializable ignoredReplicatorPeerID;
 
    // Constructors --------------------------------------------------
 
@@ -332,6 +333,19 @@ public class ReplicatorOutput
       throw new NotYetImplementedException();
    }
 
+   /**
+    * The replicator output can be configured to discard message coming from a certain replicator
+    * input. This feature is an optimization for certain topologies such a distributed topic, where
+    * the local replicator output doesn't need to process messages multicast by the associated
+    * replicator.
+    *
+    * TODO this is an experimental feature, currently discards messages coming from only ONE replicator
+    */
+   public void ignore(Serializable replicatorPeerID)
+   {
+      this.ignoredReplicatorPeerID = replicatorPeerID;
+   }
+
    public String toString()
    {
       return "ReplicatorOutput[" + getPeerIdentity() + "]";
@@ -513,7 +527,7 @@ public class ReplicatorOutput
    }
 
    protected class MessageListenerImpl
-         extends DelegatingMessageListenerSupport implements DeliveryObserver
+      extends DelegatingMessageListenerSupport implements DeliveryObserver
    {
       // Constants -----------------------------------------------------
 
@@ -553,31 +567,51 @@ public class ReplicatorOutput
             if (log.isTraceEnabled()) { log.trace(this + " received " + r); }
 
             Object collectorID = r.getHeader(Routable.COLLECTOR_ID);
-            Address collectorAddress = null;
-            Set ids = viewKeeper.getRemotePeers();
-            for(Iterator i = ids.iterator(); i.hasNext(); )
+
+
+            if (ignoredReplicatorPeerID != null && ignoredReplicatorPeerID.equals(collectorID))
             {
-               PeerIdentity pid = (PeerIdentity)i.next();
-               if (pid.getPeerID().equals(collectorID))
-               {
-                  collectorAddress = pid.getAddress();
-                  break;
-               }
+               if (log.isTraceEnabled()) { log.trace(this + ": message " + r + " sent by an ignored replicator, discarding"); }
+               return;
             }
 
-            if (collectorAddress == null)
+            boolean isReliable = r.isReliable();
+
+            Address collectorAddress = null;
+
+
+            if (isReliable)
             {
-               log.error("Collector " + Util.guidToString(collectorID) +
-                         " not found among the peers of " + ReplicatorOutput.this);
-               return;
+               // we only need to send asynchronous acknowledgments back for reliable messages
+               Set ids = viewKeeper.getRemotePeers();
+               for(Iterator i = ids.iterator(); i.hasNext(); )
+               {
+                  PeerIdentity pid = (PeerIdentity)i.next();
+                  if (pid.getPeerID().equals(collectorID))
+                  {
+                     collectorAddress = pid.getAddress();
+                     break;
+                  }
+               }
+
+               if (collectorAddress == null)
+               {
+                  log.error("Collector " + Util.guidToString(collectorID) +
+                            " not found among the peers of " + ReplicatorOutput.this);
+                  return;
+               }
             }
 
             if (receiver == null)
             {
-               // no receiver to forward to, asynchronously reject the message
-               sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
+               if (isReliable)
+               {
+                  // no receiver to forward to, asynchronously reject the message
+                  sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
+               }
                return;
             }
+
 
             MessageReference ref = ms.reference(r);
 
@@ -596,27 +630,38 @@ public class ReplicatorOutput
             catch(Throwable t)
             {
                log.warn(ReplicatorOutput.this + "'s receiver is broken", t);
-               // broken receiver, asynchronously reject the message
-               sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
-            }
 
-            if (d.isDone())
-            {
-               acknowledge(d, null);
-            }
-            else if (d.isCancelled())
-            {
-               try
+               if (isReliable)
                {
-                  cancel(d);
-               }
-               catch(Throwable t)
-               {
-                  // will never throw Throwable
+                  // broken receiver, asynchronously reject the message
+                  sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
                }
             }
 
-            if (log.isTraceEnabled()) { log.trace(this + " starts waiting asynchronous acknowledgment from " + receiver); }
+            if (isReliable)
+            {
+               // we only need to send asynchronous acknowledgments back for reliable messages
+
+               if (d.isDone())
+               {
+                  acknowledge(d, null);
+               }
+               else if (d.isCancelled())
+               {
+                  try
+                  {
+                     cancel(d);
+                  }
+                  catch(Throwable t)
+                  {
+                     // will never throw Throwable
+                  }
+               }
+               else
+               {
+                  if (log.isTraceEnabled()) { log.trace(this + " starts waiting asynchronous acknowledgment from " + receiver); }
+               }
+            }
          }
          finally
          {
@@ -656,18 +701,28 @@ public class ReplicatorOutput
             throw new NotYetImplementedException();
          }
 
-         if (log.isTraceEnabled()) { log.trace(this + " received acknowledgment for " + d); }
-
          MessageReference ref = d.getReference();
+
+         if (!ref.isReliable())
+         {
+            return; // no acknowledgment sent back
+         }
+
+         if (log.isTraceEnabled()) { log.trace(this + " acknowledging " + d); }
          Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
          sendAsynchronousResponse(collectorAddress, ref.getMessageID(), Acknowledgment.ACCEPTED);
       }
 
       public boolean cancel(Delivery d) throws Throwable
       {
-         if (log.isTraceEnabled()) { log.trace(this + " received cancellation for " + d); }
-
          MessageReference ref = d.getReference();
+
+         if (!ref.isReliable())
+         {
+            return false; // no cancellation is sent back
+         }
+
+         if (log.isTraceEnabled()) { log.trace(this + " cancelling " + d); }
          Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
          return sendAsynchronousResponse(collectorAddress, ref.getMessageID(),
                                          Acknowledgment.CANCELLED);

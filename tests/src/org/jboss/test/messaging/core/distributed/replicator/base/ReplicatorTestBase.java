@@ -531,6 +531,8 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
 
@@ -601,8 +603,12 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             assertTrue(delivery.isDone());
             assertFalse(delivery.isCancelled());
 
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
+
+            receiver.resetInvocationCount();
          }
 
          log.info("ok");
@@ -672,6 +678,8 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
@@ -743,8 +751,12 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             assertTrue(delivery.isDone());
             assertFalse(delivery.isCancelled());
 
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
+
+            receiver.resetInvocationCount();
          }
 
          log.info("ok");
@@ -818,20 +830,16 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertEquals(1, deliveries.size());
          Delivery delivery = (Delivery)deliveries.iterator().next();
 
-         assertFalse(observer.waitForAcknowledgment(delivery, 3000));
-
-         assertFalse(delivery.isDone());
+         assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
 
+         // acknowledgment is ignored
          receiver.acknowledge((Message)receiver.getMessages().get(0), null);
-
-         assertTrue(observer.waitForAcknowledgment(delivery, 3000));
-
-         assertTrue(delivery.isDone());
-         assertFalse(delivery.isCancelled());
 
          log.info("ok");
       }
@@ -896,27 +904,22 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             assertEquals(1, dels.size());
             deliveries[i] = (Delivery)dels.iterator().next();
 
-            assertFalse(observer.waitForAcknowledgment(deliveries[i], 1000));
-
-            assertFalse(deliveries[i].isDone());
+            assertTrue(deliveries[i].isDone());
             assertFalse(deliveries[i].isCancelled());
+
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
+
+            receiver.resetInvocationCount();
          }
 
-         // acknowledge all messages at the same time
+         // acknowledge all messages at the same time just to see if no exception are thrown
          for(Iterator i = receiver.getMessages().iterator(); i.hasNext();)
          {
             Message rm = (Message)i.next();
             receiver.acknowledge(rm, null);
-         }
-
-         for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            assertTrue(observer.waitForAcknowledgment(deliveries[i], 1000));
-            assertTrue(deliveries[i].isDone());
-            assertFalse(deliveries[i].isCancelled());
          }
 
          log.info("ok");
@@ -982,20 +985,18 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertEquals(1, deliveries.size());
          Delivery delivery = (Delivery)deliveries.iterator().next();
 
-         assertFalse(observer.waitForAcknowledgment(delivery, 3000));
-
-         assertFalse(delivery.isDone());
+         assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
 
+         // cancellation is ignored
          receiver.cancel((Message)receiver.getMessages().get(0));
 
-         assertTrue(observer.waitForCancellation(delivery, 3000));
-
-         assertFalse(delivery.isDone());
-         assertTrue(delivery.isCancelled());
+         assertFalse(observer.waitForCancellation(delivery, 700));
 
          log.info("ok");
       }
@@ -1059,16 +1060,18 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             assertEquals(1, dels.size());
             deliveries[i] = (Delivery)dels.iterator().next();
 
-            assertFalse(observer.waitForAcknowledgment(deliveries[i], 1000));
-
-            assertFalse(deliveries[i].isDone());
+            assertTrue(deliveries[i].isDone());
             assertFalse(deliveries[i].isCancelled());
+
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
+
+            receiver.resetInvocationCount();
          }
 
-         // cancel all messages
+         // cancel all messages - nothing should happen
          List messages = new ArrayList();
          for(Iterator i = receiver.getMessages().iterator(); i.hasNext();)
          {
@@ -1082,9 +1085,8 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            assertTrue(observer.waitForCancellation(deliveries[i], 1000));
-            assertFalse(deliveries[i].isDone());
-            assertTrue(deliveries[i].isCancelled());
+            assertTrue(deliveries[i].isDone());
+            assertFalse(deliveries[i].isCancelled());
          }
 
          log.info("ok");
@@ -1497,16 +1499,8 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          Set deliveries = replicator.handle(observer, m, null);
 
-         assertEquals(2, deliveries.size());
+         assertEquals(1, deliveries.size());
          Delivery delivery = (Delivery)deliveries.iterator().next();
-
-         assertTrue(observer.waitForAcknowledgment(delivery, 3000));
-
-         assertTrue(delivery.isDone());
-         assertFalse(delivery.isCancelled());
-
-         delivery = (Delivery)deliveries.iterator().next();
-         assertTrue(observer.waitForAcknowledgment(delivery, 3000));
 
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
@@ -1577,17 +1571,8 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
             Set deliveries = replicator.handle(observer, m, null);
 
-            assertEquals(2, deliveries.size());
+            assertEquals(1, deliveries.size());
             Delivery delivery = (Delivery)deliveries.iterator().next();
-
-            observer.waitForAcknowledgment(delivery, 3000);
-
-            assertTrue(delivery.isDone());
-            assertFalse(delivery.isCancelled());
-
-            delivery = (Delivery)deliveries.iterator().next();
-
-            observer.waitForAcknowledgment(delivery, 3000);
 
             assertTrue(delivery.isDone());
             assertFalse(delivery.isCancelled());
@@ -1829,23 +1814,18 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          Set deliveries = replicator.handle(observer, m, null);
 
-         assertEquals(2, deliveries.size());
+         assertEquals(1, deliveries.size());
          Delivery delivery = (Delivery)deliveries.iterator().next();
 
-         assertTrue(observer.waitForAcknowledgment(delivery, 3000));
-
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
-         delivery = (Delivery)deliveries.iterator().next();
-
-         assertTrue(observer.waitForAcknowledgment(delivery, 3000));
-
-         assertTrue(delivery.isDone());
-         assertFalse(delivery.isCancelled());
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
+
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver2.getMessages().size());
          assertValidMessage(m, (Message)receiver2.getMessages().get(0));
@@ -1918,26 +1898,24 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
             Set deliveries = replicator.handle(observer, m, null);
 
-            assertEquals(2, deliveries.size());
+            assertEquals(1, deliveries.size());
             Delivery delivery = (Delivery)deliveries.iterator().next();
 
-            assertTrue(observer.waitForAcknowledgment(delivery, 3000));
-
             assertTrue(delivery.isDone());
             assertFalse(delivery.isCancelled());
 
-            delivery = (Delivery)deliveries.iterator().next();
-
-            assertTrue(observer.waitForAcknowledgment(delivery, 3000));
-
-            assertTrue(delivery.isDone());
-            assertFalse(delivery.isCancelled());
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
 
+            assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
             assertEquals(i + 1, receiver2.getMessages().size());
             assertValidMessage(m, (Message)receiver2.getMessages().get(i));
+
+            receiver.resetInvocationCount();
+            receiver2.resetInvocationCount();
          }
 
          log.info("ok");
@@ -2197,51 +2175,33 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          Set deliveries = replicator.handle(observer, m, null);
 
-         assertEquals(2, deliveries.size());
-         Iterator i = deliveries.iterator();
-
-         Delivery delivery = (Delivery)i.next();
-         Delivery delivery2;
-
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-         {
-            delivery2 = (Delivery)i.next();
-         }
-         else
-         {
-            delivery2 = delivery;
-            delivery = (Delivery)i.next();
-         }
-
-         assertFalse(observer.waitForAcknowledgment(delivery, 1000));
-
-         assertFalse(delivery.isDone());
-         assertFalse(delivery.isCancelled());
-
-         assertFalse(observer.waitForAcknowledgment(delivery2, 1000));
-
-         assertFalse(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
-
-         assertEquals(1, receiver.getMessages().size());
-         assertValidMessage(m, (Message)receiver.getMessages().get(0));
-
-         assertEquals(1, receiver2.getMessages().size());
-         assertValidMessage(m, (Message)receiver2.getMessages().get(0));
-
-         log.debug("receiver acknowledging");
-         receiver.acknowledge((Message)receiver.getMessages().get(0), null);
-         assertTrue(observer.waitForAcknowledgment(delivery, 2000));
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
 
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
-         log.debug("receiver2 acknowledging");
-         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null);
-         assertTrue(observer.waitForAcknowledgment(delivery2, 3000));
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
-         assertTrue(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m, (Message)receiver.getMessages().get(0));
+
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver2.getMessages().size());
+         assertValidMessage(m, (Message)receiver2.getMessages().get(0));
+
+         receiver.acknowledge((Message)receiver.getMessages().get(0), null);
+         // nothing should happen
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null);
+         // nothing should happen
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
 
          log.info("ok");
       }
@@ -2307,50 +2267,35 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Delivery[] deliveries = new Delivery[2 * NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             Message m = MessageFactory.createMessage("message" + i, false, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
-            assertEquals(2, dels.size());
-            Iterator j = dels.iterator();
+            assertEquals(1, dels.size());
 
-            Delivery delivery = (Delivery)j.next();
-            Delivery delivery2;
+            Delivery delivery = (Delivery)dels.iterator().next();
 
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-            {
-               delivery2 = (Delivery)j.next();
-            }
-            else
-            {
-               delivery2 = delivery;
-               delivery = (Delivery)j.next();
-            }
+            assertTrue(delivery.isDone());
+            assertFalse(delivery.isCancelled());
 
-            deliveries[2 * i] = delivery;
-            deliveries[2 * i + 1] = delivery2;
-
-            assertFalse(observer.waitForAcknowledgment(deliveries[2 * i], 300));
-
-            assertFalse(deliveries[2 * i].isDone());
-            assertFalse(deliveries[2 * i].isCancelled());
-
-            assertFalse(observer.waitForAcknowledgment(deliveries[2 * i + 1], 300));
-
-            assertFalse(deliveries[2 * i + 1].isDone());
-            assertFalse(deliveries[2 * i + 1].isCancelled());
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
 
+            assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
             assertEquals(i + 1, receiver2.getMessages().size());
             assertValidMessage(m, (Message)receiver2.getMessages().get(i));
+
+            receiver.resetInvocationCount();
+            receiver2.resetInvocationCount();
          }
 
-         // acknowledge all messages at the same time, on two different threads
+         // acknowledge all messages at the same time, on two different threads, though nothing
+         // should happen for unreliable message, as no acknowledgment is sent back
 
          new Thread(new Runnable()
          {
@@ -2389,17 +2334,6 @@ public abstract class ReplicatorTestBase extends PeerTestBase
                }
             }
          }, "Acknowledging Thread 2").start();
-
-         for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            assertTrue(observer.waitForAcknowledgment(deliveries[2 * i], 1000));
-            assertTrue(deliveries[2 * i].isDone());
-            assertFalse(deliveries[2 * i].isCancelled());
-
-            assertTrue(observer.waitForAcknowledgment(deliveries[2 * i + 1], 1000));
-            assertTrue(deliveries[2 * i + 1].isDone());
-            assertFalse(deliveries[2 * i + 1].isCancelled());
-         }
 
          log.info("ok");
       }
@@ -2471,52 +2405,33 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
 
-         assertEquals(2, deliveries.size());
-         Iterator i = deliveries.iterator();
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
 
-         Delivery delivery = (Delivery)i.next();
-         Delivery delivery2;
-
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-         {
-            delivery2 = (Delivery)i.next();
-         }
-         else
-         {
-            delivery2 = delivery;
-            delivery = (Delivery)i.next();
-         }
-
-         assertFalse(observer.waitForCancellation(delivery, 1000));
-
-         assertFalse(delivery.isDone());
+         assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
-         assertFalse(observer.waitForCancellation(delivery2, 1000));
-
-         assertFalse(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
-
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
 
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
          assertEquals(1, receiver2.getMessages().size());
          assertValidMessage(m, (Message)receiver2.getMessages().get(0));
 
-         receiver.cancel((Message)receiver.getMessages().get(0));
+         receiver.cancel((Message)receiver.getMessages().get(0)); // nothing should happen
 
-         assertTrue(observer.waitForCancellation(delivery, 2000));
+         assertFalse(observer.waitForCancellation(delivery, 700));
 
-         assertFalse(delivery.isDone());
-         assertTrue(delivery.isCancelled());
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
 
-         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null);
+         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null); // nothing should happen
 
-         assertTrue(observer.waitForAcknowledgment(delivery2, 2000));
-
-         assertTrue(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
 
          log.info("ok");
       }
@@ -2603,7 +2518,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery delivery = (Delivery)i.next();
          Delivery delivery2;
 
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+         if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
          {
             delivery2 = (Delivery)i.next();
          }
@@ -2720,7 +2635,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             Delivery delivery = (Delivery)j.next();
             Delivery delivery2;
 
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+            if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
             {
                delivery2 = (Delivery)j.next();
             }
@@ -2877,7 +2792,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery delivery = (Delivery)i.next();
          Delivery delivery2;
 
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+         if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
          {
             delivery2 = (Delivery)i.next();
          }
@@ -3009,31 +2924,12 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          Set deliveries = replicator.handle(observer, m, null);
 
-         assertEquals(2, deliveries.size());
-         Iterator i = deliveries.iterator();
+         assertEquals(1, deliveries.size());
 
-         Delivery delivery = (Delivery)i.next();
-         Delivery delivery2;
-
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-         {
-            delivery2 = (Delivery)i.next();
-         }
-         else
-         {
-            delivery2 = delivery;
-            delivery = (Delivery)i.next();
-         }
-
-         assertTrue(observer.waitForAcknowledgment(delivery, 3000));
+         Delivery delivery = (Delivery)deliveries.iterator().next();
 
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
-
-         assertTrue(observer.waitForAcknowledgment(delivery2, 3000));
-
-         assertTrue(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
 
          log.info("ok");
       }
@@ -3111,31 +3007,11 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
             Set deliveries = replicator.handle(observer, m, null);
 
-            assertEquals(2, deliveries.size());
-            Iterator j = deliveries.iterator();
-
-            Delivery delivery = (Delivery)j.next();
-            Delivery delivery2;
-
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-            {
-               delivery2 = (Delivery)j.next();
-            }
-            else
-            {
-               delivery2 = delivery;
-               delivery = (Delivery)j.next();
-            }
-
-            observer.waitForAcknowledgment(delivery, 3000);
+            assertEquals(1, deliveries.size());
+            Delivery delivery = (Delivery)deliveries.iterator().next();
 
             assertTrue(delivery.isDone());
             assertFalse(delivery.isCancelled());
-
-            observer.waitForAcknowledgment(delivery2, 3000);
-
-            assertTrue(delivery2.isDone());
-            assertFalse(delivery2.isCancelled());
          }
 
          log.info("ok");
@@ -3211,7 +3087,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createMessage("message0", false, "payload");
+         Message m = MessageFactory.createMessage("message0", true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -3221,7 +3097,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery delivery = (Delivery)i.next();
          Delivery delivery2;
 
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+         if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
          {
             delivery2 = (Delivery)i.next();
          }
@@ -3313,7 +3189,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createMessage("message" + i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -3323,7 +3199,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             Delivery delivery = (Delivery)j.next();
             Delivery delivery2;
 
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+            if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
             {
                delivery2 = (Delivery)j.next();
             }
@@ -3426,34 +3302,18 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          Set deliveries = replicator.handle(observer, m, null);
 
-         assertEquals(2, deliveries.size());
-         Iterator i = deliveries.iterator();
-
-         Delivery delivery = (Delivery)i.next();
-         Delivery delivery2;
-
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-         {
-            delivery2 = (Delivery)i.next();
-         }
-         else
-         {
-            delivery2 = delivery;
-            delivery = (Delivery)i.next();
-         }
-
-         observer.waitForAcknowledgment(delivery, 3000);
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
 
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
-         observer.waitForAcknowledgment(delivery2, 3000);
-
-         assertTrue(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
+
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver2.getMessages().size());
          assertValidMessage(m, (Message)receiver2.getMessages().get(0));
@@ -3535,37 +3395,24 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
             Set deliveries = replicator.handle(observer, m, null);
 
-            assertEquals(2, deliveries.size());
-            Iterator j = deliveries.iterator();
-
-            Delivery delivery = (Delivery)j.next();
-            Delivery delivery2;
-
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-            {
-               delivery2 = (Delivery)j.next();
-            }
-            else
-            {
-               delivery2 = delivery;
-               delivery = (Delivery)j.next();
-            }
-
-            observer.waitForAcknowledgment(delivery, 3000);
+            assertEquals(1, deliveries.size());
+            Delivery delivery = (Delivery)deliveries.iterator().next();
 
             assertTrue(delivery.isDone());
             assertFalse(delivery.isCancelled());
 
-            observer.waitForAcknowledgment(delivery2, 3000);
-
-            assertTrue(delivery2.isDone());
-            assertFalse(delivery2.isCancelled());
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
 
+            assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
             assertEquals(i + 1, receiver2.getMessages().size());
             assertValidMessage(m, (Message)receiver2.getMessages().get(i));
+
+            receiver.resetInvocationCount();
+            receiver2.resetInvocationCount();
          }
 
          log.info("ok");
@@ -3642,7 +3489,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createMessage("message0", false, "payload");
+         Message m = MessageFactory.createMessage("message0", true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -3652,7 +3499,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery delivery = (Delivery)i.next();
          Delivery delivery2;
 
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+         if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
          {
             delivery2 = (Delivery)i.next();
          }
@@ -3751,7 +3598,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createMessage("message" + i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -3761,7 +3608,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             Delivery delivery = (Delivery)j.next();
             Delivery delivery2;
 
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+            if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
             {
                delivery2 = (Delivery)j.next();
             }
@@ -3876,52 +3723,31 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
 
-         assertEquals(2, deliveries.size());
-         Iterator i = deliveries.iterator();
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
 
-         Delivery delivery = (Delivery)i.next();
-         Delivery delivery2;
-
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-         {
-            delivery2 = (Delivery)i.next();
-         }
-         else
-         {
-            delivery2 = delivery;
-            delivery = (Delivery)i.next();
-         }
-
-         assertFalse(observer.waitForAcknowledgment(delivery, 2000));
-
-         assertFalse(delivery.isDone());
+         assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
-         assertFalse(observer.waitForAcknowledgment(delivery2, 2000));
-
-         assertFalse(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
 
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
          assertEquals(1, receiver2.getMessages().size());
          assertValidMessage(m, (Message)receiver2.getMessages().get(0));
 
-         receiver.acknowledge((Message)receiver.getMessages().get(0), null);
-
-         assertTrue(observer.waitForAcknowledgment(delivery, 2000));
+         receiver.acknowledge((Message)receiver.getMessages().get(0), null); // nothing should happen
 
          assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
-         assertFalse(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
 
-         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null);
+         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null); // nothing should happen
 
-         assertTrue(observer.waitForAcknowledgment(delivery2, 3000));
-         assertTrue(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
 
          log.info("ok");
       }
@@ -3995,52 +3821,34 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Delivery[] deliveries = new Delivery[2 * NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             Message m = MessageFactory.createMessage("message" + i, false, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
-            assertEquals(2, dels.size());
-            Iterator j = dels.iterator();
+            assertEquals(1, dels.size());
+            Delivery delivery = (Delivery)dels.iterator().next();
 
-            Delivery delivery = (Delivery)j.next();
-            Delivery delivery2;
+            assertTrue(delivery.isDone());
+            assertFalse(delivery.isCancelled());
 
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-            {
-               delivery2 = (Delivery)j.next();
-            }
-            else
-            {
-               delivery2 = delivery;
-               delivery = (Delivery)j.next();
-            }
-
-
-            deliveries[2 * i] = delivery;
-            deliveries[2 * i + 1] = delivery2;
-
-            assertFalse(observer.waitForAcknowledgment(deliveries[2 * i], 300));
-
-            assertFalse(deliveries[2 * i].isDone());
-            assertFalse(deliveries[2 * i].isCancelled());
-
-            assertFalse(observer.waitForAcknowledgment(deliveries[2 * i + 1], 300));
-
-            assertFalse(deliveries[2 * i + 1].isDone());
-            assertFalse(deliveries[2 * i + 1].isCancelled());
-
+            assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
             assertEquals(i + 1, receiver.getMessages().size());
             assertValidMessage(m, (Message)receiver.getMessages().get(i));
 
+            assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
             assertEquals(i + 1, receiver2.getMessages().size());
             assertValidMessage(m, (Message)receiver2.getMessages().get(i));
+
+            receiver.resetInvocationCount();
+            receiver2.resetInvocationCount();
          }
 
-         // acknowledge all messages at the same time, on two different threads
+         // acknowledge all messages at the same time, on two different threads, even if for a
+         // non-reliable message, nothing should happen
 
          new Thread(new Runnable()
          {
@@ -4079,16 +3887,6 @@ public abstract class ReplicatorTestBase extends PeerTestBase
                }
             }
          }, "Acknowledging Thread 2").start();
-
-         for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            assertTrue(observer.waitForAcknowledgment(deliveries[2 * i], 1000));
-            assertTrue(deliveries[2 * i].isDone());
-            assertFalse(deliveries[2 * i].isCancelled());
-            assertTrue(observer.waitForAcknowledgment(deliveries[2 * i  + 1], 1000));
-            assertTrue(deliveries[2 * i + 1].isDone());
-            assertFalse(deliveries[2 * i + 1].isCancelled());
-         }
 
          log.info("ok");
       }
@@ -4170,55 +3968,31 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
 
-         assertEquals(2, deliveries.size());
-         Iterator i = deliveries.iterator();
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
 
-         Delivery delivery = (Delivery)i.next();
-         Delivery delivery2;
-
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
-         {
-            delivery2 = (Delivery)i.next();
-         }
-         else
-         {
-            delivery2 = delivery;
-            delivery = (Delivery)i.next();
-         }
-
-         assertFalse(observer.waitForCancellation(delivery, 2000));
-
-         assertFalse(delivery.isDone());
+         assertTrue(delivery.isDone());
          assertFalse(delivery.isCancelled());
 
-         assertFalse(observer.waitForCancellation(delivery2, 2000));
-
-         assertFalse(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
 
          assertEquals(1, receiver.getMessages().size());
          assertValidMessage(m, (Message)receiver.getMessages().get(0));
 
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
          assertEquals(1, receiver2.getMessages().size());
          assertValidMessage(m, (Message)receiver2.getMessages().get(0));
 
-         receiver.cancel((Message)receiver.getMessages().get(0));
+         receiver.cancel((Message)receiver.getMessages().get(0)); // nothing should happen
 
-         assertTrue(observer.waitForCancellation(delivery, 2000));
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
 
-         assertFalse(delivery.isDone());
-         assertTrue(delivery.isCancelled());
-         assertFalse(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null); // nothing should happen
 
-         receiver2.acknowledge((Message)receiver2.getMessages().get(0), null);
-
-         assertTrue(observer.waitForAcknowledgment(delivery2, 2000));
-
-         assertFalse(delivery.isDone());
-         assertTrue(delivery.isCancelled());
-         assertTrue(delivery2.isDone());
-         assertFalse(delivery2.isCancelled());
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
 
          log.info("ok");
       }
@@ -4316,7 +4090,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery delivery = (Delivery)i.next();
          Delivery delivery2;
 
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+         if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
          {
             delivery2 = (Delivery)i.next();
          }
@@ -4442,7 +4216,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
             Delivery delivery = (Delivery)j.next();
             Delivery delivery2;
 
-            if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+            if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
             {
                delivery2 = (Delivery)j.next();
             }
@@ -4610,7 +4384,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery delivery = (Delivery)i.next();
          Delivery delivery2;
 
-         if (((ReplicatorOutputDelivery)delivery).getOutputID().equals(output.getID()))
+         if (((ReplicatorOutputDelivery)delivery).getReceiverID().equals(output.getID()))
          {
             delivery2 = (Delivery)i.next();
          }
@@ -4670,16 +4444,14 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
    // TODO
 
-
    /**
     * Three outputs that return ACCEPTED, REJECTED and CANCELLED.
     *
     * Tests a non-reliable message.
-    * TODO: add test for reliable message.
     *
     * @see MultipleReceiversDeliveryTestBase#testMixedAcknowledgments
     */
-   public void testMixedAcknowledgments() throws Throwable
+   public void testMixedAcknowledgments_1() throws Throwable
    {
       if (replicator.doesCancelOnMessageRejection())
       {
@@ -4743,6 +4515,110 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
 
+         assertEquals(1, deliveries.size());
+
+         Delivery delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver2.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver2.getMessages().size());
+         assertValidMessage(m, (Message)receiver2.getMessages().get(0));
+
+         assertTrue(receiver3.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver3.getMessages().size());
+         assertValidMessage(m, (Message)receiver3.getMessages().get(0));
+
+         receiver3.cancel((Message)receiver3.getMessages().get(0)); // nothing should happen
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         log.info("ok");
+      }
+      finally
+      {
+         replicator.leave();
+         output.leave();
+         output2.leave();
+         output3.leave();
+      }
+   }
+
+   /**
+    * Three outputs that return ACCEPTED, REJECTED and CANCELLED.
+    *
+    * Tests a reliable message.
+    *
+    * @see MultipleReceiversDeliveryTestBase#testMixedAcknowledgments
+    */
+   public void testMixedAcknowledgments_2() throws Throwable
+   {
+      if (replicator.doesCancelOnMessageRejection())
+      {
+         // we only test replicators that do not cancel delivery on message rejection
+         return;
+      }
+
+      assertTrue(jchannel.isConnected());
+
+      ReplicatorOutput output = null;
+      ReplicatorOutput output2 = null;
+      ReplicatorOutput output3 = null;
+
+      try
+      {
+         replicator.join();
+         log.debug("replicator has joined");
+
+         assertTrue(replicator.hasJoined());
+         assertTrue(replicator.getOutputs().isEmpty());
+
+         // rejecting output
+         output = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher, outputms, null);
+         output.join();
+         log.debug("output has joined");
+
+         assertTrue(output.hasJoined());
+
+         SimpleReceiver receiver2 = new SimpleReceiver("ACKING_receiver", SimpleReceiver.ACKING);
+         output2 = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher, outputms2, receiver2);
+         output2.join();
+         log.debug("output2 has joined");
+
+         assertTrue(output2.hasJoined());
+
+         SimpleReceiver receiver3 = new SimpleReceiver("CANCELLING_receiver", SimpleReceiver.NACKING);
+         output3 = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher, outputms3, receiver3);
+         output3.join();
+         log.debug("output3 has joined");
+
+         assertTrue(output3.hasJoined());
+
+
+         Set identities = replicator.getOutputs();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(output2.getPeerIdentity()));
+         assertTrue(identities.contains(output3.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(4, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(output2.getPeerIdentity()));
+         assertTrue(identities.contains(output3.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+
+         SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+         Message m = MessageFactory.createMessage("message0", true, "payload");
+
+         Set deliveries = replicator.handle(observer, m, null);
+         log.debug("message submitted to replicator");
+
          assertEquals(3, deliveries.size());
 
          Delivery delivery = null, delivery2 = null, delivery3 = null;
@@ -4750,15 +4626,15 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
             ReplicatorOutputDelivery d = (ReplicatorOutputDelivery)i.next();
-            if (d.getOutputID().equals(output.getID()))
+            if (d.getReceiverID().equals(output.getID()))
             {
                delivery = d;
             }
-            else if (d.getOutputID().equals(output2.getID()))
+            else if (d.getReceiverID().equals(output2.getID()))
             {
                delivery2 = d;
             }
-            else if (d.getOutputID().equals(output3.getID()))
+            else if (d.getReceiverID().equals(output3.getID()))
             {
                delivery3 = d;
             }
@@ -4803,6 +4679,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       }
    }
 
+
    //
    // Replicator DOES cancel active delivery on message rejection
    //
@@ -4826,6 +4703,10 @@ public abstract class ReplicatorTestBase extends PeerTestBase
    ////
    //// Two replicator inputs on the same channel, output on the same channel
    ////
+
+   //////
+   ////// Unreliable message
+   //////
 
    public void testTwoReplicatorInputs_1() throws Exception
    {
@@ -4889,8 +4770,116 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         // unreliable message; TODO add test for reliable message
          Message m1 = MessageFactory.createMessage("message1", false, "payload1");
+
+         Set deliveries = replicator.handle(observer, m1, null);
+
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m1, (Message)receiver.getMessages().get(0));
+
+         receiver.clear();
+         receiver.resetInvocationCount();
+
+         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+
+         deliveries = replicator2.handle(observer, m2, null);
+
+         assertEquals(1, deliveries.size());
+         delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m2, (Message)receiver.getMessages().get(0));
+
+         log.info("ok");
+      }
+      finally
+      {
+         replicator.leave();
+         replicator2.leave();
+         output.leave();
+      }
+   }
+
+   //////
+   ////// Reliable message
+   //////
+
+   public void testTwoReplicatorInputs_2() throws Exception
+   {
+      if (replicator.doesCancelOnMessageRejection())
+      {
+         // we only test replicators that do not cancel delivery on message rejection
+         return;
+      }
+
+      assertTrue(jchannel.isConnected());
+
+      ReplicatorOutput output = null;
+
+      // create another replicator input that shares the dispatcher with the first replicator
+      replicator2 = (Replicator)createDistributed((String)replicator.getReplicatorID(), ms2,
+                                                  replicator.getDispatcher());
+
+      try
+      {
+         replicator.join();
+         log.debug("replicator has joined");
+
+         assertTrue(replicator.hasJoined());
+         assertTrue(replicator.getOutputs().isEmpty());
+
+         replicator2.join();
+         log.debug("replicator2 has joined");
+
+         assertTrue(replicator2.hasJoined());
+         assertTrue(replicator2.getOutputs().isEmpty());
+
+         SimpleReceiver receiver = new SimpleReceiver("receiver0", SimpleReceiver.ACKING);
+
+         output = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher, outputms, receiver);
+
+         output.join();
+         log.debug("output has joined");
+
+         assertTrue(output.hasJoined());
+
+         Set identities = replicator.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+         identities = replicator2.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator2.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+
+         SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+         Message m1 = MessageFactory.createMessage("message1", true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -4907,8 +4896,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         // unreliable message; TODO add test for reliable message
-         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createMessage("message2", true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -4933,11 +4921,16 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       }
    }
 
+
    ////
    //// Two replicator inputs on the same channel, output on different channel
    ////
 
-   public void testTwoReplicatorInputs_2() throws Exception
+   //////
+   ////// Unreliable message
+   //////
+
+   public void testTwoReplicatorInputs_3() throws Exception
    {
       if (replicator.doesCancelOnMessageRejection())
       {
@@ -5009,8 +5002,126 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         // unreliable message; TODO add test for reliable message
          Message m1 = MessageFactory.createMessage("message1", false, "payload1");
+
+         Set deliveries = replicator.handle(observer, m1, null);
+
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m1, (Message)receiver.getMessages().get(0));
+
+         receiver.clear();
+         receiver.resetInvocationCount();
+
+         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+
+         deliveries = replicator2.handle(observer, m2, null);
+
+         assertEquals(1, deliveries.size());
+         delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m2, (Message)receiver.getMessages().get(0));
+
+         log.info("ok");
+      }
+      finally
+      {
+         replicator.leave();
+         replicator2.leave();
+         output.leave();
+      }
+   }
+
+   //////
+   ////// Reliable message
+   //////
+
+   public void testTwoReplicatorInputs_4() throws Exception
+   {
+      if (replicator.doesCancelOnMessageRejection())
+      {
+         // we only test replicators that do not cancel delivery on message rejection
+         return;
+      }
+
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannels joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ReplicatorOutput output = null;
+
+      // create another replicator input that shares the dispatcher with the first replicator
+      replicator2 = (Replicator)createDistributed((String)replicator.getReplicatorID(), ms2,
+                                                  replicator.getDispatcher());
+
+      try
+      {
+         replicator.join();
+         log.debug("replicator has joined");
+
+         assertTrue(replicator.hasJoined());
+         assertTrue(replicator.getOutputs().isEmpty());
+
+         replicator2.join();
+         log.debug("replicator2 has joined");
+
+         assertTrue(replicator2.hasJoined());
+         assertTrue(replicator2.getOutputs().isEmpty());
+
+         SimpleReceiver receiver = new SimpleReceiver("receiver0", SimpleReceiver.ACKING);
+
+         output = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher2, outputms, receiver);
+
+         output.join();
+         log.debug("output has joined");
+
+         assertTrue(output.hasJoined());
+
+         Set identities = replicator.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+         identities = replicator2.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator2.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+
+         SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+         Message m1 = MessageFactory.createMessage("message1", true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5027,8 +5138,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         // unreliable message; TODO add test for reliable message
-         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createMessage("message2", true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5057,7 +5167,11 @@ public abstract class ReplicatorTestBase extends PeerTestBase
    //// Two replicator inputs on two separated channels, output on one of the channels
    ////
 
-   public void testTwoReplicatorInputs_3() throws Exception
+   //////
+   ////// Unreliable message
+   //////
+
+   public void testTwoReplicatorInputs_5() throws Exception
    {
       if (replicator.doesCancelOnMessageRejection())
       {
@@ -5125,8 +5239,122 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         // unreliable message; TODO add test for reliable message
          Message m1 = MessageFactory.createMessage("message1", false, "payload1");
+
+         Set deliveries = replicator.handle(observer, m1, null);
+
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m1, (Message)receiver.getMessages().get(0));
+
+         receiver.clear();
+         receiver.resetInvocationCount();
+
+         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+
+         deliveries = replicator2.handle(observer, m2, null);
+
+         assertEquals(1, deliveries.size());
+         delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m2, (Message)receiver.getMessages().get(0));
+
+         log.info("ok");
+      }
+      finally
+      {
+         replicator.leave();
+         replicator2.leave();
+         output.leave();
+      }
+   }
+
+   //////
+   ////// Reliable message
+   //////
+
+   public void testTwoReplicatorInputs_6() throws Exception
+   {
+      if (replicator.doesCancelOnMessageRejection())
+      {
+         // we only test replicators that do not cancel delivery on message rejection
+         return;
+      }
+
+      jchannel2.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(1000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+
+      // make sure both jchannels joined the group
+      assertEquals(2, jchannel.getView().getMembers().size());
+      assertEquals(2, jchannel2.getView().getMembers().size());
+
+      ReplicatorOutput output = null;
+
+      try
+      {
+         replicator.join();
+         log.debug("replicator has joined");
+
+         assertTrue(replicator.hasJoined());
+         assertTrue(replicator.getOutputs().isEmpty());
+
+         replicator2.join();
+         log.debug("replicator2 has joined");
+
+         assertTrue(replicator2.hasJoined());
+         assertTrue(replicator2.getOutputs().isEmpty());
+
+         SimpleReceiver receiver = new SimpleReceiver("receiver0", SimpleReceiver.ACKING);
+
+         output = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher, outputms, receiver);
+
+         output.join();
+         log.debug("output has joined");
+
+         assertTrue(output.hasJoined());
+
+         Set identities = replicator.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+         identities = replicator2.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator2.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+
+         SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+         Message m1 = MessageFactory.createMessage("message1", true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5143,8 +5371,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         // unreliable message; TODO add test for reliable message
-         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createMessage("message2", true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5173,7 +5400,11 @@ public abstract class ReplicatorTestBase extends PeerTestBase
    //// Two replicator inputs on two separated channels, output on the third channel
    ////
 
-   public void testTwoReplicatorInputs_4() throws Exception
+   //////
+   ////// Unreliable message
+   //////
+
+   public void testTwoReplicatorInputs_7() throws Exception
    {
       if (replicator.doesCancelOnMessageRejection())
       {
@@ -5244,8 +5475,125 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         // unreliable message; TODO add test for reliable message
          Message m1 = MessageFactory.createMessage("message1", false, "payload1");
+
+         Set deliveries = replicator.handle(observer, m1, null);
+
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m1, (Message)receiver.getMessages().get(0));
+
+         receiver.clear();
+         receiver.resetInvocationCount();
+
+         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+
+         deliveries = replicator2.handle(observer, m2, null);
+
+         assertEquals(1, deliveries.size());
+         delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m2, (Message)receiver.getMessages().get(0));
+
+         log.info("ok");
+      }
+      finally
+      {
+         replicator.leave();
+         replicator2.leave();
+         output.leave();
+      }
+   }
+
+   //////
+   ////// Reliable message
+   //////
+
+   public void testTwoReplicatorInputs_8() throws Exception
+   {
+      if (replicator.doesCancelOnMessageRejection())
+      {
+         // we only test replicators that do not cancel delivery on message rejection
+         return;
+      }
+
+      jchannel2.connect("testGroup");
+      jchannel3.connect("testGroup");
+
+      // allow the group time to form
+      Thread.sleep(2000);
+
+      assertTrue(jchannel.isConnected());
+      assertTrue(jchannel2.isConnected());
+      assertTrue(jchannel3.isConnected());
+
+      // make sure all three jchannels joined the group
+      assertEquals(3, jchannel.getView().getMembers().size());
+      assertEquals(3, jchannel2.getView().getMembers().size());
+      assertEquals(3, jchannel3.getView().getMembers().size());
+
+      ReplicatorOutput output = null;
+
+      try
+      {
+         replicator.join();
+         log.debug("replicator has joined");
+
+         assertTrue(replicator.hasJoined());
+         assertTrue(replicator.getOutputs().isEmpty());
+
+         replicator2.join();
+         log.debug("replicator2 has joined");
+
+         assertTrue(replicator2.hasJoined());
+         assertTrue(replicator2.getOutputs().isEmpty());
+
+         SimpleReceiver receiver = new SimpleReceiver("receiver0", SimpleReceiver.ACKING);
+
+         output = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher3, outputms, receiver);
+
+         output.join();
+         log.debug("output has joined");
+
+         assertTrue(output.hasJoined());
+
+         Set identities = replicator.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+         identities = replicator2.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator2.getView();
+         assertEquals(3, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+
+         SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+         Message m1 = MessageFactory.createMessage("message1", true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5262,8 +5610,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         // unreliable message; TODO add test for reliable message
-         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createMessage("message2", true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5288,9 +5635,14 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       }
    }
 
+
    //
    // Two different replicators on the same channel, outputs on the same channel
    //
+
+   ////
+   //// Unreliable message
+   ////
 
    public void testTwoReplicators_1() throws Exception
    {
@@ -5376,8 +5728,141 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         // unreliable message; TODO add test for reliable message
          Message m1 = MessageFactory.createMessage("message1", false, "payload1");
+
+         Set deliveries = replicator.handle(observer, m1, null);
+
+         assertEquals(1, deliveries.size());
+         Delivery delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertTrue(receiver.waitForHandleInvocations(1, 3000));
+
+         assertEquals(1, receiver.getMessages().size());
+         assertValidMessage(m1, (Message)receiver.getMessages().get(0));
+         assertTrue(receiver2.getMessages().isEmpty());
+
+         receiver.clear();
+         receiver.resetInvocationCount();
+
+         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+
+         deliveries = replicator2.handle(observer, m2, null);
+
+         assertEquals(1, deliveries.size());
+         delivery = (Delivery)deliveries.iterator().next();
+
+         assertTrue(delivery.isDone());
+         assertFalse(delivery.isCancelled());
+
+         assertFalse(receiver.waitForHandleInvocations(1, 3000));
+
+         assertTrue(receiver.getMessages().isEmpty());
+         assertEquals(1, receiver2.getMessages().size());
+         assertValidMessage(m2, (Message)receiver2.getMessages().get(0));
+
+         log.info("ok");
+      }
+      finally
+      {
+         replicator.leave();
+         replicator2.leave();
+         output.leave();
+         output2.leave();
+      }
+   }
+
+   ////
+   //// Reliable message
+   ////
+
+   public void testTwoReplicators_2() throws Exception
+   {
+      if (replicator.doesCancelOnMessageRejection())
+      {
+         // we only test replicators that do not cancel delivery on message rejection
+         return;
+      }
+
+      assertTrue(jchannel.isConnected());
+
+      // create another replicator that shares the dispatcher with the first replicator
+      String replicator2ID = (String)(replicator.getReplicatorID()) + "2";
+      replicator2 = (Replicator)createDistributed(replicator2ID, ms2, replicator.getDispatcher());
+
+      ReplicatorOutput output = null;
+      ReplicatorOutput output2 = null;
+
+      try
+      {
+         replicator.join();
+         log.debug("replicator has joined");
+
+         assertTrue(replicator.hasJoined());
+         assertTrue(replicator.getOutputs().isEmpty());
+
+         replicator2.join();
+         log.debug("replicator2 has joined");
+
+         assertTrue(replicator2.hasJoined());
+         assertTrue(replicator2.getOutputs().isEmpty());
+
+         SimpleReceiver receiver = new SimpleReceiver("receiver0", SimpleReceiver.ACKING);
+         output = new ReplicatorOutput(replicator.getReplicatorID(), dispatcher, outputms, receiver);
+
+         output.join();
+         log.debug("output has joined");
+
+         assertTrue(output.hasJoined());
+
+         Set identities = replicator.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(2, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+
+         identities = replicator2.getOutputs();
+         assertTrue(identities.isEmpty());
+
+         identities = replicator2.getView();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+         SimpleReceiver receiver2 = new SimpleReceiver("receiver2", SimpleReceiver.ACKING);
+         output2 = new ReplicatorOutput(replicator2ID, dispatcher, outputms, receiver2);
+
+         output2.join();
+         log.debug("output2 has joined");
+
+         assertTrue(output.hasJoined());
+
+         identities = replicator.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+
+         identities = replicator.getView();
+         assertEquals(2, identities.size());
+         assertTrue(identities.contains(output.getPeerIdentity()));
+         assertTrue(identities.contains(replicator.getPeerIdentity()));
+
+         identities = replicator2.getOutputs();
+         assertEquals(1, identities.size());
+         assertTrue(identities.contains(output2.getPeerIdentity()));
+
+         identities = replicator2.getView();
+         assertEquals(2, identities.size());
+         assertTrue(identities.contains(output2.getPeerIdentity()));
+         assertTrue(identities.contains(replicator2.getPeerIdentity()));
+
+
+         SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+         Message m1 = MessageFactory.createMessage("message1", true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5395,8 +5880,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         // unreliable message; TODO add test for reliable message
-         Message m2 = MessageFactory.createMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createMessage("message2", true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
