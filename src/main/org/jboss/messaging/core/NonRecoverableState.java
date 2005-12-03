@@ -92,7 +92,7 @@ public class NonRecoverableState implements State
 
    public void add(MessageReference ref, Transaction tx) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
+      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
 
       if (tx == null)
       {
@@ -103,7 +103,7 @@ public class NonRecoverableState implements State
          }
 
          messageRefs.addLast(ref, ref.getPriority());         
-         if (log.isTraceEnabled()) { log.trace("added " + ref + " in memory"); }
+         if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " in memory"); }
          return;
       }
 
@@ -113,7 +113,7 @@ public class NonRecoverableState implements State
       {
          // this transaction has no chance to succeed, since a reliable message cannot be
          // safely stored by a non-recoverable state, so doom the transaction
-         if (log.isTraceEnabled()) { log.trace("cannot handle reliable messages, dooming the transaction"); }
+         if (log.isTraceEnabled()) { log.trace(this + " cannot handle reliable messages, dooming the transaction"); }
          tx.setRollbackOnly();
       }
       else
@@ -121,13 +121,13 @@ public class NonRecoverableState implements State
          //Transactional so add to post commit callback
          AddReferenceCallback callback = addAddReferenceCallback(tx);
          callback.addReference(ref);
-         if (log.isTraceEnabled()) { log.trace("added transactionally " + ref + " in memory"); }
+         if (log.isTraceEnabled()) { log.trace(this + " added transactionally " + ref + " in memory"); }
       }
    }
 
    public void addFirst(MessageReference ref) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("adding " + ref + "at the top of the list in memory"); }
+      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "at the top of the list in memory"); }
 
       if (ref.isReliable() && !acceptReliableMessages)
       {
@@ -137,13 +137,13 @@ public class NonRecoverableState implements State
 
       messageRefs.addFirst(ref, ref.getPriority());
       
-      if (log.isTraceEnabled()) { log.trace("added " + ref + " at the top of the list in memory"); }      
+      if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " at the top of the list in memory"); }
    }
 
    public boolean remove(MessageReference ref) throws Throwable
    {
       boolean removed = messageRefs.remove(ref);
-      if (removed && log.isTraceEnabled()) { log.trace("removed " + ref + " from memory"); }
+      if (removed && log.isTraceEnabled()) { log.trace(this + " removed " + ref + " from memory"); }
       
       return removed;
    }
@@ -152,7 +152,7 @@ public class NonRecoverableState implements State
    {
       MessageReference result = (MessageReference)messageRefs.removeFirst();
 
-      if (log.isTraceEnabled()) { log.trace("removing the oldest message in memory returns " + result); }
+      if (log.isTraceEnabled()) { log.trace(this + " removing the oldest message in memory returns " + result); }
       return result;
    }
 
@@ -169,7 +169,7 @@ public class NonRecoverableState implements State
       // and removing deliveries (acking).
       
       deliveries.put(d.getReference().getMessageID(), d);
-      if (log.isTraceEnabled()) { log.trace("added " + d + " to memory"); }
+      if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory"); }
    }
 
    public boolean remove(Delivery d, Transaction tx) throws Throwable
@@ -179,12 +179,12 @@ public class NonRecoverableState implements State
          //Transactional so add a post commit callback to remove after tx commit
          RemoveDeliveryCallback callback = addRemoveDeliveryCallback(tx);
          callback.addDelivery(d);
-         if (log.isTraceEnabled()) { log.trace("added " + d + " to memory on transaction " + tx); }
+         if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
          return true;
       }
 
       boolean removed = deliveries.remove(d.getReference().getMessageID()) != null;
-      if (removed && log.isTraceEnabled()) { log.trace("removed " + d + " from memory"); }
+      if (removed && log.isTraceEnabled()) { log.trace(this + " removed " + d + " from memory"); }
       return removed;
    }
 
@@ -205,7 +205,7 @@ public class NonRecoverableState implements State
             }
          }
       }
-      if (log.isTraceEnabled()) {  log.trace("the non-recoverable state has " + delivering.size() + " messages being delivered"); }
+      if (log.isTraceEnabled()) {  log.trace(this + ": the non-recoverable state has " + delivering.size() + " messages being delivered"); }
       return delivering;
    }
 
@@ -226,11 +226,11 @@ public class NonRecoverableState implements State
             }
             else
             {
-               if (log.isTraceEnabled()) { log.trace(r + " NOT accepted by filter so won't add to list"); }
+               if (log.isTraceEnabled()) { log.trace(this + ": " + r + " NOT accepted by filter so won't add to list"); }
             }
          }
       }
-      if (log.isTraceEnabled()) { log.trace("undelivered() returns a list of " + undelivered.size() + " undelivered memory messages"); }
+      if (log.isTraceEnabled()) { log.trace(this + ": undelivered() returns a list of " + undelivered.size() + " undelivered memory messages"); }
       return undelivered;
    }
 
@@ -255,8 +255,13 @@ public class NonRecoverableState implements State
    }
 
    // Public --------------------------------------------------------
-   
-   
+
+   public String toString()
+   {
+      return "State[" + channel + "]";
+   }
+
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -318,7 +323,7 @@ public class NonRecoverableState implements State
          for(Iterator i = refs.iterator(); i.hasNext(); )
          {
             MessageReference ref = (MessageReference)i.next();
-            if (log.isTraceEnabled()) { log.trace("adding " + ref + " to non-recoverable state"); }
+            if (log.isTraceEnabled()) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
             messageRefs.addLast(ref, ref.getPriority());
             
             //FIXME
@@ -337,7 +342,7 @@ public class NonRecoverableState implements State
          for(Iterator i = refs.iterator(); i.hasNext(); )
          {
             MessageReference ref = (MessageReference)i.next();
-            if (log.isTraceEnabled()) { log.trace("After rollback-Releasing reference for " + ref); }
+            if (log.isTraceEnabled()) { log.trace(this + " releasing reference for " + ref + " after rollback"); }
             ref.releaseReference();
          }
          txToAddReferenceCallbacks.remove(tx);
@@ -366,7 +371,7 @@ public class NonRecoverableState implements State
          for(Iterator i = dels.iterator(); i.hasNext(); )
          {
             Delivery d = (Delivery)i.next();
-            if (log.isTraceEnabled()) { log.trace("After commit removing " + d + " from non-recoverable state"); }
+            if (log.isTraceEnabled()) { log.trace(this + " removing " + d + " after commit"); }
             deliveries.remove(d.getReference().getMessageID());
             d.getReference().releaseReference();
          }
@@ -378,7 +383,7 @@ public class NonRecoverableState implements State
          for(Iterator i = dels.iterator(); i.hasNext(); )
          {
             Delivery d = (Delivery)i.next();
-            if (log.isTraceEnabled()) { log.trace("Releasing reference for " + d.getReference()); }            
+            if (log.isTraceEnabled()) { log.trace(this + " releasing reference for " + d.getReference()); }
          }
          txToRemoveDeliveryCallbacks.remove(tx);
       }

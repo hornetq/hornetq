@@ -66,6 +66,11 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       this(observer, reference, false);
    }
 
+   public SimpleDelivery(MessageReference reference, boolean done)
+   {
+      this(null, reference, done);
+   }
+
    public SimpleDelivery(DeliveryObserver observer, MessageReference reference, boolean done)
    {
       this.done = done;
@@ -125,8 +130,8 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    public String toString()
    {
-      return "Delivery[" + reference + "](" +
-         (cancelled ? "cancelled" : done ? "done" : "active") + ")";
+      return "Delivery" + (reference == null ? "" : "[" + reference + "]") +
+         "(" + (cancelled ? "cancelled" : done ? "done" : "active") + ")";
    }
 
    // Package protected ---------------------------------------------
