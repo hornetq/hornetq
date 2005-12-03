@@ -26,6 +26,7 @@ package org.jboss.messaging.core.distributed.replicator;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.StatefulReceiverDelivery;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
 
@@ -37,7 +38,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class ReplicatorOutputDelivery extends SimpleDelivery
+public class ReplicatorOutputDelivery extends SimpleDelivery implements StatefulReceiverDelivery
 {
    // Constants -----------------------------------------------------
 
@@ -62,13 +63,14 @@ public class ReplicatorOutputDelivery extends SimpleDelivery
       this.cancelOnMessageRejection = cancelOnMessageRejection;
    }
 
+   // StatefulReceiverDelivery implementation -----------------------
 
-   // Public --------------------------------------------------------
-
-   public Serializable getOutputID()
+   public Serializable getReceiverID()
    {
       return replicatorOutputID;
    }
+
+   // Public --------------------------------------------------------
 
    public boolean handle(Acknowledgment ack) throws Throwable
    {

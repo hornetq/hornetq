@@ -153,7 +153,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
             deliveries.put(messageID, perMessageMap);
          }
 
-         Object outputID = d.getOutputID();
+         Object outputID = d.getReceiverID();
          perMessageMap.put(outputID, d);
          if (log.isTraceEnabled()) { log.trace(this + " ready to collect acknowledgment for " + messageID + " from " + Util.guidToString(outputID)); }
       }
@@ -191,7 +191,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
          return null;
       }
 
-      ReplicatorOutputDelivery rem = (ReplicatorOutputDelivery)perMessageMap.remove(d.getOutputID());
+      ReplicatorOutputDelivery rem = (ReplicatorOutputDelivery)perMessageMap.remove(d.getReceiverID());
 
       if (log.isTraceEnabled()) { log.trace(rem == null ? "no such delivery to remove: " + d : "removed " + d); }
 
