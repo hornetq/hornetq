@@ -88,7 +88,7 @@ public class ChannelSupport implements Channel
 
    // Receiver implementation ---------------------------------------
 
-   public final Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
+   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
    {
       if (r == null)
       {
@@ -427,6 +427,7 @@ public class ChannelSupport implements Channel
    
          if (receiver == null)
          {
+            if (log.isTraceEnabled()){ log.trace(this + " passing " + ref + " to router " + router); }
             deliveries = router.handle(this, ref, null);
          }
          else
@@ -447,12 +448,13 @@ public class ChannelSupport implements Channel
                log.error("The receiver " + receiver + " is broken", t);
             }
          }
-   
+
+
          if (deliveries.isEmpty())
          {
             // no receivers, receivers that don't accept the message or broken receivers
             
-            if (log.isTraceEnabled()){ log.trace("No deliveries returned for message; there are no receivers"); }
+            if (log.isTraceEnabled()){ log.trace(this + ": no deliveries returned for message; there are no receivers"); }
             
             try
             {
@@ -526,7 +528,7 @@ public class ChannelSupport implements Channel
    {
       checkClosed();
 
-      if (log.isTraceEnabled()){ log.trace("acknowledging non transactionally " + d); }
+      if (log.isTraceEnabled()){ log.trace(this + " acknowledging non transactionally " + d); }
 
       try
       {
