@@ -137,12 +137,16 @@
          </security>
       </attribute>
    </mbean>
-      
-      
+
+   <!-- We need this to deploy MDBs -->
+
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=DLQ">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
      
    <!-- Example queues -->   
-   
-   
    
    <mbean code="org.jboss.jms.server.jmx.Queue"
       name="jboss.messaging.destination:service=Queue,name=A">
