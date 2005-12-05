@@ -54,7 +54,7 @@ public class DistributedPipe implements Receiver
 
    private static final Logger log = Logger.getLogger(DistributedPipe.class);
 
-   private static final long TIMEOUT = 3600000;
+   private static final long TIMEOUT = 3000; // TODO http://jira.jboss.org/jira/browse/JBMESSAGING-193
 
    // Static --------------------------------------------------------
    
