@@ -68,10 +68,10 @@
      <property name="messaging.version.major" value="1"/>
      <property name="messaging.version.minor" value="0"/>
      <property name="messaging.version.revision" value="0"/>
-     <property name="messaging.version.tag" value="alpha-pr2.1"/>
+     <property name="messaging.version.tag" value="alpha-pr3"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR2_1"/>
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR3"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
