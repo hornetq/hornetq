@@ -41,7 +41,7 @@
 #TARGET_TEST=testAddReceiver_6
 #TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
-TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
+#TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 #TARGET_TEST=testNACKINGReceiver
 
 
@@ -61,6 +61,9 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeAsChannelTest
 
 #TARGET_CLASS=org.jboss.test.messaging.core.persistence.JDBCUtilTest
+#TARGET_CLASS=org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest
+#TARGET_TEST=testCommit_NotXA_Long_NotStoreXid
+
 
 #
 # core - message
@@ -94,8 +97,8 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueuePeerTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
+#TARGET_TEST=testAddReceiver_2
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.RecoverableDistributedQueueTest
-#TARGET_TEST=testRecoverableDistributedChannel_3
 #TARGET_TEST=testSimpleSend
 
 #
@@ -103,8 +106,8 @@ TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.TopicPeerTest
 #TARGET_TEST=testTwoPeers_1
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
-TARGET_TEST=testDistributeTopic_1
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
+#TARGET_TEST=testDistributeTopic_1
 
 #
 # core.distributed.replicator
@@ -113,8 +116,8 @@ TARGET_TEST=testDistributeTopic_1
 #TARGET_TEST=testDelivery_5
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
-#TARGET_TEST=testReplicator_47
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
+#TARGET_TEST=testTwoReplicators_2
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
 
 #
@@ -184,6 +187,11 @@ TARGET_TEST=testDistributeTopic_1
 
 
 reldir=`dirname $0`
+outputdir="$reldir/../output"
+
+if ! mkdir -p $outputdir/logs; then
+   echo "failed to create $outputdir/logs"
+fi
 
 cygwin=false;
 case "`uname`" in
@@ -212,6 +220,8 @@ while [ "$1" != "" ]; do
     fi
     shift
 done
+
+JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output"
 
 REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 #REMOTING_LIB=$reldir/../resources/jboss-remoting.jar

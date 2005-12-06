@@ -197,6 +197,7 @@
    <target name="prepare-testdirs"
            description="Prepares the directory structure required by a test run">
       <mkdir dir="${build.tests.reports}"/>
+      <mkdir dir="${module.output}/logs"/>
    </target>
 
    <target name="tests"
@@ -213,7 +214,12 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
          <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -254,6 +260,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -292,6 +299,7 @@
                 showoutput="${junit.showoutput}"
                 timeout="${junit.timeout2}">
             <sysproperty key="remote" value="${build.tests.remote}"/>
+            <sysproperty key="module.output" value="${module.output}"/>
             <jvmarg value="-Xmx512M"/>
             <classpath>
                <pathelement location="${module.root}/etc"/>
@@ -326,6 +334,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -366,14 +375,11 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout2}">
-
-<!--
-         <jvmarg value="-Xdebug"/>
-         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
--->
-
-         <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <jvmarg value="-Xmx1024M"/>
+         <!-- <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/> -->
+
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -537,12 +543,9 @@
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="3600000">
-
-         <!--
-         <jvmarg value="-Xdebug"/>
-         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
-         -->
+         <sysproperty key="module.output" value="${module.output}"/>
          <jvmarg value="-Xmx512M"/>
+         <!-- <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/> -->
 
          <classpath>
             <pathelement location="${module.root}/etc"/>
