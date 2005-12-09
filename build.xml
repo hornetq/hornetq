@@ -111,6 +111,8 @@
        <path refid="junit.junit.classpath"/>
        <path refid="gnu.regexp.classpath"/>
        <path refid="trove.trove.classpath"/>
+       <path location="src/resources/jcommon-1.0.0-rc1.jar"/>
+       <path location="src/resources/jfreechart-1.0.0-rc1.jar"/>
     </path>
 
 
@@ -358,6 +360,7 @@
       <fileset dir="${build.classes}">
         <!-- Include everything else -->
         <include name="org/jboss/**"/>
+        <exclude name="org/jboss/jms/perf/**"/>
       </fileset>
     </jar>
 
@@ -497,6 +500,7 @@
          manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}">
             <include name="**"/>
+            <exclude name="org/jboss/jms/perf/**"/>
          </fileset>
       </jar>
    </target>
@@ -652,6 +656,24 @@
    </target>
 
    <target name="test">
+   </target>
+
+   <!-- Performance framework -->
+
+   <target name="perf-jar"
+             depends="compile"
+             description="Creates the jar for the performance tests">
+
+      <mkdir dir="${build.lib}"/>
+
+      <!-- Build the perf jar -->
+      <jar jarfile="${build.lib}/perf-framework.jar">
+          <fileset dir="${build.classes}">
+              <include name="org/jboss/test/messaging/jms/perf/**"/>
+              <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
+          </fileset>
+      </jar>
+
    </target>
 
 

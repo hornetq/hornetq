@@ -119,10 +119,8 @@
    <property name="build.tests.lib" value="${module.output}/lib"/>
    <property name="build.tests.reports" value="${module.output}/reports"/>
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
-   <property name="build.performance.tests.output" value="${module.output}/reports/performance"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="perf.jar" value="jboss-messaging-perf.jar"/>
    <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
@@ -233,13 +231,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-
                <include name="**/messaging/**/*Test.class"/>
-
-               <exclude name="**/messaging/**/performance/**"/>
-
                <exclude name="**/jms/managed/**"/>
-               <exclude name="**/jms/**/perf/**"/>
             </fileset>
          </batchtest>
       </junit>
@@ -275,13 +268,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-
                <include name="**/messaging/jms/**/*Test.class"/>
-
                <exclude name="**/jms/managed/**"/>
-               <exclude name="**/jms/perf/**"/>
-
-
             </fileset>
          </batchtest>
       </junit>
@@ -352,11 +340,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-
                <include name="**/messaging/**/*Test.class"/>
                <!-- <include name="org/jboss/test/messaging/core/distributed/ReliableDistributedQueueTest.class"/> -->
-
-               <exclude name="**/messaging/**/performance/**"/>
                <exclude name="**/messaging/jms/**"/>
             </fileset>
          </batchtest>
@@ -542,75 +527,10 @@
          <delete file="${ENV.JBOSS_HOME}/server/default/deploy/${build.tests.ejbarchive}"/>
    </target>
 
-
-
-   <target name="performance-tests"
-           depends="tests-jar, prepare-testdirs"
-           description="Runs performance tests">
-
-      <junit printsummary="${junit.printsummary}"
-             fork="true"
-             includeantruntime="${junit.includeantruntime}"
-             haltonerror="${junit.haltonerror}"
-             haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}"
-             timeout="3600000">
-         <sysproperty key="module.output" value="${module.output}"/>
-         <jvmarg value="-Xmx512M"/>
-         <!-- <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/> -->
-
-         <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <path refid="test.classpath"/>
-            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-         </classpath>
-         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <test name="org.jboss.test.messaging.jms.perf.PerfRunner"
-               fork="${junit.batchtest.fork}"
-               todir="${junit.batchtest.todir}"
-               haltonfailure="false"
-               haltonerror="false">
-         </test>
-      </junit>
-   </target>
-
-
-   <target name="perfchart" depends="tests-jar">
-        <mkdir dir="perf-output"/>
-
-        <java classname="org.jboss.test.messaging.jms.perf.chart.PerfCharter" fork="true">
-           <jvmarg value="-Xmx512M"/>
-              <classpath>
-              <pathelement location="${module.root}/etc"/>
-              <path refid="test.classpath"/>
-              <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-            </classpath>
-        </java>
-   </target>
-
-   <target name="perf-jar"
-          depends="compile"
-          description="Creates the jar for the performance tests">
-
-     <mkdir dir="${build.tests.lib}"/>
-
-     <!-- Build the perf jar -->
-     <jar jarfile="${build.tests.lib}/${perf.jar}">
-        <fileset dir="${build.tests.classes}">
-           <include name="org/jboss/test/messaging/jms/perf/**"/>
-           <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
-        </fileset>
-     </jar>
-
-   </target>
-
-
    <target name="print-testclasspath">
       <pathconvert targetos="unix" property="test.classpath.property" refid="test.classpath"/>
       <echo message="${test.classpath.property}"/>
    </target>
-
-
 
 </project>
 
