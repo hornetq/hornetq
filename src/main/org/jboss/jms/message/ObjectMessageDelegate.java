@@ -24,6 +24,7 @@ package org.jboss.jms.message;
 import java.io.Serializable;
 
 import javax.jms.JMSException;
+import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 
 /**
@@ -42,6 +43,10 @@ public class ObjectMessageDelegate extends MessageDelegate implements ObjectMess
 
    public void setObject(Serializable object) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("setObject");
+      }
       bodyChange();
       ((ObjectMessage)message).setObject(object);
    }

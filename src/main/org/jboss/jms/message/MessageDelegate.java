@@ -27,6 +27,7 @@ import java.util.HashMap;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.delegate.SessionDelegate;
 
@@ -66,6 +67,10 @@ public class MessageDelegate implements Message
    
    protected static final int STATE_RECEIVED = 2;
    
+   protected boolean propertiesReadOnly;
+   
+   protected boolean bodyReadOnly;
+   
    public void setSessionDelegate(SessionDelegate sd)
    {
       this.delegate = sd;
@@ -79,6 +84,10 @@ public class MessageDelegate implements Message
    public void setReceived()
    {
       state = STATE_RECEIVED;
+      
+      propertiesReadOnly = true;
+      
+      bodyReadOnly = true;
    }
    
    protected boolean isSent()
@@ -302,6 +311,7 @@ public class MessageDelegate implements Message
    {
       propertiesClear();
       message.clearProperties();
+      propertiesReadOnly = false;
    }
 
    public boolean propertyExists(String name) throws JMSException
@@ -361,54 +371,72 @@ public class MessageDelegate implements Message
 
    public void setBooleanProperty(String name, boolean value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setBooleanProperty(name, value);
    }
 
    public void setByteProperty(String name, byte value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setByteProperty(name, value);
    }
 
    public void setShortProperty(String name, short value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setShortProperty(name, value);
    }
 
    public void setIntProperty(String name, int value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setIntProperty(name, value);
    }
 
    public void setLongProperty(String name, long value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setLongProperty(name, value);
    }
 
    public void setFloatProperty(String name, float value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setFloatProperty(name, value);
    }
 
    public void setDoubleProperty(String name, double value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setDoubleProperty(name, value);
    }
 
    public void setStringProperty(String name, String value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setStringProperty(name, value);
    }
 
    public void setObjectProperty(String name, Object value) throws JMSException
    {
+      if (propertiesReadOnly)
+         throw new MessageNotWriteableException("Properties are read-only");
       propertyChange();
       message.setObjectProperty(name, value);
    }
@@ -425,6 +453,7 @@ public class MessageDelegate implements Message
    {
       bodyClear();
       message.clearBody();
+      bodyReadOnly = false;
    }
 
 }

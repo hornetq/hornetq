@@ -69,71 +69,56 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    {
       log.warn("JBoss Messaging does not support disabling message ID generation");
 
-      // this is to trigger IllegalStateException in case the producer is closed
-      //delegate.addMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED, Boolean.FALSE);
-      
       delegate.setDisableMessageID(value);
    }
    
    public boolean getDisableMessageID() throws JMSException
    {
-      //return ((Boolean)delegate.getMetaData(JMSAdvisor.IS_MESSAGE_ID_DISABLED)).booleanValue();
       return delegate.getDisableMessageID();
    }
    
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-     // Boolean b = value ? Boolean.TRUE : Boolean.FALSE;
-    //  delegate.addMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED, b);
       delegate.setDisableMessageTimestamp(value);
    }
    
    public boolean getDisableMessageTimestamp() throws JMSException
    {
-      //return ((Boolean)delegate.
-      //      getMetaData(JMSAdvisor.IS_MESSAGE_TIMESTAMP_DISABLED)).booleanValue();
       return delegate.getDisableMessageTimestamp();
    }
    
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      //delegate.addMetaData(JMSAdvisor.DELIVERY_MODE, new Integer(deliveryMode));
       delegate.setDeliveryMode(deliveryMode);
    }
    
    public int getDeliveryMode() throws JMSException
    {
-      //return ((Integer)delegate.getMetaData(JMSAdvisor.DELIVERY_MODE)).intValue();
       return delegate.getDeliveryMode();
    }
    
    public void setPriority(int defaultPriority) throws JMSException
    {
-      //delegate.addMetaData(JMSAdvisor.PRIORITY, new Integer(defaultPriority));
       delegate.setPriority(defaultPriority);
    }
    
    public int getPriority() throws JMSException
    {
-      //return ((Integer)delegate.getMetaData(JMSAdvisor.PRIORITY)).intValue();
       return delegate.getPriority();
    }
    
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      //delegate.addMetaData(JMSAdvisor.TIME_TO_LIVE, new Long(timeToLive));
       delegate.setTimeToLive(timeToLive);
    }
    
    public long getTimeToLive() throws JMSException
    {
-      //return ((Long)delegate.getMetaData(JMSAdvisor.TIME_TO_LIVE)).longValue();
       return delegate.getTimeToLive();
    }
    
    public Destination getDestination() throws JMSException
    {
-      //return (Destination)delegate.getMetaData(JMSAdvisor.DESTINATION);
       return delegate.getDestination();
    }
    

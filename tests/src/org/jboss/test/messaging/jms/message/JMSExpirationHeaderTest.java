@@ -117,7 +117,7 @@ public class JMSExpirationHeaderTest extends MessageTest
             }
             catch(Exception e)
             {
-               log.info("receive() exits with an exception", e);
+               log.trace("receive() exits with an exception", e);
             }
             finally
             {
@@ -151,7 +151,7 @@ public class JMSExpirationHeaderTest extends MessageTest
             }
             catch(Exception e)
             {
-               log.info("receive() exits with an exception", e);
+               log.trace("receive() exits with an exception", e);
             }
             finally
             {
@@ -249,11 +249,11 @@ public class JMSExpirationHeaderTest extends MessageTest
             }
             catch(Exception e)
             {
-               log.info("receive() exits with an exception", e);
+               log.trace("receive() exits with an exception", e);
             }
             catch(Throwable t)
             {
-               log.info("receive() exits with an throwable", t);
+               log.trace("receive() exits with an throwable", t);
             }
             finally
             {

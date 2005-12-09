@@ -21,56 +21,38 @@
   */
 package org.jboss.jms.delegate;
 
-import java.io.Serializable;
-
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
-import org.jboss.jms.MetaDataRepository;
-import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 
 /**
+ * Represents the minimal set of operations to provide connection
+ * functionality.
+ * Some of the methods may be implemented on the server, others
+ * will be handled in the advice stack.
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface ConnectionDelegate extends Closeable, MetaDataRepository
-{
-   public SessionDelegate createSessionDelegate(boolean transacted,
-                                                int acknowledgmentMode,
-                                                boolean isXA)
-          throws JMSException;
-
-   public String getClientID() throws JMSException;
-   public void setClientID(String id) throws JMSException;
-
-   public void start() throws JMSException;
-   public void stop() throws JMSException;   
+public interface ConnectionDelegate extends ConnectionEndpoint
+{      
+   ExceptionListener getExceptionListener() throws JMSException;
    
-   public ExceptionListener getExceptionListener() throws JMSException;
-   public void setExceptionListener(ExceptionListener listener) throws JMSException;
+   void setExceptionListener(ExceptionListener listener) throws JMSException;
   
-	public void sendTransaction(TransactionRequest request) throws JMSException;
-
-   public Serializable getConnectionID();
+   ConnectionMetaData getConnectionMetaData() throws JMSException;
    
-   public ConnectionMetaData getConnectionMetaData() throws JMSException;
-   
-   public JBossConnectionConsumer createConnectionConsumer(Destination dest,
-                                                           String subscriptionName,
-                                                           String messageSelector,
-                                                           ServerSessionPool sessionPool,
-                                                           int maxMessages) throws JMSException;
-   
-   public void setResourceManager(ResourceManager rm);
-   public ResourceManager getResourceManager();
-   
+   JBossConnectionConsumer createConnectionConsumer(Destination dest,
+                                                    String subscriptionName,
+                                                    String messageSelector,
+                                                    ServerSessionPool sessionPool,
+                                                    int maxMessages) throws JMSException;
 }

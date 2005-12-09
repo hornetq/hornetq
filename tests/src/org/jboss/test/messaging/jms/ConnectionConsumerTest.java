@@ -95,16 +95,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
-
-//   public void testWibble() throws Exception
-//   {
-//      for (int i = 0; i < 1000; i++)
-//      {
-//         log.info("run:" + i);
-//         dotestCloseWhileProcessing();
-//      }
-//   }
-   
+ 
    public void testSimple() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -131,7 +122,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
          
-         log.info("Started connection consumer");
+         log.trace("Started connection consumer");
          
          connProducer = cf.createConnection();
             
@@ -144,7 +135,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             prod.send(m);
          }
          
-         log.info("Sent messages");
+         log.trace("Sent messages");
          
          //Wait for messages
          
@@ -160,13 +151,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages");
          }
          
-         log.info("Received all messages");
+         log.trace("Received all messages");
          
-         log.info("closing connection consumer ...");
+         log.trace("closing connection consumer ...");
          
          cc.close();
 
-         log.info("closing connections ...");
+         log.trace("closing connections ...");
 
          connProducer.close();
          connProducer = null;
@@ -208,7 +199,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
          
-         log.info("Started connection consumer");
+         log.trace("Started connection consumer");
          
          connProducer = cf.createConnection();
             
@@ -223,7 +214,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          prod.send(m3);
          
          
-         log.info("Sent messages");
+         log.trace("Sent messages");
          
          //Wait for messages
          
@@ -236,7 +227,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          cc.close();
          
-         log.info("Closed connection consumer");
+         log.trace("Closed connection consumer");
          
          connProducer.close();
          connProducer = null;
@@ -280,7 +271,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
          
-         log.info("Started connection consumer");
+         log.trace("Started connection consumer");
          
          connProducer = cf.createConnection();
             
@@ -293,7 +284,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             prod.send(m);
          }
          
-         log.info("Sent messages");
+         log.trace("Sent messages");
          
 
          cc.close();
@@ -358,7 +349,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          {
     
             
-            //log.info("Received message " + msgsReceived);
+            //log.trace("Received message " + msgsReceived);
             
             TextMessage tm = (TextMessage)message;
             
@@ -409,13 +400,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
              
             TextMessage tm = (TextMessage)message;
             
-            log.info("Got message " + tm.getText() + " count=" + count);
+            log.trace("Got message " + tm.getText() + " count=" + count);
             
             if (count == 1)
             {
                if (!tm.getText().equals("a"))
                {
-                  log.info("Expected a but was " + tm.getText());
+                  log.trace("Expected a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -424,7 +415,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("b"))
                {
-                  log.info("Expected b but was " + tm.getText());
+                  log.trace("Expected b but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -433,7 +424,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("c"))
                {
-                  log.info("Expected c but was " + tm.getText());
+                  log.trace("Expected c but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -441,7 +432,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                {
                   if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
                   {
-                     log.info("Rolling back");
+                     log.trace("Rolling back");
                      sess.rollback();
                   }                  
                }
@@ -450,13 +441,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("a"))
                {
-                  log.info("Expected a but was " + tm.getText());
+                  log.trace("Expected a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.info("Redelivered flag not set");
+                  log.trace("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -465,13 +456,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("b"))
                {
-                  log.info("Expected b but was " + tm.getText());
+                  log.trace("Expected b but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.info("Redelivered flag not set");
+                  log.trace("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -480,13 +471,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("c"))
                {
-                  log.info("Expected c but was " + tm.getText());
+                  log.trace("Expected c but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.info("Redelivered flag not set");
+                  log.trace("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -494,7 +485,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                {
                   if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
                   {
-                     log.info("Committing");
+                     log.trace("Committing");
                      sess.commit();
                   }                 
                   latch.release();

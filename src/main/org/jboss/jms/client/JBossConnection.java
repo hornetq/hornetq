@@ -214,13 +214,8 @@ public class JBossConnection implements
 
    }
 
-   // Public --------------------------------------------------------
+   // Public --------------------------------------------------------   
    
-   public Serializable getConnectionID()
-   {
-      return delegate.getConnectionID();
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

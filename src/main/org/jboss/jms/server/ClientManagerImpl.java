@@ -24,7 +24,7 @@ package org.jboss.jms.server;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -65,10 +65,10 @@ public class ClientManagerImpl implements ClientManager
    // Public --------------------------------------------------------
    
 
-   public ServerConnectionDelegate putConnectionDelegate(Serializable connectionID,
-                                                         ServerConnectionDelegate d)
+   public ServerConnectionEndpoint putConnectionDelegate(Serializable connectionID,
+                                                         ServerConnectionEndpoint d)
    {
-      return (ServerConnectionDelegate)connections.put(connectionID, d);
+      return (ServerConnectionEndpoint)connections.put(connectionID, d);
    }
    
    public void removeConnectionDelegate(Serializable connectionID)
@@ -76,9 +76,9 @@ public class ClientManagerImpl implements ClientManager
       connections.remove(connectionID);
    }
 
-   public ServerConnectionDelegate getConnectionDelegate(Serializable connectionID)
+   public ServerConnectionEndpoint getConnectionDelegate(Serializable connectionID)
    {
-      return (ServerConnectionDelegate)connections.get(connectionID);
+      return (ServerConnectionEndpoint)connections.get(connectionID);
    }
    
    

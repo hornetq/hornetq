@@ -267,8 +267,7 @@ abstract class RoutableSupport implements Routable, Externalizable
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-     
+   {     
       messageID = (Serializable)in.readObject();
       reliable = in.readBoolean();
       expiration = in.readLong();

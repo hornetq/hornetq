@@ -32,9 +32,12 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
+import org.jboss.aop.Advised;
+import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -63,7 +66,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    protected SessionDelegate sess;
    
-   protected String receiverID;
+   protected String consumerID;
    
    /** The destination this consumer will receive messages from */
    protected Destination destination;
@@ -109,7 +112,6 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    {
       trace = log.isTraceEnabled();
       
-      //this.connection = conn;
       this.destination = dest;
       this.serverSessionPool = sessPool;
       this.maxMessages = maxMessages;
@@ -120,7 +122,11 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       //via this session!
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
       cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
-      receiverID = cons.getReceiverID();
+      
+      ConsumerState state = 
+      (ConsumerState)(((Advised)cons)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE));
+      
+      this.consumerID = state.getConsumerID();
 
       id = threadId.increment();
       internalThread = new Thread(this, "Connection Consumer for dest " + destination + " id=" + id);
@@ -250,7 +256,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
                for (int i = 0; i < queue.size(); i++)
                {
-                  session.addAsfMessage((Message) queue.get(i), receiverID, cons);
+                  session.addAsfMessage((Message) queue.get(i), consumerID, cons);
                   if (trace) { log.trace("Added message to session"); }
                }
 

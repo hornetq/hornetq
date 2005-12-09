@@ -38,7 +38,6 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
@@ -95,53 +94,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       reservedIdentifiers.add("ESCAPE");
    }
 
-   /**
-    * The method creates a physical copy of a given message, which is
-    * a native JBoss Messaging message or a foreign message. Returns a JBossByteMessage for a ByteMessage,
-    * a JBossMapMessage for a MapMessage, a JBossObjectMessage for an ObjectMessage,
-    * a JBossStreamMessage for a StreamMessage, a JBossTextMessage for a TextMessage and
-    * a JBossMessage for a Message, if none of the above apply.
-    */
-//   public static JBossMessage copy(Message m) throws JMSException
-//   {
-//
-//      if (log.isTraceEnabled()) { log.trace("Copying message"); }
-//
-//      JBossMessage copy = null;
-//      if (m instanceof JBossMessage)
-//      {
-//         copy = ((JBossMessage)m).doClone();
-//      }
-//      else if (m instanceof BytesMessage)
-//      {
-//         copy = new JBossBytesMessage((BytesMessage)m);
-//      }
-//      else if (m instanceof MapMessage)
-//      {
-//         copy = new JBossMapMessage((MapMessage)m);
-//      }
-//      else if (m instanceof ObjectMessage)
-//      {
-//         copy = new JBossObjectMessage((ObjectMessage)m);
-//      }
-//      else if (m instanceof StreamMessage)
-//      {
-//         copy = new JBossStreamMessage((StreamMessage)m);
-//      }
-//      else if (m instanceof TextMessage)
-//      {
-//         copy = new JBossTextMessage((TextMessage)m);
-//      }
-//      else if (m instanceof Message)
-//      {
-//         copy = new JBossMessage((Message)m);
-//      }
-//     
-//      return copy;
-//   }
-   
-   
-   
    public static MessageDelegate createThinDelegate(JBossMessage m) throws JMSException
    {
       MessageDelegate del = null;
@@ -182,9 +134,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    protected String jmsType;
 
-   protected transient boolean propertiesReadOnly = false;
+   //protected transient boolean propertiesReadOnly = false;
    
-   protected transient boolean bodyReadOnly = false;
+   //protected transient boolean bodyReadOnly = false;
 
    protected Map properties;
    
@@ -195,18 +147,26 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    protected String connectionID;
    
    // Constructors --------------------------------------------------
-
+ 
+   /**
+    * Only deserialization should use this constructor directory
+    */
    public JBossMessage()
-   {
-      this((String) null);
+   {     
    }
-
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
    public JBossMessage(String messageID)
    {
       this(messageID, true, 0, System.currentTimeMillis(), 4, 0,
            null, null, null, null, true, null, true, null, null, null);
    }
 
+   /*
+    * This constructor is used to construct messages when retrieved from persistence storage
+    */
    public JBossMessage(String messageID,
                        boolean reliable,
                        long expiration,
@@ -286,9 +246,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       super(other);
       this.destination = other.destination;
       this.replyToDestination = other.replyToDestination;
-      this.jmsType = other.jmsType;
-      this.propertiesReadOnly = other.propertiesReadOnly;
-      this.bodyReadOnly = other.bodyReadOnly;
+      this.jmsType = other.jmsType;      
       this.properties = other.properties;     
       this.correlationID = other.correlationID;
       this.correlationIDBytes = other.correlationIDBytes;
@@ -505,13 +463,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public void clearProperties() throws JMSException
    {
       properties.clear();
-      propertiesReadOnly = false;
    }
 
    public void clearBody() throws JMSException
    {
       this.payload = null;
-      this.bodyReadOnly = false;
    }
 
    public boolean propertyExists(String name) throws JMSException
@@ -679,8 +635,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setBooleanProperty(String name, boolean value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Boolean b = Primitives.valueOf(value);
       checkProperty(name, b);
       properties.put(name, b);
@@ -688,8 +642,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setByteProperty(String name, byte value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Byte b = new Byte(value);
       checkProperty(name, b);
       properties.put(name, b);
@@ -697,8 +649,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setShortProperty(String name, short value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Short s = new Short(value);
       checkProperty(name, s);
       properties.put(name, s);
@@ -706,8 +656,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setIntProperty(String name, int value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Integer i = new Integer(value);
       checkProperty(name, i);
       properties.put(name, i);
@@ -715,8 +663,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setLongProperty(String name, long value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Long l = new Long(value);
       checkProperty(name, l);
       properties.put(name, l);
@@ -724,8 +670,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setFloatProperty(String name, float value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Float f = new Float(value);
       checkProperty(name, f);
       properties.put(name, f);
@@ -733,8 +677,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setDoubleProperty(String name, double value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       Double d = new Double(value);
       checkProperty(name, d);
       properties.put(name, d);
@@ -742,19 +684,12 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setStringProperty(String name, String value) throws JMSException
    {
-      if (propertiesReadOnly)
-         throw new MessageNotWriteableException("Properties are read-only");
       checkProperty(name, value);
       this.properties.put(name, value);
    }
 
    public void setObjectProperty(String name, Object value) throws JMSException
    {
-      if (propertiesReadOnly)
-      {
-         throw new MessageNotWriteableException("Properties are read-only");
-      }
-
       checkProperty(name, value);
 
       if (value instanceof Boolean)
@@ -800,12 +735,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    }
 
    // Public --------------------------------------------------------
-   
-   public void doBeforeReceipt()
-   {
-      this.propertiesReadOnly = true;
-      this.bodyReadOnly = true;
-   }
    
    public void doAfterSend() throws JMSException
    {      

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE aop PUBLIC
+   "-//JBoss//DTD JBOSS AOP 1.0//EN"
+   "http://www.jboss.org/aop/dtd/jboss-aop_1_0.dtd">
+
+<aop>
+
+  <prepare expr="execution(* org.jboss.jms.client.stubs.BrowserStub->*(..)) AND !execution(* org.jboss.jms.client.aop.ClientStub->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.stubs.ConnectionFactoryStub->*(..)) AND !execution(* org.jboss.jms.client.aop.ClientStub->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.stubs.ConnectionStub->*(..)) AND !execution(* org.jboss.jms.client.aop.ClientStub->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.stubs.SessionStub->*(..)) AND !execution(* org.jboss.jms.client.aop.ClientStub->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.stubs.ProducerStub->*(..)) AND !execution(* org.jboss.jms.client.aop.ClientStub->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.stubs.ConsumerStub->*(..)) AND !execution(* org.jboss.jms.client.aop.ClientStub->*(..))"/>
+
+
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ConnectionFactoryEndpointDelegate->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ConnectionEndpointDelegate->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.SessionEndpointDelegate->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ConsumerEndpointDelegate->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ProducerEndpointDelegate->*(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.BrowserEndpointDelegate->*(..))"/>
+
+</aop>

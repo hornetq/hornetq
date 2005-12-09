@@ -120,9 +120,7 @@ public class TransactedSessionTest extends MessagingTestCase
          mRec1 = (TextMessage)consumer1.receive(2000);
          assertEquals("igloo", mRec1.getText());
          assertTrue(mRec1.getJMSRedelivered());
-         
-         
-         
+                           
          sess1.commit();
       }
       finally
@@ -524,12 +522,12 @@ public class TransactedSessionTest extends MessagingTestCase
       
       TextMessage mSent = sess.createTextMessage("igloo");
       producer.send(mSent);
-      log.info("sent1");
+      log.trace("sent1");
       
       sess.commit();
       
       TextMessage mRec = (TextMessage)consumer.receive();
-      log.info("Got 1");
+      log.trace("Got 1");
       assertNotNull(mRec);
       assertEquals("igloo", mRec.getText());
       
@@ -540,9 +538,9 @@ public class TransactedSessionTest extends MessagingTestCase
       
       sess.commit();
       
-      log.info("Receiving 2");
+      log.trace("Receiving 2");
       mRec = (TextMessage)consumer.receive();
-      log.info("Received 2");
+      log.trace("Received 2");
       assertNotNull(mRec);
       assertEquals("rollback", mRec.getText());
             

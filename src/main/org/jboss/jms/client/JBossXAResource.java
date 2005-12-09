@@ -26,6 +26,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
@@ -54,6 +55,9 @@ public class JBossXAResource implements XAResource
    // Attributes ----------------------------------------------------
 
    private ResourceManager rm;
+   
+   private SessionState sessionState;
+   
    private SessionDelegate session;
    
    private Object currentTxID;
@@ -65,14 +69,15 @@ public class JBossXAResource implements XAResource
    /**
     * Create a new SpyXAResource
     *
-    * @param session the session
+    * @param sessionState the session
     */
-   public JBossXAResource(ResourceManager rm, SessionDelegate session)
+   public JBossXAResource(ResourceManager rm, SessionDelegate session, SessionState sessionState)
    {
       trace = log.isTraceEnabled();
       
       this.rm = rm;
-      this.session = session;            
+      this.session = session;
+      this.sessionState = sessionState;            
    }
    
    // Public --------------------------------------------------------
@@ -178,7 +183,7 @@ public class JBossXAResource implements XAResource
            
       try
       {
-         String asfReceiverID = session.getAsfReceiverID();
+         String asfReceiverID = sessionState.getAsfReceiverID();
          session.cancelDeliveries(asfReceiverID);
       }
       catch (JMSException e)

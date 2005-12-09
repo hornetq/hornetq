@@ -33,7 +33,6 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
 
 import org.jboss.util.Primitives;
 
@@ -66,11 +65,25 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    // Constructors --------------------------------------------------
 
+   /**
+    * Only deserialization should use this constructor directory
+    */
    public JBossMapMessage()
+   {     
+   }
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public JBossMapMessage(String messageID)
    {
+      super(messageID);
       payload = new HashMap();
    }
 
+   /*
+    * This constructor is used to construct messages when retrieved from persistence storage
+    */
    public JBossMapMessage(String messageID,
                            boolean reliable,
                            long expiration,
@@ -96,8 +109,6 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public JBossMapMessage(JBossMapMessage other)
    {
       super(other);
-      payload = new HashMap((Map)other.payload);
-      bodyReadOnly = other.bodyReadOnly;
    }
 
    /**
@@ -138,127 +149,77 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setBoolean(String name, boolean value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-      }
-
       ((Map)payload).put(name, Primitives.valueOf(value));
-
    }
 
    public void setByte(String name, byte value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Byte(value));
-
    }
 
    public void setShort(String name, short value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Short(value));
-
    }
 
    public void setChar(String name, char value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Character(value));
-
    }
 
    public void setInt(String name, int value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Integer(value));
-
    }
 
    public void setLong(String name, long value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Long(value));
-
    }
 
    public void setFloat(String name, float value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Float(value));
-
    }
 
    public void setDouble(String name, double value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, new Double(value));
-
    }
 
    public void setString(String name, String value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, value);
-
    }
 
    public void setBytes(String name, byte[] value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       ((Map)payload).put(name, value.clone());
-
    }
 
    public void setBytes(String name, byte[] value, int offset, int length) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       if (offset + length > value.length)
          throw new JMSException("Array is too small");
       byte[] temp = new byte[length];
       for (int i = 0; i < length; i++)
          temp[i] = value[i + offset];
-
       ((Map)payload).put(name, temp);
-
    }
 
    public void setObject(String name, Object value) throws JMSException
    {
       checkName(name);
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Message is ReadOnly !");
-
       if (value instanceof Boolean)
          ((Map)payload).put(name, value);
       else if (value instanceof Byte)

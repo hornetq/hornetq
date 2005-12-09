@@ -21,63 +21,45 @@
   */
 package org.jboss.jms.delegate;
 
-import javax.jms.JMSException;
 import javax.jms.Destination;
-import javax.jms.Message;
+import javax.jms.JMSException;
 
-import org.jboss.jms.client.Closeable;
-import org.jboss.jms.MetaDataRepository;
+import org.jboss.jms.server.endpoint.ProducerEndpoint;
 
 /**
+ * Represents the minimal set of operations to provide producer
+ * functionality.
+ * Some of the methods may be implemented on the server, others
+ * will be handled in the advice stack.
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface ProducerDelegate extends Closeable, MetaDataRepository
+public interface ProducerDelegate extends ProducerEndpoint
 {
-   /**
-    * Sends a message to the JMS provider.
-    *
-    * @param destination - the destination to send the message to. If null, the message will be sent
-    *        to the producer's default destination.
-    * @param message - the message to be sent.
-    * @param deliveryMode - the delivery mode to use when sending this message. Must be one of
-    *        DeliveryMode.PERSISTENT or DeliveryMode.NON_PERSISTENT. If -1, the message will be sent
-    *        using the producer's default delivery mode.
-    * @param priority - the priority to use when sending this message. A valid priority must be in
-    *        the 0-9 range. If -1, the message will be sent using the producer's default priority.
-    * @param timeToLive - the time to live to use when sending this message (in ms). Long.MIN_VALUE
-    *        means the message will be sent using the producer's default timeToLive. 0 means live
-    *        forever. For any other negative value, the message will be already expired when it is
-    *        sent.
-    *
-    * @throws JMSException
-    */
-   public void send(Destination destination, Message message, int deliveryMode,
-                    int priority, long timeToLive) throws JMSException;
+   void setDisableMessageID(boolean value) throws JMSException;
    
-
-   public void setDisableMessageID(boolean value) throws JMSException;
+   boolean getDisableMessageID() throws JMSException;
    
-   public boolean getDisableMessageID() throws JMSException;
+   void setDisableMessageTimestamp(boolean value) throws JMSException;
    
-   public void setDisableMessageTimestamp(boolean value) throws JMSException;
+   boolean getDisableMessageTimestamp() throws JMSException;
    
-   public boolean getDisableMessageTimestamp() throws JMSException;
+   void setDeliveryMode(int deliveryMode) throws JMSException;
    
-   public void setDeliveryMode(int deliveryMode) throws JMSException;
+   int getDeliveryMode() throws JMSException;
    
-   public int getDeliveryMode() throws JMSException;
+   void setPriority(int defaultPriority) throws JMSException;
    
-   public void setPriority(int defaultPriority) throws JMSException;
+   int getPriority() throws JMSException;
    
-   public int getPriority() throws JMSException;
+   void setTimeToLive(long timeToLive) throws JMSException;
    
-   public void setTimeToLive(long timeToLive) throws JMSException;
+   long getTimeToLive() throws JMSException;
    
-   public long getTimeToLive() throws JMSException;
+   Destination getDestination() throws JMSException;
    
-   public Destination getDestination() throws JMSException;
+   void setDestination(Destination dest);
    
-   public void setDestination(Destination dest);
-      
 }

@@ -21,21 +21,21 @@
   */
 package org.jboss.jms.server.remoting;
 
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-import org.jboss.logging.Logger;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.Dispatcher;
-import org.jboss.jms.server.container.JMSAdvisor;
-
-import javax.management.MBeanServer;
-import java.util.Map;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collection;
+import java.util.Map;
+
+import javax.management.MBeanServer;
+
+import org.jboss.aop.Dispatcher;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -48,7 +48,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JMSServerInvocationHandler.class);
-
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -57,7 +57,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    private MBeanServer server;
 
    protected Map callbackHandlers;
-
+   
    // Constructors --------------------------------------------------
 
    public JMSServerInvocationHandler()
@@ -70,19 +70,23 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public void setMBeanServer(MBeanServer server)
    {
       this.server = server;
-      log.debug("set MBeanServer " + this.server);
+      if (log.isTraceEnabled()) { log.trace("set MBeanServer " + this.server); }
    }
 
    public void setInvoker(ServerInvoker invoker)
    {
       this.invoker = invoker;
-      log.debug("set ServerInvoker " + this.invoker);
+      if (log.isTraceEnabled()) {log.trace("set ServerInvoker " + this.invoker); }
    }
 
    public Object invoke(InvocationRequest invocation) throws Throwable
-   {
-      Invocation i =(Invocation)invocation.getParameter();
-      String s = (String)i.getMetaData(JMSAdvisor.JMS, JMSAdvisor.REMOTING_SESSION_ID);
+   {      
+      if (log.isTraceEnabled()) { log.trace(this + "Received invocation: " + invocation); }
+      
+      MethodInvocation i = (MethodInvocation)invocation.getParameter();
+    
+      String s = (String)i.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.REMOTING_SESSION_ID);
+      
       if (s != null)
       {
          Object callbackHandler = null;
@@ -92,19 +96,21 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
          if (callbackHandler != null)
          {
-            i.getMetaData().addMetaData(JMSAdvisor.JMS, JMSAdvisor.CALLBACK_HANDLER, callbackHandler);
+            i.getMetaData().addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
          }
          else
          {
             throw new javax.jms.IllegalStateException("Cannot find callback handler for session id " + s);
          }
       }
+
       return Dispatcher.singleton.invoke(i);
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)
    {
-      log.debug("adding callback handler: " + callbackHandler);
+      if (log.isTraceEnabled()) { log.trace("adding callback handler: " + callbackHandler); }
+      
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
          ServerInvokerCallbackHandler h = (ServerInvokerCallbackHandler)callbackHandler;
@@ -129,7 +135,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      log.debug("removing callback handler: " + callbackHandler);
+      if (log.isTraceEnabled()) { log.trace("removing callback handler: " + callbackHandler); }
       synchronized(callbackHandlers)
       {
          for(Iterator i = callbackHandlers.keySet().iterator(); i.hasNext();)
@@ -156,7 +162,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    }
 
    // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

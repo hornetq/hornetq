@@ -79,6 +79,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddRemoveDeliveryNonTx() throws Exception
    {
+      if (ServerManagement.isRemote()) return;      
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
@@ -116,6 +118,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddRemoveMessageRefNonTx() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
@@ -150,11 +154,11 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddRetrieveRemoveMessage() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
-      //MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
-      //Channel channel = new SimpleChannel("channel0", ms);
-      
+
       Message[] messages = createMessages();
 
       for (int i = 0; i < messages.length; i++)
@@ -187,6 +191,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
    public void testGetDeliveries() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
@@ -224,6 +230,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetMessageReferences() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
@@ -260,6 +269,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRemoveAllMessageData() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
@@ -356,42 +367,42 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRollback_NotXA_Long_NotStoreXid() throws Exception
    {
-      doTransactionCommit(false, false, false);
+      doTransactionRollback(false, false, false);
    }
    
    public void testRollback_NotXA_Long_StoreXid() throws Exception
    {
-      doTransactionCommit(false, false, true);
+      doTransactionRollback(false, false, true);
    }
    
    public void testRollback_NotXA_Guid_NotStoreXid() throws Exception
    {
-      doTransactionCommit(false, true, false);
+      doTransactionRollback(false, true, false);
    }
    
    public void testRollback_NotXA_Guid_StoreXid() throws Exception
    {
-      doTransactionCommit(false, true, true);
+      doTransactionRollback(false, true, true);
    }
          
    public void testRollback_XA_Long_NotStoreXid() throws Exception
    {
-      doTransactionCommit(true, false, false);
+      doTransactionRollback(true, false, false);
    }
    
    public void testRollback_XA_Long_StoreXid() throws Exception
    {
-      doTransactionCommit(true, false, true);
+      doTransactionRollback(true, false, true);
    }
    
    public void testRollback_XA_Guid_NotStoreXid() throws Exception
    {
-      doTransactionCommit(true, true, false);
+      doTransactionRollback(true, true, false);
    }
    
    public void testRollback_XA_Guid_StoreXid() throws Exception
    {
-      doTransactionCommit(true, true, true);
+      doTransactionRollback(true, true, true);
    }
    
    
@@ -711,6 +722,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    protected void doTransactionCommit(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       if (idIsGuid)
       {
@@ -853,6 +866,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    protected void doTransactionRollback(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       if (idIsGuid)
       {

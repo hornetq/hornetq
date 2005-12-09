@@ -22,6 +22,7 @@
 package org.jboss.jms.message;
 
 import javax.jms.JMSException;
+import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
 /**
@@ -41,6 +42,8 @@ public class TextMessageDelegate extends MessageDelegate implements TextMessage
    
    public void setText(String string) throws JMSException
    {
+      if (bodyReadOnly)
+         throw new MessageNotWriteableException("Cannot set the content; message is read-only");
       bodyChange();
       ((TextMessage)message).setText(string);
    }

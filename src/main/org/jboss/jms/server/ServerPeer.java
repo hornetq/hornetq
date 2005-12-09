@@ -21,8 +21,9 @@
   */
 package org.jboss.jms.server;
 
-import java.io.Serializable;
-import java.lang.reflect.Proxy;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,22 +36,14 @@ import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.jboss.aop.AspectManager;
-import org.jboss.aop.ClassAdvisor;
 import org.jboss.aop.Dispatcher;
-import org.jboss.aop.DomainDefinition;
-import org.jboss.aop.advice.AdviceStack;
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.container.JMSInvocationHandler;
-import org.jboss.jms.client.container.RemotingClientInterceptor;
+import org.jboss.jms.client.stubs.ConnectionFactoryStub;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.server.container.JMSAdvisor;
-import org.jboss.jms.server.endpoint.ServerConnectionFactoryDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityManager;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
@@ -67,6 +60,7 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
  * A JMS server peer.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -78,8 +72,11 @@ public class ServerPeer
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
    private static final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
+   
    private static final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
+   
    private static ObjectName DESTINATION_MANAGER_OBJECT_NAME;
+   
    private static ObjectName STATE_MANAGER_OBJECT_NAME;
 
    static
@@ -97,34 +94,31 @@ public class ServerPeer
       }
    }
 
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    protected String serverPeerID;
+   
    protected InvokerLocator locator;
+   
    protected ObjectName connector;
 
-
    protected ClientManager clientManager;
+   
    protected StateManager stateManager;
+   
    protected DestinationManagerImpl destinationManager;
+   
    protected SecurityManager securityManager;
+   
    protected Map connFactoryDelegates;
+   
    protected MBeanServer mbeanServer;
+   
    protected TransactionRepository txRepository;
 
    protected boolean started;
-
-   protected ClassAdvisor connFactoryAdvisor;
-   protected ClassAdvisor connAdvisor;
-   protected ClassAdvisor sessionAdvisor;
-   protected ClassAdvisor producerAdvisor;
-   protected ClassAdvisor consumerAdvisor;
-	protected ClassAdvisor browserAdvisor;
-   protected ClassAdvisor genericAdvisor;
-
 
    // This thread pool controls the number of threads used to deliver messages to consumers
    protected PooledExecutor threadPool;
@@ -135,6 +129,10 @@ public class ServerPeer
    
    protected int connFactoryIDSequence;
    
+   protected JMSServerInvocationHandler handler;
+   
+   protected byte[] clientAOPConfig;
+   
 
    // Constructors --------------------------------------------------
 
@@ -142,11 +140,14 @@ public class ServerPeer
    public ServerPeer(String serverPeerID) throws Exception
    {
       this.serverPeerID = serverPeerID;
+      
       this.connFactoryDelegates = new HashMap();
 
       // the default value to use, unless the JMX attribute is modified
       connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
+      
       securityManager = new SecurityManager();
+      
       started = false;
    }
 
@@ -167,7 +168,9 @@ public class ServerPeer
       {
          return;
       }
-
+      
+      loadClientAOPConfig();
+      
       log.info(this + " starting");
       
       mbeanServer = findMBeanServer();
@@ -182,6 +185,7 @@ public class ServerPeer
       ms = new PersistentMessageStore(serverPeerID, pm);
 
       clientManager = new ClientManagerImpl(this);
+      
       destinationManager = new DestinationManagerImpl(this);
             
       JDBCStateManager jdbcStateManager = new JDBCStateManager(this);
@@ -233,7 +237,6 @@ public class ServerPeer
       threadPool = new PooledExecutor(new LinkedQueue(), 10);
 
       initializeRemoting();
-      initializeAdvisors();
 
       mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
       
@@ -242,7 +245,7 @@ public class ServerPeer
       securityManager.init();
       
       setupConnectionFactories();
-
+      
       started = true;
 
       log.info("JMS " + this + " started");
@@ -278,7 +281,6 @@ public class ServerPeer
 
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
-      tearDownAdvisors();
 
       started = false;
 
@@ -291,12 +293,6 @@ public class ServerPeer
       log.debug(this + " destroyed");
    }
    
-   public ServerPeer getServerPeer()
-   {
-      return this;
-   }
-
-
    //
    // end of JMX operations
    //
@@ -329,8 +325,7 @@ public class ServerPeer
    {
       connector = on;
    }
-   
-   
+      
    public void setSecurityDomain(String securityDomain)
    {
       securityManager.setSecurityDomain(securityDomain);
@@ -403,39 +398,6 @@ public class ServerPeer
       return (ConnectionFactoryDelegate)connFactoryDelegates.get(connectionFactoryID);
    }
 
-
-
-   public ClassAdvisor getConnectionFactoryAdvisor()
-   {
-      return connFactoryAdvisor;
-   }
-
-   public ClassAdvisor getConnectionAdvisor()
-   {
-      return connAdvisor;
-   }
-
-   public ClassAdvisor getSessionAdvisor()
-   {
-      return sessionAdvisor;
-   }
-
-   public ClassAdvisor getProducerAdvisor()
-   {
-      return producerAdvisor;
-   }
-
-   public ClassAdvisor getBrowserAdvisor()
-   {
-      return browserAdvisor;
-   }
-
-   public ClassAdvisor getConsumerAdvisor()
-   {
-      return consumerAdvisor;
-   }
-
-
    public PooledExecutor getThreadPool()
    {
       return threadPool;
@@ -446,13 +408,16 @@ public class ServerPeer
       return ms;
    }
 
-
    public PersistenceManager getPersistenceManager()
    {
       return pm;
    }
-
    
+   public byte[] getClientAOPConfig()
+   {
+      return clientAOPConfig;
+   }
+
    public String toString()
    {
       StringBuffer sb = new StringBuffer();
@@ -461,6 +426,7 @@ public class ServerPeer
       sb.append(")");
       return sb.toString();
    }
+   
 
    // Package protected ---------------------------------------------
 
@@ -468,95 +434,25 @@ public class ServerPeer
 
    // Private -------------------------------------------------------
 
-   private static String[] domainNames = { "ServerConnectionFactoryDelegate",
-                                           "ServerConnectionDelegate",
-                                           "ServerSessionDelegate",
-                                           "ServerProducerDelegate",
-														 "ServerConsumerDelegate",
-                                           "ServerBrowserDelegate",
-                                           "GenericTarget"};
-
-   private void initializeAdvisors() throws Exception
-   {
-
-      ClassAdvisor[] advisors = new ClassAdvisor[7];
-
-      for(int i = 0; i < domainNames.length; i++)
-      {
-         DomainDefinition domainDefinition = AspectManager.instance().getContainer(domainNames[i]);
-         if (domainDefinition == null)
-         {
-            throw new RuntimeException("Domain " + domainNames[i] + " not found");
-         }
-
-         //TODO Use AOPManager interface once that has stabilized
-         advisors[i] = new JMSAdvisor(domainNames[i], (AspectManager)domainDefinition.getManager(), this);
-         Class c = Class.forName("org.jboss.jms.server.endpoint." + domainNames[i]);
-         advisors[i].attachClass(c);
-
-         // register the advisor with the Dispatcher
-         Dispatcher.singleton.registerTarget(advisors[i].getName(), advisors[i]);
-      }
-      connFactoryAdvisor = advisors[0];
-      connAdvisor = advisors[1];
-      sessionAdvisor = advisors[2];
-      producerAdvisor = advisors[3];
-		consumerAdvisor = advisors[4];
-      browserAdvisor = advisors[5];
-      genericAdvisor = advisors[6];
-   }
-
-   private void tearDownAdvisors() throws Exception
-   {
-      for(int i = 0; i < domainNames.length; i++)
-      {
-         Dispatcher.singleton.unregisterTarget(domainNames[i]);
-      }
-      connFactoryAdvisor = null;
-      connAdvisor = null;
-      sessionAdvisor = null;
-      producerAdvisor = null;
-      browserAdvisor = null;
-   }
 
    private ConnectionFactory createConnectionFactory(String connFactoryID) throws Exception
    {
-      ConnectionFactoryDelegate proxy = (ConnectionFactoryDelegate)createProxy(connFactoryID);
-      return new JBossConnectionFactory(proxy);
-   }
-
-   private Object createProxy(String connFactoryID) throws Exception
-   {
-      Serializable oid = connFactoryAdvisor.getName();
-      String stackName = "ConnectionFactoryStack";
-      AdviceStack stack = AspectManager.instance().getAdviceStack(stackName);
-      // TODO why do I need an advisor to create an interceptor stack?
-      Interceptor[] interceptors = stack.createInterceptors(connFactoryAdvisor, null);
-      JMSInvocationHandler h = new JMSInvocationHandler(interceptors);
-
-      SimpleMetaData metadata = new SimpleMetaData();
-      // TODO: The ConnectionFactoryDelegate and ConnectionDelegate share the same locator (TCP/IP connection?). Performance?
-      metadata.addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, oid, PayloadKey.AS_IS);
-      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
-            RemotingClientInterceptor.INVOKER_LOCATOR,
-                           locator,
-                           PayloadKey.AS_IS);
-      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
-            RemotingClientInterceptor.INVOKER_LOCATOR,
-                           locator,
-                           PayloadKey.AS_IS);
-      metadata.addMetaData(RemotingClientInterceptor.REMOTING,
-            RemotingClientInterceptor.SUBSYSTEM,
-                           "JMS",
-                           PayloadKey.AS_IS);
-      metadata.addMetaData(JMSAdvisor.JMS, JMSAdvisor.CONNECTION_FACTORY_ID, connFactoryID, PayloadKey.AS_IS);
-
-      h.getMetaData().mergeIn(metadata);
-
-      // TODO
-      ClassLoader loader = getClass().getClassLoader();
-      Class[] interfaces = new Class[] { ConnectionFactoryDelegate.class };
-      return Proxy.newProxyInstance(loader, interfaces, h);
+      ServerConnectionFactoryEndpoint scfd =
+         new ServerConnectionFactoryEndpoint(this.genConnFactoryID(), this, null);
+      
+      Dispatcher.singleton.registerTarget(scfd.getID(), scfd);
+         
+      ConnectionFactoryStub stub;
+      try
+      {
+         stub = new ConnectionFactoryStub(scfd.getID(), locator);
+      }
+      catch (Exception e)
+      {
+         throw new JBossJMSException("Failed to create connection factory stub", e);
+      }
+      
+      return new JBossConnectionFactory(stub);
    }
 
 
@@ -566,7 +462,6 @@ public class ServerPeer
    private MBeanServer findMBeanServer()
    {
       System.setProperty("jmx.invoke.getters", "true");
-
 
       MBeanServer result = null;
       ArrayList l = MBeanServerFactory.findMBeanServer(null);
@@ -587,26 +482,27 @@ public class ServerPeer
       String s = (String)mbeanServer.invoke(connector, "getInvokerLocator",
                                             new Object[0], new String[0]);
 
-      // TODO 
-      locator = new InvokerLocator(s + "&socketTimeout=3600000");
-      //locator = new InvokerLocator(s);
+      locator = new InvokerLocator(s);
+      
+      //Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
+      //a socket timeout on the invoker locator URI then it always makes a remote call
+      //even when in the same JVM
 
       log.debug("LocatorURI: " + getLocatorURI());
 
       // add the JMS subsystem
+      
+      handler = new JMSServerInvocationHandler();
 
       mbeanServer.invoke(connector, "addInvocationHandler",
-                         new Object[] {"JMS", new JMSServerInvocationHandler()},
+                         new Object[] {"JMS", handler},
                          new String[] {"java.lang.String",
-                                       "org.jboss.remoting.ServerInvocationHandler"});         
-      
-
+                                       "org.jboss.remoting.ServerInvocationHandler"});               
    }
 
 
    private void setupConnectionFactories() throws Exception
    {
-
       ConnectionFactory cf = setupConnectionFactory(null);
       InitialContext ic = new InitialContext();
       
@@ -616,7 +512,6 @@ public class ServerPeer
 
       ic.rebind("java:/" + CONNECTION_FACTORY_JNDI_NAME, cf);
       ic.rebind("java:/" + XACONNECTION_FACTORY_JNDI_NAME, cf);
-
 
       //And now the connection factories and links as required by the TCK
       //See section 4.4.15 of the TCK user guide.
@@ -646,16 +541,14 @@ public class ServerPeer
       jmsContext.rebind("DURABLE_CMT_XCONNECTION_FACTORY", setupConnectionFactory("cts5"));
       jmsContext.rebind("DURABLE_CMT_TXNS_XCONNECTION_FACTORY", setupConnectionFactory("cts6"));
       
-
       ic.close();
-
    }
 
    private ConnectionFactory setupConnectionFactory(String clientID)
       throws Exception
    {
       String connFactoryID = genConnFactoryID();
-      ServerConnectionFactoryDelegate serverDelegate = new ServerConnectionFactoryDelegate(this, clientID);
+      ServerConnectionFactoryEndpoint serverDelegate = new ServerConnectionFactoryEndpoint(this.genConnFactoryID(), this, clientID);
       this.connFactoryDelegates.put(connFactoryID, serverDelegate);
       ConnectionFactory clientDelegate = createConnectionFactory(connFactoryID);
       return clientDelegate;
@@ -664,9 +557,7 @@ public class ServerPeer
    private void tearDownConnectionFactories()
       throws Exception
    {
-
       InitialContext ic = new InitialContext();
-
 
       //TODO
       //FIXME - this is a hack. It should be removed once a better way to manage
@@ -685,17 +576,48 @@ public class ServerPeer
       ic.unbind("java:/" + CONNECTION_FACTORY_JNDI_NAME);
       ic.unbind("java:/" + XACONNECTION_FACTORY_JNDI_NAME);
 
+      ic.close();
    }
-
 
 
    private synchronized String genConnFactoryID()
    {
       return "CONNFACTORY" + connFactoryIDSequence++;
    }
-
-
-
-
+   
+   private void loadClientAOPConfig() throws Exception
+   {
+      //Note the file is called aop-messaging-client.xml NOT messaging-client-aop.xml
+      //This is because the JBoss will automatically deploy any files ending with
+      //aop.xml - we do not want this to happen for the client config
+      URL url = this.getClass().getClassLoader().getResource("aop-messaging-client.xml");
+      InputStream is = null;
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      try
+      {
+         is = url.openStream();
+         int b;
+         while ((b = is.read()) != -1)
+         {
+            os.write(b);
+         }
+         os.flush();
+         clientAOPConfig = os.toByteArray();
+      }
+      finally
+      {
+         if (is != null)
+         {
+            is.close();
+         }
+         if (os != null)
+         {
+            os.close();
+         }
+      }
+   }
+   
    // Inner classes -------------------------------------------------
+   
+   
 }

@@ -77,7 +77,7 @@ public class MessagingTestCase extends TestCase
    {
       Connection conn = null;
       try
-      {
+      {         
          conn = cf.createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(dest);

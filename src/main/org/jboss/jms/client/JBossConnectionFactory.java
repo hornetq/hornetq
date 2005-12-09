@@ -21,11 +21,10 @@
   */
 package org.jboss.jms.client;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.delegate.ConnectionDelegate;
+import java.io.Serializable;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -38,7 +37,12 @@ import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
 
-import java.io.Serializable;
+import org.jboss.aop.Advised;
+import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
+import org.jboss.jms.client.stubs.ConnectionFactoryStub;
+import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -53,13 +57,20 @@ public class JBossConnectionFactory implements
    // Constants -----------------------------------------------------
 
    private final static long serialVersionUID = -2810634789345348326L;
+   
+   private static final Logger log = Logger.getLogger(JBossConnectionFactory.class);
+   
 
    // Static --------------------------------------------------------
+   
+   private static boolean configLoaded;
 
    // Attributes ----------------------------------------------------
 
    protected ConnectionFactoryDelegate delegate;
-
+   
+   private boolean initialised;
+   
    // Constructors --------------------------------------------------
 
    public JBossConnectionFactory(ConnectionFactoryDelegate delegate)
@@ -140,15 +151,63 @@ public class JBossConnectionFactory implements
    }
 
    // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
    protected JBossConnection createConnectionInternal(String username, String password, boolean isXA, int type)
       throws JMSException
    {
+      ConnectionFactoryStub stub = (ConnectionFactoryStub)delegate;
+      ensureAOPConfigLoaded(stub);
+      initStub();
+            
       ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
       return new JBossConnection(cd, type);
+   }
+   
+   protected synchronized void initStub()
+   {
+      if (!initialised)
+      {
+         ((ConnectionFactoryStub)delegate).init();
+         initialised = true;
+      }         
+   }
+   
+   protected void ensureAOPConfigLoaded(ConnectionFactoryStub stub)
+   {
+      try
+      {
+         synchronized (JBossConnectionFactory.class)
+         {
+            if (!configLoaded)
+            {
+               //Load the client side aspect stack configuration 
+               //from the server and apply it
+               
+               stub.init();
+                           
+               byte[] clientAOPConfig = stub.getClientAOPConfig();
+               
+               //Remove interceptor since we don't want it on the front of the stack
+               ((Advised)stub)._getInstanceAdvisor().removeInterceptor(stub.getName());
+               
+               JmsClientAspectXMLLoader loader = new JmsClientAspectXMLLoader();
+               
+               loader.deployXML(clientAOPConfig);
+               
+               configLoaded = true;               
+            }
+         }   
+      }
+      catch(Exception e)
+      {
+         //Need to log message since no guarantee that client will log it
+         final String msg = "Failed to config client side AOP";
+         log.error(msg, e);
+         throw new RuntimeException(msg, e);
+      }
    }
    
    

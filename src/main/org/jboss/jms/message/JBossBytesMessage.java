@@ -37,10 +37,9 @@ import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
-import javax.jms.MessageNotReadableException;
-import javax.jms.MessageNotWriteableException;
-import org.jboss.logging.Logger;
+
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.logging.Logger;
 
 
 
@@ -77,16 +76,30 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    private transient ByteArrayInputStream istream;
 
    private transient DataInputStream m;
-
+   
    // Constructor ---------------------------------------------------
 
+   /**
+    * Only deserialization should use this constructor directly
+    */
    public JBossBytesMessage()
+   {   
+   }
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public JBossBytesMessage(String messageID)
    {
-      if (log.isTraceEnabled()) { log.trace("Creating new JBossBytesMessage"); }
+      super(messageID);
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
    }
+   
 
+   /*
+    * This constructor is used to construct messages when retrieved from persistence storage
+    */
    public JBossBytesMessage(String messageID,
          boolean reliable,
          long expiration,
@@ -153,20 +166,15 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       return JBossBytesMessage.TYPE;
    }
 
-
    public JBossMessage doShallowCopy() throws JMSException
    {
-      return new JBossBytesMessage(this);
-   }
-   
-   public void doAfterSend() throws JMSException
-   {      
       reset();
+      
+      return new JBossBytesMessage(this);      
    }
-   
+      
    public void copyPayload(Object payload) throws JMSException
    {
-      reset();
       byte[] otherBytes = (byte[])payload;
       if (otherBytes == null)
       {
@@ -195,7 +203,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -212,7 +220,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -229,7 +237,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -246,7 +254,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -263,7 +271,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -280,7 +288,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -297,7 +305,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -314,7 +322,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -331,7 +339,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -348,7 +356,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -365,7 +373,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -378,7 +386,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
@@ -391,192 +399,144 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeBoolean(boolean value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeBoolean(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeByte(byte value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeByte(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeShort(short value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeShort(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeChar(char value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeChar(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeInt(int value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeInt(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeLong(long value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeLong(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeFloat(float value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeFloat(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeDouble(double value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeDouble(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeUTF(String value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.writeUTF(value);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeBytes(byte[] value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.write(value, 0, value.length);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeBytes(byte[] value, int offset, int length) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          p.write(value, offset, length);
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    public void writeObject(Object value) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("the message body is read-only");
-      }
       try
       {
          if (value == null)
@@ -627,7 +587,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
 
    }
@@ -637,7 +597,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       if (log.isTraceEnabled()) log.trace("reset()");
       try
       {
-         if (!bodyReadOnly)
+         if (ostream != null)
          {
             if (log.isTraceEnabled())  { log.trace("Flushing ostream to array"); }
 
@@ -652,21 +612,25 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          istream = null;
          m = null;
          p = null;
-         bodyReadOnly = true;
       }
       catch (IOException e)
       {
-         throw new JMSException("IOException");
+         throw new JBossJMSException("IOException", e);
       }
    }
 
    // JBossMessage overrides ----------------------------------------
+   
+   public void doAfterSend() throws JMSException
+   {
+      reset();
+   }
 
    public void clearBody() throws JMSException
    {
       try
       {
-         if (!bodyReadOnly)
+         if (ostream != null)
          {
             ostream.close();
          }
@@ -706,7 +670,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    {
       byte[] arrayToSend = null;
       
-      if (!bodyReadOnly)
+      if (ostream != null)
       {
          p.flush();
          arrayToSend = ostream.toByteArray();
@@ -753,13 +717,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
     *
     * @throws JMSException when not readable
     */
-   private void checkRead() throws JMSException
-   {
-      if (!bodyReadOnly)
-      {
-         throw new MessageNotReadableException("readByte while the buffer is writeonly");
-      }
-
+   void checkRead() throws JMSException
+   {   
       // We have just received/reset() the message, and the client is trying to
       // read it
       if (istream == null || m == null)

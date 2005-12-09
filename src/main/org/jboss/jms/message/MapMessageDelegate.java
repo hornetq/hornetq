@@ -25,6 +25,7 @@ import java.util.Enumeration;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
+import javax.jms.MessageNotWriteableException;
 
 /**
  * 
@@ -102,72 +103,120 @@ public class MapMessageDelegate extends MessageDelegate implements MapMessage
 
    public void setBoolean(String name, boolean value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setBoolean(name, value);
    }
 
    public void setByte(String name, byte value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setByte(name, value);
    }
 
    public void setShort(String name, short value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setShort(name, value);
    }
 
    public void setChar(String name, char value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setChar(name, value);
    }
 
    public void setInt(String name, int value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setInt(name, value);
    }
 
    public void setLong(String name, long value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setLong(name, value);
    }
 
    public void setFloat(String name, float value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setFloat(name, value);
    }
 
    public void setDouble(String name, double value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setDouble(name, value);
    }
 
    public void setString(String name, String value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setString(name, value);
    }
 
    public void setBytes(String name, byte[] value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setBytes(name, value);
    }
 
    public void setBytes(String name, byte[] value, int offset, int length) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setBytes(name, value, offset, length);
    }
 
    public void setObject(String name, Object value) throws JMSException
    {
+      if (bodyReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is ReadOnly !");
+      }
       bodyChange();
       ((MapMessage)message).setObject(name, value);
    }

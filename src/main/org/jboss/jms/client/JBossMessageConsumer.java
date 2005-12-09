@@ -63,47 +63,39 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    public String getMessageSelector() throws JMSException
    {
-      //return (String)delegate.getMetaData(JMSAdvisor.SELECTOR);
       return delegate.getMessageSelector();
    }
-
 
    public MessageListener getMessageListener() throws JMSException
    {
       return delegate.getMessageListener();
    }
 
-
    public void setMessageListener(MessageListener listener) throws JMSException
    {
       delegate.setMessageListener(listener);
    }
-
 
    public Message receive() throws JMSException
    {
       return delegate.receive(0);
    }
 
-
    public Message receive(long timeout) throws JMSException
    {
       return delegate.receive(timeout);
    }
-
 
    public Message receiveNoWait() throws JMSException
    {
       return delegate.receive(-1);
    }
 
-
    public void close() throws JMSException
    {
       delegate.closing();
       delegate.close();
    }
-
 
    // QueueReceiver implementation ----------------------------------
 
@@ -114,7 +106,6 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
    }
 
    // TopicSubscriber implementation --------------------------------
-
 
    public Topic getTopic() throws JMSException
    {

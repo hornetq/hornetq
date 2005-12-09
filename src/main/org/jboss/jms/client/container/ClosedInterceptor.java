@@ -22,7 +22,6 @@
 package org.jboss.jms.client.container;
 
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -33,6 +32,8 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.state.HierarchicalState;
+import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 
 
@@ -40,23 +41,18 @@ import org.jboss.logging.Logger;
  * An interceptor for checking closed state. It waits for other invocations to complete before
  * allowing the close. I.e. it performs the function of a "valve"
  * 
- * Important! There should be *one instance* of this interceptor per instance of Connection,
- * Session, MessageProducer, MessageConsumer or QueueBrowser
+ * This interceptor is PER_INSTANCE.
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a> Adapted from the JBoss 4 version
+ * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
  *
  * $Id$
  */
-public class ClosedInterceptor
-   implements Interceptor, Serializable
+public class ClosedInterceptor  implements Interceptor
 {
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ClosedInterceptor.class);
-   
-   private static final long serialVersionUID = 7564456983116742854L;
-
    
    /** Not closed */
    private static final int NOT_CLOSED = 0;
@@ -99,8 +95,6 @@ public class ClosedInterceptor
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
-
-      if (log.isTraceEnabled()) { log.trace(methodName + " " + ((JMSMethodInvocation)invocation).getHandler().getDelegateID()); }
 
       if (isClosing)
       {         
@@ -237,15 +231,22 @@ public class ClosedInterceptor
     */
    protected void maintainRelatives(Invocation invocation)
    {                  
-      
-      //Get the InvocationHandler for this invocation
-      JMSInvocationHandler thisHandler = ((JMSMethodInvocation)invocation).getHandler();
-             
+      HierarchicalState state = 
+         (HierarchicalState)invocation.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
+          
       //We use a clone to avoid a deadlock where requests
       //are made to close parent and child concurrently
       
       Set clone = null;
-      Set children = thisHandler.getChildren();
+     
+      Set children = state.getChildren();
+      
+      if (children == null)
+      {
+         log.info("No children");
+         return;
+      }
+      
       synchronized (children)
       {
          clone = new HashSet(children);
@@ -255,13 +256,12 @@ public class ClosedInterceptor
       // first close
       for (Iterator i = clone.iterator(); i.hasNext();)
       {
-         JMSInvocationHandler childHandler = (JMSInvocationHandler) i.next();
-         
-         Closeable child = (Closeable) childHandler.getDelegate();             
+         HierarchicalState child = (HierarchicalState)i.next();      
+         Closeable del = (Closeable)child.getDelegate();
          try
          {
-            child.closing();
-            child.close();
+            del.closing();
+            del.close();
          }
          catch (Throwable ignored)
          {
@@ -271,10 +271,10 @@ public class ClosedInterceptor
       }
       
       // Remove from the parent
-      JMSInvocationHandler parentHandler = thisHandler.getParent();
-      if (parentHandler != null)
-      {
-         parentHandler.removeChild(thisHandler);
+      HierarchicalState parent = (HierarchicalState)state.getParent();
+      if (parent != null)
+      {         
+         parent.getChildren().remove(state);
       }
    }
 
@@ -282,8 +282,7 @@ public class ClosedInterceptor
 
    // Private --------------------------------------------------------
 
-   
-   
+ 
    // Inner Classes --------------------------------------------------
 
 }

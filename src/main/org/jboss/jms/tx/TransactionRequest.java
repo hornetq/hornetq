@@ -21,7 +21,10 @@
   */
 package org.jboss.jms.tx;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import javax.transaction.xa.Xid;
 
@@ -35,7 +38,7 @@ import javax.transaction.xa.Xid;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  */
-public class TransactionRequest implements Serializable
+public class TransactionRequest implements Externalizable
 {
    // Constants -----------------------------------------------------
    
@@ -54,7 +57,7 @@ public class TransactionRequest implements Serializable
    // Attributes ----------------------------------------------------
    
    /** Request type */
-   public byte requestType = ONE_PHASE_COMMIT_REQUEST;
+   public int requestType = ONE_PHASE_COMMIT_REQUEST;
 
    /** For 2 phase commit, this identifies the transaction. */
    public Xid xid;
@@ -65,11 +68,28 @@ public class TransactionRequest implements Serializable
    
    // Constructors --------------------------------------------------
    
+   public TransactionRequest()
+   {      
+   }
+   
    // Public --------------------------------------------------------
    
    // Externalizable implementation ---------------------------------
 
-   //TODO
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      out.writeInt(requestType);
+      out.writeObject(xid);
+      out.writeObject(txInfo);
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+     requestType = in.readInt();
+     xid = (Xid)in.readObject();
+     txInfo = (TxState)in.readObject();
+   }
    
    // Package protected ---------------------------------------------
    

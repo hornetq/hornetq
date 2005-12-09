@@ -23,7 +23,7 @@ package org.jboss.jms.server;
 
 import java.io.Serializable;
 
-import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 
 /**
  * A ClientManager manages client connections
@@ -35,11 +35,11 @@ import org.jboss.jms.server.endpoint.ServerConnectionDelegate;
 public interface ClientManager
 {
 
-   ServerConnectionDelegate putConnectionDelegate(Serializable connectionID,
-                                                  ServerConnectionDelegate d);
+   ServerConnectionEndpoint putConnectionDelegate(Serializable connectionID,
+                                                  ServerConnectionEndpoint d);
 
    void removeConnectionDelegate(Serializable connectionID);
 
-   ServerConnectionDelegate getConnectionDelegate(Serializable connectionID);
+   ServerConnectionEndpoint getConnectionDelegate(Serializable connectionID);
    
 }

@@ -67,12 +67,15 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
    
    protected StateManager createStateManager() throws Exception
    {
+
       sm = ServerManagement.getServerPeer().getStateManager();
       return sm;
    }
    
    public void testGetPreConfClientId() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       InitialContext ctx = new InitialContext();
       TransactionManager mgr = (TransactionManager) ctx.lookup(TransactionManagerService.JNDI_NAME);
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
@@ -103,6 +106,8 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
    
    public void testLoadDurableSubscriptionsForTopic() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       final int NUM_SUBS = 10;
       
       ServerManagement.getServerPeer().getDestinationManager().createTopic("topic1");

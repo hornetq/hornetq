@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.client.container;
 
-import java.io.Serializable;
-
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.logging.Logger;
@@ -31,11 +29,9 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LogInterceptor implements Interceptor, Serializable
+public class LogInterceptor implements Interceptor
 {
    // Constants -----------------------------------------------------
-
-   private final static long serialVersionUID = 5639549352058264964L;
 
    private static final Logger log = Logger.getLogger(LogInterceptor.class);
 
@@ -56,7 +52,16 @@ public class LogInterceptor implements Interceptor, Serializable
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      return invocation.invokeNext();
+      if (log.isTraceEnabled())
+      {
+         log.trace("Invoking: " + invocation);
+      }
+      Object res = invocation.invokeNext();
+      if (log.isTraceEnabled())
+      {
+         log.trace("Invoked: " + invocation);
+      }
+      return res;
    }
 
    // Package protected ---------------------------------------------

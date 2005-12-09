@@ -30,11 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
-import javax.jms.MessageNotReadableException;
-import javax.jms.MessageNotWriteableException;
 import javax.jms.StreamMessage;
 
 import org.jboss.logging.Logger;
@@ -76,14 +73,28 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Constructors --------------------------------------------------
 
+   /**
+    * Only deserialization should use this constructor directory
+    */
    public JBossStreamMessage()
+   {     
+   }
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public JBossStreamMessage(String messageID)
    {
+      super(messageID);      
       payload = new ArrayList();
       position = 0;
       size = 0;
       offset = 0;
    }
-
+   
+   /*
+    * This constructor is used to construct messages when retrieved from persistence storage
+    */
    public JBossStreamMessage(String messageID,
          boolean reliable,
          long expiration,
@@ -164,8 +175,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public boolean readBoolean() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
 
       try
       {
@@ -197,9 +206,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public byte readByte() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
-
       try
       {
          Object value = ((List)payload).get(position);
@@ -228,8 +234,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public short readShort() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -264,8 +268,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public char readChar() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -289,8 +291,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public int readInt() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -330,8 +330,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public long readLong() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -376,8 +374,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public float readFloat() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -407,8 +403,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public double readDouble() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -443,8 +437,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public String readString() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -511,8 +503,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public int readBytes(byte[] value) throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object myObj = ((List)payload).get(position);
@@ -564,8 +554,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public Object readObject() throws JMSException
    {
-      if (!bodyReadOnly)
-         throw new MessageNotReadableException("The message body is writeonly");
       try
       {
          Object value = ((List)payload).get(position);
@@ -582,64 +570,47 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void writeBoolean(boolean value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
+
       ((List)payload).add(Primitives.valueOf(value));
    }
 
    public void writeByte(byte value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(new Byte(value));
    }
 
    public void writeShort(short value) throws JMSException
-   {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
+   {      
       ((List)payload).add(new Short(value));
    }
 
    public void writeChar(char value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(new Character(value));
    }
 
    public void writeInt(int value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(new Integer(value));
    }
 
    public void writeLong(long value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(new Long(value));
    }
 
    public void writeFloat(float value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(new Float(value));
    }
 
    public void writeDouble(double value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(new Double(value));
    }
 
    public void writeString(String value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       if (value == null)
          ((List)payload).add(null);
       else
@@ -648,16 +619,11 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void writeBytes(byte[] value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       ((List)payload).add(value.clone());
    }
 
    public void writeBytes(byte[] value, int offset, int length) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
-
       if (offset + length > value.length)
          throw new JMSException("Array is too small");
       byte[] temp = new byte[length];
@@ -669,8 +635,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public void writeObject(Object value) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("The message body is readonly");
       if (value == null)
          ((List)payload).add(null);
       else if (value instanceof Boolean)
@@ -698,14 +662,14 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    }
 
    public void reset() throws JMSException
-   {
-      bodyReadOnly = true;
+   {      
       position = 0;
       size = ((List)payload).size();
       offset = 0;
    }
 
    // JBossMessage overrides ----------------------------------------
+   
 
    public void clearBody() throws JMSException
    {

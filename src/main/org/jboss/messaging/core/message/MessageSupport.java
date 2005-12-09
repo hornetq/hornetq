@@ -186,13 +186,13 @@ public class MessageSupport extends RoutableSupport implements Message
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      out.writeObject(payload);
+      //out.writeObject(payload); payload is already written in subclasses - don't want to write it twice!!
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      payload = (Serializable)in.readObject();
+      //payload = (Serializable)in.readObject();
    }
    
 }

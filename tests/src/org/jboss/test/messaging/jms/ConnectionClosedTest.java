@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.IllegalStateException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -87,7 +88,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
-      drainDestination(cf, queue);
+      //drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
@@ -452,7 +453,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
    }
 
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

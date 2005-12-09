@@ -737,7 +737,7 @@ public class AcknowledgmentTest extends MessagingTestCase
          {
             count++;
             
-            log.info("Message is:" + m);
+            log.trace("Message is:" + m);
             
             TextMessage tm = (TextMessage)m;
             

@@ -24,7 +24,7 @@ package org.jboss.jms.server.container;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.server.endpoint.ServerProducerDelegate;
+import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.MessageReference;
@@ -84,7 +84,7 @@ public class CachingInterceptor implements Interceptor
                   Serializable id = m.getJMSMessageID();
                   if (log.isTraceEnabled()) log.trace("caching message " + id);
 
-                  ServerProducerDelegate spd = (ServerProducerDelegate)invocation.getTargetObject();
+                  ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();
                   MessageStore ms = spd.getServerPeer().getMessageStore();
 
                   MessageReference r = ms.reference((Routable)m);

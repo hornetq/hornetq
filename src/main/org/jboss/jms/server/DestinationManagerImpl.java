@@ -239,7 +239,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
          throw e;
       }
 
-      log.info((isQueue ? "Queue" : "Topic") + " " + name +
+      log.debug((isQueue ? "Queue" : "Topic") + " " + name +
                " created and bound in JNDI as " + jndiName );
    }
 

@@ -281,7 +281,6 @@ public class PersistenceTest extends MessagingTestCase
       prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
       prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
       
-      log.info("Closing connection 111");
       conn.close();
       
       ServerManagement.getServerPeer().stop();
@@ -289,7 +288,6 @@ public class PersistenceTest extends MessagingTestCase
       ServerManagement.getServerPeer().start();
       ServerManagement.deployQueue("Queue");
       
-      log.info("Creating new connection 222");
       conn = cf.createConnection();
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       conn.start();
@@ -350,7 +348,6 @@ public class PersistenceTest extends MessagingTestCase
          assertNull(t);
       }
       
-      log.info("Closing connection 333");
       conn.close();
    }
    

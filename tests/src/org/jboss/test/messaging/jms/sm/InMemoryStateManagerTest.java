@@ -54,7 +54,11 @@ public class InMemoryStateManagerTest extends MessagingTestCase
       
       ServerManagement.init("all");
       
-      sm = createStateManager();
+      if (!ServerManagement.isRemote())
+      {
+      
+         sm = createStateManager();
+      }
    }
 
    public void tearDown() throws Exception
@@ -66,6 +70,8 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    
    public void testCreateGetRemoveDurableSubscription() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
@@ -99,6 +105,8 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    
    public void testCreateGetRemoveDurableSubscriptionNullSelector() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
@@ -130,6 +138,8 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    
    public void testGetPreConfClientId() throws Exception
    {
+      if (ServerManagement.isRemote()) return;
+      
       String clientID = sm.getPreConfiguredClientID("blahblah");
       assertNull(clientID);
    }
@@ -137,6 +147,7 @@ public class InMemoryStateManagerTest extends MessagingTestCase
 
    protected StateManager createStateManager() throws Exception
    {
+     
       return new InMemoryStateManager(ServerManagement.getServerPeer());
    }
   

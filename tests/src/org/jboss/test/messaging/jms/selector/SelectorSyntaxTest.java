@@ -48,7 +48,7 @@ public class SelectorSyntaxTest
    protected void setUp() throws Exception
    {
       super.setUp();
-      message = new JBossMessage();
+      message = new JBossMessage((String)null);
    }
    
    public void testBooleanTrue() throws Exception

@@ -21,8 +21,13 @@
   */
 package org.jboss.jms.tx;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Holds information for a JMS transaction to be sent to the server for
@@ -32,7 +37,7 @@ import java.util.ArrayList;
  * 
  * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox </a>
  */
-public class TxState implements Serializable
+public class TxState implements Externalizable
 {  
    // Constants -----------------------------------------------------
    private static final long serialVersionUID = -7255482761072658186L;
@@ -46,32 +51,36 @@ public class TxState implements Serializable
    // Attributes ----------------------------------------------------
    
    //private Long id;
-   public byte state = TX_OPEN;
-   public ArrayList messages = new ArrayList();
-   public ArrayList acks = new ArrayList();
+   public int state = TX_OPEN;
+   public List messages = new ArrayList();
+   public List acks = new ArrayList();
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   /*
-   TxInfo(Long id)
+   
+   public TxState()
    {
-      this.id = id;
+      
    }
-   */
 
    // Public --------------------------------------------------------
    
-   /*
-   public Long getId()
-   {
-      return id;
-   }
-   */
-   
    // Externalizable implementation ---------------------------------
 
-   //TODO
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+     out.writeInt(state);
+     writeList(messages, out);
+     writeList(acks, out);
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+     state = in.readInt();
+     messages = readList(in);
+     acks = readList(in);
+   }
    
    // Class YYY overrides -------------------------------------------
 
@@ -80,6 +89,31 @@ public class TxState implements Serializable
    // Package Private -----------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private void writeList(List l, ObjectOutput out) throws IOException
+   {
+      out.writeInt(l.size());
+      Iterator iter = l.iterator();
+      while (iter.hasNext())
+      {
+         out.writeObject(iter.next());
+      }
+   }
+   
+   private List readList(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      int size = in.readInt();
+      
+      List l = new ArrayList(size);
+      
+      for (int i = 0; i < size; i++)
+      {
+         l.add(in.readObject());
+      }
+      
+      return l;
+      
+   }
    
    // Inner Classes -------------------------------------------------
 	

@@ -95,6 +95,7 @@
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.serialization.classpath"/>
       <path refid="jboss.aop.classpath"/>
+      <path refid="jboss.aspects.classpath"/>
       <path refid="jboss.system.classpath"/>
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.naming.classpath"/>
@@ -276,8 +277,11 @@
             <fileset dir="${build.tests.classes}">
 
                <include name="**/messaging/jms/**/*Test.class"/>
+
                <exclude name="**/jms/managed/**"/>
-               <exclude name="**/jms/**/perf/**"/>
+               <exclude name="**/jms/perf/**"/>
+
+
             </fileset>
          </batchtest>
       </junit>
@@ -377,8 +381,16 @@
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
+
+
+<!--
+         <jvmarg value="-Xdebug"/>
+         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
+-->
+
+
          <jvmarg value="-Xmx1024M"/>
-         <!-- <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/> -->
+         <sysproperty key="remote" value="${build.tests.remote}"/>
 
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -395,10 +407,10 @@
          </test>
          -->
          <test name="${test.classname}"
-	                fork="${junit.batchtest.fork}"
-	                todir="${junit.batchtest.todir}"
-	                haltonfailure="${junit.test.haltonfailure}"
-	                haltonerror="${junit.test.haltonerror}">
+                    fork="true"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.test.haltonfailure}"
+                    haltonerror="${junit.test.haltonerror}">
          </test>
       </junit>
    </target>
@@ -442,43 +454,43 @@
    </target>
 
   <target name="messagereport" depends="messagetests, compile-stylesheets">
-	 <mkdir dir="${build.tests.reports}/html"/>
+     <mkdir dir="${build.tests.reports}/html"/>
 
-	 <junitreport todir="${build.tests.reports}">
-		<fileset dir="${build.tests.reports}">
-		   <include name="TEST-*.xml"/>
-		</fileset>
-		<report format="frames"
-		   todir="${build.tests.reports}/html"
-		   styledir="${build.tests.stylesheets}"
-		   />
-	 </junitreport>
+     <junitreport todir="${build.tests.reports}">
+        <fileset dir="${build.tests.reports}">
+           <include name="TEST-*.xml"/>
+        </fileset>
+        <report format="frames"
+           todir="${build.tests.reports}/html"
+           styledir="${build.tests.stylesheets}"
+           />
+     </junitreport>
    </target>
 
-	<target name="corereport" depends="coretests, compile-stylesheets">
-	 <mkdir dir="${build.tests.reports}/html"/>
+    <target name="corereport" depends="coretests, compile-stylesheets">
+     <mkdir dir="${build.tests.reports}/html"/>
 
-	 <junitreport todir="${build.tests.reports}">
-	    <fileset dir="${build.tests.reports}">
-	       <include name="TEST-*.xml"/>
-	    </fileset>
-	    <report format="frames"
-	       todir="${build.tests.reports}/html"
-	       styledir="${build.tests.stylesheets}"
-	       />
-	 </junitreport>
+     <junitreport todir="${build.tests.reports}">
+        <fileset dir="${build.tests.reports}">
+           <include name="TEST-*.xml"/>
+        </fileset>
+        <report format="frames"
+           todir="${build.tests.reports}/html"
+           styledir="${build.tests.stylesheets}"
+           />
+     </junitreport>
    </target>
 
    <target name="build-report" >
-   	 <junitreport todir="${build.tests.reports}">
-   	    <fileset dir="${build.tests.reports}">
-   	       <include name="TEST-*.xml"/>
-   	    </fileset>
-   	    <report format="frames"
-   	       todir="${build.tests.reports}/html"
-   	       styledir="${build.tests.stylesheets}"
-   	       />
-	 </junitreport>
+     <junitreport todir="${build.tests.reports}">
+        <fileset dir="${build.tests.reports}">
+           <include name="TEST-*.xml"/>
+        </fileset>
+        <report format="frames"
+           todir="${build.tests.reports}/html"
+           styledir="${build.tests.stylesheets}"
+           />
+     </junitreport>
    </target>
 
    <target name="functional-tests" depends="tests"/>
@@ -564,31 +576,31 @@
 
 
    <target name="perfchart" depends="tests-jar">
-      	<mkdir dir="perf-output"/>
+        <mkdir dir="perf-output"/>
 
-      	<java classname="org.jboss.test.messaging.jms.perf.chart.PerfCharter" fork="true">
-      	   <jvmarg value="-Xmx512M"/>
+        <java classname="org.jboss.test.messaging.jms.perf.chart.PerfCharter" fork="true">
+           <jvmarg value="-Xmx512M"/>
               <classpath>
-   	          <pathelement location="${module.root}/etc"/>
-   	          <path refid="test.classpath"/>
-   	          <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+              <pathelement location="${module.root}/etc"/>
+              <path refid="test.classpath"/>
+              <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             </classpath>
-      	</java>
+        </java>
    </target>
 
    <target name="perf-jar"
-	      depends="compile"
-	      description="Creates the jar for the performance tests">
+          depends="compile"
+          description="Creates the jar for the performance tests">
 
-	 <mkdir dir="${build.tests.lib}"/>
+     <mkdir dir="${build.tests.lib}"/>
 
-	 <!-- Build the perf jar -->
-	 <jar jarfile="${build.tests.lib}/${perf.jar}">
-	    <fileset dir="${build.tests.classes}">
-	       <include name="org/jboss/test/messaging/jms/perf/**"/>
-	       <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
-	    </fileset>
-	 </jar>
+     <!-- Build the perf jar -->
+     <jar jarfile="${build.tests.lib}/${perf.jar}">
+        <fileset dir="${build.tests.classes}">
+           <include name="org/jboss/test/messaging/jms/perf/**"/>
+           <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
+        </fileset>
+     </jar>
 
    </target>
 

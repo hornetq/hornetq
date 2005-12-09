@@ -90,7 +90,7 @@ public class SecurityManager
          authMgr = (AuthenticationManager)mgr;
          realmMapping = (RealmMapping)mgr;
 
-         log.info("JMS SecurityManager initialized");
+         log.trace("JMS SecurityManager initialized");
       }
       catch (NamingException e)
       {

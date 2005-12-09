@@ -21,31 +21,27 @@
   */
 package org.jboss.jms.client.container;
 
-
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 
 /**
  * Interceptor - useful in debugging to determine when concurrent access to objects is occurring
  * Not to be used in normal usage
  * 
+ * This interceptor is PER_INSTANCE.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  */
-public class ConcurrencyInterceptor implements Interceptor, Serializable
+public class ConcurrencyInterceptor implements Interceptor
 {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
-   private Thread currentThread;
+   //private Thread currentThread;
    
    //debug
-   private String methodName;
+   //private String methodName;
    
    // Static --------------------------------------------------------
    
@@ -78,28 +74,28 @@ public class ConcurrencyInterceptor implements Interceptor, Serializable
 
    // Private -------------------------------------------------------
    
-   private synchronized void checkThread(Invocation inv) throws JMSException
-   {
-      if (currentThread != null)
-      {
-         if (!Thread.currentThread().equals(currentThread))
-         {
-            String thisMethodName = ((MethodInvocation)inv).getMethod().getName();
-            throw new JMSException("Attempting to execute " + thisMethodName + " but already executing " + methodName);
-         }
-      }
-      else
-      {
-         currentThread = Thread.currentThread();
-         //debug
-         methodName = ((MethodInvocation)inv).getMethod().getName();
-      }      
-   }
-   
-   private synchronized void unsetThread()
-   {
-      currentThread = null;
-   }
+//   private synchronized void checkThread(Invocation inv) throws JMSException
+//   {
+//      if (currentThread != null)
+//      {
+//         if (!Thread.currentThread().equals(currentThread))
+//         {
+//            String thisMethodName = ((MethodInvocation)inv).getMethod().getName();
+//            throw new JMSException("Attempting to execute " + thisMethodName + " but already executing " + methodName);
+//         }
+//      }
+//      else
+//      {
+//         currentThread = Thread.currentThread();
+//         //debug
+//         methodName = ((MethodInvocation)inv).getMethod().getName();
+//      }      
+//   }
+//   
+//   private synchronized void unsetThread()
+//   {
+//      currentThread = null;
+//   }
      
    // Inner Classes -------------------------------------------------
    

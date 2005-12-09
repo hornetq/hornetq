@@ -53,12 +53,15 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.aop.Advised;
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 
 /**
@@ -77,7 +80,9 @@ class JBossSession implements
    private static final long serialVersionUID = 2235942510476264909L;
    
    static final int TYPE_GENERIC_SESSION = 0;
+   
    static final int TYPE_QUEUE_SESSION = 1;
+   
    static final int TYPE_TOPIC_SESSION = 2;
 
    // Static --------------------------------------------------------
@@ -87,9 +92,8 @@ class JBossSession implements
    // Attributes ----------------------------------------------------
 
    protected SessionDelegate sessionDelegate;
-  // protected boolean isXA;
+
    protected int sessionType;
-  // protected int acknowledgeMode;
 
    // Constructors --------------------------------------------------
 
@@ -326,8 +330,8 @@ class JBossSession implements
       {
          messageSelector = null;
       }
-      BrowserDelegate delegate = this.sessionDelegate.createBrowserDelegate(queue, messageSelector);
-      return new JBossQueueBrowser(queue, messageSelector, delegate);
+      BrowserDelegate del = this.sessionDelegate.createBrowserDelegate(queue, messageSelector);
+      return new JBossQueueBrowser(queue, messageSelector, del);
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException
@@ -368,7 +372,8 @@ class JBossSession implements
    
    public Session getSession() throws JMSException
    {      
-      if (!sessionDelegate.getXA())
+      SessionState state = (SessionState)((Advised)sessionDelegate)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
+      if (!state.isXA())
       {
          throw new IllegalStateException("Isn't an XASession");
       }

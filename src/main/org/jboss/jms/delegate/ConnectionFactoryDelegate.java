@@ -21,18 +21,18 @@
   */
 package org.jboss.jms.delegate;
 
-import javax.jms.JMSException;
+import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 
 /**
+ * Represents the minimal set of operations to provide connection factory
+ * functionality.
+ * Some of the methods may be implemented on the server, others
+ * will be handled in the advice stack.
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface ConnectionFactoryDelegate
+public interface ConnectionFactoryDelegate extends ConnectionFactoryEndpoint
 {
-   ConnectionDelegate createConnectionDelegate()
-         throws JMSException;
-
-   ConnectionDelegate createConnectionDelegate(String username, String password)
-         throws JMSException;
-
 }

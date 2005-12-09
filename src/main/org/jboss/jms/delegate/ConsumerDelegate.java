@@ -21,59 +21,36 @@
   */
 package org.jboss.jms.delegate;
 
-import java.io.Serializable;
-
 import javax.jms.Destination;
-import javax.jms.Message;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.jboss.jms.client.Closeable;
-import org.jboss.jms.MetaDataRepository;
+import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
+ * Represents the minimal set of operations to provide consumer
+ * functionality.
+ * Some of the methods may be implemented on the server, others
+ * will be handled in the advice stack.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface ConsumerDelegate extends Closeable, MetaDataRepository
+public interface ConsumerDelegate extends ConsumerEndpoint
 {
-
-   MessageListener getMessageListener() throws JMSException;
-   void setMessageListener(MessageListener listener) throws JMSException;
-
-   /**
-    * @param timeout - a 0 timeout means wait forever and a negative value timeout means 
-    *        "receiveNoWait".
-    * @return
-    * @throws JMSException
-    */
+   MessageListener getMessageListener();
+   
+   void setMessageListener(MessageListener listener);
+   
+   Destination getDestination();
+   
+   boolean getNoLocal();
+   
+   String getMessageSelector();   
+   
    Message receive(long timeout) throws JMSException;
-   
-   Destination getDestination() throws JMSException;
-   
-   boolean getNoLocal() throws JMSException;
-   
-   String getMessageSelector() throws JMSException;
-   
-   String getReceiverID();
-   
-   void setDestination(Destination dest);
-   
-   void setNoLocal(boolean noLocal);
-   
-   void setMessageSelector(String selector);
-   
-   void setReceiverID(String receiverID);
-   
-   void cancelMessage(Serializable messageID) throws JMSException;
-   
-   Message getMessageNow() throws JMSException;
-   
-   void activate() throws JMSException;
-   
-   void deactivate() throws JMSException;
-   
 }

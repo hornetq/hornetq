@@ -34,9 +34,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 
 import org.jboss.logging.Logger;
@@ -73,10 +71,24 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    // Constructors --------------------------------------------------
    
+   /**
+    * Only deserialization should use this constructor directory
+    */
    public JBossObjectMessage()
+   {     
+   }
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public JBossObjectMessage(String messageID)
    {
+      super(messageID);
    }
 
+   /*
+    * This constructor is used to construct messages when retrieved from persistence storage
+    */
    public JBossObjectMessage(String messageID,
                               boolean reliable,
                               long expiration,
@@ -144,10 +156,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    public void setObject(Serializable object) throws JMSException
    {
-      if (bodyReadOnly)
-      {
-         throw new MessageNotWriteableException("setObject");
-      }
       if (object == null)
       {
          payload = null;

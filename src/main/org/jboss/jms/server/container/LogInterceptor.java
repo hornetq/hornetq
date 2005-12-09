@@ -49,12 +49,12 @@ public class LogInterceptor implements Interceptor
     {
         return "LogInterceptor";
     }
-
+    
     public Object invoke(Invocation invocation) throws Throwable
     {
-        return invocation.invokeNext();
+       return invocation.invokeNext();
     }
-
+    
     // Package protected ---------------------------------------------
 
     // Protected -----------------------------------------------------

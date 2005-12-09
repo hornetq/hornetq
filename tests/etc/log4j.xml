@@ -93,6 +93,10 @@
       <priority value="INFO"/>
    </category>
 
+   <category name="org.jboss.remoting">
+      <priority value="WARN"/>
+   </category>
+
    <!--
    <category name="org.jboss.messaging.core.distributed.replicator.CompositeDelivery">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>

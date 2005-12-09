@@ -21,23 +21,19 @@
   */
 package org.jboss.jms.delegate;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-
-import org.jboss.jms.client.Closeable;
+import org.jboss.jms.server.endpoint.BrowserEndpoint;
 
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * Represents the minimal set of operations to provide browser
+ * functionality.
+ * Some of the methods may be implemented on the server, others
+ * will be handled in the advice stack.
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
  */
-public interface BrowserDelegate extends Closeable
-{
-   
-   Message nextMessage() throws JMSException;
-   
-   boolean hasNextMessage() throws JMSException;
-      
-   Message[] nextMessageBlock(int maxMessages) throws JMSException;
-   
+public interface BrowserDelegate extends BrowserEndpoint
+{   
 }
    
 

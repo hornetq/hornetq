@@ -71,7 +71,7 @@ public class AspectLoader
       // since I have a dependency on my scoped Aspect Deployer, the scoped Aspect Deployer will
       // be installed and fully operational at this time
 
-      String aspectFile = "jms-aop.xml";
+      String aspectFile = "messaging-server-aop.xml";
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
       URL url = cl.getResource(aspectFile);
 

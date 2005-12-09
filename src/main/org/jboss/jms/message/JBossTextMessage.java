@@ -26,8 +26,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
+
 import javax.jms.JMSException;
-import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
 import org.jboss.logging.Logger;
@@ -61,10 +61,24 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Constructors --------------------------------------------------
    
+   /**
+    * Only deserialization should use this constructor directory
+    */
    public JBossTextMessage()
+   {     
+   }
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public JBossTextMessage(String messageID)
    {
+      super(messageID);
    }
 
+   /*
+    * This constructor is used to construct messages when retrieved from persistence storage
+    */
    public JBossTextMessage(String messageID,
          boolean reliable,
          long expiration,
@@ -123,9 +137,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    public void setText(String string) throws JMSException
    {
-      if (bodyReadOnly)
-         throw new MessageNotWriteableException("Cannot set the content; message is read-only");
-
       payload = string;
    }
 
