@@ -37,7 +37,7 @@
                <attribute name="marshaller" isParam="true">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
-               <attribute name="serverBindPort">4447</attribute>
+               <attribute name="serverBindPort">4457</attribute>
             </invoker>
             <handlers>
                <handler subsystem="placeholder">org.jboss.jms.client.remoting.ServerInvocationHandlerImpl</handler>

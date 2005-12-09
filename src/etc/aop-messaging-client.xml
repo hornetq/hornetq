@@ -8,16 +8,16 @@
    <interceptor class="org.jboss.jms.client.container.LogInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ClosedInterceptor" scope="PER_INSTANCE"/>                  	
    <interceptor class="org.jboss.jms.client.container.ConcurrencyInterceptor" scope="PER_INSTANCE"/>
-   
+
+   <aspect class="org.jboss.jms.client.container.StateCreationAspect" scope="PER_VM"/>
+   <aspect class="org.jboss.jms.client.container.ReceiverAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.AsfAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.BrowserAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ConnectionAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/> 
-   <aspect class="org.jboss.jms.client.container.StateCreationAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_INSTANCE"/>
-   <aspect class="org.jboss.jms.client.container.ReceiverAspect" scope="PER_VM"/> 
-   <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_INSTANCE"/> 
+   <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.TransactionAspect" scope="PER_INSTANCE"/>
    
    <!-- ConnectionFactory Stack-->        

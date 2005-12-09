@@ -372,7 +372,9 @@ class JBossSession implements
    
    public Session getSession() throws JMSException
    {      
-      SessionState state = (SessionState)((Advised)sessionDelegate)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
+      SessionState state = (SessionState)((Advised)sessionDelegate)._getInstanceAdvisor().
+         getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
+      
       if (!state.isXA())
       {
          throw new IllegalStateException("Isn't an XASession");
