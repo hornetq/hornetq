@@ -249,11 +249,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       return new JBossObjectMessage(this);
    }
    
-   // Externalizable implementation ---------------------------------
+   // Package protected ---------------------------------------------
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   // Protected -----------------------------------------------------
+
+   protected void writePayloadExternal(ObjectOutput out) throws IOException
    {
-      super.writeExternal(out);
       out.writeBoolean(isByteArray);
       if (payload == null)
       {
@@ -266,25 +267,19 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       }
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   protected Serializable readPayloadExternal(ObjectInput in)
+      throws IOException, ClassNotFoundException
    {
-      super.readExternal(in);
       isByteArray = in.readBoolean();
       int length = in.readInt();
       if (length < 0)
       {
-         payload = null;
+         return null;
       }
-      else
-      {
-         payload = new byte[length];
-         in.readFully((byte[])payload);
-      }
+      byte[] payload = new byte[length];
+      in.readFully((byte[])payload);
+      return payload;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 

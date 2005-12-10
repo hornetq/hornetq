@@ -85,4 +85,13 @@ class SimpleMessage extends MessageSupport
    {
       return "SimpleMessage["+messageID+"]";
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

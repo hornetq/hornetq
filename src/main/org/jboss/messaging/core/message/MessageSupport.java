@@ -31,7 +31,7 @@ import java.util.Map;
 
 
 /**
- * A simple Message implementation.
+ * A message base.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -186,13 +186,38 @@ public class MessageSupport extends RoutableSupport implements Message
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      //out.writeObject(payload); payload is already written in subclasses - don't want to write it twice!!
+      writePayloadExternal(out); // making sure the payload is written by this class OR a subclass
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      //payload = (Serializable)in.readObject();
+      payload = readPayloadExternal(in); // making sure the payload is read by this class OR a subclass
    }
-   
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   /**
+    * Override this if you want more sophisticated payload externalization.
+    */
+   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   {
+      out.writeObject(payload);
+   }
+
+   /**
+    * Override this if you want more sophisticated payload externalization.
+    */
+   protected Serializable readPayloadExternal(ObjectInput in)
+      throws IOException, ClassNotFoundException
+   {
+      return (Serializable)in.readObject();
+   }
+
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 }

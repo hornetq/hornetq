@@ -472,23 +472,20 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       return new JBossMapMessage(this);
    }
    
-   // Externalizable implementation ---------------------------------
-
-   public void writeExternal(ObjectOutput out) throws IOException
-   {
-      super.writeExternal(out);
-      writeMap(out, ((Map)payload));
-   }
-
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-      super.readExternal(in);
-      payload = (Serializable)readMap(in);
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   {
+      writeMap(out, ((Map)payload));
+   }
+
+   protected Serializable readPayloadExternal(ObjectInput in)
+      throws IOException, ClassNotFoundException
+   {
+      return (Serializable)readMap(in);
+   }
 
    // Private -------------------------------------------------------
 

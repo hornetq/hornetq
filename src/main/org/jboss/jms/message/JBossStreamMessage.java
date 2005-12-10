@@ -669,7 +669,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    }
 
    // JBossMessage overrides ----------------------------------------
-   
 
    public void clearBody() throws JMSException
    {
@@ -687,14 +686,25 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       return new JBossStreamMessage(this);
    }
    
-   // Externalizable implementation ---------------------------------
+   // Package protected ---------------------------------------------
 
-   public void readExternal(ObjectInput in) throws IOException
+   // Protected -----------------------------------------------------
+
+   protected void writePayloadExternal(ObjectOutput out) throws IOException
    {
+      out.writeObject(((List)payload));
+      out.writeInt(position);
+      out.writeInt(offset);
+      out.writeInt(size);
+   }
+
+   protected Serializable readPayloadExternal(ObjectInput in)
+      throws IOException, ClassNotFoundException
+   {
+      Serializable p = null;
       try
       {
-         super.readExternal(in);         
-         payload = (ArrayList) in.readObject();
+         p = (ArrayList) in.readObject();
          position = in.readInt();
          offset = in.readInt();
          size = in.readInt();
@@ -704,20 +714,9 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          log.error("Failed to find class", e);
          throw new IOException(e.getMessage());
       }
+
+      return p;
    }
-
-   public void writeExternal(ObjectOutput out) throws IOException
-   {
-      super.writeExternal(out);
-      out.writeObject(((List)payload));
-      out.writeInt(position);
-      out.writeInt(offset);
-      out.writeInt(size);
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 

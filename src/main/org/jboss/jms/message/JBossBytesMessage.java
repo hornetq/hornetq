@@ -130,9 +130,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
     * Make a shallow copy of another JBossBytesMessage
     * 
     * @param other
-    * @throws JMSException
     */
-   public JBossBytesMessage(JBossBytesMessage other) throws JMSException
+   public JBossBytesMessage(JBossBytesMessage other)
    {
       super(other);
       
@@ -664,12 +663,14 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       return ((byte[])payload).length;
    }
 
-   // Externalizable implementation ---------------------------------
+   // Package protected ---------------------------------------------
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   // Protected -----------------------------------------------------
+
+   protected void writePayloadExternal(ObjectOutput out) throws IOException
    {
       byte[] arrayToSend = null;
-      
+
       if (ostream != null)
       {
          p.flush();
@@ -679,7 +680,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       {
          arrayToSend = (byte[])payload;
       }
-      super.writeExternal(out);
+
       if (arrayToSend == null)
       {
          out.writeInt(0); //pretend to be empty array
@@ -691,24 +692,18 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   protected Serializable readPayloadExternal(ObjectInput in)
+      throws IOException, ClassNotFoundException
    {
-      super.readExternal(in);
       int length = in.readInt();
       if (length < 0)
       {
-         payload = null;
+         return null;
       }
-      else
-      {
-         payload = new byte[length];
-         in.readFully((byte[])payload);
-      }
+      byte[] payload = new byte[length];
+      in.readFully(payload);
+      return payload;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 

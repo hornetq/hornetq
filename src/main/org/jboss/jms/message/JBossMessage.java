@@ -45,7 +45,6 @@ import javax.jms.TextMessage;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JBossJMSException;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
@@ -72,8 +71,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    private static final long serialVersionUID = 8341387096828690976L;
    
-   private static final Logger log = Logger.getLogger(JBossMessage.class);
-
    public static final int TYPE = 0;
 
    // Static --------------------------------------------------------
@@ -94,7 +91,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       reservedIdentifiers.add("ESCAPE");
    }
 
-   public static MessageDelegate createThinDelegate(JBossMessage m) throws JMSException
+   public static MessageDelegate createThinDelegate(JBossMessage m)
    {
       MessageDelegate del = null;
       

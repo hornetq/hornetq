@@ -44,7 +44,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * Collection of static methods to use to start/stop and interact with the in memory JMS server. 
+ * Collection of static methods to use to start/stop and interact with the in-memory JMS server.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
@@ -89,15 +90,6 @@ public class ServerManagement
       }
    }
    
-   public static void init(TransactionManager tm) throws Exception
-   {
-      initRemote();
-      if (!isRemote)
-      {
-         startInVMServer(tm);
-      }
-   }
-   
    public static void init(String config) throws Exception
    {
       initRemote();
@@ -115,11 +107,6 @@ public class ServerManagement
    private static void startInVMServer() throws Exception
    {
       startInVMServer("transaction, remoting, aop, security", null);
-   }
-
-   private static void startInVMServer(TransactionManager tm) throws Exception
-   {
-      startInVMServer("transaction, remoting, aop, security", tm);
    }
 
    private synchronized static void startInVMServer(String config) throws Exception
@@ -156,8 +143,6 @@ public class ServerManagement
       Document doc = parser.parse(new InputSource(new StringReader(s)));
       return doc.getDocumentElement();
    }
-
-
 
    public synchronized static void deInit() throws Exception
    {
@@ -319,8 +304,7 @@ public class ServerManagement
          return InVMInitialContextFactory.getJNDIEnvironment();
       }
    }
-   
-   
+
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -354,11 +338,7 @@ public class ServerManagement
    private static void setupRemoteJMX() throws Exception
    {
       InitialContext ic = new InitialContext(RemoteInitialContextFactory.getJNDIEnvironment());
-      
       rmiAdaptor = (RMIAdaptor) ic.lookup("jmx/invoker/RMIAdaptor");
-      
-     
-      
    }
 
    // Inner classes -------------------------------------------------

@@ -521,6 +521,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
          Message m = MessageFactory.createMessage("message0", false, "payload");
 
+         log.debug("sending the message");
          Set deliveries = replicator.handle(observer, m, null);
 
          assertEquals(1, deliveries.size());

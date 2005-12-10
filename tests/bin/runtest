@@ -37,8 +37,8 @@
 
 #TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
 #TARGET_TEST=testRecoverableChannel_3
-TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
-TARGET_TEST=testRecoverableChannel_7
+#TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
+#TARGET_TEST=testRecoverableChannel_7
 #TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
@@ -116,8 +116,8 @@ TARGET_TEST=testRecoverableChannel_7
 #TARGET_TEST=testDelivery_5
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
-#TARGET_TEST=testTwoReplicators_2
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
+TARGET_TEST=testReplicator_6
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
 
 #

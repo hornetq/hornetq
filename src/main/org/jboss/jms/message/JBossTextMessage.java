@@ -30,8 +30,6 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.jboss.logging.Logger;
-
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
  * 
@@ -51,8 +49,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    private static final long serialVersionUID = 7965361851565655163L;
    
-   private static final Logger log = Logger.getLogger(JBossTextMessage.class);
-
    public static final int TYPE = 5;
 
    // Attributes ----------------------------------------------------
@@ -145,35 +141,19 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       return (String)payload;
    }
 
-   // Externalizable implementation ---------------------------------
-
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   // JBossMessage override -----------------------------------------
+   
+   public JBossMessage doShallowCopy()
    {
-      super.readExternal(in);
-      
-      if (log.isTraceEnabled()) { log.trace("in readExternal"); }
-      
-      byte type = in.readByte();
-      
-      if (log.isTraceEnabled()) { log.trace("type is:" + type); }
-
-      if (type == NULL)
-      {
-         payload = null;
-      }
-      else
-      {
-         payload = in.readUTF();
-
-      }
+      return new JBossTextMessage(this);
    }
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void writePayloadExternal(ObjectOutput out) throws IOException
    {
-      super.writeExternal(out);
-      
-      if (log.isTraceEnabled()) { log.trace("in writeExternal"); }
-      
       if (payload == null)
       {
          out.writeByte(NULL);
@@ -185,16 +165,17 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       }
    }
 
-   // JBossMessage override -----------------------------------------------
-   
-   public JBossMessage doShallowCopy()
+   protected Serializable readPayloadExternal(ObjectInput in)
+      throws IOException, ClassNotFoundException
    {
-      return new JBossTextMessage(this);
+      byte type = in.readByte();
+      if (type == NULL)
+      {
+         return null;
+      }
+      return in.readUTF();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 
