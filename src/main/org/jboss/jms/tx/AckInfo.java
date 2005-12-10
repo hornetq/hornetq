@@ -30,7 +30,7 @@ import java.io.ObjectOutput;
  * Struct like class for holding information regarding an acknowlegement to
  * be passed to the server for processing.
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox </a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
  *
  * $Id$
  */

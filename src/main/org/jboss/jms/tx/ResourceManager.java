@@ -42,7 +42,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  *
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version $Revision$
  *
  * $Id$

@@ -23,29 +23,23 @@ package org.jboss.test.messaging.jms;
 
 import java.util.Map;
 
-import javax.naming.InitialContext;
-import javax.jms.BytesMessage;
+import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.Connection;
 import javax.jms.MapMessage;
-import javax.jms.Session;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Message;
-import javax.jms.TextMessage;
+import javax.jms.Session;
+import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.tx.TransactionManagerImpl;
-import org.jboss.util.id.GUID;
 
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class MessageDelegateTest extends MessagingTestCase

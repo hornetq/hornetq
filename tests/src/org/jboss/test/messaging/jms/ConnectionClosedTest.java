@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
-import javax.jms.IllegalStateException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -47,7 +46,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * All tests related to closing a Connection.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

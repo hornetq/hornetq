@@ -36,7 +36,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.tx.TransactionManagerImpl;
 
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id$
  */

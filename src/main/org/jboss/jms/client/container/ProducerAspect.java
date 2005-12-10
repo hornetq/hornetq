@@ -27,9 +27,9 @@ import javax.jms.Message;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.ProducerState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
@@ -40,7 +40,7 @@ import org.jboss.util.id.GUID;
  * 
  * This aspect is PER_INSTANCE.
  *
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class ProducerAspect
@@ -50,8 +50,6 @@ public class ProducerAspect
    private static final Logger log = Logger.getLogger(ProducerAspect.class);
    
    // Attributes ----------------------------------------------------     
-   
-   protected ProducerState state;
    
    // Static --------------------------------------------------------
    
@@ -280,11 +278,7 @@ public class ProducerAspect
    
    private ProducerState getState(Invocation inv)
    {
-      if (state == null)
-      {
-         state = (ProducerState)inv.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-      }
-      return state;
+      return (ProducerState)((ClientStubBase)inv.getTargetObject()).getState();
    }
    
    // Inner Classes -------------------------------------------------

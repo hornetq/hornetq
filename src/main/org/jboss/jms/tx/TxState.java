@@ -35,7 +35,7 @@ import java.util.List;
  * Holds the messages to be sent and the acknowledgements to be made
  * for the transaction
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox </a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
  */
 public class TxState implements Externalizable
 {  

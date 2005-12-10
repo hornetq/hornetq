@@ -35,10 +35,10 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jgroups.protocols.JMS;
 
@@ -188,11 +188,7 @@ public class AsfAspect
    
    private SessionState getState(Invocation inv)
    {
-      if (state == null)
-      {
-         state = (SessionState)inv.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-      }
-      return state;
+      return (SessionState)((ClientStubBase)inv.getTargetObject()).getState();
    }
    
    // Inner Classes --------------------------------------------------

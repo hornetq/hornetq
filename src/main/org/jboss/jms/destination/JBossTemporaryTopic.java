@@ -28,7 +28,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.util.id.GUID;
 
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

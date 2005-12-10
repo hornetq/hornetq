@@ -33,13 +33,12 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *

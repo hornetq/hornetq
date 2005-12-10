@@ -44,7 +44,7 @@ import org.jboss.jms.delegate.SessionDelegate;
  * See JMS1.1 Spec 3.9, 3.10 for more details.
  * If nothing is changed, nothing is copied.
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  */
 public class MessageDelegate implements Message

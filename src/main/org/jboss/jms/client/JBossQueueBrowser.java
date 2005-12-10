@@ -31,7 +31,7 @@ import java.util.Enumeration;
 import org.jboss.jms.delegate.BrowserDelegate;
 
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id$
  */

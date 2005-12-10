@@ -31,7 +31,7 @@ import javax.jms.ObjectMessage;
  * 
  * Thin delegator for a JBossObjectMessage
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  */
 public class ObjectMessageDelegate extends MessageDelegate implements ObjectMessage

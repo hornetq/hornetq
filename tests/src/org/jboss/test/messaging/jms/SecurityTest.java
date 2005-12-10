@@ -50,7 +50,7 @@ import org.xml.sax.InputSource;
  * 
  * This test must be run with the Test security config. on the server
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * Much of the basic idea of the tests come from SecurityUnitTestCase.java in JBossMQ by:
  * @author <a href="pra@tim.se">Peter Antman</a>

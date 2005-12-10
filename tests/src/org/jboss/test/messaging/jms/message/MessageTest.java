@@ -60,7 +60,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * Base class for all tests concerning message headers, properties, etc.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

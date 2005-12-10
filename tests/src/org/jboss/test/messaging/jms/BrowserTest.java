@@ -21,7 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-
 import java.util.Enumeration;
 
 import javax.jms.Connection;
@@ -41,9 +40,8 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 
-
 /**
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *

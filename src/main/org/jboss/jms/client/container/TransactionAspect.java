@@ -28,10 +28,11 @@ import javax.jms.TransactionInProgressException;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
 import org.jboss.logging.Logger;
@@ -41,7 +42,7 @@ import org.jboss.logging.Logger;
  * 
  * This aspect is PER_INSTANCE
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  *
  * $Id$
  */
@@ -204,9 +205,9 @@ public class TransactionAspect
    
    // Private --------------------------------------------------------
    
-   private Object getState(Invocation inv)
+   private HierarchicalState getState(Invocation inv)
    {
-      return inv.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);      
+      return ((ClientStubBase)inv.getTargetObject()).getState();    
    }
    
    // Inner Classes --------------------------------------------------

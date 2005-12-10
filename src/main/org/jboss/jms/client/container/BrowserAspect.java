@@ -34,7 +34,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
  * 
  * This aspect is PER_INSTANCE.
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  */
 public class BrowserAspect
 {
@@ -42,8 +42,10 @@ public class BrowserAspect
    
    //TODO - these need to be configurable by the user - should be configured from jboss-aop.xml
    
-   //FIXME - Batching isn't currently working properly
+   //FIXME - This interceptor is currently broken
+   
    private static final boolean BATCH_MESSAGES = false;
+
    private static final int MSG_BLOCK_SIZE = 5;
    
    // Attributes ----------------------------------------------------
@@ -59,6 +61,8 @@ public class BrowserAspect
 
    public Object handleNextMessage(Invocation invocation) throws Throwable
    {   
+      if (!BATCH_MESSAGES) return invocation.invokeNext();
+      
       checkCache(invocation);
       Message mess = cache[pos++];
       if (pos == cache.length)

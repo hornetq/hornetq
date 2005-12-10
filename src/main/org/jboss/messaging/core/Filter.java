@@ -31,7 +31,7 @@ import java.io.Serializable;
  * A filter must be serializable because it can be sent between two address spaces as argument
  * of a distributed RPC.
  *
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *

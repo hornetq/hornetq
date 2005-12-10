@@ -27,7 +27,6 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.logging.Logger;
 
 /**
  * 
@@ -46,8 +45,6 @@ import org.jboss.logging.Logger;
 public class ReceiverAspect
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ReceiverAspect.class);
 
    // Static --------------------------------------------------------
 

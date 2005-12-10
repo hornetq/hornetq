@@ -33,7 +33,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.logging.Logger;
 
 
@@ -44,7 +44,7 @@ import org.jboss.logging.Logger;
  * This interceptor is PER_INSTANCE.
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  *
  * $Id$
  */
@@ -231,9 +231,8 @@ public class ClosedInterceptor  implements Interceptor
     */
    protected void maintainRelatives(Invocation invocation)
    {                  
-      HierarchicalState state = 
-         (HierarchicalState)invocation.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-          
+      HierarchicalState state = ((ClientStubBase)invocation.getTargetObject()).getState();    
+            
       //We use a clone to avoid a deadlock where requests
       //are made to close parent and child concurrently
       

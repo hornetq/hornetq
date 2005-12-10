@@ -33,6 +33,7 @@ import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.invocation.unified.marshall.InvocationMarshaller;
 import org.jboss.invocation.unified.marshall.InvocationUnMarshaller;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
@@ -44,9 +45,9 @@ import org.jboss.remoting.marshal.UnMarshaller;
 /**
  * Base class for all client stub classes.
  * 
- * Client stub classes provide an emptuy implementation of the appropriate delegate
+ * Client stub classes provide an empty implementation of the appropriate delegate
  * interface.
- * The classes are advised using JBoss AOP to proviede the client side
+ * The classes are advised using JBoss AOP to provide the client side
  * advice stack.
  * The delegate methods in the stub class will never actually be invoked
  * since they will either be handled in the advice stack or invoked on the server
@@ -68,12 +69,24 @@ public abstract class ClientStubBase implements Interceptor, Serializable
    
    protected InvokerLocator locator;
    
-   private Client client;         
+   private Client client;  
+   
+   private HierarchicalState state;
    
    public ClientStubBase(String objectID, InvokerLocator locator)
    {
       this.objectID = objectID;
       this.locator = locator;      
+   }
+   
+   public HierarchicalState getState()
+   {
+      return state;
+   }
+   
+   public void setState(HierarchicalState state)
+   {
+      this.state = state;
    }
    
    /**

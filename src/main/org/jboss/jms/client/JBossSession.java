@@ -53,21 +53,25 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.aop.Advised;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+<<<<<<< JBossSession.java
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+=======
  * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+>>>>>>> 1.28
  * 
  * $Id$
  */
@@ -372,9 +376,7 @@ class JBossSession implements
    
    public Session getSession() throws JMSException
    {      
-      SessionState state = (SessionState)((Advised)sessionDelegate)._getInstanceAdvisor().
-         getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-      
+      SessionState state = (SessionState)((ClientStubBase)sessionDelegate).getState();
       if (!state.isXA())
       {
          throw new IllegalStateException("Isn't an XASession");

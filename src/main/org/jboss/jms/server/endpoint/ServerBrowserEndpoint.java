@@ -38,7 +38,7 @@ import org.jboss.messaging.core.Routable;
 /**
  * Concrete implementation of BrowserEndpoint
  * 
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$

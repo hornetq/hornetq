@@ -32,12 +32,11 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import org.jboss.aop.Advised;
 import org.jboss.jms.client.state.ConsumerState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -123,8 +122,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
       cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
       
-      ConsumerState state = 
-      (ConsumerState)(((Advised)cons)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE));
+      ConsumerState state = (ConsumerState)((ClientStubBase)cons).getState();
       
       this.consumerID = state.getConsumerID();
 

@@ -14,11 +14,11 @@
    <aspect class="org.jboss.jms.client.container.AsfAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.BrowserAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ConnectionAspect" scope="PER_INSTANCE"/>
-   <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_INSTANCE"/>
+   <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/> 
-   <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_INSTANCE"/>
+   <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_INSTANCE"/>
-   <aspect class="org.jboss.jms.client.container.TransactionAspect" scope="PER_INSTANCE"/>
+   <aspect class="org.jboss.jms.client.container.TransactionAspect" scope="PER_VM"/>
    
    <!-- ConnectionFactory Stack-->        
    <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionFactoryStub->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))">
@@ -228,7 +228,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
-   </bind>            
+   </bind>      
    <bind pointcut="execution(* org.jboss.jms.client.stubs.BrowserStub->nextMessage())">
       <advice name="handleNextMessage" aspect="org.jboss.jms.client.container.BrowserAspect"/>
    </bind>

@@ -40,11 +40,9 @@ import org.jboss.util.Primitives;
 /**
  * This class implements javax.jms.StreamMessage.
  * 
- * It is largely ported from SpyStreamMessage in JBossMQ.
- * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * @version $Revision$

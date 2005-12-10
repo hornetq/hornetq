@@ -42,7 +42,7 @@ import org.jboss.jms.server.endpoint.SessionEndpoint;
  * will be handled in the advice stack.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

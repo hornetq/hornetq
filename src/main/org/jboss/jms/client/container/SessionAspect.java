@@ -30,8 +30,8 @@ import javax.jms.Session;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.logging.Logger;
 
@@ -40,7 +40,7 @@ import org.jboss.logging.Logger;
  * 
  * This aspect is PER_INSTANCE
  *
- * @author <a href="mailto:tim.l.fox@gmail.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  *
  * $Id$
  */
@@ -54,8 +54,6 @@ public class SessionAspect
    
    protected ArrayList unacked = new ArrayList();
    
-   protected SessionState state;
-      
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -232,11 +230,7 @@ public class SessionAspect
    
    private SessionState getState(Invocation inv)
    {
-      if (state == null)
-      {
-         state = (SessionState)inv.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-      }
-      return state;
+      return (SessionState)((ClientStubBase)inv.getTargetObject()).getState();
    }
     
    // Inner Classes -------------------------------------------------

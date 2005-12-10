@@ -30,7 +30,7 @@ import org.jboss.messaging.core.local.Topic;
  * 
  * Holds state for a DurableSubscription
  *
- * @author <a href="tim.l.fox@gmail.com">Tim Fox/a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox/a>
  * @version $Revision$
  *
  * $Id$

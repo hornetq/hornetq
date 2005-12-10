@@ -21,8 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
@@ -36,8 +34,6 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -48,7 +44,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * which go to ConnectionClosedTest.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

@@ -43,8 +43,6 @@ import org.jboss.util.Classes;
 /**
  * This class implements javax.jms.ObjectMessage
  * 
- * It is largely ported from SpyObjectMessage in JBossMQ.
- *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

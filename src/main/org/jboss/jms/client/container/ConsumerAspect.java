@@ -30,6 +30,7 @@ import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.remoting.Remoting;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
@@ -60,8 +61,6 @@ public class ConsumerAspect
 
    // Attributes ----------------------------------------------------
 
-   protected ConsumerState state;
-   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -93,8 +92,7 @@ public class ConsumerAspect
       boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       //Create the message handler
-      SessionState sessState =
-         (SessionState)invocation.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
+      SessionState sessState = (SessionState)((ClientStubBase)invocation.getTargetObject()).getState();
       
       MessageCallbackHandler messageHandler = new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode());
 
@@ -110,9 +108,8 @@ public class ConsumerAspect
       
       SessionDelegate del = (SessionDelegate)invocation.getTargetObject();
 
-      ConsumerState theState =
-         (ConsumerState)((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-      
+      ConsumerState theState = (ConsumerState)((ClientStubBase)consumerDelegate).getState();
+         
       messageHandler.setSessionDelegate(del);
       messageHandler.setConsumerDelegate(consumerDelegate);
       messageHandler.setConsumerID(theState.getConsumerID());
@@ -165,11 +162,7 @@ public class ConsumerAspect
    
    private ConsumerState getState(Invocation inv)
    {
-      if (state == null)
-      {
-         state = (ConsumerState)inv.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
-      }
-      return state;
+      return (ConsumerState)((ClientStubBase)inv.getTargetObject()).getState();
    }
    
    // Inner classes -------------------------------------------------

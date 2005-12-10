@@ -40,7 +40,7 @@ import org.jboss.messaging.core.Routable;
  * @author     Juha Lindfors (jplindfo@helsinki.fi)
  * @author     <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author     Scott.Stark@jboss.org
- * @author	   <a href="mailto:tim.l.fox@gmail.com">Tim Fox - port from JBoss 4</a>
+ * @author	   <a href="mailto:tim.fox@jboss.com">Tim Fox - port from JBoss 4</a>
  * @version    $Revision$
  *
  * $Id$

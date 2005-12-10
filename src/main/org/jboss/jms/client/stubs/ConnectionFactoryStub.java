@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 
 /**

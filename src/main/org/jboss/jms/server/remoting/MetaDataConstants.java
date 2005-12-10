@@ -36,6 +36,4 @@ public class MetaDataConstants
    public static final String MESSAGE_HANDLER = "HANDLER";
    
    public static final String INVOKER_CLIENT = "CLIENT";
-   
-   public static final String LOCAL_STATE = "STATE";
 }

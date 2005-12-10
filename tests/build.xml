@@ -373,7 +373,6 @@
          <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
 -->
 
-
          <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
 

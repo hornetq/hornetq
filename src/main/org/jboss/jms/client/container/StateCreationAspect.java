@@ -26,7 +26,6 @@ import javax.jms.Destination;
 import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.BrowserState;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
@@ -40,7 +39,6 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.logging.Logger;
 
 /**
  * Maintains the hierarchy of parent and child state objects
@@ -61,9 +59,6 @@ public class StateCreationAspect
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(StateCreationAspect.class);
-   
-
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
@@ -78,12 +73,12 @@ public class StateCreationAspect
    {
       ConnectionDelegate conn = (ConnectionDelegate)invocation.invokeNext();
       
-      ((ClientStubBase)conn).init();
+      ClientStubBase csb = (ClientStubBase)conn;
       
-      ConnectionState state = new ConnectionState(conn);      
-
-      setState(conn, state);
+      csb.init();
       
+      csb.setState(new ConnectionState(conn));           
+                  
       return conn;
    }
    
@@ -91,7 +86,9 @@ public class StateCreationAspect
    {
       SessionDelegate sess = (SessionDelegate)invocation.invokeNext();
       
-      ((ClientStubBase)sess).init();
+      ClientStubBase csb = (ClientStubBase)sess;
+      
+      csb.init();
       
       ConnectionState connState = (ConnectionState)getState(invocation);
       
@@ -103,7 +100,7 @@ public class StateCreationAspect
       
       SessionState state = new SessionState(connState, sess, transacted, ackMode, xa);
       
-      setState(sess, state);
+      csb.setState(state);
       
       return sess;
    }
@@ -112,7 +109,9 @@ public class StateCreationAspect
    {
       ConsumerDelegate cons = (ConsumerDelegate)invocation.invokeNext();
       
-      ((ClientStubBase)cons).init();
+      ClientStubBase csb = (ClientStubBase)cons;
+      
+      csb.init();
       
       SessionState sessState = (SessionState)getState(invocation);
       
@@ -126,7 +125,7 @@ public class StateCreationAspect
       
       ConsumerState state = new ConsumerState(sessState, cons, dest, selector, noLocal, consumerID, connectionConsumer);
       
-      setState(cons, state);
+      csb.setState(state);
       
       return cons;
    }
@@ -135,7 +134,9 @@ public class StateCreationAspect
    {
       ProducerDelegate prod = (ProducerDelegate)invocation.invokeNext();
       
-      ((ClientStubBase)prod).init();
+      ClientStubBase csb = (ClientStubBase)prod;
+      
+      csb.init();
       
       SessionState sessState = (SessionState)getState(invocation);
       
@@ -145,7 +146,7 @@ public class StateCreationAspect
       
       ProducerState state = new ProducerState(sessState, prod, theDest);
       
-      setState(prod, state);
+      csb.setState(state);
       
       return prod;
    }
@@ -154,13 +155,15 @@ public class StateCreationAspect
    {
       BrowserDelegate browser = (BrowserDelegate)invocation.invokeNext();
       
-      ((ClientStubBase)browser).init();
+      ClientStubBase csb = (ClientStubBase)browser;      
+      
+      csb.init();
       
       SessionState sessState = (SessionState)getState(invocation);
       
       BrowserState state = new BrowserState(sessState, browser);
       
-      setState(browser, state);
+      csb.setState(state);
       
       return browser;
    }
@@ -171,15 +174,9 @@ public class StateCreationAspect
 
    // Private --------------------------------------------------------
    
-   private void setState(Object delegate, HierarchicalState state)
-   {
-      ((Advised)delegate)._getInstanceAdvisor().getMetaData()
-         .addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE, state, PayloadKey.TRANSIENT);     
-   }
-   
    private HierarchicalState getState(Invocation inv)
    {
-      return (HierarchicalState)inv.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.LOCAL_STATE);
+      return ((ClientStubBase)inv.getTargetObject()).getState();
    }
    
    // Inner Classes --------------------------------------------------

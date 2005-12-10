@@ -31,7 +31,7 @@ import org.jboss.jms.message.JBossMessage;
  * <p>Needs a lot of work...
  *
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a> Ported from JBossMQ
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Ported from JBossMQ
  * @version $Revision$
  */
 public class SelectorSyntaxTest

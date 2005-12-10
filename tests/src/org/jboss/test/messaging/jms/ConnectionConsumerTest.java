@@ -44,7 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 /**
  * ConnectionConsumer tests
  *
- * @author <a href="mailto:tim.l.fox@gmail.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
