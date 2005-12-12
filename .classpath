@@ -24,5 +24,7 @@
 	<classpathentry kind="lib" path="src/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/thirdparty/apache-logging/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/tools/lib/ant.jar"/>
+	<classpathentry kind="lib" path="/tools/lib/ant-junit.jar"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
