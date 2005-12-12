@@ -150,6 +150,10 @@
          <classpath refid="test.classpath"/>
          <include name="**/*.java"/>
       </javac>
+      <!-- Call rmi compiler to create stub for server -->
+      <rmic base="${build.tests.classes}" includes="**/RMIServer.class">
+         <classpath refid="test.classpath"/>
+      </rmic>
    </target>
 
 
