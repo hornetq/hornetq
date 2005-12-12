@@ -37,5 +37,6 @@ $reldir/../../output/classes${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
+$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP} \
  org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer

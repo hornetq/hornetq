@@ -125,16 +125,13 @@
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/etc"/>
       <pathelement path="${module.root}/../src/etc"/>
-
-      <!-- TODO I am pretty sure this is NOT the right way to include these here -->
-      <pathelement path="${module.root}/../../tools/lib/ant.jar"/>
-      <pathelement path="${module.root}/../../tools/lib/ant-junit.jar"/>
    </path>
-
 
    <!-- Compile all test files -->
    <target name="compile">
+
       <mkdir dir="${build.tests.classes}"/>
+
       <javac destdir="${build.tests.classes}"
          optimize="${javac.optimize}"
          target="1.4"
@@ -143,19 +140,19 @@
          depend="${javac.depend}"
          verbose="${javac.verbose}"
          deprecation="${javac.deprecation}"
-         includeAntRuntime="${javac.include.ant.runtime}"
+         includeAntRuntime="yes"
          includeJavaRuntime="${javac.include.java.runtime}"
          failonerror="${javac.fail.onerror}">
          <src path="${source.tests.java}"/>
          <classpath refid="test.classpath"/>
          <include name="**/*.java"/>
       </javac>
+
       <!-- Call rmi compiler to create stub for server -->
-      <rmic base="${build.tests.classes}" includes="**/RMIServer.class">
+      <rmic base="${build.tests.classes}" includes="**/RMIServer.class,**/RMINamingDelegate.class">
          <classpath refid="test.classpath"/>
       </rmic>
    </target>
-
 
    <target name="tests-jar"
            depends="compile"
@@ -183,7 +180,6 @@
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="2400000"/>
-
 
    <property name="junit.timeout2" value="2400000"/>
 
@@ -227,6 +223,7 @@
          <classpath>
             <path refid="jboss.common.classpath"/>
             <path refid="jboss.remoting.classpath"/>
+            <path refid="jboss.j2se.classpath"/>
             <pathelement location="${module.root}/etc"/>
             <pathelement location="${module.output}/classes"/>
             <pathelement location="${module.root}/../output/classes"/>
@@ -277,13 +274,14 @@
    <target name="remote-tests"
       description="Runs remotely all tests for which it makes sense to run remotely">
 
+      <antcall target="stop-rmi-server"/>
       <antcall target="start-rmi-server"/>
-
+      <mkdir dir="${build.tests.reports}"/>
       <antcall target="print-testclasspath"/>
 
       <junit printsummary="${junit.printsummary}"
          fork="${junit.fork}"
-         includeantruntime="${junit.includeantruntime}"
+         includeantruntime="yes"
          haltonerror="${junit.haltonerror}"
          haltonfailure="${junit.haltonfailure}"
          showoutput="${junit.showoutput}"
@@ -299,6 +297,7 @@
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+            <pathelement location="${module.root}/output/classes"/>
          </classpath>
 
          <sysproperty key="messaging-test-configuration" value="Remote"/>
@@ -457,13 +456,9 @@
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
-
-
-<!--
-         <jvmarg value="-Xdebug"/>
-         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
--->
-
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
+         -->
          <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
 
@@ -490,9 +485,7 @@
       </junit>
 
       <antcall target="stop-rmi-server"/>
-
    </target>
-
 
    <target name="compile-stylesheets">
       <mkdir dir="${build.tests.stylesheets}"/>
@@ -512,8 +505,7 @@
          </fileset>
          <report format="frames"
             todir="${build.tests.reports}/html"
-            styledir="${build.tests.stylesheets}"
-            />
+            styledir="${build.tests.stylesheets}"/>
       </junitreport>
    </target>
 
@@ -526,37 +518,34 @@
          </fileset>
          <report format="frames"
             todir="${build.tests.reports}/html"
-            styledir="${build.tests.stylesheets}"
-            />
+            styledir="${build.tests.stylesheets}"/>
       </junitreport>
    </target>
 
-  <target name="messagereport" depends="messagetests, compile-stylesheets">
-     <mkdir dir="${build.tests.reports}/html"/>
+   <target name="messagereport" depends="messagetests, compile-stylesheets">
+      <mkdir dir="${build.tests.reports}/html"/>
 
-     <junitreport todir="${build.tests.reports}">
-        <fileset dir="${build.tests.reports}">
-           <include name="TEST-*.xml"/>
-        </fileset>
-        <report format="frames"
-           todir="${build.tests.reports}/html"
-           styledir="${build.tests.stylesheets}"
-           />
-     </junitreport>
+      <junitreport todir="${build.tests.reports}">
+         <fileset dir="${build.tests.reports}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+            todir="${build.tests.reports}/html"
+            styledir="${build.tests.stylesheets}"/>
+      </junitreport>
    </target>
 
-    <target name="corereport" depends="coretests, compile-stylesheets">
-     <mkdir dir="${build.tests.reports}/html"/>
+   <target name="corereport" depends="coretests, compile-stylesheets">
+      <mkdir dir="${build.tests.reports}/html"/>
 
-     <junitreport todir="${build.tests.reports}">
-        <fileset dir="${build.tests.reports}">
-           <include name="TEST-*.xml"/>
-        </fileset>
-        <report format="frames"
-           todir="${build.tests.reports}/html"
-           styledir="${build.tests.stylesheets}"
-           />
-     </junitreport>
+      <junitreport todir="${build.tests.reports}">
+         <fileset dir="${build.tests.reports}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+            todir="${build.tests.reports}/html"
+            styledir="${build.tests.stylesheets}"/>
+      </junitreport>
    </target>
 
    <target name="build-report" >
@@ -566,8 +555,7 @@
         </fileset>
         <report format="frames"
            todir="${build.tests.reports}/html"
-           styledir="${build.tests.stylesheets}"
-           />
+           styledir="${build.tests.stylesheets}"/>
      </junitreport>
    </target>
 

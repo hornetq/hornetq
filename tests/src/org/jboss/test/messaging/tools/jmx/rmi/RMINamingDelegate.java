@@ -34,7 +34,7 @@ import java.rmi.server.UnicastRemoteObject;
  *
  * $Id$
  */
-public class NamingDelegateImpl extends UnicastRemoteObject implements NamingDelegate
+public class RMINamingDelegate extends UnicastRemoteObject implements NamingDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -46,7 +46,7 @@ public class NamingDelegateImpl extends UnicastRemoteObject implements NamingDel
 
    // Constructors --------------------------------------------------
 
-   public NamingDelegateImpl() throws Exception
+   public RMINamingDelegate() throws Exception
    {
       super();
       ica = new InitialContextAccess();

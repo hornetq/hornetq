@@ -85,7 +85,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
    private ServiceContainer sc;
    private ServerPeer serverPeer;
    private boolean remote;
-   private NamingDelegateImpl namingDelegate;
+   private RMINamingDelegate namingDelegate;
 
    // Constructors --------------------------------------------------
 
@@ -96,7 +96,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
       if (remote)
       {
-         namingDelegate = new NamingDelegateImpl();
+         namingDelegate = new RMINamingDelegate();
       }
    }
 
@@ -276,7 +276,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
    // Private -------------------------------------------------------
 
-   private NamingDelegateImpl getNamingDelegate()
+   private RMINamingDelegate getNamingDelegate()
    {
       return namingDelegate;
    }
