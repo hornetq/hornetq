@@ -79,7 +79,7 @@ public class BrowserTest extends MessagingTestCase
 	{
 
 		super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
 		initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 		cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 		

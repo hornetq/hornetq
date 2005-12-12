@@ -19,63 +19,64 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.tools.jndi;
+package org.jboss.test.messaging.tools.jmx.rmi;
 
-import javax.naming.spi.InitialContextFactory;
-import javax.naming.NamingException;
-import javax.naming.Context;
-import java.util.Hashtable;
+import org.jboss.logging.Logger;
+
+import java.rmi.Naming;
+import java.rmi.ConnectException;
 
 /**
- * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
-
+ * A utility to stop runaway rmi servers.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class InVMInitialContextFactory implements InitialContextFactory
+public class StopRMIServer
 {
    // Constants -----------------------------------------------------
 
-   private static InVMContext initialContext;
+   private static final Logger log = Logger.getLogger(StopRMIServer.class);
 
    // Static --------------------------------------------------------
 
-   /**
-    * @return the JNDI environment to use to get this InitialContextFactory.
-    */
-   public static Hashtable getJNDIEnvironment()
+   public static void main(String[] args) throws Exception
    {
-      Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial",
-              "org.jboss.messaging.tools.jndi.InVMInitialContextFactory");
-      env.put("java.naming.provider.url", "");
-      env.put("java.naming.factory.url.pkgs", "");
-      return env;
+
+      String name = "//localhost:" + RMIServer.RMI_REGISTRY_PORT + "/" + RMIServer.RMI_SERVER_NAME;
+
+      Server server;
+      try
+      {
+         server = (Server)Naming.lookup(name);
+      }
+      catch(ConnectException e)
+      {
+         log.info("Cannot contact the registry, the server is probably shut down already");
+         return;
+      }
+
+      server.stop();
+      log.info("RMI server stopped");
+
+      server.exit();
+      log.info("RMI server shut down");
    }
 
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
 
-   public Context getInitialContext(Hashtable environment) throws NamingException
-   {
-      if (initialContext == null)
-      {
-         initialContext = new InVMContext();
-         initialContext.bind("java:/", new InVMContext());
-      }
-      return initialContext;
-   }
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
+
 }

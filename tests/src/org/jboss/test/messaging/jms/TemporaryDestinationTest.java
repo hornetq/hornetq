@@ -72,7 +72,7 @@ public class TemporaryDestinationTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployTopic("Topic");

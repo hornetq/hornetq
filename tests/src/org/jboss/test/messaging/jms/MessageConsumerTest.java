@@ -21,45 +21,46 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.HashSet;
-
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
 import javax.jms.Queue;
-import javax.jms.QueueReceiver;
 import javax.jms.Session;
-import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
+import javax.jms.MessageListener;
+import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.QueueBrowser;
 import javax.jms.InvalidDestinationException;
+import javax.jms.ObjectMessage;
+import javax.jms.MapMessage;
+import javax.jms.StreamMessage;
+import javax.jms.BytesMessage;
+import javax.jms.QueueReceiver;
+import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.remoting.transport.Connector;
+import org.jboss.remoting.ServerInvoker;
+
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collection;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -100,7 +101,7 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
@@ -150,9 +151,6 @@ public class MessageConsumerTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployQueue("Queue2");
-
-
-      //ServerManagement.deInit();
 
       super.tearDown();
    }
@@ -1118,12 +1116,17 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testRemotingInternals() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
       
       Connector serverConnector = ServerManagement.getConnector();
       ServerInvoker serverInvoker = serverConnector.getServerInvoker();
+
       JMSServerInvocationHandler invocationHandler =
             (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
+      
       Collection listeners = invocationHandler.getListeners();
 
       assertEquals(3, listeners.size());  // topicConsumer's and queueConsumer's
@@ -1137,7 +1140,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
       listeners = invocationHandler.getListeners();
       assertEquals(3, listeners.size());
-
    }
    
    public void testMultipleConcurrentConsumers() throws Exception

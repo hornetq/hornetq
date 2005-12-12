@@ -67,7 +67,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    {
 
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
   
    }
 

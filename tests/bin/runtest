@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # bash script for running a single unit test case
+# Options:
+#    -debug start the VM in debugging mode
+#    -remote set the "remote" system property so the server start in a remote VM
 #
 #
 
@@ -9,7 +12,8 @@
 #
 #TARGET_CLASS=org.jboss.test.messaging.util.SelectiveIteratorTest
 #TARGET_CLASS=org.jboss.test.messaging.util.UtilTest
-
+#TARGET_CLASS=org.jboss.test.messaging.util.RemoteServerTest
+#TARGET_TEST=testRemoteServer
 
 #
 # core
@@ -116,8 +120,8 @@
 #TARGET_TEST=testDelivery_5
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
-TARGET_TEST=testReplicator_6
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
+#TARGET_TEST=testReplicator_6
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
 
 #
@@ -145,13 +149,14 @@ TARGET_TEST=testReplicator_6
 #TARGET_TEST=testSimple
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testCreateConsumerOnInexistentDestination
+#TARGET_TEST=testRemotingInternals
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
-#TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
+TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.selector.SelectorTest
+#TARGET_TEST=testSelectiveClosingConsumer
 #TARGET_CLASS=org.jboss.test.messaging.jms.QueueTest
 #TARGET_TEST=testQueue
 #TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
@@ -218,10 +223,15 @@ while [ "$1" != "" ]; do
             JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"
         fi
     fi
+    if [ "$1" = "-remote" ]; then
+        isRemote=true;
+        REMOTE_TEST="-Dremote=true"
+    fi
+
     shift
 done
 
-JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output"
+JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST"
 
 REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 #REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
@@ -232,6 +242,10 @@ JGROUPS_LIB=$reldir/../../../thirdparty/jgroups/lib/jgroups.jar
 
 if [ "$TARGET_TEST" != "" ]; then
    TARGET_TEST="-t $TARGET_TEST"
+fi
+
+if [ "$isRemote" = "true" ]; then
+  $reldir/start-rmi-server
 fi
 
 
@@ -267,3 +281,9 @@ $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
 ${JGROUPS_LIB}${SEP}\
  org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
+
+
+if [ "$isRemote" = "true" ]; then
+  $reldir/stop-rmi-server
+fi
+

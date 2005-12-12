@@ -37,7 +37,6 @@ public class InMemoryStateManager implements StateManager
    // Attributes ----------------------------------------------------
    
    protected Map subscriptions;
-   
    protected ServerPeer serverPeer;
    
    // Constructors --------------------------------------------------

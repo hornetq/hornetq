@@ -106,9 +106,6 @@
 
    </path>
 
-
-
-
    <!-- ===== -->
    <!-- Tasks -->
    <!-- ===== -->
@@ -128,6 +125,10 @@
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/etc"/>
       <pathelement path="${module.root}/../src/etc"/>
+
+      <!-- TODO I am pretty sure this is NOT the right way to include these here -->
+      <pathelement path="${module.root}/../../tools/lib/ant.jar"/>
+      <pathelement path="${module.root}/../../tools/lib/ant-junit.jar"/>
    </path>
 
 
@@ -199,26 +200,57 @@
       <mkdir dir="${module.output}/logs"/>
    </target>
 
-   <target name="tests"
-           depends="tests-jar, prepare-testdirs"
-           description="Runs all available tests">
+   <target name="start-rmi-server"
+           description="Starts the RMI server used by remote tests">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMIServer" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+            <path refid="test.classpath"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="stop-rmi-server"
+           description="Stops the RMI server used by remote tests">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer">
+         <classpath>
+            <path refid="jboss.common.classpath"/>
+            <path refid="jboss.remoting.classpath"/>
+            <pathelement location="${module.root}/etc"/>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests, remote-tests"
+      description="Runs all available tests, in in-VM and remote configurations"/>
+
+   <target name="invm-tests" description="Runs all available tests an in-VM configuration">
 
       <antcall target="print-testclasspath"/>
 
       <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
-             includeantruntime="${junit.includeantruntime}"
-             haltonerror="${junit.haltonerror}"
-             haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
-         <sysproperty key="remote" value="${build.tests.remote}"/>
+         fork="${junit.fork}"
+         includeantruntime="${junit.includeantruntime}"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${junit.timeout2}">
+
+         <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->
-
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
@@ -226,9 +258,9 @@
          </classpath>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <batchtest fork="${junit.batchtest.fork}"
-                    todir="${junit.batchtest.todir}"
-                    haltonfailure="${junit.batchtest.haltonfailure}"
-                    haltonerror="${junit.batchtest.haltonerror}">
+            todir="${junit.batchtest.todir}"
+            haltonfailure="${junit.batchtest.haltonfailure}"
+            haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
@@ -236,6 +268,53 @@
             </fileset>
          </batchtest>
       </junit>
+   </target>
+
+   <target name="remote-tests"
+      description="Runs remotely all tests for which it makes sense to run remotely">
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="print-testclasspath"/>
+
+      <junit printsummary="${junit.printsummary}"
+         fork="${junit.fork}"
+         includeantruntime="${junit.includeantruntime}"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${junit.timeout2}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+         </classpath>
+
+         <sysproperty key="messaging-test-configuration" value="Remote"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+            todir="${junit.batchtest.todir}"
+            haltonfailure="${junit.batchtest.haltonfailure}"
+            haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/messaging/jms/**/*Test.class"/>
+               <exclude name="**/jms/managed/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
    </target>
 
    <target name="jmstests"
@@ -273,43 +352,49 @@
             </fileset>
          </batchtest>
       </junit>
+
+      <antcall target="stop-rmi-server"/>
+
    </target>
 
    <target name="messagetests"
               depends="tests-jar, prepare-testdirs"
               description="Runs the jms tests only">
 
-         <antcall target="print-testclasspath"/>
+      <antcall target="print-testclasspath"/>
 
-         <echo message="${junit.timeout2}"/>
+      <echo message="${junit.timeout2}"/>
 
-         <junit printsummary="${junit.printsummary}"
-                fork="${junit.fork}"
-                includeantruntime="${junit.includeantruntime}"
-                haltonerror="${junit.haltonerror}"
-                haltonfailure="${junit.haltonfailure}"
-                showoutput="${junit.showoutput}"
-                timeout="${junit.timeout2}">
-            <sysproperty key="remote" value="${build.tests.remote}"/>
-            <sysproperty key="module.output" value="${module.output}"/>
-            <jvmarg value="-Xmx512M"/>
-            <classpath>
-               <pathelement location="${module.root}/etc"/>
-               <path refid="test.classpath"/>
-               <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-            </classpath>
-            <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-            <batchtest fork="${junit.batchtest.fork}"
-                       todir="${junit.batchtest.todir}"
-                       haltonfailure="${junit.batchtest.haltonfailure}"
-                       haltonerror="${junit.batchtest.haltonerror}">
-               <formatter type="plain" usefile="${junit.formatter.usefile}"/>
-               <fileset dir="${build.tests.classes}">
+      <junit printsummary="${junit.printsummary}"
+         fork="${junit.fork}"
+         includeantruntime="${junit.includeantruntime}"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${junit.timeout2}">
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <jvmarg value="-Xmx512M"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+         </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+            todir="${junit.batchtest.todir}"
+            haltonfailure="${junit.batchtest.haltonfailure}"
+            haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
 
-                  <include name="**/messaging/jms/message/**/*Test.class"/>
-               </fileset>
-            </batchtest>
-         </junit>
+               <include name="**/messaging/jms/message/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
    </target>
 
    <target name="coretests"
@@ -346,6 +431,9 @@
             </fileset>
          </batchtest>
       </junit>
+
+      <antcall target="stop-rmi-server"/>
+
    </target>
 
    <target name="test"
@@ -397,6 +485,9 @@
                     haltonerror="${junit.test.haltonerror}">
          </test>
       </junit>
+
+      <antcall target="stop-rmi-server"/>
+
    </target>
 
 

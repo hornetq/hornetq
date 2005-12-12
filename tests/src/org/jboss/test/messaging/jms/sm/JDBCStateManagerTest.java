@@ -68,7 +68,7 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
    protected StateManager createStateManager() throws Exception
    {
 
-      sm = ServerManagement.getServerPeer().getStateManager();
+      sm = ServerManagement.getStateManager();
       return sm;
    }
    
@@ -110,9 +110,8 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
       
       final int NUM_SUBS = 10;
       
-      ServerManagement.getServerPeer().getDestinationManager().createTopic("topic1");
-      
-      ServerManagement.getServerPeer().getDestinationManager().createTopic("topic2");
+      ServerManagement.deployTopic("topic1");
+      ServerManagement.deployTopic("topic2");
       
       DurableSubscription[] subs = new DurableSubscription[NUM_SUBS];
       

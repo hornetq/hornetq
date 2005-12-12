@@ -72,7 +72,7 @@ public class MessageProducerTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployTopic("Topic2");
       ServerManagement.undeployQueue("Queue");

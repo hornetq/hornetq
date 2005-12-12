@@ -67,11 +67,11 @@ public class SelectorTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 
-      InitialContext ic = new InitialContext();
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       queue = (Queue)ic.lookup("/queue/Queue");
       conn = cf.createConnection();

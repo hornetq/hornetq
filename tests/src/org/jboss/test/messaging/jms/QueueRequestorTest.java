@@ -70,7 +70,7 @@ public class QueueRequestorTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployQueue("Queue");

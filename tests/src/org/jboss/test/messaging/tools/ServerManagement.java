@@ -21,27 +21,24 @@
 */
 package org.jboss.test.messaging.tools;
 
-import java.io.StringReader;
 import java.util.Hashtable;
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.rmi.Naming;
 
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
+import org.jboss.jms.server.StateManager;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.transport.Connector;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
-import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
+import org.jboss.test.messaging.tools.jmx.rmi.RMIServer;
+import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import org.w3c.dom.Document;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.transaction.TransactionManager;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server.
@@ -57,161 +54,186 @@ public class ServerManagement
 
    // Static --------------------------------------------------------
 
-   private static ServiceContainer sc;
-   private static ServerPeer serverPeer;
-   private static boolean isRemote;
-   private static RMIAdaptor rmiAdaptor;
-   
    private static Logger log = Logger.getLogger(ServerManagement.class);
-   
-   private static void initRemote()
+
+   private static final int RMI_SERVER_LOOKUP_RETRIES = 10;
+
+   private static Server server;
+   private static volatile Process process;
+   private static Thread vmStarter;
+
+   public static boolean isLocal()
    {
-      String remoteVal = System.getProperty("remote");
-      if ("true".equals(remoteVal))
+      return !"true".equals(System.getProperty("remote"));
+   }
+
+   public static boolean isRemote()
+   {
+      return !isLocal();
+   }
+
+   public static synchronized void create() throws Exception
+   {
+      if (server != null)
       {
-         isRemote = true;
+         return;
       }
-      if (isRemote)
+
+      if (isLocal())
       {
-         log.info("*** Tests are running against remote instance");
+         server = new RMIServer(false);
+         return;
+      }
+
+      server = acquireRemote(RMI_SERVER_LOOKUP_RETRIES);
+
+      if (server != null)
+      {
+         // RMI server started
+         return;
+
+      }
+
+      // the remote RMI server is not started
+
+      // I could attempt to start the remote server VM from the test itself (see commented out code)
+      // but when running such a test from a forking ant, ant blocks forever waiting for *this* VM
+      // to exit. That's why I require the remote server to be started in advance.
+
+      throw new IllegalStateException("The RMI server doesn't seem to be started. " +
+                                      "Start it and re-run the test.");
+
+//      // start the service container and the JMS server in a different VM
+//      vmStarter = new Thread(new VMStarter(), "External VM Starter Thread");
+//      vmStarter.setDaemon(true);
+//      vmStarter.start();
+//
+//      server = acquireRemote(RMI_SERVER_LOOKUP_RETRIES);
+//
+//      if (server == null)
+//      {
+//         throw new IllegalStateException("Cannot find remote server " +
+//                                         RMIServer.RMI_SERVER_NAME + " in registry");
+//      }
+   }
+
+   public static synchronized void start(String config) throws Exception
+   {
+      create();
+
+      if (isLocal())
+      {
+         log.info("IN-VM TEST");
       }
       else
       {
-         log.info("*** Tests are running in INVM container");
-      }      
-   }
-   
-   public static synchronized void init() throws Exception
-   {
-      initRemote();
-      if (!isRemote)
-      {
-         startInVMServer();
+         log.info("REMOTE TEST");
       }
-   }
-   
-   public static void init(String config) throws Exception
-   {
-      initRemote();
-      if (!isRemote)
-      {
-         startInVMServer(config);
-      }
-   }
-   
-   public static boolean isRemote()
-   {
-      return isRemote;
+
+      server.start(config);
+
+      log.debug("server started");
    }
 
-   private static void startInVMServer() throws Exception
+   public static synchronized void stop() throws Exception
    {
-      startInVMServer("transaction, remoting, aop, security", null);
-   }
-
-   private synchronized static void startInVMServer(String config) throws Exception
-   {
-      startInVMServer(config, null);
-   }
-
-   /**
-    * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
-    *        If null, the default JBoss TransactionManager implementation will be used.
-    */
-   public synchronized static void startInVMServer(String config, TransactionManager tm)
-         throws Exception
-   {
-      if (sc != null)
+      if (server != null)
       {
-         return;
+         server.stop();
       }
-      sc = new ServiceContainer(config, tm);
-      sc.start();
-      serverPeer = new ServerPeer("ServerPeer0");      
-      serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
-      final String defaultSecurityConfig = 
-         "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      serverPeer.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
-      serverPeer.start();
-   }
-   
-   private static Element toElement(String s)
-      throws Exception
-   {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder parser = factory.newDocumentBuilder();
-      Document doc = parser.parse(new InputSource(new StringReader(s)));
-      return doc.getDocumentElement();
    }
 
-   public synchronized static void deInit() throws Exception
+   public static synchronized void destroy() throws Exception
    {
-      if (sc == null)
+      stop();
+
+      server.destroy();
+
+      if (isRemote())
       {
-         return;
+         log.debug("destroying the remote server VM");
+         process.destroy();
+         log.debug("remote server VM destroyed");
       }
-      serverPeer.stop();
-      serverPeer = null;
-      sc.stop();
-      sc = null;
+      server = null;
+   }
+
+   public static void disconnect() throws Exception
+   {
+      if (isRemote())
+      {
+         server = null;
+         process = null;
+         if (vmStarter != null)
+         {
+            vmStarter.interrupt();
+            vmStarter = null;
+         }
+      }
+   }
+
+   public static void startServerPeer() throws Exception
+   {
+      insureStarted();
+      server.startServerPeer();
+   }
+
+   public static void stopServerPeer() throws Exception
+   {
+      insureStarted();
+      server.stopServerPeer();
    }
 
    public static ServerPeer getServerPeer() throws Exception
    {
-      return serverPeer;
+      if (isRemote())
+      {
+         throw new IllegalStateException("Cannot get a remote server peer!");
+      }
+
+      insureStarted();
+      return server.getServerPeer();
    }
 
    public static Connector getConnector() throws Exception
    {
-      RemotingJMXWrapper remoting =
-            (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
-      return remoting.getConnector();
+      if (isRemote())
+      {
+         throw new IllegalStateException("Cannot get a remote connector!");
+      }
+
+      insureStarted();
+      return server.getConnector();
    }
-   
+
+   public static MessageStore getMessageStore() throws Exception
+   {
+      insureStarted();
+      return server.getMessageStore();
+   }
+
+   public static StateManager getStateManager() throws Exception
+   {
+      insureStarted();
+      return server.getStateManager();
+   }
+
    public static void setSecurityConfig(String destName, Element config) throws Exception
    {
-      if (isRemote)
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
-         
-         rmiAdaptor.invoke(on, "setSecurityConfig",
-               new Object[] {destName, config}, new String[] { "java.lang.String" ,
-                                                             "org.w3c.dom.Element"});
-      }
-      else
-      {
-         ServerManagement.getServerPeer().setSecurityConfig(destName, config);
-      }
+      insureStarted();
+      server.setSecurityConfig(destName, config);
    }
    
    public static void setDefaultSecurityConfig(Element config) throws Exception
    {
-      if (isRemote)
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
-         
-         rmiAdaptor.invoke(on, "setDefaultSecurityConfig",
-               new Object[] {config}, new String[] { "org.w3c.dom.Element"});
-      }
-      else
-      {
-         ServerManagement.getServerPeer().setDefaultSecurityConfig(config);
-      }
+      insureStarted();
+      server.setDefaultSecurityConfig(config);
    }
    
    public static Element getDefaultSecurityConfig() throws Exception
    {
-      if (isRemote)
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
-         
-         return (Element)rmiAdaptor.invoke(on, "getDefaultSecurityConfig",
-               new Object[] {}, new String[] {});
-      }
-      else
-      {
-         return ServerManagement.getServerPeer().getDefaultSecurityConfig();
-      }
+      insureStarted();
+      return server.getDefaultSecurityConfig();
    }
 
    public static void deployTopic(String name) throws Exception
@@ -222,36 +244,13 @@ public class ServerManagement
    public static void deployTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
-      if (!isRemote)
-      {
-         
-         serverPeer.getDestinationManager().createTopic(name, jndiName);
-      }
-      else
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
-         
-         rmiAdaptor.invoke(on, "createTopic",
-               new Object[] {name, jndiName}, new String[] { "java.lang.String" ,
-                                                             "java.lang.String"});
-      }
+      server.deployTopic(name, jndiName);
    }
 
    public static void undeployTopic(String name) throws Exception
    {
       insureStarted();
-      if (!isRemote)
-      {
-         
-         serverPeer.getDestinationManager().destroyTopic(name);
-      }
-      else
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
-         
-         rmiAdaptor.invoke(on, "destroyTopic",
-               new Object[] {name}, new String[] { "java.lang.String" });
-      }
+      server.undeployTopic(name);
    }
 
    public static void deployQueue(String name) throws Exception
@@ -262,46 +261,24 @@ public class ServerManagement
    public static void deployQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
-      if (!isRemote)
-      {
-    
-         serverPeer.getDestinationManager().createQueue(name, jndiName);
-      }
-      else
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
-         
-         rmiAdaptor.invoke(on, "createQueue",
-               new Object[] {name, jndiName}, new String[] { "java.lang.String" , "java.lang.String"});
-      }
+      server.deployQueue(name, jndiName);
    }
 
    public static void undeployQueue(String name) throws Exception
    {
       insureStarted();
-      if (!isRemote)
-      {
-       
-         serverPeer.getDestinationManager().destroyQueue(name);
-      }
-      else
-      {
-         ObjectName on = new ObjectName("jboss.messaging:service=DestinationManager");
-         
-         rmiAdaptor.invoke(on, "destroyQueue",
-               new Object[] {name}, new String[] { "java.lang.String" });
-      }
+      server.undeployQueue(name);
    }
 
    public static Hashtable getJNDIEnvironment()
    {
-      if (isRemote)
+      if (isLocal())
       {
-         return RemoteInitialContextFactory.getJNDIEnvironment();
+         return InVMInitialContextFactory.getJNDIEnvironment();
       }
       else
       {
-         return InVMInitialContextFactory.getJNDIEnvironment();
+         return RemoteInitialContextFactory.getJNDIEnvironment();
       }
    }
 
@@ -319,27 +296,186 @@ public class ServerManagement
 
    private static void insureStarted() throws Exception
    {
-      if (isRemote)
+      if (server == null)
       {
-         if (rmiAdaptor == null)
-         {
-            setupRemoteJMX();
-         }
+         throw new Exception("The server has not been created!");
       }
-      else
+      if (!server.isStarted())
       {
-         if (sc == null)
-         {
-            throw new Exception("The server has not been started!");
-         }
+         throw new Exception("The server has not been started!");
       }
-   }
-   
-   private static void setupRemoteJMX() throws Exception
-   {
-      InitialContext ic = new InitialContext(RemoteInitialContextFactory.getJNDIEnvironment());
-      rmiAdaptor = (RMIAdaptor) ic.lookup("jmx/invoker/RMIAdaptor");
    }
 
+   private static Server acquireRemote(int initialRetries)
+   {
+      String name = "//localhost:" + RMIServer.RMI_REGISTRY_PORT + "/" + RMIServer.RMI_SERVER_NAME;
+      Server s = null;
+      int retries = initialRetries;
+      while(s == null && retries > 0)
+      {
+         int attempt = initialRetries - retries + 1;
+         try
+         {
+            log.info("trying to connect to the remote RMI server" +
+                     (attempt == 1 ? "" : ", attempt " + attempt));
+            s = (Server)Naming.lookup(name);
+            log.info("connected to the remote server");
+         }
+         catch(Exception e)
+         {
+            log.debug("failed to get the RMI server stub, attempt " +
+                      (initialRetries - retries + 1), e);
+
+            try
+            {
+               Thread.sleep(1500);
+            }
+            catch(InterruptedException e2)
+            {
+               // OK
+            }
+
+            retries--;
+         }
+      }
+      return s;
+   }
+
+
    // Inner classes -------------------------------------------------
+
+   static class VMStarter implements Runnable
+   {
+      public void run()
+      {
+         // start a remote java process that runs a RMIServer
+
+         String userDir = System.getProperty("user.dir");
+         String javaClassPath = System.getProperty("java.class.path");
+         String fileSeparator = System.getProperty("file.separator");
+         String javaHome = System.getProperty("java.home");
+         String moduleOutput = System.getProperty("module.output");
+
+         String osName = System.getProperty("os.name").toLowerCase();
+         boolean isWindows = osName.indexOf("windows") != -1;
+
+         String javaExecutable =
+            javaHome + fileSeparator + "bin" + fileSeparator + "java" + (isWindows ? ".exe" : "");
+
+         String[] cmdarray = new String[]
+         {
+            javaExecutable,
+            "-cp",
+            javaClassPath,
+            "-Dmodule.output=" + moduleOutput,
+            "-Dremote.test.suffix=-remote",
+            "org.jboss.test.messaging.tools.jmx.rmi.RMIServer",
+         };
+
+         String[] environment;
+         if (isWindows)
+         {
+            environment = new String[]
+            {
+               "SYSTEMROOT=C:\\WINDOWS" // TODO get this from environment, as it may be diffrent on different machines
+            };
+         }
+         else
+         {
+            environment = new String[0];
+         }
+
+         Runtime runtime = Runtime.getRuntime();
+
+         try
+         {
+            log.debug("creating external process");
+
+            Thread stdoutLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDOUT),
+                                             "Remote VM STDOUT Logging Thread");
+            Thread stderrLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDERR),
+                                             "Remote VM STDERR Logging Thread");
+
+            stdoutLogger.setDaemon(true);
+            stdoutLogger.setDaemon(true);
+            stdoutLogger.start();
+            stderrLogger.start();
+
+            process = runtime.exec(cmdarray, environment, new File(userDir));
+         }
+         catch(Exception e)
+         {
+            log.error("Error spawning remote server", e);
+         }
+      }
+   }
+
+   /**
+    * This logger is used to get and display the output generated at stdout or stderr by the
+    * RMI server VM.
+    */
+   static class RemoteProcessLogger implements Runnable
+   {
+      public static final int STDOUT = 0;
+      public static final int STDERR = 1;
+
+      private int type;
+      private BufferedReader br;
+      private PrintStream out;
+
+      public RemoteProcessLogger(int type)
+      {
+         this.type = type;
+
+         if (type == STDOUT)
+         {
+            out = System.out;
+         }
+         else if (type == STDERR)
+         {
+            out = System.err;
+         }
+         else
+         {
+            throw new IllegalArgumentException("Unknown type " + type);
+         }
+      }
+
+      public void run()
+      {
+         while(process == null)
+         {
+            try
+            {
+               Thread.sleep(50);
+            }
+            catch(InterruptedException e)
+            {
+               // OK
+            }
+         }
+
+         if (type == STDOUT)
+         {
+            br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+         }
+         else if (type == STDERR)
+         {
+            br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+         }
+
+         String line;
+         try
+         {
+            while((line = br.readLine()) != null)
+            {
+               out.println(line);
+            }
+         }
+         catch(Exception e)
+         {
+            log.error("failed to read from process " + process, e);
+         }
+      }
+   }
 }

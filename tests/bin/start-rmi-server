@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+# bash script to start the rmi server in background. Will exit immediately.
+# Look at tests/output/logs/messaging-tests-remote.trace.log to diagnose the start up process in
+# case something goes wrong.
+#
+
+reldir=`dirname $0`
+
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+if [ $cygwin = true ]; then
+    SEP=";"
+else
+    SEP=":"
+fi
+
+while [ "$1" != "" ]; do
+    if [ "$1" = "-debug" ]; then
+        if [ $cygwin = false ]; then
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
+        else
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=stoprmi"
+        fi
+    fi
+    shift
+done
+
+mkdir -p $reldir/../output/logs
+
+JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote"
+
+java $JAVA_OPTS -cp \
+$reldir/../etc${SEP}\
+$reldir/../../src/etc${SEP}\
+$reldir/../output/classes${SEP}\
+$reldir/../../output/classes${SEP}\
+$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
+$reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
+$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
+$reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
+$reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
+$reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
+$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar${SEP}\
+$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
+$reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
+$reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
+$reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
+$reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
+$reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
+$reldir/../../../thirdparty/apache-httpclient/lib/commons-httpclient.jar${SEP}\
+$reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
+$reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
+$reldir/../../../common/output/lib/jboss-common.jar${SEP}\
+$reldir/../../../system/output/lib/jboss-system.jar${SEP}\
+$reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
+$reldir/../../../security/output/lib/jbosssx.jar${SEP}\
+$reldir/../../src/resources/hsqldb.jar${SEP}\
+$reldir/../../../connector/output/lib/jboss-local-jdbc.jar${SEP}\
+$reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
+$reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
+$reldir/../../../thirdparty/jgroups/lib/jgroups.jar${SEP}\
+$reldir/../../../server/output/lib/jboss.jar${SEP} \
+ org.jboss.test.messaging.tools.jmx.rmi.RMIServer &

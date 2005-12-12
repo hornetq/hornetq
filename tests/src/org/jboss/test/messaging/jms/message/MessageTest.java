@@ -97,7 +97,7 @@ public class MessageTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       

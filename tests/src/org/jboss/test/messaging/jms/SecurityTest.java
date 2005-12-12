@@ -108,7 +108,7 @@ public class SecurityTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       
       setupDestinations();
       

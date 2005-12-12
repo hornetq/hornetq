@@ -146,6 +146,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -181,6 +183,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
 
@@ -232,6 +236,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
    //////////
@@ -272,6 +278,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    //////
@@ -312,6 +320,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    //////////
@@ -352,6 +362,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    //////
@@ -388,6 +400,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals("message0", rref.getMessageID());
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    //////////
@@ -422,6 +436,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    //////
@@ -465,6 +481,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -499,6 +517,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    //////
@@ -538,6 +558,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -579,6 +601,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -633,6 +657,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
+      log.info("ok");
    }
 
    //////////
@@ -677,6 +702,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -736,6 +763,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
    //////////
@@ -780,6 +809,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////
@@ -826,6 +857,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -860,6 +893,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////////
@@ -898,6 +933,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -932,6 +969,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    //////
@@ -983,7 +1022,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -1025,7 +1064,7 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
 
-
+      log.info("ok");
    }
 
    ////////
@@ -1073,7 +1112,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -1115,7 +1154,7 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
 
-
+      log.info("ok");
    }
 
 
@@ -1158,7 +1197,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -1200,7 +1239,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
-
+      log.info("ok");
    }
 
    ////////
@@ -1238,7 +1277,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -1279,6 +1318,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -1316,6 +1357,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals("message0", rref.getMessageID());
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    //////////
@@ -1350,6 +1393,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    ////////
@@ -1382,6 +1427,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals("message0", rref.getMessageID());
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    //////////
@@ -1416,6 +1463,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    public void testNonRecoverableState_remove_6_mixed() throws Throwable
@@ -1446,6 +1495,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
 
@@ -1490,6 +1541,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -1524,6 +1577,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////////
@@ -1563,6 +1618,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -1597,6 +1654,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
 
@@ -1637,6 +1696,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -1678,6 +1739,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    ////////
@@ -1713,6 +1776,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -1754,6 +1819,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -1809,6 +1876,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
+      log.info("ok");
    }
 
    //////////
@@ -1853,6 +1921,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    ////////
@@ -1902,6 +1972,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
+      log.info("ok");
    }
 
    //////////
@@ -1946,6 +2017,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -2006,6 +2079,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
    //////////
@@ -2050,6 +2125,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////////
@@ -2104,6 +2181,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
    //////////
@@ -2148,6 +2227,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
 
@@ -2191,6 +2272,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -2219,6 +2302,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////////
@@ -2251,6 +2336,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -2279,6 +2366,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    //////
@@ -2324,7 +2413,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -2360,7 +2449,7 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
 
-
+      log.info("ok");
    }
 
    ////////
@@ -2402,7 +2491,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -2438,7 +2527,7 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.undelivered(null));
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
 
-
+      log.info("ok");
    }
 
 
@@ -2475,7 +2564,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -2511,7 +2600,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
-
+      log.info("ok");
    }
 
    ////////
@@ -2543,7 +2632,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
-
+      log.info("ok");
    }
 
    //////////
@@ -2579,6 +2668,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    //////
@@ -2609,6 +2700,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals("message0", rref.getMessageID());
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    //////////
@@ -2637,6 +2730,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    ////////
@@ -2663,6 +2758,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertEquals("message0", rref.getMessageID());
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
    //////////
@@ -2691,6 +2788,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
 
@@ -2716,6 +2815,8 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       assertNull(state.remove());
+
+      log.info("ok");
    }
 
 
@@ -2754,6 +2855,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -2782,6 +2885,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////////
@@ -2815,6 +2920,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
 
@@ -2843,6 +2950,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
 
@@ -2877,6 +2986,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -2912,6 +3023,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    ////////
@@ -2941,6 +3054,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -2975,6 +3090,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -3024,6 +3141,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
+      log.info("ok");
    }
 
    //////////
@@ -3061,6 +3179,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
    ////////
@@ -3104,6 +3224,7 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
 
+      log.info("ok");
    }
 
    //////////
@@ -3141,6 +3262,8 @@ public abstract class StateTestBase extends MessagingTestCase
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
       assertTrue(state.browse(null).isEmpty());
+
+      log.info("ok");
    }
 
 
@@ -3195,6 +3318,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
    //////////
@@ -3232,6 +3357,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    ////////
@@ -3280,6 +3407,8 @@ public abstract class StateTestBase extends MessagingTestCase
       l = state.browse(null);
       assertEquals(1, l.size());
       assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+
+      log.info("ok");
    }
 
    //////////
@@ -3317,6 +3446,8 @@ public abstract class StateTestBase extends MessagingTestCase
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
       assertTrue(state.undelivered(null).isEmpty());
       ChannelTestBase.assertEqualSets(refs, state.browse(null));
+
+      log.info("ok");
    }
 
    // Package protected ---------------------------------------------

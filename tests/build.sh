@@ -150,6 +150,9 @@ main() {
     # setup some build properties
     ANT_OPTS="$ANT_OPTS -Dbuild.script=$0"
 
+    # debugging options
+    #ANT_OPTS="$ANT_OPTS -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=n,address=antitself"
+
     # change to the directory where the script lives so users are not forced
     # to be in the same directory as build.xml
     cd $DIRNAME

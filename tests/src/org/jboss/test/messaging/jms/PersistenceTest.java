@@ -66,7 +66,7 @@ public class PersistenceTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployQueue("Queue");
@@ -108,9 +108,10 @@ public class PersistenceTest extends MessagingTestCase
       
       conn.close();
       
-      ServerManagement.getServerPeer().stop();
+      ServerManagement.stopServerPeer();
       
-      ServerManagement.getServerPeer().start();
+      ServerManagement.startServerPeer();
+
       ServerManagement.deployQueue("Queue");
       
       conn = cf.createConnection();
@@ -168,9 +169,10 @@ public class PersistenceTest extends MessagingTestCase
       
       conn.close();
       
-      ServerManagement.getServerPeer().stop();
-      
-      ServerManagement.getServerPeer().start();
+      ServerManagement.stopServerPeer();
+
+      ServerManagement.startServerPeer();
+
       ServerManagement.deployQueue("Queue");
       
       conn = cf.createConnection();
@@ -283,9 +285,10 @@ public class PersistenceTest extends MessagingTestCase
       
       conn.close();
       
-      ServerManagement.getServerPeer().stop();
-      
-      ServerManagement.getServerPeer().start();
+      ServerManagement.stopServerPeer();
+
+      ServerManagement.startServerPeer();
+
       ServerManagement.deployQueue("Queue");
       
       conn = cf.createConnection();
@@ -380,9 +383,10 @@ public class PersistenceTest extends MessagingTestCase
       
       conn.close();
       
-      ServerManagement.getServerPeer().stop();
-      
-      ServerManagement.getServerPeer().start();
+      ServerManagement.stopServerPeer();
+
+      ServerManagement.startServerPeer();
+
       ServerManagement.deployTopic("Topic");
       
       conn = cf.createConnection();

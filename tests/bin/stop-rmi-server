@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# bash script to stop runaway remote servers
+#
+
+reldir=`dirname $0`
+
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+if [ $cygwin = true ]; then
+    SEP=";"
+else
+    SEP=":"
+fi
+
+while [ "$1" != "" ]; do
+    if [ "$1" = "-debug" ]; then
+        if [ $cygwin = false ]; then
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
+        else
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=stoprmi"
+        fi
+    fi
+    shift
+done
+
+
+java $JAVA_OPTS -cp \
+$reldir/../etc${SEP}\
+$reldir/../output/classes${SEP}\
+$reldir/../../output/classes${SEP}\
+$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
+$reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
+$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
+$reldir/../../../common/output/lib/jboss-common.jar${SEP} \
+ org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer

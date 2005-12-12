@@ -242,7 +242,7 @@ public class ClosedInterceptor  implements Interceptor
       
       if (children == null)
       {
-         log.info("No children");
+         if (log.isTraceEnabled()) { log.trace("No children"); }
          return;
       }
       

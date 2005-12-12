@@ -21,22 +21,28 @@
 */
 package org.jboss.test.messaging.tools.jndi;
 
-import javax.naming.spi.InitialContextFactory;
-import javax.naming.NamingException;
-import javax.naming.Context;
 import java.util.Hashtable;
 
-/**
- * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.naming.spi.InitialContextFactory;
 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+import org.jboss.logging.Logger;
+
+/**
+ * An InitialContextFactory providing InitialContext to JNDI on a remote JBoss instance.
+
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class InVMInitialContextFactory implements InitialContextFactory
+public class JNPInitialContextFactory implements InitialContextFactory
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(JNPInitialContextFactory.class);
 
    private static InVMContext initialContext;
 
@@ -48,10 +54,9 @@ public class InVMInitialContextFactory implements InitialContextFactory
    public static Hashtable getJNDIEnvironment()
    {
       Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial",
-              "org.jboss.messaging.tools.jndi.InVMInitialContextFactory");
-      env.put("java.naming.provider.url", "");
-      env.put("java.naming.factory.url.pkgs", "");
+      env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+      env.put("java.naming.provider.url", "jnp://localhost:1099");
+      env.put("java.naming.factory.url.pkg", "org.jboss.naming:org.jnp.interfaces");
       return env;
    }
 
@@ -63,12 +68,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    public Context getInitialContext(Hashtable environment) throws NamingException
    {
-      if (initialContext == null)
-      {
-         initialContext = new InVMContext();
-         initialContext.bind("java:/", new InVMContext());
-      }
-      return initialContext;
+      return new InitialContext(environment);
    }
 
    // Package protected ---------------------------------------------

@@ -19,56 +19,51 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.tools.jndi;
+package org.jboss.test.messaging.tools.jmx.rmi;
 
-import javax.naming.spi.InitialContextFactory;
+
+import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
+
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.naming.Context;
-import java.util.Hashtable;
+import java.rmi.server.UnicastRemoteObject;
 
 /**
- * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
-
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class InVMInitialContextFactory implements InitialContextFactory
+public class NamingDelegateImpl extends UnicastRemoteObject implements NamingDelegate
 {
    // Constants -----------------------------------------------------
 
-   private static InVMContext initialContext;
-
    // Static --------------------------------------------------------
 
-   /**
-    * @return the JNDI environment to use to get this InitialContextFactory.
-    */
-   public static Hashtable getJNDIEnvironment()
+   // Attributes ----------------------------------------------------
+
+   private InitialContextAccess ica;
+
+   // Constructors --------------------------------------------------
+
+   public NamingDelegateImpl() throws Exception
    {
-      Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial",
-              "org.jboss.messaging.tools.jndi.InVMInitialContextFactory");
-      env.put("java.naming.provider.url", "");
-      env.put("java.naming.factory.url.pkgs", "");
-      return env;
+      super();
+      ica = new InitialContextAccess();
    }
 
-   // Attributes ----------------------------------------------------
-   
-   // Constructors --------------------------------------------------
-   
+   // NamingDelegate implementation ---------------------------------
+
+   public Object lookup(String name) throws Exception
+   {
+      return getInitialContext().lookup(name);
+   }
+
    // Public --------------------------------------------------------
 
-   public Context getInitialContext(Hashtable environment) throws NamingException
+   public void reset()
    {
-      if (initialContext == null)
-      {
-         initialContext = new InVMContext();
-         initialContext.bind("java:/", new InVMContext());
-      }
-      return initialContext;
+      ica.reset();
    }
 
    // Package protected ---------------------------------------------
@@ -76,6 +71,30 @@ public class InVMInitialContextFactory implements InitialContextFactory
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   private InitialContext getInitialContext() throws NamingException
+   {
+      return ica.getInitialContext();
+   }
+
+   // Inner classes -------------------------------------------------
+
+   private class InitialContextAccess
+   {
+      private InitialContext ic;
+
+      InitialContext getInitialContext() throws NamingException
+      {
+         if (ic == null)
+         {
+            ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+         }
+         return ic;
+      }
+
+      public void reset()
+      {
+         ic = null;
+      }
+   }
 }

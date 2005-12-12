@@ -67,7 +67,7 @@ public class ReferencingTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -94,7 +94,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -124,7 +124,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -156,7 +156,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -192,7 +192,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -230,7 +230,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -279,7 +279,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -314,7 +314,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -359,7 +359,7 @@ public class ReferencingTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      MessageStore store = ServerManagement.getServerPeer().getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       

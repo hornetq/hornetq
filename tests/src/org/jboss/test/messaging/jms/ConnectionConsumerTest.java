@@ -72,7 +72,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.init("all");
+      ServerManagement.start("all");
 
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
@@ -99,7 +99,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
    public void testSimple() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       final int NUM_MESSAGES = 10;
       
       Connection connConsumer = null;
@@ -243,8 +243,6 @@ public class ConnectionConsumerTest extends MessagingTestCase
       }
    }
    
-   
-
    public void testCloseWhileProcessing() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -293,9 +291,6 @@ public class ConnectionConsumerTest extends MessagingTestCase
          connProducer = null;
          connConsumer.close();
          connConsumer = null;
-         
-         
-         
       }
       finally 
       {
@@ -366,9 +361,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             log.error(e);
             failed = true;
          }
-  
       }
-      
    }
    
    class RedelMessageListener implements MessageListener

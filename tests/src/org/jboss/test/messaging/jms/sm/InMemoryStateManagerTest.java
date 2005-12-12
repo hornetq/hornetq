@@ -52,11 +52,10 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    {
       super.setUp();
       
-      ServerManagement.init("all");
+      ServerManagement.start("all");
       
-      if (!ServerManagement.isRemote())
+      if (ServerManagement.isLocal())
       {
-      
          sm = createStateManager();
       }
    }
@@ -70,14 +69,17 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    
    public void testCreateGetRemoveDurableSubscription() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
       
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
       String selector = new GUID().toString();
       
-      ServerManagement.getServerPeer().getDestinationManager().createTopic(topicName);
+      ServerManagement.deployTopic(topicName);
             
       DurableSubscription sub = sm.createDurableSubscription(topicName, clientID, subscriptionName, selector);
       
@@ -105,12 +107,16 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    
    public void testCreateGetRemoveDurableSubscriptionNullSelector() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
       
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
-      ServerManagement.getServerPeer().getDestinationManager().createTopic(topicName);
+
+      ServerManagement.deployTopic(topicName);
             
       DurableSubscription sub = sm.createDurableSubscription(topicName, clientID, subscriptionName, null);
       
@@ -138,19 +144,28 @@ public class InMemoryStateManagerTest extends MessagingTestCase
    
    public void testGetPreConfClientId() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
       
       String clientID = sm.getPreConfiguredClientID("blahblah");
       assertNull(clientID);
    }
    
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
 
    protected StateManager createStateManager() throws Exception
    {
-     
-      return new InMemoryStateManager(ServerManagement.getServerPeer());
+     return new InMemoryStateManager(ServerManagement.getServerPeer());
    }
-  
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }
 
 

@@ -21,19 +21,16 @@
 */
 package org.jboss.test.messaging.tools.jndi;
 
+import org.jboss.logging.Logger;
+
 import java.util.Hashtable;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
-import org.jboss.logging.Logger;
-
 /**
- * An InitialContextFactory providing InitialContext to JNDI on a remote VM
-
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -44,9 +41,10 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    private static final Logger log = Logger.getLogger(RemoteInitialContextFactory.class);
 
-   private static InVMContext initialContext;
-
    // Static --------------------------------------------------------
+
+   private static RemoteContext initialContext;
+
 
    /**
     * @return the JNDI environment to use to get this InitialContextFactory.
@@ -54,9 +52,10 @@ public class RemoteInitialContextFactory implements InitialContextFactory
    public static Hashtable getJNDIEnvironment()
    {
       Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-      env.put("java.naming.provider.url", "jnp://localhost:1099");
-      env.put("java.naming.factory.url.pkg", "org.jboss.naming:org.jnp.interfaces");
+      env.put("java.naming.factory.initial",
+              "org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory");
+      env.put("java.naming.provider.url", "");
+      env.put("java.naming.factory.url.pkgs", "");
       return env;
    }
 
@@ -68,7 +67,19 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    public Context getInitialContext(Hashtable environment) throws NamingException
    {
-      return new InitialContext(environment);
+      if (initialContext == null)
+      {
+         try
+         {
+            initialContext = new RemoteContext();
+         }
+         catch(Exception e)
+         {
+            log.error("Cannot get the remote context", e);
+            throw new NamingException("Cannot get the remote context");
+         }
+      }
+      return initialContext;
    }
 
    // Package protected ---------------------------------------------
