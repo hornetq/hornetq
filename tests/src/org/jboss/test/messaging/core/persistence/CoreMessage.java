@@ -30,6 +30,7 @@ import org.jboss.messaging.core.message.MessageSupport;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
+ * $Id$
  */
 public class CoreMessage extends MessageSupport
 {
