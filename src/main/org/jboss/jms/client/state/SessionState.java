@@ -37,7 +37,7 @@ public class SessionState extends HierarchicalStateBase
 {
    private int acknowledgeMode;
    
-   private String asfReceiverID;
+   private String asfConsumerID;
    
    private boolean transacted;
    
@@ -69,9 +69,9 @@ public class SessionState extends HierarchicalStateBase
       return acknowledgeMode;
    }
    
-   public String getAsfReceiverID()
+   public String getAsfConsumerID()
    {
-      return asfReceiverID;
+      return asfConsumerID;
    }   
    
    public boolean isTransacted()
@@ -89,9 +89,9 @@ public class SessionState extends HierarchicalStateBase
       return xaResource;
    }
    
-   public void setAsfReceiverID(String id)
+   public void setAsfConsumerID(String id)
    {
-      this.asfReceiverID = id;
+      this.asfConsumerID = id;
    }
 }
 

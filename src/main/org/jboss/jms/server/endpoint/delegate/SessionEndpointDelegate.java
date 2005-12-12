@@ -51,9 +51,14 @@ public class SessionEndpointDelegate extends EndpointDelegateBase implements Ses
       return del;
    }
 
-   public void acknowledge(String messageID, String receiverID) throws JMSException
+//   public void acknowledge(String messageID, String receiverID) throws JMSException
+//   {
+//      del.acknowledge(messageID, receiverID);
+//   }
+   
+   public void acknowledge() throws JMSException
    {
-      del.acknowledge(messageID, receiverID);
+      del.acknowledge();
    }
 
    public void addTemporaryDestination(Destination destination) throws JMSException

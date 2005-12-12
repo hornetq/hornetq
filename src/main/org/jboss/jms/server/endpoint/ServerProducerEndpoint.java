@@ -36,7 +36,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ServerProducerEndpoint implements ProducerEndpoint
 {

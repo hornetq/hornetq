@@ -67,7 +67,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    void preDeliver(String messageID, String receiverID) throws JMSException;
    
-   void postDeliver(String messageID, String receiverID)throws JMSException;
+   void postDeliver(String messageID, String receiverID) throws JMSException;
    
    MessageListener getMessageListener() throws JMSException;
    
@@ -89,10 +89,5 @@ public interface SessionDelegate extends SessionEndpoint
    void rollback() throws JMSException;
    
    void recover() throws JMSException;
-
-   /**
-    * Acknowledges all messages received so far by this session.
-    */
-   void acknowledgeSession() throws JMSException;
 
 }

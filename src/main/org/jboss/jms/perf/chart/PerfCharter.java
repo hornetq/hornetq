@@ -43,20 +43,23 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 public class PerfCharter
 {
-   private static final Logger log = Logger.getLogger(PerfCharter.class);   
-   
+   // Constants -----------------------------------------------------
+
    private static final String OUTPUT_DIR = "perf-output";
    
    private static final String OUTPUT_FILE = "jms-perf-results.html";
+   
+   private static final Logger log = Logger.getLogger(PerfCharter.class);   
+   
+   
+   // Static --------------------------------------------------------
    
    public static void main(String[] args)
    {
       new PerfCharter().run();
    }
-   
-   private PerfCharter()
-   {      
-   }
+
+   // Attributes ----------------------------------------------------
    
    protected PersistenceManager pm;
    
@@ -64,52 +67,25 @@ public class PerfCharter
    
    protected Writer writer;
    
-   protected void setUp() throws Exception
-   {
-      String dbURL = System.getProperty("perf.dbURL", "jdbc:hsqldb:hsql://localhost:7776");
-      
-      pm = new JDBCPersistenceManager(dbURL);
-      pm.start();
-      
-      outputDir = new File(OUTPUT_DIR);
-      
-      File outputFile = new File(outputDir, OUTPUT_FILE);
-      
-      writer = new FileWriter(outputFile);
+
+   // Constructors --------------------------------------------------
+   
+   private PerfCharter()
+   {      
    }
+
+
+   // Connection implementation -------------------------------------
+
+   // Public -------------------------------------------------------- 
    
-   protected void tearDown() throws Exception
-   {
-      pm.stop();
-      writer.close();
-   }
    
    
-   protected void run()
-   {
-      try
-      {
-         log.info("Starting perfcharter");
-         
-         setUp();
-         
-         writer.write("<html><body>\n");
-         
-         doCharts();
-         
-         writer.write("</body></html>\n");
-         
-         tearDown();
-         
-         log.info("Done");
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to chart", e);
-      }
-   }
-   
-   public void doCharts()
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------  
+      
+   protected void doCharts()
       throws Exception
    {            
       chartSimpleBenchmark("Queue1", "Date", "Send rate (messages/sec)",
@@ -283,8 +259,53 @@ public class PerfCharter
       createImage(chart, imageFileName);
       
    }
-
    
+   protected void setUp() throws Exception
+   {
+      String dbURL = System.getProperty("perf.dbURL", "jdbc:hsqldb:hsql://localhost:7776");
+      
+      pm = new JDBCPersistenceManager(dbURL);
+      pm.start();
+      
+      outputDir = new File(OUTPUT_DIR);
+      
+      File outputFile = new File(outputDir, OUTPUT_FILE);
+      
+      writer = new FileWriter(outputFile);
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      pm.stop();
+      writer.close();
+   }
+   
+   
+   protected void run()
+   {
+      try
+      {
+         log.info("Starting perfcharter");
+         
+         setUp();
+         
+         writer.write("<html><body>\n");
+         
+         doCharts();
+         
+         writer.write("</body></html>\n");
+         
+         tearDown();
+         
+         log.info("Done");
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to chart", e);
+      }
+   }
+   
+
    protected void chartSimpleBenchmark(String bmName, String xLabel, String yLabel, String title, String imageFileName)
       throws Exception
    {
@@ -370,6 +391,9 @@ public class PerfCharter
       
       writer.write("<img src=\"" + imageFileName + "\"><br>\n");  
    }
-   
-   
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+ 
 }

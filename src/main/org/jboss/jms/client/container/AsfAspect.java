@@ -127,32 +127,32 @@ public class AsfAspect
       
       //Load the session with a message to be processed during a subsequent call to run()
       
-      SessionState theState = getState(invocation);
+      SessionState theState = getSessionState(invocation);
       
       Message m = (Message)mi.getArguments()[0];
-      String theReceiverID = (String)mi.getArguments()[1];
+      String theConsumerID = (String)mi.getArguments()[1];
       ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
       
-      String currReceiverID = theState.getAsfReceiverID();
+      String currConsumerID = theState.getAsfConsumerID();
       
       if (m == null)
       {
          throw new IllegalStateException("Cannot add a null message to the session");
       }
-      if (theReceiverID == null)
+      if (theConsumerID == null)
       {
          throw new IllegalStateException("Cannot add a message without specifying receiverID");
       }
       
-      if (currReceiverID != null && currReceiverID != theReceiverID)
+      if (currConsumerID != null && currConsumerID != theConsumerID)
       {
          throw new IllegalStateException("Cannot receive messages from more than one receiver");
       }
-      theState.setAsfReceiverID(theReceiverID);
+      theState.setAsfConsumerID(theConsumerID);
       
       AsfMessageHolder holder = new AsfMessageHolder();
       holder.msg = m;
-      holder.consumerID = theReceiverID;
+      holder.consumerID = theConsumerID;
       holder.consumerDelegate = cons;
       
       msgs.add(holder);
@@ -168,7 +168,7 @@ public class AsfAspect
             
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      int ackMode = getState(invocation).getAcknowledgeMode();
+      int ackMode = getSessionState(invocation).getAcknowledgeMode();
 
       while (msgs.size() > 0)
       {
@@ -186,10 +186,12 @@ public class AsfAspect
 
    // Private --------------------------------------------------------
    
-   private SessionState getState(Invocation inv)
+   private SessionState getSessionState(Invocation inv)
    {
       return (SessionState)((ClientStubBase)inv.getTargetObject()).getState();
    }
+   
+   
    
    // Inner Classes --------------------------------------------------
    

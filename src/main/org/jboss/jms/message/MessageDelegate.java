@@ -445,7 +445,7 @@ public class MessageDelegate implements Message
    {
       if (delegate != null)
       {
-         delegate.acknowledgeSession();
+         delegate.acknowledge();
       }
    }
 

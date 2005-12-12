@@ -25,7 +25,7 @@ package org.jboss.messaging.core.tx;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version $Revision$
+ * @version <tt>$Revision$</tt>
  */
 public class TransactionException extends Exception
 {

@@ -32,7 +32,6 @@ import org.jboss.util.id.GUID;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class JBossObjectMessagePersistenceManagerTest extends JBossMessagePersistenceManagerTest
 {

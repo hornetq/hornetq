@@ -32,7 +32,7 @@ import org.jboss.jms.server.remoting.MetaDataConstants;
  * 
  * This aspect handles receive functionality for a message consumer
  * 
- * This aspect is PER_INSTANCE.
+ * This aspect is PER_IVM.
  * 
  * (TODO consider merging this with ConsumerInterceptor
  * I don't see the advantage of splitting this functionality out into a

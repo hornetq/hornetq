@@ -43,7 +43,7 @@ public class AckInfo implements Externalizable
    // Attributes ----------------------------------------------------
    
    public String messageID;
-   public String receiverID;
+   public String consumerID;
 
    // Static --------------------------------------------------------
    
@@ -53,10 +53,10 @@ public class AckInfo implements Externalizable
    {      
    }
    
-   public AckInfo(String messageID, String receiverID)
+   public AckInfo(String messageID, String consumerID)
    {
       this.messageID = messageID;
-      this.receiverID = receiverID;    
+      this.consumerID = consumerID;    
    }
 
    // Public --------------------------------------------------------
@@ -66,13 +66,13 @@ public class AckInfo implements Externalizable
    public void writeExternal(ObjectOutput out) throws IOException
    {
      out.writeUTF(messageID);
-     out.writeUTF(receiverID);
+     out.writeUTF(consumerID);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       messageID = in.readUTF();
-      receiverID = in.readUTF();
+      consumerID = in.readUTF();
    }
    
    // Class YYY overrides -------------------------------------------

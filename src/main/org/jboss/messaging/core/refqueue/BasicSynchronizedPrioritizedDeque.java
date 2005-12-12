@@ -32,7 +32,7 @@ import java.util.List;
  *      puts to occur without contention when there are more than x items in the deque.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision$
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */

@@ -60,14 +60,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    public static void callOnMessage(ConsumerDelegate cons,
                                     SessionDelegate sess,
                                     MessageListener listener,
-                                    String receiverID,
+                                    String consumerID,
                                     boolean isConnectionConsumer,
                                     Message m,
                                     int ackMode)
          throws JMSException
    {
-      preDeliver(sess, receiverID, m, isConnectionConsumer);           
-      
+      preDeliver(sess, consumerID, m, isConnectionConsumer);  
+                  
       try
       {      
          listener.onMessage(m);         
@@ -90,12 +90,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             //We just deliver next message
          }           
       }
-      
-      postDeliver(sess, receiverID, m, isConnectionConsumer);     
+            
+      postDeliver(sess, consumerID, m, isConnectionConsumer);
+          
    }
    
    protected static void preDeliver(SessionDelegate sess,
-                                    String receiverID,
+                                    String consumerID,
                                     Message m,
                                     boolean isConnectionConsumer)
       throws JMSException
@@ -104,12 +105,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       //to acknowledge or add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.preDeliver(m.getJMSMessageID(), receiverID);
+         sess.preDeliver(m.getJMSMessageID(), consumerID);
       }         
    }
    
    protected static void postDeliver(SessionDelegate sess,
-                                     String receiverID,
+                                     String consumerID,
                                      Message m,
                                      boolean isConnectionConsumer)
       throws JMSException
@@ -118,7 +119,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       //to acknowledge or add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.postDeliver(m.getJMSMessageID(), receiverID);
+         sess.postDeliver(m.getJMSMessageID(), consumerID);
       }         
    }
    

@@ -43,7 +43,7 @@ import org.jboss.remoting.transport.Connector;
  * 
  * Handles operations related to the consumer.
  * 
- * This aspect is PER_INSTANCE.
+ * This aspect is PER_VM.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

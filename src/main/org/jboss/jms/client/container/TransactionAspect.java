@@ -40,7 +40,7 @@ import org.jboss.logging.Logger;
 /**
  * This aspect handles transaction related logic
  * 
- * This aspect is PER_INSTANCE
+ * This aspect is PER_VM.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  *
@@ -122,11 +122,11 @@ public class TransactionAspect
       } 
       
       //Rollback causes cancellation of messages
-      String asfReceiverID = state.getAsfReceiverID();
+      String asfConsumerID = state.getAsfConsumerID();
       
       if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.cancelAllDeliveries()"); }
       
-      sessDelegate.cancelDeliveries(asfReceiverID);
+      sessDelegate.cancelDeliveries(asfConsumerID);
       
       return null;            
    }
@@ -169,20 +169,13 @@ public class TransactionAspect
    {
       SessionState state = (SessionState)getState(invocation);
       
-      if (!state.isTransacted())
-      {
-         //Not transacted - do nothing - ack will happen when delivered() is called
-         if (log.isTraceEnabled()) { log.trace("session is not transacted, this is a noop, returning"); }
-         
-         return null;
-      }
-      else 
+      if (state.isTransacted())
       {
          MethodInvocation mi = (MethodInvocation)invocation;
          
          String messageID = (String)mi.getArguments()[0];
          
-         String receiverID = (String)mi.getArguments()[1];
+         String consumerID = (String)mi.getArguments()[1];
          
          Object txID = state.getXAResource().getCurrentTxID();
          
@@ -193,10 +186,12 @@ public class TransactionAspect
          
          ConnectionState connState = (ConnectionState)state.getParent();
          
-         connState.getResourceManager().addAck(txID, new AckInfo(messageID, receiverID));
+         //Add the acknowledgement to the transaction
          
-         return null;
+         connState.getResourceManager().addAck(txID, new AckInfo(messageID, consumerID));                  
       }
+      
+      return null;
    }
 
    // Protected ------------------------------------------------------

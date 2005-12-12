@@ -88,9 +88,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    protected String clientID;
    
-   //We keep a map of receivers to prevent us to recurse through the attached session
+   //We keep a map of consumers to prevent us to recurse through the attached session
    //in order to find the ServerConsumerDelegate so we can ack the message
-   protected Map receivers;
+   protected Map consumers;
    
    protected String username;
    
@@ -115,7 +115,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       connectionID = new GUID().toString();
       
-      receivers = new ConcurrentReaderHashMap();
+      consumers = new ConcurrentReaderHashMap();
       
       this.clientID = clientID;
       
@@ -335,7 +335,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          
          this.temporaryDestinations.clear();
-         this.receivers.clear();
+         this.consumers.clear();
          this.serverPeer.getClientManager().removeConnectionDelegate(this.connectionID);
          Dispatcher.singleton.unregisterTarget(this.connectionID);
          closed = true;
@@ -494,26 +494,26 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }
    
-   void acknowledge(String messageID, String receiverID, Transaction tx) throws JMSException
+   void acknowledge(String messageID, String consumerID, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID + " from receiver " + receiverID + " transactionally on " + tx); }
+      if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
 
-      ServerConsumerEndpoint receiver = (ServerConsumerEndpoint)receivers.get(receiverID);
-      if (receiver == null)
+      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(consumerID);
+      if (consumer == null)
       {
-         throw new IllegalStateException("Cannot find receiver:" + receiverID);
+         throw new IllegalStateException("Cannot find consumer:" + consumerID);
       }
-      receiver.acknowledge(messageID, tx);
+      consumer.acknowledge(messageID, tx);
    }
    
-   void cancelDeliveriesForConnectionConsumer(String receiverID) throws JMSException
+   void cancelDeliveriesForConnectionConsumer(String consumerID) throws JMSException
    {
-      ServerConsumerEndpoint receiver = (ServerConsumerEndpoint)receivers.get(receiverID);
-      if (receiver == null)
+      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(consumerID);
+      if (consumer == null)
       {
-         throw new IllegalStateException("Cannot find receiver:" + receiverID);
+         throw new IllegalStateException("Cannot find consumer:" + consumerID);
       }
-      receiver.cancelAllDeliveries();
+      consumer.cancelAllDeliveries();
    }
    
    
@@ -585,14 +585,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       for(Iterator i = txState.acks.iterator(); i.hasNext(); )
       {
          AckInfo ack = (AckInfo)i.next();
-         acknowledge(ack.messageID, ack.receiverID, tx);
+         acknowledge(ack.messageID, ack.consumerID, tx);
          if (log.isTraceEnabled()) { log.trace("acked " + ack.messageID); }
       }
       
       if (log.isTraceEnabled()) { log.trace("Done the acks"); }
    }
 
-
-   
    // Inner classes -------------------------------------------------
 }

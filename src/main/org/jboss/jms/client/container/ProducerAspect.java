@@ -38,7 +38,7 @@ import org.jboss.util.id.GUID;
  * Handles sending of messages plus handles get and set methods for Producer - 
  * returning state from local cache
  * 
- * This aspect is PER_INSTANCE.
+ * This aspect is PER_VM.
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>

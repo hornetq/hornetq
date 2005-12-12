@@ -32,7 +32,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  * A DoubleLinkedDequeTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision$
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */

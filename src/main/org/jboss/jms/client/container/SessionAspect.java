@@ -21,9 +21,6 @@
   */
 package org.jboss.jms.client.container;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import javax.jms.IllegalStateException;
 import javax.jms.Session;
 
@@ -32,13 +29,12 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.tx.AckInfo;
 import org.jboss.logging.Logger;
 
 /**
  * This aspect handles JMS session related logic
  * 
- * This aspect is PER_INSTANCE
+ * This aspect is PER_VM
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  *
@@ -52,129 +48,33 @@ public class SessionAspect
    
    // Attributes ----------------------------------------------------
    
-   protected ArrayList unacked = new ArrayList();
-   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   public Object handleAcknowledgeSession(Invocation invocation) throws Throwable
-   {
-      //Acknowledge all the messages received in this session
-      if (log.isTraceEnabled()) { log.trace("acknowledgeSession called"); }
-      
-      //This only does anything if in client acknowledge mode
-      if (getState(invocation).getAcknowledgeMode() != Session.CLIENT_ACKNOWLEDGE)
-      {
-         if (log.isTraceEnabled()) { log.trace("nothing to acknowledge, ending the invocation"); }
-         
-         return null;
-      }                        
-      
-      MethodInvocation mi = (MethodInvocation)invocation;
-      
-      if (log.isTraceEnabled()) { log.trace("I have " + unacked.size() + " messages in the session to ack"); }
-
-      Iterator iter = unacked.iterator();
-      try
-      {
-         while (iter.hasNext())
-         {
-            AckInfo ackInfo = (AckInfo)iter.next();
-            
-            SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-            
-            del.acknowledge(ackInfo.messageID, ackInfo.receiverID);
-         }
-      }
-      finally
-      {
-         unacked.clear();
-      }
-
-      if (log.isTraceEnabled()) { log.trace("session acknowledged, ending the invocation"); }
-      
-      return null;
-   }
    
    public Object handlePostDeliver(Invocation invocation) throws Throwable
    { 
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      String messageID = (String)mi.getArguments()[0];
-      String receiverID = (String)mi.getArguments()[1];         
-      
       int ackMode = getState(invocation).getAcknowledgeMode();
       
       if (log.isTraceEnabled()) { log.trace("Session ack mode is:" + ackMode); }
       
-      if (ackMode == Session.SESSION_TRANSACTED)
+      if (ackMode != Session.SESSION_TRANSACTED && ackMode != Session.CLIENT_ACKNOWLEDGE) 
       {
-         if (log.isTraceEnabled()) { log.trace("session is transacted, noop and ending the invocation"); }
-         
-      }
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE)
-      {
-         //Just acknowledge now
-         if (log.isTraceEnabled()) log.trace("AUTO_ACKNOWLEDGE, so acknowledging to the server");
-         
          SessionDelegate del = (SessionDelegate)mi.getTargetObject();
          
-         del.acknowledge(messageID, receiverID);
+         //We acknowledge immediately
          
-         if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
-      }
-      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-      {
-         //TODO Lazy acks - for now we ack individually
-         if (log.isTraceEnabled()) log.trace("DUPS_OK_ACKNOWLEDGE, so lazy acking message");
-         
-         SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-         
-         del.acknowledge(messageID, receiverID);
-         
-         if (log.isTraceEnabled()) { log.trace("acknowledged, ending the invocation"); }
+         del.acknowledge();                
       }
       
       return null;
    }
    
-   public Object handlePreDeliver(Invocation invocation) throws Throwable
-   { 
-      MethodInvocation mi = (MethodInvocation)invocation;
-      
-      String messageID = (String)mi.getArguments()[0];
-      String receiverID = (String)mi.getArguments()[1];   
-      
-      int ackMode = getState(invocation).getAcknowledgeMode();
-   
-      if (ackMode == Session.CLIENT_ACKNOWLEDGE)
-      {
-         if (log.isTraceEnabled()) log.trace("CLIENT_ACKNOWLEDGE, so storing in unacked msgs");
-         
-         unacked.add(new AckInfo(messageID, receiverID));
-         
-         if (log.isTraceEnabled()) { log.trace("there are now " + unacked.size() + " unacked messages"); }
-      }
-      
-      if (getState(invocation).isTransacted())
-      {
-         return invocation.invokeNext();
-      }
-      else
-      {
-         return null;
-      }
-   }
-   
-   public Object handleClosing(Invocation invocation) throws Throwable
-   { 
-      unacked.clear();
-      
-      return invocation.invokeNext();
-   }
    
    public Object handleRecover(Invocation invocation) throws Throwable
    {
@@ -186,7 +86,6 @@ public class SessionAspect
       {
          throw new IllegalStateException("Cannot recover a transacted session");
       }
-      unacked.clear();
       
       //Tell the server to redeliver any un-acked messages
       if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
@@ -195,11 +94,11 @@ public class SessionAspect
       
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      String asfReceiverID = getState(invocation).getAsfReceiverID();
+      String asfConsumerID = getState(invocation).getAsfConsumerID();
       
       if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
       
-      del.cancelDeliveries(asfReceiverID);
+      del.cancelDeliveries(asfConsumerID);
       
       return null;  
    }

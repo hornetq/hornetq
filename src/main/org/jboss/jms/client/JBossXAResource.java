@@ -183,8 +183,8 @@ public class JBossXAResource implements XAResource
            
       try
       {
-         String asfReceiverID = sessionState.getAsfReceiverID();
-         session.cancelDeliveries(asfReceiverID);
+         String asfConsumerID = sessionState.getAsfConsumerID();
+         session.cancelDeliveries(asfConsumerID);
       }
       catch (JMSException e)
       {

@@ -38,7 +38,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoint
 {

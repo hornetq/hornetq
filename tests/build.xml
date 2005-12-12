@@ -351,8 +351,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/messaging/jms/**/*Test.class"/>
-               <exclude name="**/jms/managed/**"/>
+               <include name="**/messaging/jms/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

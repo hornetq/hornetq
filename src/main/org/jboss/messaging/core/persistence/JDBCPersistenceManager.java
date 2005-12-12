@@ -73,7 +73,6 @@ import org.jboss.util.id.GUID;
  * 
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class JDBCPersistenceManager implements PersistenceManager
 {

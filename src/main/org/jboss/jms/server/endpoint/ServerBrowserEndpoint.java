@@ -39,7 +39,7 @@ import org.jboss.messaging.core.Routable;
  * Concrete implementation of BrowserEndpoint
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision$
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */

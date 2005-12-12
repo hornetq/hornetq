@@ -63,7 +63,6 @@ import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoint
 {
@@ -457,7 +456,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             close();
          }
          
-         this.sessionEndpoint.connectionEndpoint.receivers.remove(id);
+         this.sessionEndpoint.connectionEndpoint.consumers.remove(id);
    
          if (this.channel instanceof Subscription)
          {
@@ -472,7 +471,30 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
    }  
    
-   void acknowledge(String messageID, Transaction tx)
+   void acknowledgeAll() throws JMSException
+   {
+      try
+      {
+         acquireLock();
+         
+         for(Iterator i = deliveries.iterator(); i.hasNext(); )
+         {
+            SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
+            d.acknowledge(null);
+            i.remove();            
+         }
+      }
+      catch(Throwable t)
+      {
+         throw new JBossJMSException("Failed to acknowledge deliveries", t);
+      }
+      finally
+      {
+         releaseLock();
+      }
+   }
+   
+   void acknowledge(String messageID, Transaction tx) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
 
@@ -492,7 +514,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       catch(Throwable t)
       {
-         log.error("Message " + messageID + "cannot be acknowledged to the source");
+         throw new JBossJMSException("Message " + messageID + "cannot be acknowledged to the source", t);
       }
       finally
       {

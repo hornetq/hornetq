@@ -65,7 +65,6 @@ import org.jboss.util.id.GUID;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ServerSessionEndpoint implements SessionEndpoint
 {
@@ -302,7 +301,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
       putConsumerDelegate(consumerID, scd);
       
-      connectionEndpoint.receivers.put(consumerID, scd);
+      connectionEndpoint.consumers.put(consumerID, scd);
 
       if (log.isTraceEnabled()) log.trace("created consumer endpoint (destination=" + jmsDestination + ")");
 
@@ -465,15 +464,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
 		}     
 	}
 	
-	public void acknowledge(String messageID, String receiverID)
-		throws JMSException
-	{
-      if (closed)
+   public void acknowledge() throws JMSException
+   {
+
+      Iterator iter = consumers.values().iterator();
+      while (iter.hasNext())
       {
-         throw new IllegalStateException("Session is closed");
+         ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)iter.next();
+         consumer.acknowledgeAll();
       }
-		this.connectionEndpoint.acknowledge(messageID, receiverID, null);
-	}
+   }
 
    public void addTemporaryDestination(Destination dest) throws JMSException
    {

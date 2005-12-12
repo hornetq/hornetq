@@ -62,7 +62,7 @@ public class SessionStub extends ClientStubBase implements SessionDelegate
    {
    }
 
-   public void acknowledgeSession() throws JMSException
+   public void acknowledge() throws JMSException
    {
    }
 

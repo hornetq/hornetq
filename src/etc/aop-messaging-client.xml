@@ -17,7 +17,7 @@
    <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/> 
    <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_VM"/>
-   <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_INSTANCE"/>
+   <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.TransactionAspect" scope="PER_VM"/>
    
    <!-- ConnectionFactory Stack-->        
@@ -96,12 +96,6 @@
    <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->run())">
       <advice name="handleRun" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>      
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->acknowledgeSession())">
-      <advice name="handleAcknowledgeSession" aspect="org.jboss.jms.client.container.SessionAspect"/>
-   </bind>  
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->closing())">
-      <advice name="handleClosing" aspect="org.jboss.jms.client.container.SessionAspect"/>
-   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->getAcknowledgeMode())">
       <advice name="handleGetAcknowledgeMode" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
@@ -113,9 +107,6 @@
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->postDeliver(..))">
       <advice name="handlePostDeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
-   </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->preDeliver(..))">
-      <advice name="handlePreDeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->recover())">
       <advice name="handleRecover" aspect="org.jboss.jms.client.container.SessionAspect"/>

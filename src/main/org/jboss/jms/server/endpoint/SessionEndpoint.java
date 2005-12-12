@@ -64,10 +64,9 @@ public interface SessionEndpoint extends Closeable
    Topic createTopic(String topicName) throws JMSException;
 
    /**
-    * Acknowledges a message back to the server (non transactionally).
-    */
-   void acknowledge(String messageID, String receiverID)
-         throws JMSException;
+    * Acknowledges the session
+    */ 
+   void acknowledge() throws JMSException;
    
    void cancelDeliveries(String receiverID) throws JMSException;
    

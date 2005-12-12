@@ -30,6 +30,8 @@ import org.jboss.logging.Logger;
 
 /**
  * Interceptor that handles exceptions thrown from JMS calls
+ * 
+ * This interceptor is PER_VM
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
