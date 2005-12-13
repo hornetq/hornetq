@@ -26,6 +26,9 @@ import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 import org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter;
 
 /**
+ * TODO Deprecate this and use org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter nstead
+ *      when http://jira.jboss.org/jira/browse/JBAS-2554 is done
+ *
  * This class only serves the proposite of keep multiple JUnit runnings between different
  * configurations. For example, if you run a testcase as cluster, and the same testcase as
  * singlenode, we want to keep both results in the JUnitReport. This is a simple implementation

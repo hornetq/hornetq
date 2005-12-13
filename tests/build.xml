@@ -298,11 +298,24 @@
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/output/classes"/>
+
+            <!-- Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+            <!--
+            <path refid="jboss.test.classpath"/>
+            -->
          </classpath>
+
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
 
          <sysproperty key="messaging-test-configuration" value="Remote"/>
          <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
             usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+
 
          <batchtest fork="${junit.batchtest.fork}"
             todir="${junit.batchtest.todir}"
