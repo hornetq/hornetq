@@ -36,6 +36,7 @@ import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
+import org.jboss.aop.AspectXmlLoader;
 import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.stubs.ConnectionFactoryStub;
@@ -171,6 +172,8 @@ public class ServerPeer
       
       loadClientAOPConfig();
       
+      loadServerAOPConfig();
+      
       log.info(this + " starting");
       
       mbeanServer = findMBeanServer();
@@ -259,6 +262,8 @@ public class ServerPeer
       {
          return;
       }
+      
+      unloadServerAOPConfig();
       
       log.debug(this + " stopping");
       
@@ -583,6 +588,18 @@ public class ServerPeer
    private synchronized String genConnFactoryID()
    {
       return "CONNFACTORY" + connFactoryIDSequence++;
+   }
+   
+   private void loadServerAOPConfig() throws Exception
+   {
+      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
+      AspectXmlLoader.deployXML(url);
+   }
+   
+   private void unloadServerAOPConfig() throws Exception
+   {
+      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
+      AspectXmlLoader.undeployXML(url);
    }
    
    private void loadClientAOPConfig() throws Exception

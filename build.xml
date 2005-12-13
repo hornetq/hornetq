@@ -487,7 +487,7 @@
       <copy todir="${build.classes}/xmdesc">
          <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
       </copy>
-      <copy todir="${build.classes}" file="${source.etc}/messaging-server-aop.xml"/>
+      <copy todir="${build.classes}" file="${source.etc}/aop-messaging-server.xml"/>
       <copy todir="${build.classes}" file="${source.etc}/aop-messaging-client.xml"/>
    </target>
 
@@ -545,21 +545,9 @@
          <substitution expression="\2"/>
       </replaceregexp>
 
-      <!-- enable the deployment of the scoped AOP manager/deployer -->
-      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.aop.deployment.AspectManagerService.+AspectDeployer\x22\x3e[ \t\n\r]*\x3c/mbean\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-
       <!-- enable the deployment of the remoting Connector and NeworkRegistry -->
       <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
          <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.remoting.transport.Connector.+NetworkRegistry\x22/\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-
-      <!-- enable the deployment of the AspectLoader -->
-      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cmbean code=\x22org.jboss.jms.util.AspectLoader.+MainDeployer[ \t]*\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)([ \t\n\r]*)\x2d-\x3e"/>
          <substitution expression="\2"/>
       </replaceregexp>
 
@@ -567,12 +555,6 @@
       <replaceregexp file="${build.classes}/META-INF/jboss-service.xml">
          <regexp pattern="jboss.remoting:service=Connector,transport=socket"/>
          <substitution expression="jboss.messaging:service=Connector,transport=socket"/>
-      </replaceregexp>
-
-      <!-- enable AspectLoader dependency -->
-      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cdepends\x3e[ \t]*jboss.messaging:service=AspectLoader[ \t]*\x3c/depends\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
       </replaceregexp>
 
       <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar"

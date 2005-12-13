@@ -118,7 +118,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="build.tests.remote" value="false"/>
+   <property name="build.tests.remote" value="true"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>

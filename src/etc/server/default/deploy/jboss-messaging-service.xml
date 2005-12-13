@@ -14,16 +14,6 @@
    </loader-repository>
    -->   
 
-   <!--
-   <mbean code="org.jboss.aop.deployment.AspectManagerService"
-      name="jboss.messaging:service=AspectManager">
-   </mbean>
-
-   <mbean code="org.jboss.aop.deployment.AspectDeployer"
-      name="jboss.messaging:service=AspectDeployer">
-   </mbean>
-   -->
-
    <!-- JBoss 5 has a remoting connector already deployed. For JBoss 4, I need to deploy it. -->
    <!--
    <mbean code="org.jboss.remoting.transport.Connector"
@@ -44,21 +34,11 @@
             </handlers>
          </config>
       </attribute>
-      <depends>jboss.messaging:service=NetworkRegistry</depends>
-      <depends>jboss.messaging:service=AspectDeployer</depends>
+      <depends>jboss.messaging:service=NetworkRegistry</depends>      
    </mbean>
 
    <mbean code="org.jboss.remoting.network.NetworkRegistry"
           name="jboss.messaging:service=NetworkRegistry"/>
-   -->
-
-   <!--
-   <mbean code="org.jboss.jms.util.AspectLoader"
-      name="jboss.messaging:service=AspectLoader"
-      xmbean-dd="xmdesc/AspectLoader-xmbean.xml">
-      <depends>jboss.messaging:service=AspectDeployer</depends>
-      <depends optional-attribute-name="MainDeployer">jboss.system:service=MainDeployer</depends>
-   </mbean>
    -->
 
    <!-- The Server Peer -->
@@ -69,14 +49,9 @@
          <!-- serverPeerID -->
          <arg type="java.lang.String" value="0" />
       </constructor>
-      <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
-      
+      <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>      
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      
       <depends>jboss:service=TransactionManager</depends>
-      <!--
-      <depends>jboss.messaging:service=AspectLoader</depends>
-      -->
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
 		<security>				
