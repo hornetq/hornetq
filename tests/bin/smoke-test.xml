@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project default="smoke-test" name="Messaging Smoke Test">
+
+   <property environment="ENV"/>
+
+   <target name="validate-messaging-sar">
+
+      <available property="messaging-sar"
+         type="file" file="../../output/lib/jboss-messaging-scoped.sar"/>
+      <fail unless="messaging-sar"
+         message="../../output/lib/jboss-messaging-scoped.sar does not exist! Build it and try again"/>
+   </target>
+
+   <target name="validate-jboss-instance">
+
+      <fail unless="ENV.JBOSS_HOME"
+         message="JBOSS_HOME environment variable not set! Set it and try again"/>
+      <available property="jboss-messaging-configuration"
+         type="dir" file="${ENV.JBOSS_HOME}/server/messaging"/>
+      <fail if="jboss-messaging-configuration"
+         message="'messaging' configuration already exists. Delete it manually and try again"/>
+   </target>
+
+   <target name="create-messaging-configuration">
+
+      <mkdir dir="${ENV.JBOSS_HOME}/server/messaging"/>
+      <copy todir="${ENV.JBOSS_HOME}/server/messaging">
+         <fileset dir="${ENV.JBOSS_HOME}/server/default"/>
+      </copy>
+      <copy file="${ENV.JBOSS_HOME}/server/messaging/deploy/jms/jms-ra.rar"
+         todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
+      <delete dir="${ENV.JBOSS_HOME}/server/messaging/data" quiet="yes"/>
+      <delete dir="${ENV.JBOSS_HOME}/server/messaging/log" quiet="yes"/>
+      <delete dir="${ENV.JBOSS_HOME}/server/messaging/tmp" quiet="yes"/>
+      <delete dir="${ENV.JBOSS_HOME}/server/messaging/work" quiet="yes"/>
+      <delete dir="${ENV.JBOSS_HOME}/server/messaging/deploy/jms"/>
+      <!-- add unauthenticated identity to "other" -->
+      <replaceregexp file="${ENV.JBOSS_HOME}/server/messaging/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3capplication-policy[ \t\n\r]+name[ \t\n\r]*=[ \t\n\r]*\x22other\x22.+flag[ \t\n\r]*=[ \t\n\r]*\x22required\x22)[ \t\n\r]*/\x3e"/>
+         <substitution expression="\1>&lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;&lt;/login-module&gt;"/>
+      </replaceregexp>
+   </target>
+
+   <target name="start-jboss">
+
+      <!--
+      <exec dir="${ENV.JBOSS_HOME}/bin" executable="run.bat" spawn="true">
+         <arg line="-c messaging"/>
+      </exec>
+      -->
+
+      <java classname="org.jboss.Main"
+         fork="yes" spawn="yes" dir="${ENV.JBOSS_HOME}/bin">
+         <jvmarg value="-server"/>
+         <jvmarg value="-Xms128m"/>
+         <jvmarg value="-Xmx128m"/>
+         <arg value="-c"/>
+         <arg value="messaging"/>
+         <sysproperty key="java.endorsed.dirs" value="${ENV.JBOSS_HOME}/lib/endorsed"/>
+         <classpath>
+            <pathelement location="${ENV.JBOSS_HOME}/bin/run.jar"/>
+            <pathelement location="${java.home}/lib/tools.jar"/>
+         </classpath>
+      </java>
+   </target>
+
+
+   <target name="deploy-sar">
+      <copy file="../../output/lib/jboss-messaging-scoped.sar"
+         todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
+   </target>
+
+   <target name="smoke-test"
+      depends="validate-messaging-sar,
+               validate-jboss-instance,
+               create-messaging-configuration,
+               start-jboss,
+               deploy-sar"/>
+
+
+   <target name="test">
+
+      <!--
+      <delete file="login-config.xml"/>
+      <copy file="login-config.orig.xml" tofile="./login-config.xml"/>
+
+
+          -->
+   </target>
+
+</project>
+
