@@ -541,7 +541,6 @@
       <!-- enable scoping -->
       <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
          <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <!-- <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*jboss.jar\x22/\x3e)([ \t\n\r]*)\x2d-\x3e"/> -->
          <substitution expression="\2"/>
       </replaceregexp>
 
