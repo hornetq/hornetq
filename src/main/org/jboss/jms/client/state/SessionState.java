@@ -26,6 +26,10 @@ import java.util.HashSet;
 import org.jboss.jms.client.JBossXAResource;
 import org.jboss.jms.delegate.SessionDelegate;
 
+import EDU.oswego.cs.dl.util.concurrent.Executor;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * State corresponding to a session
  * This state is acessible inside aspects/interceptors
@@ -45,6 +49,9 @@ public class SessionState extends HierarchicalStateBase
    
    private JBossXAResource xaResource;
    
+   //Executor used for executing onMessage methods
+   private Executor executor;
+   
    public SessionState(ConnectionState parent, SessionDelegate delegate, boolean transacted,
          int ackMode, boolean xa)
    {
@@ -62,6 +69,7 @@ public class SessionState extends HierarchicalStateBase
          
          xaResource.setCurrentTxID(Xid);          
       }
+      executor = new QueuedExecutor(new LinkedQueue());
    }
     
    public int getAcknowledgeMode()
@@ -92,6 +100,11 @@ public class SessionState extends HierarchicalStateBase
    public void setAsfConsumerID(String id)
    {
       this.asfConsumerID = id;
+   }
+   
+   public Executor getExecutor()
+   {
+      return executor;
    }
 }
 

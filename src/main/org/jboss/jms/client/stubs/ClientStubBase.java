@@ -104,6 +104,8 @@ public abstract class ClientStubBase implements Interceptor, Serializable
                         
       InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
       invocation.setResponseContextInfo(response.getContextInfo());
+      
+      
             
       if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 

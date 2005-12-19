@@ -38,6 +38,7 @@ import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 
+import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronousChannel;
 
 /**
@@ -47,13 +48,11 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronousChannel;
  *
  * $Id$
  */
-public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
+public class MessageCallbackHandler implements InvokerCallbackHandler
 {
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(MessageCallbackHandler.class);
-   
-   private static final long CLOSE_TIMEOUT = 5000;
    
    // Static --------------------------------------------------------
    
@@ -137,66 +136,77 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
    
    protected boolean closed;
    
-   protected volatile boolean listening;
-   
-   protected volatile boolean receiving;
-   
-   protected Thread listenerThread;
-   
-   protected Thread receiverThread;
-   
-   protected Object closedLock;
+   protected volatile Thread receiverThread;
    
    protected Object receiverLock;
    
-   protected MessageListener listener;
-   
-   protected int listenerThreadCount;
+   protected volatile MessageListener listener;
    
    protected volatile boolean stopping;
    
    protected volatile boolean waiting;
    
-   protected Thread activateThread;
-   
    protected int deliveryAttempts;
    
    protected int ackMode;
+   
+   //Executor used for executing onMessage methods - there is one per session
+   protected Executor onMessageExecutor;
+   
+   //Executor for executing activateConsumer methods asynchronously - there is one pool per connection
+   protected Executor pooledExecutor;
 
    // Constructors --------------------------------------------------
 
-   public MessageCallbackHandler(boolean isCC, int ackMode)
+   public MessageCallbackHandler(boolean isCC, int ackMode, Executor executor, Executor pooledExecutor)
    {
       buffer = new SynchronousChannel();
       
       isConnectionConsumer = isCC;
-      
-      closedLock = new Object();
-      
+       
       receiverLock = new Object();
       
       this.ackMode = ackMode;
+      
+      this.onMessageExecutor = executor;
+      
+      this.pooledExecutor = pooledExecutor;
    }
 
    // InvokerCallbackHandler implementation -------------------------
    
-   public void handleCallback(Callback callback) throws HandleCallbackException
+   public synchronized void handleCallback(Callback callback) throws HandleCallbackException
    {
       if (log.isTraceEnabled()) { log.trace("receiving message " + callback.getParameter() + " from the remoting layer"); }
 
-      synchronized (closedLock)
-      {         
-         Message m = (Message)callback.getParameter();
-         
-         if (closed)
+      if (closed)
+      {
+         log.warn("Consumer is closed - ignoring message");
+         //Note - we do not cancel the message if the handler is closed.
+         //If the handler is closed then the corresponding serverconsumerdelegate
+         //is either already closed or about to close, in which case it's deliveries
+         //will be cancelled anyway.
+         return;
+      }
+      
+      Message m = (Message)callback.getParameter();
+      
+      if (listener != null)
+      {
+         //Queue the message to be delivered by the session
+         ClientDeliveryRunnable cdr = new ClientDeliveryRunnable(this, processMessage(m));
+         try
          {
-            log.error("Consumer is closed - ignoring message");
-            //Note - we do not cancel the message if the handler is closed.
-            //If the handler is closed then the corresponding serverconsumerdelegate
-            //is either already closed or about to close, in which case it's deliveries
-            //will be cancelled anyway.
+            onMessageExecutor.execute(cdr);
          }
-         
+         catch (InterruptedException e)
+         {
+            log.error("Thread was interrupted, cancelling message", e);
+            cancelMessage(m);
+         }
+      }
+      else
+      {                                 
          try
          {                    
             //We attempt to put the message in the Channel
@@ -238,137 +248,50 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
             throw new HandleCallbackException(msg, e);
          }
       }
-   }
-   
-   // Runnable implementation ---------------------------------------
-   
-   /**
-    * Receive messages for the message listener.
-    */
-   public void run()
-   {
-      if (log.isTraceEnabled()) { log.trace("listener thread started"); }
       
-      try
-      {      
-         while(true)
-         {            
-            if (log.isTraceEnabled()) { log.trace("blocking to take a message"); }
-                       
-            if (!stopping)
-            {
-            
-               Message m = getMessage(0);
-               
-               callOnMessage(consumerDelegate, sessionDelegate, listener,
-                             consumerID, isConnectionConsumer, m, this.ackMode);
-               
-               if (log.isTraceEnabled()) { log.trace("message successfully handled by listener"); }  
-            }
-            else
-            {
-               break;
-            }           
-         }     
-      }
-      catch(InterruptedException e)
-      {
-         log.debug("message listener thread interrupted, exiting");         
-      }
-      catch (JMSException e)
-      {
-         log.error("Failed to deliver message", e);
-      }
-      finally
-      {
-         listening = false;
-      }
    }
    
-   
+  
    // Public --------------------------------------------------------
-   
-
-   
-   public void setMessageListener(MessageListener listener) throws JMSException
+    
+   public synchronized void setMessageListener(MessageListener listener) throws JMSException
    {
       //JMS consumer is single threaded, so it shouldn't be possible to
       //set a MessageListener while another thread is receiving
       
-      if (receiving)
+      if (receiverThread != null)
       {
-         throw new JBossJMSException("Another thread is already receiving");
+         //Should never happen
+         throw new javax.jms.IllegalStateException("Another thread is already receiving");
       }
       
-      if (listening)
-      {
-         //Stop the current listener
-         stopListener();
-      }
+      this.listener = listener;            
       
-      this.listener = listener;
-      
-      if (listener != null)
-      {
-         //Start the new listener
-         listening = true;
-         listenerThread = new Thread(this, "MessageListenerThread-" + listenerThreadCount++);
-         listenerThread.start();
-      }
-      
+      activateConsumer();      
    }
  
    
-   public void close()
+   public synchronized void close()
    {
-      synchronized (closedLock)
-      {
-         closed = true;
-            
-         //Interrupt the listening thread if there is one
-         if (listening)
-         {
-            stopListener();
-         }
-         
-         if (receiving)
-         {
-            stopReceiver();
-         }
-         
-         //It's possible we are in a call to activate still.
-         //We must wait for that call to complete, otherwise the 
-         //serverconsumer can end up closing while the call is still executing (observed)
-         if (activateThread != null)
-         {
-            try
-            {
-               activateThread.join();
-            }
-            catch (InterruptedException e)
-            {
-               //Ignore
-            }
-         }
-         
-         // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-         try
-         {
-            // unregister this callback handler and stop the callback server
-   
-            client.removeListener(this);
-            log.debug("Listener removed from server");
-   
-            callbackServer.stop();
-            log.debug("Closed callback server " + callbackServer.getInvokerLocator());
-         }
-         catch(Throwable e)
-         {
-            log.warn("Failed to clean up callback handler/callback server", e);
-         }
+      closed = true;
+          
+      stopReceiver();       
       
+      // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
+      try
+      {
+         // unregister this callback handler and stop the callback server
+
+         client.removeListener(this);
+         log.debug("Listener removed from server");
+
+         callbackServer.stop();
+         log.debug("Closed callback server " + callbackServer.getInvokerLocator());
       }
-  
+      catch(Throwable e)
+      {
+         log.warn("Failed to clean up callback handler/callback server", e);
+      }
    }
    
  
@@ -382,26 +305,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
     */
    public Message receive(long timeout)
       throws JMSException
-   {            
-
-      //Since the jms consumer is single threaded,
-      //it shouldn't be possible for a receive to be called when another receive is in operation
-      //or while a close is in operation.
-      //But it is possible for a receive to be called while a message listener is set
+   {                 
       
-      if (listening)
+      if (listener != null)
       {
          throw new JBossJMSException("A message listener is already registered");         
       }
-      
-      
-      synchronized (receiverLock)
-      {         
-         receiving = true;
-         
-         receiverThread = Thread.currentThread();
-      }
-      
+                    
+      receiverThread = Thread.currentThread();
+            
       long startTimestamp = System.currentTimeMillis();
       
       Message m = null;
@@ -500,11 +412,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
       finally
       {
-         synchronized (receiverLock)
-         {
-            receiving = false;
-            receiverThread = null;
-         }
+         receiverThread = null;         
       }
  
    }
@@ -567,56 +475,18 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
          String msg = "Failed to cancel message";
          log.warn(msg, e);         
       }
-   }
-        
-   protected void stopListener()
-   {           
-      try
-      {
-         if (waiting)
-         {
-            //Listener thread is almost certainly waiting on getting a message
-            //There is a small chance it is not actually waiting but is betwen setting waiting
-            //to true and actually waiting for a message
-            listenerThread.interrupt();         
-         }
-         
-         //Wait for thread to end
-         listenerThread.join(CLOSE_TIMEOUT);
-         
-         if (listenerThread.isAlive())
-         {
-            //Thread still hasn't finished - either processing is taking a long time (maybe locked??)
-            //or there is a small chance it is actually waiting to get a message
-            //since it might actually be before the check to whether it is stopping
-            //and actually waiting to get the message
-            //So we interrupt it and wait for it to finish again.
-            listenerThread.interrupt();
-            listenerThread.join(CLOSE_TIMEOUT);
-            if (listenerThread.isAlive())
-            {
-               log.error("Listener thread is still alive!");
-            }           
-         }
-      }
-      catch (InterruptedException e)
-      {
-         log.error("Thread interrupted", e);
-      }
-      
-   }
+   }        
    
    protected void stopReceiver()
    {
       synchronized (receiverLock)
-      {
-         
+      {         
          stopping = true;
          
          //The listener loop may not be waiting, so interrupting the thread will
          //not necessarily work, thus leaving it hanging
          //so we use the listenerStopping variable too
-         if (receiving)
+         if (receiverThread != null)
          {
             receiverThread.interrupt();
          }
@@ -635,28 +505,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       //arrives before we have returned from the synch call, which would
       //cause us to lose the message
       
-      //TODO Use a thread pool
-      activateThread = new Thread(new Runnable()
-            {
-         public void run()
-         {
-            try
-            {
-               if (log.isTraceEnabled()) { log.trace("Consumer Activation"); }
-               consumerDelegate.activate();
-            }
-            catch(Throwable t)
-            {
-               log.error("Consumer activation failed", t);
-               if (t.getCause() != null)
-               {
-                  log.error("Cause:" + t.getCause());
-               }
-               stopReceiver();
-            }
-         }
-            }, "Consumer Activation Thread");
-      activateThread.start();
+      try
+      {
+         pooledExecutor.execute(new ConsumerActivationRunnable());
+      }
+      catch (InterruptedException e)
+      {
+         throw new JBossJMSException("Thread interrupted", e);
+      }
    }
    
    protected void deactivateConsumer() throws JMSException
@@ -684,7 +540,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       else
       {
          //otherwise we active the server side consumer and 
-         //wait for a message to arrive asynchonrously
+         //wait for a message to arrive asynchronously
          
          waiting = true;
          
@@ -719,27 +575,92 @@ public class MessageCallbackHandler implements InvokerCallbackHandler, Runnable
       }
            
       if (m != null)
-      {         
-         //We create a thin delegate to the message - which prevents it having to be
-         //unnecessarily copied
-         MessageDelegate del = JBossMessage.createThinDelegate((JBossMessage)m);
-         
-         //if this is the handler for a connection consumer we don't want to set the session delegate
-         //since this is only used for client acknowledgement which is illegal for a session
-         //used for an MDB
-         if (!this.isConnectionConsumer)
-         {
-            del.setSessionDelegate(sessionDelegate);
-         }         
-         del.setReceived();
-         m = del;
+      {                  
+         m = processMessage(m);
       }
       
       return m;
    }
    
+   protected Message processMessage(Message m)
+   {
+      //We create a thin delegate to the message - which prevents it having to be
+      //unnecessarily copied
+      MessageDelegate del = JBossMessage.createThinDelegate((JBossMessage)m);
+      
+      //if this is the handler for a connection consumer we don't want to set the session delegate
+      //since this is only used for client acknowledgement which is illegal for a session
+      //used for an MDB
+      if (!this.isConnectionConsumer)
+      {
+         del.setSessionDelegate(sessionDelegate);
+      }         
+      del.setReceived();
+      
+      return del;
+   }
+   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+   
+   private class ClientDeliveryRunnable implements Runnable
+   {
+      private MessageCallbackHandler handler;
+      
+      private Message message;
+      
+      private ClientDeliveryRunnable(MessageCallbackHandler handler, Message message)
+      {
+         this.handler = handler;
+         this.message = message;
+      }
+      
+      public void run()
+      {
+         synchronized (handler)
+         {
+            if (handler.closed)
+            {
+               //The handler is closed - ignore the message - the serverconsumerdelegate will already be
+               //closed so the message will have already been cancelled               
+            }
+            else
+            {
+               try
+               {
+                  MessageCallbackHandler.callOnMessage(consumerDelegate, sessionDelegate, listener,
+                                                       consumerID, isConnectionConsumer, message, ackMode);
+                  consumerDelegate.activate();
+               }
+               catch (JMSException e)
+               {
+                  log.error("Failed to deliver message", e);
+               }
+            }
+         }
+      }
+   }
+   
+   private class ConsumerActivationRunnable implements Runnable
+   {
+      public void run()
+      {
+         try
+         {
+            if (log.isTraceEnabled()) { log.trace("Consumer Activation"); }
+            consumerDelegate.activate();
+         }
+         catch(Throwable t)
+         {
+            log.error("Consumer activation failed", t);
+            if (t.getCause() != null)
+            {
+               log.error("Cause:" + t.getCause());
+            }
+            stopReceiver();
+         }
+      } 
+   }      
 }
 

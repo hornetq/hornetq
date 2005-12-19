@@ -404,6 +404,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          if (log.isTraceEnabled()) { log.trace("activate:" + this); }
          acquireLock();
          
+         if (closed)
+         {
+            //Do nothing
+            return;
+         }
+         
          ready = true;
          
          promptDelivery();

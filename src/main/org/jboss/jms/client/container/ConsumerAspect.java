@@ -28,6 +28,7 @@ import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.remoting.Remoting;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.client.stubs.ClientStubBase;
@@ -94,7 +95,10 @@ public class ConsumerAspect
       //Create the message handler
       SessionState sessState = (SessionState)((ClientStubBase)invocation.getTargetObject()).getState();
       
-      MessageCallbackHandler messageHandler = new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode());
+      ConnectionState connState = (ConnectionState)sessState.getParent();
+      
+      MessageCallbackHandler messageHandler = new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
+                                                                         sessState.getExecutor(), connState.getPooledExecutor());
 
       Client client = new Client(serverLocator, "JMS");
       
