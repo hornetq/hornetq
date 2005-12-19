@@ -195,49 +195,14 @@ public class ServerPeer
       jdbcStateManager.start();
       stateManager = jdbcStateManager;
       
-      //FIXME
-      //Important Note
-      //==============
-      //
       //This pooled executor controls how threads are allocated to deliver messges
       //to consumers.
-      //The pool and/or queue must be bounded otherwise if messages are ready to be delivered at
-      //a higher rate than the deliveries can be completed, then we can end up with more
-      //and more threads being created to do the deliveries and subsequent resource exhaustion.
-      //E.g. max number of sockets being allocated and/or out of memory - Tim
-      
-      //Currently we have max 10 threads in the pool, and an unlimited queue of waiting requests.
-      //This means we can have up to 10 threads delivering messages to client side MessageCallbackHandler
-      //buffers at any one time and any number of messages queued up waiting to be delivered.
-      
-      //There is a danger with this. Imagine the following scenario:
-      //There are 100000 messages on a queue to be delivered - there are no consumers currently on
-      //the queue.
-      //A new consumer is created for the queue and the consumer is started.
-      //This causes deliver() to be called for the channel corresponding to the queue.
-      //The call to deliver() will not return until all the waiting messages are placed onto the delivery
-      //queue ready for delivery.
-      //If the delivery queue is not bounded, as is currently the case, then this operation will complete,
-      //assuming there is sufficient memory to add all the messages to the queue, but wil cause
-      //exhaustion of memory if there is not enough.
-      //In order to prevent memory exhaustion, a BoundedBuffer could be used instead of a LinkedQueue.
-      //These would prevent more than a certain number of messages being on in the queue at any one time.
-      //Any other attempts to place a message on the queue would block until a place on the queue
-      //becomes available.
-      //In our scenario this would never happen since messages aren't consumed on the client side until the
-      //call to start the consumer returns which it never does. Hence we end up with a lock.
-      //
-      //Another solution, IMHO would perhaps be to use a bounded buffer to guard against memory
-      //exhaustion but make the delivery operation
-      //asynchronous rather than synchronous as it currently is.
-      //In this way, consumer.start() would trigger delivery but return immediately, allowing consumption
-      //of messages to start thus preventing locking.
-      //This would also prevent a large pause on start() before messages are consumed as they are being placed
-      //on the queue
-      //
-      // - Tim 07/09/05
+      //The buffer(queue) of the pool must be unbounded to avoid potential distributed deadlock
+      //Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
+      //Otherwise, we will never have more than getMinimumPoolSize threads running.
                   
       threadPool = new PooledExecutor(new LinkedQueue(), 10);
+      threadPool.setMinimumPoolSize(10); 
 
       initializeRemoting();
 
