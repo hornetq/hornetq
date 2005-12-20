@@ -42,27 +42,28 @@ public class TransactionRequest implements Externalizable
 {
    // Constants -----------------------------------------------------
    
-   /** The serialVersionUID */
    private static final long serialVersionUID = -5371388526898322431L;
    
-   /** One phase Commit request */
+
    public final static byte ONE_PHASE_COMMIT_REQUEST = 0;
-   /** Two phase Prepare phase */
-   public final static byte TWO_PHASE_COMMIT_PREPARE_REQUEST = 1;
-   /** Two phase Commit phase */
-   public final static byte TWO_PHASE_COMMIT_COMMIT_REQUEST = 2;
-   /** Rollback request */
-   public final static byte TWO_PHASE_COMMIT_ROLLBACK_REQUEST = 3;
+   
+   public final static byte ONE_PHASE_ROLLBACK_REQUEST = 1;
+
+   public final static byte TWO_PHASE_PREPARE_REQUEST = 2;
+
+   public final static byte TWO_PHASE_COMMIT_REQUEST = 3;
+
+   public final static byte TWO_PHASE_ROLLBACK_REQUEST = 4;
    
    // Attributes ----------------------------------------------------
    
    /** Request type */
-   public int requestType = ONE_PHASE_COMMIT_REQUEST;
+   protected int requestType;
 
    /** For 2 phase commit, this identifies the transaction. */
-   public Xid xid;
+   protected Xid xid;
 
-   public TxState txInfo;
+   protected TxState state;
    
    // Static --------------------------------------------------------
    
@@ -72,23 +73,44 @@ public class TransactionRequest implements Externalizable
    {      
    }
    
+   public TransactionRequest(int requestType, Xid xid, TxState state)
+   {      
+      this.requestType = requestType;
+      this.xid = xid;
+      this.state = state;
+   }
+   
    // Public --------------------------------------------------------
    
+   public TxState getState()
+   {
+      return state;
+   }
+   
+   public Xid getXid()
+   {
+      return xid;
+   }
+   
+   public int getRequestType()
+   {
+      return requestType;
+   }
+   
    // Externalizable implementation ---------------------------------
-
 
    public void writeExternal(ObjectOutput out) throws IOException
    {
       out.writeInt(requestType);
       out.writeObject(xid);
-      out.writeObject(txInfo);
+      out.writeObject(state);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
      requestType = in.readInt();
      xid = (Xid)in.readObject();
-     txInfo = (TxState)in.readObject();
+     state = (TxState)in.readObject();
    }
    
    // Package protected ---------------------------------------------

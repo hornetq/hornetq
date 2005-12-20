@@ -35,14 +35,18 @@ import org.jboss.logging.Logger;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
- * This class implements the ResourceManager used for the XAResources used in
- * JBossMessaging JMS.
+ * The ResourceManager manages work done in both local and
+ * global (XA) transactions.
  * 
- * Adapted from SpyXAResourceManager
+ * This is one instance of ResourceManager per JMS server.
+ * The ResourceManager instances are managed by ResourceManagerFactory
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * 
+ * Parts adapted from SpyXAResourceManager by:
  *
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
@@ -53,14 +57,7 @@ public class ResourceManager
    
    // Attributes ----------------------------------------------------
    
-   //TODO - If there are a lot of messages/acks in a tx
-   //we need to sensibly deal with this to avoid exhausting memory - 
-   //perhaps spill over into a persistent store
-   private ConcurrentHashMap transactions = new ConcurrentHashMap();
-   
-   private long idSequence;
-   
-   private ConnectionDelegate connection;
+   protected ConcurrentHashMap transactions = new ConcurrentHashMap();
    
    // Static --------------------------------------------------------
    
@@ -69,9 +66,8 @@ public class ResourceManager
    
    // Constructors --------------------------------------------------
    
-   public ResourceManager(ConnectionDelegate connection)
-   {
-      this.connection = connection;
+   ResourceManager()
+   {      
    }
    
    // Public --------------------------------------------------------
@@ -97,7 +93,7 @@ public class ResourceManager
    {
       if (log.isTraceEnabled()) { log.trace("Addding message for xid:" + xid); }
       TxState tx = getTx(xid);
-      tx.messages.add(m);
+      tx.getMessages().add(m);
    }
    
    /**
@@ -114,10 +110,10 @@ public class ResourceManager
       {
          throw new JMSException("There is no transaction with id:" + xid);
       }
-      tx.acks.add(ackInfo);
+      tx.getAcks().add(ackInfo);
    }
          
-   public void commitLocal(LocalTxXid xid) throws JMSException
+   public void commitLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("Commiting local xid=" + xid); }
       
@@ -131,13 +127,11 @@ public class ResourceManager
          throw new IllegalStateException(msg);
       }
       
-      TransactionRequest request = new TransactionRequest();
-      request.requestType = TransactionRequest.ONE_PHASE_COMMIT_REQUEST;
-      request.txInfo = tx;
+      TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
       connection.sendTransaction(request);      
    }
    
-   public void rollbackLocal(LocalTxXid xid) throws JMSException
+   public void rollbackLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("Rolling back local xid: " + xid); }
       TxState tx = removeTx(xid);
@@ -147,9 +141,14 @@ public class ResourceManager
          log.error(msg);         
          throw new IllegalStateException(msg);         
       }
+      
+      //Don't need messages for rollback
+      tx.clearMessages();
+      TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, null, tx);
+      connection.sendTransaction(request);
    }
    
-   private void sendTransactionXA(TransactionRequest request) throws XAException
+   private void sendTransactionXA(TransactionRequest request, ConnectionDelegate connection) throws XAException
    {
       try
       {
@@ -168,7 +167,7 @@ public class ResourceManager
       }
    }
    
-   public void commit(Xid xid, boolean onePhase) throws XAException
+   public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
    {
       if (log.isTraceEnabled()) { log.trace("Commiting xid=" + xid + ", onePhase=" + onePhase); }
       
@@ -183,28 +182,26 @@ public class ResourceManager
       
       if (onePhase)
       {
-         TransactionRequest request = new TransactionRequest();
-         request.requestType = TransactionRequest.ONE_PHASE_COMMIT_REQUEST;         
-         request.txInfo = tx;    
-         sendTransactionXA(request);
+         TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);      
+         request.state = tx;    
+         sendTransactionXA(request, connection);
       }
       else
       {
-         if (tx.state != TxState.TX_PREPARED)
+         if (tx.getState() != TxState.TX_PREPARED)
          {
             log.error("commit called for transaction, but it is not prepared");         
             throw new XAException(XAException.XAER_PROTO);
          }
-         TransactionRequest request = new TransactionRequest();
-         request.xid = xid;
-         request.requestType = TransactionRequest.TWO_PHASE_COMMIT_COMMIT_REQUEST;         
-         sendTransactionXA(request);
+         TransactionRequest request = new TransactionRequest(TransactionRequest.TWO_PHASE_COMMIT_REQUEST, xid, null);
+         request.xid = xid;      
+         sendTransactionXA(request, connection);
       }
-      tx.state = TxState.TX_COMMITED;
+      tx.setState(TxState.TX_COMMITED);
    }
    
    
-   public void rollback(Xid xid) throws XAException
+   public void rollback(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (log.isTraceEnabled()) { log.trace("Rolling back xid: " + xid); }
       TxState tx = removeTx(xid);
@@ -213,13 +210,22 @@ public class ResourceManager
          log.error("Cannot find transaction with xid:" + xid);         
          throw new XAException(XAException.XAER_NOTA);
       }
-      if (tx.state == TxState.TX_PREPARED)
+            
+      TransactionRequest request = null;
+      
+      //We don't need to send the messages to the server on a rollback
+      tx.clearMessages();
+      
+      if (tx.getState() == TxState.TX_PREPARED)
       {
-         TransactionRequest request = new TransactionRequest();        
-         request.requestType = TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST;
-         request.xid = xid;
-         sendTransactionXA(request);
-      }    
+         request = new TransactionRequest(TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST, xid, tx);
+      } 
+      else
+      {
+         request = new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, xid, tx);
+      }
+      
+      sendTransactionXA(request, connection);
    }
    
    public void endTx(Xid xid, boolean success) throws XAException
@@ -232,7 +238,7 @@ public class ResourceManager
          log.error("Cannot find transaction with xid:" + xid);         
          throw new XAException(XAException.XAER_NOTA);
       }         
-      state.state = TxState.TX_ENDED;
+      state.setState(TxState.TX_ENDED);
    }
    
    public Xid joinTx(Xid xid) throws XAException
@@ -248,7 +254,7 @@ public class ResourceManager
       return xid;
    }
    
-   public int prepare(Xid xid) throws XAException
+   public int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (log.isTraceEnabled()) { log.trace("Preparing xid=" + xid); }
       
@@ -258,12 +264,9 @@ public class ResourceManager
          log.error("Cannot find transaction with xid:" + xid);         
          throw new XAException(XAException.XAER_NOTA);
       } 
-      TransactionRequest request = new TransactionRequest();
-      request.requestType = TransactionRequest.TWO_PHASE_COMMIT_PREPARE_REQUEST;
-      request.txInfo = state;
-      request.xid = xid;
-      sendTransactionXA(request);      
-      state.state = TxState.TX_PREPARED;
+      TransactionRequest request = new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
+      sendTransactionXA(request, connection);      
+      state.setState(TxState.TX_PREPARED);
       return XAResource.XA_OK;
    }
    
@@ -338,7 +341,7 @@ public class ResourceManager
    
    private synchronized LocalTxXid getNextTxId()
    {
-      return new LocalTxXid(idSequence++);
+      return new LocalTxXid();
    }
    
    public TxState getTx(Object xid)
@@ -357,24 +360,6 @@ public class ResourceManager
    // Inner Classes --------------------------------------------------
    
    public static class LocalTxXid
-   {
-      public long id;
-      public LocalTxXid(long l)
-      {
-         id = l;
-      }
-      public int hashCode()
-      {
-         return (int)((id >>> 32) ^ id);
-      }
-      public boolean equals(Object other)
-      {
-         if (!(other instanceof LocalTxXid))
-         {
-            return false;
-         }
-         LocalTxXid lother = (LocalTxXid)other;
-         return lother.id == this.id;
-      }
+   {      
    }  
 }

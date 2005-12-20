@@ -25,6 +25,7 @@ import java.util.HashSet;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -46,12 +47,12 @@ public class ConnectionState extends HierarchicalStateBase
    //Thread pool used for making asynch calls to server - e.g. activateConsumer
    private PooledExecutor pooledExecutor;
    
-   public ConnectionState(ConnectionDelegate delegate)
+   public ConnectionState(ConnectionDelegate delegate, String serverId)
    {
       super(null, delegate);
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
       this.delegate = delegate;
-      resourceManager = new ResourceManager(delegate);
+      resourceManager = ResourceManagerFactory.instance.getResourceManager(serverId);
       
       //TODO size should be configurable
       pooledExecutor = new PooledExecutor(20);

@@ -97,7 +97,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       ConnectionStub stub;
       try
       {
-         stub = new ConnectionStub(scd.getConnectionID(), serverPeer.getLocator());
+         stub = new ConnectionStub(scd.getConnectionID(), serverPeer.getLocator(), serverPeer.getServerPeerID());
       }
       catch (Exception e)
       {

@@ -41,13 +41,13 @@ public class SessionState extends HierarchicalStateBase
 {
    private int acknowledgeMode;
    
-   private String asfConsumerID;
-   
    private boolean transacted;
    
    private boolean xa;
    
    private JBossXAResource xaResource;
+   
+   private Object currentTxId;
    
    //Executor used for executing onMessage methods
    private Executor executor;
@@ -60,14 +60,15 @@ public class SessionState extends HierarchicalStateBase
       this.acknowledgeMode = ackMode;
       this.transacted = transacted;
       this.xa = xa;      
+      if (xa)
+      {
+         //Create an XA resource
+         xaResource = new JBossXAResource(parent.getResourceManager(), this);                            
+      }
       if (transacted)
       {
-         xaResource = new JBossXAResource(parent.getResourceManager(), delegate, this);
-                     
          //Create a local tx                                                  
-         Object Xid = parent.getResourceManager().createLocalTx();
-         
-         xaResource.setCurrentTxID(Xid);          
+         currentTxId = parent.getResourceManager().createLocalTx();        
       }
       executor = new QueuedExecutor(new LinkedQueue());
    }
@@ -76,11 +77,6 @@ public class SessionState extends HierarchicalStateBase
    {
       return acknowledgeMode;
    }
-   
-   public String getAsfConsumerID()
-   {
-      return asfConsumerID;
-   }   
    
    public boolean isTransacted()
    {
@@ -97,14 +93,19 @@ public class SessionState extends HierarchicalStateBase
       return xaResource;
    }
    
-   public void setAsfConsumerID(String id)
-   {
-      this.asfConsumerID = id;
-   }
-   
    public Executor getExecutor()
    {
       return executor;
+   }
+   
+   public Object getCurrentTxId()
+   {
+      return currentTxId;
+   }
+   
+   public void setCurrentTxId(Object id)
+   {
+      this.currentTxId = id;
    }
 }
 

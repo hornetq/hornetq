@@ -33,6 +33,7 @@ import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.stubs.ConnectionStub;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
@@ -73,11 +74,11 @@ public class StateCreationAspect
    {
       ConnectionDelegate conn = (ConnectionDelegate)invocation.invokeNext();
       
-      ClientStubBase csb = (ClientStubBase)conn;
+      ConnectionStub csb = (ConnectionStub)conn;
       
       csb.init();
       
-      csb.setState(new ConnectionState(conn));           
+      csb.setState(new ConnectionState(conn, csb.getServerId()));           
                   
       return conn;
    }

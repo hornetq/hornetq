@@ -39,6 +39,7 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.SynchronousChannel;
 
 /**
@@ -155,6 +156,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    //Executor for executing activateConsumer methods asynchronously - there is one pool per connection
    protected Executor pooledExecutor;
+   
+   //We need to keep track of how many calls to activate we have made so when we close the 
+   //consumer we can wait for the last one to complete otherwise
+   //we can end up with closing the consumer and then a call to activate occurs
+   //causing an exception
+   protected SynchronizedInt activationCount;
+   
 
    // Constructors --------------------------------------------------
 
@@ -171,6 +179,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       this.onMessageExecutor = executor;
       
       this.pooledExecutor = pooledExecutor;
+      
+      activationCount = new SynchronizedInt(0);
    }
 
    // InvokerCallbackHandler implementation -------------------------
@@ -276,6 +286,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       closed = true;
           
       stopReceiver();       
+      
+      //There may still be pending calls to activateConsumer - we wait for them to complete (or fail)
+      while (activationCount.get() != 0)
+      {
+         Thread.yield();
+      }
       
       // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
       try
@@ -506,8 +522,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       //cause us to lose the message
       
       try
-      {
-         pooledExecutor.execute(new ConsumerActivationRunnable());
+      {         
+         pooledExecutor.execute(new ConsumerActivationRunnable());     
+         activationCount.increment();
       }
       catch (InterruptedException e)
       {
@@ -636,7 +653,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                catch (JMSException e)
                {
                   log.error("Failed to deliver message", e);
-               }
+               }                           
             }
          }
       }
@@ -660,6 +677,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
             }
             stopReceiver();
          }
+         finally
+         {
+            activationCount.decrement();
+         } 
+        
       } 
    }      
 }

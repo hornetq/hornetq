@@ -24,6 +24,7 @@ package org.jboss.jms.server.endpoint;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -376,33 +377,43 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          try
          {
                 
-            if (request.requestType == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
+            if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
             {
                if (log.isTraceEnabled()) { log.trace("One phase commit request received"); }
                
                tx = txRep.createTransaction();
-               processTx(request.txInfo, tx);
+               processCommit(request.getState(), tx);
                tx.commit();         
             }
-            else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_PREPARE_REQUEST)
+            else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
+            {
+               if (log.isTraceEnabled()) { log.trace("One phase rollback request received"); }
+               
+               //We just need to cancel deliveries
+               processRollback(request.getState());
+            }
+            else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
             {                        
                if (log.isTraceEnabled()) { log.trace("Two phase commit prepare request received"); }        
-               tx = txRep.createTransaction(request.xid);
-               processTx(request.txInfo, tx);     
+               tx = txRep.createTransaction(request.getXid());
+               processCommit(request.getState(), tx);     
                tx.prepare();
             }
-            else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_COMMIT_REQUEST)
+            else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
             {   
                if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
-               tx = txRep.getPreparedTx(request.xid);
+               tx = txRep.getPreparedTx(request.getXid());
    
                if (log.isTraceEnabled()) { log.trace("committing " + tx); }
                tx.commit();
             }
-            else if (request.requestType == TransactionRequest.TWO_PHASE_COMMIT_ROLLBACK_REQUEST)
+            else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
             {
                if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
-               tx = txRep.getPreparedTx(request.xid);
+               tx = txRep.getPreparedTx(request.getXid());
+               
+               //We just need to cancel deliveries
+               processRollback(request.getState());
    
                if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
                tx.rollback();
@@ -506,16 +517,15 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       consumer.acknowledge(messageID, tx);
    }
    
-   void cancelDeliveriesForConnectionConsumer(String consumerID) throws JMSException
+   void cancel(String messageID, String consumerID) throws JMSException
    {
       ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(consumerID);
       if (consumer == null)
       {
          throw new IllegalStateException("Cannot find consumer:" + consumerID);
       }
-      consumer.cancelAllDeliveries();
+      consumer.cancelMessage(messageID);
    }
-   
    
    // Protected -----------------------------------------------------
    
@@ -568,11 +578,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }        
    }
    
-   private void processTx(TxState txState, Transaction tx) throws JMSException
+   private void processCommit(TxState txState, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("processing transaction, there are " + txState.messages.size() + " messages and " + txState.acks.size() + " acks "); }
+      if (log.isTraceEnabled()) { log.trace("processing commit, there are " + txState.getMessages().size() + " messages and " + txState.getAcks().size() + " acks "); }
       
-      for(Iterator i = txState.messages.iterator(); i.hasNext(); )
+      for(Iterator i = txState.getMessages().iterator(); i.hasNext(); )
       {
          Message m = (Message)i.next();
          sendMessage(m, tx);
@@ -582,14 +592,33 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (log.isTraceEnabled()) { log.trace("Done the sends"); }
       
       //Then ack the acks
-      for(Iterator i = txState.acks.iterator(); i.hasNext(); )
+      for(Iterator i = txState.getAcks().iterator(); i.hasNext(); )
       {
          AckInfo ack = (AckInfo)i.next();
-         acknowledge(ack.messageID, ack.consumerID, tx);
-         if (log.isTraceEnabled()) { log.trace("acked " + ack.messageID); }
+         acknowledge(ack.getMessageID(), ack.getConsumerID(), tx);
+         if (log.isTraceEnabled()) { log.trace("acked " + ack.getMessageID()); }
       }
       
       if (log.isTraceEnabled()) { log.trace("Done the acks"); }
+   }
+   
+   private void processRollback(TxState txState) throws JMSException
+   {
+      if (log.isTraceEnabled()) { log.trace("processing rollback"); }
+      
+      //On a rollback of a transaction we cancel deliveries of any messages
+      //delivered in the tx
+      
+      //Need to cancel in reverse order in order to retain delivery order
+      
+      //FIXME Need to do this atomically      
+      List acks = txState.getAcks();
+      for (int i = acks.size() - 1; i >= 0; i--)
+      {   
+         AckInfo ack = (AckInfo)acks.get(i);
+         cancel(ack.getMessageID(), ack.getConsumerID());
+      }
+      
    }
 
    // Inner classes -------------------------------------------------

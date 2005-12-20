@@ -76,12 +76,17 @@
    </category>
 
    <category name="org.jboss.test">
+      <priority value="INFO"/>
+      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
+   </category>
+
+   <category name="org.jboss.jms">
       <!-- <priority value="INFO"/> -->
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
-   <category name="org.jboss.jms">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   <category name="org.jboss.jms.client.JBossXAResource">
+         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
    <category name="org.jboss.messaging">

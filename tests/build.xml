@@ -118,7 +118,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="build.tests.remote" value="false"/>
+   <property name="build.tests.remote" value="true"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -339,6 +339,8 @@
 
       <antcall target="print-testclasspath"/>
 
+      <antcall target="start-rmi-server"/>
+
       <echo message="${junit.timeout2}"/>
 
       <junit printsummary="${junit.printsummary}"
@@ -364,6 +366,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/jms/*Test.class"/>
+               <!-- <include name="**/messaging/jms/AcknowledgmentTest.class"/> -->
             </fileset>
          </batchtest>
       </junit>
@@ -460,6 +463,8 @@
 
             <echo>Module root is:${module.root}</echo>
 
+      <antcall target="start-rmi-server"/>
+
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
              includeantruntime="${junit.includeantruntime}"
@@ -469,9 +474,9 @@
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
-         <!--
+<!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
-         -->
+-->
          <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
 

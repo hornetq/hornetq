@@ -44,9 +44,18 @@ public class ConnectionStub extends ClientStubBase implements ConnectionDelegate
 {
    private static final long serialVersionUID = 6680015509555859038L;
    
-   public ConnectionStub(String objectID, InvokerLocator locator)
+   private String serverId;
+   
+   public ConnectionStub(String objectID, InvokerLocator locator, String serverId)
    {
       super(objectID, locator);
+      
+      this.serverId = serverId;
+   }
+   
+   public String getServerId()
+   {
+      return serverId;
    }
    
    public void close() throws JMSException

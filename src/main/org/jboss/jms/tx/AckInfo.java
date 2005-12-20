@@ -27,7 +27,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * Struct like class for holding information regarding an acknowlegement to
+ * Struct like class for holding information regarding an acknowledgement to
  * be passed to the server for processing.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
@@ -42,8 +42,9 @@ public class AckInfo implements Externalizable
    
    // Attributes ----------------------------------------------------
    
-   public String messageID;
-   public String consumerID;
+   protected String messageID;
+   
+   protected String consumerID;
 
    // Static --------------------------------------------------------
    
@@ -60,6 +61,16 @@ public class AckInfo implements Externalizable
    }
 
    // Public --------------------------------------------------------
+   
+   public String getMessageID()
+   {
+      return messageID;
+   }
+   
+   public String getConsumerID()
+   {
+      return consumerID;
+   }
 
    // Externalizable implementation ---------------------------------
 

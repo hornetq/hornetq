@@ -126,14 +126,10 @@ public class AsfAspect
       MethodInvocation mi = (MethodInvocation)invocation;
       
       //Load the session with a message to be processed during a subsequent call to run()
-      
-      SessionState theState = getSessionState(invocation);
-      
+
       Message m = (Message)mi.getArguments()[0];
       String theConsumerID = (String)mi.getArguments()[1];
       ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
-      
-      String currConsumerID = theState.getAsfConsumerID();
       
       if (m == null)
       {
@@ -143,12 +139,6 @@ public class AsfAspect
       {
          throw new IllegalStateException("Cannot add a message without specifying receiverID");
       }
-      
-      if (currConsumerID != null && currConsumerID != theConsumerID)
-      {
-         throw new IllegalStateException("Cannot receive messages from more than one receiver");
-      }
-      theState.setAsfConsumerID(theConsumerID);
       
       AsfMessageHolder holder = new AsfMessageHolder();
       holder.msg = m;
@@ -191,8 +181,7 @@ public class AsfAspect
       return (SessionState)((ClientStubBase)inv.getTargetObject()).getState();
    }
    
-   
-   
+
    // Inner Classes --------------------------------------------------
    
    protected static class AsfMessageHolder

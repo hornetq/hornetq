@@ -68,7 +68,7 @@ public interface SessionEndpoint extends Closeable
     */ 
    void acknowledge() throws JMSException;
    
-   void cancelDeliveries(String receiverID) throws JMSException;
+   void cancelDeliveries() throws JMSException;
    
    /**
     * Add a temporary destination.

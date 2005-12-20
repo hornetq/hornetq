@@ -435,7 +435,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //Currently does nothing
    }
    
-	public void cancelDeliveries(String asfReceiverID) throws JMSException
+   /**
+    * Cancel all the deliveries in the session
+    */
+	public void cancelDeliveries() throws JMSException
 	{
       if (closed)
       {
@@ -443,22 +446,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       if (log.isTraceEnabled()) { log.trace("Cancelling messages"); }
-      
-      if (asfReceiverID != null)
-      {
-         //This means the session is doing work from a connection consumer
-         //In this case we don't want to redeliver the messages in the 
-         //sessions consumers, but instead redeliver the messages from the
-         //connection consumers receiver
-         if (log.isTraceEnabled()) { log.trace("Cancelling the connectionconsumer's messages"); }
-               
-         this.connectionEndpoint.cancelDeliveriesForConnectionConsumer(asfReceiverID);
-                  
-      }
-      
+            
 		for(Iterator i = this.consumers.values().iterator(); i.hasNext(); )
 		{
-          // TODO I need to do this atomically, otherwise only some of the messages may be redelivered
 			ServerConsumerEndpoint scd = (ServerConsumerEndpoint)i.next();
          scd.cancelAllDeliveries();
 		}     

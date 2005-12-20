@@ -94,8 +94,8 @@ public class ExceptionInterceptor implements Interceptor
       {
          if (log.isTraceEnabled()) { log.trace("Caught Exception:" + e); }
          log.error("Caught Exception: ", e);
-         logCause(e);
-         throw new JBossJMSException(e.getMessage(), e);
+         logCause(e);         
+         throw new JBossJMSException("Caught exception", e);
       }
       catch (Error e)
       {

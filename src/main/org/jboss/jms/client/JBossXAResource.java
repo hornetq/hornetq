@@ -21,23 +21,34 @@
   */
 package org.jboss.jms.client;
 
-import javax.jms.JMSException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
 import org.jboss.logging.Logger;
 
 /**
- * An XAResource for the Session - delegates most of it's work to the resource manager
+ * An XAResource implementation.
+ * 
+ * This defines the contract for the application server to interact with the resource manager.
+ * 
+ * It basically just delegates to the resource manager.
+ * 
+ * TODO This functionality in this class should be put in the resource manager class
+ * and the resource manager should implement XAResource
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Parts based on JBoss MQ XAResource implementation by:
  * 
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
  * @version $Revision$
  *
  * $Id$
@@ -46,11 +57,7 @@ public class JBossXAResource implements XAResource
 {
    // Constants -----------------------------------------------------
 
-   /** The log */
    private static final Logger log = Logger.getLogger(JBossXAResource.class);
-   
-   /** Whether trace is enabled */
-   private static boolean trace = log.isTraceEnabled();
    
    // Attributes ----------------------------------------------------
 
@@ -58,48 +65,24 @@ public class JBossXAResource implements XAResource
    
    private SessionState sessionState;
    
-   private SessionDelegate session;
-   
-   private Object currentTxID;
+   private ConnectionDelegate connection;
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   /**
-    * Create a new SpyXAResource
-    *
-    * @param sessionState the session
-    */
-   public JBossXAResource(ResourceManager rm, SessionDelegate session, SessionState sessionState)
-   {
-      trace = log.isTraceEnabled();
-      
+   public JBossXAResource(ResourceManager rm, SessionState sessionState)
+   { 
       this.rm = rm;
-      this.session = session;
-      this.sessionState = sessionState;            
+      
+      this.sessionState = sessionState;   
+      
+      this.connection = (ConnectionDelegate)((ConnectionState)sessionState.getParent()).getDelegate();
    }
    
    // Public --------------------------------------------------------
    
-   public Object getCurrentTxID()
-   {
-      return currentTxID;
-   }
-   
-   public void setCurrentTxID(Object currentTxID)
-   {
-      if (log.isTraceEnabled()) { log.trace("Setting current tx id to " + currentTxID); }
-      if (log.isTraceEnabled()) { log.trace("XAresource is: " + this); }
-      this.currentTxID = currentTxID;
-   }
-   
-   //debug only
-   public ResourceManager getRM()
-   {
-      return rm;
-   }
-   
+ 
    // XAResource implementation -------------------------------------
 
    public boolean setTransactionTimeout(int timeout) throws XAException
@@ -115,22 +98,29 @@ public class JBossXAResource implements XAResource
    public boolean isSameRM(XAResource xaResource) throws XAException
    {
       if (!(xaResource instanceof JBossXAResource))
+      {
          return false;
+      }
+      
       return ((JBossXAResource)xaResource).rm == this.rm;
    }
    
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
-      if (trace)
+      if (log.isTraceEnabled())
+      {
          log.trace("Commit xid=" + xid + ", onePhase=" + onePhase + " " + this);
+      }
 
-      rm.commit(xid, onePhase);
+      rm.commit(xid, onePhase, connection);
    }
 
    public void end(Xid xid, int flags) throws XAException
    {
-      if (trace)
+      if (log.isTraceEnabled())
+      {
          log.trace("End xid=" + xid + ", flags=" + flags + " " +this);
+      }
 
       synchronized (this)
       {
@@ -154,22 +144,28 @@ public class JBossXAResource implements XAResource
    
    public void forget(Xid xid) throws XAException
    {
-      if (trace)
+      if (log.isTraceEnabled())
+      {
          log.trace("Forget xid=" + xid + " " + this);
+      }
    }
 
    public int prepare(Xid xid) throws XAException
    {
       if (log.isTraceEnabled())
+      {
          log.trace("Prepare xid=" + xid + " " + this);
+      }
 
-      return rm.prepare(xid);
+      return rm.prepare(xid, connection);
    }
 
    public Xid[] recover(int arg1) throws XAException
    {
       if (log.isTraceEnabled())
+      {
          log.trace("Recover arg1=" + arg1 + " " + this);
+      }
 
       return new Xid[0];
    }
@@ -177,39 +173,27 @@ public class JBossXAResource implements XAResource
    public void rollback(Xid xid) throws XAException
    {
       if (log.isTraceEnabled())
+      {
          log.trace("Rollback xid=" + xid + " " + this);
-
-      rm.rollback(xid);
-           
-      try
-      {
-         String asfConsumerID = sessionState.getAsfConsumerID();
-         session.cancelDeliveries(asfConsumerID);
-      }
-      catch (JMSException e)
-      {
-         throw new XAException(XAException.XAER_RMERR);
       }
 
+      rm.rollback(xid, connection);
    }
 
    public void start(Xid xid, int flags) throws XAException
    {
       if (log.isTraceEnabled())
+      {
          log.trace("Start xid=" + xid + ", flags=" + flags + " " + this);
+      }
 
       boolean convertTx = false;
       
-      if (this.currentTxID != null)
+      if (sessionState.getCurrentTxId() != null)
       {
-         if (flags == TMNOFLAGS && this.currentTxID instanceof LocalTxXid)
+         if (flags == TMNOFLAGS && sessionState.getCurrentTxId() instanceof LocalTxXid)
          {
             convertTx = true;
-         }
-         else
-         {
-            //This resource is already doing work as part of another global tx
-            throw new XAException(XAException.XAER_OUTSIDE);
          }
       }
 
@@ -222,13 +206,13 @@ public class JBossXAResource implements XAResource
                if (convertTx)
                {
                   // it was an anonymous TX, TM is now taking control over it.
-                  // convert it over to a normal XID tansaction.
+                  // convert it over to a normal XID.
                   
                   //Is it legal to "convert" a tx?
                   //Surely only work done between start and end is considered part of the tx?
                   //Is it legal to consider work done before "start" as part of the tx?
                                     
-                  setCurrentTransactionId(rm.convertTx((LocalTxXid)this.currentTxID, xid));
+                  setCurrentTransactionId(rm.convertTx((LocalTxXid)sessionState.getCurrentTxId(), xid));
                }
                else
                {                  
@@ -259,10 +243,11 @@ public class JBossXAResource implements XAResource
       if (xid == null)
          throw new org.jboss.util.NullArgumentException("xid");
 
-      if (trace)
-         log.trace("Setting current tx xid=" + xid + " previous: " + this.currentTxID + " " + this);
-
-      this.currentTxID = xid;
+      if (log.isTraceEnabled())
+      {
+         log.trace("Setting current tx xid=" + xid + " previous: " + sessionState.getCurrentTxId() + " " + this);
+      }
+      sessionState.setCurrentTxId(xid);
    }
    
    private void unsetCurrentTransactionId(final Xid xid)
@@ -270,13 +255,17 @@ public class JBossXAResource implements XAResource
       if (xid == null)
          throw new org.jboss.util.NullArgumentException("xid");
 
-      if (trace)
-         log.trace("Unsetting current tx  xid=" + xid + " previous: " + this.currentTxID + " " + this);
-
+      if (log.isTraceEnabled())
+      {
+         log.trace("Unsetting current tx  xid=" + xid + " previous: " + sessionState.getCurrentTxId() + " " + this);
+      }
+      
       // Don't unset the xid if it has previously been suspended
       // The session could have been recycled
-      if (xid.equals(this.currentTxID))
-         this.currentTxID = rm.createLocalTx();
+      if (xid.equals(sessionState.getCurrentTxId()))
+      {
+         sessionState.setCurrentTxId(rm.createLocalTx());
+      }
 
    }
    

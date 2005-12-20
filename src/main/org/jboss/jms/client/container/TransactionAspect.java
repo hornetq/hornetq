@@ -32,10 +32,9 @@ import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.client.stubs.ClientStubBase;
-import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
-import org.jboss.logging.Logger;
 
 /**
  * This aspect handles transaction related logic
@@ -49,8 +48,6 @@ import org.jboss.logging.Logger;
 public class TransactionAspect
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(TransactionAspect.class);
    
    // Attributes ----------------------------------------------------
        
@@ -75,17 +72,18 @@ public class TransactionAspect
       }
       
       ConnectionState connState = (ConnectionState)state.getParent();
+      ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
       
       try
       {            
-         connState.getResourceManager().commitLocal((LocalTxXid)state.getXAResource().getCurrentTxID());
+         connState.getResourceManager().commitLocal((LocalTxXid)state.getCurrentTxId(), conn);
       }
       finally
       {
          //Start new local tx
          Object xid = connState.getResourceManager().createLocalTx();
          
-         state.getXAResource().setCurrentTxID(xid);
+         state.setCurrentTxId(xid);
       }
       
       return null;
@@ -94,9 +92,7 @@ public class TransactionAspect
    public Object handleRollback(Invocation invocation) throws Throwable
    {
       SessionState state = (SessionState)getState(invocation);
-      
-      SessionDelegate sessDelegate = (SessionDelegate)state.getDelegate();
-               
+           
       if (!state.isTransacted())
       {
          throw new IllegalStateException("Cannot rollback a non-transacted session");
@@ -108,25 +104,19 @@ public class TransactionAspect
       }
       
       ConnectionState connState = (ConnectionState)state.getParent();
+      ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
       
       try
       {
-         connState.getResourceManager().rollbackLocal((LocalTxXid)state.getXAResource().getCurrentTxID());
+         connState.getResourceManager().rollbackLocal((LocalTxXid)state.getCurrentTxId(), conn);
       }
       finally
       {
          //Start new local tx
          Object xid = connState.getResourceManager().createLocalTx();
          
-         state.getXAResource().setCurrentTxID(xid);
+         state.setCurrentTxId(xid);
       } 
-      
-      //Rollback causes cancellation of messages
-      String asfConsumerID = state.getAsfConsumerID();
-      
-      if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.cancelAllDeliveries()"); }
-      
-      sessDelegate.cancelDeliveries(asfConsumerID);
       
       return null;            
    }
@@ -141,7 +131,7 @@ public class TransactionAspect
       {
          //Session is transacted - so we add message to tx instead of sending now
          
-         Object txID = sessState.getXAResource().getCurrentTxID();
+         Object txID = sessState.getCurrentTxId();
          
          if (txID == null)
          {            
@@ -177,7 +167,7 @@ public class TransactionAspect
          
          String consumerID = (String)mi.getArguments()[1];
          
-         Object txID = state.getXAResource().getCurrentTxID();
+         Object txID = state.getCurrentTxId();
          
          if (txID == null)
          {

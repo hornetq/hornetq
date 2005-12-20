@@ -70,7 +70,7 @@ public class SessionStub extends ClientStubBase implements SessionDelegate
    {
    }
 
-   public void cancelDeliveries(String receiverID) throws JMSException
+   public void cancelDeliveries() throws JMSException
    {
    }
 

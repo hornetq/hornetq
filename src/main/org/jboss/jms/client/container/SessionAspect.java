@@ -94,11 +94,11 @@ public class SessionAspect
       
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      String asfConsumerID = getState(invocation).getAsfConsumerID();
+      //String asfConsumerID = getState(invocation).getAsfConsumerID();
       
       if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
       
-      del.cancelDeliveries(asfConsumerID);
+      del.cancelDeliveries();
       
       return null;  
    }
