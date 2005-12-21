@@ -318,14 +318,16 @@ public class ServiceContainer
 
    private void loadAspects() throws Exception
    {
-      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-      AspectXmlLoader.deployXML(url);
+      // These specific aspects will be loaded by the JMS server itself, if it needs them
+//      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
+//      AspectXmlLoader.deployXML(url);
    }
 
    private void unloadAspects() throws Exception
    {
-      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-      AspectXmlLoader.undeployXML(url);
+      // These specific aspects will be unloaded by the JMS server itself, if it's the case
+//      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
+//      AspectXmlLoader.undeployXML(url);
    }
 
    private void startServiceController() throws Exception

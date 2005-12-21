@@ -245,7 +245,8 @@ if [ "$TARGET_TEST" != "" ]; then
 fi
 
 if [ "$isRemote" = "true" ]; then
-  $reldir/start-rmi-server -debug
+  #$reldir/start-rmi-server -debug
+  $reldir/start-rmi-server
 fi
 
 
@@ -284,7 +285,6 @@ ${JGROUPS_LIB}${SEP}\
 
 
 if [ "$isRemote" = "true" ]; then
-#  $reldir/stop-rmi-server
-  echo "I should restore stopping the server"
+  $reldir/stop-rmi-server
 fi
 
