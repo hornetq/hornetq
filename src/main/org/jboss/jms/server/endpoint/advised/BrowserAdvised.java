@@ -27,7 +27,7 @@ import javax.jms.Message;
 import org.jboss.jms.server.endpoint.BrowserEndpoint;
 
 /**
- * The server-side advised instance corresponding to a Brrowser. It is bound to the AOP
+ * The server-side advised instance corresponding to a Browser. It is bound to the AOP
  * Dispatcher's map.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
