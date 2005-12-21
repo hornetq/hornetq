@@ -39,7 +39,7 @@ import javax.jms.XATopicConnectionFactory;
 
 import org.jboss.aop.Advised;
 import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
-import org.jboss.jms.client.stubs.ConnectionFactoryStub;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
@@ -155,27 +155,28 @@ public class JBossConnectionFactory implements
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   protected JBossConnection createConnectionInternal(String username, String password, boolean isXA, int type)
+
+   protected JBossConnection createConnectionInternal(String username, String password,
+                                                      boolean isXA, int type)
       throws JMSException
    {
-      ConnectionFactoryStub stub = (ConnectionFactoryStub)delegate;
-      ensureAOPConfigLoaded(stub);
-      initStub();
+      ensureAOPConfigLoaded((ClientConnectionFactoryDelegate)delegate);
+      initDelegate();
             
       ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
       return new JBossConnection(cd, type);
    }
    
-   protected synchronized void initStub()
+   protected synchronized void initDelegate()
    {
       if (!initialised)
       {
-         ((ConnectionFactoryStub)delegate).init();
+         ((ClientConnectionFactoryDelegate)delegate).init();
          initialised = true;
       }         
    }
    
-   protected void ensureAOPConfigLoaded(ConnectionFactoryStub stub)
+   protected void ensureAOPConfigLoaded(ClientConnectionFactoryDelegate delegate)
    {
       try
       {
@@ -183,15 +184,14 @@ public class JBossConnectionFactory implements
          {
             if (!configLoaded)
             {
-               //Load the client side aspect stack configuration 
-               //from the server and apply it
+               // Load the client side aspect stack configuration from the server and apply it
                
-               stub.init();
+               delegate.init();
                            
-               byte[] clientAOPConfig = stub.getClientAOPConfig();
+               byte[] clientAOPConfig = delegate.getClientAOPConfig();
                
-               //Remove interceptor since we don't want it on the front of the stack
-               ((Advised)stub)._getInstanceAdvisor().removeInterceptor(stub.getName());
+               // Remove interceptor since we don't want it on the front of the stack
+               ((Advised)delegate)._getInstanceAdvisor().removeInterceptor(delegate.getName());
                
                JmsClientAspectXMLLoader loader = new JmsClientAspectXMLLoader();
                
@@ -203,7 +203,7 @@ public class JBossConnectionFactory implements
       }
       catch(Exception e)
       {
-         //Need to log message since no guarantee that client will log it
+         // Need to log message since no guarantee that client will log it
          final String msg = "Failed to config client side AOP";
          log.error(msg, e);
          throw new RuntimeException(msg, e);

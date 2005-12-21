@@ -33,9 +33,9 @@ import javax.jms.ServerSessionPool;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.stubs.ClientStubBase;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -178,7 +178,7 @@ public class AsfAspect
    
    private SessionState getSessionState(Invocation inv)
    {
-      return (SessionState)((ClientStubBase)inv.getTargetObject()).getState();
+      return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
    }
    
 

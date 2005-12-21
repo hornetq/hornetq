@@ -32,8 +32,9 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.delegate.ProducerEndpointDelegate;
-import org.jboss.jms.server.endpoint.delegate.SessionEndpointDelegate;
+import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
+import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityManager;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
@@ -68,7 +69,7 @@ public class SecurityAspect
       //read permission required on the destination
       Destination dest = (Destination)mi.getArguments()[0];
       
-      SessionEndpointDelegate del = (SessionEndpointDelegate)invocation.getTargetObject();
+      SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
       ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
       
       check(mi, dest, CheckType.READ, sess.getConnectionEndpoint());
@@ -100,7 +101,7 @@ public class SecurityAspect
       
       if (dest != null)
       {               
-         SessionEndpointDelegate del = (SessionEndpointDelegate)invocation.getTargetObject();
+         SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
          ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
                         
          check(mi, dest, CheckType.WRITE, sess.getConnectionEndpoint());
@@ -119,7 +120,7 @@ public class SecurityAspect
       
       Destination dest = (Destination)mi.getArguments()[0];
       
-      SessionEndpointDelegate del = (SessionEndpointDelegate)invocation.getTargetObject();
+      SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
       ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
                   
       check(mi, dest, CheckType.READ, sess.getConnectionEndpoint());
@@ -139,7 +140,7 @@ public class SecurityAspect
       
       Destination dest = (Destination)mi.getArguments()[0];
       
-      ProducerEndpointDelegate del = (ProducerEndpointDelegate)invocation.getTargetObject();
+      ProducerAdvised del = (ProducerAdvised)invocation.getTargetObject();
       ServerProducerEndpoint prod = (ServerProducerEndpoint)del.getEndpoint();
                   
       if (dest != null)

@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint.delegate;
+package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -28,38 +28,64 @@ import javax.jms.Message;
 import org.jboss.jms.server.endpoint.ProducerEndpoint;
 
 /**
- * Delegate class for ProducerEndpoint
- * 
+ * The server-side advised instance corresponding to a Producer. It is bound to the AOP
+ * Dispatcher's map.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class ProducerEndpointDelegate extends EndpointDelegateBase implements ProducerEndpoint
+public class ProducerAdvised extends AdvisedSupport implements ProducerEndpoint
 {
-   protected ProducerEndpoint del;
+   // Constants -----------------------------------------------------
 
-   public ProducerEndpointDelegate(ProducerEndpoint del)
+   // Attributes ----------------------------------------------------
+
+   protected ProducerEndpoint endpoint;
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   public ProducerAdvised(ProducerEndpoint endpoint)
    {
-      this.del = del;      
+      this.endpoint = endpoint;
    }
-   
-   public Object getEndpoint()
-   {
-      return del;
-   }
+
+   // ProducerEndpoint implementation -------------------------------
 
    public void close() throws JMSException
    {
-      del.close();
+      endpoint.close();
    }
 
    public void closing() throws JMSException
    {
-      del.closing();
+      endpoint.closing();
    }
 
    public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
    {
-      del.send(destination, message, deliveryMode, priority, timeToLive);
+      endpoint.send(destination, message, deliveryMode, priority, timeToLive);
    }
-   
+
+   // AdvisedSupport overrides --------------------------------------
+
+   public Object getEndpoint()
+   {
+      return endpoint;
+   }
+
+   // Public --------------------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Package Private -----------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner Classes -------------------------------------------------
+
 }

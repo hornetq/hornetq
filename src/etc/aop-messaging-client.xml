@@ -21,209 +21,209 @@
    <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/>
 
    <!-- ConnectionFactory Stack-->        
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionFactoryStub->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionFactoryStub->createConnectionDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->createConnectionDelegate(..))">
       <advice name="handleCreateConnectionDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
                
    <!-- Connection Stack -->   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))">      
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>               
    </bind>  
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->createConnectionConsumer(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createConnectionConsumer(..))">
       <advice name="handleCreateConnectionConsumer" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->getClientID())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->getClientID())">
       <advice name="handleGetClientID" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->setClientID(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->setClientID(..))">
       <advice name="handleSetClientID" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->getExceptionListener())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->getExceptionListener())">
       <advice name="handleGetExceptionListener" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->setExceptionListener(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->setExceptionListener(..))">
       <advice name="handleSetExceptionListener" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->getConnectionMetaData())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->getConnectionMetaData())">
       <advice name="handleGetConnectionMetaData" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->createSessionDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createSessionDelegate(..))">
       <advice name="handleCreateSessionDelegate" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>      
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConnectionStub->createSessionDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createSessionDelegate(..))">
       <advice name="handleCreateSessionDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
    
    <!-- Session Stack -->   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>       
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createMessage())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createMessage())">
       <advice name="handleCreateMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createBytesMessage())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createBytesMessage())">
       <advice name="handleCreateBytesMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createMapMessage())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createMapMessage())">
       <advice name="handleCreateMapMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createObjectMessage(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createObjectMessage(..))">
       <advice name="handleCreateObjectMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createStreamMessage())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createStreamMessage())">
       <advice name="handleCreateStreamMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createTextMessage(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createTextMessage(..))">
       <advice name="handleCreateTextMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->setMessageListener(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->setMessageListener(..))">
       <advice name="handleSetMessageListener" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->getMessageListener())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->getMessageListener())">
       <advice name="handleGetMessageListener" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->addAsfMessage(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->addAsfMessage(..))">
       <advice name="handleAddAsfMessage" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->run())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->run())">
       <advice name="handleRun" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>      
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->getAcknowledgeMode())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->getAcknowledgeMode())">
       <advice name="handleGetAcknowledgeMode" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->getTransacted())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->getTransacted())">
       <advice name="handleGetTransacted" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->getXAResource())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->getXAResource())">
       <advice name="handleGetXAResource" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->postDeliver(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->postDeliver(..))">
       <advice name="handlePostDeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->recover())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->recover())">
       <advice name="handleRecover" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->commit())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->commit())">
       <advice name="handleCommit" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->rollback())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->rollback())">
       <advice name="handleRollback" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->preDeliver(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->preDeliver(..))">
       <advice name="handlePreDeliver" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createConsumerDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createConsumerDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createProducerDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createProducerDelegate(..))">
       <advice name="handleCreateProducerDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.SessionStub->createBrowserDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createBrowserDelegate(..))">
       <advice name="handleCreateBrowserDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
    
    <!-- Consumer Stack -->   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->$implementing{org.jboss.jms.delegate.ConsumerDelegate}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->$implementing{org.jboss.jms.delegate.ConsumerDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>          
    </bind>       
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->getMessageListener())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getMessageListener())">
       <advice name="handleGetMessageListener" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->setMessageListener(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->setMessageListener(..))">
       <advice name="handleSetMessageListener" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->receive(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->receive(..))">
       <advice name="handleReceive" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
    </bind>  
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->receiveNoWait())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->receiveNoWait())">
       <advice name="handleReceiveNoWait" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
    </bind>    
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->closing())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->closing())">
       <advice name="handleClosing" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->getDestination())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getDestination())">
       <advice name="handleGetDestination" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->getNoLocal())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getNoLocal())">
       <advice name="handleGetNoLocal" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ConsumerStub->getMessageSelector())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getMessageSelector())">
       <advice name="handleGetMessageSelector" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   
 
    
    <!-- Producer Stack -->   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->$implementing{org.jboss.jms.delegate.ProducerDelegate}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->$implementing{org.jboss.jms.delegate.ProducerDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>  
    </bind>        
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->getDeliveryMode())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getDeliveryMode())">
       <advice name="handleGetDeliveryMode" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>     
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->getDestination())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getDestination())">
       <advice name="handleGetDestination" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->getDisableMessageID())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getDisableMessageID())">
       <advice name="handleGetDisableMessageID" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->getDisableMessageTimestamp())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getDisableMessageTimestamp())">
       <advice name="handleGetDisableMessageTimestamp" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->getPriority())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getPriority())">
       <advice name="handleGetPriority" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->getTimeToLive())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getTimeToLive())">
       <advice name="handleGetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->send(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(..))">
       <advice name="handleSend" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->setDeliveryMode(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setDeliveryMode(..))">
       <advice name="handleSetDeliveryMode" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->setDestination(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setDestination(..))">
       <advice name="handleSetDestination" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->setDisableMessageID(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setDisableMessageID(..))">
       <advice name="handleSetDisableMessageID" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>    
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->setDisableMessageTimestamp(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setDisableMessageTimestamp(..))">
       <advice name="handleSetDisableMessageTimestamp" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->setPriority(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setPriority(..))">
       <advice name="handleSetPriority" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>      
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->setTimeToLive(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setTimeToLive(..))">
       <advice name="handleSetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.ProducerStub->send(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(..))">
       <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>
    
    <!-- Browser Stack -->   
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.BrowserStub->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
    </bind>      
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.BrowserStub->nextMessage())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->nextMessage())">
       <advice name="handleNextMessage" aspect="org.jboss.jms.client.container.BrowserAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.stubs.BrowserStub->hasNextMessage())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->hasNextMessage())">
       <advice name="handleHasNextMessage" aspect="org.jboss.jms.client.container.BrowserAspect"/>
    </bind>        
 </aop>

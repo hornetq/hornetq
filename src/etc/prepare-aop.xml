@@ -6,19 +6,18 @@
 <aop>
 
   <!-- Prepare the client stub classes - these provide the client side advice stack -->
-  <prepare expr="execution(* org.jboss.jms.client.stubs.ConnectionFactoryStub->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.client.stubs.ConnectionStub->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.client.stubs.SessionStub->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.client.stubs.ConsumerStub->$implementing{org.jboss.jms.delegate.ConsumerDelegate}(..))"/>   
-  <prepare expr="execution(* org.jboss.jms.client.stubs.ProducerStub->$implementing{org.jboss.jms.delegate.ProducerDelegate}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.client.stubs.BrowserStub->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->$implementing{org.jboss.jms.delegate.ConsumerDelegate}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->$implementing{org.jboss.jms.delegate.ProducerDelegate}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))"/>
  
   <!-- Prepare the server delegate classes - these provide the server side advice stack -->
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ConnectionFactoryEndpointDelegate->$implementing{org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ConnectionEndpointDelegate->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.SessionEndpointDelegate->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ProducerEndpointDelegate->$implementing{org.jboss.jms.server.endpoint.ProducerEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.ConsumerEndpointDelegate->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.delegate.BrowserEndpointDelegate->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ProducerAdvised->$implementing{org.jboss.jms.server.endpoint.ProducerEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))"/>
 
 </aop>

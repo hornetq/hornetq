@@ -97,7 +97,7 @@ public class ReceiverAspect
    private MessageCallbackHandler getHandler(Invocation inv)
    {
       return (MessageCallbackHandler)inv.
-         getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.MESSAGE_HANDLER);
+         getMetaData(MetaDataConstants.JMS, MetaDataConstants.MESSAGE_HANDLER);
    }
 
    // Inner classes -------------------------------------------------

@@ -33,7 +33,7 @@ import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
 import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -122,7 +122,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
       cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
       
-      ConsumerState state = (ConsumerState)((ClientStubBase)cons).getState();
+      ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
       
       this.consumerID = state.getConsumerID();
 

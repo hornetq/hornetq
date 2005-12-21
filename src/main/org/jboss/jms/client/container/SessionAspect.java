@@ -27,7 +27,7 @@ import javax.jms.Session;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.logging.Logger;
 
@@ -129,7 +129,7 @@ public class SessionAspect
    
    private SessionState getState(Invocation inv)
    {
-      return (SessionState)((ClientStubBase)inv.getTargetObject()).getState();
+      return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
    }
     
    // Inner Classes -------------------------------------------------

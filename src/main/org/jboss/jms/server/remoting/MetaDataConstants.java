@@ -23,17 +23,17 @@ package org.jboss.jms.server.remoting;
 
 public class MetaDataConstants
 {
-   public static final String TAG_NAME = "JMS";
+   public static final String JMS = "JMS";
    
-   public static final String REMOTING_SESSION_ID = "RSID";
+   public static final String REMOTING_SESSION_ID = "REMOTING_SESSION_ID";
    
-   public static final String CALLBACK_HANDLER = "CBH";
+   public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
    
-   public static final String INVOKER_LOCATOR = "LCTR";
+   public static final String INVOKER_LOCATOR = "INVOKER_LOCATOR";
    
-   public static final String CONSUMER_ID = "CSID";
+   public static final String CONSUMER_ID = "CONSUMER_ID";
    
-   public static final String MESSAGE_HANDLER = "HANDLER";
+   public static final String MESSAGE_HANDLER = "MESSAGE_HANDLER";
    
-   public static final String INVOKER_CLIENT = "CLIENT";
+   public static final String INVOKER_CLIENT = "INVOKER_CLIENT";
 }

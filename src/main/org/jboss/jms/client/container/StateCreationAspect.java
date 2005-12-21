@@ -32,10 +32,9 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.stubs.ClientStubBase;
-import org.jboss.jms.client.stubs.ConnectionStub;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -72,24 +71,22 @@ public class StateCreationAspect
 
    public Object handleCreateConnectionDelegate(Invocation invocation) throws Throwable
    {
-      ConnectionDelegate conn = (ConnectionDelegate)invocation.invokeNext();
+      ClientConnectionDelegate delegate = (ClientConnectionDelegate)invocation.invokeNext();
       
-      ConnectionStub csb = (ConnectionStub)conn;
+      delegate.init();
       
-      csb.init();
-      
-      csb.setState(new ConnectionState(conn, csb.getServerId()));           
+      delegate.setState(new ConnectionState(delegate, delegate.getServerId()));
                   
-      return conn;
+      return delegate;
    }
    
    public Object handleCreateSessionDelegate(Invocation invocation) throws Throwable
    {
-      SessionDelegate sess = (SessionDelegate)invocation.invokeNext();
+      SessionDelegate delegate = (SessionDelegate)invocation.invokeNext();
+
+      DelegateSupport delegateSupport = (DelegateSupport)delegate;
       
-      ClientStubBase csb = (ClientStubBase)sess;
-      
-      csb.init();
+      delegateSupport.init();
       
       ConnectionState connState = (ConnectionState)getState(invocation);
       
@@ -99,20 +96,20 @@ public class StateCreationAspect
       int ackMode = ((Integer)mi.getArguments()[1]).intValue();
       boolean xa = ((Boolean)mi.getArguments()[2]).booleanValue();
       
-      SessionState state = new SessionState(connState, sess, transacted, ackMode, xa);
+      SessionState state = new SessionState(connState, delegate, transacted, ackMode, xa);
       
-      csb.setState(state);
+      delegateSupport.setState(state);
       
-      return sess;
+      return delegate;
    }
    
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
       ConsumerDelegate cons = (ConsumerDelegate)invocation.invokeNext();
       
-      ClientStubBase csb = (ClientStubBase)cons;
+      DelegateSupport delegate = (DelegateSupport)cons;
       
-      csb.init();
+      delegate.init();
       
       SessionState sessState = (SessionState)getState(invocation);
       
@@ -122,11 +119,11 @@ public class StateCreationAspect
       boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();    
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();      
       String consumerID = 
-         (String)((Advised)cons)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.CONSUMER_ID);
+         (String)((Advised)cons)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID);
       
       ConsumerState state = new ConsumerState(sessState, cons, dest, selector, noLocal, consumerID, connectionConsumer);
       
-      csb.setState(state);
+      delegate.setState(state);
       
       return cons;
    }
@@ -135,9 +132,9 @@ public class StateCreationAspect
    {
       ProducerDelegate prod = (ProducerDelegate)invocation.invokeNext();
       
-      ClientStubBase csb = (ClientStubBase)prod;
+      DelegateSupport delegate = (DelegateSupport)prod;
       
-      csb.init();
+      delegate.init();
       
       SessionState sessState = (SessionState)getState(invocation);
       
@@ -147,7 +144,7 @@ public class StateCreationAspect
       
       ProducerState state = new ProducerState(sessState, prod, theDest);
       
-      csb.setState(state);
+      delegate.setState(state);
       
       return prod;
    }
@@ -156,15 +153,15 @@ public class StateCreationAspect
    {
       BrowserDelegate browser = (BrowserDelegate)invocation.invokeNext();
       
-      ClientStubBase csb = (ClientStubBase)browser;      
+      DelegateSupport delegate = (DelegateSupport)browser;
       
-      csb.init();
+      delegate.init();
       
       SessionState sessState = (SessionState)getState(invocation);
       
       BrowserState state = new BrowserState(sessState, browser);
       
-      csb.setState(state);
+      delegate.setState(state);
       
       return browser;
    }
@@ -177,7 +174,7 @@ public class StateCreationAspect
    
    private HierarchicalState getState(Invocation inv)
    {
-      return ((ClientStubBase)inv.getTargetObject()).getState();
+      return ((DelegateSupport)inv.getTargetObject()).getState();
    }
    
    // Inner Classes --------------------------------------------------

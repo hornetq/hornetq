@@ -24,7 +24,7 @@ package org.jboss.jms.server.container;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.delegate.SessionEndpointDelegate;
+import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
@@ -50,10 +50,10 @@ public class InjectionAspect
        MethodInvocation mi = (MethodInvocation)invocation;
        
        InvokerCallbackHandler handler =
-          (InvokerCallbackHandler)mi.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.CALLBACK_HANDLER);
+          (InvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CALLBACK_HANDLER);
        if (handler != null)
        {
-          SessionEndpointDelegate del = (SessionEndpointDelegate)invocation.getTargetObject();
+          SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
           ServerSessionEndpoint endpoint = (ServerSessionEndpoint)del.getEndpoint();
           endpoint.setCallbackHandler(handler);
        }

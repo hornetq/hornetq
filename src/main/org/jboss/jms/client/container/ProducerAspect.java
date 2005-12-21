@@ -27,7 +27,7 @@ import javax.jms.Message;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.ProducerState;
-import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.logging.Logger;
@@ -278,7 +278,7 @@ public class ProducerAspect
    
    private ProducerState getState(Invocation inv)
    {
-      return (ProducerState)((ClientStubBase)inv.getTargetObject()).getState();
+      return (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
    }
    
    // Inner Classes -------------------------------------------------

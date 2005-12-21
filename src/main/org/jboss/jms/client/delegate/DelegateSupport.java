@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.stubs;
+package org.jboss.jms.client.delegate;
 
 import java.io.Serializable;
 
@@ -43,28 +43,34 @@ import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
 
 /**
- * Base class for all client stub classes.
+ * Base class for all client-side delegate classes.
  * 
- * Client stub classes provide an empty implementation of the appropriate delegate
- * interface.
- * The classes are advised using JBoss AOP to provide the client side
- * advice stack.
- * The delegate methods in the stub class will never actually be invoked
- * since they will either be handled in the advice stack or invoked on the server
- * before reaching the stub.
- * The stubs are created on the server and serialized back to the client.
- * When they arrive on the client, the init() method is called which causes
- * the advices to be bound to the advised class.
+ * Client-side delegate classes provide an empty implementation of the appropriate delegate
+ * interface. The classes are advised using JBoss AOP to provide the client side advice stack.
+ * The methods in the delegate class will never actually be invoked since they will either be
+ * handled in the advice stack or invoked on the server before reaching the delegate.
+ *
+ * The delegates are created on the server and serialized back to the client. When they arrive on
+ * the client, the init() method is called which causes the advices to be bound to the advised
+ * class.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public abstract class ClientStubBase implements Interceptor, Serializable
+public abstract class DelegateSupport implements Interceptor, Serializable
 {
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = 8005108339439737469L;
 
-   private static final Logger log = Logger.getLogger(ClientStubBase.class);
-   
+   private static final Logger log = Logger.getLogger(DelegateSupport.class);
+
+   // Attributes ----------------------------------------------------
+
    protected String objectID;
    
    protected InvokerLocator locator;
@@ -72,13 +78,46 @@ public abstract class ClientStubBase implements Interceptor, Serializable
    private Client client;  
    
    private HierarchicalState state;
-   
-   public ClientStubBase(String objectID, InvokerLocator locator)
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   public DelegateSupport(String objectID, InvokerLocator locator)
    {
       this.objectID = objectID;
       this.locator = locator;      
    }
-   
+
+   // Interceptor implementation ------------------------------------
+
+   public String getName()
+   {
+      return "Invoker";
+   }
+
+   /**
+    * DelegateSupport also acts as an interceptor - the last interceptor in the chain which
+    * invokes on the server.
+    */
+   public Object invoke(Invocation invocation) throws Throwable
+   {
+      if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
+
+      invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
+                                           Dispatcher.OID,
+                                           objectID, PayloadKey.AS_IS);
+
+      InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
+      invocation.setResponseContextInfo(response.getContextInfo());
+
+      if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
+
+      return response.getResponse();
+   }
+
+   // Public --------------------------------------------------------
+
    public HierarchicalState getState()
    {
       return state;
@@ -90,35 +129,7 @@ public abstract class ClientStubBase implements Interceptor, Serializable
    }
    
    /**
-    * ClientStubBase also acts as an interceptor - the last interceptor in the chain
-    * which invokes on the server
-    */
-   public Object invoke(Invocation invocation) throws Throwable
-   {      
-      if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
-      
-      invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
-                                          Dispatcher.OID,
-                                          objectID,
-                                          PayloadKey.AS_IS);
-                        
-      InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
-      invocation.setResponseContextInfo(response.getContextInfo());
-      
-      
-            
-      if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
-
-      return response.getResponse();
-   }
-   
-   public String getName()
-   {
-      return "Invoker";
-   }
-   
-   /**
-    *  Add Invoking interceptor and prepare the stack for invocations
+    *  Add Invoking interceptor and prepare the stack for invocations.
     */
    public void init()
    {          
@@ -135,18 +146,23 @@ public abstract class ClientStubBase implements Interceptor, Serializable
          throw new RuntimeException("Failed to create client", e);  
       }
       
-      //Add to meta data         
-      getMetaData().addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.INVOKER_CLIENT, client, PayloadKey.TRANSIENT);
+      // Add to meta data
+
+      SimpleMetaData md = getMetaData();
+
+      md.addMetaData(MetaDataConstants.JMS,
+                     MetaDataConstants.INVOKER_CLIENT,
+                     client, PayloadKey.TRANSIENT);
       
-      getMetaData()
-      .addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.INVOKER_LOCATOR, locator, PayloadKey.TRANSIENT);
+      md.addMetaData(MetaDataConstants.JMS,
+                     MetaDataConstants.INVOKER_LOCATOR,
+                     locator, PayloadKey.TRANSIENT);
       
    }
    
    /**
-    *  Check that the correct marshallers have been registered wit the MarshalFactory
-    *  This is only done once.
-    *
+    * Check that the correct marshallers have been registered wit the MarshalFactory.
+    * This is only done once.
     */
    private synchronized void checkMarshallers()
    {
@@ -154,8 +170,9 @@ public abstract class ClientStubBase implements Interceptor, Serializable
       {
          return;
       }
-      //We shouldn't have to do this programmatically - it should pick it up from the params
-      //on the locator uri, but that doesn't seem to work
+
+      // We shouldn't have to do this programmatically - it should pick it up from the params
+      // on the locator uri, but that doesn't seem to work.
       Marshaller marshaller = new InvocationMarshaller();
       UnMarshaller unmarshaller = new InvocationUnMarshaller();
       MarshalFactory.addMarshaller(InvocationMarshaller.DATATYPE, marshaller, unmarshaller);
@@ -168,5 +185,4 @@ public abstract class ClientStubBase implements Interceptor, Serializable
    {
       return ((Advised)this)._getInstanceAdvisor().getMetaData();
    } 
-    
 }

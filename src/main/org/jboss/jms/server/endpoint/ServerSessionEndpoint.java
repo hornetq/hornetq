@@ -32,9 +32,10 @@ import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
-import org.jboss.jms.client.stubs.BrowserStub;
-import org.jboss.jms.client.stubs.ConsumerStub;
-import org.jboss.jms.client.stubs.ProducerStub;
+import org.jboss.jms.client.delegate.ClientBrowserDelegate;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
+import org.jboss.jms.client.delegate.ClientProducerDelegate;
+import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
@@ -44,9 +45,10 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.StateManager;
-import org.jboss.jms.server.endpoint.delegate.BrowserEndpointDelegate;
-import org.jboss.jms.server.endpoint.delegate.ConsumerEndpointDelegate;
-import org.jboss.jms.server.endpoint.delegate.ProducerEndpointDelegate;
+import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
+import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
+import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
+import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
@@ -135,20 +137,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
      
       String producerID = new GUID().toString();
       
-      // create the corresponding "server-side" ProducerDelegate and register it with this
-      // SessionDelegate instance
-      ServerProducerEndpoint spd =
-            new ServerProducerEndpoint(producerID, jmsDestination, this);
+      // create the corresponding server-side producer endpoint and register it with this
+      // session endpoint instance
+      ServerProducerEndpoint ep = new ServerProducerEndpoint(producerID, jmsDestination, this);
       
-      putProducerDelegate(producerID, spd);
-               
-      Dispatcher.singleton.registerTarget(producerID, new ProducerEndpointDelegate(spd));
+      putProducerDelegate(producerID, ep);
+      ProducerAdvised producerAdvised = new ProducerAdvised(ep);
+      Dispatcher.singleton.registerTarget(producerID, producerAdvised);
          
-      ProducerStub stub = new ProducerStub(producerID, serverPeer.getLocator());
+      ClientProducerDelegate d = new ClientProducerDelegate(producerID, serverPeer.getLocator());
       
       log.debug("created producer delegate (producerID=" + producerID + ")");
 
-      return stub;
+      return d;
    }
 
 	public ConsumerDelegate createConsumerDelegate(Destination jmsDestination,
@@ -290,9 +291,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                     subscription == null ? (Channel)destination : subscription,
                                     callbackHandler, this, selector, noLocal);
        
-      Dispatcher.singleton.registerTarget(consumerID, new ConsumerEndpointDelegate(scd));
+      Dispatcher.singleton.registerTarget(consumerID, new ConsumerAdvised(scd));
          
-      ConsumerStub stub = new ConsumerStub(consumerID, serverPeer.getLocator());     
+      ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, serverPeer.getLocator());
       
       if (subscription != null)
       {
@@ -343,9 +344,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   
 	   putBrowserDelegate(browserID, sbd);
 	   
-	   Dispatcher.singleton.registerTarget(browserID, new BrowserEndpointDelegate(sbd));
+	   Dispatcher.singleton.registerTarget(browserID, new BrowserAdvised(sbd));
 	   
-	   BrowserStub stub = new BrowserStub(browserID, serverPeer.getLocator());	  
+	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID, serverPeer.getLocator());
 	   
 	   return stub;
 	}

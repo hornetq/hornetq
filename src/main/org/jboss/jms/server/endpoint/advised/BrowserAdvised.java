@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint.delegate;
+package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -27,49 +27,64 @@ import javax.jms.Message;
 import org.jboss.jms.server.endpoint.BrowserEndpoint;
 
 /**
- * Delegate class for BrowserEndpoint
- * 
+ * The server-side advised instance corresponding to a Brrowser. It is bound to the AOP
+ * Dispatcher's map.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class BrowserEndpointDelegate extends EndpointDelegateBase implements BrowserEndpoint
+public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
 {
-   protected BrowserEndpoint del;
-   
-   public BrowserEndpointDelegate(BrowserEndpoint del)
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   protected BrowserEndpoint endpoint;
+
+   // Constructors --------------------------------------------------
+
+   public BrowserAdvised(BrowserEndpoint endpoint)
    {
-      this.del = del;
+      this.endpoint = endpoint;
    }
 
-   public Object getEndpoint()
-   {
-      return del;
-   }
-   
+   // Static --------------------------------------------------------
+
+   // BrowserAdvised implementation ---------------------------------
+
    public void close() throws JMSException
    {
-      del.close();
+      endpoint.close();
    }
 
    public void closing() throws JMSException
    {
-      del.closing();
+      endpoint.closing();
    }
 
    public boolean hasNextMessage() throws JMSException
    {
-      return del.hasNextMessage();
+      return endpoint.hasNextMessage();
    }
 
    public Message nextMessage() throws JMSException
    {
-      return del.nextMessage();
+      return endpoint.nextMessage();
    }
 
    public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
-      return del.nextMessageBlock(maxMessages);
+      return endpoint.nextMessageBlock(maxMessages);
    }
+
+   // AdvisedSupport overrides --------------------------------------
    
+   public Object getEndpoint()
+   {
+      return endpoint;
+   }
 
 }

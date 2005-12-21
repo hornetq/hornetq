@@ -26,9 +26,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.delegate.ConnectionDelegate;
 
 /**
- * 
- * Represents the set of methods from the ConnectionFactoryDelegate
- * that are handled on the server.
+ * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
  * The rest of the methods are handled in the advice stack.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,7 +36,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 public interface ConnectionFactoryEndpoint
 {
    ConnectionDelegate createConnectionDelegate(String username, String password)
-         throws JMSException;
+      throws JMSException;
    
    byte[] getClientAOPConfig();
 

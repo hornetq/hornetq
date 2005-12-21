@@ -117,9 +117,6 @@ public class MessageConsumerTest extends MessagingTestCase
       queue = (Queue)ic.lookup("/queue/Queue");
       queue2 = (Queue)ic.lookup("/queue/Queue2");
 
-      super.drainDestination(cf, queue);
-      super.drainDestination(cf, queue2);
-
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 
@@ -133,6 +130,9 @@ public class MessageConsumerTest extends MessagingTestCase
       queueProducer = producerSession.createProducer(queue);
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueConsumer = consumerSession.createConsumer(queue);
+
+      super.drainDestination(cf, queue);
+      super.drainDestination(cf, queue2);
       
       log.debug("setup done");
    }

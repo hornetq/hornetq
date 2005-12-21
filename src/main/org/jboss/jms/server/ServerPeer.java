@@ -39,7 +39,7 @@ import javax.naming.InitialContext;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.stubs.ConnectionFactoryStub;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -404,28 +404,6 @@ public class ServerPeer
 
    // Private -------------------------------------------------------
 
-
-   private ConnectionFactory createConnectionFactory(String connFactoryID) throws Exception
-   {
-      ServerConnectionFactoryEndpoint scfd =
-         new ServerConnectionFactoryEndpoint(this.genConnFactoryID(), this, null);
-      
-      Dispatcher.singleton.registerTarget(scfd.getID(), scfd);
-         
-      ConnectionFactoryStub stub;
-      try
-      {
-         stub = new ConnectionFactoryStub(scfd.getID(), locator);
-      }
-      catch (Exception e)
-      {
-         throw new JBossJMSException("Failed to create connection factory stub", e);
-      }
-      
-      return new JBossConnectionFactory(stub);
-   }
-
-
    /**
     * @return - may return null if it doesn't find a "jboss" MBeanServer.
     */
@@ -514,14 +492,28 @@ public class ServerPeer
       ic.close();
    }
 
-   private ConnectionFactory setupConnectionFactory(String clientID)
-      throws Exception
+   private ConnectionFactory setupConnectionFactory(String clientID) throws Exception
    {
-      String connFactoryID = genConnFactoryID();
-      ServerConnectionFactoryEndpoint serverDelegate = new ServerConnectionFactoryEndpoint(this.genConnFactoryID(), this, clientID);
-      this.connFactoryDelegates.put(connFactoryID, serverDelegate);
-      ConnectionFactory clientDelegate = createConnectionFactory(connFactoryID);
-      return clientDelegate;
+      String id = genConnFactoryID();
+
+      ServerConnectionFactoryEndpoint endpoint =
+         new ServerConnectionFactoryEndpoint(id, this, clientID);
+
+      Dispatcher.singleton.registerTarget(id, endpoint);
+      connFactoryDelegates.put(id, endpoint);
+
+      ClientConnectionFactoryDelegate delegate;
+      try
+      {
+         delegate = new ClientConnectionFactoryDelegate(id, locator);
+      }
+      catch (Exception e)
+      {
+         throw new JBossJMSException("Failed to create connection factory delegate", e);
+      }
+
+      JBossConnectionFactory connFactory = new JBossConnectionFactory(delegate);
+      return connFactory;
    }
 
    private void tearDownConnectionFactories()
@@ -569,9 +561,10 @@ public class ServerPeer
    
    private void loadClientAOPConfig() throws Exception
    {
-      //Note the file is called aop-messaging-client.xml NOT messaging-client-aop.xml
-      //This is because the JBoss will automatically deploy any files ending with
-      //aop.xml - we do not want this to happen for the client config
+      // Note the file is called aop-messaging-client.xml NOT messaging-client-aop.xml. This is
+      // because the JBoss will automatically deploy any files ending with aop.xml; we do not want
+      // this to happen for the client config
+
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-client.xml");
       InputStream is = null;
       ByteArrayOutputStream os = new ByteArrayOutputStream();

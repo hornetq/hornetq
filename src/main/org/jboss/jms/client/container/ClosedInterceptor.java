@@ -33,7 +33,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.logging.Logger;
 
 
@@ -231,7 +231,7 @@ public class ClosedInterceptor  implements Interceptor
     */
    protected void maintainRelatives(Invocation invocation)
    {                  
-      HierarchicalState state = ((ClientStubBase)invocation.getTargetObject()).getState();    
+      HierarchicalState state = ((DelegateSupport)invocation.getTargetObject()).getState();
             
       //We use a clone to avoid a deadlock where requests
       //are made to close parent and child concurrently

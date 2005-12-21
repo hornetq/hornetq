@@ -7,6 +7,16 @@
    <property environment="ENV"/>
    <property name="sleep.interval" value="60"/>
 
+   <path id="twiddle.classpath">
+      <pathelement location="${ENV.JBOSS_HOME}/bin/twiddle.jar"/>
+      <pathelement location="${ENV.JBOSS_HOME}/client/jbossall-client.jar"/>
+      <pathelement location="${ENV.JBOSS_HOME}/client/getopt.jar"/>
+      <pathelement location="${ENV.JBOSS_HOME}/client/log4j.jar"/>
+      <pathelement location="${ENV.JBOSS_HOME}/lib/jboss-jmx.jar"/>
+      <pathelement location="${ENV.JBOSS_HOME}/lib/dom4j.jar"/>
+   </path>
+
+
    <target name="validate-messaging-sar">
 
       <available property="messaging-sar"
@@ -73,7 +83,7 @@
          <arg value="-S"/>
          <classpath>
             <pathelement location="${ENV.JBOSS_HOME}/bin/shutdown.jar"/>
-            <pathelement location="${ENV.JBOSS_HOME}/client\jbossall-client.jar"/>
+            <pathelement location="${ENV.JBOSS_HOME}/client/jbossall-client.jar"/>
          </classpath>
       </java>
    </target>
@@ -84,23 +94,27 @@
       <sleep seconds="${sleep.interval}"/>
    </target>
 
-   <target name="invoke">
-       <java classname="org.jboss.console.twiddle.Twiddle"
-          fork="yes"
-          failonerror="yes"
-          dir="${ENV.JBOSS_HOME}/bin">
-          <jvmarg value="-server"/>
-          <jvmarg value="-Xms128m"/>
-          <jvmarg value="-Xmx128m"/>
+   <target name="ping-jms-server">
+       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
+           dir="${ENV.JBOSS_HOME}/bin">
           <arg line="get jboss.messaging:service=ServerPeer serverPeerID"/>
-          <sysproperty key="java.endorsed.dirs" value="${ENV.JBOSS_HOME}/lib/endorsed"/>
           <classpath>
-             <pathelement location="${ENV.JBOSS_HOME}/bin/twiddle.jar"/>
-             <pathelement location="${ENV.JBOSS_HOME}/client/jbossall-client.jar"/>
-             <pathelement location="${ENV.JBOSS_HOME}/client/getopt.jar"/>
-             <pathelement location="${ENV.JBOSS_HOME}/client/log4j.jar"/>
-             <pathelement location="${ENV.JBOSS_HOME}/lib/jboss-jmx.jar"/>
-             <pathelement location="${ENV.JBOSS_HOME}/lib/dom4j.jar"/>
+             <path refid="twiddle.classpath"/>
+          </classpath>
+       </java>
+    </target>
+
+   <target name="deploy-queue">
+       <copy file="../etc/smoketest/smoketest-queue-service.xml"
+         todir="${ENV.JBOSS_HOME}/server/messaging-smoke-test/deploy"/>
+   </target>
+
+   <target name="ping-queue">
+       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
+          dir="${ENV.JBOSS_HOME}/bin">
+          <arg line="get jboss.messaging.destination:name=SmokeTestQueue,service=Queue QueueName"/>
+          <classpath>
+             <path refid="twiddle.classpath"/>
           </classpath>
        </java>
     </target>
@@ -112,7 +126,7 @@
                deploy-sar,
                start-jboss,
                sleep,
-               invoke"/>
+               ping-jms-server"/>
 
    <target name="clean">
        <antcall target="shutdown-jboss"/>

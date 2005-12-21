@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<server>
+
+   <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
+       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
+   </loader-repository>
+
+   <mbean code="org.jboss.jms.server.jmx.Queue"
+      name="jboss.messaging.destination:service=Queue,name=SmokeTestQueue">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+</server>

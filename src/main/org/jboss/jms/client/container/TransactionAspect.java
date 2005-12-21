@@ -31,7 +31,7 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
@@ -192,7 +192,7 @@ public class TransactionAspect
    
    private HierarchicalState getState(Invocation inv)
    {
-      return ((ClientStubBase)inv.getTargetObject()).getState();    
+      return ((DelegateSupport)inv.getTargetObject()).getState();
    }
    
    // Inner Classes --------------------------------------------------

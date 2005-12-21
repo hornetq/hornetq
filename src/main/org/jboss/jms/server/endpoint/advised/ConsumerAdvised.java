@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint.delegate;
+package org.jboss.jms.server.endpoint.advised;
 
 import java.io.Serializable;
 
@@ -29,68 +29,94 @@ import javax.jms.Message;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
- * Delegate class for ConsumerEndpoint
- * 
+ * The server-side advised instance corresponding to a Consumer. It is bound to the AOP
+ * Dispatcher's map.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class ConsumerEndpointDelegate extends EndpointDelegateBase implements ConsumerEndpoint
+public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
 {
-   protected ConsumerEndpoint del;
-   
-   public ConsumerEndpointDelegate(ConsumerEndpoint del)
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   protected ConsumerEndpoint endpoint;
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   public ConsumerAdvised(ConsumerEndpoint endpoint)
    {
-      this.del = del;
+      this.endpoint = endpoint;
    }
-   
-   public Object getEndpoint()
-   {
-      return del;
-   }
+
+   // ConsumerAdvised implementation --------------------------------
 
    public void activate() throws JMSException
    {
-      del.activate();
+      endpoint.activate();
    }
 
    public void cancelMessage(Serializable messageID) throws JMSException
    {
-      del.cancelMessage(messageID);
+      endpoint.cancelMessage(messageID);
    }
 
    public void close() throws JMSException
    {
-      del.close();
+      endpoint.close();
    }
 
    public void closing() throws JMSException
    {
-      del.closing();
+      endpoint.closing();
    }
 
    public void deactivate() throws JMSException
    {
-      del.deactivate();
-   }
-
-   public boolean equals(Object obj)
-   {
-      return del.equals(obj);
+      endpoint.deactivate();
    }
 
    public Message getMessageNow() throws JMSException
    {
-      return del.getMessageNow();
+      return endpoint.getMessageNow();
+   }
+
+   // AdvisedSupport overrides --------------------------------------
+
+   public Object getEndpoint()
+   {
+      return endpoint;
+   }
+
+   // Public --------------------------------------------------------
+
+   public boolean equals(Object obj)
+   {
+      return endpoint.equals(obj);
    }
 
    public int hashCode()
    {
-      return del.hashCode();
+      return endpoint.hashCode();
    }
 
    public String toString()
    {
-      return del.toString();
+      return endpoint.toString();
    }
-   
+
+   // Protected -----------------------------------------------------
+
+   // Package Private -----------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner Classes -------------------------------------------------
+
 }

@@ -119,7 +119,7 @@ public class ConnectionAspect implements ConnectionListener
       
       exceptionListener = (ExceptionListener)mi.getArguments()[0];
       
-      Client client = (Client)invocation.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.INVOKER_CLIENT);                  
+      Client client = (Client)invocation.getMetaData(MetaDataConstants.JMS, MetaDataConstants.INVOKER_CLIENT);
 
       if (client == null)
       {

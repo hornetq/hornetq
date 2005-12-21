@@ -85,7 +85,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       
       MethodInvocation i = (MethodInvocation)invocation.getParameter();
     
-      String s = (String)i.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.REMOTING_SESSION_ID);
+      String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
       
       if (s != null)
       {
@@ -96,7 +96,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
          if (callbackHandler != null)
          {
-            i.getMetaData().addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
+            i.getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
          }
          else
          {

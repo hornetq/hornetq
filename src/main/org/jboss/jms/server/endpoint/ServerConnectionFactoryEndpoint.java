@@ -24,10 +24,10 @@ package org.jboss.jms.server.endpoint;
 import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
-import org.jboss.jms.client.stubs.ConnectionStub;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.endpoint.delegate.ConnectionEndpointDelegate;
+import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 
@@ -38,6 +38,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
+ * $Id$
  */
 public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoint
 {
@@ -86,25 +87,31 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          }
       }
 
-      // create the corresponding "server-side" ConnectionDelegate and register it with the
+      // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
-      ServerConnectionEndpoint scd = new ServerConnectionEndpoint(serverPeer, clientID, username, password);
-      
-      serverPeer.getClientManager().putConnectionDelegate(scd.getConnectionID(), scd);
-         
-      Dispatcher.singleton.registerTarget(scd.getConnectionID(), new ConnectionEndpointDelegate(scd));
-         
-      ConnectionStub stub;
+      ServerConnectionEndpoint endpoint =
+         new ServerConnectionEndpoint(serverPeer, clientID, username, password);
+
+
+      String connectionID = endpoint.getConnectionID();
+
+      serverPeer.getClientManager().putConnectionDelegate(connectionID, endpoint);
+      ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
+      Dispatcher.singleton.registerTarget(connectionID, connAdvised);
+
+      ClientConnectionDelegate delegate;
       try
       {
-         stub = new ConnectionStub(scd.getConnectionID(), serverPeer.getLocator(), serverPeer.getServerPeerID());
+         delegate = new ClientConnectionDelegate(connectionID,
+                                                 serverPeer.getLocator(),
+                                                 serverPeer.getServerPeerID());
       }
       catch (Exception e)
       {
          throw new JBossJMSException("Failed to create connection stub", e);
       }  
       
-      return stub;
+      return delegate;
    }
    
    public byte[] getClientAOPConfig()

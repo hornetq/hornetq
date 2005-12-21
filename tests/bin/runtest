@@ -148,11 +148,11 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionConsumerTest
 #TARGET_TEST=testSimple
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testRemotingInternals
+TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+TARGET_TEST=testReceive
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
-TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
+#TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.selector.SelectorTest
@@ -245,7 +245,7 @@ if [ "$TARGET_TEST" != "" ]; then
 fi
 
 if [ "$isRemote" = "true" ]; then
-  $reldir/start-rmi-server
+  $reldir/start-rmi-server -debug
 fi
 
 
@@ -284,6 +284,7 @@ ${JGROUPS_LIB}${SEP}\
 
 
 if [ "$isRemote" = "true" ]; then
-  $reldir/stop-rmi-server
+#  $reldir/stop-rmi-server
+  echo "I should restore stopping the server"
 fi
 

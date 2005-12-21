@@ -31,7 +31,7 @@ import org.jboss.jms.client.remoting.Remoting;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.stubs.ClientStubBase;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
@@ -73,7 +73,7 @@ public class ConsumerAspect
       //register/unregister a callback handler that deal with callbacks sent by the server
 
       InvokerLocator serverLocator = (InvokerLocator)invocation.
-            getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.INVOKER_LOCATOR);
+            getMetaData(MetaDataConstants.JMS, MetaDataConstants.INVOKER_LOCATOR);
 
       if (serverLocator == null)
       {
@@ -93,7 +93,7 @@ public class ConsumerAspect
       boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       //Create the message handler
-      SessionState sessState = (SessionState)((ClientStubBase)invocation.getTargetObject()).getState();
+      SessionState sessState = (SessionState)((DelegateSupport)invocation.getTargetObject()).getState();
       
       ConnectionState connState = (ConnectionState)sessState.getParent();
       
@@ -105,14 +105,14 @@ public class ConsumerAspect
       client.addListener(messageHandler, callbackServerLocator);
 
       // I will need this on the server-side to create the ConsumerDelegate instance
-      invocation.getMetaData().addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.REMOTING_SESSION_ID,
+      invocation.getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID,
                                      client.getSessionId(), PayloadKey.AS_IS);
 
       ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
       
       SessionDelegate del = (SessionDelegate)invocation.getTargetObject();
 
-      ConsumerState theState = (ConsumerState)((ClientStubBase)consumerDelegate).getState();
+      ConsumerState theState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
          
       messageHandler.setSessionDelegate(del);
       messageHandler.setConsumerDelegate(consumerDelegate);
@@ -122,7 +122,7 @@ public class ConsumerAspect
       //Add to the instance advisor's metadata
       SimpleMetaData instanceMetaData = ((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData();
       
-      instanceMetaData.addMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.MESSAGE_HANDLER, messageHandler, PayloadKey.TRANSIENT);
+      instanceMetaData.addMetaData(MetaDataConstants.JMS, MetaDataConstants.MESSAGE_HANDLER, messageHandler, PayloadKey.TRANSIENT);
       
       return consumerDelegate;
    }
@@ -130,7 +130,7 @@ public class ConsumerAspect
    public Object handleClosing(Invocation invocation) throws Throwable
    {
       MessageCallbackHandler handler =
-         (MessageCallbackHandler)invocation.getMetaData(MetaDataConstants.TAG_NAME, MetaDataConstants.MESSAGE_HANDLER);
+         (MessageCallbackHandler)invocation.getMetaData(MetaDataConstants.JMS, MetaDataConstants.MESSAGE_HANDLER);
       
       if (handler == null)
       {
@@ -166,7 +166,7 @@ public class ConsumerAspect
    
    private ConsumerState getState(Invocation inv)
    {
-      return (ConsumerState)((ClientStubBase)inv.getTargetObject()).getState();
+      return (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
    }
    
    // Inner classes -------------------------------------------------

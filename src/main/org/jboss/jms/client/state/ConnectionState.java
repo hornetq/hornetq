@@ -51,7 +51,6 @@ public class ConnectionState extends HierarchicalStateBase
    {
       super(null, delegate);
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
-      this.delegate = delegate;
       resourceManager = ResourceManagerFactory.instance.getResourceManager(serverId);
       
       //TODO size should be configurable

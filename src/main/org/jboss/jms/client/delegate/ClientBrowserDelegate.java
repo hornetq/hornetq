@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.stubs;
+package org.jboss.jms.client.delegate;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -28,47 +28,77 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.remoting.InvokerLocator;
 
 /**
- * 
- * The client stub class for BrowserDelegate
- * 
+ * The client-side Browser delegate class.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class BrowserStub extends ClientStubBase implements BrowserDelegate
+public class ClientBrowserDelegate extends DelegateSupport implements BrowserDelegate
 {
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = 8293543769773757409L;
-   
-   public BrowserStub(String objectID, InvokerLocator locator)
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   public ClientBrowserDelegate(String objectID, InvokerLocator locator)
    {
       super(objectID, locator);
    }
-   
+
+
+   // BrowserDelegate implementation --------------------------------
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void close() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   public void closing() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   public boolean hasNextMessage() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   public Message nextMessage() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   public Message[] nextMessageBlock(int maxMessages) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   // Public --------------------------------------------------------
+
    public String getStackName()
    {
       return "BrowserStack";
    }
 
-   public void close() throws JMSException
-   {
-   }
+   // Protected -----------------------------------------------------
 
-   public void closing() throws JMSException
-   {
-   }
+   // Package Private -----------------------------------------------
 
-   public boolean hasNextMessage() throws JMSException
-   {
-      return false;
-   }
+   // Private -------------------------------------------------------
 
-   public Message nextMessage() throws JMSException
-   {
-      return null;
-   }
-
-   public Message[] nextMessageBlock(int maxMessages) throws JMSException
-   {
-      return null;
-   }
+   // Inner Classes -------------------------------------------------
 
 }

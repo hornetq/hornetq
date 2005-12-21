@@ -34,13 +34,13 @@ import javax.jms.Message;
 import javax.jms.TransactionRolledBackException;
 
 import org.jboss.aop.Dispatcher;
-import org.jboss.jms.client.stubs.SessionStub;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.endpoint.delegate.SessionEndpointDelegate;
+import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
@@ -89,8 +89,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    protected String clientID;
    
-   //We keep a map of consumers to prevent us to recurse through the attached session
-   //in order to find the ServerConsumerDelegate so we can ack the message
+   // We keep a map of consumers to prevent us to recurse through the attached session in order to
+   // find the ServerConsumerDelegate so we can ack the message
    protected Map consumers;
    
    protected String username;
@@ -153,24 +153,23 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                   
          String sessionID = generateSessionID();
          
-         // create the corresponding "server-side" SessionDelegate and register it with this
-         // ConnectionDelegate instance
-         ServerSessionEndpoint ssd = new ServerSessionEndpoint(sessionID, this, acknowledgmentMode);
-         putSessionDelegate(sessionID, ssd);
-            
-         Dispatcher.singleton.registerTarget(sessionID, new SessionEndpointDelegate(ssd));
-            
-         SessionStub stub = new SessionStub(sessionID, serverPeer.getLocator());
+         // create the corresponding server-side session endpoint and register it with this
+         // connection endpoint instance
+         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this, acknowledgmentMode);
+         putSessionDelegate(sessionID, ep);
+         SessionAdvised sessionAdvised = new SessionAdvised(ep);
+         Dispatcher.singleton.registerTarget(sessionID, sessionAdvised);
+
+         ClientSessionDelegate d = new ClientSessionDelegate(sessionID, serverPeer.getLocator());
                  
          log.debug("created session delegate (sessionID=" + sessionID + ")");
          
-         return stub;
+         return d;
       }
       finally
       {
          closeLock.readLock().release();
       }
-      
    }
          
    public String getClientID() throws JMSException
