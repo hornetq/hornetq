@@ -36,6 +36,8 @@ import org.jboss.jms.tx.TransactionRequest;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface ConnectionEndpoint extends Closeable
 {

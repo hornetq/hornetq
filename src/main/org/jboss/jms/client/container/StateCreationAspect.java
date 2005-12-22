@@ -75,7 +75,7 @@ public class StateCreationAspect
       
       delegate.init();
       
-      delegate.setState(new ConnectionState(delegate, delegate.getServerId()));
+      delegate.setState(new ConnectionState(delegate, delegate.getServerID()));
                   
       return delegate;
    }
