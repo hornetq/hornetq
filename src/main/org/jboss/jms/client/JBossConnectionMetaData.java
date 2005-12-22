@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.client;
 
+import org.jboss.jms.server.Version;
+
 import java.util.Enumeration;
 import java.util.Vector;
 import java.io.Serializable;
@@ -30,71 +32,88 @@ import javax.jms.JMSException;
 
 /**
  * Connection metadata
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *
  * $Id$
  */
-public class JBossConnectionMetaData implements Serializable, ConnectionMetaData {
-   
+public class JBossConnectionMetaData implements Serializable, ConnectionMetaData
+{
+
    // Constants -----------------------------------------------------
-   
+
    private static final long serialVersionUID = 327633302671160939L;
-   
+
    // Static --------------------------------------------------------
-      
+
    // Attributes ----------------------------------------------------
-   
+
+   protected Version serverVersion;
+
    // Constructors --------------------------------------------------
-   
+
    /**
     * Create a new JBossConnectionMetaData object.
     */
-   public JBossConnectionMetaData() {}
-   
-   
-   // ConnectionMetaData Implementation
-   
-   public String getJMSVersion() throws JMSException {
-      return "1.1";
+   public JBossConnectionMetaData(Version serverVersion)
+   {
+      this.serverVersion = serverVersion;
    }
-   
-   
-   public int getJMSMajorVersion() throws JMSException {
-      return 1;
+
+   // ConnectionMetaData implementation -----------------------------
+
+   public String getJMSVersion() throws JMSException
+   {
+      return serverVersion.getJMSVersion();
    }
-   
-   
-   public int getJMSMinorVersion() throws JMSException {
-      return 1;
+
+   public int getJMSMajorVersion() throws JMSException
+   {
+      return serverVersion.getJMSMajorVersion();
    }
-   
-   
-   public String getJMSProviderName() throws JMSException {
-      return "JBoss Messaging";
+
+   public int getJMSMinorVersion() throws JMSException
+   {
+      return serverVersion.getJMSMinorVersion();
    }
-   
-   
-   public String getProviderVersion() throws JMSException {        
-      return "1.0.0 alpha PR1";
+
+   public String getJMSProviderName() throws JMSException
+   {
+      return serverVersion.getJMSProviderName();
    }
-   
-   
-   public int getProviderMajorVersion() throws JMSException {
-      return 1;
+
+   public String getProviderVersion() throws JMSException
+   {
+      return serverVersion.getProviderVersion();
    }
-   
-   
-   public int getProviderMinorVersion() throws JMSException {
-      return 0;
+
+   public int getProviderMajorVersion() throws JMSException
+   {
+      return serverVersion.getProviderMajorVersion();
    }
-   
-   
-   public Enumeration getJMSXPropertyNames() throws JMSException {
+
+   public int getProviderMinorVersion() throws JMSException
+   {
+      return serverVersion.getProviderMinorVersion();
+   }
+
+   public Enumeration getJMSXPropertyNames() throws JMSException
+   {
       Vector v = new Vector();
       v.add("JMSXGroupID");
       v.add("JMSXGroupSeq");
       return v.elements();
    }
-   
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

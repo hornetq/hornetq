@@ -29,6 +29,7 @@ import javax.jms.JMSException;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionMetaData;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
@@ -59,7 +60,7 @@ public class ConnectionAspect implements ConnectionListener
    
    protected ExceptionListener exceptionListener;
    
-   protected ConnectionMetaData connMetaData = new JBossConnectionMetaData();
+   protected ConnectionMetaData connMetaData;
    
    boolean justCreated = true;
    
@@ -144,7 +145,13 @@ public class ConnectionAspect implements ConnectionListener
    public Object handleGetConnectionMetaData(Invocation invocation) throws Throwable
    {
       justCreated = false;
-      
+
+      if (connMetaData == null)
+      {
+         ClientConnectionDelegate delegate = (ClientConnectionDelegate)invocation.getTargetObject();
+         connMetaData = new JBossConnectionMetaData(delegate.getServerVersion());
+      }
+
       return connMetaData;
    }
    

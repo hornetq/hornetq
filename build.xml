@@ -69,10 +69,10 @@
      <property name="messaging.version.major" value="1"/>
      <property name="messaging.version.minor" value="0"/>
      <property name="messaging.version.revision" value="0"/>
-     <property name="messaging.version.tag" value="alpha-pr3"/>
+     <property name="messaging.version.tag" value="alpha-PR2.2"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR3"/>
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_alpha_PR2_2"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
@@ -91,6 +91,10 @@
         value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}${messaging.version.tag} (build: CVSTag=${messaging.version.cvstag} date=${build.id})"/>
      <property name="messaging.implementation.vendor" value="JBoss Inc."/>
      <property name="messaging.implementation.vendor.id" value="${implementation.url}"/>
+
+     <property name="jms.version.major" value="1"/>
+     <property name="jms.version.minor" value="1"/>
+     <property name="jms.version" value="1.1"/>
 
     <!-- ========= -->
     <!-- Libraries -->
@@ -298,32 +302,32 @@
   </target>
 
   <!-- Compile all class files -->
-  <target name="compile-classes" depends="init">
-    <mkdir dir="${build.classes}"/>
-    <javac destdir="${build.classes}"
-           optimize="${javac.optimize}"
-       target="${javac.target}"
-           source="${javac.source}"
-           debug="${javac.debug}"
-       depend="${javac.depend}"
-       verbose="${javac.verbose}"
-       deprecation="${javac.deprecation}"
-       includeAntRuntime="${javac.include.ant.runtime}"
-       includeJavaRuntime="${javac.include.java.runtime}"
-       failonerror="${javac.fail.onerror}">
-       <src path="${source.java}"/>
-       <classpath refid="javac.classpath"/>
-       <include name="${javac.includes}"/>
-       <exclude name="${javac.excludes}"/>
-    </javac>
-    <taskdef name="aopc" classname="org.jboss.aop.ant.AopC"
-                     classpathref="jboss.aop.classpath"/>
-    <aopc compilerclasspathref="aopc.classpath" classpathref="aopc.classpath" verbose="false">
-       <classpath refid="aopc.classpath"/>
-       <src path="${build.classes}"/>
-       <aoppath path="src/etc/prepare-aop.xml"/>
-    </aopc>
-  </target>
+   <target name="compile-classes" depends="init">
+      <mkdir dir="${build.classes}"/>
+      <javac destdir="${build.classes}"
+         optimize="${javac.optimize}"
+         target="${javac.target}"
+         source="${javac.source}"
+         debug="${javac.debug}"
+         depend="${javac.depend}"
+         verbose="${javac.verbose}"
+         deprecation="${javac.deprecation}"
+         includeAntRuntime="${javac.include.ant.runtime}"
+         includeJavaRuntime="${javac.include.java.runtime}"
+         failonerror="${javac.fail.onerror}">
+         <src path="${source.java}"/>
+         <classpath refid="javac.classpath"/>
+         <include name="${javac.includes}"/>
+         <exclude name="${javac.excludes}"/>
+      </javac>
+      <taskdef name="aopc" classname="org.jboss.aop.ant.AopC"
+         classpathref="jboss.aop.classpath"/>
+      <aopc compilerclasspathref="aopc.classpath" classpathref="aopc.classpath" verbose="false">
+         <classpath refid="aopc.classpath"/>
+         <src path="${build.classes}"/>
+         <aoppath path="src/etc/prepare-aop.xml"/>
+      </aopc>
+   </target>
 
   <!-- Compile manifests -->
   <target name="compile-etc" depends="init">
@@ -332,6 +336,15 @@
       <fileset dir="${source.etc}">
          <include name="**"/>
       </fileset>
+       <filterset>
+          <filter token="JMS_VERSION" value="${jms.version}"/>
+          <filter token="JMS_VERSION_MAJOR" value="${jms.version.major}"/>
+          <filter token="JMS_VERSION_MINOR" value="${jms.version.minor}"/>
+          <filter token="MODULE_VERSION" value="${module.version}"/>
+          <filter token="MESSAGING_VERSION_MAJOR" value="${messaging.version.major}"/>
+          <filter token="MESSAGING_VERSION_MINOR" value="${messaging.version.minor}"/>
+          <filter token="MODULE_NAME" value="${module.Name}"/>
+       </filterset>
     </copy>
   </target>
 
@@ -340,31 +353,31 @@
   <!-- Archives                                                           -->
   <!-- ================================================================== -->
 
-  <!--
-     | Build all jar files.
+   <!--
+   | Build all jar files.
    -->
-  <target name="jars" description="Builds all jar files."
-     depends="_buildmagic:build-bypass-check"
+   <target name="jars" description="Builds all jar files."
+      depends="_buildmagic:build-bypass-check"
       unless="build-bypass.on">
 
-    <call target="compile"/>
+      <call target="compile"/>
 
-    <mkdir dir="${build.lib}"/>
+      <mkdir dir="${build.lib}"/>
 
-    <!-- Build the jboss-${module.name}.jar -->
-    <jar jarfile="${build.lib}/jboss-${module.name}.jar"
-     manifest="${build.etc}/default.mf">
-      <fileset dir="${build.classes}">
-        <!-- Include everything else -->
-        <include name="org/jboss/**"/>
-        <exclude name="org/jboss/jms/perf/**"/>
-      </fileset>
-    </jar>
+      <!-- Build the jboss-${module.name}.jar -->
+      <jar jarfile="${build.lib}/jboss-${module.name}.jar"
+         manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}">
+            <!-- Include everything else -->
+            <include name="org/jboss/**"/>
+            <exclude name="org/jboss/jms/perf/**"/>
+         </fileset>
+      </jar>
 
-    <!-- Update the build marker to allow bypassing -->
-    <touch file="${build-bypass.marker}"/>
+      <!-- Update the build marker to allow bypassing -->
+      <touch file="${build-bypass.marker}"/>
 
-  </target>
+   </target>
 
   <!-- ================================================================== -->
   <!-- Install & Release                                                  -->
@@ -481,7 +494,9 @@
       <mkdir dir="${build.classes}/xmdesc"/>
 
       <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
-            tofile="${build.classes}/META-INF/jboss-service.xml"/>
+         tofile="${build.classes}/META-INF/jboss-service.xml"/>
+
+      <copy file="${build.etc}/VERSION" todir="${build.classes}"/>
 
       <!-- copy all other deployment descriptors from ${source.etc}/server/default/deploy -->
       <copy todir="${build.classes}">

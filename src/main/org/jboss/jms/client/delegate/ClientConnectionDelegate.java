@@ -32,6 +32,7 @@ import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.server.Version;
 import org.jboss.remoting.InvokerLocator;
 
 /**
@@ -52,19 +53,20 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Attributes ----------------------------------------------------
 
-   private String serverId;
-   
-   private InvokerLocator locator;
+   private String serverID;
+   private Version serverVersion;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConnectionDelegate(String objectID, InvokerLocator locator, String serverId)
+   public ClientConnectionDelegate(String objectID, InvokerLocator locator,
+                                   String serverID, Version serverVersion)
    {
       super(objectID, locator);
       
-      this.serverId = serverId;
+      this.serverID = serverID;
+      this.serverVersion = serverVersion;
    }
 
    // ConnectionDelegate implementation -----------------------------
@@ -194,9 +196,14 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Public --------------------------------------------------------
 
-   public String getServerId()
+   public String getServerID()
    {
-      return serverId;
+      return serverID;
+   }
+
+   public Version getServerVersion()
+   {
+      return serverVersion;
    }
 
    // Protected -----------------------------------------------------

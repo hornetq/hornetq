@@ -104,7 +104,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       {
          delegate = new ClientConnectionDelegate(connectionID,
                                                  serverPeer.getLocator(),
-                                                 serverPeer.getServerPeerID());
+                                                 serverPeer.getServerPeerID(),
+                                                 serverPeer.getVersion());
       }
       catch (Exception e)
       {

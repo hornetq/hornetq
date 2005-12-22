@@ -137,7 +137,8 @@ public class ServerPeer
    protected JMSServerInvocationHandler handler;
    
    protected byte[] clientAOPConfig;
-   
+
+   private Version version;
 
    // Constructors --------------------------------------------------
 
@@ -152,7 +153,9 @@ public class ServerPeer
       connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
       
       securityManager = new SecurityManager();
-      
+
+      version = new Version("VERSION");
+
       started = false;
    }
 
@@ -286,6 +289,41 @@ public class ServerPeer
    // JMX attributes
    //
 
+   public String getJMSVersion()
+   {
+      return version.getJMSVersion();
+   }
+
+   public int getJMSMajorVersion()
+   {
+      return version.getJMSMajorVersion();
+   }
+
+   public int getJMSMinorVersion()
+   {
+      return version.getJMSMinorVersion();
+   }
+
+   public String getJMSProviderName()
+   {
+      return version.getJMSProviderName();
+   }
+
+   public String getProviderVersion()
+   {
+      return version.getProviderVersion();
+   }
+
+   public int getProviderMajorVersion()
+   {
+      return version.getProviderMajorVersion();
+   }
+
+   public int getProviderMinorVersion()
+   {
+      return version.getProviderMinorVersion();
+   }
+
    public String getServerPeerID()
    {
       return serverPeerID;
@@ -299,7 +337,6 @@ public class ServerPeer
       }
       return locator.getLocatorURI();
    }
-
 
    public ObjectName getConnector()
    {
@@ -401,6 +438,11 @@ public class ServerPeer
    public byte[] getClientAOPConfig()
    {
       return clientAOPConfig;
+   }
+
+   public Version getVersion()
+   {
+      return version;
    }
 
    public String toString()
@@ -628,8 +670,7 @@ public class ServerPeer
          }
       }
    }
-   
+
    // Inner classes -------------------------------------------------
-   
-   
+
 }

@@ -1,0 +1,10 @@
+#
+# This is an automatically generated file. DO NOT EDIT!
+#
+jboss.messaging.jmsVersion=@JMS_VERSION@
+jboss.messaging.jmsMajorVersion=@JMS_VERSION_MAJOR@
+jboss.messaging.jmsMinorVersion=@JMS_VERSION_MINOR@
+jboss.messaging.jmsProviderName=@MODULE_NAME@
+jboss.messaging.providerVersion=@MODULE_VERSION@
+jboss.messaging.providerMajorVersion=@MESSAGING_VERSION_MAJOR@
+jboss.messaging.providerMinorVersion=@MESSAGING_VERSION_MINOR@

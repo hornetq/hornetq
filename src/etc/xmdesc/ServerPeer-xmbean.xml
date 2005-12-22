@@ -21,6 +21,48 @@
 
    <!-- Managed attributes -->
 
+   <attribute access="read-only" getMethod="getJMSVersion">
+      <description>The version of the JMS specification implemented by this provider</description>
+      <name>JMSVersion</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getJMSMajorVersion">
+      <description>The major version of the JMS specification implemented by this provider</description>
+      <name>JMSMajorVersion</name>
+      <type>int</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getJMSMinorVersion">
+      <description>The minor version of the JMS specification implemented by this provider</description>
+      <name>JMSMinorVersion</name>
+      <type>int</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getJMSProviderName">
+      <description>The JMS provider name</description>
+      <name>JMSProviderName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getProviderVersion">
+      <description>The fully qualified provider version string</description>
+      <name>ProviderVersion</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getProviderMajorVersion">
+      <description>The JMS provider major version number</description>
+      <name>ProviderMajorVersion</name>
+      <type>int</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getProviderMinorVersion">
+      <description>The JMS provider minor version number</description>
+      <name>ProviderMinorVersion</name>
+      <type>int</type>
+   </attribute>
+
    <attribute access="read-only" getMethod="getServerPeerID">
       <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
       <name>serverPeerID</name>
