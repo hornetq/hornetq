@@ -42,6 +42,7 @@ import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 /**
@@ -160,11 +161,23 @@ public class JBossConnectionFactory implements
                                                       boolean isXA, int type)
       throws JMSException
    {
-      ensureAOPConfigLoaded((ClientConnectionFactoryDelegate)delegate);
-      initDelegate();
-            
-      ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
-      return new JBossConnection(cd, type);
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         ensureAOPConfigLoaded((ClientConnectionFactoryDelegate)delegate);
+         initDelegate();
+
+         ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
+         return new JBossConnection(cd, type);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
    
    protected synchronized void initDelegate()
@@ -209,8 +222,7 @@ public class JBossConnectionFactory implements
          throw new RuntimeException(msg, e);
       }
    }
-   
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

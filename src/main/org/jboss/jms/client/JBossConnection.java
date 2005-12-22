@@ -46,6 +46,7 @@ import javax.jms.XATopicSession;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -227,8 +228,21 @@ public class JBossConnection implements
       {
          acknowledgeMode = Session.SESSION_TRANSACTED;
       }
-      SessionDelegate sessionDelegate = delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
-      return new JBossSession(sessionDelegate, type);
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         SessionDelegate sessionDelegate =
+            delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
+         return new JBossSession(sessionDelegate, type);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    // Private -------------------------------------------------------

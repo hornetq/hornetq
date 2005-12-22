@@ -37,6 +37,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -110,7 +111,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                                   ServerSessionPool sessPool, int maxMessages) throws JMSException
    {
       trace = log.isTraceEnabled();
-      
+
       this.destination = dest;
       this.serverSessionPool = sessPool;
       this.maxMessages = maxMessages;
@@ -120,10 +121,22 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       //Create a consumer - we must create with CLIENT_ACKNOWLEDGE - they get must not get acked
       //via this session!
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
-      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
-      
+
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
+      }
+      finally
+      {
+         tccc.restore();
+      }
+
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
-      
+
       this.consumerID = state.getConsumerID();
 
       id = threadId.increment();
