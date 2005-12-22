@@ -26,7 +26,8 @@ package org.jboss.jms.util;
  * purposes only. The way it changes the class loader (and more important, the way it stores the
  * saved thread context class loader) is inneficient and dangerous.
  *
- * TODO: Do not use it in the production version. See http:// for an alternative solution.
+ * TODO: Do not use it in the production version.
+ *       See http://www.jboss.org/index.html?module=bb&op=viewtopic&t=74434 for an alternative solution.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
