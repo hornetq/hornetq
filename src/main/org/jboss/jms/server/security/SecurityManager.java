@@ -183,9 +183,8 @@ public class SecurityManager
       }
       else
       {
-         if (trace)
-            log.trace("User: " + user + " is NOT authenticated");
-         throw new JMSSecurityException("User: " + user + " is NOT authenticated");
+         if (trace) { log.trace("User " + user + " is NOT authenticated"); }
+         throw new JMSSecurityException("User " + user + " is NOT authenticated");
       }
    }
    
@@ -198,12 +197,7 @@ public class SecurityManager
     */
    public boolean authorize(String user, Set rolePrincipals)
    {   
-      if (log.isTraceEnabled())
-         log.trace(
-               "Checking authorize on user: "
-               + user
-               + " for rolePrincipals "
-               + rolePrincipals.toString());
+      if (log.isTraceEnabled()) { log.trace("Checking authorize on user " + user + " for rolePrincipals " + rolePrincipals.toString()); }
       
       Principal principal = user == null ? null : new SimplePrincipal(user);
       
