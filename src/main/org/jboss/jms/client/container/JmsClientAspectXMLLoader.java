@@ -36,6 +36,16 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+
+/**
+ * This class deploys the client side AOP config from a byte[] representation of the 
+ * client aop config file.
+ * This allows the config to be kep on the server but the advising to be done on the client.
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * @version <tt>$Revision$</tt>
+ */
 public class JmsClientAspectXMLLoader extends AspectXmlLoader
 {
    public JmsClientAspectXMLLoader()

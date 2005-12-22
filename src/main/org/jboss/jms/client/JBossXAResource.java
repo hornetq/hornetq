@@ -160,14 +160,14 @@ public class JBossXAResource implements XAResource
       return rm.prepare(xid, connection);
    }
 
-   public Xid[] recover(int arg1) throws XAException
+   public Xid[] recover(int flags) throws XAException
    {
       if (log.isTraceEnabled())
       {
-         log.trace("Recover arg1=" + arg1 + " " + this);
+         log.trace("Recover flags=" + flags + " " + this);
       }
 
-      return new Xid[0];
+      return rm.recover(flags, connection);
    }
 
    public void rollback(Xid xid) throws XAException

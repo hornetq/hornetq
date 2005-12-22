@@ -40,6 +40,7 @@ import java.io.Serializable;
  * effort.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -91,7 +92,7 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
     * Synchronously returns the "oldest" message stored by the channel to the receiver.
     * If receiver is null, it delivers the message to the first available receiver
     */
-   void deliver(Receiver receiver);
+   void redeliver(Receiver receiver);
 
    void close();
 

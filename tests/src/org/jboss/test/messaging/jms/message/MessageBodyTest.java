@@ -119,7 +119,7 @@ public class MessageBodyTest extends MessagingTestCase
       consumerConnection.close();
 
       ServerManagement.undeployQueue("Queue");
-      //ServerManagement.deInit();
+      
 
       super.tearDown();
    }

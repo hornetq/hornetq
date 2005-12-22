@@ -32,7 +32,6 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityManager;
@@ -43,7 +42,7 @@ import org.jboss.logging.Logger;
  * This aspect enforces the JBossMessaging JMS security policy
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision 1.1 $</tt>
  *
  */
 public class SecurityAspect

@@ -88,7 +88,7 @@ public class TemporaryDestinationTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       connection.close();
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
 

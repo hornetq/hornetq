@@ -83,7 +83,7 @@ public class ReferencingTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
 

@@ -113,16 +113,6 @@ public class DistributedPipe implements Receiver
       }
    }
    
-   public void acquireLock()
-   {
-      //NOOP
-   }
-   
-   public void releaseLock()
-   {
-      //NOOP
-   }
-
    // Public --------------------------------------------------------
 
    public Address getOutputAddress()

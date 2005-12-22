@@ -19,27 +19,64 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.jms.tx;
+
+import java.io.Serializable;
+
+import javax.jms.JMSException;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
+import javax.transaction.xa.XAResource;
 
 /**
- * A message delivery. It can be "done" or active.
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ *
+ * @version $Revision$
  *
  * $Id$
  */
-public interface Delivery
+public class JMSRecoverable implements Serializable
 {
-   MessageReference getReference();
+   private static final long serialVersionUID = -2007160911694821670L;
 
-   boolean isDone();
+   protected String serverID;
    
-   boolean isCancelled();
+   protected XAConnectionFactory cf;
+   
+   protected XAConnection conn;
+   
+   public JMSRecoverable(String serverID, XAConnectionFactory cf)
+   {
+      this.serverID = serverID;
+      this.cf = cf; 
+   }
 
-   void setObserver(DeliveryObserver observer);
+   public String getName()
+   {
+      return "JBossMessaging-" + serverID;
+   }
 
-   DeliveryObserver getObserver();
+   public XAResource getResource() throws JMSException
+   {
+      cleanUp();
+      
+      conn = cf.createXAConnection();
+      
+      XASession sess = conn.createXASession();
+      
+      return sess.getXAResource();
+   }
+   
+   public void cleanUp() throws JMSException
+   {
+      if (conn != null)
+      {
+         conn.close();
+         
+         conn = null;
+      }
+   }
 
 }

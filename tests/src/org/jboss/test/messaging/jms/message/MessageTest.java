@@ -133,7 +133,7 @@ public class MessageTest extends MessagingTestCase
       consumerConnection.close();
 
       ServerManagement.undeployQueue("Queue");
-      //ServerManagement.deInit();
+      
 
       super.tearDown();
    }

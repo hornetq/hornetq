@@ -77,7 +77,7 @@ public class TopicTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.undeployTopic("TestTopic");
-      //ServerManagement.deInit();
+      
       super.tearDown();
 
       log.debug("tear down done");

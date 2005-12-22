@@ -181,16 +181,6 @@ public class SimpleReceiver implements Receiver
       }
    }
    
-   public void acquireLock()
-   {
-      //NOOP
-   }
-   
-   public void releaseLock()
-   {
-      //NOOP
-   }
-
    // Public --------------------------------------------------------
 
    public void setImmediateAsynchronousAcknowledgment(boolean b)
@@ -211,7 +201,7 @@ public class SimpleReceiver implements Receiver
          return;
       }
       log.info("receiver explicitely requesting message from the channel");
-      channel.deliver(this);
+      channel.redeliver(this);
    }
 
    public void clear()

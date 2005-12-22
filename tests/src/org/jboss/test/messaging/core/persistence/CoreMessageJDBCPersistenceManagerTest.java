@@ -23,6 +23,7 @@ package org.jboss.test.messaging.core.persistence;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -73,11 +74,45 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
    
-   public void testAddRemoveDeliveryNonTx() throws Exception
+   public void testAddReference() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;      
+      
+      JDBCPersistenceManager pm = new JDBCPersistenceManager();
+      pm.start();
+      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
+      Channel channel = new SimpleChannel("channel0", ms);
+
+      Message[] messages = createMessages();     
+      
+      for (int i = 0; i < messages.length; i++)
+      {
+         Message m = messages[i];
+         
+         MessageReference ref = ms.reference(m);
+         
+         pm.addReference(channel.getChannelID(), ref, null);
+      
+         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         
+         assertNotNull(refs);
+         assertEquals(1, refs.size());
+         String messageID = (String)refs.get(0);
+         
+         assertEquals(ref.getMessageID(), messageID);
+         
+         pm.removeAllMessageData(channel.getChannelID());
+
+         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         assertTrue(refs.isEmpty());
+      }
+   }
+   
+   public void testDeliver() throws Exception
    {
       if (ServerManagement.isRemote()) return;      
       
@@ -95,9 +130,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          MessageReference ref = ms.reference(m);
          
          Delivery del = new SimpleDelivery(channel, ref);
-         
-         pm.addDelivery(channel.getChannelID(), del);
-         
+                  
+         pm.deliver(channel.getChannelID(), del);
+      
          List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
          
          assertNotNull(dels);
@@ -106,51 +141,159 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          
          assertEquals(ref.getMessageID(), messageID);
          
-         boolean removed = pm.removeDelivery(channel.getChannelID(), del, null);
-         
-         assertTrue(removed);
-         
+         pm.removeAllMessageData(channel.getChannelID());
+
          dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
          assertTrue(dels.isEmpty());
       }
-           
    }
    
-   public void testAddRemoveMessageRefNonTx() throws Exception
+   public void testReDeliver() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
+      if (ServerManagement.isRemote()) return;      
       
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
       Channel channel = new SimpleChannel("channel0", ms);
-      
+
       Message[] messages = createMessages();     
       
       for (int i = 0; i < messages.length; i++)
       {
-         Message m = messages[i];     
+         Message m = messages[i];
+         
          MessageReference ref = ms.reference(m);
          
          pm.addReference(channel.getChannelID(), ref, null);
          
-         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         Delivery del = new SimpleDelivery(channel, ref);
          
-         assertNotNull(refs);
-         assertEquals(1, refs.size());
-         String messageID = (String)refs.get(0);
+         HashSet set = new HashSet();
+         set.add(del);
+                  
+         pm.redeliver(channel.getChannelID(), set);
+      
+         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         
+         assertNotNull(dels);
+         assertEquals(1, dels.size());
+         String messageID = (String)dels.get(0);
          
          assertEquals(ref.getMessageID(), messageID);
          
-         boolean removed = pm.removeReference(channel.getChannelID(), ref);
+         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         assertTrue(refs.isEmpty());
          
-         assertTrue(removed);            
+         pm.removeAllMessageData(channel.getChannelID());
+
+         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         assertTrue(dels.isEmpty());
+      }
+   }
+   
+   
+   public void testAcknowledge() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;      
+      
+      JDBCPersistenceManager pm = new JDBCPersistenceManager();
+      pm.start();
+      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
+      Channel channel = new SimpleChannel("channel0", ms);
+
+      Message[] messages = createMessages();     
+      
+      for (int i = 0; i < messages.length; i++)
+      {
+         Message m = messages[i];
+         
+         MessageReference ref = ms.reference(m);
+         
+         Delivery del = new SimpleDelivery(channel, ref);
+           
+         pm.deliver(channel.getChannelID(), del);
+      
+         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         
+         assertNotNull(dels);
+         assertEquals(1, dels.size());
+         String messageID = (String)dels.get(0);
+         
+         assertEquals(ref.getMessageID(), messageID);
+         
+         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         assertTrue(refs.isEmpty());
+         
+         pm.acknowledge(channel.getChannelID(), del, null);
+         
+         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         
+         assertTrue(dels.isEmpty());
          
          refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
          assertTrue(refs.isEmpty());
+                  
       }
-      
    }
+   
+   public void testCancel() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;      
+      
+      JDBCPersistenceManager pm = new JDBCPersistenceManager();
+      pm.start();
+      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
+      Channel channel = new SimpleChannel("channel0", ms);
+
+      Message[] messages = createMessages();     
+      
+      for (int i = 0; i < messages.length; i++)
+      {
+         Message m = messages[i];
+         
+         MessageReference ref = ms.reference(m);
+         
+         Delivery del = new SimpleDelivery(channel, ref);
+           
+         pm.deliver(channel.getChannelID(), del);
+      
+         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         
+         assertNotNull(dels);
+         assertEquals(1, dels.size());
+         String messageID = (String)dels.get(0);
+         
+         assertEquals(ref.getMessageID(), messageID);
+         
+         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         assertTrue(refs.isEmpty());
+         
+         pm.cancel(channel.getChannelID(), del);
+         
+         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         
+         assertTrue(dels.isEmpty());
+         
+         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         assertNotNull(refs);
+         assertEquals(1, refs.size());
+         messageID = (String)refs.get(0);
+         
+         assertEquals(ref.getMessageID(), messageID);
+         
+         pm.removeAllMessageData(channel.getChannelID());
+         
+         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+         assertTrue(dels.isEmpty());
+         assertTrue(refs.isEmpty());
+      }
+   }
+
+   
+   
+   
    
    public void testAddRetrieveRemoveMessage() throws Exception
    {
@@ -208,7 +351,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          
          Delivery del = new SimpleDelivery(channel, ref);
          
-         pm.addDelivery(channel.getChannelID(), del);
+         pm.deliver(channel.getChannelID(), del);
       }
          
       List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
@@ -286,7 +429,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          
          Delivery del = new SimpleDelivery(channel, ref);
          
-         pm.addDelivery(channel.getChannelID(), del);
+         pm.deliver(channel.getChannelID(), del);
                            
          pm.addReference(channel.getChannelID(), ref, null);
       }
@@ -406,8 +549,10 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    }
    
    
-   public void retrievePreparedTransactions() throws Exception
+   public void testRetrievePreparedTransactions() throws Exception
    {
+      if (ServerManagement.isRemote()) return;      
+            
       JDBCPersistenceManager pm = new JDBCPersistenceManager();
       pm.start();
       MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
@@ -421,11 +566,12 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       
       for (int i = 0; i < messages.length; i++)
       {         
-         Transaction tx = txRep.createTransaction();
+         xids[i] = new MockXid();
+         Transaction tx = txRep.createTransaction(xids[i]);
          MessageReference ref = ms.reference(messages[i]);
-         pm.addReference(channel.getChannelID(), ref, tx);         
+         pm.addReference(channel.getChannelID(), ref, tx);  
+         tx.prepare();
       }
-      
       
       List txs = pm.retrievePreparedTransactions();
       assertNotNull(txs);
@@ -718,6 +864,44 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          return globalTxId;
       }
       
+      public boolean equals(Object other)
+      {
+         if (!(other instanceof Xid))
+         {
+            return false;
+         }
+         Xid xother = (Xid)other;
+         if (xother.getFormatId() != this.formatID)
+         {
+            return false;
+         }
+         if (xother.getBranchQualifier().length != this.branchQual.length)
+         {
+            return false;
+         }
+         if (xother.getGlobalTransactionId().length != this.globalTxId.length)
+         {
+            return false;
+         }
+         for (int i = 0; i < this.branchQual.length; i++)
+         {
+            byte[] otherBQ = xother.getBranchQualifier();
+            if (this.branchQual[i] != otherBQ[i])
+            {
+               return false;
+            }
+         }
+         for (int i = 0; i < this.globalTxId.length; i++)
+         {
+            byte[] otherGtx = xother.getGlobalTransactionId();
+            if (this.globalTxId[i] != otherGtx[i])
+            {
+               return false;
+            }
+         }
+         return true;
+      }
+      
    }
    
    protected void doTransactionCommit(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
@@ -736,129 +920,125 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       TransactionRepository txRep = new TransactionRepository(pm);
       pm.start();
       
+      Message[] messages = createMessages();     
       
-      for (int i = 0; i < 10; i++)
+      Message m1 = messages[0];
+      Message m2 = messages[1];
+      Message m3 = messages[2];      
+      Message m4 = messages[3];
+      Message m5 = messages[4];
+      Message m6 = messages[5];
+      Message m7 = messages[6];      
+      Message m8 = messages[7];
+      Message m9 = messages[8];
+      Message m10 = messages[9];
+               
+      
+      Transaction tx = null;
+      if (xa)
       {
          
-         Message[] messages = createMessages();     
-         
-         Message m1 = messages[0];
-         Message m2 = messages[1];
-         Message m3 = messages[2];      
-         Message m4 = messages[3];
-         Message m5 = messages[4];
-         Message m6 = messages[5];
-         Message m7 = messages[6];      
-         Message m8 = messages[7];
-         Message m9 = messages[8];
-         Message m10 = messages[9];
-                  
-         
-         Transaction tx = null;
-         if (xa)
-         {
-            
-            tx = txRep.createTransaction(new MockXid());
-         }
-         else
-         {
-            tx = txRep.createTransaction();
-         }
-         
-         MessageReference ref1 = ms.reference(m1);
-         MessageReference ref2 = ms.reference(m2);  
-         MessageReference ref3 = ms.reference(m3);       
-         MessageReference ref4 = ms.reference(m4);
-         MessageReference ref5 = ms.reference(m5);  
-         MessageReference ref6 = ms.reference(m6);
-         MessageReference ref7 = ms.reference(m7);       
-         MessageReference ref8 = ms.reference(m8);
-         MessageReference ref9 = ms.reference(m9);  
-         MessageReference ref10 = ms.reference(m10);
-         
-         Delivery del6 = new SimpleDelivery(channel, ref6);
-         Delivery del7 = new SimpleDelivery(channel, ref7);
-         Delivery del8 = new SimpleDelivery(channel, ref8);
-         Delivery del9 = new SimpleDelivery(channel, ref9);
-         Delivery del10 = new SimpleDelivery(channel, ref10);
-               
-         //Add first two refs non transactionally
-         pm.addReference(channel.getChannelID(), ref1, null);
-         pm.addReference(channel.getChannelID(), ref2, null);
-         
-         //check they're there
-         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(refs);
-         assertEquals(2, refs.size());
-         assertTrue(refs.contains(ref1.getMessageID()));
-         assertTrue(refs.contains(ref2.getMessageID()));      
-         
-         //Add the next 3 refs transactionally
-         pm.addReference(channel.getChannelID(), ref3, tx);
-         pm.addReference(channel.getChannelID(), ref4, tx);
-         pm.addReference(channel.getChannelID(), ref5, tx);
-              
-         //Check they're not visible
-         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(refs);
-         assertEquals(2, refs.size());
-         assertTrue(refs.contains(ref1.getMessageID()));
-         assertTrue(refs.contains(ref2.getMessageID()));  
-         
-         //Add deliveries non transactionally
-         pm.addDelivery(channel.getChannelID(), del6);
-         pm.addDelivery(channel.getChannelID(), del7);
-         pm.addDelivery(channel.getChannelID(), del8);
-         pm.addDelivery(channel.getChannelID(), del9);
-         pm.addDelivery(channel.getChannelID(), del10);
-         
-         //Check they're there
-         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(dels);
-         assertEquals(5, dels.size());
-         assertTrue(dels.contains(ref6.getMessageID()));
-         assertTrue(dels.contains(ref7.getMessageID())); 
-         assertTrue(dels.contains(ref8.getMessageID()));
-         assertTrue(dels.contains(ref9.getMessageID()));
-         assertTrue(dels.contains(ref10.getMessageID()));
-         
-         //Remove first three transactionally
-         pm.removeDelivery(channel.getChannelID(), del6, tx);
-         pm.removeDelivery(channel.getChannelID(), del7, tx);
-         pm.removeDelivery(channel.getChannelID(), del8, tx);
-   
-         //Check changes are not visible
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(dels);
-         assertEquals(5, dels.size());
-         assertTrue(dels.contains(ref6.getMessageID()));
-         assertTrue(dels.contains(ref7.getMessageID())); 
-         assertTrue(dels.contains(ref8.getMessageID()));
-         assertTrue(dels.contains(ref9.getMessageID()));
-         assertTrue(dels.contains(ref10.getMessageID()));
-         
-         //commit transaction
-         pm.commitTx(tx);
-         
-         //check we can see all 5 refs
-         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(refs);
-         assertEquals(5, refs.size());
-         assertTrue(refs.contains(ref1.getMessageID()));
-         assertTrue(refs.contains(ref2.getMessageID()));    
-         assertTrue(refs.contains(ref3.getMessageID()));
-         assertTrue(refs.contains(ref4.getMessageID()));  
-         assertTrue(refs.contains(ref5.getMessageID()));
-         
-         //Check we can see only 2 deliveries
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(dels);
-         assertEquals(2, dels.size());
-         assertTrue(dels.contains(ref9.getMessageID()));
-         assertTrue(dels.contains(ref10.getMessageID())); 
-         
-         pm.removeAllMessageData(channel.getChannelID());
+         tx = txRep.createTransaction(new MockXid());
       }
+      else
+      {
+         tx = txRep.createTransaction();
+      }
+      
+      MessageReference ref1 = ms.reference(m1);
+      MessageReference ref2 = ms.reference(m2);  
+      MessageReference ref3 = ms.reference(m3);       
+      MessageReference ref4 = ms.reference(m4);
+      MessageReference ref5 = ms.reference(m5);  
+      MessageReference ref6 = ms.reference(m6);
+      MessageReference ref7 = ms.reference(m7);       
+      MessageReference ref8 = ms.reference(m8);
+      MessageReference ref9 = ms.reference(m9);  
+      MessageReference ref10 = ms.reference(m10);
+      
+      Delivery del6 = new SimpleDelivery(channel, ref6);
+      Delivery del7 = new SimpleDelivery(channel, ref7);
+      Delivery del8 = new SimpleDelivery(channel, ref8);
+      Delivery del9 = new SimpleDelivery(channel, ref9);
+      Delivery del10 = new SimpleDelivery(channel, ref10);
+            
+      //Add first two refs non transactionally
+      pm.addReference(channel.getChannelID(), ref1, null);
+      pm.addReference(channel.getChannelID(), ref2, null);
+      
+      //check they're there
+      List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(refs);
+      assertEquals(2, refs.size());
+      assertTrue(refs.contains(ref1.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));      
+      
+      //Add the next 3 refs transactionally
+      pm.addReference(channel.getChannelID(), ref3, tx);
+      pm.addReference(channel.getChannelID(), ref4, tx);
+      pm.addReference(channel.getChannelID(), ref5, tx);
+           
+      //Check they're not visible
+      refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(refs);
+      assertEquals(2, refs.size());
+      assertTrue(refs.contains(ref1.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));  
+      
+      //Add deliveries non transactionally
+      pm.deliver(channel.getChannelID(), del6);
+      pm.deliver(channel.getChannelID(), del7);
+      pm.deliver(channel.getChannelID(), del8);
+      pm.deliver(channel.getChannelID(), del9);
+      pm.deliver(channel.getChannelID(), del10);
+      
+      //Check they're there
+      List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(dels);
+      assertEquals(5, dels.size());
+      assertTrue(dels.contains(ref6.getMessageID()));
+      assertTrue(dels.contains(ref7.getMessageID())); 
+      assertTrue(dels.contains(ref8.getMessageID()));
+      assertTrue(dels.contains(ref9.getMessageID()));
+      assertTrue(dels.contains(ref10.getMessageID()));
+      
+      //Remove first three transactionally
+      pm.acknowledge(channel.getChannelID(), del6, tx);
+      pm.acknowledge(channel.getChannelID(), del7, tx);
+      pm.acknowledge(channel.getChannelID(), del8, tx);
+
+      //Check changes are not visible
+      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(dels);
+      assertEquals(5, dels.size());
+      assertTrue(dels.contains(ref6.getMessageID()));
+      assertTrue(dels.contains(ref7.getMessageID())); 
+      assertTrue(dels.contains(ref8.getMessageID()));
+      assertTrue(dels.contains(ref9.getMessageID()));
+      assertTrue(dels.contains(ref10.getMessageID()));
+      
+      //commit transaction
+      pm.commitTx(tx);
+      
+      //check we can see all 5 refs
+      refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(refs);
+      assertEquals(5, refs.size());
+      assertTrue(refs.contains(ref1.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));    
+      assertTrue(refs.contains(ref3.getMessageID()));
+      assertTrue(refs.contains(ref4.getMessageID()));  
+      assertTrue(refs.contains(ref5.getMessageID()));
+      
+      //Check we can see only 2 deliveries
+      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(dels);
+      assertEquals(2, dels.size());
+      assertTrue(dels.contains(ref9.getMessageID()));
+      assertTrue(dels.contains(ref10.getMessageID())); 
+      
+      pm.removeAllMessageData(channel.getChannelID());
+      
    }
    
 
@@ -880,126 +1060,123 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       TransactionRepository txRep = new TransactionRepository(pm);
       pm.start();
       
-      for (int i = 0; i < 10; i++)
+      Message[] messages = createMessages();     
+      
+      Message m1 = messages[0];
+      Message m2 = messages[1];
+      Message m3 = messages[2];      
+      Message m4 = messages[3];
+      Message m5 = messages[4];
+      Message m6 = messages[5];
+      Message m7 = messages[6];      
+      Message m8 = messages[7];
+      Message m9 = messages[8];
+      Message m10 = messages[9];
+      
+      Transaction tx = null;
+      if (xa)
       {
-         
-         Message[] messages = createMessages();     
-         
-         Message m1 = messages[0];
-         Message m2 = messages[1];
-         Message m3 = messages[2];      
-         Message m4 = messages[3];
-         Message m5 = messages[4];
-         Message m6 = messages[5];
-         Message m7 = messages[6];      
-         Message m8 = messages[7];
-         Message m9 = messages[8];
-         Message m10 = messages[9];
-         
-         Transaction tx = null;
-         if (xa)
-         {
-            tx = txRep.createTransaction(new MockXid());
-         }
-         else
-         {
-            tx = txRep.createTransaction();
-         }
-         
-         MessageReference ref1 = ms.reference(m1);
-         MessageReference ref2 = ms.reference(m2);  
-         MessageReference ref3 = ms.reference(m3);       
-         MessageReference ref4 = ms.reference(m4);
-         MessageReference ref5 = ms.reference(m5);  
-         MessageReference ref6 = ms.reference(m6);
-         MessageReference ref7 = ms.reference(m7);       
-         MessageReference ref8 = ms.reference(m8);
-         MessageReference ref9 = ms.reference(m9);  
-         MessageReference ref10 = ms.reference(m10);
-         
-         Delivery del6 = new SimpleDelivery(channel, ref6);
-         Delivery del7 = new SimpleDelivery(channel, ref7);
-         Delivery del8 = new SimpleDelivery(channel, ref8);
-         Delivery del9 = new SimpleDelivery(channel, ref9);
-         Delivery del10 = new SimpleDelivery(channel, ref10);
-               
-         //Add first two refs non transactionally
-         pm.addReference(channel.getChannelID(), ref1, null);
-         pm.addReference(channel.getChannelID(), ref2, null);
-         
-         //check they're there
-         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(refs);
-         assertEquals(2, refs.size());
-         assertTrue(refs.contains(ref1.getMessageID()));
-         assertTrue(refs.contains(ref2.getMessageID()));      
-         
-         //Add the next 3 refs transactionally
-         pm.addReference(channel.getChannelID(), ref3, tx);
-         pm.addReference(channel.getChannelID(), ref4, tx);
-         pm.addReference(channel.getChannelID(), ref5, tx);
-              
-         //Check they're not visible
-         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(refs);
-         assertEquals(2, refs.size());
-         assertTrue(refs.contains(ref1.getMessageID()));
-         assertTrue(refs.contains(ref2.getMessageID()));  
-         
-         //Add deliveries non transactionally
-         pm.addDelivery(channel.getChannelID(), del6);
-         pm.addDelivery(channel.getChannelID(), del7);
-         pm.addDelivery(channel.getChannelID(), del8);
-         pm.addDelivery(channel.getChannelID(), del9);
-         pm.addDelivery(channel.getChannelID(), del10);
-         
-         //Check they're there
-         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(dels);
-         assertEquals(5, dels.size());
-         assertTrue(dels.contains(ref6.getMessageID()));
-         assertTrue(dels.contains(ref7.getMessageID())); 
-         assertTrue(dels.contains(ref8.getMessageID()));
-         assertTrue(dels.contains(ref9.getMessageID()));
-         assertTrue(dels.contains(ref10.getMessageID()));
-         
-         //Remove first three transactionally
-         pm.removeDelivery(channel.getChannelID(), del6, tx);
-         pm.removeDelivery(channel.getChannelID(), del7, tx);
-         pm.removeDelivery(channel.getChannelID(), del8, tx);
-   
-         //Check changes are not visible
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(dels);
-         assertEquals(5, dels.size());
-         assertTrue(dels.contains(ref6.getMessageID()));
-         assertTrue(dels.contains(ref7.getMessageID())); 
-         assertTrue(dels.contains(ref8.getMessageID()));
-         assertTrue(dels.contains(ref9.getMessageID()));
-         assertTrue(dels.contains(ref10.getMessageID()));
-         
-         //rollback transaction
-         pm.rollbackTx(tx);
-         
-         //check we can see only two
-         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(refs);
-         assertEquals(2, refs.size());
-         assertTrue(refs.contains(ref1.getMessageID()));
-         assertTrue(refs.contains(ref2.getMessageID()));
-         
-         //Check we can see all 5 deliveries
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertNotNull(dels);
-         assertEquals(5, dels.size());
-         assertTrue(dels.contains(ref6.getMessageID()));
-         assertTrue(dels.contains(ref7.getMessageID())); 
-         assertTrue(dels.contains(ref8.getMessageID()));
-         assertTrue(dels.contains(ref9.getMessageID()));
-         assertTrue(dels.contains(ref10.getMessageID()));
-         
-         pm.removeAllMessageData(channel.getChannelID());
+         tx = txRep.createTransaction(new MockXid());
       }
+      else
+      {
+         tx = txRep.createTransaction();
+      }
+      
+      MessageReference ref1 = ms.reference(m1);
+      MessageReference ref2 = ms.reference(m2);  
+      MessageReference ref3 = ms.reference(m3);       
+      MessageReference ref4 = ms.reference(m4);
+      MessageReference ref5 = ms.reference(m5);  
+      MessageReference ref6 = ms.reference(m6);
+      MessageReference ref7 = ms.reference(m7);       
+      MessageReference ref8 = ms.reference(m8);
+      MessageReference ref9 = ms.reference(m9);  
+      MessageReference ref10 = ms.reference(m10);
+      
+      Delivery del6 = new SimpleDelivery(channel, ref6);
+      Delivery del7 = new SimpleDelivery(channel, ref7);
+      Delivery del8 = new SimpleDelivery(channel, ref8);
+      Delivery del9 = new SimpleDelivery(channel, ref9);
+      Delivery del10 = new SimpleDelivery(channel, ref10);
+            
+      //Add first two refs non transactionally
+      pm.addReference(channel.getChannelID(), ref1, null);
+      pm.addReference(channel.getChannelID(), ref2, null);
+      
+      //check they're there
+      List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(refs);
+      assertEquals(2, refs.size());
+      assertTrue(refs.contains(ref1.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));      
+      
+      //Add the next 3 refs transactionally
+      pm.addReference(channel.getChannelID(), ref3, tx);
+      pm.addReference(channel.getChannelID(), ref4, tx);
+      pm.addReference(channel.getChannelID(), ref5, tx);
+           
+      //Check they're not visible
+      refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(refs);
+      assertEquals(2, refs.size());
+      assertTrue(refs.contains(ref1.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));  
+      
+      //Add deliveries non transactionally
+      pm.deliver(channel.getChannelID(), del6);
+      pm.deliver(channel.getChannelID(), del7);
+      pm.deliver(channel.getChannelID(), del8);
+      pm.deliver(channel.getChannelID(), del9);
+      pm.deliver(channel.getChannelID(), del10);
+      
+      //Check they're there
+      List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(dels);
+      assertEquals(5, dels.size());
+      assertTrue(dels.contains(ref6.getMessageID()));
+      assertTrue(dels.contains(ref7.getMessageID())); 
+      assertTrue(dels.contains(ref8.getMessageID()));
+      assertTrue(dels.contains(ref9.getMessageID()));
+      assertTrue(dels.contains(ref10.getMessageID()));
+      
+      //Remove first three transactionally
+      pm.acknowledge(channel.getChannelID(), del6, tx);
+      pm.acknowledge(channel.getChannelID(), del7, tx);
+      pm.acknowledge(channel.getChannelID(), del8, tx);
+
+      //Check changes are not visible
+      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(dels);
+      assertEquals(5, dels.size());
+      assertTrue(dels.contains(ref6.getMessageID()));
+      assertTrue(dels.contains(ref7.getMessageID())); 
+      assertTrue(dels.contains(ref8.getMessageID()));
+      assertTrue(dels.contains(ref9.getMessageID()));
+      assertTrue(dels.contains(ref10.getMessageID()));
+      
+      //rollback transaction
+      pm.rollbackTx(tx);
+      
+      //check we can see only two
+      refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(refs);
+      assertEquals(2, refs.size());
+      assertTrue(refs.contains(ref1.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));
+      
+      //Check we can see all 5 deliveries
+      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
+      assertNotNull(dels);
+      assertEquals(5, dels.size());
+      assertTrue(dels.contains(ref6.getMessageID()));
+      assertTrue(dels.contains(ref7.getMessageID())); 
+      assertTrue(dels.contains(ref8.getMessageID()));
+      assertTrue(dels.contains(ref9.getMessageID()));
+      assertTrue(dels.contains(ref10.getMessageID()));
+      
+      pm.removeAllMessageData(channel.getChannelID());
+     
       
    }
    

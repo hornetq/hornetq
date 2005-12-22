@@ -28,6 +28,7 @@ import org.jboss.messaging.core.refqueue.BasicSynchronizedPrioritizedDeque;
 import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
+import org.jboss.messaging.core.util.ConcurrentHashSet;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -58,7 +60,7 @@ public class NonRecoverableState implements State
 
    protected PrioritizedDeque messageRefs;
    
-   protected Map deliveries;
+   protected Set deliveries;
 
    protected Map txToAddReferenceCallbacks;
    protected Map txToRemoveDeliveryCallbacks;
@@ -73,7 +75,7 @@ public class NonRecoverableState implements State
       this.channel = channel;
       this.acceptReliableMessages = acceptReliableMessages;
       messageRefs = new BasicSynchronizedPrioritizedDeque(new BasicPrioritizedDeque(10));
-      deliveries = new ConcurrentHashMap();
+      deliveries = new ConcurrentHashSet();
       txToAddReferenceCallbacks = new ConcurrentHashMap();
       txToRemoveDeliveryCallbacks = new ConcurrentHashMap();
    }
@@ -89,25 +91,13 @@ public class NonRecoverableState implements State
    {
       return acceptReliableMessages;
    }
-
+   
+   /*
+    * Add a ref transactionally
+    */
    public void add(MessageReference ref, Transaction tx) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
-
-      if (tx == null)
-      {
-         if (ref.isReliable() && !acceptReliableMessages)
-         {
-            throw new IllegalStateException("Reliable reference " + ref +
-                                            " cannot be added to non-recoverable state");
-         }
-
-         messageRefs.addLast(ref, ref.getPriority());         
-         if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " in memory"); }
-         return;
-      }
-
-      // transactional add
+      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "transactionally in transaction: " + tx); }
 
       if (ref.isReliable() && !acceptReliableMessages)
       {
@@ -123,9 +113,151 @@ public class NonRecoverableState implements State
          callback.addReference(ref);
          if (log.isTraceEnabled()) { log.trace(this + " added transactionally " + ref + " in memory"); }
       }
+      ref.acquireReference();
+      
    }
 
-   public void addFirst(MessageReference ref) throws Throwable
+   /* Add a message reference non transactionally.
+    * This occurs when a new message arrives but is not delivered
+    */
+   public void add(MessageReference ref) throws Throwable
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "non-transactionally"); }
+
+      if (ref.isReliable() && !acceptReliableMessages)
+      {
+         throw new IllegalStateException("Reliable reference " + ref +
+                                         " cannot be added to non-recoverable state");
+      }
+
+      messageRefs.addLast(ref, ref.getPriority());    
+      
+      ref.acquireReference();
+      
+      if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " in memory"); }      
+   }
+  
+   /*
+    * We have delivered a new message so add the delivery to state
+    */
+   public void deliver(Delivery d) throws Throwable
+   {
+      if (d.getReference().isReliable() && !acceptReliableMessages)
+      {
+         throw new IllegalStateException("Delivery " + d + " of a reliable reference " +
+                                         " cannot be added to non-recoverable state");
+      }
+
+      // Note! Adding of deliveries to the state is NEVER done in a transactional context.
+      // The only things that are done in a transactional context are sending of messages
+      // and removing deliveries (acking).
+      
+      deliveries.add(d);
+      
+      d.getReference().acquireReference();
+      
+      if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory"); }
+   }
+   
+   /*
+    * We have redelivered a pre-existing message, so we remove the ref and add the deliveries to state
+    */
+   public void redeliver(Set dels) throws Throwable
+   {
+      //Add the deliveries
+      Iterator iter = dels.iterator();
+      
+      //We also acquire a reference for every *extra* delivery we have over 1.
+      //This is because we already have a reference for the ref so we don't want to get that
+      //again
+      int count = 0;
+      while (iter.hasNext())
+      {
+         Delivery d = (Delivery)iter.next();
+         
+         deliveries.add(d);
+         
+         if (count != 0)
+         {
+            d.getReference().acquireReference();
+         }
+         
+         count++;
+      }
+   }
+   
+   /*
+    * Cancel an outstanding delivery.
+    * This removes the delivery and adds the message reference back into the state
+    */
+   public void cancel(Delivery del) throws Throwable
+   {
+      boolean removed = deliveries.remove(del);
+      
+      if (!removed)
+      {
+         //This is ok
+         //This can happen if the message is cancelled before the result of ServerConsumerDelegate.handle
+         //has returned, in which case we won't have a record of the delivery in the Set
+         
+         //In this case we don't want to add the message reference back into the state
+         //since it was never removed in the first place
+      }
+      else
+      {         
+         //FIXME - 
+         //This won't prove to be a problem for JMS since there is only ever one delivery per message ref at any one
+         //time.
+         //However in the general case, there can be many deliveries for a message reference.
+         //We only want to add the message reference back in the state if there are no more deliveries
+         //for that message reference outstanding.
+         //Currently we add the message reference back into the state when any delivery for it is cancelled.
+         //Suggestion here would be to generalise the JMS case and make the restriction that a channel can only
+         //have one receiver.
+         //It is completely unnecessary for a channel to have more than one receiver and adds significant
+         //extra complexity - Tim
+         
+         messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
+      }
+   }
+   
+   public void acknowledge(Delivery d, Transaction tx) throws Throwable
+   {
+      // Transactional so add a post commit callback to remove after tx commit
+      RemoveDeliveryCallback callback = addRemoveDeliveryCallback(tx);
+      
+      callback.addDelivery(d);
+      
+      if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
+   }
+   
+   public void acknowledge(Delivery d) throws Throwable
+   {
+      boolean removed = deliveries.remove(d);
+      
+      if (removed && log.isTraceEnabled()) { log.trace(this + " removed " + d + " from memory"); }
+      
+      if (!removed)
+      {
+         //This is ok
+         //This can happen if the message is acknowledged before the result of ServerConsumerDelegate.handle
+         //has returned, in which case we won't have a record of the delivery in the Set
+      }      
+      else
+      {
+         d.getReference().releaseReference();
+      }
+   }
+   
+   public MessageReference removeFirst()
+   {
+      MessageReference result = (MessageReference)messageRefs.removeFirst();
+
+      if (log.isTraceEnabled()) { log.trace(this + " removing the oldest message in memory returns " + result); }
+      return result;
+   }
+   
+   public void replaceFirst(MessageReference ref)
    {
       if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "at the top of the list in memory"); }
 
@@ -139,61 +271,14 @@ public class NonRecoverableState implements State
       
       if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " at the top of the list in memory"); }
    }
-
-   public boolean remove(MessageReference ref) throws Throwable
-   {
-      boolean removed = messageRefs.remove(ref);
-      if (removed && log.isTraceEnabled()) { log.trace(this + " removed " + ref + " from memory"); }
-      
-      return removed;
-   }
-
-   public MessageReference remove() throws Throwable
-   {
-      MessageReference result = (MessageReference)messageRefs.removeFirst();
-
-      if (log.isTraceEnabled()) { log.trace(this + " removing the oldest message in memory returns " + result); }
-      return result;
-   }
-
-   public void add(Delivery d) throws Throwable
-   {
-      if (d.getReference().isReliable() && !acceptReliableMessages)
-      {
-         throw new IllegalStateException("Delivery " + d + " of a reliable reference " +
-                                         " cannot be added to non-recoverable state");
-      }
-
-      // Note! Adding of deliveries to the state is NEVER done in a transactional context.
-      // The only things that are done in a transactional context are sending of messages
-      // and removing deliveries (acking).
-      
-      deliveries.put(d.getReference().getMessageID(), d);
-      if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory"); }
-   }
-
-   public boolean remove(Delivery d, Transaction tx) throws Throwable
-   {
-      if (tx != null)
-      {
-         //Transactional so add a post commit callback to remove after tx commit
-         RemoveDeliveryCallback callback = addRemoveDeliveryCallback(tx);
-         callback.addDelivery(d);
-         if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
-         return true;
-      }
-
-      boolean removed = deliveries.remove(d.getReference().getMessageID()) != null;
-      if (removed && log.isTraceEnabled()) { log.trace(this + " removed " + d + " from memory"); }
-      return removed;
-   }
-
+   
+ 
    public List delivering(Filter filter)
    {
       List delivering = new ArrayList();
       synchronized (deliveries)
       {
-         for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
+         for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
             Delivery d = (Delivery)i.next();
             MessageReference r = d.getReference();
@@ -331,7 +416,7 @@ public class NonRecoverableState implements State
             //However some of the core tests still assume all deliver() semantics i.e. delivery
             //is attempted for all messages in channel on commit, hence they will fail if we only
             //call deliver once
-            channel.deliver(null);
+            channel.redeliver(null);
          }
 
          txToAddReferenceCallbacks.remove(tx);
@@ -372,7 +457,7 @@ public class NonRecoverableState implements State
          {
             Delivery d = (Delivery)i.next();
             if (log.isTraceEnabled()) { log.trace(this + " removing " + d + " after commit"); }
-            deliveries.remove(d.getReference().getMessageID());
+            deliveries.remove(d);
             d.getReference().releaseReference();
          }
          txToRemoveDeliveryCallbacks.remove(tx);

@@ -22,6 +22,7 @@
 package org.jboss.messaging.core;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -60,37 +61,101 @@ public interface State
     */
    public boolean acceptReliableMessages();
 
+   
    /**
-    * Adds a message reference to the state. Adding a message can be done in the context of a
-    * local transaction, if tx is not null.
+    * Add a message reference into the state in the presence of a JMS local transaction
+    * This occurs when a new message arrives at the Channel but it is not delivered since
+    * there are no receivers willing to accept it.
+    * It should not be used for any other purpose.
+    * The add can occur
+    * 
+    * @param ref The MessageReference to add
+    * @param tx The JMS local transaction
+    * @throws Throwable
     */
    void add(MessageReference ref, Transaction tx) throws Throwable;
+   
+   /**
+    * Add a message reference into the state in the presence in a non-transacted context
+    * This occurs when a new message arrives at the Channel but it is not delivered since
+    * there are no receivers willing to accept it.
+    * It should not be used for any other purpose.
+    * The add can occur
+    * 
+    * @param ref The MessageReference to add
+    * @throws Throwable
+    */
+   void add(MessageReference ref) throws Throwable;
+   
+   /**
+    * A new message has been successfully delivered
+    * Add a delivery into the state.
+    * This occurs when a new message arrives at the Channel and is immediately successfully
+    * delivered, at no point is the corresponding MessageReference put in the state.
+    * It should not be used for any other purpose
+    * 
+    * @param d The Delivery to add
+    * @throws Throwable
+    */
+   void deliver(Delivery d) throws Throwable;
 
    /**
-    * Adds at the top of the list. TODO Experimental - useful for redeliveries
+    * A message that was already in the state has now been successully delivered.
+    * This means we need to remove the MessageReference from the state, and add
+    * the successful deliveries.
+    * In the JMS case there is only ever one deliver.
+    * This all needs to be done atomically
+    *
+    * @param deliveries The set of Delivery instances to add
+    * @throws Throwable
     */
-   void addFirst(MessageReference ref) throws Throwable;
-
+   void redeliver(Set deliveries) throws Throwable;
+   
    /**
-    * Removes a message from state.
+    * A Delivery has been cancelled.
+    * This means we need to remove the Delivery from the state and add the 
+    * corresponding MessageReference into the state.
+    * This all needs to be done atomically
+    * 
+    * @param d The Delivery to cancel
+    * @throws Throwable
     */
-   boolean remove(MessageReference ref) throws Throwable;
-
+   void cancel(Delivery d) throws Throwable;
+      
    /**
-    * Removes the "oldest" message from state.
+    * A Delivery has been acknowledged in the presence of a JMS local transaction.
+    * This means we need to remove the Delivery from the state.
+    * @param d The Delivery to acknowledge
+    * @param tx The JMS local transaction
+    * @throws Throwable
     */
-   MessageReference remove() throws Throwable;
-
+   void acknowledge(Delivery d, Transaction tx) throws Throwable;
+   
    /**
-    * Adds a delivery to the state. Adding a delivery is done non-transactionally.
+    * A Delivery has been acknowledged in a non transactional context.
+    * This means we need to remove the Delivery from the state.
+    * @param d The Delivery to acknowledge
+    * @throws Throwable
     */
-   void add(Delivery d) throws Throwable;
-
+   void acknowledge(Delivery d) throws Throwable;
+      
    /**
-    * Removes a delivery from the state. Removing a delivery can be done in the context of a
-    * local transaction, if tx is not null.
+    * Remove the MessageReference at the head of the queue from the state.
+    * Note that this operation *does not* remove the MessageReference from
+    * RecoverableState - it only removes it from NonRecoverableState
+    * @return The MessageReference
+    * @throws Throwable
     */
-   boolean remove(Delivery d, Transaction tx) throws Throwable;
+   MessageReference removeFirst();
+   
+   /**
+    * Replace the MessageReference at the head of the queue.
+    * Note that this operation *does not* replace the MessageReference in
+    * RecoverableState - it only replaces it in NonRecoverableState
+    * @param ref The MessageReference to replace
+    * @throws Throwable
+    */
+   void replaceFirst(MessageReference ref);
 
    /**
     * A list of message references of messages in process of being delivered.

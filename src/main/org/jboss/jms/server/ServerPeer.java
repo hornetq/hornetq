@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.XAConnectionFactory;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
@@ -44,6 +45,7 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityManager;
+import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
@@ -75,6 +77,8 @@ public class ServerPeer
    private static final String CONNECTION_FACTORY_JNDI_NAME = "ConnectionFactory";
    
    private static final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
+   
+   private static final String RECOVERABLE_JNDI_NAME = "JMSRecoverable";
    
    private static ObjectName DESTINATION_MANAGER_OBJECT_NAME;
    
@@ -165,58 +169,69 @@ public class ServerPeer
 
    public synchronized void start() throws Exception
    {
-      if (started)
+      try
       {
-         return;
+         
+         if (started)
+         {
+            return;
+         }
+         
+         loadClientAOPConfig();
+         
+         loadServerAOPConfig();
+         
+         log.info(this + " starting");
+         
+         mbeanServer = findMBeanServer();
+   
+         JDBCPersistenceManager jpm = new JDBCPersistenceManager();
+         jpm.start();
+         pm = jpm;
+         
+         txRepository = new TransactionRepository(pm);
+         txRepository.loadPreparedTransactions();
+               
+         // TODO: is should be possible to share this with other peers
+         ms = new PersistentMessageStore(serverPeerID, pm);
+   
+         clientManager = new ClientManagerImpl(this);
+         
+         destinationManager = new DestinationManagerImpl(this);
+               
+         JDBCStateManager jdbcStateManager = new JDBCStateManager(this);
+         jdbcStateManager.start();
+         stateManager = jdbcStateManager;
+         
+         //This pooled executor controls how threads are allocated to deliver messges
+         //to consumers.
+         //The buffer(queue) of the pool must be unbounded to avoid potential distributed deadlock
+         //Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
+         //Otherwise, we will never have more than getMinimumPoolSize threads running.
+                     
+         threadPool = new PooledExecutor(new LinkedQueue(), 10);
+         threadPool.setMinimumPoolSize(10); 
+   
+         initializeRemoting();
+   
+         mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
+         
+         mbeanServer.registerMBean(stateManager, STATE_MANAGER_OBJECT_NAME);
+         
+         securityManager.init();
+         
+         setupConnectionFactories();
+         
+         //createRecoverable();
+         
+         started = true;
+   
+         log.info("JMS " + this + " started");
       }
-      
-      loadClientAOPConfig();
-      
-      loadServerAOPConfig();
-      
-      log.info(this + " starting");
-      
-      mbeanServer = findMBeanServer();
-
-      JDBCPersistenceManager jpm = new JDBCPersistenceManager();
-      jpm.start();
-      pm = jpm;
-      
-      txRepository = new TransactionRepository(pm);
-     
-      // TODO: is should be possible to share this with other peers
-      ms = new PersistentMessageStore(serverPeerID, pm);
-
-      clientManager = new ClientManagerImpl(this);
-      
-      destinationManager = new DestinationManagerImpl(this);
-            
-      JDBCStateManager jdbcStateManager = new JDBCStateManager(this);
-      jdbcStateManager.start();
-      stateManager = jdbcStateManager;
-      
-      //This pooled executor controls how threads are allocated to deliver messges
-      //to consumers.
-      //The buffer(queue) of the pool must be unbounded to avoid potential distributed deadlock
-      //Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
-      //Otherwise, we will never have more than getMinimumPoolSize threads running.
-                  
-      threadPool = new PooledExecutor(new LinkedQueue(), 10);
-      threadPool.setMinimumPoolSize(10); 
-
-      initializeRemoting();
-
-      mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
-      
-      mbeanServer.registerMBean(stateManager, STATE_MANAGER_OBJECT_NAME);
-      
-      securityManager.init();
-      
-      setupConnectionFactories();
-      
-      started = true;
-
-      log.info("JMS " + this + " started");
+      catch (Exception e)
+      {
+         log.error("Failed to start", e);
+      }
    }
 
 
@@ -246,11 +261,11 @@ public class ServerPeer
       mbeanServer.invoke(connector, "removeInvocationHandler",
                          new Object[] {"JMS"},
                          new String[] {"java.lang.String"});
-                  
-      
-
+                        
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
+      
+      //removeRecoverable();
 
       started = false;
 
@@ -403,6 +418,28 @@ public class ServerPeer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   /*
+    * Place a Recoverable instance in the JNDI tree.
+    * This can be used by a transaction manager in order to obtain
+    * an XAResource so it can perform XA recovery
+    */
+   private void createRecoverable() throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      
+      JMSRecoverable recoverable =
+         new JMSRecoverable(this.serverPeerID, (XAConnectionFactory)setupConnectionFactory(null));
+      
+      ic.rebind(RECOVERABLE_JNDI_NAME + "/server-" + this.serverPeerID, recoverable);
+   }
+   
+   private void removeRecoverable() throws Exception
+   {
+      InitialContext ic = new InitialContext();
+            
+      ic.unbind(RECOVERABLE_JNDI_NAME + "/server-" + this.serverPeerID);
+   }
 
    /**
     * @return - may return null if it doesn't find a "jboss" MBeanServer.

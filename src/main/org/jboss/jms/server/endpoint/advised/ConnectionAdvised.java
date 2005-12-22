@@ -22,6 +22,7 @@
 package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
@@ -96,6 +97,11 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
    public void sendTransaction(TransactionRequest request) throws JMSException
    {
       endpoint.sendTransaction(request);
+   }
+   
+   public Xid[] getPreparedTransactions()
+   {
+      return endpoint.getPreparedTransactions();
    }
 
    // Public --------------------------------------------------------

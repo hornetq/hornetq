@@ -1211,6 +1211,7 @@ public class MessageConsumerTest extends MessagingTestCase
       producerConnection.start();
       Session prodSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = prodSession.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -1477,7 +1478,7 @@ public class MessageConsumerTest extends MessagingTestCase
    public void testStressReceiveOnTopic() throws Exception
    {
       if (log.isTraceEnabled()) log.trace("testStressReceiveOnTopic");
-      final int count = 100;
+      final int count = 1000;
 
       consumerConnection.start();
 

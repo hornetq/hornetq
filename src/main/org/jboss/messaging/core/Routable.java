@@ -35,6 +35,7 @@ import java.util.Set;
  * @see org.jboss.messaging.core.MessageReference
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

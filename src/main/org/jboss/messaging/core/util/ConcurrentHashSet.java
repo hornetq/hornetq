@@ -19,45 +19,67 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.tx;
+package org.jboss.messaging.core.util;
 
-import java.util.HashMap;
+import java.util.AbstractSet;
+import java.util.Iterator;
 import java.util.Map;
 
-/*
- * This class manages instances of ResourceManager
- * It ensures there is one instance per instance of JMS server
- * as specified by the server id.
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+
+/**
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A ConcurrentHashSet.
+ * 
+ * Offers same concurrency as ConcurrentHashMap but for a Set
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
- * 
  */
-public class ResourceManagerFactory
+public class ConcurrentHashSet extends AbstractSet
 {
-   public static ResourceManagerFactory instance;
+   private Map theMap;
    
-   static
+   private static Object dummy = new Object();
+   
+   public ConcurrentHashSet()
    {
-      instance = new ResourceManagerFactory();
+      theMap = new ConcurrentHashMap();
    }
    
-   private ResourceManagerFactory()
-   {      
-      resourceManagers = new HashMap();
-   }
-   
-   protected Map resourceManagers;
-   
-   public synchronized ResourceManager getResourceManager(String serverId)
+   public int size()
    {
-      ResourceManager rm = (ResourceManager)resourceManagers.get(serverId);
-      if (rm == null)
-      {
-         rm = new ResourceManager();
-         resourceManagers.put(serverId, rm);
-      }
-      return rm;
+      return theMap.size();
    }
-  
+   
+   public Iterator iterator()
+   {
+      return theMap.keySet().iterator();
+   }
+   
+   public boolean isEmpty()
+   {
+      return theMap.isEmpty();
+   }
+   
+   public boolean add(Object o)
+   {
+      return theMap.put(o, dummy) == dummy;
+   }
+   
+   public boolean contains(Object o)
+   {
+      return theMap.containsKey(o);
+   }
+   
+   public void clear()
+   {
+      theMap.clear();
+   }
+   
+   public boolean remove(Object o)
+   {
+      return theMap.remove(o) == dummy;
+   }
+
 }

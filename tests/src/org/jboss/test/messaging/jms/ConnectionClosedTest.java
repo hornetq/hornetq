@@ -92,7 +92,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
 

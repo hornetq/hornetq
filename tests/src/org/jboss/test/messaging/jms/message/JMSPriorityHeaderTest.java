@@ -78,7 +78,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
 

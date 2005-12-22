@@ -76,8 +76,8 @@
    </category>
 
    <category name="org.jboss.test">
-      <priority value="INFO"/>
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
+      <!-- <priority value="INFO"/> -->
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
    <category name="org.jboss.jms">

@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core.message;
 
-
-
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;

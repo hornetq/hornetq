@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TransactionRolledBackException;
+import javax.transaction.xa.Xid;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
@@ -411,8 +413,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
                tx = txRep.getPreparedTx(request.getXid());
                
-               //We just need to cancel deliveries
-               processRollback(request.getState());
+               if (request.getState() != null)
+               {
+                  //We just need to cancel deliveries
+                  processRollback(request.getState());
+               }
    
                if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
                tx.rollback();
@@ -429,6 +434,18 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       {
          closeLock.readLock().release();
       }
+   }
+   
+   /**
+    * Get array of XA transactions in prepared state-
+    * This would be used by the transaction manager in recovery or by a tool to apply
+    * heuristic decisions to commit or rollback particular transactions
+    */
+   public Xid[] getPreparedTransactions()
+   {
+      List xids = this.serverPeer.getTxRepository().getPreparedTransactions();
+      
+      return (Xid[])xids.toArray();
    }
    
    // Public --------------------------------------------------------

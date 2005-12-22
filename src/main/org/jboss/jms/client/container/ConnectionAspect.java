@@ -117,7 +117,7 @@ public class ConnectionAspect implements ConnectionListener
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      exceptionListener = (ExceptionListener)mi.getArguments()[0];
+      exceptionListener = (ExceptionListener)mi.getArguments()[0];            
       
       Client client = (Client)invocation.getMetaData(MetaDataConstants.JMS, MetaDataConstants.INVOKER_CLIENT);
 

@@ -23,6 +23,8 @@ package org.jboss.jms.client.state;
 
 import java.util.Set;
 
+import org.jboss.remoting.Client;
+
 /**
  * 
  * Base implementation of HierarchicalState
@@ -68,4 +70,5 @@ public class HierarchicalStateBase implements HierarchicalState
    {
       return delegate;
    }
+   
 }

@@ -21,6 +21,13 @@
   */
 package org.jboss.jms.server.remoting;
 
+/**
+ * Constants for passing stuff in aop meta-data
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision 1.1 $</tt>
+ *
+ */
 public class MetaDataConstants
 {
    public static final String JMS = "JMS";

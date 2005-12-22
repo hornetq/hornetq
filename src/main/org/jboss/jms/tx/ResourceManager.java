@@ -172,32 +172,44 @@ public class ResourceManager
       if (log.isTraceEnabled()) { log.trace("Commiting xid=" + xid + ", onePhase=" + onePhase); }
       
       TxState tx = removeTx(xid);
-      
-      //Invalid xid
-      if (tx == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
-      }
-      
+          
       if (onePhase)
       {
+         //Invalid xid
+         if (tx == null)
+         {
+            log.error("Cannot find transaction with xid:" + xid);         
+            throw new XAException(XAException.XAER_NOTA);
+         }
+         
          TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);      
          request.state = tx;    
          sendTransactionXA(request, connection);
       }
       else
       {
-         if (tx.getState() != TxState.TX_PREPARED)
+         if (tx != null)
          {
-            log.error("commit called for transaction, but it is not prepared");         
-            throw new XAException(XAException.XAER_PROTO);
+            if (tx.getState() != TxState.TX_PREPARED)
+            {
+               log.error("commit called for transaction, but it is not prepared");         
+               throw new XAException(XAException.XAER_PROTO);
+            }
+         }
+         else
+         {
+            //It's possible we don't actually have the prepared tx here locally - this
+            //may happen if we have recovered from failure and the transaction manager
+            //is calling commit on the transaction as part of the recovery process.
          }
          TransactionRequest request = new TransactionRequest(TransactionRequest.TWO_PHASE_COMMIT_REQUEST, xid, null);
          request.xid = xid;      
          sendTransactionXA(request, connection);
       }
-      tx.setState(TxState.TX_COMMITED);
+      if (tx != null)
+      {
+         tx.setState(TxState.TX_COMMITED);
+      }
    }
    
    
@@ -205,23 +217,26 @@ public class ResourceManager
    {
       if (log.isTraceEnabled()) { log.trace("Rolling back xid: " + xid); }
       TxState tx = removeTx(xid);
-      if (tx == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
-      }
-            
+                  
       TransactionRequest request = null;
       
       //We don't need to send the messages to the server on a rollback
-      tx.clearMessages();
+      if (tx != null)
+      {
+         tx.clearMessages();
+      }
       
-      if (tx.getState() == TxState.TX_PREPARED)
+      if ((tx == null) || tx.getState() == TxState.TX_PREPARED)
       {
          request = new TransactionRequest(TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST, xid, tx);
       } 
       else
       {
+         if (tx == null)
+         {
+            log.error("Cannot find transaction with xid:" + xid);         
+            throw new XAException(XAException.XAER_NOTA);
+         }
          request = new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, xid, tx);
       }
       
@@ -331,6 +346,20 @@ public class ResourceManager
       }
       transactions.put(xid, new TxState());
       return xid;
+   }
+   
+   public Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
+   {
+      if (log.isTraceEnabled()) { log.trace("Calling recover " + flags); }
+      
+      if (flags == XAResource.TMSTARTRSCAN)
+      {
+         return conn.getPreparedTransactions();
+      }
+      else
+      {
+         return new Xid[0];
+      }
    }
    
    // Protected ------------------------------------------------------

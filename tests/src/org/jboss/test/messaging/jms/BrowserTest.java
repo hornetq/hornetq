@@ -99,7 +99,7 @@ public class BrowserTest extends MessagingTestCase
 	{
       connection.stop();
       connection = null;
-		//ServerManagement.deInit();
+		
 		super.tearDown();
 	}
 	

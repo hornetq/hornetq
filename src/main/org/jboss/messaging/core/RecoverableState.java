@@ -22,8 +22,10 @@
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
@@ -77,152 +79,112 @@ public class RecoverableState extends NonRecoverableState
    {
       return true;
    }
-
+   
    public void add(MessageReference ref, Transaction tx) throws Throwable
-   {
-      //We synchronize on the ref to prevent a message being removed from memory
-      //and failing on attempting to remove from db, because it tries after the message
-      //is added to memory but before it's been added to db
-      synchronized (ref)
-      {      
-         super.add(ref, tx);
-   
-         if (ref.isReliable())
-         {
-            //Reliable message in a recoverable state - also add to db
-            if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-            pm.addReference(channelID, ref, tx);
-         }
-   
-         if (tx != null)
-         {
-            addAddReferenceCallback(tx);
-            if (log.isTraceEnabled()) { log.trace("added an Add callback to transaction " + tx); }
-         }
-      }
-   }
+   {    
+      super.add(ref, tx);
 
-   public void addFirst(MessageReference ref) throws Throwable
-   {
-      //We synchronize on the ref to prevent a message being removed from memory
-      //and failing on attempting to remove from db, because it tries after the message
-      //is added to memory but before it's been added to db
-      synchronized (ref)
-      {         
-         super.addFirst(ref);
-   
-         if (ref.isReliable())
-         {
-            //Reliable message in a recoverable state - also add to db
-            if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database"); }
-            // TODO Q1 - have a method that enforces ordering
-            pm.addReference(channelID, ref, null);
-            if (log.isTraceEnabled()) { log.trace("added " + ref + " to database"); }
-         }
-      }
-   }
-
-
-   public boolean remove(MessageReference ref) throws Throwable
-   {
-      //We synchronize on the ref to prevent a message being removed from memory
-      //and failing on attempting to remove from db, because it tries after the message
-      //is added to memory but before it's been added to db
-      synchronized (ref)
+      if (ref.isReliable())
       {
-         boolean memory = super.remove(ref);
-         if (!memory)
-         {
-            return false;
-         }
-   
-         if (ref.isReliable())
-         {
-            boolean database = pm.removeReference(channelID, ref);
-            if (database && log.isTraceEnabled()) { log.trace("removed " + ref + " from database"); }
-            return database;
-         }
-   
-         return memory;
+         //Reliable message in a recoverable state - also add to db
+         if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+         pm.addReference(channelID, ref, tx);
       }
+
+      addAddReferenceCallback(tx); //FIXME What is the point of this??
+      if (log.isTraceEnabled()) { log.trace("added an Add callback to transaction " + tx); }            
    }
 
-   public MessageReference remove() throws Throwable
-   {      
-      MessageReference removed = super.remove();
-      if (removed == null)
-      {
-         return null;
-      }
-      
-      //We synchronize on the ref to prevent a message being removed from memory
-      //and failing on attempting to remove from db, because it tries after the message
-      //is added to memory but before it's been added to db
-      synchronized (removed)
-      {
+   public void add(MessageReference ref) throws Throwable
+   {  
+      super.add(ref);
 
-         if (removed.isReliable())
-         {
-            boolean database = pm.removeReference(channelID, removed);
-            if (!database)
-            {
-               throw new IllegalStateException("reference " + removed + " not found in database");
-            }
-            else if (log.isTraceEnabled()) { log.trace("removed " + removed + " from database"); }
-         }
-   
-         return removed;
-      }
+      if (ref.isReliable())
+      {
+         //Reliable message in a recoverable state - also add to db
+         if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database non-transactionally"); }
+         pm.addReference(channelID, ref, null);
+      }      
    }
 
-   public void add(Delivery d) throws Throwable
+   public void deliver(Delivery d) throws Throwable
    {
       // Note! Adding of deliveries to the state is NEVER done in a transactional context.
       // The only things that are done in a transactional context are sending of messages and
       // removing deliveries (acking).
-      
-      //We synchronize on the delivery to prevent a delivery being removed from memory
-      //and failing on attempting to remove from db, because it tries after the delivery
-      //is added to memory but before it's been added to db
-      synchronized (d)
-      {
-   
-         super.add(d);
-   
-         if (d.getReference().isReliable())
-         {
-            // also add delivery to persistent storage (reliable delivery in recoverable state)
-            pm.addDelivery(channelID, d);
-            if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
-         }
-      }
-   }
+        
+      super.deliver(d);
 
-   public boolean remove(Delivery d, Transaction tx) throws Throwable
+      if (d.getReference().isReliable())
+      {
+         // also add delivery to persistent storage (reliable delivery in recoverable state)
+         pm.deliver(channelID, d);
+         if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
+      }      
+   }
+   
+   /*
+    * We have redelivered a pre-existing message, so we remove the ref and add the deliveries to state
+    */
+   public void redeliver(Set dels) throws Throwable
    {
-      //We synchronize on the delivery to prevent a delivery being removed from memory
-      //and failing on attempting to remove from db, because it tries after the delivery
-      //is added to memory but before it's been added to db
-      synchronized (d)
-      {
+      super.redeliver(dels);
       
-         boolean memory = super.remove(d, tx);
-         if (!memory)
-         {
-            return false;
-         }
-   
-         if (d.getReference().isReliable())
-         {
-            boolean database = pm.removeDelivery(channelID, d, tx);
-            if (database && log.isTraceEnabled()) { log.trace("removed " + d + " from database " + (tx == null ? "non-transactionally" : " on transaction " + tx)); }
-            return database;
-         }
-   
-         return memory;
+      boolean isReliable = ((Delivery)dels.iterator().next()).getReference().isReliable();
+      
+      if (isReliable)
+      {
+         pm.redeliver(channelID, dels);
       }
    }
+   
+   /*
+    * Cancel an outstanding delivery.
+    * This removes the delivery and adds the message reference back into the state
+    */
+   public void cancel(Delivery del) throws Throwable
+   {
+      super.cancel(del);
+      
+      if (del.getReference().isReliable())
+      {
+         pm.cancel(channelID, del);
+      }
+   }
+   
+   public void acknowledge(Delivery d, Transaction tx) throws Throwable
+   {      
+      super.acknowledge(d, tx);
 
+      if (d.getReference().isReliable())
+      {
+         pm.acknowledge(channelID, d, tx);            
+      }
+     
+   }
+   
+   public void acknowledge(Delivery d) throws Throwable
+   {   
+      super.acknowledge(d);
+
+      if (d.getReference().isReliable())
+      {
+         pm.acknowledge(channelID, d, null);            
+      }     
+   }
+   
+   public MessageReference removeFirst()
+   {
+      //We do not remove from persistent state
+      return super.removeFirst();
+   }
+   
+   public void replaceFirst(MessageReference ref)
+   {
+      //We do not replace in persistent state
+      super.replaceFirst(ref);
+   }
+   
    public void clear()
    {
       super.clear();
@@ -237,32 +199,49 @@ public class RecoverableState extends NonRecoverableState
    {
       List refs = pm.messageRefs(storeID, channelID);
       
+      Set ids = new HashSet();
+      
       Iterator iter = refs.iterator();
       while (iter.hasNext())
       {
          String messageID = (String)iter.next();
+         
          MessageReference ref = messageStore.getReference(messageID);
+         
          messageRefs.addLast(ref, ref.getPriority());
+         
          ref.acquireReference();
+         
+         ids.add(messageID);         
       }
       
+      //Important note. When we reload deliveries we load them as MessageReferences,
+      //*not* as Delivery instances.
+      //This is because, after recovery, it is not possible that those Delivery instances
+      //can be acknowledged, since the receivers no longer exist.
+      //Therefore by loading the Deliveries as MessageReferences we are effectively
+      //cancelling them
+                  
       List dels = pm.deliveries(storeID, channelID);
       iter = dels.iterator();
       while (iter.hasNext())
       {
          String messageID = (String)iter.next();
-         MessageReference ref = messageStore.getReference(messageID);
-         ref.acquireReference();
-         Delivery del = new SimpleDelivery(channel, ref);
-         deliveries.put(del.getReference().getMessageID(), del);
+         
+         if (ids.add(messageID))
+         {
+            MessageReference ref = messageStore.getReference(messageID);
+            
+            messageRefs.addFirst(ref, ref.getPriority());
+            
+            ref.acquireReference();
+         }
       }
       
    }
 
    // Public --------------------------------------------------------
    
-   
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

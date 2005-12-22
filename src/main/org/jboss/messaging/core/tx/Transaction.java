@@ -163,8 +163,17 @@ public class Transaction
       }
    }
    
-   public void prepare()
+   public void prepare() throws Exception
    {
+      if (xid != null)
+      {
+         //Write record in db saying we have prepared the tx
+        if (insertedTXRecord)
+        {
+           pm.prepareTx(this);
+        }
+      }
+      
       state = STATE_PREPARED;
    }
    

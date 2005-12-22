@@ -118,7 +118,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="build.tests.remote" value="true"/>
+   <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -365,7 +365,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/messaging/jms/*Test.class"/>
+               <include name="**/messaging/jms/**/*Test.class"/>
                <!-- <include name="**/messaging/jms/AcknowledgmentTest.class"/> -->
             </fileset>
          </batchtest>

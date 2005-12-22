@@ -80,7 +80,7 @@ public class PersistenceTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
 

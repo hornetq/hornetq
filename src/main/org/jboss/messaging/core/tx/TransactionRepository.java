@@ -21,6 +21,9 @@
   */
 package org.jboss.messaging.core.tx;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.transaction.xa.Xid;
@@ -61,8 +64,49 @@ public class TransactionRepository
    }
    
    // Public --------------------------------------------------------
-      
    
+   public List getPreparedTransactions()
+   {
+      ArrayList prepared = new ArrayList();
+      Iterator iter = globalToLocalMap.values().iterator();
+      while (iter.hasNext())
+      {
+         Transaction tx = (Transaction)iter.next();
+         if (tx.xid != null && tx.getState() == Transaction.STATE_PREPARED)
+         {
+            prepared.add(tx.getXid());
+         }
+      }
+      return prepared;
+   }
+   
+   public void loadPreparedTransactions() throws TransactionException
+   {
+      List prepared = null;
+      
+      try
+      {
+         pm.retrievePreparedTransactions();
+      }
+      catch (Exception e)
+      {
+         throw new TransactionException("Failed to retrieve prepared transactions", e);
+      }
+      
+      if (prepared != null)
+      {         
+         Iterator iter = prepared.iterator();
+         
+         while (iter.hasNext())
+         {
+            Xid xid = (Xid)iter.next();
+            Transaction tx = createTransaction(xid);
+            tx.insertedTXRecord();
+            tx.state = Transaction.STATE_PREPARED;
+         }
+      }
+   }
+         
    public Transaction getPreparedTx(Xid xid) throws TransactionException
    {
       Transaction tx = (Transaction)globalToLocalMap.get(xid);
@@ -107,8 +151,7 @@ public class TransactionRepository
    
    // Package protected ---------------------------------------------
    
-   // Protected -----------------------------------------------------
-      
+   // Protected -----------------------------------------------------         
    
    // Private -------------------------------------------------------
    

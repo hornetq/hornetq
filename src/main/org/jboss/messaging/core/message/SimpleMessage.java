@@ -34,10 +34,13 @@ import java.io.Serializable;
  */
 class SimpleMessage extends MessageSupport
 {
+   private static final long serialVersionUID = -1926255243537983723L;
+
+   
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-
+      
    /**
     * Required by externalization.
     */

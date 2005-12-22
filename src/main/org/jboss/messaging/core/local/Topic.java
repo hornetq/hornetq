@@ -92,16 +92,6 @@ public class Topic implements CoreDestination
       }
       return new SimpleDelivery(ms.reference(r), true);
    }
-   
-   public void acquireLock()
-   {
-      //NOOP
-   }
-   
-   public void releaseLock()
-   {
-      //NOOP
-   }
 
    // Distributor implementation --------------------------------------
 

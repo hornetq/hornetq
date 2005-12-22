@@ -47,9 +47,5 @@ public interface Receiver
     * @see org.jboss.messaging.core.DeliveryObserver
     */
    Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx);
-   
-   void acquireLock();
-   
-   void releaseLock();
-   
+     
 }

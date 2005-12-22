@@ -26,6 +26,7 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
@@ -55,4 +56,5 @@ public interface ConnectionDelegate extends ConnectionEndpoint
                                                     String messageSelector,
                                                     ServerSessionPool sessionPool,
                                                     int maxMessages) throws JMSException;
+   
 }

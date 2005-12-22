@@ -139,7 +139,7 @@ public class SecurityTest extends MessagingTestCase
       ServerManagement.undeployQueue("testTopic");
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.undeployTopic("unsecuredTopic");
-      //ServerManagement.deInit();
+      
    }
    
    

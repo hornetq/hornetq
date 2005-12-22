@@ -69,16 +69,6 @@ public class RemoteQueue extends RemotePeer implements Receiver
       return p.handle(observer, routable, tx);
    }
    
-   public void acquireLock()
-   {
-      //NOOP
-   }
-   
-   public void releaseLock()
-   {
-      //NOOP
-   }
-
    // Public --------------------------------------------------------
 
    public String toString()

@@ -96,7 +96,7 @@ public class SessionTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-      //ServerManagement.deInit();
+      
       super.tearDown();
    }
    

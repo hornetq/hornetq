@@ -26,6 +26,7 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.delegate.ConnectionDelegate;
@@ -52,6 +53,8 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    // Attributes ----------------------------------------------------
 
    private String serverId;
+   
+   private InvokerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -176,6 +179,15 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
     * server-side endpoint.
     */
    public void stop() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public Xid[] getPreparedTransactions()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

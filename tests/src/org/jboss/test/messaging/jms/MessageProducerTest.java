@@ -96,7 +96,7 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployTopic("Topic2");
       ServerManagement.undeployQueue("Queue");
-      //ServerManagement.deInit();
+      
 
       super.tearDown();
    }
