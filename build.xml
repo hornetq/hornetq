@@ -676,6 +676,9 @@
 
    </target>
 
+   <target name="smoke">
+      <ant dir="tests/smoke" antfile="build.xml" target="smoke-test" inheritAll="false"/>
+   </target>
 
 </project>
 
