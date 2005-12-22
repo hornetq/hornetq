@@ -7,23 +7,21 @@
 </head>
 <body>
 <br>
-<h1>JBoss Messaging Queue Example</h1>
+<h1>JBoss Messaging Topic Example</h1>
 $Revision$
 <h2>Overview</h2>
 <br>
 This example creates a JMS Connection to a JBoss Messaging instance
-and uses it to create a session and a message producer, which sends a
-message to a queue. The first connection is closed, and a second
-connection is created and used to create a message consumer that reads
-a single message from the queue. The example is considered successful
-if the message consumer receives without any error the message that was
-sent by the producer. <br>
+and uses it to create a session, a publisher and a subscriber. The
+publisher sends a message to the topic. The example is considered
+successful
+if the topic subscriber receives the message.<br>
 <br>
 This example relies on access to a running JBoss Messaging instance.
 The JBoss Messaging instance must be deployed according to the
-"Installation" paragraph from the release documentation. However, the
-example will automatically deploy its own queue, unless a queue with
-the same name is already deployed. <br>
+"Installation" paragraph from the release documentation.&nbsp; However,
+the example will automatically deploy its own topic, unless a topic
+with the same name is already deployed. <br>
 <br>
 <span style="font-style: italic;">The example was designed to work with
 a </span><span style="font-family: monospace; font-style: italic;">jboss-messaging-scoped.sar</span><span
@@ -57,7 +55,7 @@ configuration, please modify the example's <span
 2. Go to the example's home directory<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cd
-.. \examples\queue</span><br>
+.. \examples\topic</span><br>
 </div>
 <br>
 3. Run the example:<br>
@@ -81,30 +79,32 @@ The output of a successful run should be similar to:<br>
 $ ant<br>
 Buildfile: build.xml<br>
       <br>
+identify:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] Running the topic example<br>
+      <br>
 sanity-check:<br>
       <br>
 init:<br>
-&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
       <br>
 compile:<br>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
-C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 1 source file to
+C:\work\src\cvs\jboss-head\jms\docs\examples\topic\output<br>
       <br>
 run:<br>
 &nbsp;&nbsp;&nbsp; [unjar] Expanding:
 C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\default\deploy\jboss-messaging-scoped.sar
 into C:\work\src\cvs\jboss-head\jms\docs\examples<br>
-\queue\output<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully sent to
-the queue<br>
+\topic\output<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Topic /topic/testTopic exists<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully published
+on the topic<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
 Messaging version 1.0.0 alpha PR3 (1.0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The example executed correctly.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example executed successfully<br>
       <br>
 BUILD SUCCESSFUL<br>
-Total time: 9 seconds<br>
+Total time: 8 seconds<br>
       <br>
       <br>
       </td>

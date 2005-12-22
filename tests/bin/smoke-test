@@ -1,6 +1,0 @@
-#!/bin/sh
-#
-
-reldir=`dirname $0`
-
-ant -f $reldir/smoke-test.xml "$@"

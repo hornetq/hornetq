@@ -431,6 +431,12 @@
   <target name="clean"
       description="Cleans up most generated files."
       depends="_buildmagic:clean">
+
+      <ant dir="./docs/examples/queue" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/topic" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/mdb" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
+
   </target>
 
   <!-- Clean up all generated files -->
@@ -515,6 +521,7 @@
       <copy file="${current.jboss.remoting.lib}/jboss-remoting.jar" todir="${build.classes}"/>
       <copy file="${jboss.serialization.lib}/jboss-serialization.jar" todir="${build.classes}"/>
       <copy file="${javassist.javassist.lib}/javassist.jar" todir="${build.classes}"/>
+      <copy file="${trove.trove.lib}/trove.jar" todir="${build.classes}"/>
 
       <!-- I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract

@@ -16,9 +16,12 @@
       <pathelement location="${ENV.JBOSS_HOME}/lib/dom4j.jar"/>
    </path>
 
+   <target name="build-from-scratch">
+      <ant dir="../.." antfile="build.xml" target="clean" inheritAll="false"/>
+      <ant dir="../.." antfile="build.xml" target="sar-scoped" inheritAll="false"/>
+   </target>
 
    <target name="validate-messaging-sar">
-
       <available property="messaging-sar"
          type="file" file="../../output/lib/jboss-messaging-scoped.sar"/>
       <fail unless="messaging-sar"
@@ -26,7 +29,6 @@
    </target>
 
    <target name="validate-jboss-instance">
-
       <fail unless="ENV.JBOSS_HOME"
          message="JBOSS_HOME environment variable not set! Set it and try again"/>
       <available property="jboss-messaging-configuration"
@@ -36,7 +38,6 @@
    </target>
 
    <target name="create-messaging-configuration">
-
       <mkdir dir="${ENV.JBOSS_HOME}/server/messaging-smoke-test"/>
       <copy todir="${ENV.JBOSS_HOME}/server/messaging-smoke-test">
          <fileset dir="${ENV.JBOSS_HOME}/server/default"/>
@@ -105,33 +106,110 @@
     </target>
 
    <target name="deploy-queue">
-       <copy file="../etc/smoketest/smoketest-queue-service.xml"
+       <copy file="artifacts/smoketest-queue-service.xml"
          todir="${ENV.JBOSS_HOME}/server/messaging-smoke-test/deploy"/>
    </target>
 
    <target name="ping-queue">
-       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
+      <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${ENV.JBOSS_HOME}/bin">
-          <arg line="get jboss.messaging.destination:name=SmokeTestQueue,service=Queue QueueName"/>
-          <classpath>
-             <path refid="twiddle.classpath"/>
-          </classpath>
-       </java>
-    </target>
+         <arg line="get jboss.messaging.destination:name=SmokeTestQueue,service=Queue QueueName"/>
+         <classpath>
+            <path refid="twiddle.classpath"/>
+         </classpath>
+      </java>
+   </target>
 
-   <target name="smoke-test"
-      depends="validate-messaging-sar,
-               validate-jboss-instance,
-               create-messaging-configuration,
-               deploy-sar,
-               start-jboss,
-               sleep,
-               ping-jms-server"/>
+   <target name="deploy-topic">
+       <copy file="artifacts/smoketest-topic-service.xml"
+         todir="${ENV.JBOSS_HOME}/server/messaging-smoke-test/deploy"/>
+   </target>
+
+   <target name="ping-topic">
+      <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
+          dir="${ENV.JBOSS_HOME}/bin">
+         <arg line="get jboss.messaging.destination:name=SmokeTestTopic,service=Topic TopicName"/>
+         <classpath>
+            <path refid="twiddle.classpath"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="queue-example">
+      <ant dir="../../docs/examples/queue" antfile="build.xml" inheritAll="false">
+         <property name="example.queue.name" value="SmokeTestQueue"/>
+         <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </ant>
+      <antcall target="clean-queue-example"/>
+   </target>
+
+   <target name="clean-queue-example">
+      <ant dir="../../docs/examples/queue" antfile="build.xml" inheritAll="false" target="clean"/>
+   </target>
+
+   <target name="topic-example">
+      <ant dir="../../docs/examples/topic" antfile="build.xml" inheritAll="false">
+         <property name="example.topic.name" value="SmokeTestTopic"/>
+         <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </ant>
+      <antcall target="clean-topic-example"/>
+   </target>
+
+   <target name="clean-topic-example">
+      <ant dir="../../docs/examples/topic" antfile="build.xml" inheritAll="false" target="clean"/>
+   </target>
+
+   <target name="mdb-example">
+      <ant dir="../../docs/examples/mdb" antfile="build.xml" inheritAll="false">
+         <property name="example.queue.name" value="SmokeTestQueue"/>
+         <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </ant>
+      <antcall target="clean-mdb-example"/>
+   </target>
+
+   <target name="clean-mdb-example">
+      <ant dir="../../docs/examples/mdb" antfile="build.xml" inheritAll="false" target="clean">
+         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </ant>
+   </target>
 
    <target name="clean">
-       <antcall target="shutdown-jboss"/>
-       <antcall target="sleep"/>
-       <delete dir="${ENV.JBOSS_HOME}/server/messaging-smoke-test" quiet="yes"/>
+      <delete dir="${ENV.JBOSS_HOME}/server/messaging-smoke-test" quiet="false" failonerror="true"/>
+   </target>
+
+   <target name="smoke-test">
+
+      <antcall target="build-from-scratch"/>
+
+      <antcall target="validate-messaging-sar"/>
+      <antcall target="validate-jboss-instance"/>
+
+      <antcall target="create-messaging-configuration"/>
+      <antcall target="deploy-sar"/>
+
+      <antcall target="start-jboss"/>
+      <antcall target="sleep"><param name="sleep.interval" value="60"/></antcall>
+      <antcall target="ping-jms-server"/>
+
+      <antcall target="deploy-queue"/>
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="ping-queue"/>
+
+      <antcall target="deploy-topic"/>
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="ping-topic"/>
+
+
+      <antcall target="queue-example"/>
+      <antcall target="topic-example"/>
+      <antcall target="mdb-example"/>
+
+      <antcall target="shutdown-jboss"/>
+      <antcall target="sleep"><param name="sleep.interval" value="30"/></antcall>
+      <antcall target="clean"/>
    </target>
 
 </project>

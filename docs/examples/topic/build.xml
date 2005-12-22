@@ -8,14 +8,14 @@
 
  -->
 
-<project name="QueueExample" default="run" >
+<project name="TopicExample" default="run" >
 
    <property environment="ENV"/>
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
    <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
    <property name="jboss.configuration.name" value="default"/>
-   <property name="example.queue.name" value="testQueue"/>
+   <property name="example.topic.name" value="testTopic"/>
 
    <path id="common.compilation.classpath">
       <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
@@ -39,8 +39,8 @@
    </path>
 
    <target name="identify">
-      <echo message="Running the queue example"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="Running the topic example"/>
+      <echo message="The topic: ${example.topic.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
@@ -82,12 +82,12 @@
          </patternset>
       </unjar>
 
-      <!-- QueueExample expects to find the name of the queue to connect to as value of the
-           'example.queue.name' property, which *may* be defined by calling ants when this example
+      <!-- TopicExample expects to find the name of the topic to connect to as value of the
+           'example.topic.name' property, which *may* be defined by calling ants when this example
             is used in a smoke test -->
-      <java classname="org.jboss.example.jms.queue.QueueExample"
+      <java classname="org.jboss.example.jms.topic.TopicExample"
          classpathref="execution.classpath" fork="yes" failonerror="true">
-         <sysproperty key="example.queue.name" value="${example.queue.name}"/>
+         <sysproperty key="example.topic.name" value="${example.topic.name}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
           -->

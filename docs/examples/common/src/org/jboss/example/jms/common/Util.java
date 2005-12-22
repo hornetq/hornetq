@@ -19,9 +19,10 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.example.jms.queue;
+package org.jboss.example.jms.common;
 
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
@@ -36,6 +37,20 @@ public class Util
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
+
+   public static boolean doesDestinationExist(String jndiName) throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      try
+      {
+         ic.lookup(jndiName);
+      }
+      catch(NameNotFoundException e)
+      {
+         return false;
+      }
+      return true;
+   }
 
    public static void deployQueue(String jndiName) throws Exception
    {
@@ -66,7 +81,6 @@ public class Util
 
       System.out.println("Queue " + jndiName + " undeployed");
    }
-
 
    public static MBeanServerConnection lookupMBeanServerProxy() throws Exception
    {

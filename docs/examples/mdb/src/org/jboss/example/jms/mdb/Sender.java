@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.example.jms.queue;
+package org.jboss.example.jms.mdb;
 
 import org.jboss.example.jms.common.ExampleSupport;
 
@@ -27,15 +27,16 @@ import javax.naming.InitialContext;
 import javax.jms.ConnectionFactory;
 import javax.jms.Connection;
 import javax.jms.Session;
-import javax.jms.Queue;
 import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
+import javax.jms.Queue;
+import javax.jms.MessageConsumer;
 
 /**
- * The example creates a connection to the default provider and uses the connection to send a
- * message to the queue "queue/testQueue". Then, the example creates a second connection to the
- * provider and uses it to receive the message.
+ * This example deploys a simple Message Driven Bean that processes messages sent to a test queue.
+ * Once it receives a message and "processes" it, the MDB sends an acknowledgment message to a
+ * temporary destination created by the sender for this purpose. The example is considered
+ * successful if the sender receives the acknowledgment message.
  *
  * Since this example is also used by the smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
@@ -45,9 +46,8 @@ import javax.jms.TextMessage;
  *
  * $Id$
  */
-public class QueueExample extends ExampleSupport
+public class Sender extends ExampleSupport
 {
-
    public void example() throws Exception
    {
       String destinationName = getDestinationJNDIName();
@@ -72,7 +72,13 @@ public class QueueExample extends ExampleSupport
 
 
 
+      Queue temporaryQueue = session.createTemporaryQueue();
+      MessageConsumer consumer = session.createConsumer(temporaryQueue);
+
+
+
       TextMessage message = session.createTextMessage("Hello!");
+      message.setJMSReplyTo(temporaryQueue);
 
 
 
@@ -80,21 +86,11 @@ public class QueueExample extends ExampleSupport
 
 
 
-      log("The message was successfully sent to the " + queue.getQueueName() + " queue");
+      log("The " + message.getText() + " message was successfully sent to the " + queue.getQueueName() + " queue");
 
 
 
-      connection.close();
-
-
-
-      Connection connection2 = cf.createConnection();
-      Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer =  session2.createConsumer(queue);
-
-
-
-      connection2.start();
+      connection.start();
 
 
 
@@ -106,15 +102,15 @@ public class QueueExample extends ExampleSupport
 
 
 
-      assertEquals("Hello!", message.getText());
+      assertEquals("!olleH", message.getText());
 
 
 
-      displayProviderInfo(connection2.getMetaData());
+      displayProviderInfo(connection.getMetaData());
 
 
 
-      connection2.close();
+      connection.close();
    }
 
 
@@ -127,7 +123,7 @@ public class QueueExample extends ExampleSupport
 
    public static void main(String[] args)
    {
-      new QueueExample().run();
+      new Sender().run();
    }
 
 }

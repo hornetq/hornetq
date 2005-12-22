@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.example.jms.queue;
+package org.jboss.example.jms.topic;
 
 import org.jboss.example.jms.common.ExampleSupport;
 
@@ -27,15 +27,14 @@ import javax.naming.InitialContext;
 import javax.jms.ConnectionFactory;
 import javax.jms.Connection;
 import javax.jms.Session;
-import javax.jms.Queue;
 import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
+import javax.jms.MessageConsumer;
+import javax.jms.Topic;
 
 /**
  * The example creates a connection to the default provider and uses the connection to send a
- * message to the queue "queue/testQueue". Then, the example creates a second connection to the
- * provider and uses it to receive the message.
+ * message to the topic "queue/testTopic". The message must be received by a topic subscriber.
  *
  * Since this example is also used by the smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
@@ -45,9 +44,8 @@ import javax.jms.TextMessage;
  *
  * $Id$
  */
-public class QueueExample extends ExampleSupport
+public class TopicExample extends ExampleSupport
 {
-
    public void example() throws Exception
    {
       String destinationName = getDestinationJNDIName();
@@ -58,17 +56,27 @@ public class QueueExample extends ExampleSupport
 
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup(destinationName);
+      Topic topic = (Topic)ic.lookup(destinationName);
 
 
 
-      log("Queue " + destinationName + " exists");
+      log("Topic " + destinationName + " exists");
 
 
 
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer sender = session.createProducer(queue);
+      MessageProducer publisher = session.createProducer(topic);
+      MessageConsumer subscriber = session.createConsumer(topic);
+
+
+
+      ExampleListener messageListener = new ExampleListener();
+      subscriber.setMessageListener(messageListener);
+
+
+
+      connection.start();
 
 
 
@@ -76,29 +84,17 @@ public class QueueExample extends ExampleSupport
 
 
 
-      sender.send(message);
+      publisher.send(message);
 
 
 
-      log("The message was successfully sent to the " + queue.getQueueName() + " queue");
+      log("The message was successfully published on the topic");
 
 
-
-      connection.close();
-
+      messageListener.waitForMessage();
 
 
-      Connection connection2 = cf.createConnection();
-      Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer =  session2.createConsumer(queue);
-
-
-
-      connection2.start();
-
-
-
-      message = (TextMessage)consumer.receive(2000);
+      message = (TextMessage)messageListener.getMessage();
 
 
 
@@ -110,11 +106,11 @@ public class QueueExample extends ExampleSupport
 
 
 
-      displayProviderInfo(connection2.getMetaData());
+      displayProviderInfo(connection.getMetaData());
 
 
 
-      connection2.close();
+      connection.close();
    }
 
 
@@ -122,12 +118,12 @@ public class QueueExample extends ExampleSupport
 
    protected boolean isQueueExample()
    {
-      return true;
+      return false;
    }
 
    public static void main(String[] args)
    {
-      new QueueExample().run();
+      new TopicExample().run();
    }
 
 }

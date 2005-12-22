@@ -8,7 +8,7 @@
 
  -->
 
-<project name="QueueExample" default="run" >
+<project name="MDBExample" default="run">
 
    <property environment="ENV"/>
 
@@ -30,7 +30,7 @@
    <path id="execution.classpath">
       <pathelement path="./etc"/>
       <pathelement path="../common/output"/>
-      <pathelement path="./output"/>
+      <pathelement path="./output/classes"/>
       <fileset dir="./output" includes="*.jar"/>
       <fileset file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"/>
       <fileset dir="${ENV.JBOSS_HOME}/client" includes="*.jar"/>
@@ -39,7 +39,7 @@
    </path>
 
    <target name="identify">
-      <echo message="Running the queue example"/>
+      <echo message="Running the MDB example"/>
       <echo message="The queue: ${example.queue.name}"/>
    </target>
 
@@ -52,7 +52,8 @@
    </target>
 
    <target name="init" depends="sanity-check">
-      <mkdir dir="./output"/>
+      <mkdir dir="./output/classes/META-INF"/>
+      <mkdir dir="./output/lib/META-INF"/>
       <mkdir dir="../common/output"/>
    </target>
 
@@ -61,13 +62,31 @@
          <src path="../common/src"/>
          <classpath refid="common.compilation.classpath"/>
       </javac>
-      <javac destdir="./output" debug="on" debuglevel="lines,vars,source">
+      <javac destdir="./output/classes" debug="on" debuglevel="lines,vars,source">
          <src path="./src"/>
          <classpath refid="example.compilation.classpath"/>
       </javac>
    </target>
 
-   <target name="run" depends="compile">
+   <target name="jar" depends="compile">
+      <copy todir="./output/classes/META-INF" filtering="true">
+         <fileset dir="./etc/META-INF" includes="*"/>
+         <filterset>
+            <filter token="QUEUE_NAME" value="${example.queue.name}"/>
+         </filterset>
+      </copy>
+      <jar destfile="./output/lib/mdb-example.jar"
+         basedir="./output/classes"
+         includes="META-INF/**,org/jboss/example/**/MDBExample.class"/>
+   </target>
+
+   <target name="deploy" depends="jar">
+      <copy file="./output/lib/mdb-example.jar"
+         todir="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy"/>
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+   </target>
+
+   <target name="run" depends="deploy">
 
       <!-- extract jboss-remoting.jar, jboss.jar from jboss messaging sar and store it locally -->
       <unjar src="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
@@ -82,10 +101,16 @@
          </patternset>
       </unjar>
 
-      <!-- QueueExample expects to find the name of the queue to connect to as value of the
+      <antcall target="send"/>
+
+   </target>
+
+
+   <target name="send">
+      <!-- MDBExample expects to find the name of the queue to connect to as value of the
            'example.queue.name' property, which *may* be defined by calling ants when this example
             is used in a smoke test -->
-      <java classname="org.jboss.example.jms.queue.QueueExample"
+      <java classname="org.jboss.example.jms.mdb.Sender"
          classpathref="execution.classpath" fork="yes" failonerror="true">
          <sysproperty key="example.queue.name" value="${example.queue.name}"/>
          <!--
@@ -94,9 +119,19 @@
       </java>
    </target>
 
-   <target name="clean">
+   <target name="undeploy">
+      <delete file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/mdb-example.jar"
+         quiet="true"/>
+   </target>
+
+   <target name="clean" depends="undeploy">
       <delete dir="./output" quiet="true"/>
       <delete dir="../common/output" quiet="true"/>
+   </target>
+
+   <target name="sleep">
+      <echo message="Sleeping for ${sleep.interval} seconds ..."/>
+      <sleep seconds="${sleep.interval}"/>
    </target>
 
 </project>
