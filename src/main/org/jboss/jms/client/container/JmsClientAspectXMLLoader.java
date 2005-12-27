@@ -45,6 +45,8 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class JmsClientAspectXMLLoader extends AspectXmlLoader
 {

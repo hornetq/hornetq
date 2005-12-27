@@ -31,11 +31,12 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
- * State corresponding to a session
- * This state is acessible inside aspects/interceptors
+ * State corresponding to a session. This state is acessible inside aspects/interceptors.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class SessionState extends HierarchicalStateBase
 {

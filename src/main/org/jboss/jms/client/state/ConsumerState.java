@@ -28,11 +28,12 @@ import javax.jms.Destination;
 import org.jboss.jms.delegate.ConsumerDelegate;
 
 /**
- * State corresponding to a Consumer
- * This state is acessible inside aspects/interceptors
+ * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ConsumerState extends HierarchicalStateBase
 {

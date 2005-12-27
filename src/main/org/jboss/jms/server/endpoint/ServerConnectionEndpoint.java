@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,7 +60,7 @@ import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
- * Concrete implementation of ConnectionEndpoint
+ * Concrete implementation of ConnectionEndpoint.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

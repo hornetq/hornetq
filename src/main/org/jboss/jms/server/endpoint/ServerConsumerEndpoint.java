@@ -51,19 +51,17 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 
 /**
- * Concrete implementation of ConsumerEndpoint
- * 
- * A Consumer endpoint. Lives on the boundary between Messaging Core and the JMS Facade.
+ * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
+ * JMS Facade.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
+ * $Id$
  */
 public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoint
 {

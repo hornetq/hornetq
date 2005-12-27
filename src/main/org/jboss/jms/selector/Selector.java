@@ -36,10 +36,10 @@ import org.jboss.messaging.core.Routable;
 /**
  * This class implements a Message Selector.
  *
- * @author     Norbert Lataille (Norbert.Lataille@m4x.org)
- * @author     Juha Lindfors (jplindfo@helsinki.fi)
+ * @author     <a href="mailto:Norbert.Lataille@m4x.org">Norbert Lataille</a>
+ * @author     <a href="mailto:jplindfo@helsinki.fi">Juha Lindfors</a>
  * @author     <a href="mailto:jason@planet57.com">Jason Dillon</a>
- * @author     Scott.Stark@jboss.org
+ * @author     <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author	   <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version    $Revision$
  *

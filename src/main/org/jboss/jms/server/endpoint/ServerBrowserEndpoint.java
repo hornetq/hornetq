@@ -36,12 +36,12 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;
 
 /**
- * Concrete implementation of BrowserEndpoint
+ * Concrete implementation of BrowserEndpoint.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
- * 
+ * $Id$
  */
 public class ServerBrowserEndpoint implements BrowserEndpoint
 {
@@ -55,7 +55,10 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    
    protected boolean closed;
 
-   ServerBrowserEndpoint(ServerSessionEndpoint session, String browserID, Channel destination, String messageSelector)
+   ServerBrowserEndpoint(ServerSessionEndpoint session,
+                         String browserID,
+                         Channel destination,
+                         String messageSelector)
       throws JMSException
    {     
       this.session = session;
@@ -105,7 +108,10 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          throw new IllegalStateException("Browser is closed");
       }
       
-      if (maxMessages < 2) throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
+      if (maxMessages < 2)
+      {
+         throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
+      }
       
       ArrayList messages = new ArrayList(maxMessages);
       int i = 0;

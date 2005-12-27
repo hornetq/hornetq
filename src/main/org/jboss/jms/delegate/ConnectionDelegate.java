@@ -26,16 +26,13 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
-import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 
 /**
- * Represents the minimal set of operations to provide connection
- * functionality.
- * Some of the methods may be implemented on the server, others
- * will be handled in the advice stack.
+ * Represents the minimal set of operations to provide connection functionality.
+ * Some of the methods may be implemented on the server, others will be handled in the advice stack.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -35,6 +35,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
+ *
+ * $Id$
  */
 public class ConcurrentHashSet extends AbstractSet
 {

@@ -29,11 +29,12 @@ import javax.jms.Destination;
 import org.jboss.jms.delegate.ProducerDelegate;
 
 /**
- * State corresponding to a producer
- * This state is acessible inside aspects/interceptors
+ * State corresponding to a producer. This state is acessible inside aspects/interceptors.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class ProducerState extends HierarchicalStateBase
 {

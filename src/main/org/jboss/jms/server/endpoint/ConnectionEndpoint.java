@@ -30,8 +30,7 @@ import org.jboss.jms.tx.TransactionRequest;
 
 /**
  * 
- * Represents the set of methods from the ConnectionDelegate
- * that are handled on the server.
+ * Represents the set of methods from the ConnectionDelegate that are handled on the server.
  * The rest of the methods are handled in the advice stack.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

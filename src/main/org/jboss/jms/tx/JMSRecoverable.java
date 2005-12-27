@@ -30,7 +30,6 @@ import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
 /**
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * @version $Revision$

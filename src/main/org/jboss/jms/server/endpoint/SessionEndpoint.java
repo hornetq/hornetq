@@ -38,6 +38,7 @@ import org.jboss.jms.delegate.ProducerDelegate;
  * 
  * @version <tt>$Revision$</tt>
  *
+ * $Id$
  */
 public interface SessionEndpoint extends Closeable
 {
@@ -47,7 +48,8 @@ public interface SessionEndpoint extends Closeable
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer) throws JMSException;   
    
-   BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector) throws JMSException;
+   BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
+      throws JMSException;
 
    /**
     * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical

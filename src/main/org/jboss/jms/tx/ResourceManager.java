@@ -35,17 +35,16 @@ import org.jboss.logging.Logger;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
- * The ResourceManager manages work done in both local and
- * global (XA) transactions.
+ * The ResourceManager manages work done in both local and global (XA) transactions.
  * 
- * This is one instance of ResourceManager per JMS server.
- * The ResourceManager instances are managed by ResourceManagerFactory
+ * This is one instance of ResourceManager per JMS server. The ResourceManager instances are managed
+ * by ResourceManagerFactory.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * 
  * Parts adapted from SpyXAResourceManager by:
  *
- * @author Hiram Chirino (Cojonudo14@hotmail.com)
+ * @author <a href="mailto:Cojonudo14@hotmail.com">Hiram Chirino</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @version $Revision$
  *
@@ -127,7 +126,8 @@ public class ResourceManager
          throw new IllegalStateException(msg);
       }
       
-      TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
+      TransactionRequest request =
+         new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
       connection.sendTransaction(request);      
    }
    
@@ -144,11 +144,13 @@ public class ResourceManager
       
       //Don't need messages for rollback
       tx.clearMessages();
-      TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, null, tx);
+      TransactionRequest request =
+         new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, null, tx);
       connection.sendTransaction(request);
    }
    
-   private void sendTransactionXA(TransactionRequest request, ConnectionDelegate connection) throws XAException
+   private void sendTransactionXA(TransactionRequest request, ConnectionDelegate connection)
+      throws XAException
    {
       try
       {
@@ -182,7 +184,8 @@ public class ResourceManager
             throw new XAException(XAException.XAER_NOTA);
          }
          
-         TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);      
+         TransactionRequest request =
+            new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
          request.state = tx;    
          sendTransactionXA(request, connection);
       }
@@ -202,7 +205,8 @@ public class ResourceManager
             //may happen if we have recovered from failure and the transaction manager
             //is calling commit on the transaction as part of the recovery process.
          }
-         TransactionRequest request = new TransactionRequest(TransactionRequest.TWO_PHASE_COMMIT_REQUEST, xid, null);
+         TransactionRequest request =
+            new TransactionRequest(TransactionRequest.TWO_PHASE_COMMIT_REQUEST, xid, null);
          request.xid = xid;      
          sendTransactionXA(request, connection);
       }
@@ -279,7 +283,8 @@ public class ResourceManager
          log.error("Cannot find transaction with xid:" + xid);         
          throw new XAException(XAException.XAER_NOTA);
       } 
-      TransactionRequest request = new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
+      TransactionRequest request =
+         new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
       sendTransactionXA(request, connection);      
       state.setState(TxState.TX_PREPARED);
       return XAResource.XA_OK;

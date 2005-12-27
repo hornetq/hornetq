@@ -24,14 +24,14 @@ package org.jboss.jms.tx;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
- * This class manages instances of ResourceManager
- * It ensures there is one instance per instance of JMS server
- * as specified by the server id.
- * 
+/**
+ * This class manages instances of ResourceManager. It ensures there is one instance per instance
+ * of JMS server as specified by the server id.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
- * 
+ *
+ * $Id$
  */
 public class ResourceManagerFactory
 {

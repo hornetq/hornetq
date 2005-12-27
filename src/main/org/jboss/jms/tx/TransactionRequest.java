@@ -29,17 +29,19 @@ import java.io.ObjectOutput;
 import javax.transaction.xa.Xid;
 
 /**
- * This class contians all the data needed to perform a JMS transaction
+ * This class contians all the data needed to perform a JMS transaction.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * Partially based on JBossMQ version by:
  * 
- * @author Hiram Chirino (Cojonudo14@hotmail.com)
- * @author David Maplesden (David.Maplesden@orion.co.nz)
+ * @author <a href="mailto:Cojonudo14@hotmail.com">Hiram Chirino</a>
+ * @author <a href="mailto:David.Maplesden@orion.co.nz">David Maplesden</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author Daniel Bloomfield Ramagem (daniel.ramagem@gmail.com) 
+ * @author <a href="mailto:daniel.ramagem@gmail.com">Daniel Bloomfield Ramagem</a>
  * @version $Revision$
+ *
+ * $Id$
  */
 public class TransactionRequest implements Externalizable
 {

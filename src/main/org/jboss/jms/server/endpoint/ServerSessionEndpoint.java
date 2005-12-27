@@ -59,12 +59,13 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
 /**
- * Concrete implementation of SessionEndpoint
+ * Concrete implementation of SessionEndpoint.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
+ * $Id$
  */
 public class ServerSessionEndpoint implements SessionEndpoint
 {

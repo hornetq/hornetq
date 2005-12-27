@@ -39,11 +39,12 @@ import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
 
 /**
- * This aspect enforces the JBossMessaging JMS security policy
+ * This aspect enforces the JBossMessaging JMS security policy.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision 1.1 $</tt>
  *
+ * $Id$
  */
 public class SecurityAspect
 {
@@ -157,7 +158,8 @@ public class SecurityAspect
    
    // Private -------------------------------------------------------
    
-   private void check(Invocation inv, Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
+   private void check(Invocation inv, Destination dest, CheckType checkType,
+                      ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
       JBossDestination jbDest = (JBossDestination)dest;           

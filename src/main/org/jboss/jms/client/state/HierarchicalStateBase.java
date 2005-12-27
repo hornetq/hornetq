@@ -27,16 +27,17 @@ import org.jboss.remoting.Client;
 
 /**
  * 
- * Base implementation of HierarchicalState
+ * Base implementation of HierarchicalState.
  * 
- * State is created and maintained by the StateCreationAspect.
- * The state is placed in the meta data for the invocation, so that
- * it is available in any of the interceptors/aspects, this enables
- * each interceptor/aspect to access the state for it's delegate without
- * having to add multiple get/set methods on the delegate API.
+ * State is created and maintained by the StateCreationAspect. The state is placed in the meta data
+ * for the invocation, so that it is available in any of the interceptors/aspects, this enables each
+ * interceptor/aspect to access the state for it's delegate without having to add multiple get/set
+ * methods on the delegate API.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public class HierarchicalStateBase implements HierarchicalState
 {

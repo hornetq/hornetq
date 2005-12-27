@@ -27,12 +27,13 @@ import javax.jms.Message;
 import org.jboss.jms.client.Closeable;
 
 /**
- * Represents the set of methods from the BrowserDelegate
- * that are handled on the server.
- * The rest of the methods are handled in the advice stack.
+ * Represents the set of methods from the BrowserDelegate that are handled on the server. The rest
+ * of the methods are handled in the advice stack.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface BrowserEndpoint extends Closeable
 {   

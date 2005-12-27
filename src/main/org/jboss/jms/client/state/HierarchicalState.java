@@ -23,16 +23,14 @@ package org.jboss.jms.client.state;
 
 import java.util.Set;
 
-import org.jboss.remoting.Client;
-
 /**
- * Any state that is Hierarchical in nature implements this interface.
- * E.g. A connection has child sessions.
- * Or, a session has child consumers, producers and browsers.
- * 
+ * Any state that is Hierarchical in nature implements this interface (e.g. a connection has child
+ * sessions). Or, a session has child consumers, producers and browsers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
 public interface HierarchicalState
 {

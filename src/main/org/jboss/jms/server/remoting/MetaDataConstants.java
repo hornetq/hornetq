@@ -27,6 +27,7 @@ package org.jboss.jms.server.remoting;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision 1.1 $</tt>
  *
+ * $Id$
  */
 public class MetaDataConstants
 {
