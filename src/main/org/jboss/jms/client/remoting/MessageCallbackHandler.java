@@ -236,14 +236,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                //to take or poll from the channel
                
                handled = buffer.offer(m, 0);
+                              
                if (handled)
                {
                   break;
-               }
+               } 
+               
+               //ust yield to other threads - otherwise all CPU is eaten in this loop and everything
+               //slows down
+               Thread.yield();               
             }
             
             if (!handled)
             {
+               log.info("Not handled!");
                //There is no-one waiting for our message so we cancel it
                if (!closed)
                {

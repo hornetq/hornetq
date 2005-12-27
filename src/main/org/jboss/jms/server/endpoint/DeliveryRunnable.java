@@ -48,17 +48,14 @@ class DeliveryRunnable extends Callback implements Runnable
    // Attributes ----------------------------------------------------
    
    protected transient InvokerCallbackHandler callbackHandler;
-   protected transient ServerConnectionEndpoint connection;
 
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(ServerConnectionEndpoint connection,
-                           InvokerCallbackHandler callbackHandler,
+   public DeliveryRunnable(InvokerCallbackHandler callbackHandler,
                            Message m)
    {
       super(m);
       this.callbackHandler = callbackHandler;
-      this.connection = connection;
    }
 
    // Runnable implementation ---------------------------------------
@@ -69,6 +66,7 @@ class DeliveryRunnable extends Callback implements Runnable
       {
          if (log.isTraceEnabled()) { log.trace("handing the message " + this.getCallbackObject() + " over to the remoting layer"); }
          callbackHandler.handleCallback(this);
+         //log.info("Handled callback");
       }
       catch(Throwable t)
       {

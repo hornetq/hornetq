@@ -118,7 +118,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="build.tests.remote" value="false"/>
+   <property name="build.tests.remote" value="true"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -477,6 +477,7 @@
 <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
 -->
+
          <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
 
@@ -484,6 +485,7 @@
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+            <pathelement location="C:\tools\Optimizeit\OptimizeitEntSuite60\lib\optit.jar"/>
          </classpath>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <!--

@@ -51,6 +51,8 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 
 /**
@@ -105,6 +107,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    protected volatile boolean grabbing;
    
    protected Message toGrab;
+   
+   //protected QueuedExecutor executor = new QueuedExecutor();
    
    // Constructors --------------------------------------------------
    
@@ -194,7 +198,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             try
             {
                if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }
-               threadPool.execute(new DeliveryRunnable(this.sessionEndpoint.connectionEndpoint, callbackHandler, message));
+               threadPool.execute(new DeliveryRunnable(callbackHandler, message));
             }
             catch (InterruptedException e)
             {
@@ -248,7 +252,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // Closeable implementation --------------------------------------
    
-   public void closing() throws JMSException
+   public synchronized void closing() throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace(this.id + " closing"); }
    }
@@ -550,5 +554,6 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // Private -------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
+   // Inner classes -------------------------------------------------   
+  
 }

@@ -28,6 +28,7 @@ import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SyncSet;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
@@ -54,7 +55,9 @@ public class ConnectionState extends HierarchicalStateBase
       resourceManager = ResourceManagerFactory.instance.getResourceManager(serverId);
       
       //TODO size should be configurable
-      pooledExecutor = new PooledExecutor(20);
+      pooledExecutor = new PooledExecutor(new LinkedQueue(), 10);
+      pooledExecutor.setMinimumPoolSize(10);
+      
    }
     
    public ResourceManager getResourceManager()
