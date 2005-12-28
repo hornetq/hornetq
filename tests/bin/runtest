@@ -23,8 +23,8 @@
 # local core
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
-#TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
-#TARGET_TEST=testNonRecoverableState_remove_2
+TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
+TARGET_TEST=testNonRecoverableState_1
 #TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState2Test
 #TARGET_TEST=testNonRecoverableState_17
 #TARGET_CLASS=org.jboss.test.messaging.core.RecoverableStateTest
@@ -80,8 +80,8 @@
 # core.distributed.queue
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueuePeerTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
-TARGET_TEST=testForwarding_1
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
+#TARGET_TEST=testForwarding_1
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.RecoverableDistributedQueueTest
 #TARGET_TEST=testAddReceiver_6
 #
@@ -94,9 +94,6 @@ TARGET_TEST=testForwarding_1
 #
 # core.distributed.replicator
 #
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDeliveryTest
-#TARGET_TEST=testDelivery_5
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.CompositeDelivery2Test
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
 #TARGET_TEST=testReplicator_6
