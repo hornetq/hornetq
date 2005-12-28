@@ -32,7 +32,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
 #TARGET_TEST=testRecoverableChannel_3
 #TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
-#TARGET_TEST=testRecoverableChannel_7
+#TARGET_TEST=testRecoverableChannel_17
 #TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
@@ -80,17 +80,17 @@
 # core.distributed.queue
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueuePeerTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
-#TARGET_TEST=testAddReceiver_2
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
+TARGET_TEST=testForwarding_1
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.RecoverableDistributedQueueTest
-#TARGET_TEST=testSimpleSend
+#TARGET_TEST=testAddReceiver_6
 #
 # core.distributed.topic
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.TopicPeerTest
 #TARGET_TEST=testTwoPeers_1
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
-TARGET_TEST=testDistributedTopic_4
+#TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
+#TARGET_TEST=testDistributedTopic_4
 #
 # core.distributed.replicator
 #
