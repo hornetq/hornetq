@@ -129,7 +129,17 @@ public class RecoverableState extends NonRecoverableState
    public void redeliver(Set dels) throws Throwable
    {
       super.redeliver(dels);
-      
+
+      //TODO (BUG): how about a set of mixed deliveries, when some of them are reliable and some of
+      //            them are not? If only the first delivery in the set is reliable, and the rest
+      //            are not pm will be requested to redeliver non-reliable messages. Add a test case
+      //            for this.
+
+      if (dels.isEmpty())
+      {
+         return;
+      }
+
       boolean isReliable = ((Delivery)dels.iterator().next()).getReference().isReliable();
       
       if (isReliable)
