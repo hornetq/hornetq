@@ -567,19 +567,8 @@ public class ReplicatorOutput
             if (log.isTraceEnabled()) { log.trace(this + " received " + r); }
 
             Object collectorID = r.getHeader(Routable.COLLECTOR_ID);
-
-
-            if (ignoredReplicatorPeerID != null && ignoredReplicatorPeerID.equals(collectorID))
-            {
-               if (log.isTraceEnabled()) { log.trace(this + ": message " + r + " sent by an ignored replicator, discarding"); }
-               return;
-            }
-
             boolean isReliable = r.isReliable();
-
             Address collectorAddress = null;
-
-
             if (isReliable)
             {
                // we only need to send asynchronous acknowledgments back for reliable messages
@@ -600,6 +589,25 @@ public class ReplicatorOutput
                             " not found among the peers of " + ReplicatorOutput.this);
                   return;
                }
+            }
+
+
+            if (ignoredReplicatorPeerID != null && ignoredReplicatorPeerID.equals(collectorID))
+            {
+               if (log.isTraceEnabled()) { log.trace(this + ": message " + r + " sent by an ignored replicator, discarding"); }
+
+               // However, I need to send an acknowledgment back for reliable messages, otherwise
+               // the originator replicator input will never get rid of the associated delivery
+               // from its RemoteTopic state.
+               //
+               // TODO: this solution is inneficient and confusing. A more efficient mechanism would
+               //       be for to code the replicator input to not even *WAIT* for acknowledments
+               //       from ignored outputs.
+               if (isReliable)
+               {
+                  sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.ACCEPTED);
+               }
+               return;
             }
 
             if (receiver == null)

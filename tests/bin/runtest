@@ -14,23 +14,14 @@
 #TARGET_CLASS=org.jboss.test.messaging.util.UtilTest
 #TARGET_CLASS=org.jboss.test.messaging.util.RemoteServerTest
 #TARGET_TEST=testRemoteServer
-
 #
 # core
 #
-
 #TARGET_CLASS=org.jboss.test.messaging.core.SimpleDeliveryTest
 #TARGET_CLASS=org.jboss.test.messaging.core.ReplicatorOutputDeliveryTest
-
-
-
 #
-# core utils
-#
-
 # local core
 #
-
 #TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
 #TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
 #TARGET_TEST=testNonRecoverableState_remove_2
@@ -38,7 +29,6 @@
 #TARGET_TEST=testNonRecoverableState_17
 #TARGET_CLASS=org.jboss.test.messaging.core.RecoverableStateTest
 #TARGET_TEST=testRecoverableState_57
-
 #TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
 #TARGET_TEST=testRecoverableChannel_3
 #TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
@@ -47,8 +37,6 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
 #TARGET_TEST=testNACKINGReceiver
-
-
 #TARGET_CLASS=org.jboss.test.messaging.core.DistributorTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageReferenceSupportTest
 #TARGET_CLASS=org.jboss.test.messaging.core.MessageSupportTest
@@ -63,30 +51,23 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.AbstractDestinationAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeAsChannelTest
-
 #TARGET_CLASS=org.jboss.test.messaging.core.persistence.JDBCUtilTest
 #TARGET_CLASS=org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest
 #TARGET_TEST=testCommit_NotXA_Long_NotStoreXid
-
-
 #
 # core - message
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.message.InMemoryMessageStoreTest
 #TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
 #TARGET_TEST=testRecoverableMessageStore_1
-
 #
 # core - persistence
 #
-
 #TARGET_CLASS=org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest
 #TARGET_TEST=testAddRetrieveRemoveMessage
-
 #
 # distributed core
 #
-
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.pipe.SharedPipeOutputTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTimeoutExceptionTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ToEraseReplicatorOutputTest
@@ -95,7 +76,6 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueueAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.pipe.PipeAsChannelTest
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
-
 #
 # core.distributed.queue
 #
@@ -104,15 +84,13 @@
 #TARGET_TEST=testAddReceiver_2
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.RecoverableDistributedQueueTest
 #TARGET_TEST=testSimpleSend
-
 #
 # core.distributed.topic
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.TopicPeerTest
 #TARGET_TEST=testTwoPeers_1
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
-#TARGET_TEST=testDistributeTopic_1
-
+TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
+TARGET_TEST=testDistributedTopic_4
 #
 # core.distributed.replicator
 #
@@ -123,18 +101,14 @@
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
 #TARGET_TEST=testReplicator_6
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
-
 #
 # distributed utils
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.distributed.util.RpcServerTest
 #TARGET_TEST=testNoSuchMethodName_Local
-
-
 #
 # JMS Facade
 #
-
 #TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
 #TARGET_TEST=testRedeliveredFlagLocalTopic
 #TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
@@ -148,8 +122,8 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionConsumerTest
 #TARGET_TEST=testSimple
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-TARGET_TEST=testReceive
+#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
+#TARGET_TEST=testReceive
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
 #TARGET_TEST=testBrowseWithSelector
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
@@ -161,14 +135,10 @@ TARGET_TEST=testReceive
 #TARGET_TEST=testQueue
 #TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
 #TARGET_TEST=testQueue
-
 #
 # JMS Facade server
 #
 #TARGET_CLASS=org.jboss.test.messaging.jms.server.DestinationManagerTest
-
-
-
 #
 # Message tests
 #
@@ -179,7 +149,6 @@ TARGET_TEST=testReceive
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageTest
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageBodyTest
 #TARGET_TEST=testStreamMessage
-
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.TextMessageTest
 #TARGET_TEST=testPersistentSend
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.MapMessageTest

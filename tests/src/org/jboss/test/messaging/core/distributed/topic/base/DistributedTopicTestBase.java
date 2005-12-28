@@ -139,7 +139,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    //////// Unreliable message
    ////////
 
-   public void testDistributeTopic_1() throws Exception
+   public void testDistributedTopic_1() throws Exception
    {
       jchannel2.connect("testGroup");
 
@@ -198,7 +198,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    //////// Reliable message
    ////////
 
-   public void testDistributeTopic_2() throws Exception
+   public void testDistributedTopic_2() throws Exception
    {
       jchannel2.connect("testGroup");
 
@@ -263,7 +263,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    //////// Unreliable message
    ////////
 
-   public void testDistributeTopic_3() throws Throwable
+   public void testDistributedTopic_3() throws Throwable
    {
       jchannel2.connect("testGroup");
 
@@ -317,7 +317,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    //////// Reliable message
    ////////
 
-   public void testDistributeTopic_4() throws Throwable
+   public void testDistributedTopic_4() throws Throwable
    {
       jchannel2.connect("testGroup");
 
