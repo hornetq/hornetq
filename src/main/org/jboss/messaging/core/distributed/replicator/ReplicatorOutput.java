@@ -28,12 +28,14 @@ import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.util.DelegatingMessageListener;
 import org.jboss.messaging.core.distributed.util.DelegatingMessageListenerSupport;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.util.Util;
@@ -620,9 +622,16 @@ public class ReplicatorOutput
                return;
             }
 
-
-            MessageReference ref = ms.reference(r);
-
+            MessageReference ref;
+            if (r.isReference())
+            {
+               ref = ms.reference((MessageReference)r);
+            }
+            else
+            {
+               ref = ms.reference((Message)r);
+            }
+            
             // Mark the reference as being received from a remote endpoint
             ref.putHeader(Routable.REMOTE_ROUTABLE, Routable.REMOTE_ROUTABLE);
             ref.removeHeader(Routable.REPLICATOR_ID);
@@ -633,6 +642,13 @@ public class ReplicatorOutput
             {
                ref.putHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS, collectorAddress);
                d = receiver.handle(this, ref, null);
+               //If the receiver is a simple Topic then the returned delivery
+               //will have been created with new SimpleDelivery(true)
+               //hence won't have a reference
+               if (d.getReference() == null)
+               {
+                  d = new SimpleDelivery(ref, d.isDone());
+               }
                if (log.isTraceEnabled()) { log.trace(this + ": receiver " + receiver + " handled " + r + " and returned " + d); }
             }
             catch(Throwable t)

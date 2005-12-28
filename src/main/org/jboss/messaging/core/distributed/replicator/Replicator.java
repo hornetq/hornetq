@@ -144,7 +144,15 @@ public class Replicator extends ReplicatorPeer implements Distributed, Router
       }
 
       Set deliveries = new HashSet();
-      MessageReference ref = ms.reference(routable);
+      MessageReference ref;
+      if (!routable.isReference())
+      {
+         ref = ms.reference((Message)routable);
+      }
+      else
+      {
+         ref = (MessageReference)routable;
+      }
 
       // expect asynchronous acknowledgments only for reliable messages
 

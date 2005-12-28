@@ -201,6 +201,15 @@ abstract class RoutableSupport implements Routable, Externalizable
    {
       deliveryCount++;      
    }
+   
+   public void setDeliveryCount(int deliveryCount)
+   {
+      this.deliveryCount = deliveryCount;
+      if (deliveryCount > 0)
+      {
+         this.redelivered = true;
+      }
+   }
 
    public Serializable putHeader(String name, Serializable value)
    {

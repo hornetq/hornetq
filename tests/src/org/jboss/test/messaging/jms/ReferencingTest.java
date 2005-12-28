@@ -115,7 +115,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
       
       assertNull(ref);
    }
@@ -147,7 +147,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
       
       assertNull(ref);
    }
@@ -177,13 +177,14 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
+      ref.release();
       
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
       
       m2.acknowledge();
       
-      ref = store.getReference(m2.getJMSMessageID());
+      ref = store.reference(m2.getJMSMessageID());
       
       assertNull(ref);
    }
@@ -215,13 +216,14 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
+      ref.release();
       
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
       
       m2.acknowledge();
       
-      ref = store.getReference(m2.getJMSMessageID());
+      ref = store.reference(m2.getJMSMessageID());
       
       assertNull(ref);
    }
@@ -253,7 +255,8 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
+      ref.release();
       
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
       
@@ -264,13 +267,14 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m3);
       assertEquals(m.getText(), m3.getText());
       
-      ref = store.getReference(m2.getJMSMessageID());
+      ref = store.reference(m2.getJMSMessageID());
+      ref.release();
       
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
             
       m2.acknowledge();
       
-      ref = store.getReference(m2.getJMSMessageID());
+      ref = store.reference(m2.getJMSMessageID());
       
       assertNull(ref);
    }
@@ -301,12 +305,13 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
+      ref.release();
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
       
       sess.commit();
       
-      ref = store.getReference(m2.getJMSMessageID());
+      ref = store.reference(m2.getJMSMessageID());
       assertNull(ref);
    }
    
@@ -336,7 +341,8 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
+      ref.release();
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
       
       sess.rollback();
@@ -346,12 +352,13 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m3);
       assertEquals(m.getText(), m3.getText());
       
-      ref = store.getReference(m3.getJMSMessageID());
+      ref = store.reference(m3.getJMSMessageID());
+      ref.release();
       assertEquals(m.getJMSMessageID(), ref.getMessageID());
       
       sess.commit();
       
-      ref = store.getReference(m2.getJMSMessageID());
+      ref = store.reference(m2.getJMSMessageID());
       assertNull(ref);
    }
    
@@ -401,7 +408,7 @@ public class ReferencingTest extends MessagingTestCase
       
       m6.acknowledge();
       
-      MessageReference ref = store.getReference(m2.getJMSMessageID());
+      MessageReference ref = store.reference(m2.getJMSMessageID());
       
       assertNull(ref);
    }

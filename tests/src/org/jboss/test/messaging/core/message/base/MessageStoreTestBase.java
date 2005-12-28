@@ -21,18 +21,16 @@
 */
 package org.jboss.test.messaging.core.message.base;
 
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.message.MessageFactory;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.lang.ref.WeakReference;
+import java.util.Map;
+
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 
 /**
@@ -154,25 +152,14 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      // get reachable reference
-      ref = ms.getReference(m.getMessageID());
-      ref.acquireReference();
       assertCorrectReference(ref, ms.getStoreID(), m);
-
-//      // send reference out of scope and request garbage collection
-//      WeakReference control = new WeakReference(ref);
-//      ref = null;
-//      System.gc();
-//
-//      // make sure the unreachable reference has been garbage collected
-//      assertNull(control.get());
-      
-      ref.releaseReference();
+  
+      ref.release();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref = ms.getReference(m.getMessageID());
+      ref = ms.reference((String)m.getMessageID());
       assertNull(ref);
    }
 
@@ -196,7 +183,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       MessageReference ref2 = ms.reference(m);
 
-      assertTrue(ref == ref2);
+      assertCorrectReference(ref2, ms.getStoreID(), m);
    }
 
    //////
@@ -226,25 +213,17 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // get reachable reference
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         MessageReference ref = ms.getReference(m[i].getMessageID());
-         ref.acquireReference();
-         assertCorrectReference(ref, ms.getStoreID(), m[i]);
-         ref.releaseReference();
+      {         
+         assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
+         refs[i].release();
       }
-
-//      // send references are out of scope, request garbage collection
-//      refs = null;
-//      System.gc();
-      
-      
 
       // there are no strong references to the message reference anymore, so the message store
       // should be cleaned of everything that pertains to those message
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.getReference(m[i].getMessageID()));
+         assertNull(ms.reference((String)m[i].getMessageID()));
       }
    }
 
@@ -316,22 +295,10 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      // get reachable reference
-      ref = ms.getReference(m.getMessageID());
-      assertCorrectReference(ref, ms.getStoreID(), m);
-
-      // send reference out of scope and request garbage collection
-      WeakReference control = new WeakReference(ref);
-      ref = null;
-      System.gc();
-
-      // make sure the unreachable reference has been garbage collected
-      assertNull(control.get());
-
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref = ms.getReference(m.getMessageID());
+      ref = ms.reference((String)m.getMessageID());
       assertNull(ref);
    }
 
@@ -368,22 +335,117 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // get reachable reference
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         MessageReference ref = ms.getReference(m[i].getMessageID());
-         assertCorrectReference(ref, ms.getStoreID(), m[i]);
+      {         
+         assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
+         refs[i].release();
       }
-
-      // send references are out of scope, request garbage collection
-      refs = null;
-      System.gc();
 
       // there are no strong references to the message reference anymore, so the message store
       // should be cleaned of everything that pertains to those message
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.getReference(m[i].getMessageID()));
+         assertNull(ms.reference((String)m[i].getMessageID()));
       }
+   }
+   
+   public void testNonRecoverableMessageStore_6() throws Exception
+   {
+      if (ms.isRecoverable())
+      {
+         // we only test non-recoverable message stores
+         return;
+      }
+
+      if (!ms.acceptReliableMessages())
+      {
+         // we only test message stores that accept reliable message
+         return;
+      }
+
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+
+      // non-recoverable store, non-reliable message, one message
+      MessageReference ref = ms.reference(m);
+      assertCorrectReference(ref, ms.getStoreID(), m);
+      
+      //Create another reference from that reference
+      MessageReference ref2 = ms.reference(ref);
+      
+      ref.release();
+      
+      MessageReference ref3 = ms.reference((String)m.getMessageID());
+      assertNotNull(ref3);
+      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      
+      ref2.release();
+
+      // there's no strong reference to the unique message reference anymore, so the message store
+      // should be cleaned of everything that pertains to that message
+
+      ref3 = ms.reference((String)m.getMessageID());
+      assertNull(ref3);
+   }
+   
+   public void testNonRecoverableMessageStore_7() throws Exception
+   {
+      if (ms.isRecoverable())
+      {
+         // we only test non-recoverable message stores
+         return;
+      }
+
+      if (!ms.acceptReliableMessages())
+      {
+         // we only test message stores that accept reliable message
+         return;
+      }
+
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+
+      // non-recoverable store, non-reliable message, one message
+      MessageReference ref = ms.reference(m);
+      assertCorrectReference(ref, ms.getStoreID(), m);
+      
+      MessageReference ref2 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref2);      
+      assertCorrectReference(ref2, ms.getStoreID(), m);
+      
+      ref2.release();
+      
+      //Acquire multiple times - this is what would happen with multiple deliveries
+      //for the same reference
+      ref.acquire();
+      ref.acquire();
+      ref.acquire();
+      
+      ref.release();
+      
+      MessageReference ref3 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref3);      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      ref3.release();
+      
+      ref.release();
+      
+      ref3 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref3);      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      ref3.release();
+      
+      ref.release();
+      
+      ref3 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref3);      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      ref.release();
+      
+      ref.release();
+      ref3 = ms.reference((String)ref.getMessageID());
+      assertNull(ref3);    
+      
+      
    }
 
    //
@@ -415,25 +477,9 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
+      ref.release();
 
-      // get reachable reference
-      ref = ms.getReference(m.getMessageID());
-      ref.acquireReference();
-      assertCorrectReference(ref, ms.getStoreID(), m);
-
-//      // send reference out of scope and request garbage collection
-//      WeakReference control = new WeakReference(ref);
-//      ref = null;
-//      System.gc();
-      ref.releaseReference();
-
-      // make sure the unreachable reference has been garbage collected
-      //assertNull(control.get());
-
-      // there's no strong reference to the unique message reference anymore, so the message store
-      // should be cleaned of everything that pertains to that message
-
-      ref = ms.getReference(m.getMessageID());
+      ref = ms.reference((String)m.getMessageID());
       assertNull(ref);
    }
 
@@ -457,7 +503,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       MessageReference ref2 = ms.reference(m);
 
-      assertTrue(ref == ref2);
+      assertCorrectReference(ref2, ms.getStoreID(), m);
    }
 
    //////
@@ -487,23 +533,14 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // get reachable reference
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         MessageReference ref = ms.getReference(m[i].getMessageID());
-         ref.acquireReference();
-         assertCorrectReference(ref, ms.getStoreID(), m[i]);
-         ref.releaseReference();
+      {         
+         assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
+         refs[i].release();
       }
-
-//      // send references are out of scope, request garbage collection
-//      refs = null;
-//      System.gc();
-
-      // there are no strong references to the message reference anymore, so the message store
-      // should be cleaned of everything that pertains to those message
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.getReference(m[i].getMessageID()));
+         assertNull(ms.reference((String)m[i].getMessageID()));
       }
    }
 
@@ -533,24 +570,12 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      // get reachable reference
-      ref = ms.getReference(m.getMessageID());
-      ref.acquireReference();
-      assertCorrectReference(ref, ms.getStoreID(), m);
-
-//      // send reference out of scope and request garbage collection
-//      WeakReference control = new WeakReference(ref);
-//      ref = null;
-//      System.gc();
-      ref.releaseReference();
-
-      // make sure the unreachable reference has been garbage collected
-      //assertNull(control.get());
+      ref.release();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref = ms.getReference(m.getMessageID());
+      ref = ms.reference((String)m.getMessageID());
       assertNull(ref);
    }
 
@@ -574,7 +599,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       MessageReference ref2 = ms.reference(m);
 
-      assertTrue(ref2 == ref);
+      assertCorrectReference(ref2, ms.getStoreID(), m);
    }
 
    //////
@@ -604,24 +629,103 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // get reachable reference
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         MessageReference ref = ms.getReference(m[i].getMessageID());
-         ref.acquireReference();
-         assertCorrectReference(ref, ms.getStoreID(), m[i]);
-         ref.releaseReference();
+      {         
+         refs[i].release();
       }
-
-//      // send references are out of scope, request garbage collection
-//      refs = null;
-//      System.gc();
 
       // there are no strong references to the message reference anymore, so the message store
       // should be cleaned of everything that pertains to those message
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.getReference(m[i].getMessageID()));
+         assertNull(ms.reference((String)m[i].getMessageID()));
       }
+   }
+   
+   public void testRecoverableMessageStore_6() throws Exception
+   {
+      if (!ms.isRecoverable())
+      {
+         // we only test recoverable message stores
+         return;
+      }
+
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+
+      // non-recoverable store, non-reliable message, one message
+      MessageReference ref = ms.reference(m);
+      assertCorrectReference(ref, ms.getStoreID(), m);
+      
+      //Create another reference from that reference
+      MessageReference ref2 = ms.reference(ref);
+      
+      ref.release();
+      
+      MessageReference ref3 = ms.reference((String)m.getMessageID());
+      assertNotNull(ref3);
+      ref3.release();
+      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      
+      ref2.release();
+
+      // there's no strong reference to the unique message reference anymore, so the message store
+      // should be cleaned of everything that pertains to that message
+
+      ref3 = ms.reference((String)m.getMessageID());
+      assertNull(ref3);
+   }
+   
+   public void testRecoverableMessageStore_7() throws Exception
+   {
+      if (!ms.isRecoverable())
+      {
+         // we only test recoverable message stores
+         return;
+      }
+
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+
+      // non-recoverable store, non-reliable message, one message
+      MessageReference ref = ms.reference(m);
+      assertCorrectReference(ref, ms.getStoreID(), m);
+      
+      MessageReference ref2 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref2);      
+      assertCorrectReference(ref2, ms.getStoreID(), m);
+      
+      ref2.release();
+      
+      //Acquire multiple times - this is what would happen with multiple deliveries
+      //for the same reference
+      ref.acquire();
+      ref.acquire();
+      ref.acquire();
+      
+      ref.release();
+      
+      MessageReference ref3 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref3);      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      ref3.release();
+      
+      ref.release();
+      
+      ref3 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref3);      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      ref3.release();
+      
+      ref.release();
+      
+      ref3 = ms.reference((String)ref.getMessageID());
+      assertNotNull(ref3);      
+      assertCorrectReference(ref3, ms.getStoreID(), m);
+      ref.release();
+      
+      ref.release();
+      ref3 = ms.reference((String)ref.getMessageID());
+      assertNull(ref3);                
    }
 
    // Package protected ---------------------------------------------

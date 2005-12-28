@@ -134,6 +134,13 @@ public class RecoverableState extends NonRecoverableState
       //            them are not? If only the first delivery in the set is reliable, and the rest
       //            are not pm will be requested to redeliver non-reliable messages. Add a test case
       //            for this.
+      
+      // Solution to this is to restrict a Channel to having only one receiver then we only ever deal with
+      // one delivery - this will also significantly simplify other parts of the code.
+      // Allowing a Channel to have multiple receivers adds extra complexity and reduces
+      // clarity and manageability.
+      // It is my view that we should choose the simplest primitives and built up from there.
+      // A channel with multiple receivers is not the simplest primitive.      
 
       if (dels.isEmpty())
       {
@@ -216,11 +223,9 @@ public class RecoverableState extends NonRecoverableState
       {
          String messageID = (String)iter.next();
          
-         MessageReference ref = messageStore.getReference(messageID);
+         MessageReference ref = messageStore.reference(messageID);
          
          messageRefs.addLast(ref, ref.getPriority());
-         
-         ref.acquireReference();
          
          ids.add(messageID);         
       }
@@ -240,11 +245,9 @@ public class RecoverableState extends NonRecoverableState
          
          if (ids.add(messageID))
          {
-            MessageReference ref = messageStore.getReference(messageID);
+            MessageReference ref = messageStore.reference(messageID);
             
-            messageRefs.addFirst(ref, ref.getPriority());
-            
-            ref.acquireReference();
+            messageRefs.addFirst(ref, ref.getPriority());            
          }
       }
       

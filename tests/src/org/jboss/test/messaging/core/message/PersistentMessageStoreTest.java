@@ -67,7 +67,7 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
       pm = new JDBCPersistenceManager();
       pm.start();
-      ms = new PersistentMessageStore("test-persitent-store", pm);
+      ms = new PersistentMessageStore("test-persistent-store", pm);
 
       pm2 = new JDBCPersistenceManager();
       pm2.start();
@@ -93,52 +93,36 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
       assertEquals(0, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
 
-      MessageReference ref = ms.reference(m);
-      ref.acquireReference();
+      MessageReference ref = ms.reference(m);      
       log.debug("referenced " + m + " using " + ms);
       assertCorrectReference(ref, ms.getStoreID(), m);
       assertEquals(1, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
 
       // add the same message to the second store
       MessageReference ref2 = ms2.reference(m);
-      ref2.acquireReference();
       log.debug("referenced " + m + " using " + ms2);
       assertCorrectReference(ref2, ms2.getStoreID(), m);
       assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
 
       assertFalse(ref == ref2);
 
-//      // send ref out of scope and call a full GC
-//      ref = null;
-//      System.gc();
-      ref.releaseReference();
-
-      // TODO - do I need to keep this here?
-      // wait a while (?) for garbage collection (on a multi-processor machine)
-      //Thread.sleep(3000);
-
-      // the reference is garbage collected and the message store is evicted ...
+      ref.release();
 
       assertEquals(1, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
 
       // ... but because the message is still in the database, trying to get a new reference
       // is successful.
 
-      ref = ms.getReference(m.getMessageID());
-      ref.acquireReference();
+      ref = ms.reference((String)m.getMessageID());
       assertCorrectReference(ref, ms.getStoreID(), m);
-      assertCorrectReference(ms2.getReference(m.getMessageID()), ms2.getStoreID(), m);
+      
       assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
 
-//      // send both references out of scope and call a full GC
-//      ref = null;
-//      ref2 = null;
-//      System.gc();
-      ref.releaseReference();
-      ref2.releaseReference();
+      ref.release();
+      ref2.release();      
 
-      assertNull(ms.getReference(m.getMessageID()));
-      assertNull(ms2.getReference(m.getMessageID()));
+      assertNull(ms.reference((String)m.getMessageID()));
+      assertNull(ms2.reference((String)m.getMessageID()));
       assertEquals(0, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
    }
 

@@ -27,7 +27,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.Routable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -53,6 +52,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
    public PersistentMessageStore(Serializable storeID, PersistenceManager pm)
    {
       super(storeID, true);
+      
       this.pm = pm;
    }
 
@@ -63,52 +63,35 @@ public class PersistentMessageStore extends InMemoryMessageStore
       return true;
    }
    
-   public MessageReference reference(Routable r)
+   public MessageReference reference(Message m)
    {
-      if (r.isReference())
-      {
-         if (log.isTraceEnabled()) { log.trace("message " + r + " is already a reference"); }
-         return (MessageReference)r;
-      }
+      MessageReference ref = super.reference(m);
       
-      MessageReference ref = super.getReference(r.getMessageID());
-      
-      if (ref != null)
-      {        
-         if (log.isTraceEnabled()) { log.trace("retrieved " + ref + " from memory cache"); }
-         return ref;
-      }
-      
-      if (ref == null)
-      {
-         // Message doesn't exist either in memory or on disc
-         if (log.isTraceEnabled()) { log.trace(this + " referencing " + r); }
+      if (log.isTraceEnabled()) { log.trace(this + " referencing " + m); }
 
-         if (r.isReliable())
+      if (m.isReliable())
+      {         
+         try
          {
-            try
-            {
-               pm.storeMessage((Message)r);
-               if (log.isTraceEnabled()) { log.trace("stored " + r + " on disk"); }
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to store message " + r, e);
-               return null;
-            }
+            pm.storeMessage(m);
          }
-
-         ref = super.createReference((Message)r);
+         catch (Exception e)
+         {
+            log.error("Failed to store message", e);
+         }
+         
+         if (log.isTraceEnabled()) { log.trace("stored " + m + " on disk"); }         
       }
+
       return ref;
    }
 
-   public MessageReference getReference(Serializable messageID)
+   public MessageReference reference(String messageID) throws Exception
    {
       if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID);}
       
       //Try and get the reference from the in memory cache first
-      MessageReference ref = super.getReference(messageID);
+      MessageReference ref = super.reference(messageID);
       
       if (ref != null)
       {        
@@ -119,46 +102,42 @@ public class PersistentMessageStore extends InMemoryMessageStore
       // Try and retrieve it from persistent storage
       // TODO We make a database trip even if the message is non-reliable, but I see no way to avoid
       // TODO this by only knowing the messageID ...
+      
+      //TODO - We would avoid this by storing the message header fields in the message reference table - Tim
+            
       Message m = retrieveMessage(messageID);
 
       if (m != null)
       {
-         //Put it in the memory cache and return a ref from there
-         ref = super.createReference((Message)m);
+         //Put it in the memory cache
+         super.addMessage(m);
+         
+         ref = new WeakMessageReference(m, this);
       }
       
-      return ref;
+      return ref;      
+   }
+   
+   public Message retrieveMessage(String messageId) throws Exception
+   {
+      Message m = super.retrieveMessage(messageId);
       
+      if (m == null)
+      {
+         m = pm.retrieveMessage(messageId);
+         
+         if (m != null)
+         {
+            super.addMessage(m);
+            
+            if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage:" + m); }    
+         }
+                       
+      }
+      
+      return m;      
    }
    
-   protected Message retrieveMessage(Serializable messageID)
-   {
-      Message m = null;
-      try
-      {
-         m = pm.retrieveMessage(messageID);
-         if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage:" + m); }
-      }
-      catch(Throwable t)
-      {
-         log.error("Persistence manager failed", t);
-      }
-      return m;
-   }
-   
-
-   public void remove(MessageReference ref) throws Throwable
-   {
-      super.remove(ref);
-
-      if (ref.isReliable())
-      {
-         if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + ref.getMessageID() + " on disk"); }
-         pm.removeMessage((String)ref.getMessageID());
-         if (log.isTraceEnabled()) { log.trace(ref.getMessageID() + " removed (or reference count decremented) on disk"); }
-      }
-   }
-
 
    // Public --------------------------------------------------------
 
@@ -175,6 +154,18 @@ public class PersistentMessageStore extends InMemoryMessageStore
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+    
+   protected void remove(String messageId, boolean reliable) throws Exception
+   {
+      super.remove(messageId, reliable);
+
+      if (reliable)
+      {
+         if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + messageId + " on disk"); }
+         pm.removeMessage(messageId);
+         if (log.isTraceEnabled()) { log.trace(messageId + " removed (or reference count decremented) on disk"); }
+      }
+   }
 
    // Private -------------------------------------------------------
    

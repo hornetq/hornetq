@@ -36,8 +36,7 @@ public interface MessageReference extends Routable
 {
    Serializable getStoreID();
    
-   void acquireReference();
+   void acquire();
    
-   void releaseReference();
-
+   void release();
 }

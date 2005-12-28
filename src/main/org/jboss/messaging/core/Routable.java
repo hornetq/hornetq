@@ -90,6 +90,8 @@ public interface Routable extends Serializable
     */
    int getDeliveryCount();
    
+   void setDeliveryCount(int deliveryCount);
+   
    void incrementDeliveryCount();
    
    /**

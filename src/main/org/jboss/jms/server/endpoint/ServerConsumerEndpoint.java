@@ -163,6 +163,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          
          Delivery delivery = null;
          Message message = reference.getMessage();
+         message.setDeliveryCount(reference.getDeliveryCount());
+         
          
          boolean accept = this.accept(message);
          if (!accept)
@@ -171,14 +173,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             return null;
          }
          
-         //TODO This should really go in core
-         message.incrementDeliveryCount();
-         
-         
          //TODO - We need to put the message in a DLQ
          //For now we just ack it otherwise the message will keep being retried
          //and we'll never get anywhere
-         if (message.getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
+         if (reference.getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
          {
             log.warn("Message has exceed maximum delivery attempts and will be removed " + message);
             delivery = new SimpleDelivery(observer, (MessageReference)reference, true);

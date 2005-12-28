@@ -212,8 +212,8 @@ public class ServerPeer
          //Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
          //Otherwise, we will never have more than getMinimumPoolSize threads running.
                      
-         threadPool = new PooledExecutor(new LinkedQueue(), 20);
-         threadPool.setMinimumPoolSize(20); 
+         threadPool = new PooledExecutor(new LinkedQueue(), 100);
+         threadPool.setMinimumPoolSize(100); 
          
          initializeRemoting();
    

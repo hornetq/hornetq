@@ -56,8 +56,8 @@ public class ConnectionState extends HierarchicalStateBase
       resourceManager = ResourceManagerFactory.instance.getResourceManager(serverId);
       
       //TODO size should be configurable
-      pooledExecutor = new PooledExecutor(new LinkedQueue(), 10);
-      pooledExecutor.setMinimumPoolSize(10);
+      pooledExecutor = new PooledExecutor(new LinkedQueue(), 100);
+      pooledExecutor.setMinimumPoolSize(100);
       
    }
     

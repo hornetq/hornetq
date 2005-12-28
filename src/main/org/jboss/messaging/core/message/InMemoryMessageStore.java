@@ -28,21 +28,18 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.Routable;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * A MessageStore implementation that stores messages in an in-memory cache.
  * 
- * This message store dishes out WeakMessageReference instances, which contain WeakReferences to
- * Message instances. This means the message can be removed from the message store and gc'd without
- * the MessageReference realeasing its reference.
- * Messages can be removed when, say, memory gets low. (TODO)
- * Messages and message refs are also automatically removed when the MessageReference instance is
- * garbage collected by hooking into the MessageReferences finalizer.
- * This means any non referenced messages are automatically removed from the message store.
- *
+ * This message store, stores one instance of the actual message in memory
+ * and returns new WeakMessageReference instances to those messages via one
+ * of the reference() methods.
+ * Calling one of the reference() methods causes the reference count for the message to
+ * be increased.
+ *   
  * TODO - do spillover onto disc at low memory by reusing jboss mq message cache.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -62,6 +59,7 @@ public class InMemoryMessageStore implements MessageStore
    // Attributes ----------------------------------------------------
 
    private Serializable storeID;
+   
    private boolean acceptReliableMessages;
 
    // <messageID - MessageHolder>
@@ -78,7 +76,9 @@ public class InMemoryMessageStore implements MessageStore
    public InMemoryMessageStore(Serializable storeID, boolean acceptReliableMessages)
    {
       this.storeID = storeID;
+      
       this.acceptReliableMessages = acceptReliableMessages;
+      
       messages = new ConcurrentHashMap();
 
       log.debug(this + " initialized");
@@ -101,40 +101,126 @@ public class InMemoryMessageStore implements MessageStore
       return acceptReliableMessages;
    }
 
-   public MessageReference reference(Routable r)
+ 
+   public MessageReference reference(Message m)
    {
-      if (r.isReference())
+      if (m.isReliable() && !acceptReliableMessages)
       {
-         if (log.isTraceEnabled()) { log.trace("routable " + r + " is already a reference"); }
-         return (MessageReference)r;
+         throw new IllegalStateException(this + " does not accept reliable messages (" + m + ")");
       }
-
-      if (r.isReliable() && !acceptReliableMessages)
+      
+      if (log.isTraceEnabled()) { log.trace(this + " referencing " + m); }
+      
+      MessageHolder holder = (MessageHolder)messages.get(m.getMessageID());
+      
+      if (holder == null)
+      {      
+         addMessage(m);
+      }
+      else
       {
-          throw new IllegalStateException(this + " does not accept reliable messages (" + r + ")");
+         holder.incRefCount();
       }
+           
+      MessageReference ref = new WeakMessageReference(m, this);
 
-      if (log.isTraceEnabled()) { log.trace(this + " referencing " + r); }
-
-      MessageReference ref = getReference(r.getMessageID());
-      if (ref == null)
-      {
-         ref = createReference((Message)r);
-      }
       return ref;
    }
+   
 
-   public MessageReference getReference(Serializable messageID)
+   /* Create a reference from a message id. The message id must correspond to a message
+    * already known to the store
+    */
+   public MessageReference reference(String messageId) throws Exception
    {
-      MessageHolder holder = (MessageHolder)messages.get(messageID);
+      MessageHolder holder = (MessageHolder)messages.get(messageId);
       
-      MessageReference mref = holder == null ? null : holder.ref;
+      if (holder == null)
+      {
+         return null;
+      }
       
-      if (log.isTraceEnabled()) { log.trace("getting reference for " + messageID + " from memory, returning " + mref);}
+      holder.incRefCount();
       
-      return mref;
+      MessageReference ref = new WeakMessageReference(holder.msg, this);
+      
+      return ref;      
    }
    
+   /*
+    * Create a reference from another message reference
+    */
+   public MessageReference reference(MessageReference other)
+   {
+      MessageHolder holder = (MessageHolder)messages.get(other.getMessageID());
+      
+      if (holder == null)
+      {
+         return null;
+      }
+      
+      holder.incRefCount();
+      
+      MessageReference ref = new WeakMessageReference((WeakMessageReference)other);
+      
+      return ref;
+   }
+   
+   
+   
+   public Message retrieveMessage(String messageId) throws Exception
+   {
+      MessageHolder holder = (MessageHolder)messages.get(messageId);
+      
+      if (holder == null)
+      {
+         return null;
+      }
+      else
+      {
+         return holder.getMessage();
+      }
+   }
+   
+   public void acquireReference(MessageReference ref) throws Exception
+   {
+      //TODO - This can be optimized by storing a reference to the actual 
+      //MessageHolder in the MessageReference thus preventing this look-up
+      
+      MessageHolder holder = (MessageHolder)messages.get(ref.getMessageID());
+      
+      if (holder != null)
+      {
+         holder.incRefCount();        
+      }   
+      else
+      {
+         log.warn("Cannot find message to acquire:" + ref);
+      }
+   }
+   
+   public void releaseReference(MessageReference ref) throws Exception
+   {
+      //TODO - This can be optimized by storing a reference to the actual 
+      //MessageHolder in the MessageReference thus preventing this look-up
+      
+
+      MessageHolder holder = (MessageHolder)messages.get(ref.getMessageID());
+      
+      if (holder != null)
+      {
+         holder.decRefCount();        
+      }   
+      else
+      {
+         log.warn("Cannot find message to release:" + ref);
+         
+         Exception e = new Exception();
+         e.printStackTrace();
+      }
+   }
+   
+
    // Public --------------------------------------------------------
 
    public String toString()
@@ -145,34 +231,16 @@ public class InMemoryMessageStore implements MessageStore
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected MessageReference createReference(Message m)
+   
+   protected void addMessage(Message m)
    {
-      MessageReference ref = new WeakMessageReference(m, this);
-      
-      messages.put(m.getMessageID(), new MessageHolder(ref, m));
-      
-      if (log.isTraceEnabled()) { log.trace("added message and reference to memory cache for " + m.getMessageID()); }
-      
-      return ref;
-   }
-
-   protected Message retrieve(Serializable messageID)
-   {
-      //TODO - Actually we should really implement all of this properly based on the JBossMQ
-      //Message Cache
-      return null;
+      messages.put(m.getMessageID(), new MessageHolder(m));
    }
    
-   public void remove(MessageReference ref) throws Throwable
+   protected void remove(String messageId, boolean reliable) throws Exception
    {
-      //Nothing is referencing the message reference any more so we can remove it
-      // and the message from the maps
-      if (log.isTraceEnabled()) { log.trace("removing " + ref.getMessageID() + " from memory cache"); }
-            
-      messages.remove(ref.getMessageID());               
+      messages.remove(messageId);
    }
-   
 
    // Private -------------------------------------------------------
    
@@ -180,15 +248,36 @@ public class InMemoryMessageStore implements MessageStore
    
    private class MessageHolder
    {
-      MessageReference ref;
+      private int refCount;
       
-      Message msg;
+      private Message msg;
       
-      MessageHolder(MessageReference ref, Message msg)
+      private MessageHolder(Message msg)
       {
-         this.ref = ref;
          this.msg = msg;
-      }           
+         
+         this.refCount = 1;
+      }    
+      
+      synchronized void incRefCount()
+      {
+         refCount++;
+      }
+      
+      synchronized void decRefCount() throws Exception
+      {
+         refCount--;
+         
+         if (refCount == 0)
+         {
+            remove((String)msg.getMessageID(), msg.isReliable());
+         }
+      }
+      
+      private Message getMessage()
+      {
+         return msg;
+      }
    }
         
 }

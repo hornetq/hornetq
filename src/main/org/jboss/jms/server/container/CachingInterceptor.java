@@ -21,17 +21,17 @@
   */
 package org.jboss.jms.server.container;
 
+import java.io.Serializable;
+
+import javax.jms.Message;
+
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Routable;
-
-import javax.jms.Message;
-import java.io.Serializable;
+import org.jboss.messaging.core.MessageStore;
 
 /**
  * TODO Not used yoet.
@@ -87,7 +87,7 @@ public class CachingInterceptor implements Interceptor
                   ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();
                   MessageStore ms = spd.getServerPeer().getMessageStore();
 
-                  MessageReference r = ms.reference((Routable)m);
+                  MessageReference r = ms.reference((org.jboss.messaging.core.Message)m);
 
                   // replace the message with its reference
                   args[i] = r;

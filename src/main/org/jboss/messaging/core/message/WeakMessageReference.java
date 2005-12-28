@@ -51,8 +51,6 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    private WeakReference ref;
    
-   private int refCount;
-   
    // Constructors --------------------------------------------------
 
    /**
@@ -69,7 +67,9 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
     */
    public WeakMessageReference(Message m, InMemoryMessageStore ms)
    {
-      this(m.getMessageID(), m.isReliable(), m.getExpiration(), m.getTimestamp(), m.getHeaders(), m.isRedelivered(), m.getPriority(), m.getOrdering(), ms);
+      this(m.getMessageID(), m.isReliable(), m.getExpiration(),
+            m.getTimestamp(), m.getHeaders(), m.isRedelivered(),
+            m.getPriority(), m.getOrdering(), ms);
 
       for(Iterator i = m.getHeaderNames().iterator(); i.hasNext(); )
       {
@@ -78,6 +78,21 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       }
 
       ref = new WeakReference(m);
+   }
+   
+   /*
+    * Creates a WeakMessageReference as a shallow copy of another
+    * TODO - By using a delegate pattern similarly to how the MessageDelegates are done
+    * we can prevent unnecessary copying of MessageReference data since most of it is read only :)
+    */
+   public WeakMessageReference(WeakMessageReference other)
+   {
+      this(other.getMessageID(), other.isReliable(), other.getExpiration(),
+            other.getTimestamp(), other.getHeaders(), other.isRedelivered(),
+            other.getPriority(), other.getOrdering(), other.ms);
+      
+      this.headers = other.headers;
+      this.ref = other.ref;
    }
    
    protected WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
@@ -103,54 +118,57 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
       return ms.getStoreID();
    }
    
-   public synchronized void acquireReference()
-   {
-      refCount++;
-      if (log.isTraceEnabled()) { log.trace("Incrementing ref count, is now:" + refCount); }
-   }
-   
-   public synchronized void releaseReference()
-   {      
-      --refCount;
-      
-      if (log.isTraceEnabled()) { log.trace("Decrementing ref count, is now:" + refCount);}
-   
-      if (refCount == 0)
-      {
-         try
-         {
-            if (log.isTraceEnabled())
-            {
-               log.trace("Message " + this.getMessageID() + " is no longer referenced, removing it from message store");
-            }
-            ms.remove(this);
-         }
-         catch (Throwable t)
-         {
-            //Why the heck does this method throw throwable!!
-            //FIXME Revisit exception handling
-            log.error("Failed to remove message", t);
-         }
-      }
-   }
-
    public Message getMessage()
    {
       if (log.isTraceEnabled()) { log.trace(this + ": getting message from reference " + ref); }
       
-      if (ref == null)
+      try
       {
-         //Been created through serialization
+         
+         Message m = (Message)ref.get();
+   
+         if (m == null)
+         {
+            m = ms.retrieveMessage((String)messageID);
+            
+            ref = new WeakReference(m);
+         }
+         return m;
       }
-      
-      Message m = (Message)ref.get();
-
-      if (m == null)
+      catch (Exception e)
       {
-         m = ms.retrieve(messageID);
-         ref = new WeakReference(m);
+         log.error("Failed to getMessage", e);
+         //FIXME - should not swallow exceptions like this
+         return null;
       }
-      return m;
+   }
+   
+   
+   public void acquire()
+   {
+      try
+      {
+         ms.acquireReference(this);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to acquire reference", e);
+         //FIXME - Do not swallow
+      }
+   }
+   
+   public void release()
+   {
+      try
+      {
+         //TODO Lookup can be eliminated by storing ref to message holder
+         ms.releaseReference(this);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to release reference", e);
+         //FIXME - Do not swallow
+      } 
    }
    
    // Public --------------------------------------------------------

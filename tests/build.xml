@@ -118,7 +118,7 @@
    <property name="build.tests.stylesheets" value="${module.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="build.tests.remote" value="true"/>
+   <property name="build.tests.remote" value="false"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -177,7 +177,7 @@
    <property name="junit.printsummary" value="true"/>
    <property name="junit.haltonerror" value="false"/>
    <property name="junit.haltonfailure" value="false"/>
-   <property name="junit.fork" value="true"/>
+   <property name="junit.fork" value="false"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="2400000"/>
 
@@ -190,7 +190,7 @@
    <property name="junit.batchtest.todir" value="${build.tests.reports}"/>
    <property name="junit.batchtest.haltonerror" value="false"/>
    <property name="junit.batchtest.haltonfailure" value="false"/>
-   <property name="junit.batchtest.fork" value="true"/>
+   <property name="junit.batchtest.fork" value="false"/>
    <property name="junit.test.haltonfailure" value="false"/>
    <property name="junit.test.haltonerror" value="false"/>
 

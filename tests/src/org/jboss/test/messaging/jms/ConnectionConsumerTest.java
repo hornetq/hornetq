@@ -393,13 +393,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
              
             TextMessage tm = (TextMessage)message;
             
-            log.trace("Got message " + tm.getText() + " count=" + count);
+            log.info("Got message " + tm.getText() + " count=" + count);
             
             if (count == 1)
             {
                if (!tm.getText().equals("a"))
                {
-                  log.trace("Expected a but was " + tm.getText());
+                  log.info("Expected a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -408,7 +408,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("b"))
                {
-                  log.trace("Expected b but was " + tm.getText());
+                  log.info("Expected b but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -417,7 +417,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("c"))
                {
-                  log.trace("Expected c but was " + tm.getText());
+                  log.info("Expected c but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -425,7 +425,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                {
                   if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
                   {
-                     log.trace("Rolling back");
+                     log.info("Rolling back");
                      sess.rollback();
                   }                  
                }
@@ -434,13 +434,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("a"))
                {
-                  log.trace("Expected a but was " + tm.getText());
+                  log.info("Expected a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.trace("Redelivered flag not set");
+                  log.info("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -449,13 +449,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("b"))
                {
-                  log.trace("Expected b but was " + tm.getText());
+                  log.info("Expected b but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.trace("Redelivered flag not set");
+                  log.info("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -464,13 +464,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
             {
                if (!tm.getText().equals("c"))
                {
-                  log.trace("Expected c but was " + tm.getText());
+                  log.info("Expected c but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.trace("Redelivered flag not set");
+                  log.info("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -478,7 +478,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                {
                   if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
                   {
-                     log.trace("Committing");
+                     log.info("Committing");
                      sess.commit();
                   }                 
                   latch.release();

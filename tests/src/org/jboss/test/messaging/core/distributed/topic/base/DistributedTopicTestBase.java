@@ -31,6 +31,7 @@ import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
@@ -170,7 +171,9 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       Message m = MessageFactory.createMessage("message0", false, "payload0");
 
       log.debug("sending message");
-      Delivery d = topic.handle(observer, ms.reference(m), null);
+      MessageReference ref = ms.reference(m);
+      Delivery d = topic.handle(observer, ref, null);
+      //ref.release();
       log.debug("message sent");
 
       assertTrue(d.isDone());

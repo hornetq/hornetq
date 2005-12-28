@@ -101,7 +101,13 @@ public abstract class ChannelSupport implements Channel
 
       if (tx == null)
       {
-         return push(null, ref);
+         Delivery del = push(null, ref);
+         if (del == null)
+         {
+            //Not handled
+            ref.release();
+         }
+         return del;
       }
 
       if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
@@ -147,10 +153,6 @@ public abstract class ChannelSupport implements Channel
    public boolean cancel(Delivery d) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("cancel " + d); }
-      
-      d.getReference().setRedelivered(true);
-      
-      d.getReference().getMessage().setRedelivered(true);
       
       state.cancel(d);
       
@@ -269,12 +271,25 @@ public abstract class ChannelSupport implements Channel
       //Convert to reference
       try
       {
-         ref = ms.reference(r);
+         if (r.isReference())
+         {
+            //Make a copy - each channel has it's own copy of the reference - 
+            //this is becaause the headers for a particular message may vary depending
+            //on what channel it is in - e.g. deliveryCount
+            ref = ms.reference((MessageReference)r);
+         }
+         else
+         {
+            //Reference it for the first time
+            ref = ms.reference((Message)r);
+         }
+      
          return ref;
       }
-      catch (Throwable t)
+      catch (Exception e)
       {
-         log.error("Failed to reference routable", t);
+         log.error("Failed to reference routable", e);
+         //FIXME - Swallowing exceptions
          return null;
       }      
    }
@@ -386,6 +401,13 @@ public abstract class ChannelSupport implements Channel
             // broken receiver - log the exception and ignore it
             log.error("The receiver " + receiver + " is broken", t);
          }
+      }
+      
+      Iterator iter = deliveries.iterator();
+      while (iter.hasNext())
+      {         
+         ref.incrementDeliveryCount();
+         iter.next();
       }
       
       return deliveries;      

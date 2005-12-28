@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
@@ -90,7 +92,8 @@ public class Topic implements CoreDestination
             throw new IllegalStateException("Incomplete delivery");
          }
       }
-      return new SimpleDelivery(ms.reference(r), true);
+      
+      return new SimpleDelivery(true);   
    }
 
    // Distributor implementation --------------------------------------

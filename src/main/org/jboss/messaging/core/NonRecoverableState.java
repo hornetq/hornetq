@@ -112,9 +112,7 @@ public class NonRecoverableState implements State
          AddReferenceCallback callback = addAddReferenceCallback(tx);
          callback.addReference(ref);
          if (log.isTraceEnabled()) { log.trace(this + " added transactionally " + ref + " in memory"); }
-      }
-      ref.acquireReference();
-      
+      }  
    }
 
    /* Add a message reference non transactionally.
@@ -131,8 +129,6 @@ public class NonRecoverableState implements State
       }
 
       messageRefs.addLast(ref, ref.getPriority());    
-      
-      ref.acquireReference();
       
       if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " in memory"); }      
    }
@@ -153,8 +149,6 @@ public class NonRecoverableState implements State
       // and removing deliveries (acking).
       
       deliveries.add(d);
-      
-      d.getReference().acquireReference();
       
       if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory"); }
    }
@@ -179,7 +173,10 @@ public class NonRecoverableState implements State
          
          if (count != 0)
          {
-            d.getReference().acquireReference();
+            //We increment the ref counter on the message even more since we
+            //have multiple deliveries for the message - this is the only
+            //case in which this happens
+            d.getReference().acquire();
          }
          
          count++;
@@ -245,7 +242,7 @@ public class NonRecoverableState implements State
       }      
       else
       {
-         d.getReference().releaseReference();
+         d.getReference().release();
       }
    }
    
@@ -428,7 +425,7 @@ public class NonRecoverableState implements State
          {
             MessageReference ref = (MessageReference)i.next();
             if (log.isTraceEnabled()) { log.trace(this + " releasing reference for " + ref + " after rollback"); }
-            ref.releaseReference();
+            ref.release();
          }
          txToAddReferenceCallbacks.remove(tx);
       }
@@ -458,7 +455,7 @@ public class NonRecoverableState implements State
             Delivery d = (Delivery)i.next();
             if (log.isTraceEnabled()) { log.trace(this + " removing " + d + " after commit"); }
             deliveries.remove(d);
-            d.getReference().releaseReference();
+            d.getReference().release();
          }
          txToRemoveDeliveryCallbacks.remove(tx);
       }   
