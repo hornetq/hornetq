@@ -31,11 +31,4 @@ import org.jboss.messaging.core.distributed.util.ServerFacade;
  */
 interface ReplicatorOutputFacade extends ServerFacade
 {
-//   /**
-//    * The metohd to be called remotely by the replicator input in case of an unacknowledged
-//    * message re-delivery attempt. The redelivery attempts are unicast, not multicast.
-//    *
-//    * @return the acknowledgement as returned by the associated receiver.
-//    */
-//   public boolean handle(Routable r);
 }
