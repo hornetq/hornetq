@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.core.distributed.queue;
 
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
-import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 
