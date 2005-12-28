@@ -35,7 +35,6 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.DestinationManagerImpl;
 
 import javax.management.MBeanServer;
@@ -60,7 +59,6 @@ import java.util.Iterator;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.net.URL;
 
 /**
  * An MBeanServer and a configurable set of services (TransactionManager, Remoting, etc) available
@@ -352,6 +350,7 @@ public class ServiceContainer
       props.setProperty("server.trace", "false");
       props.setProperty("server.silent", "true");
       props.setProperty("server.no_system_exit", "true");
+      props.setProperty("server.port", 27862);
 
       hsqldbServer = new Server();
       hsqldbServer.setLogWriter(null);
