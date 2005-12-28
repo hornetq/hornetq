@@ -25,6 +25,10 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.RemotePeer;
@@ -105,11 +109,59 @@ public class DistributedQueue extends Queue implements Distributed
       return messages;
    }
 
-   // TODO - override deliver(Receiver r) for a clustered case
-//   public void deliver(Receiver r)
-//   {
-//      if (log.isTraceEnabled()){ log.trace(r + " requested delivery on " + this); }
-//   }
+   public boolean redeliver(Receiver r)
+   {
+      boolean delivered = redeliver(this, r);
+
+      if (delivered)
+      {
+         return true;
+      }
+
+      // this peer has not redelivered any message but other peers may have messages to redeliver
+
+      if (r instanceof RemoteQueue)
+      {
+         // this was a remote forward request, but there are no local messages to forward so return
+         return false;
+      }
+
+      // no message in the local state, try remotely
+      boolean peerWillForward = false;
+      try
+      {
+         peerWillForward = peer.requestForward();
+      }
+      catch(DistributedException e)
+      {
+         log.error("Redelivery request failed", e);
+         return false;
+      }
+
+      if (!peerWillForward)
+      {
+         return false;
+      }
+
+      // at least one peer will forward a message
+      while(!delivered)
+      {
+         // TODO: experimental. Also see QueuePeer.requestForward() and QueueFacade.forward()
+         try
+         {
+            Thread.sleep(200);
+         }
+         catch(InterruptedException e)
+         {
+            // ignore
+         }
+
+         if (log.isTraceEnabled()) { log.trace("retrying redelivery"); }
+         delivered = redeliver(this, r);
+      }
+
+      return delivered;
+   }
 
    public void close()
    {
@@ -159,6 +211,15 @@ public class DistributedQueue extends Queue implements Distributed
 
    // Package protected ---------------------------------------------
 
+   // ChannelSupport overrides --------------------------------------
+
+   protected void processMessageBeforeStorage(MessageReference ref)
+   {
+      // clean REMOTE_ROUTABLE header before storage
+      Message m = ref.getMessage();
+      m.putHeader(Routable.REMOTE_ROUTABLE, null);
+   }
+
    // Protected -----------------------------------------------------
 
    protected ViewKeeper getViewKeeper()
@@ -173,7 +234,7 @@ public class DistributedQueue extends Queue implements Distributed
    /**
     * The inner class that manages the local representation of the distributed destination view.
     */
-   private class QueueViewKeeper implements ViewKeeper
+   class QueueViewKeeper implements ViewKeeper
    {
       // Constants -----------------------------------------------------
 
@@ -241,6 +302,25 @@ public class DistributedQueue extends Queue implements Distributed
       }
 
       // Public --------------------------------------------------------
+
+      public RemoteQueue getRemoteQueue(PeerIdentity peerIdentity)
+      {
+         // TODO synchronization
+         for(Iterator i = router.iterator(); i.hasNext(); )
+         {
+            Object receiver = i.next();
+            if (receiver instanceof RemoteQueue)
+            {
+               RemoteQueue rq = (RemoteQueue)receiver;
+               if (rq.getPeerIdentity().equals(peerIdentity))
+               {
+                  return rq;
+               }
+            }
+         }
+         return null;
+      }
+
 
       public String toString()
       {

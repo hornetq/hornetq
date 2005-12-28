@@ -38,4 +38,14 @@ import java.util.List;
 public interface QueueFacade extends PeerFacade
 {
    List remoteBrowse(PeerIdentity originator, Filter filter);
+
+   /**
+    * TODO: experimental
+    *
+    * The originator requests the first undelivered message maintained by this queue peer to be
+    * forwared to it. This queue peer should return true if it has undelivered messages and it
+    * asynchronously initiated the forwarding process, or false otherwise.
+    */
+   boolean forward(PeerIdentity originator);
+
 }

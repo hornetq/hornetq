@@ -88,6 +88,21 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       return queue.localBrowse(filter);
    }
 
+   public boolean forward(PeerIdentity targetID)
+   {
+      if (getPeerIdentity().equals(targetID))
+      {
+         // ignore my own requests
+         if (log.isTraceEnabled()) { log.trace(this + " got forward request from myself, ignoring ..."); }
+         return false;
+      }
+
+      if (log.isTraceEnabled()) { log.trace(this + " got forward request from " + targetID); }
+
+      RemoteQueue target = ((DistributedQueue.QueueViewKeeper)viewKeeper).getRemoteQueue(targetID);
+      return queue.redeliver(target);
+   }
+
    // Public --------------------------------------------------------
 
    public String toString()
@@ -100,7 +115,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
    /**
     * Multicast a browse request to the group.
     */
-   public List doRemoteBrowse(Filter filter)
+   List doRemoteBrowse(Filter filter)
    {
       if (log.isTraceEnabled()) { log.trace(this + " remote browse" + (filter == null ? "" : ", filter = " + filter)); }
 
@@ -150,6 +165,62 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       return messages;
    }
 
+   /**
+    * TODO: experimental
+    *
+    * Multicast a forward request to the group.
+    *
+    * @return true if at least on member 'promises' to forward, false otherwise.
+    * @exception DistributedException thrown in case of unsuccessful distributed RPC
+    */
+   boolean requestForward() throws DistributedException
+   {
+      if (log.isTraceEnabled()) { log.trace(this + " initiating a forward request"); }
+
+      RpcServerCall rpcServerCall =
+            new RpcServerCall(queue.getName(), "forward",
+                              new Object[] {getPeerIdentity()},
+                              new String[] {"org.jboss.messaging.core.distributed.PeerIdentity"});
+
+      // TODO use the timout when I'll change the send() signature or deal with the timeout
+      Collection responses = rpcServerCall.remoteInvoke(dispatcher, TIMEOUT);
+
+      if (log.isTraceEnabled()) { log.trace(this + " received " + responses.size() + " response(s) on forward request"); }
+
+      ServerResponse r = null;
+      try
+      {
+         for(Iterator i = responses.iterator(); i.hasNext(); )
+         {
+            r = (ServerResponse)i.next();
+
+            if (log.isTraceEnabled()) { log.trace(this + " received: " + r); }
+
+            Object o = r.getInvocationResult();
+            if (o instanceof Throwable)
+            {
+               throw (Throwable)o;
+            }
+
+            Boolean initiated = (Boolean)o;
+            if (initiated.booleanValue())
+            {
+               // at least one peer initiated forwarding
+               return true;
+            }
+         }
+      }
+      catch(Throwable t)
+      {
+         String msg = RpcServer.
+            subordinateToString(r.getCategory(), r.getSubordinateID(), r.getAddress()) +
+            " failed to handle the forward request";
+         log.error(msg, t);
+         throw new DistributedException(msg, t);
+      }
+      return false;
+   }
+
    // PeerSupport overrides -----------------------------------------
 
    protected void doJoin() throws DistributedException
@@ -163,6 +234,9 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       }
 
       rpcServer.register(queue.getName(), this);
+
+      // also, register the peer individually to allow point-to-point calls
+      rpcServer.register(peerID, this);
    }
 
    protected void doLeave() throws DistributedException

@@ -89,10 +89,13 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
    MessageStore getMessageStore();
 
    /**
-    * Synchronously returns the "oldest" message stored by the channel to the receiver.
-    * If receiver is null, it delivers the message to the first available receiver
+    * Synchronously pushes the "oldest" message stored by the channel to the receiver. If receiver
+    * is null, it delivers the message to the first available receiver.
+    *
+    * @return true if a message was handed over to the receiver and the channel got a delivery in
+    *         exchange, or false otherwise. 
     */
-   void redeliver(Receiver receiver);
+   boolean redeliver(Receiver receiver);
 
    void close();
 

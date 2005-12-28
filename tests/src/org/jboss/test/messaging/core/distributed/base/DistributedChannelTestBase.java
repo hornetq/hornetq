@@ -6794,8 +6794,13 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       Message m = MessageFactory.createMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
+      log.debug("sending message");
+
       // non-recoverable channel, non-reliable message
       Delivery delivery = channel.handle(observer, m, null);
+
+      log.debug("message sent");
+
       assertTrue(delivery.isDone());
 
       List stored = channel.browse();
@@ -6803,12 +6808,15 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       stored = channel2.browse();
       assertEquals(1, stored.size());
 
-      SimpleReceiver receiver =
-            new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING, channel);
+      SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING, channel2);
       assertTrue(channel2.add(receiver));
+
+      log.debug("receiver added");
 
       assertEquals(1, channel.browse().size());
       assertEquals(1, channel2.browse().size());
+
+      log.debug("requesting message");
 
       // receiver explicitely asks for message
       receiver.requestMessages();
@@ -6867,7 +6875,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(1, stored.size());
 
       SimpleReceiver receiver =
-            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, channel);
+            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, channel2);
       assertTrue(channel2.add(receiver));
 
       assertEquals(1, channel.browse().size());
@@ -7005,7 +7013,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(1, stored.size());
 
       SimpleReceiver receiver =
-            new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING, channel);
+            new SimpleReceiver("ACKINGReceiver", SimpleReceiver.ACKING, channel2);
       assertTrue(channel2.add(receiver));
 
       // receiver explicitely asks for message
@@ -7065,7 +7073,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertEquals(1, stored.size());
 
       SimpleReceiver receiver =
-            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, channel);
+            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, channel2);
       assertTrue(channel2.add(receiver));
 
       assertEquals(1, channel.browse().size());
@@ -7094,6 +7102,222 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
       assertTrue(sm.isReliable());
       assertEquals("message0", sm.getMessageID());
    }
+
+   ///////////////////////////////
+   /////////////////////////////// Forwarding
+   ///////////////////////////////
+
+   //
+   // Non-recoverable channel
+   //
+
+   ////
+   //// Non-reliable message
+   ////
+
+   // TODO: Stopped working on this while suspecting a JGroups deadlock due to nested synchronous
+   //       remote calls. Uncomment and make the test pass when starting to work on the distributed
+   //       part again
+
+//   public void testForwarding_1() throws Exception
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//
+//      // send a message that will be stored locally
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-recoverable channel, non-reliable message
+//      log.debug("sending message");
+//      Delivery delivery = channel.handle(observer, m, null);
+//      log.debug("message sent");
+//
+//      assertTrue(delivery.isDone());
+//
+//      assertEquals(1, channel.browse().size());
+//
+//      // the second peer joins
+//
+//      ((Distributed)channel2).join();
+//
+//      assertEquals(1, channel.browse().size());
+//      assertEquals(1, channel2.browse().size());
+//
+//      SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING, channel2);
+//      assertTrue(channel2.add(receiver));
+//
+//      log.debug("requesting message");
+//      receiver.requestMessages();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List messages = receiver.getMessages();
+//      assertEquals(1, messages.size());
+//      Message sm = (Message)messages.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//
+//      log.info("ok");
+//   }
+
+   //
+   // Recoverable channel
+   //
+
+   ////
+   //// Non-reliable message
+   ////
+
+   // TODO: Stopped working on this while suspecting a JGroups deadlock due to nested synchronous
+   //       remote calls. Uncomment and make the test pass when starting to work on the distributed
+   //       part again
+
+//   public void testForwarding_2() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//
+//      // send a message that will be stored locally
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-recoverable channel, non-reliable message
+//      log.debug("sending message");
+//      Delivery delivery = channel.handle(observer, m, null);
+//      log.debug("message sent");
+//
+//      assertTrue(delivery.isDone());
+//
+//      assertEquals(1, channel.browse().size());
+//
+//      // the second peer joins
+//
+//      ((Distributed)channel2).join();
+//
+//      assertEquals(1, channel.browse().size());
+//      assertEquals(1, channel2.browse().size());
+//
+//      SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING, channel2);
+//      assertTrue(channel2.add(receiver));
+//
+//      log.debug("requesting message");
+//      receiver.requestMessages();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List messages = receiver.getMessages();
+//      assertEquals(1, messages.size());
+//      Message sm = (Message)messages.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//
+//      log.info("ok");
+//   }
+
+   ////
+   //// Reliable message
+   ////
+
+   // TODO: Stopped working on this while suspecting a JGroups deadlock due to nested synchronous
+   //       remote calls. Uncomment and make the test pass when starting to work on the distributed
+   //       part again
+
+//   public void testForwarding_3() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//
+//      // send a message that will be stored locally
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-recoverable channel, non-reliable message
+//      log.debug("sending message");
+//      Delivery delivery = channel.handle(observer, m, null);
+//      log.debug("message sent");
+//
+//      assertTrue(delivery.isDone());
+//
+//      assertEquals(1, channel.browse().size());
+//
+//      // the second peer joins
+//
+//      ((Distributed)channel2).join();
+//
+//      assertEquals(1, channel.browse().size());
+//      assertEquals(1, channel2.browse().size());
+//
+//      SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING, channel2);
+//      assertTrue(channel2.add(receiver));
+//
+//      log.debug("requesting message");
+//      receiver.requestMessages();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List messages = receiver.getMessages();
+//      assertEquals(1, messages.size());
+//      Message sm = (Message)messages.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//
+//      log.info("ok");
+//   }
 
    //
    //

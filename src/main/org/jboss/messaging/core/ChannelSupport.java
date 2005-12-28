@@ -42,7 +42,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class ChannelSupport implements Channel
+public abstract class ChannelSupport implements Channel
 {
    // Constants -----------------------------------------------------
 
@@ -101,7 +101,7 @@ public class ChannelSupport implements Channel
 
       if (tx == null)
       {
-         return deliver(sender, null, ref);
+         return push(null, ref);
       }
 
       if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
@@ -236,11 +236,10 @@ public class ChannelSupport implements Channel
    }
 
 
-   public void redeliver(Receiver r)
+   public boolean redeliver(Receiver r)
    {
-      if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "delivery requested on " + this); }
-              
-      redeliver(this, r); 
+      if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "generic delivery requested on " + this); }
+      return redeliver(this, r);
    }
    
    public void close()
@@ -257,14 +256,12 @@ public class ChannelSupport implements Channel
       channelID = null;
    }
   
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
-   
+
    protected MessageReference ref(Routable r)
    {
       MessageReference ref = null;
@@ -281,8 +278,78 @@ public class ChannelSupport implements Channel
          return null;
       }      
    }
-   
-   
+
+   protected boolean redeliver(DeliveryObserver sender, Receiver receiver)
+   {
+      checkClosed();
+
+      //This removes the reference at the head of the queue from the in memory state.
+      //Note: It *only* removes it from the in-memory NonRecoverableState - it does
+      //not remove it from the persistent state.
+      //This means that if the server crashes shortly after removing it, when it recovers
+      //the message is still in the state and will be redelivered. :)
+      MessageReference ref = state.removeFirst();
+
+      if (!checkRef(ref))
+      {
+         return false;
+      }
+
+      if (log.isTraceEnabled()){ log.trace(this + " handling non-transactionally " + ref); }
+
+      Set deliveries = getDeliveries(receiver, ref);
+
+      if (deliveries.isEmpty())
+      {
+         // no receivers, receivers that don't accept the message or broken receivers
+
+         if (log.isTraceEnabled()){ log.trace(this + ": no deliveries returned for message; there are no receivers"); }
+
+         //The message wasn't delivered - so we replace the message back to the front of the queue
+         //Note we only do this to the in-memory nonrecoverable state!
+         //This is not done to persistent state
+         state.replaceFirst(ref);
+
+         return false;
+      }
+      else
+      {
+         // there are receivers
+         try
+         {
+            Set toAdd = new HashSet();
+
+            for (Iterator i = deliveries.iterator(); i.hasNext(); )
+            {
+               Delivery d = (Delivery)i.next();
+               if (!d.isDone())
+               {
+                  toAdd.add(d);
+               }
+            }
+
+            //Atomically remove the ref and add the deliveries
+            state.redeliver(toAdd);
+
+            return true;
+         }
+         catch(Throwable t)
+         {
+            log.error(this + " cannot manage redelivery", t);
+            return false;
+         }
+      }
+   }
+
+   /**
+    * Give subclass a chance to process the message before storing it internally. Useful to get
+    * rid of the REMOTE_ROUTABLE header in a distributed case, for example.
+    */
+   protected void processMessageBeforeStorage(MessageReference reference)
+   {
+      // by default a noop
+   }
+
    // Private -------------------------------------------------------
 
    private void checkClosed()
@@ -345,10 +412,8 @@ public class ChannelSupport implements Channel
       
       return true;
    }
-   
-   
-   
-   private Delivery deliver(DeliveryObserver sender, Receiver receiver, MessageReference ref)
+
+   private Delivery push(Receiver receiver, MessageReference ref)
    {
       checkClosed();
       
@@ -363,7 +428,9 @@ public class ChannelSupport implements Channel
       {
          // no receivers, receivers that don't accept the message or broken receivers         
          if (log.isTraceEnabled()){ log.trace(this + ": no deliveries returned for message; there are no receivers"); }
-         
+
+         processMessageBeforeStorage(ref);
+
          try
          {                        
             state.add(ref);
@@ -393,92 +460,16 @@ public class ChannelSupport implements Channel
          }
          catch(Throwable t)
          {
-            log.error(this + " cannot manage delivery, passing responsibility to the sender", t);
-
-            // cannot manage this delivery, pass the responsibility to the sender
-            // cannot split delivery, because in case of crash, the message must be recoverable
-            // from one and only one channel
-
-            // TODO this is untested
-            return new CompositeDelivery(sender, deliveries);
-         }         
+            // TODO: this should be done atomically
+            log.error(this + " failed to manage the delivery, rejecting the message", t);
+            return null;
+         }
       }
 
       // the channel can safely assume responsibility for delivery
       return new SimpleDelivery(true);
    }
    
-
-
-   private Delivery redeliver(DeliveryObserver sender, Receiver receiver)
-   {
-      checkClosed();
-
-      //This removes the reference at the head of the queue from the in memory state.
-      //Note: It *only* removes it from the in-memory NonRecoverableState - it does
-      //not remove it from the persistent state.
-      //This means that if the server crashes shortly after removing it, when it recovers
-      //the message is still in the state and will be redelivered. :)
-      MessageReference ref = state.removeFirst();         
-         
-      if (!checkRef(ref))
-      {
-         return null;
-      }
-
-      if (log.isTraceEnabled()){ log.trace(this + " handling non-transactionally " + ref); }
-      
-      Set deliveries = getDeliveries(receiver, ref);
-
-      if (deliveries.isEmpty())
-      {
-         // no receivers, receivers that don't accept the message or broken receivers
-         
-         if (log.isTraceEnabled()){ log.trace(this + ": no deliveries returned for message; there are no receivers"); }
-                      
-         //The message wasn't delivered - so we replace the message back to the front of the queue
-         //Note we only do this to the in-memory nonrecoverable state!
-         //This is not done to persistent state
-         state.replaceFirst(ref);                                      
-      }
-      else
-      {
-         // there are receivers
-         try
-         {
-            Set toAdd = new HashSet();
-            
-            for (Iterator i = deliveries.iterator(); i.hasNext(); )
-            {
-               Delivery d = (Delivery)i.next();               
-               if (!d.isDone())
-               {
-                  toAdd.add(d);               
-               }
-            }     
-            
-            //Atomically remove the ref and add the deliveries
-            state.redeliver(toAdd);                              
-                                                
-         }
-         catch(Throwable t)
-         {
-            log.error(this + " cannot manage delivery, passing responsibility to the sender", t);
-
-            // cannot manage this delivery, pass the responsibility to the sender
-            // cannot split delivery, because in case of crash, the message must be recoverable
-            // from one and only one channel
-
-            // TODO this is untested
-            return new CompositeDelivery(sender, deliveries);
-         }        
-      }
-
-      // the channel can safely assume responsibility for delivery
-      return new SimpleDelivery(true);  
-   }
-
-
    private void acknowledgeNoTx(Delivery d)
    {
       checkClosed();

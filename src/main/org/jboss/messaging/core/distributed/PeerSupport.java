@@ -51,7 +51,7 @@ public abstract class PeerSupport implements Peer, PeerFacade
 
    private static final Logger log = Logger.getLogger(PeerSupport.class);
 
-   protected static final long TIMEOUT = 3000; // TODO make this configurable http://jira.jboss.org/jira/browse/JBMESSAGING-193
+   public static final long TIMEOUT = 3000; // TODO make this configurable http://jira.jboss.org/jira/browse/JBMESSAGING-193
 
    // Static --------------------------------------------------------
    

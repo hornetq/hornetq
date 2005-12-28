@@ -85,10 +85,11 @@ public class SimpleChannel implements Channel
       return ms;
    }
 
-   public void redeliver(Receiver receiver)
+   public boolean redeliver(Receiver receiver)
    {
-      log.trace("");
+      log.debug("redeliver(" + receiver + ")");
       deliveryNotification = true;
+      return false;
    }
 
    public void close()
