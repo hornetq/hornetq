@@ -86,7 +86,7 @@ public class DistributedPipe implements Receiver
       // enabled.
       if (r.getHeader(Routable.REMOTE_ROUTABLE) != null)
       {
-         if (log.isTraceEnabled()) { log.trace("rejecting remote routable " + r); }
+         if (log.isTraceEnabled()) { log.trace(this + " rejecting remote routable " + r); }
          return null;
       }
 

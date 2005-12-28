@@ -122,7 +122,7 @@ public class NonRecoverableState implements State
     */
    public void add(MessageReference ref) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "non-transactionally"); }
+      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + " non-transactionally"); }
 
       if (ref.isReliable() && !acceptReliableMessages)
       {
