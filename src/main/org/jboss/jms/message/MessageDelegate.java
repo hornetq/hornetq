@@ -46,7 +46,8 @@ import org.jboss.jms.delegate.SessionDelegate;
  * If nothing is changed, nothing is copied.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
+ * $Id$
  */
 public class MessageDelegate implements Message, Serializable
 {
