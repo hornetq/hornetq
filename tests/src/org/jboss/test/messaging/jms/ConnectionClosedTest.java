@@ -28,7 +28,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
@@ -157,7 +156,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
       log.debug("all messages received by sub1");
 
-      Message m = sub2.receiveNoWait();
+      Message m = sub2.receive(200);
       
       assertNull(m);
       
@@ -166,7 +165,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub2.receiveNoWait();
+         TextMessage tm = (TextMessage)sub2.receive(200);
          if (tm == null)
          {
             break;
@@ -291,7 +290,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer consumer = sess.createConsumer(topic);
       MessageProducer producer = sess.createProducer(topic);
-      QueueBrowser browser = sess.createBrowser(queue);
+      sess.createBrowser(queue);
       Message m = sess.createMessage();
 
       conn.close();
