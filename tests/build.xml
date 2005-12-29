@@ -198,6 +198,10 @@
            description="Prepares the directory structure required by a test run">
       <mkdir dir="${build.tests.reports}"/>
       <mkdir dir="${module.output}/logs"/>
+      <!-- clean up the logs, since log4j runs in "append" mode -->
+      <delete quiet="true">
+         <fileset dir="${module.output}/logs" includes="*.log"/>
+      </delete>
    </target>
 
    <target name="start-rmi-server"
@@ -231,7 +235,8 @@
       </java>
    </target>
 
-   <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests, remote-tests"
+   <!-- <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests, remote-tests" -->
+   <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests"
       description="Runs all available tests, in in-VM and remote configurations"/>
 
    <target name="invm-tests" description="Runs all available tests an in-VM configuration">
@@ -264,7 +269,8 @@
             haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/messaging/**/*Test.class"/>
+               <!-- <include name="**/messaging/**/*Test.class"/> -->
+               <include name="org/jboss/test/messaging/jms/*Test.class"/>
                <exclude name="**/jms/managed/**"/>
             </fileset>
          </batchtest>

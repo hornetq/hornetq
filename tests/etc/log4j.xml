@@ -24,7 +24,12 @@
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.trace.log"/>
-      <param name="Append" value="false"/>
+
+      <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
+           for each test. We need to append if we want to preserve a full testsuite run log.
+           Make sure the build script clears this log at the beginning of each run.
+      -->
+      <param name="Append" value="true"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
       <param name="Threshold" value="INFO"/>
@@ -85,12 +90,6 @@
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
-<!--
-   <category name="org.jboss.jms.client.JBossXAResource">
-         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-   -->
-
    <category name="org.jboss.messaging">
       <!-- <priority value="INFO"/> -->
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
@@ -104,16 +103,6 @@
       <priority value="WARN"/>
    </category>
 
-   <!--
-   <category name="org.jboss.messaging.core.distributed.replicator.CompositeDelivery">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-   <category name="org.jboss.messaging.core.distributed.replicator.ReplicatorOutput">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-   -->
-
-
    <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">
       <priority value="WARN"/>
    </category>
@@ -121,20 +110,6 @@
    <category name="org.jboss.resource.connectionmanager.ConnectionFactoryBindingService">
       <priority value="WARN"/>
    </category>
-
-
-   <!--
-
-   <category name="org.jgroups.protocols.PING">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-
-   <category name="org.jgroups.protocols.UDP">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-
-   -->
-
 
    <!-- ======================= -->
    <!-- Setup the Root category -->
