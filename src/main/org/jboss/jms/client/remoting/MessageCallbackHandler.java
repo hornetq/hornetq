@@ -28,7 +28,6 @@ import javax.jms.Session;
 
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
@@ -199,12 +198,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          return;
       }
       
-      Message m = (Message)callback.getParameter();
+      MessageDelegate md = (MessageDelegate)callback.getParameter();
       
       if (listener != null)
       {
          //Queue the message to be delivered by the session
-         ClientDeliveryRunnable cdr = new ClientDeliveryRunnable(this, processMessage(m));
+         ClientDeliveryRunnable cdr = new ClientDeliveryRunnable(this, processMessage(md));
          try
          {
             onMessageExecutor.execute(cdr);
@@ -212,7 +211,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          catch (InterruptedException e)
          {
             log.error("Thread was interrupted, cancelling message", e);
-            cancelMessage(m);
+            cancelMessage(md);
          }
       }
       else
@@ -235,7 +234,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                //waiting had been set but the main consumer thread hadn't quite blocked on the call
                //to take or poll from the channel
                
-               handled = buffer.offer(m, 0);
+               handled = buffer.offer(processMessage(md), 0);
                               
                if (handled)
                {
@@ -249,11 +248,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
             
             if (!handled)
             {
-               log.info("Not handled!");
                //There is no-one waiting for our message so we cancel it
                if (!closed)
                {
-                  cancelMessage(m);
+                  cancelMessage(md);
                }
             }              
          }
@@ -545,7 +543,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    protected Message getMessageNow() throws JMSException
    {
-      return consumerDelegate.getMessageNow();
+      MessageDelegate del = (MessageDelegate)consumerDelegate.getMessageNow();
+      if (del != null)
+      {
+         return processMessage(del);
+      }
+      else
+      {
+         return null;
+      }
    }
    
    protected Message getMessage(long timeout) throws InterruptedException, JMSException
@@ -596,21 +602,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
             }
          }
       }
-           
-      if (m != null)
-      {                  
-         m = processMessage(m);
-      }
-      
+               
       return m;
    }
    
-   protected Message processMessage(Message m)
+   protected Message processMessage(MessageDelegate del)
    {
-      //We create a thin delegate to the message - which prevents it having to be
-      //unnecessarily copied
-      MessageDelegate del = JBossMessage.createThinDelegate((JBossMessage)m);
-      
       //if this is the handler for a connection consumer we don't want to set the session delegate
       //since this is only used for client acknowledgement which is illegal for a session
       //used for an MDB

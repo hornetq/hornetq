@@ -157,7 +157,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
       log.debug("all messages received by sub1");
 
-      Message m = sub2.receive(2000);
+      Message m = sub2.receiveNoWait();
       
       assertNull(m);
       
@@ -166,7 +166,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub2.receive(2000);
+         TextMessage tm = (TextMessage)sub2.receiveNoWait();
          if (tm == null)
          {
             break;

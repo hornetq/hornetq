@@ -444,7 +444,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       List xids = this.serverPeer.getTxRepository().getPreparedTransactions();
       
-      return (Xid[])xids.toArray();
+      return (Xid[])xids.toArray(new Xid[xids.size()]);
    }
    
    // Public --------------------------------------------------------

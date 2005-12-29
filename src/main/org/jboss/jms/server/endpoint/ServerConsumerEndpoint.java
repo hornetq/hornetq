@@ -33,6 +33,7 @@ import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
@@ -104,18 +105,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    protected volatile boolean grabbing;
    
-   protected Message toGrab;
-   
-   //protected QueuedExecutor executor = new QueuedExecutor();
-   
+   protected MessageDelegate toGrab;
+      
    // Constructors --------------------------------------------------
    
    ServerConsumerEndpoint(String id, Channel channel,
          InvokerCallbackHandler callbackHandler,
          ServerSessionEndpoint sessionEndpoint,
          String selector, boolean noLocal)
-         throws InvalidSelectorException
-         {
+            throws InvalidSelectorException
+   {
       log.debug("creating ServerConsumerDelegate[" + id + "]");
       
       this.id = id;
@@ -143,7 +142,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       this.channel.add(this);
       
-         }
+   }
    
    // Receiver implementation --------------------------------------- 
    
@@ -162,10 +161,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          if (log.isTraceEnabled()) { log.trace("Delivering ref " + reference.getMessageID()); }
          
          Delivery delivery = null;
-         Message message = reference.getMessage();
-         message.setDeliveryCount(reference.getDeliveryCount());
-         
-         
+
+         JBossMessage message = (JBossMessage)reference.getMessage();
+
          boolean accept = this.accept(message);
          if (!accept)
          {
@@ -186,6 +184,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
          deliveries.add(delivery);
          
+         //We don't send the message as-is, instead we create a MessageDelegate instance
+         //This allows local fields such as deliveryCount to be handled by the delegate
+         //but global data to be fielded by the same underlying Message instance.
+         //This allows us to avoid expensive copying of messages
+         MessageDelegate md = JBossMessage.createThinDelegate(message, reference.getDeliveryCount());
+         
+         
          if (!grabbing)
          {
             //We want to asynchronously deliver the message to the consumer
@@ -193,8 +198,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             
             try
             {
-               if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }
-               threadPool.execute(new DeliveryRunnable(callbackHandler, message));
+               if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }               
+               threadPool.execute(new DeliveryRunnable(callbackHandler, md));
             }
             catch (InterruptedException e)
             {
@@ -204,7 +209,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          else
          {
             //The message is being "grabbed" and returned for receiveNoWait semantics
-            toGrab = message;
+            toGrab = md;
          }
          
          return delivery;     

@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.message;
 
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -47,19 +48,21 @@ import org.jboss.jms.delegate.SessionDelegate;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  */
-public class MessageDelegate implements Message
+public class MessageDelegate implements Message, Serializable
 {
+   private static final long serialVersionUID = 5903095946142192468L;
+
    protected JBossMessage message;
    
-   protected SessionDelegate delegate;
+   protected transient SessionDelegate delegate;
       
-   protected boolean messageCopied;
+   protected transient boolean messageCopied;
    
-   protected boolean propertiesCopied;
+   protected transient boolean propertiesCopied;
    
-   protected boolean bodyCopied;
+   protected transient boolean bodyCopied;
    
-   protected int state;
+   protected transient int state;
    
    protected static final int STATE_NEW = 0;
    
@@ -67,9 +70,13 @@ public class MessageDelegate implements Message
    
    protected static final int STATE_RECEIVED = 2;
    
-   protected boolean propertiesReadOnly;
+   protected transient boolean propertiesReadOnly;
    
-   protected boolean bodyReadOnly;
+   protected transient boolean bodyReadOnly;
+   
+   protected int deliveryCount;
+   
+   protected transient boolean jmsRedelivered;
    
    public void setSessionDelegate(SessionDelegate sd)
    {
@@ -88,6 +95,9 @@ public class MessageDelegate implements Message
       propertiesReadOnly = true;
       
       bodyReadOnly = true;
+      
+      this.jmsRedelivered = deliveryCount > 0;
+     
    }
    
    protected boolean isSent()
@@ -175,10 +185,11 @@ public class MessageDelegate implements Message
       }
    }
    
-   public MessageDelegate(JBossMessage message)
+   public MessageDelegate(JBossMessage message, int deliveryCount)
    {
       this.message = message;
       this.state = STATE_NEW;
+      this.deliveryCount = deliveryCount;
    }
    
    public JBossMessage getMessage()
@@ -265,13 +276,14 @@ public class MessageDelegate implements Message
 
    public boolean getJMSRedelivered() throws JMSException
    {
-      return message.getJMSRedelivered();
+      //Always handled in the delegate
+      return jmsRedelivered;
    }
 
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
-      headerChange();
-      message.setJMSRedelivered(redelivered);
+      //Always handled in the delegate
+      jmsRedelivered = redelivered;
    }
 
    public String getJMSType() throws JMSException
@@ -336,6 +348,10 @@ public class MessageDelegate implements Message
 
    public int getIntProperty(String name) throws JMSException
    {
+      if ("JMSXDeliveryCount".equals(name))
+      {
+         return deliveryCount;
+      }
       return message.getIntProperty(name);
    }
 

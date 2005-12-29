@@ -70,7 +70,7 @@ public class FactoryAspect
       
       jbm.setOrdering(ordering++);
       
-      return new MessageDelegate(jbm);
+      return new MessageDelegate(jbm, 0);
    }
    
    public Object handleCreateBytesMessage(Invocation invocation) throws Throwable
@@ -79,7 +79,7 @@ public class FactoryAspect
       
       jbm.setOrdering(ordering++);
       
-      return new BytesMessageDelegate(jbm);
+      return new BytesMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateMapMessage(Invocation invocation) throws Throwable
@@ -88,7 +88,7 @@ public class FactoryAspect
       
       jbm.setOrdering(ordering++);
       
-      return new MapMessageDelegate(jbm);      
+      return new MapMessageDelegate(jbm, 0);      
    }
    
    public Object handleCreateObjectMessage(Invocation invocation) throws Throwable
@@ -104,7 +104,7 @@ public class FactoryAspect
          jbm.setObject((Serializable)mi.getArguments()[0]);
       }
       
-      return new ObjectMessageDelegate(jbm);
+      return new ObjectMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateStreamMessage(Invocation invocation) throws Throwable
@@ -113,7 +113,7 @@ public class FactoryAspect
       
       jbm.setOrdering(ordering++);
       
-      return new StreamMessageDelegate(jbm);
+      return new StreamMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateTextMessage(Invocation invocation) throws Throwable
@@ -129,7 +129,7 @@ public class FactoryAspect
          jbm.setText((String)mi.getArguments()[0]);
       }
       
-      return new TextMessageDelegate(jbm);
+      return new TextMessageDelegate(jbm, 0);
    }   
 
    // Package protected ---------------------------------------------

@@ -80,13 +80,16 @@ public class TransactionRepository
       return prepared;
    }
    
+   /*
+    * Load any prepared transactions into the repository so they can be recovered
+    */
    public void loadPreparedTransactions() throws TransactionException
    {
       List prepared = null;
       
       try
       {
-         pm.retrievePreparedTransactions();
+         prepared = pm.retrievePreparedTransactions();
       }
       catch (Exception e)
       {

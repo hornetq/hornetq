@@ -21,8 +21,9 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import javax.jms.Message;
+
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
@@ -66,7 +67,6 @@ class DeliveryRunnable extends Callback implements Runnable
       {
          if (log.isTraceEnabled()) { log.trace("handing the message " + this.getCallbackObject() + " over to the remoting layer"); }
          callbackHandler.handleCallback(this);
-         //log.info("Handled callback");
       }
       catch(Throwable t)
       {

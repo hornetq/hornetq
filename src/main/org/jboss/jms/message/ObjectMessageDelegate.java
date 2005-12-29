@@ -36,9 +36,11 @@ import javax.jms.ObjectMessage;
  */
 public class ObjectMessageDelegate extends MessageDelegate implements ObjectMessage
 {
-   public ObjectMessageDelegate(JBossObjectMessage message)
+   private static final long serialVersionUID = 8797295997477962825L;
+
+   public ObjectMessageDelegate(JBossObjectMessage message, int deliveryCount)
    {
-      super(message);
+      super(message, deliveryCount);
    }
 
    public void setObject(Serializable object) throws JMSException

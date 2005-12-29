@@ -23,6 +23,7 @@ package org.jboss.test.messaging.jms.message;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -132,6 +133,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
    }
    
+
    public void testRedeliveryOnTopic() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -146,30 +148,18 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
       Session sess3 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       MessageConsumer cons3= sess3.createDurableSubscriber(topic, "subxyz");
-      
+
       conn.start();
       
-      final int NUM_MESSAGES = 10;
+      final int NUM_MESSAGES = 30;
       
-      final int NUM_RECOVERIES = 8;
+      final int NUM_RECOVERIES = 9;
       
-      Receiver r1 = new Receiver();
-      r1.cons = cons1;
-      r1.numMessages = NUM_MESSAGES;
-      r1.sess = sess1;
-      r1.numRecoveries = NUM_RECOVERIES;
+      Receiver r1 = new Receiver("R1", sess1, cons1, NUM_MESSAGES, NUM_RECOVERIES);
       
-      Receiver r2 = new Receiver();
-      r2.cons = cons2;
-      r2.numMessages = NUM_MESSAGES;
-      r2.sess = sess2;
-      r2.numRecoveries = NUM_RECOVERIES;
+      Receiver r2 = new Receiver("R2", sess2, cons2, NUM_MESSAGES, NUM_RECOVERIES);
       
-      Receiver r3 = new Receiver();
-      r3.cons = cons3;
-      r3.numMessages = NUM_MESSAGES;
-      r3.sess = sess3;
-      r3.numRecoveries = NUM_RECOVERIES;
+      Receiver r3 = new Receiver("R3", sess3, cons3, NUM_MESSAGES, NUM_RECOVERIES);
       
       Thread t1 = new Thread(r1);
       
@@ -206,7 +196,9 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
       assertFalse(r2.failed);
       
-      assertFalse(r3.failed);
+      assertFalse(r3.failed);            
+      
+      conn.close();
       
    }
    
@@ -222,29 +214,45 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
       Session sess;
       
+      String name;
+      
+      Receiver(String name, Session sess, MessageConsumer cons, int numMessages, int numRecoveries)
+      {
+         this.sess = sess;
+         this.cons = cons;
+         this.numMessages = numMessages;
+         this.numRecoveries = numRecoveries;
+         this.name = name;
+      }
+      
       public void run()
       {
          try
          {
             //log.info("in run(), numr=" + numRecoveries + " numMesages:" +numMessages);
+            Message lastMessage = null;
             for (int j = 0; j < numRecoveries; j++)
             {
                
                for (int i = 0; i < numMessages; i++)
-               {
+               {                  
                   TextMessage tm = (TextMessage)cons.receive();
+                  lastMessage = tm;
                   
                   //log.info("Actual: " + tm.getIntProperty("JMSXDeliveryCount") + " expected:" + j);
                   
                   if (tm == null)
-                  {
+                  {                     
                      failed = true;
                   }
                   
                   if (!tm.getText().equals("testing" + i))
                   {
+                     log.error("Out of order!!");
                      failed = true;
                   }
+                  
+                  //log.info(name + " recieved message:" + i);
                   
                   if (tm.getIntProperty("JMSXDeliveryCount") != j)
                   {
@@ -252,9 +260,14 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
                      failed = true;
                   }
                }
-               sess.recover();
+               //log.info("Recovering:" + j);
+               if (j != numRecoveries -1)
+               {
+                  sess.recover();
+               }
                
             }
+            lastMessage.acknowledge();
          }
          catch (Exception e)
          {

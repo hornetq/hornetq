@@ -477,7 +477,6 @@
 <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
 -->
-
          <jvmarg value="-Xmx1024M"/>
          <sysproperty key="remote" value="${build.tests.remote}"/>
 
@@ -488,16 +487,8 @@
             <pathelement location="C:\tools\Optimizeit\OptimizeitEntSuite60\lib\optit.jar"/>
          </classpath>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <!--
          <test name="${test.classname}"
-               fork="false"
-               todir="${junit.batchtest.todir}"
-               haltonfailure="${junit.test.haltonfailure}"
-               haltonerror="${junit.test.haltonerror}">
-         </test>
-         -->
-         <test name="${test.classname}"
-                    fork="true"
+                    fork="false"
                     todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.test.haltonfailure}"
                     haltonerror="${junit.test.haltonerror}">

@@ -91,33 +91,33 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       reservedIdentifiers.add("ESCAPE");
    }
 
-   public static MessageDelegate createThinDelegate(JBossMessage m)
+   public static MessageDelegate createThinDelegate(JBossMessage m, int deliveryCount)
    {
       MessageDelegate del = null;
       
       if (m instanceof BytesMessage)
       {
-         del = new BytesMessageDelegate((JBossBytesMessage)m);
+         del = new BytesMessageDelegate((JBossBytesMessage)m, deliveryCount);
       }
       else if (m instanceof MapMessage)
       {
-         del = new MapMessageDelegate((JBossMapMessage)m);
+         del = new MapMessageDelegate((JBossMapMessage)m, deliveryCount);
       }
       else if (m instanceof ObjectMessage)
       {
-         del = new ObjectMessageDelegate((JBossObjectMessage)m);
+         del = new ObjectMessageDelegate((JBossObjectMessage)m, deliveryCount);
       }
       else if (m instanceof StreamMessage)
       {
-         del = new StreamMessageDelegate((JBossStreamMessage)m);
+         del = new StreamMessageDelegate((JBossStreamMessage)m, deliveryCount);
       }
       else if (m instanceof TextMessage)
       {
-         del = new TextMessageDelegate((JBossTextMessage)m);
+         del = new TextMessageDelegate((JBossTextMessage)m, deliveryCount);
       }      
       else if (m instanceof JBossMessage)
       {
-         del = new MessageDelegate(m);
+         del = new MessageDelegate(m, deliveryCount);
       }
      
       return del;
@@ -130,10 +130,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    protected Destination replyToDestination;
 
    protected String jmsType;
-
-   //protected transient boolean propertiesReadOnly = false;
-   
-   //protected transient boolean bodyReadOnly = false;
 
    protected Map properties;
    

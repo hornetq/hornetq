@@ -35,9 +35,11 @@ import javax.jms.TextMessage;
 public class TextMessageDelegate extends MessageDelegate implements TextMessage
 {
 
-   public TextMessageDelegate(JBossTextMessage message)
+   private static final long serialVersionUID = -3530143417050205123L;
+
+   public TextMessageDelegate(JBossTextMessage message, int deliveryCount)
    {
-      super(message);
+      super(message, deliveryCount);
    }
    
    public void setText(String string) throws JMSException

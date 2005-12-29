@@ -36,9 +36,11 @@ import javax.jms.MessageNotWriteableException;
  */
 public class MapMessageDelegate extends MessageDelegate implements MapMessage
 {
-   public MapMessageDelegate(JBossMapMessage message)
+   private static final long serialVersionUID = 6953530870351885569L;
+
+   public MapMessageDelegate(JBossMapMessage message, int deliveryCount)
    {
-      super(message);
+      super(message, deliveryCount);
    }
    
    public boolean getBoolean(String name) throws JMSException

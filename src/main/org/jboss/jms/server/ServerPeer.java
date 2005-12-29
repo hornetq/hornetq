@@ -36,6 +36,7 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.aop.Dispatcher;
@@ -78,7 +79,7 @@ public class ServerPeer
    
    private static final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
    
-   private static final String RECOVERABLE_JNDI_NAME = "JMSRecoverable";
+   public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
    
    private static ObjectName DESTINATION_MANAGER_OBJECT_NAME;
    
@@ -212,8 +213,8 @@ public class ServerPeer
          //Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
          //Otherwise, we will never have more than getMinimumPoolSize threads running.
                      
-         threadPool = new PooledExecutor(new LinkedQueue(), 100);
-         threadPool.setMinimumPoolSize(100); 
+         threadPool = new PooledExecutor(new LinkedQueue(), 50);
+         threadPool.setMinimumPoolSize(50); 
          
          initializeRemoting();
    
@@ -225,7 +226,7 @@ public class ServerPeer
          
          setupConnectionFactories();
          
-         //createRecoverable();
+         createRecoverable();
          
          started = true;
    
@@ -268,7 +269,7 @@ public class ServerPeer
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
       
-      //removeRecoverable();
+      removeRecoverable();
 
       started = false;
 
@@ -473,14 +474,38 @@ public class ServerPeer
       JMSRecoverable recoverable =
          new JMSRecoverable(this.serverPeerID, (XAConnectionFactory)setupConnectionFactory(null));
       
-      ic.rebind(RECOVERABLE_JNDI_NAME + "/server-" + this.serverPeerID, recoverable);
+      Context recCtx = null;
+      try
+      {
+         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
+      }
+      catch (NamingException e)
+      {
+         //Ignore
+      }
+      
+      if (recCtx == null)
+      {
+         recCtx = ic.createSubcontext(RECOVERABLE_CTX_NAME);
+      }
+      
+      recCtx.rebind(this.serverPeerID, recoverable);
    }
    
    private void removeRecoverable() throws Exception
    {
       InitialContext ic = new InitialContext();
-            
-      ic.unbind(RECOVERABLE_JNDI_NAME + "/server-" + this.serverPeerID);
+      
+      Context recCtx = null;
+      try
+      {
+         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
+         recCtx.unbind(serverPeerID);
+      }
+      catch (NamingException e)
+      {
+         //Ignore
+      }   
    }
 
    /**

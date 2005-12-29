@@ -122,7 +122,7 @@ public class AcknowledgmentTest extends MessagingTestCase
          TopicSession newsess = conn.createTopicSession(true, 0);
          TopicSubscriber newcons = newsess.createSubscriber(topic);
          
-         Message m2 = (Message)newcons.receive(3000);
+         Message m2 = (Message)newcons.receiveNoWait();
          assertNull(m2);
       }
       finally
@@ -153,7 +153,7 @@ public class AcknowledgmentTest extends MessagingTestCase
          sess.commit();
          
          //receive but rollback
-         TextMessage m2 = (TextMessage)sub.receive(3000);
+         TextMessage m2 = (TextMessage)sub.receiveNoWait();
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
          
@@ -166,7 +166,7 @@ public class AcknowledgmentTest extends MessagingTestCase
          TopicSession newsess = conn.createTopicSession(true, 0);
          TopicSubscriber newcons = newsess.createSubscriber(topic);
          
-         Message m3 = (Message)newcons.receive(3000);
+         Message m3 = (Message)newcons.receiveNoWait();
          assertNull(m3);
       }
       finally
@@ -194,13 +194,13 @@ public class AcknowledgmentTest extends MessagingTestCase
          pub.publish(m);
          sess.commit();
          
-         TextMessage m2 = (TextMessage)cons.receive(3000);
+         TextMessage m2 = (TextMessage)cons.receiveNoWait();
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
          
          sess.rollback();
          
-         m2 = (TextMessage)cons.receive(3000);
+         m2 = (TextMessage)cons.receiveNoWait();
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
          
@@ -218,7 +218,7 @@ public class AcknowledgmentTest extends MessagingTestCase
          newpub.publish(m3);
          newsess.commit();
          
-         TextMessage m4 = (TextMessage)newcons.receive(3000);
+         TextMessage m4 = (TextMessage)newcons.receiveNoWait();
          assertNotNull(m4);
          assertEquals("testing456", m4.getText());
          
@@ -227,13 +227,13 @@ public class AcknowledgmentTest extends MessagingTestCase
          newpub.publish(m3);
          newsess.commit();
          
-         TextMessage m5 = (TextMessage)newcons.receive(3000);
+         TextMessage m5 = (TextMessage)newcons.receiveNoWait();
          assertNotNull(m5);
          assertEquals("testing456", m5.getText());
          
          newsess.rollback();
          
-         TextMessage m6 = (TextMessage)newcons.receive(3000);
+         TextMessage m6 = (TextMessage)newcons.receiveNoWait();
          assertNotNull(m6);
          assertEquals("testing456", m6.getText());
          
@@ -278,7 +278,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		int count = 0;
 		while (true)
 		{
-			Message m = consumer.receive(500);
+			Message m = consumer.receiveNoWait();
 			if (m == null) break;
 			count++;
 		}
@@ -306,7 +306,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 
       // make sure I don't receive anything else
 
-      Message m = consumer.receive(2000);
+      Message m = consumer.receiveNoWait();
       assertNull(m);
 
 		conn.close();
@@ -344,7 +344,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		int count = 0;
 		while (true)		
 		{
-			Message m = consumer.receive(500);
+			Message m = consumer.receiveNoWait();
          log.trace("Received message " + m);
 			if (m == null)
          {
@@ -358,7 +358,7 @@ public class AcknowledgmentTest extends MessagingTestCase
       assertEquals(NUM_MESSAGES, count);
       log.trace("received and acknowledged " + count +  " messages");
 
-      Message m = consumer.receive(2000);
+      Message m = consumer.receiveNoWait();
 		assertNull(m);
       
       log.trace("mesage is " + m);
@@ -367,7 +367,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		consumerSess.recover();
 		log.trace("recover called");
 		
-		m = consumer.receive(2000);
+		m = consumer.receiveNoWait();
 		assertNull(m);
 		
 		conn.close();
@@ -406,7 +406,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		int count = 0;
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
-			m = consumer.receive(500);
+			m = consumer.receiveNoWait();
 			if (m == null) break;
 			count++;
 		}
@@ -423,7 +423,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 
 		log.trace("Session recover called");
 
-		m = consumer.receive(2000);
+		m = consumer.receiveNoWait();
 
 		log.trace("Message is:" + m);
 
@@ -468,7 +468,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		Message m = null;
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
-			m = consumer.receive(500);
+			m = consumer.receiveNoWait();
 			if (m == null)
          {
             break;
@@ -493,7 +493,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		count = 0;
 		while (true)
 		{
-			m = consumer.receive(500);
+			m = consumer.receiveNoWait();
 			if (m == null) break;
 			count++;
 		}
@@ -538,7 +538,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		Message m = null;
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
-			m = consumer.receive(500);
+			m = consumer.receiveNoWait();
 			if (m == null) break;
 			count++;
 		}
@@ -553,7 +553,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 
 		log.trace("Session recover called");
 
-		m = consumer.receive(2000);
+		m = consumer.receiveNoWait();
 
 		log.trace("Message is:" + m);
 
@@ -596,7 +596,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 		Message m = null;
 		for (int i = 0; i < NUM_MESSAGES; i++)
 		{
-			m = consumer.receive(500);
+			m = consumer.receiveNoWait();
 			if (m == null) break;
 			count++;
 		}
@@ -611,7 +611,7 @@ public class AcknowledgmentTest extends MessagingTestCase
 
 		log.trace("Session recover called");
 
-		m = consumer.receive(2000);
+		m = consumer.receiveNoWait();
 
 		log.trace("Message is:" + m);
 

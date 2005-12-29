@@ -35,9 +35,11 @@ import javax.jms.StreamMessage;
  */
 public class StreamMessageDelegate extends MessageDelegate implements StreamMessage
 {
-   public StreamMessageDelegate(JBossStreamMessage message)
+   private static final long serialVersionUID = 856367553964704474L;
+
+   public StreamMessageDelegate(JBossStreamMessage message, int deliveryCount)
    {
-      super(message);
+      super(message, deliveryCount);
    }
 
    public boolean readBoolean() throws JMSException

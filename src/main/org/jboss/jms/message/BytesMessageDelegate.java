@@ -35,9 +35,11 @@ import javax.jms.MessageNotWriteableException;
  */
 public class BytesMessageDelegate extends MessageDelegate implements BytesMessage
 {
-   public BytesMessageDelegate(JBossBytesMessage message)
+   private static final long serialVersionUID = -9121097962625801946L;
+
+   public BytesMessageDelegate(JBossBytesMessage message, int deliveryCount)
    {
-      super(message);
+      super(message, deliveryCount);
    }
 
    public long getBodyLength() throws JMSException
