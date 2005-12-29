@@ -235,8 +235,7 @@
       </java>
    </target>
 
-   <!-- <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests, remote-tests" -->
-   <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests"
+   <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests, remote-tests"
       description="Runs all available tests, in in-VM and remote configurations"/>
 
    <target name="invm-tests" description="Runs all available tests an in-VM configuration">
@@ -269,8 +268,7 @@
             haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <!-- <include name="**/messaging/**/*Test.class"/> -->
-               <include name="org/jboss/test/messaging/jms/*Test.class"/>
+               <include name="**/messaging/**/*Test.class"/>
                <exclude name="**/jms/managed/**"/>
             </fileset>
          </batchtest>
