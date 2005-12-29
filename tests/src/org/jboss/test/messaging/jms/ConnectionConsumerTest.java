@@ -95,85 +95,85 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
-// 
-//   public void testSimple() throws Exception
-//   {
-//      if (ServerManagement.isRemote()) return;
-//
-//      final int NUM_MESSAGES = 10;
-//      
-//      Connection connConsumer = null;
-//      
-//      Connection connProducer = null;
-//      
-//      try
-//      {
-//         connConsumer = cf.createConnection();        
-//         
-//         connConsumer.start();
-//                  
-//         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         
-//         SimpleMessageListener listener = new SimpleMessageListener(NUM_MESSAGES);
-//         
-//         sessCons.setMessageListener(listener);
-//         
-//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
-//         
-//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
-//         
-//         log.trace("Started connection consumer");
-//         
-//         connProducer = cf.createConnection();
-//            
-//         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageProducer prod = sessProd.createProducer(queue);
-//            
-//         for (int i = 0; i < NUM_MESSAGES; i++)
-//         {
-//            TextMessage m = sessProd.createTextMessage("testing testing");
-//            prod.send(m);
-//         }
-//         
-//         log.trace("Sent messages");
-//         
-//         //Wait for messages
-//         
-//         listener.waitForLatch(10000);
-//         
-//         if (listener.getMsgsReceived() != NUM_MESSAGES)
-//         {
-//            fail("Didn't receive all messages");
-//         }
-//         
-//         if (listener.failed)
-//         {
-//            fail ("Didn't receive correct messages");
-//         }
-//         
-//         log.trace("Received all messages");
-//         
-//         log.trace("closing connection consumer ...");
-//         
-//         cc.close();
-//
-//         log.trace("closing connections ...");
-//
-//         connProducer.close();
-//         connProducer = null;
-//         connConsumer.close();
-//         connConsumer = null;
-//         
-//    
-//      }
-//      finally 
-//      {
-//         if (connConsumer != null) connConsumer.close();
-//         if (connProducer != null) connProducer.close();
-//      }
-//   }
-//  
-//   
+
+   public void testSimple() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+
+      final int NUM_MESSAGES = 10;
+
+      Connection connConsumer = null;
+
+      Connection connProducer = null;
+
+      try
+      {
+         connConsumer = cf.createConnection();
+
+         connConsumer.start();
+
+         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         SimpleMessageListener listener = new SimpleMessageListener(NUM_MESSAGES);
+
+         sessCons.setMessageListener(listener);
+
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);
+
+         log.trace("Started connection consumer");
+
+         connProducer = cf.createConnection();
+
+         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessProd.createProducer(queue);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage m = sessProd.createTextMessage("testing testing");
+            prod.send(m);
+         }
+
+         log.trace("Sent messages");
+
+         //Wait for messages
+
+         listener.waitForLatch(10000);
+
+         if (listener.getMsgsReceived() != NUM_MESSAGES)
+         {
+            fail("Didn't receive all messages");
+         }
+
+         if (listener.failed)
+         {
+            fail ("Didn't receive correct messages");
+         }
+
+         log.trace("Received all messages");
+
+         log.trace("closing connection consumer ...");
+
+         cc.close();
+
+         log.trace("closing connections ...");
+
+         connProducer.close();
+         connProducer = null;
+         connConsumer.close();
+         connConsumer = null;
+
+
+      }
+      finally
+      {
+         if (connConsumer != null) connConsumer.close();
+         if (connProducer != null) connProducer.close();
+      }
+   }
+
+
    
    public void testRedeliveryTransacted() throws Exception
    {
@@ -242,63 +242,63 @@ public class ConnectionConsumerTest extends MessagingTestCase
          if (connConsumer != null) connProducer.close();
       }
    }
-//   
-//   public void testCloseWhileProcessing() throws Exception
-//   {
-//      if (ServerManagement.isRemote()) return;
-//      
-//      final int NUM_MESSAGES = 10;
-//      
-//      Connection connConsumer = null;
-//      
-//      Connection connProducer = null;
-//      
-//      try
-//      {
-//         connConsumer = cf.createConnection();        
-//         
-//         connConsumer.start();
-//                  
-//         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         
-//         SimpleMessageListener listener = new SimpleMessageListener(NUM_MESSAGES);
-//         
-//         sessCons.setMessageListener(listener);
-//         
-//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
-//         
-//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
-//         
-//         log.trace("Started connection consumer");
-//         
-//         connProducer = cf.createConnection();
-//            
-//         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageProducer prod = sessProd.createProducer(queue);
-//            
-//         for (int i = 0; i < NUM_MESSAGES; i++)
-//         {
-//            TextMessage m = sessProd.createTextMessage("testing testing");
-//            prod.send(m);
-//         }
-//         
-//         log.trace("Sent messages");
-//         
-//
-//         cc.close();
-//         
-//         connProducer.close();
-//         connProducer = null;
-//         connConsumer.close();
-//         connConsumer = null;
-//      }
-//      finally 
-//      {
-//         if (connConsumer != null) connConsumer.close();
-//         if (connConsumer != null) connProducer.close();
-//      }
-//   }
-//   
+
+   public void testCloseWhileProcessing() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+
+      final int NUM_MESSAGES = 10;
+
+      Connection connConsumer = null;
+
+      Connection connProducer = null;
+
+      try
+      {
+         connConsumer = cf.createConnection();
+         
+         connConsumer.start();
+
+         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         SimpleMessageListener listener = new SimpleMessageListener(NUM_MESSAGES);
+
+         sessCons.setMessageListener(listener);
+
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);
+
+         log.trace("Started connection consumer");
+
+         connProducer = cf.createConnection();
+
+         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessProd.createProducer(queue);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage m = sessProd.createTextMessage("testing testing");
+            prod.send(m);
+         }
+
+         log.trace("Sent messages");
+
+
+         cc.close();
+
+         connProducer.close();
+         connProducer = null;
+         connConsumer.close();
+         connConsumer = null;
+      }
+      finally
+      {
+         if (connConsumer != null) connConsumer.close();
+         if (connConsumer != null) connProducer.close();
+      }
+   }
+
    
    class SimpleMessageListener implements MessageListener
    {
