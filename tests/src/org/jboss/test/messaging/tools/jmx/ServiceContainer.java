@@ -475,7 +475,7 @@ public class ServiceContainer
    private void startRemoting() throws Exception
    {
       RemotingJMXWrapper mbean =
-            new RemotingJMXWrapper(new InvokerLocator("socket://localhost:9890"));
+            new RemotingJMXWrapper(new InvokerLocator("socket://localhost:19895"));
       mbeanServer.registerMBean(mbean, REMOTING_OBJECT_NAME);
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
       log.debug("started " + REMOTING_OBJECT_NAME);
