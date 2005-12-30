@@ -61,6 +61,7 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 /**
@@ -196,49 +197,56 @@ class JBossSession implements
 
    public MessageProducer createProducer(Destination d) throws JMSException
    {
-      ProducerDelegate producerDelegate = delegate.createProducerDelegate(d);
-      return new JBossMessageProducer(producerDelegate);
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         ProducerDelegate producerDelegate = delegate.createProducerDelegate(d);
+         return new JBossMessageProducer(producerDelegate);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
   {
-     if (d == null)
-     {
-        throw new InvalidDestinationException("Cannot create a consumer with a null destination");
-     }
-     ConsumerDelegate consumerDelegate =
-           delegate.createConsumerDelegate(d, null, false, null, false);
-     return new JBossMessageConsumer(consumerDelegate);
+     return createConsumer(d, null, false);
   }
 
   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
   {
-     if (log.isTraceEnabled()) { log.trace("Attempting to create consumer for destination:" + d +
-           ", messageSelector: " + messageSelector); }
-     if (d == null)
-     {
-        throw new InvalidDestinationException("Cannot create a consumer with a null destination");
-     }
-	  ConsumerDelegate consumerDelegate =
-        delegate.createConsumerDelegate(d, messageSelector, false, null, false);
-     return new JBossMessageConsumer(consumerDelegate);
+     return createConsumer(d, messageSelector, false);
   }
 
-   public MessageConsumer createConsumer(Destination d,
-                                         String messageSelector,
-                                         boolean noLocal)
+   public MessageConsumer createConsumer(Destination d, String messageSelector, boolean noLocal)
          throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("Attempting to create consumer for destination:" + d +
-            ", messageSelector: " + messageSelector + ", noLocal: " + noLocal); }
-      
       if (d == null)
       {
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
-      ConsumerDelegate consumerDelegate =
-         delegate.createConsumerDelegate(d, messageSelector, noLocal, null, false);
-      return new JBossMessageConsumer(consumerDelegate);
+
+      log.debug("Attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         ConsumerDelegate consumerDelegate
+            = delegate.createConsumerDelegate(d, messageSelector, noLocal, null, false);
+         return new JBossMessageConsumer(consumerDelegate);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -303,15 +311,6 @@ class JBossSession implements
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
    {
-      //As per spec. section 4.11
-      if (sessionType == TYPE_TOPIC_SESSION)
-      {
-         throw new IllegalStateException("Cannot create a browser on a TopicSession");
-      }
-      if (queue == null)
-      {
-         throw new InvalidDestinationException("Cannot create a browser with a null queue");
-      }
       return createBrowser(queue, null);
    }
 
@@ -330,8 +329,20 @@ class JBossSession implements
       {
          messageSelector = null;
       }
-      BrowserDelegate del = this.delegate.createBrowserDelegate(queue, messageSelector);
-      return new JBossQueueBrowser(queue, messageSelector, del);
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         BrowserDelegate del = this.delegate.createBrowserDelegate(queue, messageSelector);
+         return new JBossQueueBrowser(queue, messageSelector, del);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException
