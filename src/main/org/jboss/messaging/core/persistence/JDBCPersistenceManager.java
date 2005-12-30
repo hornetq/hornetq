@@ -1745,6 +1745,8 @@ public class JDBCPersistenceManager implements PersistenceManager
       String receiverID = "";
       String storeID = null;
 
+      int rows = -1;
+
       try
       {
          ref = d.getReference();
@@ -1762,12 +1764,12 @@ public class JDBCPersistenceManager implements PersistenceManager
          ps.setString(4, storeID);
          ps.setNull(5, java.sql.Types.VARCHAR);
          ps.setString(6, "C");
-         int rows = ps.executeUpdate();
-
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertDelivery, channelID, messageID, receiverID, storeID, null, "C") + " inserted " + rows + " row(s)"); }
-      }      
+         rows = ps.executeUpdate();
+      }
       finally
       {
+         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertDelivery, channelID, messageID, receiverID, storeID, null, "C") + (rows == -1 ? " failed" : " inserted " + rows + " row(s)")); }
+
          if (ps != null)
          {
             try
