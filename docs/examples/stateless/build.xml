@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+   To run the example, set JBOSS_HOME and run ant (with no parameters)
+
+   $Id$
+
+ -->
+
+<project name="MDBExample" default="run">
+
+   <property environment="ENV"/>
+
+   <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
+   <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+   <property name="jboss.configuration.name" value="default"/>
+   <property name="example.queue.name" value="testQueue"/>
+
+   <path id="common.compilation.classpath">
+      <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2se.jar"/>
+   </path>
+
+   <path id="example.compilation.classpath">
+      <path refid="common.compilation.classpath"/>
+      <pathelement path="../common/output"/>
+   </path>
+
+   <path id="execution.classpath">
+      <pathelement path="./etc"/>
+      <pathelement path="../common/output"/>
+      <pathelement path="./output/classes"/>
+      <fileset dir="./output" includes="*.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"/>
+      <fileset dir="${ENV.JBOSS_HOME}/client" includes="*.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/server/default/lib/javax.servlet.jar"/>
+      <fileset file="${ENV.JBOSS_HOME}/lib/commons-httpclient.jar"/>
+   </path>
+
+   <target name="identify">
+      <echo message="Running the Stateless Session Bean example"/>
+      <echo message="The queue: ${example.queue.name}"/>
+   </target>
+
+   <target name="sanity-check" depends="identify">
+      <fail message="The example needs JBOSS_HOME to run!" unless="ENV.JBOSS_HOME"/>
+      <available file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
+         property="sar.present"/>
+      <fail message="Could not find ${messaging.deployment.archive.name} in ${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy"
+         unless="sar.present"/>
+   </target>
+
+   <target name="init" depends="sanity-check">
+      <mkdir dir="./output/classes/META-INF"/>
+      <mkdir dir="./output/lib"/>
+      <mkdir dir="../common/output"/>
+   </target>
+
+   <target name="compile" depends="init">
+      <javac destdir="../common/output" debug="on" debuglevel="lines,vars,source">
+         <src path="../common/src"/>
+         <classpath refid="common.compilation.classpath"/>
+      </javac>
+      <javac destdir="./output/classes" debug="on" debuglevel="lines,vars,source">
+         <src path="./src"/>
+         <classpath refid="example.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="jar" depends="compile">
+      <copy todir="./output/classes/META-INF">
+         <fileset dir="./etc/META-INF" includes="*"/>
+      </copy>
+      <jar destfile="./output/lib/stateless-example.jar"
+         basedir="./output/classes"
+         includes="META-INF/**,org/jboss/example/jms/stateless/bean/*.class"/>
+   </target>
+
+   <target name="deploy" depends="jar">
+      <copy file="./output/lib/stateless-example.jar"
+         todir="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy"/>
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+   </target>
+
+   <target name="run" depends="deploy">
+
+      <!-- extract jboss-remoting.jar, jboss.jar from jboss messaging sar and store it locally -->
+      <unjar src="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
+         dest="./output">
+         <patternset>
+            <include name="jboss-remoting.jar"/>
+            <include name="jboss-unified-invoker.jar"/>
+            <include name="jboss-serialization.jar"/>
+            <include name="jboss-aop.jar"/>
+            <include name="javassist.jar"/>
+            <include name="trove.jar"/>
+         </patternset>
+      </unjar>
+
+      <antcall target="send-and-receive"/>
+
+   </target>
+
+
+   <target name="send-and-receive">
+      <!-- The client expects to find the name of the queue to connect to as value of the
+           'example.queue.name' property, which *may* be defined by calling ants when this example
+            is used in a smoke test -->
+      <java classname="org.jboss.example.jms.stateless.client.Client"
+         classpathref="execution.classpath" fork="yes" failonerror="true">
+         <sysproperty key="example.queue.name" value="${example.queue.name}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
+          -->
+      </java>
+   </target>
+
+   <target name="undeploy">
+      <delete file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/stateless-example.jar"
+         quiet="true"/>
+   </target>
+
+   <target name="clean" depends="undeploy">
+      <delete dir="./output" quiet="true"/>
+      <delete dir="../common/output" quiet="true"/>
+   </target>
+
+   <target name="sleep">
+      <echo message="Sleeping for ${sleep.interval} seconds ..."/>
+      <sleep seconds="${sleep.interval}"/>
+   </target>
+
+</project>
+

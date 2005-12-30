@@ -76,7 +76,7 @@
       </java>
    </target>
 
-   <target name="shutdown-jboss">
+   <target name="stop-jboss">
       <java classname="org.jboss.Shutdown" fork="yes" dir="${ENV.JBOSS_HOME}/bin">
          <jvmarg value="-server"/>
          <jvmarg value="-Xms128m"/>
@@ -176,6 +176,21 @@
       </ant>
    </target>
 
+   <target name="stateless-example">
+      <ant dir="../../docs/examples/stateless" antfile="build.xml" inheritAll="false">
+         <property name="example.queue.name" value="SmokeTestQueue"/>
+         <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </ant>
+      <antcall target="clean-stateless-example"/>
+   </target>
+
+   <target name="clean-stateless-example">
+      <ant dir="../../docs/examples/stateless" antfile="build.xml" inheritAll="false" target="clean">
+         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </ant>
+   </target>
+
    <target name="clean">
       <delete dir="${ENV.JBOSS_HOME}/server/messaging-smoke-test" quiet="false" failonerror="true"/>
    </target>
@@ -206,8 +221,9 @@
       <antcall target="queue-example"/>
       <antcall target="topic-example"/>
       <antcall target="mdb-example"/>
+      <antcall target="stateless-example"/>
 
-      <antcall target="shutdown-jboss"/>
+      <antcall target="stop-jboss"/>
       <antcall target="sleep"><param name="sleep.interval" value="30"/></antcall>
       <antcall target="clean"/>
    </target>

@@ -113,6 +113,17 @@ public abstract class ExampleSupport
       throw new RuntimeException("Assertion failed, " + o + " != " + o2);
    }
 
+   protected void assertEquals(int i, int i2)
+   {
+      if (i == i2)
+      {
+         return;
+      }
+
+      throw new RuntimeException("Assertion failed, " + i + " != " + i2);
+   }
+
+
    // Private -------------------------------------------------------
 
    private void setup() throws Exception
