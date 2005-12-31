@@ -25,19 +25,15 @@ import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.StateManager;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
-import java.io.StringReader;
 import java.rmi.registry.LocateRegistry;
 
 /**
@@ -131,7 +127,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
       serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       final String defaultSecurityConfig =
          "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      serverPeer.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
+      serverPeer.setDefaultSecurityConfig(ServerManagement.toElement(defaultSecurityConfig));
       serverPeer.start();
 
       log.info("server started");
@@ -254,19 +250,21 @@ public class RMIServer extends UnicastRemoteObject implements Server
       serverPeer.getDestinationManager().destroyQueue(name);
    }
 
-   public void setSecurityConfig(String destName, Element config) throws Exception
+   public void setSecurityConfig(String destName, String config) throws Exception
    {
-      serverPeer.setSecurityConfig(destName, config);
+      Element element = ServerManagement.toElement(config);
+      serverPeer.setSecurityConfig(destName, element);
    }
 
-   public void setDefaultSecurityConfig(Element config) throws Exception
+   public void setDefaultSecurityConfig(String config) throws Exception
    {
-      serverPeer.setDefaultSecurityConfig(config);
+      Element element = ServerManagement.toElement(config);
+      serverPeer.setDefaultSecurityConfig(element);
    }
 
-   public Element getDefaultSecurityConfig() throws Exception
+   public String getDefaultSecurityConfig() throws Exception
    {
-      return serverPeer.getDefaultSecurityConfig();
+      return serverPeer.getDefaultSecurityConfig().toString();
    }
 
    // Public --------------------------------------------------------
@@ -290,14 +288,6 @@ public class RMIServer extends UnicastRemoteObject implements Server
    private RMINamingDelegate getNamingDelegate()
    {
       return namingDelegate;
-   }
-
-   private static Element toElement(String s) throws Exception
-   {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder parser = factory.newDocumentBuilder();
-      Document doc = parser.parse(new InputSource(new StringReader(s)));
-      return doc.getDocumentElement();
    }
 
    // Inner classes -------------------------------------------------

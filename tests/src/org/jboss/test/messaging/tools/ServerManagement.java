@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.rmi.Naming;
 
 import org.jboss.jms.server.ServerPeer;
@@ -36,9 +37,13 @@ import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server.
@@ -218,19 +223,19 @@ public class ServerManagement
       return server.getStateManager();
    }
 
-   public static void setSecurityConfig(String destName, Element config) throws Exception
+   public static void setSecurityConfig(String destName, String config) throws Exception
    {
       insureStarted();
       server.setSecurityConfig(destName, config);
    }
    
-   public static void setDefaultSecurityConfig(Element config) throws Exception
+   public static void setDefaultSecurityConfig(String config) throws Exception
    {
       insureStarted();
       server.setDefaultSecurityConfig(config);
    }
    
-   public static Element getDefaultSecurityConfig() throws Exception
+   public static String getDefaultSecurityConfig() throws Exception
    {
       insureStarted();
       return server.getDefaultSecurityConfig();
@@ -280,6 +285,14 @@ public class ServerManagement
       {
          return RemoteInitialContextFactory.getJNDIEnvironment();
       }
+   }
+
+   public static Element toElement(String s) throws Exception
+   {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder parser = factory.newDocumentBuilder();
+      Document doc = parser.parse(new InputSource(new StringReader(s)));
+      return doc.getDocumentElement();
    }
 
    // Attributes ----------------------------------------------------

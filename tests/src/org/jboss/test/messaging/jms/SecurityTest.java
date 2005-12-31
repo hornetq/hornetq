@@ -21,8 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.io.StringReader;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -34,15 +32,10 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
  * 
@@ -94,7 +87,7 @@ public class SecurityTest extends MessagingTestCase
    protected Topic securedTopic;
    protected Topic unsecuredTopic;
    
-   protected Element oldDefaultConfig;
+   protected String oldDefaultConfig;
    
    // Constructors --------------------------------------------------
    
@@ -115,7 +108,7 @@ public class SecurityTest extends MessagingTestCase
       final String defaultSecurityConfig = 
          "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
       oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
-      ServerManagement.setDefaultSecurityConfig(toElement(defaultSecurityConfig));
+      ServerManagement.setDefaultSecurityConfig(defaultSecurityConfig);
  
             
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
@@ -736,7 +729,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"noacc\" read=\"false\" write=\"false\" create=\"false\"/>" +
          "</security>";
                      
-      ServerManagement.setSecurityConfig("testQueue", toElement(testQueueConf));
+      ServerManagement.setSecurityConfig("testQueue", testQueueConf);
       
       ServerManagement.undeployTopic("testTopic");
       ServerManagement.deployTopic("testTopic");
@@ -748,7 +741,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>" +
          "</security>";
                      
-      ServerManagement.setSecurityConfig("testTopic", toElement(testTopicConf));
+      ServerManagement.setSecurityConfig("testTopic", testTopicConf);
       
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.deployTopic("securedTopic");
@@ -758,20 +751,11 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
          "</security>";
                      
-      ServerManagement.setSecurityConfig("testSecuredTopic", toElement(testSecuredTopicConf));
+      ServerManagement.setSecurityConfig("testSecuredTopic", testSecuredTopicConf);
       
       ServerManagement.undeployTopic("unsecuredTopic");
       ServerManagement.deployTopic("unsecuredTopic");
       
-   }
-   
-   private Element toElement(String s)
-      throws Exception
-   {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder parser = factory.newDocumentBuilder();
-      Document doc = parser.parse(new InputSource(new StringReader(s)));
-      return doc.getDocumentElement();
    }
    
 }

@@ -25,7 +25,6 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.jms.server.StateManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.remoting.transport.Connector;
-import org.w3c.dom.Element;
 
 import java.rmi.Remote;
 
@@ -67,9 +66,23 @@ public interface Server extends Remote
    void undeployQueue(String name) throws Exception;
 
 
-   void setSecurityConfig(String destName, Element config) throws Exception;
-   void setDefaultSecurityConfig(Element config) throws Exception;
-   Element getDefaultSecurityConfig() throws Exception;
+   /**
+    * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
+    *        NotSerializableExceptions that show up when running tests on JDK 1.4.
+    */
+   void setSecurityConfig(String destName, String config) throws Exception;
+
+   /**
+    * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
+    *        NotSerializableExceptions that show up when running tests on JDK 1.4.
+    */
+   void setDefaultSecurityConfig(String config) throws Exception;
+
+   /**
+    * @return a String that can be converted to an org.w3c.dom.Element using
+    *         ServerManagement.toElement().
+    */
+   String getDefaultSecurityConfig() throws Exception;
 
 
    void exit() throws Exception;

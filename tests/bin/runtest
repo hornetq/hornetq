@@ -23,8 +23,8 @@
 # local core
 #
 #TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
-TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
-TARGET_TEST=testNonRecoverableState_1
+#TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
+#TARGET_TEST=testNonRecoverableState_1
 #TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState2Test
 #TARGET_TEST=testNonRecoverableState_17
 #TARGET_CLASS=org.jboss.test.messaging.core.RecoverableStateTest
@@ -132,6 +132,8 @@ TARGET_TEST=testNonRecoverableState_1
 #TARGET_TEST=testQueue
 #TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
 #TARGET_TEST=testQueue
+TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
+#TARGET_TEST=testLoginNoUserNoPassword
 #
 # JMS Facade server
 #
