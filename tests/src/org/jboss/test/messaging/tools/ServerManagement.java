@@ -40,6 +40,9 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -287,12 +290,52 @@ public class ServerManagement
       }
    }
 
-   public static Element toElement(String s) throws Exception
+   public static Element stringToElement(String s) throws Exception
    {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder parser = factory.newDocumentBuilder();
       Document doc = parser.parse(new InputSource(new StringReader(s)));
       return doc.getDocumentElement();
+   }
+
+   public static String elementToString(Node n) throws Exception
+   {
+
+      String name = n.getNodeName();
+      if (name.startsWith("#"))
+      {
+         return "";
+      }
+
+      StringBuffer sb = new StringBuffer();
+      sb.append('<').append(name);
+
+      NamedNodeMap attrs = n.getAttributes();
+      if (attrs != null)
+      {
+         for(int i = 0; i < attrs.getLength(); i++)
+         {
+            sb.append(' ').append(attrs.item(i));
+         }
+      }
+
+      NodeList children = n.getChildNodes();
+
+      if (children.getLength() == 0)
+      {
+         sb.append("/>").append('\n');
+      }
+      else
+      {
+         sb.append('>').append('\n');
+         for(int i = 0; i < children.getLength(); i++)
+         {
+            sb.append(elementToString(children.item(i)));
+
+         }
+         sb.append("</").append(name).append('>');
+      }
+      return sb.toString();
    }
 
    // Attributes ----------------------------------------------------

@@ -127,7 +127,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
       serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       final String defaultSecurityConfig =
          "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      serverPeer.setDefaultSecurityConfig(ServerManagement.toElement(defaultSecurityConfig));
+      serverPeer.setDefaultSecurityConfig(ServerManagement.stringToElement(defaultSecurityConfig));
       serverPeer.start();
 
       log.info("server started");
@@ -252,19 +252,20 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
    public void setSecurityConfig(String destName, String config) throws Exception
    {
-      Element element = ServerManagement.toElement(config);
+      Element element = ServerManagement.stringToElement(config);
       serverPeer.setSecurityConfig(destName, element);
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
    {
-      Element element = ServerManagement.toElement(config);
+      Element element = ServerManagement.stringToElement(config);
       serverPeer.setDefaultSecurityConfig(element);
    }
 
    public String getDefaultSecurityConfig() throws Exception
    {
-      return serverPeer.getDefaultSecurityConfig().toString();
+      Element element = serverPeer.getDefaultSecurityConfig();
+      return ServerManagement.elementToString(element);
    }
 
    // Public --------------------------------------------------------
