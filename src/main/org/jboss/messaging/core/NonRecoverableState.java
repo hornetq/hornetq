@@ -413,7 +413,7 @@ public class NonRecoverableState implements State
             //However some of the core tests still assume all deliver() semantics i.e. delivery
             //is attempted for all messages in channel on commit, hence they will fail if we only
             //call deliver once
-            channel.redeliver(null);
+            channel.deliver(null);
          }
 
          txToAddReferenceCallbacks.remove(tx);

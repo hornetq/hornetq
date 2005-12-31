@@ -499,7 +499,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       if (log.isTraceEnabled()) { log.trace("promptDelivery:" + this); }
       if (ready || grabbing)
       {
-         channel.redeliver(this);
+         channel.deliver(this);
       }      
    }
    

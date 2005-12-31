@@ -109,7 +109,7 @@ public class DistributedQueue extends Queue implements Distributed
       return messages;
    }
 
-   public boolean redeliver(Receiver r)
+   public boolean deliver(Receiver r)
    {
       boolean delivered = redeliver(this, r);
 

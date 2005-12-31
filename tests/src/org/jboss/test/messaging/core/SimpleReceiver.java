@@ -201,7 +201,7 @@ public class SimpleReceiver implements Receiver
          return;
       }
       log.info("receiver explicitely requesting message from the channel");
-      channel.redeliver(this);
+      channel.deliver(this);
    }
 
    public void clear()

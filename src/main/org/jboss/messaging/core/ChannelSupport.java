@@ -238,7 +238,7 @@ public abstract class ChannelSupport implements Channel
    }
 
 
-   public boolean redeliver(Receiver r)
+   public boolean deliver(Receiver r)
    {
       if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "generic delivery requested on " + this); }
       return redeliver(this, r);

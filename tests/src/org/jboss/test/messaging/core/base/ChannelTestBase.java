@@ -245,14 +245,14 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertFalse(sm.isReliable());
       assertEquals("message0", sm.getMessageID());
 
-      assertFalse(channel.redeliver(null));
+      assertFalse(channel.deliver(null));
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(channel.redeliver(receiver));
+      assertTrue(channel.deliver(receiver));
       assertEquals(1, receiver.getMessages().size());
       assertEquals("message0", ((Message)receiver.getMessages().get(0)).getMessageID());
 
-      assertFalse(channel.redeliver(receiver));
+      assertFalse(channel.deliver(receiver));
 
       log.info("ok");
    }
@@ -284,7 +284,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
          assertTrue(delivery.isDone());
 
-         assertFalse(channel.redeliver(null));
+         assertFalse(channel.deliver(null));
       }
 
       List stored = channel.browse();
@@ -293,13 +293,13 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertTrue(channel.redeliver(receiver));
+         assertTrue(channel.deliver(receiver));
          assertEquals(1, receiver.getMessages().size());
          assertEquals("message" + i, ((Message)receiver.getMessages().get(0)).getMessageID());
          receiver.clear();
       }
 
-      assertFalse(channel.redeliver(receiver));
+      assertFalse(channel.deliver(receiver));
 
       log.info("ok");
    }
@@ -344,8 +344,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       assertTrue(channel.browse().isEmpty());
 
-      assertFalse(channel.redeliver(null));
-      assertFalse(channel.redeliver(new SimpleReceiver("ACKING", SimpleReceiver.ACKING)));
+      assertFalse(channel.deliver(null));
+      assertFalse(channel.deliver(new SimpleReceiver("ACKING", SimpleReceiver.ACKING)));
 
       log.info("ok");
    }
@@ -386,14 +386,14 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(sm.isReliable());
       assertEquals("message0", sm.getMessageID());
 
-      assertFalse(channel.redeliver(null));
+      assertFalse(channel.deliver(null));
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(channel.redeliver(receiver));
+      assertTrue(channel.deliver(receiver));
       assertEquals(1, receiver.getMessages().size());
       assertEquals("message0", ((Message)receiver.getMessages().get(0)).getMessageID());
 
-      assertFalse(channel.redeliver(receiver));
+      assertFalse(channel.deliver(receiver));
 
       log.info("ok");
    }
@@ -436,8 +436,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
          // the channel must not accept the message
          assertNull(delivery);
 
-         assertFalse(channel.redeliver(null));
-         assertFalse(channel.redeliver(new SimpleReceiver("ACKING", SimpleReceiver.ACKING)));
+         assertFalse(channel.deliver(null));
+         assertFalse(channel.deliver(new SimpleReceiver("ACKING", SimpleReceiver.ACKING)));
       }
 
       assertTrue(channel.browse().isEmpty());
@@ -484,13 +484,13 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertTrue(channel.redeliver(receiver));
+         assertTrue(channel.deliver(receiver));
          assertEquals(1, receiver.getMessages().size());
          assertEquals("message" + i, ((Message)receiver.getMessages().get(0)).getMessageID());
          receiver.clear();
       }
 
-      assertFalse(channel.redeliver(receiver));
+      assertFalse(channel.deliver(receiver));
 
       log.info("ok");
    }

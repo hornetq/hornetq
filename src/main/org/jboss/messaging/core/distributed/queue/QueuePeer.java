@@ -100,7 +100,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (log.isTraceEnabled()) { log.trace(this + " got forward request from " + targetID); }
 
       RemoteQueue target = ((DistributedQueue.QueueViewKeeper)viewKeeper).getRemoteQueue(targetID);
-      return queue.redeliver(target);
+      return queue.deliver(target);
    }
 
    // Public --------------------------------------------------------

@@ -95,7 +95,7 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
     * @return true if a message was handed over to the receiver and the channel got a delivery in
     *         exchange, or false otherwise. 
     */
-   boolean redeliver(Receiver receiver);
+   boolean deliver(Receiver receiver);
 
    void close();
 

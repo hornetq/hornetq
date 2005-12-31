@@ -85,7 +85,7 @@ public class SimpleChannel implements Channel
       return ms;
    }
 
-   public boolean redeliver(Receiver receiver)
+   public boolean deliver(Receiver receiver)
    {
       log.debug("redeliver(" + receiver + ")");
       deliveryNotification = true;
