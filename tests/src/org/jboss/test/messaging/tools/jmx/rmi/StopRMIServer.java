@@ -45,7 +45,16 @@ public class StopRMIServer
    public static void main(String[] args) throws Exception
    {
 
-      String name = "//localhost:" + RMIServer.RMI_REGISTRY_PORT + "/" + RMIServer.RMI_SERVER_NAME;
+      String host = System.getProperty("test.bind.address");
+      if (host == null)
+      {
+         host = "localhost";
+      }
+
+      String name =
+         "//" + host + ":" + RMIServer.RMI_REGISTRY_PORT + "/" + RMIServer.RMI_SERVER_NAME;
+
+      log.info("Stopping " + name);
 
       Server server;
       try

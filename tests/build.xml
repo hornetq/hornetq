@@ -119,6 +119,7 @@
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
    <property name="build.tests.remote" value="false"/>
+   <property name="test.bind.address" value="localhost"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -209,6 +210,7 @@
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMIServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -252,6 +254,7 @@
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -293,6 +296,7 @@
 
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -356,6 +360,7 @@
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -396,6 +401,7 @@
          timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -434,6 +440,7 @@
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <pathelement location="${module.root}/etc"/>
@@ -478,12 +485,11 @@
              timeout="${junit.timeout2}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
 <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
 -->
          <jvmarg value="-Xmx1024M"/>
-         <sysproperty key="remote" value="${build.tests.remote}"/>
-
          <classpath>
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>

@@ -68,6 +68,17 @@ public class RMIServer extends UnicastRemoteObject implements Server
    {
       log.debug("initializing RMI runtime");
 
+      String host = System.getProperty("test.bind.address");
+      if (host == null)
+      {
+         host = "localhost";
+      }
+
+      log.info("bind address: " + host);
+
+      // let RMI know the bind address
+      System.setProperty("java.rmi.server.hostname", host);
+
       registry = LocateRegistry.createRegistry(RMI_REGISTRY_PORT);
       log.debug("registry created");
 

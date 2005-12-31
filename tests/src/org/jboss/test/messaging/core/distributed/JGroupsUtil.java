@@ -42,8 +42,15 @@ public class JGroupsUtil
    public static String generateProperties(int PING_timeout,
                                            int PING_num_initial_members)
    {
+
+      String host = System.getProperty("test.bind.address");
+      if (host == null)
+      {
+         host = "localhost";
+      }
+
       return
-         "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32):"+
+         "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32;bind_addr=" + host + "):" +
          "PING(timeout=" + PING_timeout + ";num_initial_members=" + PING_num_initial_members + "):"+
          "FD(timeout=3000):"+
          "VERIFY_SUSPECT(timeout=1500):"+

@@ -66,4 +66,5 @@ $reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../thirdparty/jgroups/lib/jgroups.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP} \
- org.jboss.test.messaging.tools.jmx.rmi.RMIServer &
+-Dtest.bind.address=192.168.1.188 \
+org.jboss.test.messaging.tools.jmx.rmi.RMIServer &

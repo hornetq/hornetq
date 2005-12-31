@@ -130,6 +130,7 @@ public class ServiceContainer
    private boolean security;
 
    private List toUnbindAtExit;
+   private String ipAddressOrHostName;
 
    // Constructors --------------------------------------------------
 
@@ -160,6 +161,8 @@ public class ServiceContainer
 
       try
       {
+         configureAddress();
+
          toUnbindAtExit.clear();
 
          jndiNamingFactory = System.getProperty("java.naming.factory.initial");
@@ -287,6 +290,22 @@ public class ServiceContainer
 
    // Private -------------------------------------------------------
 
+   private void configureAddress()
+   {
+
+      String s = System.getProperty("test.bind.address");
+      if (s == null)
+      {
+         ipAddressOrHostName = "localhost";
+      }
+      else
+      {
+         ipAddressOrHostName = s;
+      }
+
+      log.debug("All server sockets will be open on address: " + ipAddressOrHostName);
+   }
+
    private void loadJNDIContexts() throws Exception
    {
       String[] names = {DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT,
@@ -351,6 +370,7 @@ public class ServiceContainer
       props.setProperty("server.silent", "true");
       props.setProperty("server.no_system_exit", "true");
       props.setProperty("server.port", 27862);
+      props.setProperty("server.address", ipAddressOrHostName);
 
       hsqldbServer = new Server();
       hsqldbServer.setLogWriter(null);
@@ -475,7 +495,7 @@ public class ServiceContainer
    private void startRemoting() throws Exception
    {
       RemotingJMXWrapper mbean =
-            new RemotingJMXWrapper(new InvokerLocator("socket://localhost:19895"));
+            new RemotingJMXWrapper(new InvokerLocator("socket://" + ipAddressOrHostName + ":19895"));
       mbeanServer.registerMBean(mbean, REMOTING_OBJECT_NAME);
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
       log.debug("started " + REMOTING_OBJECT_NAME);
