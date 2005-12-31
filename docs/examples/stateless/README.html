@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging Example - JMS Queue</title>
+  <title>JBoss Messaging Example - Managed Environment</title>
 </head>
 <body>
 <br>
@@ -78,6 +78,47 @@ The output of a successful run should be similar to:<br>
       <td style="vertical-align: top;">
       <div style="margin-left: 40px;"><br>
       </div>
+$ ant<br>
+Buildfile: build.xml<br>
+      <br>
+identify:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] Running the Stateless Session Bean
+example<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The queue: testQueue<br>
+      <br>
+sanity-check:<br>
+      <br>
+init:<br>
+      <br>
+compile:<br>
+      <br>
+jar:<br>
+      <br>
+deploy:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
+C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\default\deploy<br>
+      <br>
+sleep:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 5 seconds ...<br>
+      <br>
+run:<br>
+&nbsp;&nbsp;&nbsp; [unjar] Expanding:
+C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\default\deploy\jboss-messaging-scoped.sar
+into C:\work\src\cvs\jboss-head\jms\docs\examples<br>
+\stateless\output<br>
+      <br>
+send-and-receive:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The Hello! message was successfully
+sent to the /queue/testQueue queue<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
+SUCCESS!&nbsp;&nbsp; ###<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+      <br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 14 seconds<br>
       <br>
       <br>
       </td>
