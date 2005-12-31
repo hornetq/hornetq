@@ -191,7 +191,6 @@ public class SecurityManager
    /**
     * Authorize that the subject has at least one of the specified roles
     * 
-    * @param subject
     * @param rolePrincipals - The set of roles allowed to read/write/create the destination
     * @return true if the subject is authorized, or false if not
     */
@@ -225,7 +224,6 @@ public class SecurityManager
       if (log.isTraceEnabled()) { log.trace("Removing security config. for destination:" + destName); }
       securityConf.remove(destName);
    }
-   
    
    public Element getDefaultSecurityConfig()
    {
