@@ -108,8 +108,8 @@
 #
 #TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
 #TARGET_TEST=testRedeliveredFlagLocalTopic
-TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
-TARGET_TEST=testCreateConsumer
+#TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
+#TARGET_TEST=testCreateConsumer
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
 #TARGET_TEST=testCreateProducerOnInexistentDestination
 #TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
@@ -132,8 +132,8 @@ TARGET_TEST=testCreateConsumer
 #TARGET_TEST=testQueue
 #TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
 #TARGET_TEST=testQueue
-#TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
-#TARGET_TEST=testInvalidTopicSubscriber
+TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
+TARGET_TEST=testLoginNoUserNoPassword
 #
 # JMS Facade server
 #

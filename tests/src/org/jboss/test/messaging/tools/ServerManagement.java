@@ -315,7 +315,8 @@ public class ServerManagement
       {
          for(int i = 0; i < attrs.getLength(); i++)
          {
-            sb.append(' ').append(attrs.item(i));
+            Node attr = attrs.item(i);
+            sb.append(' ').append(attr.getNodeName() + "=\"" + attr.getNodeValue() + "\"");
          }
       }
 
