@@ -966,7 +966,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-          s.createConsumer(queue);
+          //s.createConsumer(queue); //what's the point?
 
           conn.start();
 
@@ -1001,7 +1001,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-          s.createConsumer(queue);
+          //s.createConsumer(queue);
 
           conn.start();
 
@@ -2725,14 +2725,14 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue2);
 
       RedelMessageListenerImpl listener = new RedelMessageListenerImpl(false);
       listener.sess = sess;
 
       cons.setMessageListener(listener);
 
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue2);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
@@ -2763,14 +2763,14 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue2);
 
       RedelMessageListenerImpl listener = new RedelMessageListenerImpl(true);
       listener.sess = sess;
 
       cons.setMessageListener(listener);
 
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue2);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");
@@ -2798,13 +2798,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue2);
 
       ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
       cons.setMessageListener(listener);
 
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue2);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");
@@ -2831,13 +2831,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue2);
 
       ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
       cons.setMessageListener(listener);
 
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue2);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");
@@ -2864,13 +2864,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue2);
 
       ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
       cons.setMessageListener(listener);
 
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue2);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");
@@ -2897,13 +2897,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue2);
 
       ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
       cons.setMessageListener(listener);
 
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue2);
       TextMessage m1 = sess.createTextMessage("a");
       TextMessage m2 = sess.createTextMessage("b");
       TextMessage m3 = sess.createTextMessage("c");

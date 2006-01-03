@@ -22,7 +22,6 @@
 package org.jboss.messaging.core;
 
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -63,9 +62,10 @@ public interface State
 
    
    /**
-    * Add a message reference into the state in the presence of a JMS local transaction. This occurs
-    * when a new message arrives at the Channel but it is not delivered since there are no receivers
-    * willing to accept it. It should not be used for any other purpose.
+    * This method is called after a new message has arrived at the Channel in the presence of 
+    * a JMS transaction.
+    * This method updates the transactional state of the Channel to include this message reference.
+    * Message delivery is not attempted until the transaction commits.
     *
     * @param ref The MessageReference to add
     * @param tx The JMS local transaction
@@ -74,20 +74,19 @@ public interface State
    void add(MessageReference ref, Transaction tx) throws Throwable;
    
    /**
-    * Add a message reference into the state in the presence in a non-transacted context. This
-    * occurs when a new message arrives at the Channel but it is not delivered since there are no
-    * receivers willing to accept it. It should not be used for any other purpose.
-    *
+    * This method is called after a new message arrives at the Channel but the message is
+    * not delivered either due to no receivers, broken receivers, or receivers unwilling to
+    * accept the message.
+    * The method updates the Channel state to include the message reference.
+    * 
     * @param ref The MessageReference to add
     * @throws Throwable
     */
    void add(MessageReference ref) throws Throwable;
    
    /**
-    * A new message has been successfully delivered. Add a delivery into the state. This occurs when
-    * a new message arrives at the Channel and is immediately successfully delivered, at no point is
-    * the corresponding MessageReference put in the state. It should not be used for any other
-    * purpose.
+    * This method is called after a new message arrives at the Channel and is succesfully delivered.
+    * At no point is a message refernce added to the state.
     * 
     * @param d The Delivery to add
     * @throws Throwable
@@ -95,18 +94,15 @@ public interface State
    void deliver(Delivery d) throws Throwable;
 
    /**
-    * A message that was already in the state has now been successully delivered. This means we need
-    * to remove the MessageReference from the state, and add the successful deliveries. In the JMS
-    * case there is only ever one deliver. This all needs to be done atomically.
+    * A message that was already in the state has now been successully delivered.  
     *
     * @param deliveries The set of delivery instances to add
     * @throws Throwable
     */
-   void redeliver(Set deliveries) throws Throwable;
+   void redeliver(Delivery d) throws Throwable;
    
    /**
-    * A Delivery has been cancelled. This means we need to remove the delivery from the state and
-    * add the corresponding MessageReference into the state. This all needs to be done atomically.
+    * A Delivery has been cancelled. 
     * 
     * @param d The delivery to cancel
     * @throws Throwable
@@ -114,8 +110,7 @@ public interface State
    void cancel(Delivery d) throws Throwable;
       
    /**
-    * A Delivery has been acknowledged in the presence of a JMS local transaction. This means we
-    * need to remove the delivery from the state.
+    * A Delivery has been acknowledged in the presence of a JMS local transaction. 
     *
     * @param d The delivery to acknowledge
     * @param tx The JMS local transaction
@@ -124,8 +119,7 @@ public interface State
    void acknowledge(Delivery d, Transaction tx) throws Throwable;
    
    /**
-    * A Delivery has been acknowledged in a non transactional context. This means we need to remove
-    * the delivery from the state.
+    * A Delivery has been acknowledged in a non transactional context. 
     *
     * @param d The delivery to acknowledge
     * @throws Throwable

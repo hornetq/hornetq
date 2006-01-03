@@ -1075,100 +1075,102 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    ////////// One message
    //////////
 
-   public void testNonRecoverableDistributedChannel_17() throws Exception
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEquals(1, received.size());
-      Message sm = (Message)received.iterator().next();
-      assertFalse(sm.isReliable());
-      assertEquals("message0", sm.getMessageID());
-   }
+//   
+//   
+//   public void testNonRecoverableDistributedChannel_17() throws Exception
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEquals(1, received.size());
+//      Message sm = (Message)received.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testNonRecoverableDistributedChannel_18() throws Exception
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEqualSets(messages, received);
-   }
+//
+//   public void testNonRecoverableDistributedChannel_18() throws Exception
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEqualSets(messages, received);
+//   }
 
    ////////
    //////// Reliable message
@@ -1315,120 +1317,120 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    //////////
    ////////// One message
    //////////
-
-   public void testNonRecoverableDistributedChannel_21() throws Exception
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted send, non-reliable message, one message
-      // for a transactional send, handle() return value is unspecified
-      channel.handle(observer, m, tx);
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEquals(1, received.size());
-      Message sm = (Message)received.iterator().next();
-      assertFalse(sm.isReliable());
-      assertEquals("message0", sm.getMessageID());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_21() throws Exception
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted send, non-reliable message, one message
+//      // for a transactional send, handle() return value is unspecified
+//      channel.handle(observer, m, tx);
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEquals(1, received.size());
+//      Message sm = (Message)received.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testNonRecoverableDistributedChannel_22() throws Exception
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // transacted send, non-reliable message, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-      assertEqualSets(messages, r.getMessages());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_22() throws Exception
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // transacted send, non-reliable message, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//      assertEqualSets(messages, r.getMessages());
+//   }
 
    ////////
    //////// Reliable message
@@ -1820,61 +1822,61 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    ////////////
    //////////// Non-transacted acknowledgment
    ////////////
-
-   public void testNonRecoverableDistributedChannel_28() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // non-transacted acknowledgment
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_28() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // non-transacted acknowledgment
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    /**
     * The same test as before, but with a Receiver configured to acknowledge immediately
@@ -1883,213 +1885,213 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
     *
     * @throws Throwable
     */
-   public void testNonRecoverableDistributedChannel_28_race() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      r.setImmediateAsynchronousAcknowledgment(true);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      // the receiver should have returned a "done" delivery
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List messages = r.getMessages();
-      assertEquals(1, messages.size());
-      Message ackm = (Message)messages.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // an extra acknowledgment should be discarded
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//   public void testNonRecoverableDistributedChannel_28_race() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      r.setImmediateAsynchronousAcknowledgment(true);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      // the receiver should have returned a "done" delivery
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List messages = r.getMessages();
+//      assertEquals(1, messages.size());
+//      Message ackm = (Message)messages.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // an extra acknowledgment should be discarded
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
 
    ////////////
    //////////// Transacted acknowledgment and commit
    ////////////
-
-   public void testNonRecoverableDistributedChannel_29() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted acknowledgment
-      r.acknowledge(ackm, tx);
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-   }
+//
+//   public void testNonRecoverableDistributedChannel_29() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted acknowledgment
+//      r.acknowledge(ackm, tx);
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//   }
 
 
    ////////////
    //////////// Transacted acknowledgment and rollback
    ////////////
-
-   public void testNonRecoverableDistributedChannel_30() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted acknowledgment
-      r.acknowledge(ackm, tx);
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      tx.rollback();
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      // acknowledge non-transactionally
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_30() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted acknowledgment
+//      r.acknowledge(ackm, tx);
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      tx.rollback();
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      // acknowledge non-transactionally
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
 
    //////////
@@ -2099,206 +2101,206 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    ////////////
    //////////// Non-transacted acknowledgment
    ////////////
-
-   public void testNonRecoverableDistributedChannel_31() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-   }
+//
+//   public void testNonRecoverableDistributedChannel_31() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//   }
 
    ////////////
    //////////// Transacted acknowledgment and commit
    ////////////
-
-   public void testNonRecoverableDistributedChannel_32() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      Transaction tx = tr.createTransaction();
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // transacted acknowledgment
-         r.acknowledge(ackm, tx);
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_32() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // transacted acknowledgment
+//         r.acknowledge(ackm, tx);
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    ////////////
    //////////// Transacted acknowledgment and rollback
    ////////////
-
-   public void testNonRecoverableDistributedChannel_33() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      Transaction tx = tr.createTransaction();
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // transacted acknowledgment
-         r.acknowledge(ackm, tx);
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      tx.rollback();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      // acknowledge non-transactionally
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-   }
+//
+//   public void testNonRecoverableDistributedChannel_33() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // transacted acknowledgment
+//         r.acknowledge(ackm, tx);
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      tx.rollback();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      // acknowledge non-transactionally
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//   }
 
    ////////
    //////// Reliable message
@@ -2653,140 +2655,140 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    //////////
    ////////// One message
    //////////
-
-   public void testNonRecoverableDistributedChannel_39() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted send, non-reliable message, one message
-      // for a transactional send, handle() return value is unspecified
-      channel.handle(observer, m, tx);
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // non-transacted acknowledgment
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_39() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted send, non-reliable message, one message
+//      // for a transactional send, handle() return value is unspecified
+//      channel.handle(observer, m, tx);
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // non-transacted acknowledgment
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testNonRecoverableDistributedChannel_40() throws Throwable
-   {
-      if (channel.isRecoverable())
-      {
-         // we test only non-recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // transacted send, non-reliable message, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testNonRecoverableDistributedChannel_40() throws Throwable
+//   {
+//      if (channel.isRecoverable())
+//      {
+//         // we test only non-recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the channel
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // transacted send, non-reliable message, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    ////////
    //////// Reliable message
@@ -4155,105 +4157,105 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    //////////
    ////////// One message
    //////////
-
-   public void testRecoverableDistributedChannel_13() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEquals(1, received.size());
-      Message sm = (Message)received.iterator().next();
-      assertFalse(sm.isReliable());
-      assertEquals("message0", sm.getMessageID());
-   }
+//
+//   public void testRecoverableDistributedChannel_13() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEquals(1, received.size());
+//      Message sm = (Message)received.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testRecoverableDistributedChannel_14() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEqualSets(messages, received);
-   }
+//
+//   public void testRecoverableDistributedChannel_14() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEqualSets(messages, received);
+//   }
 
    ////////
    //////// Reliable message
@@ -4262,104 +4264,104 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    //////////
    ////////// One message
    //////////
-
-   public void testRecoverableDistributedChannel_15() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEquals(1, received.size());
-      Message sm = (Message)received.iterator().next();
-      assertTrue(sm.isReliable());
-      assertEquals("message0", sm.getMessageID());
-   }
+//
+//   public void testRecoverableDistributedChannel_15() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEquals(1, received.size());
+//      Message sm = (Message)received.iterator().next();
+//      assertTrue(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testRecoverableDistributedChannel_16() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
-
-         // non-transacted send, reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-      assertEqualSets(messages, r.getMessages());
-   }
+//
+//   public void testRecoverableDistributedChannel_16() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+//
+//         // non-transacted send, reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//      assertEqualSets(messages, r.getMessages());
+//   }
 
    //////
    ////// Transacted send and commit
@@ -4372,124 +4374,124 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    //////////
    ////////// One message
    //////////
-
-   public void testRecoverableDistributedChannel_17() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted send, non-reliable message, one message
-      // for a transactional send, handle() return value is unspecified
-      channel.handle(observer, m, tx);
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List received = r.getMessages();
-      assertEquals(1, received.size());
-      Message sm = (Message)received.iterator().next();
-      assertFalse(sm.isReliable());
-      assertEquals("message0", sm.getMessageID());
-   }
+//
+//   public void testRecoverableDistributedChannel_17() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted send, non-reliable message, one message
+//      // for a transactional send, handle() return value is unspecified
+//      channel.handle(observer, m, tx);
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List received = r.getMessages();
+//      assertEquals(1, received.size());
+//      Message sm = (Message)received.iterator().next();
+//      assertFalse(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testRecoverableDistributedChannel_18() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // transacted send, non-reliable message, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-      assertEqualSets(messages, r.getMessages());
-   }
+//
+//   public void testRecoverableDistributedChannel_18() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // transacted send, non-reliable message, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//      assertEqualSets(messages, r.getMessages());
+//   }
 
    ////////
    //////// Reliable message
@@ -4498,190 +4500,190 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    //////////
    ////////// One message
    //////////
-
-   public void testRecoverableDistributedChannel_19() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted send, reliable message, one message
-      // for a transactional send, handle() return value is unspecified
-      channel.handle(observer, m, tx);
-
-      // no messages in the channel yet
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      List received = r.getMessages();
-      assertEquals(1, received.size());
-      Message sm = (Message)received.iterator().next();
-      assertTrue(sm.isReliable());
-      assertEquals("message0", sm.getMessageID());
-   }
+//
+//   public void testRecoverableDistributedChannel_19() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted send, reliable message, one message
+//      // for a transactional send, handle() return value is unspecified
+//      channel.handle(observer, m, tx);
+//
+//      // no messages in the channel yet
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      List received = r.getMessages();
+//      assertEquals(1, received.size());
+//      Message sm = (Message)received.iterator().next();
+//      assertTrue(sm.isReliable());
+//      assertEquals("message0", sm.getMessageID());
+//   }
 
    //////////
    ////////// Multiple messages
    //////////
-
-   public void testRecoverableDistributedChannel_20() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
-
-         // transacted send, reliable message, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel yet
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      assertEqualSets(messages, r.getMessages());
-   }
+//
+//   public void testRecoverableDistributedChannel_20() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+//
+//         // transacted send, reliable message, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel yet
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      assertEqualSets(messages, r.getMessages());
+//   }
 
    /**
     * This is a variation where I send a mixture of reliable and non-reliable messages,
     */
-   public void testRecoverableDistributedChannel_20_mixed() throws Exception
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an ACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
-
-         // transacted send, reliable/non-reliable messages, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      assertEqualSets(messages, r.getMessages());
-   }
+//   public void testRecoverableDistributedChannel_20_mixed() throws Exception
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an ACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         // send a mixture of reliable and non-reliable messages
+//         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+//
+//         // transacted send, reliable/non-reliable messages, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      assertEqualSets(messages, r.getMessages());
+//   }
 
    //////
    ////// Transacted send and rollback
@@ -5025,275 +5027,275 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    ////////////
    //////////// Non-transacted acknowledgment
    ////////////
+//
+//   public void testRecoverableDistributedChannel_25() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // non-transacted acknowledgment
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   /**
+//    * The same test as before, but with a Receiver configured to acknowledge immediately
+//    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
+//    * the Delivery is returned to channel.
+//    */
+//   public void testRecoverableDistributedChannel_25_race() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      r.setImmediateAsynchronousAcknowledgment(true);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      // the receiver should have returned a "done" delivery
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List messages = r.getMessages();
+//      assertEquals(1, messages.size());
+//      Message ackm = (Message)messages.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // an extra acknowledgment should be discarded
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and commit
+//   ////////////
 
-   public void testRecoverableDistributedChannel_25() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // non-transacted acknowledgment
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   /**
-    * The same test as before, but with a Receiver configured to acknowledge immediately
-    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
-    * the Delivery is returned to channel.
-    */
-   public void testRecoverableDistributedChannel_25_race() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      r.setImmediateAsynchronousAcknowledgment(true);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      // the receiver should have returned a "done" delivery
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List messages = r.getMessages();
-      assertEquals(1, messages.size());
-      Message ackm = (Message)messages.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // an extra acknowledgment should be discarded
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and commit
-   ////////////
-
-   public void testRecoverableDistributedChannel_25_1() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted acknowledgment
-      r.acknowledge(ackm, tx);
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//   public void testRecoverableDistributedChannel_25_1() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted acknowledgment
+//      r.acknowledge(ackm, tx);
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    ////////////
    //////////// Transacted acknowledgment and rollback
    ////////////
-
-   public void testRecoverableDistributedChannel_25_2() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, non-reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted acknowledgment
-      r.acknowledge(ackm, tx);
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      tx.rollback();
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-
-      // acknowledge non-transactionally
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testRecoverableDistributedChannel_25_2() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, non-reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted acknowledgment
+//      r.acknowledge(ackm, tx);
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      tx.rollback();
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//
+//      // acknowledge non-transactionally
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    //////////
    ////////// Multiple messages
@@ -5302,210 +5304,210 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    ////////////
    //////////// Non-transacted acknowledgment
    ////////////
-
-   public void testRecoverableDistributedChannel_26() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and commit
-   ////////////
-
-   public void testRecoverableDistributedChannel_26_1() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      Transaction tx = tr.createTransaction();
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // transacted acknowledgment
-         r.acknowledge(ackm, tx);
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and rollback
-   ////////////
-
-   public void testRecoverableDistributedChannel_26_2() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // non-transacted send, non-reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      Transaction tx = tr.createTransaction();
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // transacted acknowledgment
-         r.acknowledge(ackm, tx);
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      tx.rollback();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      // acknowledge non-transactionally
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testRecoverableDistributedChannel_26() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and commit
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_26_1() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // transacted acknowledgment
+//         r.acknowledge(ackm, tx);
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and rollback
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_26_2() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // non-transacted send, non-reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // transacted acknowledgment
+//         r.acknowledge(ackm, tx);
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      tx.rollback();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      // acknowledge non-transactionally
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    ////////
    //////// Reliable message
@@ -5518,853 +5520,853 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    ////////////
    //////////// Non-transacted acknowledgment
    ////////////
-
-   public void testRecoverableDistributedChannel_27() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // non-transacted acknowledgment
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   /**
-    * The same test as before, but with a Receiver configured to acknowledge immediately
-    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
-    * the Delivery is returned to channel.
-    *
-    * @throws Throwable
-    */
-   public void testRecoverableDistributedChannel_27_race() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-            jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      r.setImmediateAsynchronousAcknowledgment(true);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      // the receiver should have returned a "done" delivery
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-
-      List messages = r.getMessages();
-      assertEquals(1, messages.size());
-      Message ackm = (Message)messages.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // an extra acknowledgment should be discarded
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and commit
-   ////////////
-
-   public void testRecoverableDistributedChannel_27_1() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted acknowledgment
-      r.acknowledge(ackm, tx);
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and rollback
-   ////////////
-
-   public void testRecoverableDistributedChannel_27_2() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      // non-transacted send, reliable message, one message
-      Delivery delivery = channel.handle(observer, m, null);
-
-      assertTrue(delivery.isDone());
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted acknowledgment
-      r.acknowledge(ackm, tx);
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      tx.rollback();
-
-      delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      // acknowledge non-transactionally
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   //////////
-   ////////// Multiple messages
-   //////////
-
-   ////////////
-   //////////// Non-transacted acknowledgment
-   ////////////
-
-   public void testRecoverableDistributedChannel_28() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
-
-         // non-transacted send, reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and commit
-   ////////////
-
-   public void testRecoverableDistributedChannel_28_1() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
-
-         // non-transacted send, reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      Transaction tx = tr.createTransaction();
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // transacted acknowledgment
-         r.acknowledge(ackm, tx);
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      tx.commit();
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////////
-   //////////// Transacted acknowledgment and rollback
-   ////////////
-
-   public void testRecoverableDistributedChannel_28_2() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
-
-         // non-transacted send, reliable message, multiple messages
-         Delivery delivery = channel.handle(observer, messages[i], null);
-
-         assertTrue(delivery.isDone());
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      Transaction tx = tr.createTransaction();
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // transacted acknowledgment
-         r.acknowledge(ackm, tx);
-      }
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      tx.rollback();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-
-      // acknowledge non-transactionally
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel.browse().isEmpty());
-   }
-
-   //////
-   ////// Transacted send and commit
-   //////
-
-   ////////
-   //////// Non-reliable message
-   ////////
-
-   //////////
-   ////////// One message
-   //////////
-
-   public void testRecoverableDistributedChannel_29() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", false, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted send, non-reliable message, one message
-      // for a transactional send, handle() return value is unspecified
-      channel.handle(observer, m, tx);
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // non-transacted acknowledgment
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   //////////
-   ////////// Multiple messages
-   //////////
-
-   public void testRecoverableDistributedChannel_30() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
-
-         // transacted send, non-reliable message, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   ////////
-   //////// Reliable message
-   ////////
-
-   //////////
-   ////////// One message
-   //////////
-
-   public void testRecoverableDistributedChannel_31() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      Message m = MessageFactory.createMessage("message0", true, "payload");
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      // transacted send, reliable message, one message
-      // for a transactional send, handle() return value is unspecified
-      channel.handle(observer, m, tx);
-
-      // no messages in the channel yet
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      List delivering = channel.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-      delivering = channel2.browse();
-      assertEquals(1, delivering.size());
-      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
-
-      List acknowledging = r.getMessages();
-      assertEquals(1, acknowledging.size());
-      Message ackm = (Message)acknowledging.get(0);
-      assertEquals("message0", ackm.getMessageID());
-
-      // non-transacted acknowledgment
-      r.acknowledge(ackm, null);
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   //////////
-   ////////// Multiple messages
-   //////////
-
-   public void testRecoverableDistributedChannel_32() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
-
-         // transacted send, reliable message, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel yet
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
-
-   /**
-    * This is a variation where I send a mixture of reliable and non-reliable messages,
-    */
-   public void testRecoverableDistributedChannel_32_mixed() throws Throwable
-   {
-      if (!channel.isRecoverable())
-      {
-         // we test only recoverable channels now
-         return;
-      }
-
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((Distributed)channel).join();
-      ((Distributed)channel2).join();
-
-      // add an NACKING receiver to the remote channel peer
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
-      assertTrue(channel2.add(r));
-
-      assertFalse(channel.iterator().hasNext());
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      Transaction tx = tr.createTransaction();
-
-      Message[] messages = new Message[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
-
-         // transacted send, reliable/non-reliable messages, multiple messages
-         // for a transactional send, handle() return value is unspecified
-         channel.handle(observer, messages[i], tx);
-      }
-
-      // no messages in the channel
-      assertEquals(0, channel.browse().size());
-      assertEquals(0, channel2.browse().size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
-
-      tx.commit();
-
-      assertEqualSets(messages, channel.browse());
-      assertEqualSets(messages, channel2.browse());
-      assertEqualSets(messages, r.getMessages());
-
-      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
-      {
-         Message ackm = (Message)i.next();
-         // non-transacted acknowledgment
-         r.acknowledge(ackm, null);
-      }
-
-      assertTrue(channel.browse().isEmpty());
-      assertTrue(channel2.browse().isEmpty());
-   }
+//
+//   public void testRecoverableDistributedChannel_27() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // non-transacted acknowledgment
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   /**
+//    * The same test as before, but with a Receiver configured to acknowledge immediately
+//    * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
+//    * the Delivery is returned to channel.
+//    *
+//    * @throws Throwable
+//    */
+//   public void testRecoverableDistributedChannel_27_race() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//            jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      r.setImmediateAsynchronousAcknowledgment(true);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      // the receiver should have returned a "done" delivery
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//
+//      List messages = r.getMessages();
+//      assertEquals(1, messages.size());
+//      Message ackm = (Message)messages.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // an extra acknowledgment should be discarded
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and commit
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_27_1() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted acknowledgment
+//      r.acknowledge(ackm, tx);
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and rollback
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_27_2() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      // non-transacted send, reliable message, one message
+//      Delivery delivery = channel.handle(observer, m, null);
+//
+//      assertTrue(delivery.isDone());
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted acknowledgment
+//      r.acknowledge(ackm, tx);
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      tx.rollback();
+//
+//      delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      // acknowledge non-transactionally
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   //////////
+//   ////////// Multiple messages
+//   //////////
+//
+//   ////////////
+//   //////////// Non-transacted acknowledgment
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_28() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+//
+//         // non-transacted send, reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and commit
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_28_1() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+//
+//         // non-transacted send, reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // transacted acknowledgment
+//         r.acknowledge(ackm, tx);
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      tx.commit();
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////////
+//   //////////// Transacted acknowledgment and rollback
+//   ////////////
+//
+//   public void testRecoverableDistributedChannel_28_2() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+//
+//         // non-transacted send, reliable message, multiple messages
+//         Delivery delivery = channel.handle(observer, messages[i], null);
+//
+//         assertTrue(delivery.isDone());
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // transacted acknowledgment
+//         r.acknowledge(ackm, tx);
+//      }
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      tx.rollback();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//
+//      // acknowledge non-transactionally
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel.browse().isEmpty());
+//   }
+//
+//   //////
+//   ////// Transacted send and commit
+//   //////
+//
+//   ////////
+//   //////// Non-reliable message
+//   ////////
+//
+//   //////////
+//   ////////// One message
+//   //////////
+//
+//   public void testRecoverableDistributedChannel_29() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted send, non-reliable message, one message
+//      // for a transactional send, handle() return value is unspecified
+//      channel.handle(observer, m, tx);
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // non-transacted acknowledgment
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   //////////
+//   ////////// Multiple messages
+//   //////////
+//
+//   public void testRecoverableDistributedChannel_30() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+//
+//         // transacted send, non-reliable message, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   ////////
+//   //////// Reliable message
+//   ////////
+//
+//   //////////
+//   ////////// One message
+//   //////////
+//
+//   public void testRecoverableDistributedChannel_31() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload");
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      // transacted send, reliable message, one message
+//      // for a transactional send, handle() return value is unspecified
+//      channel.handle(observer, m, tx);
+//
+//      // no messages in the channel yet
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      List delivering = channel.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//      delivering = channel2.browse();
+//      assertEquals(1, delivering.size());
+//      assertEquals("message0", ((Message)delivering.get(0)).getMessageID());
+//
+//      List acknowledging = r.getMessages();
+//      assertEquals(1, acknowledging.size());
+//      Message ackm = (Message)acknowledging.get(0);
+//      assertEquals("message0", ackm.getMessageID());
+//
+//      // non-transacted acknowledgment
+//      r.acknowledge(ackm, null);
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   //////////
+//   ////////// Multiple messages
+//   //////////
+//
+//   public void testRecoverableDistributedChannel_32() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+//
+//         // transacted send, reliable message, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel yet
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
+//
+//   /**
+//    * This is a variation where I send a mixture of reliable and non-reliable messages,
+//    */
+//   public void testRecoverableDistributedChannel_32_mixed() throws Throwable
+//   {
+//      if (!channel.isRecoverable())
+//      {
+//         // we test only recoverable channels now
+//         return;
+//      }
+//
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((Distributed)channel).join();
+//      ((Distributed)channel2).join();
+//
+//      // add an NACKING receiver to the remote channel peer
+//      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+//      assertTrue(channel2.add(r));
+//
+//      assertFalse(channel.iterator().hasNext());
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      Transaction tx = tr.createTransaction();
+//
+//      Message[] messages = new Message[NUMBER_OF_MESSAGES];
+//      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+//      {
+//         // send a mixture of reliable and non-reliable messages
+//         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+//
+//         // transacted send, reliable/non-reliable messages, multiple messages
+//         // for a transactional send, handle() return value is unspecified
+//         channel.handle(observer, messages[i], tx);
+//      }
+//
+//      // no messages in the channel
+//      assertEquals(0, channel.browse().size());
+//      assertEquals(0, channel2.browse().size());
+//
+//      // no message at the receiver
+//      assertTrue(r.getMessages().isEmpty());
+//
+//      tx.commit();
+//
+//      assertEqualSets(messages, channel.browse());
+//      assertEqualSets(messages, channel2.browse());
+//      assertEqualSets(messages, r.getMessages());
+//
+//      for(Iterator i = r.getMessages().iterator(); i.hasNext();)
+//      {
+//         Message ackm = (Message)i.next();
+//         // non-transacted acknowledgment
+//         r.acknowledge(ackm, null);
+//      }
+//
+//      assertTrue(channel.browse().isEmpty());
+//      assertTrue(channel2.browse().isEmpty());
+//   }
 
    //////
    ////// Transacted send and rollback

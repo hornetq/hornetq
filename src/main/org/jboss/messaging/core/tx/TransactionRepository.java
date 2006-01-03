@@ -106,6 +106,8 @@ public class TransactionRepository
             Transaction tx = createTransaction(xid);
             tx.insertedTXRecord();
             tx.state = Transaction.STATE_PREPARED;
+            
+            //Load the references for this transaction
          }
       }
    }

@@ -112,43 +112,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       }
    }
    
-   public void testDeliver() throws Exception
-   {
-      if (ServerManagement.isRemote()) return;      
-      
-      JDBCPersistenceManager pm = new JDBCPersistenceManager();
-      pm.start();
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
-      Channel channel = new SimpleChannel("channel0", ms);
-
-      Message[] messages = createMessages();     
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];
-         
-         MessageReference ref = ms.reference(m);
-         
-         Delivery del = new SimpleDelivery(channel, ref);
-                  
-         pm.deliver(channel.getChannelID(), del);
-      
-         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         
-         assertNotNull(dels);
-         assertEquals(1, dels.size());
-         String messageID = (String)dels.get(0);
-         
-         assertEquals(ref.getMessageID(), messageID);
-         
-         pm.removeAllMessageData(channel.getChannelID());
-
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertTrue(dels.isEmpty());
-      }
-   }
    
-   public void testReDeliver() throws Exception
+   public void testRemoveReference() throws Exception
    {
       if (ServerManagement.isRemote()) return;      
       
@@ -166,133 +131,23 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          MessageReference ref = ms.reference(m);
          
          pm.addReference(channel.getChannelID(), ref, null);
-         
-         Delivery del = new SimpleDelivery(channel, ref);
-         
-         HashSet set = new HashSet();
-         set.add(del);
-                  
-         pm.redeliver(channel.getChannelID(), set);
       
-         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         
-         assertNotNull(dels);
-         assertEquals(1, dels.size());
-         String messageID = (String)dels.get(0);
-         
-         assertEquals(ref.getMessageID(), messageID);
-         
          List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertTrue(refs.isEmpty());
          
-         pm.removeAllMessageData(channel.getChannelID());
-
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         assertTrue(dels.isEmpty());
-      }
-   }
-   
-   
-   public void testAcknowledge() throws Exception
-   {
-      if (ServerManagement.isRemote()) return;      
-      
-      JDBCPersistenceManager pm = new JDBCPersistenceManager();
-      pm.start();
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
-      Channel channel = new SimpleChannel("channel0", ms);
-
-      Message[] messages = createMessages();     
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];
-         
-         MessageReference ref = ms.reference(m);
-         
-         Delivery del = new SimpleDelivery(channel, ref);
-           
-         pm.deliver(channel.getChannelID(), del);
-      
-         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         
-         assertNotNull(dels);
-         assertEquals(1, dels.size());
-         String messageID = (String)dels.get(0);
-         
-         assertEquals(ref.getMessageID(), messageID);
-         
-         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertTrue(refs.isEmpty());
-         
-         pm.acknowledge(channel.getChannelID(), del, null);
-         
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         
-         assertTrue(dels.isEmpty());
-         
-         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertTrue(refs.isEmpty());
-                  
-      }
-   }
-   
-   public void testCancel() throws Exception
-   {
-      if (ServerManagement.isRemote()) return;      
-      
-      JDBCPersistenceManager pm = new JDBCPersistenceManager();
-      pm.start();
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
-      Channel channel = new SimpleChannel("channel0", ms);
-
-      Message[] messages = createMessages();     
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];
-         
-         MessageReference ref = ms.reference(m);
-         
-         Delivery del = new SimpleDelivery(channel, ref);
-           
-         pm.deliver(channel.getChannelID(), del);
-      
-         List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         
-         assertNotNull(dels);
-         assertEquals(1, dels.size());
-         String messageID = (String)dels.get(0);
-         
-         assertEquals(ref.getMessageID(), messageID);
-         
-         List refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertTrue(refs.isEmpty());
-         
-         pm.cancel(channel.getChannelID(), del);
-         
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-         
-         assertTrue(dels.isEmpty());
-         
-         refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
          assertNotNull(refs);
          assertEquals(1, refs.size());
-         messageID = (String)refs.get(0);
+         String messageID = (String)refs.get(0);
          
-         assertEquals(ref.getMessageID(), messageID);
+         assertEquals(ref.getMessageID(), messageID);         
          
-         pm.removeAllMessageData(channel.getChannelID());
+         pm.removeReference(channel.getChannelID(), ref, null);
          
-         dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
          refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
-         assertTrue(dels.isEmpty());
+         
          assertTrue(refs.isEmpty());
+                 
       }
    }
-
-   
-   
    
    
    public void testAddRetrieveRemoveMessage() throws Exception
@@ -332,45 +187,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       }
    }
 
-   public void testGetDeliveries() throws Exception
-   {
-      if (ServerManagement.isRemote()) return;
-      
-      JDBCPersistenceManager pm = new JDBCPersistenceManager();
-      pm.start();
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", pm);
-      Channel channel = new SimpleChannel("channel0", ms);
-      
-      Message[] messages = createMessages();     
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];
-         
-         MessageReference ref = ms.reference(m);
-         
-         Delivery del = new SimpleDelivery(channel, ref);
-         
-         pm.deliver(channel.getChannelID(), del);
-      }
-         
-      List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(messages.length, dels.size());
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];         
-         assertTrue(dels.contains(m.getMessageID()));         
-      }
-      
-      pm.removeAllMessageData(channel.getChannelID());
-      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertTrue(dels.isEmpty());
-      
-   }
-   
    public void testGetMessageReferences() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -426,10 +242,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          Message m = messages[i];
          
          MessageReference ref = ms.reference(m);
-         
-         Delivery del = new SimpleDelivery(channel, ref);
-         
-         pm.deliver(channel.getChannelID(), del);
                            
          pm.addReference(channel.getChannelID(), ref, null);
       }
@@ -444,26 +256,11 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          assertTrue(refs.contains(m.getMessageID()));         
       }
       
-      List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(messages.length, dels.size());
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];         
-         assertTrue(dels.contains(m.getMessageID()));         
-      }
-      
       pm.removeAllMessageData(channel.getChannelID());
             
       refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
       assertNotNull(refs);
-      assertTrue(refs.isEmpty());
-      
-      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertTrue(dels.isEmpty());
-      
+      assertTrue(refs.isEmpty());      
  
    }
    
@@ -927,17 +724,10 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       Message m3 = messages[2];      
       Message m4 = messages[3];
       Message m5 = messages[4];
-      Message m6 = messages[5];
-      Message m7 = messages[6];      
-      Message m8 = messages[7];
-      Message m9 = messages[8];
-      Message m10 = messages[9];
-               
-      
+
       Transaction tx = null;
       if (xa)
-      {
-         
+      {         
          tx = txRep.createTransaction(new MockXid());
       }
       else
@@ -950,18 +740,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref3 = ms.reference(m3);       
       MessageReference ref4 = ms.reference(m4);
       MessageReference ref5 = ms.reference(m5);  
-      MessageReference ref6 = ms.reference(m6);
-      MessageReference ref7 = ms.reference(m7);       
-      MessageReference ref8 = ms.reference(m8);
-      MessageReference ref9 = ms.reference(m9);  
-      MessageReference ref10 = ms.reference(m10);
-      
-      Delivery del6 = new SimpleDelivery(channel, ref6);
-      Delivery del7 = new SimpleDelivery(channel, ref7);
-      Delivery del8 = new SimpleDelivery(channel, ref8);
-      Delivery del9 = new SimpleDelivery(channel, ref9);
-      Delivery del10 = new SimpleDelivery(channel, ref10);
-            
+
       //Add first two refs non transactionally
       pm.addReference(channel.getChannelID(), ref1, null);
       pm.addReference(channel.getChannelID(), ref2, null);
@@ -977,65 +756,28 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       pm.addReference(channel.getChannelID(), ref3, tx);
       pm.addReference(channel.getChannelID(), ref4, tx);
       pm.addReference(channel.getChannelID(), ref5, tx);
-           
-      //Check they're not visible
+      
+      //Remove the other 2 transactionally
+      pm.removeReference(channel.getChannelID(), ref1, tx);
+      pm.removeReference(channel.getChannelID(), ref2, tx);
+      
+      //Check the changes aren't visible
       refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
       assertTrue(refs.contains(ref2.getMessageID()));  
       
-      //Add deliveries non transactionally
-      pm.deliver(channel.getChannelID(), del6);
-      pm.deliver(channel.getChannelID(), del7);
-      pm.deliver(channel.getChannelID(), del8);
-      pm.deliver(channel.getChannelID(), del9);
-      pm.deliver(channel.getChannelID(), del10);
-      
-      //Check they're there
-      List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(5, dels.size());
-      assertTrue(dels.contains(ref6.getMessageID()));
-      assertTrue(dels.contains(ref7.getMessageID())); 
-      assertTrue(dels.contains(ref8.getMessageID()));
-      assertTrue(dels.contains(ref9.getMessageID()));
-      assertTrue(dels.contains(ref10.getMessageID()));
-      
-      //Remove first three transactionally
-      pm.acknowledge(channel.getChannelID(), del6, tx);
-      pm.acknowledge(channel.getChannelID(), del7, tx);
-      pm.acknowledge(channel.getChannelID(), del8, tx);
-
-      //Check changes are not visible
-      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(5, dels.size());
-      assertTrue(dels.contains(ref6.getMessageID()));
-      assertTrue(dels.contains(ref7.getMessageID())); 
-      assertTrue(dels.contains(ref8.getMessageID()));
-      assertTrue(dels.contains(ref9.getMessageID()));
-      assertTrue(dels.contains(ref10.getMessageID()));
-      
       //commit transaction
       pm.commitTx(tx);
       
-      //check we can see all 5 refs
+      //check we can see only the last 3 refs
       refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
       assertNotNull(refs);
-      assertEquals(5, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));    
+      assertEquals(3, refs.size()); 
       assertTrue(refs.contains(ref3.getMessageID()));
       assertTrue(refs.contains(ref4.getMessageID()));  
       assertTrue(refs.contains(ref5.getMessageID()));
-      
-      //Check we can see only 2 deliveries
-      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(2, dels.size());
-      assertTrue(dels.contains(ref9.getMessageID()));
-      assertTrue(dels.contains(ref10.getMessageID())); 
       
       pm.removeAllMessageData(channel.getChannelID());
       
@@ -1067,11 +809,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       Message m3 = messages[2];      
       Message m4 = messages[3];
       Message m5 = messages[4];
-      Message m6 = messages[5];
-      Message m7 = messages[6];      
-      Message m8 = messages[7];
-      Message m9 = messages[8];
-      Message m10 = messages[9];
+
       
       Transaction tx = null;
       if (xa)
@@ -1088,18 +826,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref3 = ms.reference(m3);       
       MessageReference ref4 = ms.reference(m4);
       MessageReference ref5 = ms.reference(m5);  
-      MessageReference ref6 = ms.reference(m6);
-      MessageReference ref7 = ms.reference(m7);       
-      MessageReference ref8 = ms.reference(m8);
-      MessageReference ref9 = ms.reference(m9);  
-      MessageReference ref10 = ms.reference(m10);
-      
-      Delivery del6 = new SimpleDelivery(channel, ref6);
-      Delivery del7 = new SimpleDelivery(channel, ref7);
-      Delivery del8 = new SimpleDelivery(channel, ref8);
-      Delivery del9 = new SimpleDelivery(channel, ref9);
-      Delivery del10 = new SimpleDelivery(channel, ref10);
-            
+
       //Add first two refs non transactionally
       pm.addReference(channel.getChannelID(), ref1, null);
       pm.addReference(channel.getChannelID(), ref2, null);
@@ -1115,68 +842,29 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       pm.addReference(channel.getChannelID(), ref3, tx);
       pm.addReference(channel.getChannelID(), ref4, tx);
       pm.addReference(channel.getChannelID(), ref5, tx);
-           
-      //Check they're not visible
+      
+      //Remove the other 2 transactionally
+      pm.removeReference(channel.getChannelID(), ref1, tx);
+      pm.removeReference(channel.getChannelID(), ref2, tx);
+      
+      //Check the changes aren't visible
       refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
       assertTrue(refs.contains(ref2.getMessageID()));  
       
-      //Add deliveries non transactionally
-      pm.deliver(channel.getChannelID(), del6);
-      pm.deliver(channel.getChannelID(), del7);
-      pm.deliver(channel.getChannelID(), del8);
-      pm.deliver(channel.getChannelID(), del9);
-      pm.deliver(channel.getChannelID(), del10);
-      
-      //Check they're there
-      List dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(5, dels.size());
-      assertTrue(dels.contains(ref6.getMessageID()));
-      assertTrue(dels.contains(ref7.getMessageID())); 
-      assertTrue(dels.contains(ref8.getMessageID()));
-      assertTrue(dels.contains(ref9.getMessageID()));
-      assertTrue(dels.contains(ref10.getMessageID()));
-      
-      //Remove first three transactionally
-      pm.acknowledge(channel.getChannelID(), del6, tx);
-      pm.acknowledge(channel.getChannelID(), del7, tx);
-      pm.acknowledge(channel.getChannelID(), del8, tx);
-
-      //Check changes are not visible
-      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(5, dels.size());
-      assertTrue(dels.contains(ref6.getMessageID()));
-      assertTrue(dels.contains(ref7.getMessageID())); 
-      assertTrue(dels.contains(ref8.getMessageID()));
-      assertTrue(dels.contains(ref9.getMessageID()));
-      assertTrue(dels.contains(ref10.getMessageID()));
-      
       //rollback transaction
       pm.rollbackTx(tx);
       
-      //check we can see only two
       refs = pm.messageRefs(ms.getStoreID(), channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));
-      
-      //Check we can see all 5 deliveries
-      dels = pm.deliveries(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(dels);
-      assertEquals(5, dels.size());
-      assertTrue(dels.contains(ref6.getMessageID()));
-      assertTrue(dels.contains(ref7.getMessageID())); 
-      assertTrue(dels.contains(ref8.getMessageID()));
-      assertTrue(dels.contains(ref9.getMessageID()));
-      assertTrue(dels.contains(ref10.getMessageID()));
+      assertTrue(refs.contains(ref2.getMessageID()));  
       
       pm.removeAllMessageData(channel.getChannelID());
-     
+      
       
    }
    

@@ -139,236 +139,236 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    ////////
    //////// Unreliable message
    ////////
-
-   public void testDistributedTopic_1() throws Exception
-   {
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((DistributedTopic)topic).join();
-      log.debug("topic joined");
-
-      topic2.join();
-      log.debug("topic2 joined");
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(topic.add(r));
-
-      SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
-      assertTrue(topic2.add(r2));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload0");
-
-      log.debug("sending message");
-      MessageReference ref = ms.reference(m);
-      Delivery d = topic.handle(observer, ref, null);
-      //ref.release();
-      log.debug("message sent");
-
-      assertTrue(d.isDone());
-
-      assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
-      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
-
-      // wait so the receiver gets the message
-      assertTrue(r2.waitForHandleInvocations(1, 3000));
-
-      assertEquals(1, r2.getMessages().size());
-      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
-      assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
-
-      // allow time for acknowledgment to propagate back
-      Thread.sleep(1000);
-
-      assertTrue(((DistributedTopic)topic).browse().isEmpty());
-      assertTrue(topic2.browse().isEmpty());
-   }
-
-
-   ////////
-   //////// Reliable message
-   ////////
-
-   public void testDistributedTopic_2() throws Exception
-   {
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((DistributedTopic)topic).join();
-      log.debug("topic joined");
-
-      topic2.join();
-      log.debug("topic2 joined");
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(topic.add(r));
-
-      SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
-      assertTrue(topic2.add(r2));
-
-      Message m = MessageFactory.createMessage("message0", true, "payload0");
-
-      log.debug("sending message");
-      Delivery d = topic.handle(observer, ms.reference(m), null);
-      log.debug("message sent");
-
-      assertTrue(d.isDone());
-
-      assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
-      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
-
-      // wait so the receiver gets the message
-      assertTrue(r2.waitForHandleInvocations(1, 3000));
-
-      assertEquals(1, r2.getMessages().size());
-      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
-      assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
-
-      // allow time for acknowledgment to propagate back
-      Thread.sleep(1000);
-
-      assertTrue(((DistributedTopic)topic).browse().isEmpty());
-      assertTrue(topic2.browse().isEmpty());
-   }
-
-   // We cannot having NACKING receiver attached to a local topic, it will violate the topic
-   // consistency constraint
-
-   //////
-   ////// One ACKING receiver, one REJECTING receiver
-   //////
-
-   ////////
-   //////// Unreliable message
-   ////////
-
-   public void testDistributedTopic_3() throws Throwable
-   {
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((DistributedTopic)topic).join();
-      log.debug("topic joined");
-
-      topic2.join();
-      log.debug("topic2 joined");
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(topic.add(r));
-
-      SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
-      assertTrue(topic2.add(r2));
-
-      Message m = MessageFactory.createMessage("message0", false, "payload0");
-
-      log.debug("sending message");
-      Delivery d = topic.handle(observer, ms.reference(m), null);
-      log.debug("message sent");
-
-      assertTrue(d.isDone());
-
-      assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
-      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
-
-      // wait for a while so the acknowledgment has time to go back to the originating peer
-      Thread.sleep(1000);
-
-      assertEquals(0, r2.getMessages().size());
-
-      assertTrue(((DistributedTopic)topic).browse().isEmpty());
-      assertTrue(topic2.browse().isEmpty());
-   }
-
-
-   ////////
-   //////// Reliable message
-   ////////
-
-   public void testDistributedTopic_4() throws Throwable
-   {
-      jchannel2.connect("testGroup");
-
-      // allow the group time to form
-      Thread.sleep(1000);
-
-      assertTrue(jchannel.isConnected());
-      assertTrue(jchannel2.isConnected());
-
-      // make sure both jchannels joined the group
-      assertEquals(2, jchannel.getView().getMembers().size());
-      assertEquals(2, jchannel2.getView().getMembers().size());
-
-      ((DistributedTopic)topic).join();
-      log.debug("topic joined");
-
-      topic2.join();
-      log.debug("topic2 joined");
-
-      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-
-      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(topic.add(r));
-
-      SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
-      assertTrue(topic2.add(r2));
-
-      Message m = MessageFactory.createMessage("message0", true, "payload0");
-
-      log.debug("sending message");
-      Delivery d = topic.handle(observer, ms.reference(m), null);
-      log.debug("message sent");
-
-      assertTrue(d.isDone());
-
-      assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
-      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
-
-      // wait for a while so the acknowledgment has time to go back to the originating peer
-      Thread.sleep(1000);
-
-      assertEquals(0, r2.getMessages().size());
-
-      assertTrue(((DistributedTopic)topic).browse().isEmpty());
-      assertTrue(topic2.browse().isEmpty());
-   }
-
+//
+//   public void testDistributedTopic_1() throws Exception
+//   {
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((DistributedTopic)topic).join();
+//      log.debug("topic joined");
+//
+//      topic2.join();
+//      log.debug("topic2 joined");
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+//      assertTrue(topic.add(r));
+//
+//      SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
+//      assertTrue(topic2.add(r2));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload0");
+//
+//      log.debug("sending message");
+//      MessageReference ref = ms.reference(m);
+//      Delivery d = topic.handle(observer, ref, null);
+//      //ref.release();
+//      log.debug("message sent");
+//
+//      assertTrue(d.isDone());
+//
+//      assertEquals(1, r.getMessages().size());
+//      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+//      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
+//
+//      // wait so the receiver gets the message
+//      assertTrue(r2.waitForHandleInvocations(1, 3000));
+//
+//      assertEquals(1, r2.getMessages().size());
+//      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
+//      assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
+//
+//      // allow time for acknowledgment to propagate back
+//      Thread.sleep(1000);
+//
+//      assertTrue(((DistributedTopic)topic).browse().isEmpty());
+//      assertTrue(topic2.browse().isEmpty());
+//   }
+//
+//
+//   ////////
+//   //////// Reliable message
+//   ////////
+//
+//   public void testDistributedTopic_2() throws Exception
+//   {
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((DistributedTopic)topic).join();
+//      log.debug("topic joined");
+//
+//      topic2.join();
+//      log.debug("topic2 joined");
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+//      assertTrue(topic.add(r));
+//
+//      SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
+//      assertTrue(topic2.add(r2));
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload0");
+//
+//      log.debug("sending message");
+//      Delivery d = topic.handle(observer, ms.reference(m), null);
+//      log.debug("message sent");
+//
+//      assertTrue(d.isDone());
+//
+//      assertEquals(1, r.getMessages().size());
+//      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+//      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
+//
+//      // wait so the receiver gets the message
+//      assertTrue(r2.waitForHandleInvocations(1, 3000));
+//
+//      assertEquals(1, r2.getMessages().size());
+//      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
+//      assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
+//
+//      // allow time for acknowledgment to propagate back
+//      Thread.sleep(1000);
+//
+//      assertTrue(((DistributedTopic)topic).browse().isEmpty());
+//      assertTrue(topic2.browse().isEmpty());
+//   }
+//
+//   // We cannot having NACKING receiver attached to a local topic, it will violate the topic
+//   // consistency constraint
+//
+//   //////
+//   ////// One ACKING receiver, one REJECTING receiver
+//   //////
+//
+//   ////////
+//   //////// Unreliable message
+//   ////////
+//
+//   public void testDistributedTopic_3() throws Throwable
+//   {
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((DistributedTopic)topic).join();
+//      log.debug("topic joined");
+//
+//      topic2.join();
+//      log.debug("topic2 joined");
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+//      assertTrue(topic.add(r));
+//
+//      SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
+//      assertTrue(topic2.add(r2));
+//
+//      Message m = MessageFactory.createMessage("message0", false, "payload0");
+//
+//      log.debug("sending message");
+//      Delivery d = topic.handle(observer, ms.reference(m), null);
+//      log.debug("message sent");
+//
+//      assertTrue(d.isDone());
+//
+//      assertEquals(1, r.getMessages().size());
+//      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+//      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
+//
+//      // wait for a while so the acknowledgment has time to go back to the originating peer
+//      Thread.sleep(1000);
+//
+//      assertEquals(0, r2.getMessages().size());
+//
+//      assertTrue(((DistributedTopic)topic).browse().isEmpty());
+//      assertTrue(topic2.browse().isEmpty());
+//   }
+//
+//
+//   ////////
+//   //////// Reliable message
+//   ////////
+//
+//   public void testDistributedTopic_4() throws Throwable
+//   {
+//      jchannel2.connect("testGroup");
+//
+//      // allow the group time to form
+//      Thread.sleep(1000);
+//
+//      assertTrue(jchannel.isConnected());
+//      assertTrue(jchannel2.isConnected());
+//
+//      // make sure both jchannels joined the group
+//      assertEquals(2, jchannel.getView().getMembers().size());
+//      assertEquals(2, jchannel2.getView().getMembers().size());
+//
+//      ((DistributedTopic)topic).join();
+//      log.debug("topic joined");
+//
+//      topic2.join();
+//      log.debug("topic2 joined");
+//
+//      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+//
+//      SimpleReceiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+//      assertTrue(topic.add(r));
+//
+//      SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
+//      assertTrue(topic2.add(r2));
+//
+//      Message m = MessageFactory.createMessage("message0", true, "payload0");
+//
+//      log.debug("sending message");
+//      Delivery d = topic.handle(observer, ms.reference(m), null);
+//      log.debug("message sent");
+//
+//      assertTrue(d.isDone());
+//
+//      assertEquals(1, r.getMessages().size());
+//      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+//      assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
+//
+//      // wait for a while so the acknowledgment has time to go back to the originating peer
+//      Thread.sleep(1000);
+//
+//      assertEquals(0, r2.getMessages().size());
+//
+//      assertTrue(((DistributedTopic)topic).browse().isEmpty());
+//      assertTrue(topic2.browse().isEmpty());
+//   }
+//
 
 
    //

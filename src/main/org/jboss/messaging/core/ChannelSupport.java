@@ -21,16 +21,13 @@
   */
 package org.jboss.messaging.core;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
-
-import java.util.Iterator;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Collections;
-import java.io.Serializable;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null
@@ -105,6 +102,8 @@ public abstract class ChannelSupport implements Channel
          if (del == null)
          {
             //Not handled
+            
+            //FIXME - Also want to do this if an exception is thrown
             ref.release();
          }
          return del;
@@ -293,7 +292,71 @@ public abstract class ChannelSupport implements Channel
          return null;
       }      
    }
+   
+   protected Delivery push(Receiver receiver, MessageReference ref)
+   {
+      checkClosed();
+      
+      if (!checkRef(ref))
+      {
+         return null;
+      }
+      
+      Delivery del = getDelivery(receiver, ref);
+      
+      if (del == null)
+      {
+         // no receiver, receiver didn't accept the message or broken receivers        
+         if (log.isTraceEnabled()){ log.trace(this + ": no delivery returned for message; there is no receiver"); }
 
+         processMessageBeforeStorage(ref);
+
+         try
+         {                        
+            state.add(ref);
+
+            if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
+         }
+         catch(Throwable t)
+         {
+            // this channel cannot safely hold the message, so it doesn't accept it
+            log.error("Cannot handle the message", t);
+            return null;
+         }
+      }
+      else
+      {
+         // delivered
+         try
+         {            
+            if (!del.isDone())
+            {
+               state.deliver(del);                                   
+            }                   
+         }
+         catch(Throwable t)
+         {
+            // TODO: this should be done atomically
+            log.error(this + " failed to manage the delivery, rejecting the message", t);
+            return null;
+         }
+      }
+
+      // the channel can safely assume responsibility for delivery
+      return new SimpleDelivery(true);
+   }
+   
+
+   /**
+    * Give subclass a chance to process the message before storing it internally. Useful to get
+    * rid of the REMOTE_ROUTABLE header in a distributed case, for example.
+    */
+   protected void processMessageBeforeStorage(MessageReference reference)
+   {
+      // by default a noop
+   }
+   
+   //TODO - Possibly combine this with the push method since they are similar
    protected boolean deliver(DeliveryObserver sender, Receiver receiver)
    {
       checkClosed();
@@ -312,41 +375,37 @@ public abstract class ChannelSupport implements Channel
 
       if (log.isTraceEnabled()){ log.trace(this + " delivering " + ref); }
 
-      Set deliveries = getDeliveries(receiver, ref);
+      Delivery del = getDelivery(receiver, ref);
 
-      if (deliveries.isEmpty())
+      if (del == null)
       {
-         // no receivers, receivers that don't accept the message or broken receivers
+         // no receiver, receiver that doesn't accept the message or broken receiver
 
-         if (log.isTraceEnabled()){ log.trace(this + ": no deliveries returned for message; there are no receivers"); }
+         if (log.isTraceEnabled()){ log.trace(this + ": no delivery returned for message; there is no receiver"); }
 
          //The message wasn't delivered - so we replace the message back to the front of the queue
          //Note we only do this to the in-memory nonrecoverable state!
          //This is not done to persistent state
+         
+         
+         //FIXME - We also want to do this if an exception is thrown
          state.replaceFirst(ref);
 
          return false;
       }
       else
       {
-         // there are receivers
+         // delivered
          try
          {
-            Set toAdd = new HashSet();
-
-            for (Iterator i = deliveries.iterator(); i.hasNext(); )
+            if (!del.isDone())
             {
-               Delivery d = (Delivery)i.next();
-               if (!d.isDone())
-               {
-                  toAdd.add(d);
-               }
+               //Add the delivery to state
+               state.redeliver(del);
             }
-
-            //Atomically remove the ref and add the deliveries
-            state.redeliver(toAdd);
-
-            return true;
+   
+            //Delivery successful
+            return true;            
          }
          catch(Throwable t)
          {
@@ -354,15 +413,6 @@ public abstract class ChannelSupport implements Channel
             return false;
          }
       }
-   }
-
-   /**
-    * Give subclass a chance to process the message before storing it internally. Useful to get
-    * rid of the REMOTE_ROUTABLE header in a distributed case, for example.
-    */
-   protected void processMessageBeforeStorage(MessageReference reference)
-   {
-      // by default a noop
    }
 
    // Private -------------------------------------------------------
@@ -375,42 +425,52 @@ public abstract class ChannelSupport implements Channel
       }
    }
    
-   private Set getDeliveries(Receiver receiver, MessageReference ref)
+   private Delivery getDelivery(Receiver receiver, MessageReference ref)
    {
-      Set deliveries = Collections.EMPTY_SET;
+      //NOTE There should never be more than one receiver
+      //Eventually we wil enforce this in the design of the Channel
+      //but for now we just check we only have one receiver
       
       if (receiver == null)
       {
-         if (log.isTraceEnabled()){ log.trace(this + " passing " + ref + " to router " + router); }
-         deliveries = router.handle(this, ref, null);
+         Iterator iter = router.iterator();
+         if (!iter.hasNext())
+         {
+            //No receivers
+            return null;
+         }
+         receiver = (Receiver)iter.next();
+         if (iter.hasNext())
+         {
+            throw new IllegalStateException("More than one consumer on a channel is not supported!!");
+         }
       }
-      else
+      
+      Delivery d = null;
+      
+      try
       {
-         try
-         {
-            Delivery d = receiver.handle(this, ref, null);
+         d = receiver.handle(this, ref, null);
 
-            if (d != null && !d.isCancelled())
-            {
-               deliveries = new HashSet(1);
-               deliveries.add(d);
-            }
-         }
-         catch(Throwable t)
+         if (d != null)
          {
-            // broken receiver - log the exception and ignore it
-            log.error("The receiver " + receiver + " is broken", t);
-         }
+            if (d.isCancelled())
+            {
+               d = null;
+            }
+            else
+            {
+               d.getReference().incrementDeliveryCount();
+            }
+         }   
+      }
+      catch(Throwable t)
+      {
+         // broken receiver - log the exception and ignore it
+         log.error("The receiver " + receiver + " is broken", t);
       }
       
-      Iterator iter = deliveries.iterator();
-      while (iter.hasNext())
-      {         
-         ref.incrementDeliveryCount();
-         iter.next();
-      }
-      
-      return deliveries;      
+      return d;
    }
    
    private boolean checkRef(MessageReference ref)
@@ -435,62 +495,7 @@ public abstract class ChannelSupport implements Channel
       return true;
    }
 
-   private Delivery push(Receiver receiver, MessageReference ref)
-   {
-      checkClosed();
-      
-      if (!checkRef(ref))
-      {
-         return null;
-      }
-      
-      Set deliveries = getDeliveries(receiver, ref);
-      
-      if (deliveries.isEmpty())
-      {
-         // no receivers, receivers that don't accept the message or broken receivers         
-         if (log.isTraceEnabled()){ log.trace(this + ": no deliveries returned for message; there are no receivers"); }
-
-         processMessageBeforeStorage(ref);
-
-         try
-         {                        
-            state.add(ref);
-
-            if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
-         }
-         catch(Throwable t)
-         {
-            // this channel cannot safely hold the message, so it doesn't accept it
-            log.error("Cannot handle the message", t);
-            return null;
-         }
-      }
-      else
-      {
-         // there are receivers
-         try
-         {            
-            for (Iterator i = deliveries.iterator(); i.hasNext(); )
-            {
-               Delivery d = (Delivery)i.next();
-               if (!d.isDone())
-               {
-                  state.deliver(d);                                   
-               }
-            }          
-         }
-         catch(Throwable t)
-         {
-            // TODO: this should be done atomically
-            log.error(this + " failed to manage the delivery, rejecting the message", t);
-            return null;
-         }
-      }
-
-      // the channel can safely assume responsibility for delivery
-      return new SimpleDelivery(true);
-   }
+   
    
    private void acknowledgeNoTx(Delivery d)
    {

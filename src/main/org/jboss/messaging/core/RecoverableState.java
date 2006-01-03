@@ -22,10 +22,8 @@
 package org.jboss.messaging.core;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
@@ -106,100 +104,43 @@ public class RecoverableState extends NonRecoverableState
          pm.addReference(channelID, ref, null);
       }      
    }
-
+   
+   /*
+    * We have successfully delivered a new message
+    */
    public void deliver(Delivery d) throws Throwable
    {
-      // Note! Adding of deliveries to the state is NEVER done in a transactional context.
-      // The only things that are done in a transactional context are sending of messages and
-      // removing deliveries (acking).
-        
       super.deliver(d);
-
+      
       if (d.getReference().isReliable())
       {
-         // also add delivery to persistent storage (reliable delivery in recoverable state)
-         pm.deliver(channelID, d);
-         if (log.isTraceEnabled()) { log.trace("added " + d + " to database"); }
+         //This is a new message that has been delivered so we add the message ref in the database
+         pm.addReference(channelID, d.getReference(), null);
       }      
    }
-   
-   /*
-    * We have redelivered a pre-existing message, so we remove the ref and add the deliveries to state
-    */
-   public void redeliver(Set dels) throws Throwable
-   {
-      super.redeliver(dels);
 
-      //TODO (BUG): how about a set of mixed deliveries, when some of them are reliable and some of
-      //            them are not? If only the first delivery in the set is reliable, and the rest
-      //            are not pm will be requested to redeliver non-reliable messages. Add a test case
-      //            for this.
-      
-      // Solution to this is to restrict a Channel to having only one receiver then we only ever deal with
-      // one delivery - this will also significantly simplify other parts of the code.
-      // Allowing a Channel to have multiple receivers adds extra complexity and reduces
-      // clarity and manageability.
-      // It is my view that we should choose the simplest primitives and built up from there.
-      // A channel with multiple receivers is not the simplest primitive.      
-
-      if (dels.isEmpty())
-      {
-         return;
-      }
-
-      boolean isReliable = ((Delivery)dels.iterator().next()).getReference().isReliable();
-      
-      if (isReliable)
-      {
-         pm.redeliver(channelID, dels);
-      }
-   }
-   
-   /*
-    * Cancel an outstanding delivery.
-    * This removes the delivery and adds the message reference back into the state
-    */
-   public void cancel(Delivery del) throws Throwable
-   {
-      super.cancel(del);
-      
-      if (del.getReference().isReliable())
-      {
-         pm.cancel(channelID, del);
-      }
-   }
-   
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {      
       super.acknowledge(d, tx);
 
       if (d.getReference().isReliable())
       {
-         pm.acknowledge(channelID, d, tx);            
-      }
-     
+         pm.removeReference(channelID, d.getReference(), tx);            
+      }     
    }
    
    public void acknowledge(Delivery d) throws Throwable
    {   
       super.acknowledge(d);
 
+      //TODO - Optimisation - If the message is acknowledged before the call to handle() returns
+      //And it is a new message then there won't be any reference in the database
+      //So the call to remove from the db is wasted.
+      //We should add a flag to check this
       if (d.getReference().isReliable())
       {
-         pm.acknowledge(channelID, d, null);            
+         pm.removeReference(channelID, d.getReference(), null);            
       }     
-   }
-   
-   public MessageReference removeFirst()
-   {
-      //We do not remove from persistent state
-      return super.removeFirst();
-   }
-   
-   public void replaceFirst(MessageReference ref)
-   {
-      //We do not replace in persistent state
-      super.replaceFirst(ref);
    }
    
    public void clear()
@@ -216,8 +157,6 @@ public class RecoverableState extends NonRecoverableState
    {
       List refs = pm.messageRefs(storeID, channelID);
       
-      Set ids = new HashSet();
-      
       Iterator iter = refs.iterator();
       while (iter.hasNext())
       {
@@ -225,32 +164,8 @@ public class RecoverableState extends NonRecoverableState
          
          MessageReference ref = messageStore.reference(messageID);
          
-         messageRefs.addLast(ref, ref.getPriority());
-         
-         ids.add(messageID);         
-      }
-      
-      //Important note. When we reload deliveries we load them as MessageReferences,
-      //*not* as Delivery instances.
-      //This is because, after recovery, it is not possible that those Delivery instances
-      //can be acknowledged, since the receivers no longer exist.
-      //Therefore by loading the Deliveries as MessageReferences we are effectively
-      //cancelling them
-                  
-      List dels = pm.deliveries(storeID, channelID);
-      iter = dels.iterator();
-      while (iter.hasNext())
-      {
-         String messageID = (String)iter.next();
-         
-         if (ids.add(messageID))
-         {
-            MessageReference ref = messageStore.reference(messageID);
-            
-            messageRefs.addFirst(ref, ref.getPriority());            
-         }
-      }
-      
+         messageRefs.addLast(ref, ref.getPriority());      
+      }        
    }
 
    // Public --------------------------------------------------------

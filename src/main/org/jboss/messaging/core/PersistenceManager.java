@@ -23,7 +23,6 @@ package org.jboss.messaging.core;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -52,25 +51,18 @@ public interface PersistenceManager
 
    Message retrieveMessage(Serializable messageID) throws Exception;
    
+   
+   
    void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
       
-   void deliver(Serializable channelID, Delivery d) throws Exception;
+   void removeReference(Serializable channelID, MessageReference ref, Transaction tx)  throws Exception;
    
-   void redeliver(Serializable channelID, Set deliveries) throws Exception;
    
-   void cancel(Serializable channelID, Delivery d) throws Exception;
-
-   void acknowledge(Serializable channelID, Delivery d, Transaction tx)  throws Exception;
 
    /**
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
     */
    List messageRefs(Serializable storeID, Serializable channelID) throws Exception;
-
-   /**
-    * @return a List of StorageIdentifiers for all messages for which there are active deliveries.
-    */
-   List deliveries(Serializable storeID, Serializable channelID) throws Exception;
 
    void removeAllMessageData(Serializable channelID) throws Exception;
    

@@ -63,6 +63,11 @@ public abstract class QueueTestBase extends ChannelTestBase
       super.tearDown();
    }
 
+   /*
+    * 
+   
+   Channel can only have one receiver
+   
    public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
    {
       if (channel.isRecoverable())
@@ -131,6 +136,8 @@ public abstract class QueueTestBase extends ChannelTestBase
          assertEquals("payload", m.getPayload());
       }
    }
+   
+   */
 
 
    // Package protected ---------------------------------------------

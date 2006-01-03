@@ -67,6 +67,13 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
    /**
     * Three a distributed queue with three peers
     */
+   
+   
+   /*
+    * 
+   
+   Cannot have more than one receiver on a Channel
+   
    public void testSimpleSend() throws Exception
    {
       jchannel2.connect("testGroup");
@@ -120,6 +127,8 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
       assertEquals("payload", ((Message)messageList.get(0)).getPayload());
 
    }
+   
+   */
 
 
    // Package protected ---------------------------------------------

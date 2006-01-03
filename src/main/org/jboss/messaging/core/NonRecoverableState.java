@@ -108,7 +108,7 @@ public class NonRecoverableState implements State
       }
       else
       {
-         //Transactional so add to post commit callback
+         //add to post commit callback
          AddReferenceCallback callback = addAddReferenceCallback(tx);
          callback.addReference(ref);
          if (log.isTraceEnabled()) { log.trace(this + " added transactionally " + ref + " in memory"); }
@@ -154,33 +154,11 @@ public class NonRecoverableState implements State
    }
    
    /*
-    * We have redelivered a pre-existing message, so we remove the ref and add the deliveries to state
+    * We have redelivered a pre-existing message, so we add the delivery to the state
     */
-   public void redeliver(Set dels) throws Throwable
+   public void redeliver(Delivery del) throws Throwable
    {
-      //Add the deliveries
-      Iterator iter = dels.iterator();
-      
-      //We also acquire a reference for every *extra* delivery we have over 1.
-      //This is because we already have a reference for the ref so we don't want to get that
-      //again
-      int count = 0;
-      while (iter.hasNext())
-      {
-         Delivery d = (Delivery)iter.next();
-         
-         deliveries.add(d);
-         
-         if (count != 0)
-         {
-            //We increment the ref counter on the message even more since we
-            //have multiple deliveries for the message - this is the only
-            //case in which this happens
-            d.getReference().acquire();
-         }
-         
-         count++;
-      }
+      deliveries.add(del);       
    }
    
    /*
@@ -202,18 +180,6 @@ public class NonRecoverableState implements State
       }
       else
       {         
-         //FIXME - 
-         //This won't prove to be a problem for JMS since there is only ever one delivery per message ref at any one
-         //time.
-         //However in the general case, there can be many deliveries for a message reference.
-         //We only want to add the message reference back in the state if there are no more deliveries
-         //for that message reference outstanding.
-         //Currently we add the message reference back into the state when any delivery for it is cancelled.
-         //Suggestion here would be to generalise the JMS case and make the restriction that a channel can only
-         //have one receiver.
-         //It is completely unnecessary for a channel to have more than one receiver and adds significant
-         //extra complexity - Tim
-         
          messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
       }
    }
@@ -234,16 +200,7 @@ public class NonRecoverableState implements State
       
       if (removed && log.isTraceEnabled()) { log.trace(this + " removed " + d + " from memory"); }
       
-      if (!removed)
-      {
-         //This is ok
-         //This can happen if the message is acknowledged before the result of ServerConsumerDelegate.handle
-         //has returned, in which case we won't have a record of the delivery in the Set
-      }      
-      else
-      {
-         d.getReference().release();
-      }
+      d.getReference().release();    
    }
    
    public MessageReference removeFirst()
