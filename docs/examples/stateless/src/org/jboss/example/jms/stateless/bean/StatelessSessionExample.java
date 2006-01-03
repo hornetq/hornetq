@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 
 public interface StatelessSessionExample extends EJBObject
 {
+   public void drain(String queueName) throws RemoteException, Exception;
    public void send(String txt, String queueName) throws RemoteException, Exception;
    public List browse(String queueName) throws RemoteException, Exception;
    public String receive(String queueName) throws RemoteException, Exception;

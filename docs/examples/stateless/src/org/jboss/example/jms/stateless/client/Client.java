@@ -65,6 +65,12 @@ public class Client extends ExampleSupport
 
 
 
+
+      bean.drain(queueName);
+            
+
+
+
       bean.send("Hello!", queueName);
       log("The " + text + " message was successfully sent to the " + queueName + " queue");
 

@@ -14,6 +14,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.MessageConsumer;
 import javax.jms.QueueBrowser;
+import javax.jms.Message;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -34,7 +35,6 @@ public class StatelessSessionExampleBean implements SessionBean
 
    private SessionContext ctx;
    private Connection connection;
-   private Session session;
 
    public void ejbCreate()
    {
@@ -45,7 +45,6 @@ public class StatelessSessionExampleBean implements SessionBean
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
 
          connection = cf.createConnection();
-         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          connection.start();
 
          ic.close();
@@ -85,28 +84,68 @@ public class StatelessSessionExampleBean implements SessionBean
 
 
 
+   public void drain(String queueName) throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      Queue queue = (Queue)ic.lookup(queueName);
+      ic.close();
+
+      Session session = null;
+      try
+      {
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer consumer = session.createConsumer(queue);
+         Message m = null;
+         do
+         {
+            m = consumer.receiveNoWait();
+         }
+         while(m != null);
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
+         }
+      }
+   }
+
+
+
+
    public void send(String txt, String queueName) throws Exception
    {
       InitialContext ic = new InitialContext();
       Queue queue = (Queue)ic.lookup(queueName);
-
-
-
-      MessageProducer producer = session.createProducer(queue);
-
-
-
-      TextMessage tm = session.createTextMessage(txt);
-
-
-
-      producer.send(tm);
-      System.out.println("message " + txt + " sent to " + queueName);
-
-
-
-      producer.close();
       ic.close();
+
+      Session session = null;
+      try
+      {
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+
+
+         MessageProducer producer = session.createProducer(queue);
+
+
+
+         TextMessage tm = session.createTextMessage(txt);
+
+
+
+         producer.send(tm);
+         System.out.println("message " + txt + " sent to " + queueName);
+
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
+         }
+      }
    }
 
 
@@ -115,24 +154,34 @@ public class StatelessSessionExampleBean implements SessionBean
    {
       InitialContext ic = new InitialContext();
       Queue queue = (Queue)ic.lookup(queueName);
-
-
-
-      QueueBrowser browser = session.createBrowser(queue);
-
-
-      ArrayList list = new ArrayList();
-      for(Enumeration e = browser.getEnumeration(); e.hasMoreElements(); )
-      {
-         list.add(e.nextElement());
-      }
-
-
-      browser.close();
       ic.close();
 
+      Session session = null;
+      try
+      {
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      return list;
+
+
+         QueueBrowser browser = session.createBrowser(queue);
+
+
+         ArrayList list = new ArrayList();
+         for(Enumeration e = browser.getEnumeration(); e.hasMoreElements(); )
+         {
+            list.add(e.nextElement());
+         }
+
+
+         return list;
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
+         }
+      }
    }
 
 
@@ -141,28 +190,40 @@ public class StatelessSessionExampleBean implements SessionBean
    {
       InitialContext ic = new InitialContext();
       Queue queue = (Queue)ic.lookup(queueName);
-
-
-
-      MessageConsumer consumer = session.createConsumer(queue);
-
-
-      System.out.println("blocking to receive message from queue " + queueName + " ...");
-      TextMessage tm = (TextMessage)consumer.receive(5000);
-
-      if (tm == null)
-      {
-         throw new Exception("No message!");
-      }
-
-
-      System.out.println("Message " + tm.getText() + " received");
-
-      consumer.close();
       ic.close();
 
+      Session session = null;
+      try
+      {
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 
-      return tm.getText();
+
+         MessageConsumer consumer = session.createConsumer(queue);
+
+
+
+         System.out.println("blocking to receive message from queue " + queueName + " ...");
+         TextMessage tm = (TextMessage)consumer.receive(5000);
+
+         if (tm == null)
+         {
+            throw new Exception("No message!");
+         }
+
+
+         System.out.println("Message " + tm.getText() + " received");
+
+
+         return tm.getText();
+      }
+
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
+         }
+      }
    }
 }
