@@ -460,7 +460,7 @@ public abstract class ChannelSupport implements Channel
             }
             else
             {
-               d.getReference().incrementDeliveryCount();
+               ref.incrementDeliveryCount();
             }
          }   
       }
