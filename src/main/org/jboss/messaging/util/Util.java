@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.util;
 
-import java.io.Serializable;
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -51,7 +49,7 @@ public class Util
       {
          return s;
       }
-      return s.substring(idx + 1);
+      return "...-" + s.substring(idx + 1);
    }
 
    // Attributes ----------------------------------------------------

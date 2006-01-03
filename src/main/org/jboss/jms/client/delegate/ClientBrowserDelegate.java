@@ -26,6 +26,7 @@ import javax.jms.Message;
 
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.messaging.util.Util;
 
 /**
  * The client-side Browser delegate class.
@@ -91,6 +92,11 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    public String getStackName()
    {
       return "BrowserStack";
+   }
+
+   public String toString()
+   {
+      return "BrowserDelegate[" + Util.guidToString(id) + "]";
    }
 
    // Protected -----------------------------------------------------

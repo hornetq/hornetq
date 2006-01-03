@@ -111,7 +111,7 @@ public class DistributedQueue extends Queue implements Distributed
 
    public boolean deliver(Receiver r)
    {
-      boolean delivered = redeliver(this, r);
+      boolean delivered = deliver(this, r);
 
       if (delivered)
       {
@@ -157,7 +157,7 @@ public class DistributedQueue extends Queue implements Distributed
          }
 
          if (log.isTraceEnabled()) { log.trace("retrying redelivery"); }
-         delivered = redeliver(this, r);
+         delivered = deliver(this, r);
       }
 
       return delivered;

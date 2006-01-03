@@ -215,8 +215,13 @@ public class JBossConnection implements
 
    }
 
-   // Public --------------------------------------------------------   
-   
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossConnection->" + delegate;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

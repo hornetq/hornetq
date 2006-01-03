@@ -61,7 +61,7 @@ public class Remoting
       
       callbackServer.start();
       
-      if (log.isTraceEnabled()) log.trace("Started callback server on: " +  callbackServer.getLocator());
+      if (log.isTraceEnabled()) log.trace("Started callback server for " +  callbackServer.getLocator());
 
       // TODO this is unnecessary
       callbackServer.addInvocationHandler("JMS", new ServerInvocationHandlerImpl());

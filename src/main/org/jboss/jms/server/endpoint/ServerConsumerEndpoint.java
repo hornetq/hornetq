@@ -49,6 +49,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.SingleReceiverDelivery;
 import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -110,12 +111,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    // Constructors --------------------------------------------------
    
    ServerConsumerEndpoint(String id, Channel channel,
-         InvokerCallbackHandler callbackHandler,
-         ServerSessionEndpoint sessionEndpoint,
-         String selector, boolean noLocal)
-            throws InvalidSelectorException
+                          InvokerCallbackHandler callbackHandler,
+                          ServerSessionEndpoint sessionEndpoint,
+                          String selector, boolean noLocal)
+      throws InvalidSelectorException
    {
-      log.debug("creating ServerConsumerDelegate[" + id + "]");
+      log.debug("creating ServerConsumerDelegate[" + Util.guidToString(id) + "]");
       
       this.id = id;
       
@@ -148,18 +149,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    public synchronized Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      if (log.isTraceEnabled()) { log.trace("Attempting to handle ref: " + reference.getMessageID()); }
+      if (log.isTraceEnabled()) { log.trace(this + " handling reference " + Util.guidToString(reference.getMessageID())); }
       
       if (!wantReference())
       {
+         if (log.isTraceEnabled()) { log.trace(this + " rejecting " + Util.guidToString(reference.getMessageID())); }
          return null;
       }
       
       try
       {
-         
-         if (log.isTraceEnabled()) { log.trace("Delivering ref " + reference.getMessageID()); }
-         
          Delivery delivery = null;
 
          JBossMessage message = (JBossMessage)reference.getMessage();
@@ -167,7 +166,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          boolean accept = this.accept(message);
          if (!accept)
          {
-            if (log.isTraceEnabled()) { log.trace("consumer DOES NOT accept the message"); }
+            if (log.isTraceEnabled()) { log.trace(this + " DOES NOT accept the message"); }
             return null;
          }
          
@@ -370,7 +369,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    public String toString()
    {
-      return "ServerConsumerDelegate[" + id + "]";
+      return "ServerConsumerDelegate[" + Util.guidToString(id) + "]";
    }
    
    // Package protected ---------------------------------------------
@@ -496,7 +495,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    protected void promptDelivery()
    {
-      if (log.isTraceEnabled()) { log.trace("promptDelivery:" + this); }
+      if (log.isTraceEnabled()) { log.trace(this + " prompts delivery"); }
       if (ready || grabbing)
       {
          channel.deliver(this);

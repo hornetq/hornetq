@@ -120,6 +120,11 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
 
    // Public --------------------------------------------------------
 
+   public String toString()
+   {
+      return "JBossMessageConsumer->" + delegate;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

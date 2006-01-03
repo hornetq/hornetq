@@ -41,6 +41,7 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.messaging.util.Util;
 
 /**
  * The client-side Session delegate class.
@@ -369,6 +370,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "SessionDelegate[" + Util.guidToString(id) + "]";
+   }
 
    // Protected -----------------------------------------------------
 

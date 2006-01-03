@@ -27,6 +27,7 @@ import javax.jms.Message;
 
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.messaging.util.Util;
 
 /**
  * The client-side Producer delegate class.
@@ -193,6 +194,11 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "ProducerDelegate[" + Util.guidToString(id) + "]";
+   }
 
    // Protected -----------------------------------------------------
 

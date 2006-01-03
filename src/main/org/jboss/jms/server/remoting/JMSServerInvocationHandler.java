@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
 
@@ -81,10 +82,21 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
-      if (log.isTraceEnabled()) { log.trace(this + "Received invocation: " + invocation); }
-      
       MethodInvocation i = (MethodInvocation)invocation.getParameter();
-    
+
+      if (log.isTraceEnabled())
+      {
+         Method m = i.getMethod();
+         if (m == null)
+         {
+            log.trace("handling remote invocation " + i);
+         }
+         else
+         {
+            log.trace("handling " + m.getName());
+         }
+      }
+
       String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
       
       if (s != null)

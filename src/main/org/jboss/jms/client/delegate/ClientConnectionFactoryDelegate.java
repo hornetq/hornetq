@@ -26,6 +26,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.messaging.util.Util;
 
 /**
  * The client-side ConnectionFactory delegate class.
@@ -77,6 +78,11 @@ public class ClientConnectionFactoryDelegate
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "ConnectionFactoryDelegate[" + Util.guidToString(id) + "]";
+   }
 
    // Protected -----------------------------------------------------
 

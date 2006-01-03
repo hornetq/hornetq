@@ -34,6 +34,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.server.Version;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.messaging.util.Util;
 
 /**
  * The client-side Connection delegate class.
@@ -204,6 +205,11 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public Version getServerVersion()
    {
       return serverVersion;
+   }
+
+   public String toString()
+   {
+      return "ConnectionDelegate[" + Util.guidToString(id) + "]";
    }
 
    // Protected -----------------------------------------------------

@@ -156,10 +156,10 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    {
       delegate.send(destination, m, deliveryMode, priority, timeToLive);
    }
-   
-   // TopicPublisher Implementation
-   //--------------------------------------- 
-   
+
+
+   // TopicPublisher Implementation ---------------------------------
+
    public Topic getTopic() throws JMSException
    {
       return (Topic)getDestination();
@@ -186,9 +186,9 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    {
       send(topic, message, deliveryMode, priority, timeToLive);
    }
-   
-   // QueueSender Implementation
-   //---------------------------------------
+
+   // QueueSender Implementation ------------------------------------
+
    public void send(Queue queue, Message message) throws JMSException
    {
       send((Destination)queue, message);
@@ -206,7 +206,12 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    }
    
    // Public --------------------------------------------------------
-   
+
+   public String toString()
+   {
+      return "JBossMessageProducer->" + delegate;
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

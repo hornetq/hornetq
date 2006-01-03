@@ -36,10 +36,8 @@ import javax.transaction.xa.XAResource;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
- * Represents the minimal set of operations to provide session
- * functionality.
- * Some of the methods may be implemented on the server, others
- * will be handled in the advice stack.
+ * Represents the minimal set of operations to provide session functionality.
+ * Some of the methods may be implemented on the server, others will be handled in the advice stack.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

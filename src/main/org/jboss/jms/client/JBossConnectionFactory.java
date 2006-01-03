@@ -152,7 +152,12 @@ public class JBossConnectionFactory implements
    }
 
    // Public --------------------------------------------------------
-   
+
+   public String toString()
+   {
+      return "JBossConnectionFactory->" + delegate;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

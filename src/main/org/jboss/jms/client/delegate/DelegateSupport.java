@@ -71,7 +71,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    // Attributes ----------------------------------------------------
 
-   protected String objectID;
+   protected String id;
    
    protected InvokerLocator locator;
    
@@ -85,7 +85,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    public DelegateSupport(String objectID, InvokerLocator locator)
    {
-      this.objectID = objectID;
+      this.id = objectID;
       this.locator = locator;      
    }
 
@@ -106,7 +106,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           objectID, PayloadKey.AS_IS);
+                                           id, PayloadKey.AS_IS);
 
       InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
       invocation.setResponseContextInfo(response.getContextInfo());
@@ -159,7 +159,25 @@ public abstract class DelegateSupport implements Interceptor, Serializable
                      locator, PayloadKey.TRANSIENT);
       
    }
-   
+
+   public String getID()
+   {
+      return id;
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected SimpleMetaData getMetaData()
+   {
+      return ((Advised)this)._getInstanceAdvisor().getMetaData();
+   }
+
+   // Private -------------------------------------------------------
+
+   private static boolean checked;
+
    /**
     * Check that the correct marshallers have been registered wit the MarshalFactory.
     * This is only done once.
@@ -178,11 +196,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       MarshalFactory.addMarshaller(InvocationMarshaller.DATATYPE, marshaller, unmarshaller);
       checked = true;
    }
-   
-   private static boolean checked;
-   
-   protected SimpleMetaData getMetaData()
-   {
-      return ((Advised)this)._getInstanceAdvisor().getMetaData();
-   } 
+
+   // Inner classes -------------------------------------------------
+
 }

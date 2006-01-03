@@ -36,23 +36,32 @@ import org.jboss.jms.delegate.BrowserDelegate;
  * $Id$
  */
 class JBossQueueBrowser implements QueueBrowser, Serializable
-{   
+{
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = 4245650830082712281L;
-   
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private BrowserDelegate delegate;
    private Queue queue;
    private String messageSelector; 
    
    private BrowserEnumeration enumeration = new BrowserEnumeration();
-   
-   
+
+   // Constructors --------------------------------------------------
+
    JBossQueueBrowser(Queue queue, String messageSelector, BrowserDelegate delegate)
    {
       this.delegate = delegate;
       this.queue = queue;
       this.messageSelector = messageSelector;
    }
-   
+
+   // QueueBrowser implementation ------------------------------------
+
    public void close() throws JMSException
    {
       delegate.closing();
@@ -73,7 +82,22 @@ class JBossQueueBrowser implements QueueBrowser, Serializable
    {
       return queue;
    }
-         
+   
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossQueueBrowser->" + delegate;
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
    private class BrowserEnumeration implements Enumeration
    {            
       public boolean hasMoreElements()
@@ -100,5 +124,4 @@ class JBossQueueBrowser implements QueueBrowser, Serializable
          }
       }
    }
-   
 }

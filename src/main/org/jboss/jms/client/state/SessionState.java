@@ -53,8 +53,8 @@ public class SessionState extends HierarchicalStateBase
    //Executor used for executing onMessage methods
    private Executor executor;
    
-   public SessionState(ConnectionState parent, SessionDelegate delegate, boolean transacted,
-         int ackMode, boolean xa)
+   public SessionState(ConnectionState parent, SessionDelegate delegate,
+                       boolean transacted, int ackMode, boolean xa)
    {
       super(parent, delegate);
       children = new HashSet();
@@ -108,5 +108,6 @@ public class SessionState extends HierarchicalStateBase
    {
       this.currentTxId = id;
    }
+
 }
 

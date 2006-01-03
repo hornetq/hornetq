@@ -32,6 +32,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.messaging.util.Util;
 
 /**
  * The client-side Consumer delegate class.
@@ -176,7 +177,12 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       super.init();
       getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID,
-                                objectID, PayloadKey.TRANSIENT);
+                                id, PayloadKey.TRANSIENT);
+   }
+
+   public String toString()
+   {
+      return "ConsumerDelegate[" + Util.guidToString(id) + "]";
    }
 
    // Protected -----------------------------------------------------

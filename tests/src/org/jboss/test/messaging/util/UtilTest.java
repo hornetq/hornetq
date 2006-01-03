@@ -57,7 +57,7 @@ public class UtilTest extends MessagingTestCase
       assertEquals("abcd-", Util.guidToString("abcd-"));
       assertEquals("-d", Util.guidToString("-d"));
       assertEquals("abc-d", Util.guidToString("abc-d"));
-      assertEquals("c-d", Util.guidToString("ab-c-d"));
+      assertEquals("...-c-d", Util.guidToString("ab-c-d"));
 
    }
 

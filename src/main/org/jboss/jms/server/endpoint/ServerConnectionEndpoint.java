@@ -53,6 +53,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.util.Util;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -163,7 +164,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID, serverPeer.getLocator());
                  
-         log.debug("created session delegate (sessionID=" + sessionID + ")");
+         log.debug("created session delegate (sessionID=" + Util.guidToString(sessionID) + ")");
          
          return d;
       }
@@ -243,7 +244,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Connection is closed");
          }
          setStarted(true);
-         log.debug("Connection " + connectionID + " started");
+         log.debug("Connection " + Util.guidToString(connectionID) + " started");
       }
       finally
       {
@@ -292,7 +293,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Connection is closed");
          }
          setStarted(false);
-         log.debug("Connection " + connectionID + " stopped");
+         log.debug("Connection " + Util.guidToString(connectionID) + " stopped");
       }
       finally
       {

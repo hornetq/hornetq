@@ -31,6 +31,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 
 /**
  * An XAResource implementation.
@@ -80,9 +81,6 @@ public class JBossXAResource implements XAResource
       this.connection = (ConnectionDelegate)((ConnectionState)sessionState.getParent()).getDelegate();
    }
    
-   // Public --------------------------------------------------------
-   
- 
    // XAResource implementation -------------------------------------
 
    public boolean setTransactionTimeout(int timeout) throws XAException
@@ -228,10 +226,14 @@ public class JBossXAResource implements XAResource
          }
       }
    }
-   
-   
-   // Object overrides ----------------------------------------------   
-   
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossXAResource[" + Util.guidToString(sessionState.getDelegate().getID())+ "]";      
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

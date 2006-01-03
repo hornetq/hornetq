@@ -241,7 +241,7 @@ public abstract class ChannelSupport implements Channel
    public boolean deliver(Receiver r)
    {
       if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "generic delivery requested on " + this); }
-      return redeliver(this, r);
+      return deliver(this, r);
    }
    
    public void close()
@@ -294,7 +294,7 @@ public abstract class ChannelSupport implements Channel
       }      
    }
 
-   protected boolean redeliver(DeliveryObserver sender, Receiver receiver)
+   protected boolean deliver(DeliveryObserver sender, Receiver receiver)
    {
       checkClosed();
 
@@ -310,7 +310,7 @@ public abstract class ChannelSupport implements Channel
          return false;
       }
 
-      if (log.isTraceEnabled()){ log.trace(this + " handling non-transactionally " + ref); }
+      if (log.isTraceEnabled()){ log.trace(this + " delivering " + ref); }
 
       Set deliveries = getDeliveries(receiver, ref);
 

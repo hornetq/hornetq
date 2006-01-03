@@ -231,7 +231,7 @@ class JBossSession implements
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
 
-      log.debug("Attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
+      log.debug("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
       ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
 
@@ -447,6 +447,11 @@ class JBossSession implements
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossSession->" + delegate;
+   }
 
    // Package protected ---------------------------------------------
    

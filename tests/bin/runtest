@@ -11,7 +11,7 @@
 # util
 #
 #TARGET_CLASS=org.jboss.test.messaging.util.SelectiveIteratorTest
-#TARGET_CLASS=org.jboss.test.messaging.util.UtilTest
+TARGET_CLASS=org.jboss.test.messaging.util.UtilTest
 #TARGET_CLASS=org.jboss.test.messaging.util.RemoteServerTest
 #TARGET_TEST=testRemoteServer
 #
@@ -122,7 +122,7 @@
 #TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
 #TARGET_TEST=testReceive
 #TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
-#TARGET_TEST=testBrowseWithSelector
+#TARGET_TEST=testCreateBrowserOnNullDestination
 #TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
 #TARGET_TEST=testClientAcknowledgeNoAcknowlegment
 #TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
@@ -132,8 +132,8 @@
 #TARGET_TEST=testQueue
 #TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
 #TARGET_TEST=testQueue
-TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
-TARGET_TEST=testLoginNoUserNoPassword
+#TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
+#TARGET_TEST=testLoginNoUserNoPassword
 #
 # JMS Facade server
 #

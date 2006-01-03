@@ -24,6 +24,7 @@ package org.jboss.jms.client.state;
 import java.util.Set;
 
 import org.jboss.remoting.Client;
+import org.jboss.jms.client.delegate.DelegateSupport;
 
 /**
  * 
@@ -41,35 +42,54 @@ import org.jboss.remoting.Client;
  */
 public class HierarchicalStateBase implements HierarchicalState
 {
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected Set children;
-   
+
    protected HierarchicalState parent;
-   
-   protected Object delegate;
-   
+
+   protected DelegateSupport delegate;
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
    public HierarchicalStateBase(HierarchicalState parent, Object delegate)
-   {      
+   {
       this.parent = parent;
-      this.delegate = delegate;
+      this.delegate = (DelegateSupport)delegate; // TODO - find a more elegant solution, delegate must implement an interface that has getID()
       if (parent != null)
       {
          parent.getChildren().add(this);
       }
    }
-   
+
+   // HierarchicalState implementation -------------------------------
+
    public Set getChildren()
    {
       return children;
    }
-   
+
    public HierarchicalState getParent()
    {
       return parent;
    }
-   
-   public Object getDelegate()
+
+   public DelegateSupport getDelegate()
    {
       return delegate;
    }
-   
+
+   // Public --------------------------------------------------------
+
+   // Protected ------------------------------------------------------
+
+   // Package Private ------------------------------------------------
+
+   // Private --------------------------------------------------------
+
+   // Inner Classes --------------------------------------------------
 }

@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.client.state;
 
+import org.jboss.jms.client.delegate.DelegateSupport;
+
 import java.util.Set;
 
 /**
@@ -36,7 +38,7 @@ public interface HierarchicalState
 {
    public Set getChildren();
    
-   public Object getDelegate();
+   public DelegateSupport getDelegate();
    
    public HierarchicalState getParent();
    

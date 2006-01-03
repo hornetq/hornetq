@@ -23,7 +23,10 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
+
+import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -55,15 +58,52 @@ public class LogInterceptor implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+      String methodName = null;
+      Object target = null;
       if (log.isTraceEnabled())
       {
-         log.trace("Invoking: " + invocation);
+         target = invocation.getTargetObject();
+
+         if (!(invocation instanceof MethodInvocation))
+         {
+            log.trace("invoking non-method invocation: " + invocation);
+         }
+         else
+         {
+            MethodInvocation mi = (MethodInvocation)invocation;
+            Method m = mi.getMethod();
+            methodName = m.getName();
+            StringBuffer sb = new StringBuffer();
+            sb.append("invoking ").append(target).append('.').append(methodName).append('(');
+            Object[] args = mi.getArguments();
+            if (args != null)
+            {
+               for(int i = 0; i < args.length; i++)
+               {
+                  // special precaution to hide passwords
+                  if ("createConnectionDelegate".equals(methodName) && i == 1)
+                  {
+                     sb.append("*****");
+                  }
+                  else
+                  {
+                     sb.append(args[i]);
+                  }
+                  if (i < args.length - 1)
+                  {
+                     sb.append(", ");
+                  }
+               }
+            }
+            sb.append(')');
+
+            log.trace(sb.toString());
+         }
       }
+
       Object res = invocation.invokeNext();
-      if (log.isTraceEnabled())
-      {
-         log.trace("Invoked: " + invocation);
-      }
+
+      if (log.isTraceEnabled()) { log.trace(target + "." + methodName + "() returned " + res); }
       return res;
    }
 
