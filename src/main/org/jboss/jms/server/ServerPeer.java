@@ -104,42 +104,29 @@ public class ServerPeer
 
    // Attributes ----------------------------------------------------
 
-   protected String serverPeerID;
-   
-   protected InvokerLocator locator;
-   
-   protected ObjectName connector;
-
-   protected ClientManager clientManager;
-   
-   protected StateManager stateManager;
-   
-   protected DestinationManagerImpl destinationManager;
-   
-   protected SecurityManager securityManager;
-   
-   protected Map connFactoryDelegates;
-   
    protected MBeanServer mbeanServer;
-   
-   protected TransactionRepository txRepository;
+
+   protected String serverPeerID;
+   protected ObjectName connector;
+   protected InvokerLocator locator;
+   protected byte[] clientAOPConfig;
+   private Version version;
 
    protected boolean started;
 
-   // This thread pool controls the number of threads used to deliver messages to consumers
-   protected PooledExecutor threadPool;
-
-   protected MessageStore ms;
+   protected DestinationManagerImpl destinationManager;
+   protected ClientManager clientManager;
+   protected SecurityManager securityManager;
+   protected TransactionRepository txRepository;
+   protected JMSServerInvocationHandler handler;
 
    protected PersistenceManager pm;
-   
-   protected int connFactoryIDSequence;
-   
-   protected JMSServerInvocationHandler handler;
-   
-   protected byte[] clientAOPConfig;
+   protected MessageStore ms;
+   protected StateManager stateManager;
+   protected PooledExecutor threadPool; // manages threads used to deliver messages to consumers
 
-   private Version version;
+   protected int connFactoryIDSequence;
+   protected Map connFactoryDelegates;
 
    // Constructors --------------------------------------------------
 

@@ -22,14 +22,14 @@ import org.jboss.messaging.core.local.DurableSubscription;
 public interface StateManager
 {
    DurableSubscription getDurableSubscription(String clientID, String subscriptionName)
-         throws JMSException;
+      throws JMSException;
 
    DurableSubscription createDurableSubscription(String topicName, String clientID,
                                                  String subscriptionName, String selector)
-         throws JMSException;
+      throws JMSException;
 
    boolean removeDurableSubscription(String clientID, String subscriptionName)
-         throws JMSException;
+      throws JMSException;
 
    String getPreConfiguredClientID(String username) throws JMSException;
 
