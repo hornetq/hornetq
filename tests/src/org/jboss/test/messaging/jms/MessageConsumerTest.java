@@ -966,7 +966,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-          //s.createConsumer(queue); //what's the point?
+          s.createConsumer(queue);
 
           conn.start();
 
@@ -975,7 +975,11 @@ public class MessageConsumerTest extends MessagingTestCase
           p.send(m);
 
           MessageConsumer c2 = s.createConsumer(queue);
+
+          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
+
           Message r = c2.receive(2000);
+
 
           assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
        }
@@ -1001,7 +1005,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-          //s.createConsumer(queue);
+          s.createConsumer(queue);
 
           conn.start();
 
@@ -1011,6 +1015,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
           MessageConsumer c2 = s.createConsumer(queue);
           final Set received = new HashSet();
+
+          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
 
           class Listener implements MessageListener
           {
