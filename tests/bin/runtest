@@ -1,167 +1,30 @@
 #!/bin/sh
 #
-# bash script for running a single unit test case
+# bash script for running a single unit test case.
+#
+# It expects TARGET_CLASS and TARGET_TEST to be set. If they are not, it tries to load them
+# from ./.testrc.
+#
 # Options:
-#    -debug start the VM in debugging mode
+#    -debug start the client VM in debugging mode
 #    -remote set the "remote" system property so the server start in a remote VM
+#    -remotedebug starts the VM that runs the remote server in debugging mode. The remote VM
+#            will attempt to connect to the debugger, which should be lisening on 'rmiserver'
 #
 #
-
-#
-# util
-#
-#TARGET_CLASS=org.jboss.test.messaging.util.SelectiveIteratorTest
-TARGET_CLASS=org.jboss.test.messaging.util.UtilTest
-#TARGET_CLASS=org.jboss.test.messaging.util.RemoteServerTest
-#TARGET_TEST=testRemoteServer
-#
-# core
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.SimpleDeliveryTest
-#TARGET_CLASS=org.jboss.test.messaging.core.ReplicatorOutputDeliveryTest
-#
-# local core
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.CoreTest
-#TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState1Test
-#TARGET_TEST=testNonRecoverableState_1
-#TARGET_CLASS=org.jboss.test.messaging.core.NonRecoverableState2Test
-#TARGET_TEST=testNonRecoverableState_17
-#TARGET_CLASS=org.jboss.test.messaging.core.RecoverableStateTest
-#TARGET_TEST=testRecoverableState_57
-#TARGET_CLASS=org.jboss.test.messaging.core.local.NonRecoverableQueueTest
-#TARGET_TEST=testRecoverableChannel_3
-#TARGET_CLASS=org.jboss.test.messaging.core.local.RecoverableQueueTest
-#TARGET_TEST=testRecoverableChannel_17
-#TARGET_CLASS=org.jboss.test.messaging.core.local.SubscriptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.DurableSubscriptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.local.TopicTest
-#TARGET_TEST=testNACKINGReceiver
-#TARGET_CLASS=org.jboss.test.messaging.core.DistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.MessageReferenceSupportTest
-#TARGET_CLASS=org.jboss.test.messaging.core.MessageSupportTest
-#TARGET_CLASS=org.jboss.test.messaging.core.PointToMultipointRouterAsDistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.PointToPointRouterAsDistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.RoutableSupportTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsDistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsDistributorTest
-#TARGET_CLASS=org.jboss.test.messaging.core.ChannelSupportTest
-#TARGET_CLASS=org.jboss.test.messaging.core.TransactionalChannelSupportTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalQueueAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalTopicAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.AbstractDestinationAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.LocalPipeAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.persistence.JDBCUtilTest
-#TARGET_CLASS=org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest
-#TARGET_TEST=testCommit_NotXA_Long_NotStoreXid
-#
-# core - message
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.message.InMemoryMessageStoreTest
-#TARGET_CLASS=org.jboss.test.messaging.core.message.PersistentMessageStoreTest
-#TARGET_TEST=testRecoverableMessageStore_1
-#
-# core - persistence
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest
-#TARGET_TEST=testAddRetrieveRemoveMessage
-#
-# distributed core
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.pipe.SharedPipeOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTimeoutExceptionTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ToEraseReplicatorOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.InvalidQueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueueTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueueAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.pipe.PipeAsChannelTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.PeerIdentityTest
-#
-# core.distributed.queue
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.QueuePeerTest
-TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.NonRecoverableDistributedQueueTest
-TARGET_TEST=testNonRecoverableDistributedChannel_30
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.queue.RecoverableDistributedQueueTest
-#TARGET_TEST=testRecoverableDistributedChannel_32_mixed
-#
-# core.distributed.topic
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.TopicPeerTest
-#TARGET_TEST=testTwoPeers_1
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.topic.DistributedTopicTest
-#TARGET_TEST=testDistributedTopic_2
-#
-# core.distributed.replicator
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorOutputTest
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorTest
-#TARGET_TEST=testReplicator_6
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.replicator.ReplicatorAsChannelTest
-#
-# distributed utils
-#
-#TARGET_CLASS=org.jboss.test.messaging.core.distributed.util.RpcServerTest
-#TARGET_TEST=testNoSuchMethodName_Local
-#
-# JMS Facade
-#
-#TARGET_CLASS=org.jboss.test.messaging.jms.TransactedSessionTest
-#TARGET_TEST=testRedeliveredFlagLocalTopic
-#TARGET_CLASS=org.jboss.test.messaging.jms.SessionTest
-#TARGET_TEST=testCreateConsumer
-#TARGET_CLASS=org.jboss.test.messaging.jms.MessageProducerTest
-#TARGET_TEST=testCreateProducerOnInexistentDestination
-#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionTest
-#TARGET_TEST=testClose1
-#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionClosedTest
-#TARGET_TEST=testCannotReceiveMessageOnStoppedConnection
-#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionConsumerTest
-#TARGET_TEST=testSimple
-#TARGET_CLASS=org.jboss.test.messaging.jms.ConnectionFactoryTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.MessageConsumerTest
-#TARGET_TEST=testExceptionMessageListener3
-#TARGET_CLASS=org.jboss.test.messaging.jms.BrowserTest
-#TARGET_TEST=testCreateBrowserOnNullDestination
-#TARGET_CLASS=org.jboss.test.messaging.jms.AcknowledgmentTest
-#TARGET_TEST=testClientAcknowledgeNoAcknowlegment
-#TARGET_CLASS=org.jboss.test.messaging.jms.TemporaryDestinationTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.selector.SelectorTest
-#TARGET_TEST=testSelectiveClosingConsumer
-#TARGET_CLASS=org.jboss.test.messaging.jms.QueueTest
-#TARGET_TEST=testQueue
-#TARGET_CLASS=org.jboss.test.messaging.jms.TopicTest
-#TARGET_TEST=testQueue
-#TARGET_CLASS=org.jboss.test.messaging.jms.persistence.JBossBytesMessagePersistenceManagerTest
-#TARGET_TEST=testCommit_NotXA_Long_NotStoreXid
-#TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
-#TARGET_TEST=testLoginNoUserNoPassword
-#
-# JMS Facade server
-#
-#TARGET_CLASS=org.jboss.test.messaging.jms.server.DestinationManagerTest
-#
-# Message tests
-#
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSExpirationHeaderTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSReplyToHeaderTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.JMSCorrelationIDHeaderTest
-#TARGET_TEST=testJMSDestination
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.MessageBodyTest
-#TARGET_TEST=testStreamMessage
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.TextMessageTest
-#TARGET_TEST=testPersistentSend
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.MapMessageTest
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.BytesMessageTest
-#TARGET_TEST=testPersistentSend
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.StreamMessageTest
-#TARGET_TEST=testNonPersistentSend
-#TARGET_CLASS=org.jboss.test.messaging.jms.message.ObjectMessageTest
-
 
 
 reldir=`dirname $0`
+
+if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
+   . $reldir/.testrc
+fi
+
+if [ -z "$TARGET_CLASS" ]; then
+   echo "No TARGET_CLASS found! Set the TARGET_CLASS environment variable and try again." 1>&2
+   exit 1
+fi
+
 outputdir="$reldir/../output"
 
 if ! mkdir -p $outputdir/logs; then
@@ -199,7 +62,9 @@ while [ "$1" != "" ]; do
         isRemote=true;
         REMOTE_TEST="-Dremote=true"
     fi
-
+    if [ "$1" = "-remotedebug" ]; then
+        REMOTE_DEBUG_FLAG="-debug"
+    fi
     shift
 done
 
@@ -217,8 +82,7 @@ if [ "$TARGET_TEST" != "" ]; then
 fi
 
 if [ "$isRemote" = "true" ]; then
-  #$reldir/start-rmi-server -debug
-  $reldir/start-rmi-server
+  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG
 fi
 
 
