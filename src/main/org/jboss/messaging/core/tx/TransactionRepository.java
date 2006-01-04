@@ -40,6 +40,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision 1.1 $
+ *
+ * $Id$
  */
 public class TransactionRepository
 {
