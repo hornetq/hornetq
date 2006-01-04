@@ -96,6 +96,14 @@ public class JMSExpirationHeaderTest extends MessageTest
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
       Thread.sleep(2000);
+      assertNull(queueConsumer.receive(100));
+   }
+
+   public void testExpirationOnReceiveNoWait() throws Exception
+   {
+      Message m = queueProducerSession.createMessage();
+      queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
+      Thread.sleep(2000);
       assertNull(queueConsumer.receiveNoWait());
    }
 
