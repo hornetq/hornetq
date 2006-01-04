@@ -6,16 +6,17 @@ i=0
 
 while [ $i -lt $count ]; do
 	i=`expr $i + 1`
-        echo "#############################################"
-        echo "#                                           #"
+   echo "#############################################"
+   echo "#                                           #"
 	echo "#         Running test loop $i"
-        echo "#                                           #"
-        echo "#############################################"
-        echo ""
-        if ! ./runtest; then
+   echo "#                                           #"
+   echo "#############################################"
+   echo ""
+   #cat /dev/null ../output/logs/messaging-tests.trace.log
+   if ! ./runtest; then
 		echo "Test failed on loop $i"
-                exit 1
-        fi
+      exit 1
+   fi
 done
 
 
