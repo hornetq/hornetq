@@ -23,7 +23,6 @@ package org.jboss.test.messaging.core.persistence;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +31,9 @@ import java.util.Properties;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
