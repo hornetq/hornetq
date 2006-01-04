@@ -43,7 +43,6 @@ public class ClientManagerImpl implements ClientManager
    
    private static final Logger log = Logger.getLogger(ClientManagerImpl.class);
 
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -58,8 +57,7 @@ public class ClientManagerImpl implements ClientManager
    {
       this.serverPeer = serverPeer;
       connections = new ConcurrentReaderHashMap();
-      
-
+      log.debug("ClientManager created");
    }
 
    // Public --------------------------------------------------------
