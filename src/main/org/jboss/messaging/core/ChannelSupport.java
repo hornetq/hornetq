@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
@@ -426,48 +427,51 @@ public abstract class ChannelSupport implements Channel
    }
    
    private Delivery getDelivery(Receiver receiver, MessageReference ref)
-   {
-      //NOTE There should never be more than one receiver
-      //Eventually we wil enforce this in the design of the Channel
-      //but for now we just check we only have one receiver
-      
+   {      
+      Delivery d = null;
+            
       if (receiver == null)
       {
-         Iterator iter = router.iterator();
-         if (!iter.hasNext())
+         Set deliveries = router.handle(this, ref, null);
+         
+         if (deliveries.isEmpty())
          {
-            //No receivers
             return null;
          }
-         receiver = (Receiver)iter.next();
-         if (iter.hasNext())
+         
+         //Sanity check - we shouldn't get more then one delivery - 
+         //the Channel can only cope with one delivery per message reference
+         //at any one time.
+         //Eventually this will be enforced in the design of the core classes
+         //but for now we just throw an Exception
+         if (deliveries.size() > 1)
          {
-            throw new IllegalStateException("More than one consumer on a channel is not supported!!");
+            throw new IllegalStateException("More than one delivery returned from router!");
+         }
+         
+         d = (Delivery)deliveries.iterator().next();
+      }
+      else
+      {
+         try
+         {
+            d = receiver.handle(this, ref, null);
+   
+            if (d != null && d.isCancelled())
+            {
+               d = null;               
+            }   
+         }
+         catch(Throwable t)
+         {
+            // broken receiver - log the exception and ignore it
+            log.error("The receiver " + receiver + " is broken", t);
          }
       }
       
-      Delivery d = null;
-      
-      try
+      if (d != null)
       {
-         d = receiver.handle(this, ref, null);
-
-         if (d != null)
-         {
-            if (d.isCancelled())
-            {
-               d = null;
-            }
-            else
-            {
-               ref.incrementDeliveryCount();
-            }
-         }   
-      }
-      catch(Throwable t)
-      {
-         // broken receiver - log the exception and ignore it
-         log.error("The receiver " + receiver + " is broken", t);
+         ref.incrementDeliveryCount();
       }
       
       return d;
