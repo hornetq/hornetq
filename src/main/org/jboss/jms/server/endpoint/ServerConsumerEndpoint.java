@@ -101,7 +101,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    protected volatile boolean closed;
    
-   protected volatile boolean ready;
+   protected volatile boolean active;
    
    protected volatile boolean grabbing;
    
@@ -214,7 +214,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       finally
       {
-         ready = false;
+         active = false;
          grabbing = false;
       }
    }
@@ -336,16 +336,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       finally
       {
          toGrab = null;
-         
          grabbing = false;
       }               
    }
    
    public synchronized void deactivate() throws JMSException
    {
-      ready = false;
-      
-      if (log.isTraceEnabled()) { log.trace("set ready to false"); }
+      active = false;
+      if (log.isTraceEnabled()) { log.trace(this + " deactivated"); }
    }
    
    
@@ -356,21 +354,20 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          //Do nothing
          return;
       }
-      
-      ready = true;
-      
+
+      active = true;
+      if (log.isTraceEnabled()) { log.trace(this + " activated"); }
+
       promptDelivery();
    }
    
    // Public --------------------------------------------------------
-   
-   
-   
+
    public String toString()
    {
-      return "ServerConsumerDelegate[" + Util.guidToString(id) + "]";
+      return "ConsumerEndpoint[" + Util.guidToString(id) + (active ? ",active" : "") + "]";
    }
-   
+
    // Package protected ---------------------------------------------
    
    /**
@@ -494,9 +491,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    protected void promptDelivery()
    {
-      if (log.isTraceEnabled()) { log.trace(this + " prompts delivery"); }
-      if (ready || grabbing)
+      if (active || grabbing)
       {
+         if (log.isTraceEnabled()) { log.trace(this + " prompts delivery"); }
          channel.deliver(this);
       }      
    }
@@ -523,10 +520,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     */
    protected boolean wantReference()
    {
-      //If the client side consumer is not ready to accept a message and have it sent to it
-      //or we're not grabbing a message for receiveNoWait
-      //we return null to refuse the message
-      if (!ready && !grabbing)
+      // If the client side consumer is not ready to accept a message and have it sent to it
+      // or we're not grabbing a message for receiveNoWait we return null to refuse the message
+      if (!active && !grabbing)
       {
          if (log.isTraceEnabled()) { log.trace("Not ready for message so returning null"); }
          return false;
@@ -534,7 +530,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       if (closed)
       {
-         if (log.isTraceEnabled()) { log.trace("consumer " + this + " closed, rejecting message" ); }
+         if (log.isTraceEnabled()) { log.trace(this + " closed, rejecting message" ); }
          return false;
       }
       

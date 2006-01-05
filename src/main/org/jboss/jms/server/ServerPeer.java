@@ -194,11 +194,11 @@ public class ServerPeer
          jdbcStateManager.start();
          stateManager = jdbcStateManager;
          
-         //This pooled executor controls how threads are allocated to deliver messages
-         //to consumers.
-         //The buffer(queue) of the pool must be unbounded to avoid potential distributed deadlock
-         //Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
-         //Otherwise, we will never have more than getMinimumPoolSize threads running.
+         // This pooled executor controls how threads are allocated to deliver messages
+         // to consumers.
+         // The buffer(queue) of the pool must be unbounded to avoid potential distributed deadlock
+         // Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
+         // Otherwise, we will never have more than getMinimumPoolSize threads running.
                      
          threadPool = new PooledExecutor(new LinkedQueue(), 50);
          threadPool.setMinimumPoolSize(50); 
@@ -208,7 +208,7 @@ public class ServerPeer
          mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
          
          mbeanServer.registerMBean(stateManager, STATE_MANAGER_OBJECT_NAME);
-         
+                                                   
          securityManager.init();
          
          setupConnectionFactories();

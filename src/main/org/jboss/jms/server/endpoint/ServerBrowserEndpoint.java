@@ -34,6 +34,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.util.Util;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -45,25 +46,31 @@ import org.jboss.messaging.core.Routable;
  */
 public class ServerBrowserEndpoint implements BrowserEndpoint
 {
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(ServerBrowserEndpoint.class);
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
 
    protected Iterator iterator;
    
    protected ServerSessionEndpoint session;
    
-   protected String browserID;
+   protected String id;
    
    protected boolean closed;
 
-   ServerBrowserEndpoint(ServerSessionEndpoint session,
-                         String browserID,
-                         Channel destination,
-                         String messageSelector)
+   // Constructors --------------------------------------------------
+
+   ServerBrowserEndpoint(ServerSessionEndpoint session, String id,
+                         Channel destination, String messageSelector)
       throws JMSException
    {     
       this.session = session;
       
-      this.browserID = browserID;
+      this.id = id;
       
 		Filter filter = null;
       
@@ -74,8 +81,9 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       
 		iterator = destination.browse(filter).iterator();
    }
-      
-   
+
+   // BrowserEndpoint implementation --------------------------------
+
    public boolean hasNextMessage() throws JMSException
    {
       if (closed)
@@ -136,8 +144,8 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          throw new IllegalStateException("Browser is already closed");
       }
       iterator = null;
-      session.producers.remove(this.browserID);
-      Dispatcher.singleton.unregisterTarget(this.browserID);
+      session.producers.remove(this.id);
+      Dispatcher.singleton.unregisterTarget(this.id);
       closed = true;
    }
    
@@ -145,5 +153,20 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    {
       //Do nothing
    }
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "BrowserEndpoint[" + Util.guidToString(id) + "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

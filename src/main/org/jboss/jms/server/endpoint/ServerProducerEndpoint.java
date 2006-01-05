@@ -29,6 +29,7 @@ import javax.jms.Message;
 import org.jboss.aop.Dispatcher;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 
 /**
  * Concrete implementation of ProducerEndpoint.
@@ -118,6 +119,11 @@ public class ServerProducerEndpoint implements ProducerEndpoint
    public ServerPeer getServerPeer()
    {
       return sessionEndpoint.getConnectionEndpoint().getServerPeer();
+   }
+
+   public String toString()
+   {
+      return "ProducerEndpoint[" + Util.guidToString(id) + ", " + jmsDestination + "]";
    }
 
    // Package protected ---------------------------------------------

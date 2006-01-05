@@ -55,6 +55,7 @@ import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
@@ -146,7 +147,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
       ClientProducerDelegate d = new ClientProducerDelegate(producerID, serverPeer.getLocator());
       
-      log.debug("created producer delegate (producerID=" + producerID + ")");
+      log.debug("created and registered " + ep);
 
       return d;
    }
@@ -285,12 +286,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       } 
       
-      ServerConsumerEndpoint scd =
+      ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID,
                                     subscription == null ? (Channel)destination : subscription,
                                     callbackHandler, this, selector, noLocal);
        
-      Dispatcher.singleton.registerTarget(consumerID, new ConsumerAdvised(scd));
+      Dispatcher.singleton.registerTarget(consumerID, new ConsumerAdvised(ep));
          
       ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, serverPeer.getLocator());
       
@@ -299,11 +300,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          subscription.subscribe();
       }
             
-      putConsumerDelegate(consumerID, scd);
+      putConsumerDelegate(consumerID, ep);
       
-      connectionEndpoint.consumers.put(consumerID, scd);
+      connectionEndpoint.consumers.put(consumerID, ep);
 
-      if (log.isTraceEnabled()) log.trace("created consumer endpoint (destination=" + jmsDestination + ")");
+      log.debug("created and registered " + ep);
 
       return stub;
    }
@@ -338,15 +339,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   
 	   String browserID = new GUID().toString();
 	   
-	   ServerBrowserEndpoint sbd =
+	   ServerBrowserEndpoint ep =
 	      new ServerBrowserEndpoint(this, browserID, (Channel)destination, messageSelector);
 	   
-	   putBrowserDelegate(browserID, sbd);
+	   putBrowserDelegate(browserID, ep);
 	   
-	   Dispatcher.singleton.registerTarget(browserID, new BrowserAdvised(sbd));
+	   Dispatcher.singleton.registerTarget(browserID, new BrowserAdvised(ep));
 	   
 	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID, serverPeer.getLocator());
-	   
+
+      log.debug("created and registered " + ep);
+
 	   return stub;
 	}
 
@@ -607,12 +610,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
    /**
     * IoC
     */
-   
    public void setCallbackHandler(InvokerCallbackHandler callbackHandler)
    {
       this.callbackHandler = callbackHandler;
    }
-   
+
+   public String toString()
+   {
+      return "SessionEndpoint[" + Util.guidToString(sessionID) + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    /**

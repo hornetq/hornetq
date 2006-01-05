@@ -58,6 +58,7 @@ public class LogInterceptor implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+      Method method = null;
       String methodName = null;
       Object target = null;
       if (log.isTraceEnabled())
@@ -71,8 +72,8 @@ public class LogInterceptor implements Interceptor
          else
          {
             MethodInvocation mi = (MethodInvocation)invocation;
-            Method m = mi.getMethod();
-            methodName = m.getName();
+            method = mi.getMethod();
+            methodName = method.getName();
             StringBuffer sb = new StringBuffer();
             sb.append("invoking ").append(target).append('.').append(methodName).append('(');
             Object[] args = mi.getArguments();
@@ -103,7 +104,24 @@ public class LogInterceptor implements Interceptor
 
       Object res = invocation.invokeNext();
 
-      if (log.isTraceEnabled()) { log.trace(target + "." + methodName + "() returned " + res); }
+      if (log.isTraceEnabled())
+      {
+         if (method == null)
+         {
+            log.trace(invocation + " successfully invoked on " + target);
+         }
+         else
+         {
+            if (method.getReturnType() != Void.TYPE)
+            {
+               log.trace(target + "." + methodName + "() returned " + res);
+            }
+            else
+            {
+               log.trace(target + "." + methodName + " oky");
+            }
+         }
+      }
       return res;
    }
 

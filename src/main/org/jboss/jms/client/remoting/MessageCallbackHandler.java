@@ -668,12 +668,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       {
          try
          {
-            if (log.isTraceEnabled()) { log.trace("Consumer Activation"); }
+            if (log.isTraceEnabled()) { log.trace("activating consumer endpoint"); }
             consumerDelegate.activate();
          }
          catch(Throwable t)
          {
-            log.error("Consumer activation failed", t);
+            log.error("Consumer endpoint activation failed", t);
             if (t.getCause() != null)
             {
                log.error("Cause:" + t.getCause());

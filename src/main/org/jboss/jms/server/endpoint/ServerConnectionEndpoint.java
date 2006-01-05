@@ -163,9 +163,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          Dispatcher.singleton.registerTarget(sessionID, sessionAdvised);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID, serverPeer.getLocator());
-                 
-         log.debug("created session delegate (sessionID=" + Util.guidToString(sessionID) + ")");
-         
+
+         log.debug("created and registered " + ep);
+
          return d;
       }
       finally
@@ -244,7 +244,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Connection is closed");
          }
          setStarted(true);
-         log.debug("Connection " + Util.guidToString(connectionID) + " started");
+         log.debug(this + " started");
       }
       finally
       {
@@ -479,12 +479,17 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return connectionID;
    }
-   
+
+   public String toString()
+   {
+      return "ConnectionEndpoint[" + Util.guidToString(connectionID) + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    void sendMessage(Message m, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("sending " + m + (tx == null ? "non-transactionally" : " transactionally on " + tx)); }
+      if (log.isTraceEnabled()) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
 
       //The JMSDestination header must already have been set for each message
       JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();

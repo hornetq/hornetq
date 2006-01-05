@@ -99,6 +99,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
       Dispatcher.singleton.registerTarget(connectionID, connAdvised);
 
+      log.debug("created and registered " + endpoint);
+
       ClientConnectionDelegate delegate;
       try
       {
