@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.util;
 
+import javax.jms.Session;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -50,6 +52,28 @@ public class Util
          return s;
       }
       return "...-" + s.substring(idx + 1);
+   }
+
+   public static String acknowledgmentModeToString(int ackMode)
+   {
+
+      if (ackMode == Session.AUTO_ACKNOWLEDGE)
+      {
+         return "AUTO_ACKNOWLEDGE";
+      }
+      else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
+      {
+         return "CLIENT_ACKNOWLEDGE";
+      }
+      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         return "DUPS_OK_ACKNOWLEDGE";
+      }
+      else if (ackMode == Session.SESSION_TRANSACTED)
+      {
+         return "SESSION_TRANSACTED";
+      }
+      return "UNKNOWN: " + ackMode;
    }
 
    // Attributes ----------------------------------------------------

@@ -86,7 +86,7 @@ public interface State
    
    /**
     * This method is called after a new message arrives at the Channel and is succesfully delivered.
-    * At no point is a message refernce added to the state.
+    * At no point is a message reference added to the state.
     * 
     * @param d The Delivery to add
     * @throws Throwable
@@ -96,7 +96,7 @@ public interface State
    /**
     * A message that was already in the state has now been successully delivered.  
     *
-    * @param deliveries The set of delivery instances to add
+    * @param d The set of delivery instances to add
     * @throws Throwable
     */
    void redeliver(Delivery d) throws Throwable;

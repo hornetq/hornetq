@@ -42,6 +42,11 @@ public interface Server extends Remote
    void stop() throws Exception;
    void destroy() throws Exception;
 
+   /**
+    * Only for remote use!
+    */
+   void log(int level, String text) throws Exception;
+
    void startServerPeer() throws Exception;
    void stopServerPeer() throws Exception;
 
@@ -83,7 +88,6 @@ public interface Server extends Remote
     *         ServerManagement.toElement().
     */
    String getDefaultSecurityConfig() throws Exception;
-
 
    void exit() throws Exception;
 

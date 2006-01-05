@@ -54,5 +54,4 @@ public class TextMessageDelegate extends MessageDelegate implements TextMessage
    {
       return ((TextMessage)message).getText();
    }
-
 }

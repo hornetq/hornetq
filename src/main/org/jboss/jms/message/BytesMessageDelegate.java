@@ -31,7 +31,8 @@ import javax.jms.MessageNotWriteableException;
  * Thin delegator for a JBossBytesMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
+ * $Id$
  */
 public class BytesMessageDelegate extends MessageDelegate implements BytesMessage
 {
@@ -279,5 +280,4 @@ public class BytesMessageDelegate extends MessageDelegate implements BytesMessag
       ((BytesMessage)message).reset();
       bodyReadOnly = true;
    }
-
 }

@@ -23,7 +23,10 @@ package org.jboss.jms.server.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
+
+import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -52,7 +55,73 @@ public class LogInterceptor implements Interceptor
     
     public Object invoke(Invocation invocation) throws Throwable
     {
-       return invocation.invokeNext();
+       Method method = null;
+       String methodName = null;
+       Object target = null;
+
+       if (log.isTraceEnabled())
+       {
+          target = invocation.getTargetObject();
+
+          if (!(invocation instanceof MethodInvocation))
+          {
+             log.trace("invoking non-method invocation: " + invocation + " on " + target);
+          }
+          else
+          {
+             MethodInvocation mi = (MethodInvocation)invocation;
+             method = mi.getMethod();
+             methodName = method.getName();
+
+             StringBuffer sb = new StringBuffer();
+             sb.append("invoking ").append(target).append('.').append(methodName).append('(');
+             Object[] args = mi.getArguments();
+             if (args != null)
+             {
+                for(int i = 0; i < args.length; i++)
+                {
+                   // take special precautions to hide passwords
+                   if ("createConnectionDelegate".equals(methodName) && i == 1)
+                   {
+                      sb.append("*****");
+                   }
+                   else
+                   {
+                      sb.append(args[i]);
+                   }
+                   if (i < args.length - 1)
+                   {
+                      sb.append(", ");
+                   }
+                }
+             }
+             sb.append(')');
+             log.trace(sb.toString());
+          }
+       }
+
+       Object result = invocation.invokeNext();
+
+       if (log.isTraceEnabled())
+       {
+          if (method == null)
+          {
+             log.trace(invocation + " successfully invoked on " + target);
+          }
+          else
+          {
+             if (method.getReturnType() != Void.TYPE)
+             {
+                log.trace(target + "." + methodName + "() returned " + result);
+             }
+             else
+             {
+                log.trace(target + "." + methodName + "() ok");
+             }
+          }
+       }
+
+       return result;
     }
     
     // Package protected ---------------------------------------------
@@ -63,6 +132,7 @@ public class LogInterceptor implements Interceptor
 
     // Inner classes -------------------------------------------------
 }
+
 
 
 

@@ -108,7 +108,7 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
 
    public String toString()
    {
-      return endpoint.toString();
+      return "ConsumerAdvised->" + endpoint;
    }
 
    // Protected -----------------------------------------------------

@@ -31,7 +31,8 @@ import javax.jms.StreamMessage;
  * Thin delegator for a JBossStreamMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
+ * $Id$
  */
 public class StreamMessageDelegate extends MessageDelegate implements StreamMessage
 {
@@ -231,6 +232,5 @@ public class StreamMessageDelegate extends MessageDelegate implements StreamMess
       bodyChange();
       ((StreamMessage)message).writeString(value);
    }
-
 }
 

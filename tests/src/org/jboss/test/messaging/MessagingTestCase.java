@@ -29,6 +29,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 import junit.framework.TestCase;
 
@@ -65,12 +66,30 @@ public class MessagingTestCase extends TestCase
 
    protected void setUp() throws Exception
    {
-      log.info("####################################################### Start test: " + getName());
+      String banner =
+         "####################################################### Start test: " + getName();
+
+      log.info(banner);
+
+      if (isRemote())
+      {
+         // log the test start in the remote log, this will make hunting through logs so much easier
+         ServerManagement.log(ServerManagement.INFO, banner);
+      }
    }
 
    protected void tearDown() throws Exception
    {
-      log.info("####################################################### Stop test: " + getName());
+      String banner =
+         "####################################################### Stop test: " + getName();
+
+      log.info(banner);
+
+      if (isRemote())
+      {
+         // log the test stop in the remote log, this will make hunting through logs so much easier
+         ServerManagement.log(ServerManagement.INFO, banner);
+      }
    }
    
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception
@@ -95,7 +114,17 @@ public class MessagingTestCase extends TestCase
       {
          if (conn!= null) conn.close();
       }
-  }
+   }
+
+
+   /**
+    * @return true if this test is ran in "remote" mode, i.e. the server side of the test runs in a
+    *         different VM than this one (that is running the client side)
+    */
+   protected boolean isRemote()
+   {
+      return ServerManagement.isRemote();
+   }
 
    // Private -------------------------------------------------------
    

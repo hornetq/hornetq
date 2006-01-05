@@ -32,7 +32,8 @@ import javax.jms.MessageNotWriteableException;
  * Thin delegator for a JBossMapMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
+ * $Id$
  */
 public class MapMessageDelegate extends MessageDelegate implements MapMessage
 {
@@ -227,5 +228,4 @@ public class MapMessageDelegate extends MessageDelegate implements MapMessage
    {
       return ((MapMessage)message).itemExists(name);
    }
-
 }

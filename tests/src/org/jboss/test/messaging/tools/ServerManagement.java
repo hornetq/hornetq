@@ -49,7 +49,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 
 /**
- * Collection of static methods to use to start/stop and interact with the in-memory JMS server.
+ * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
+ * is also use to start/stop a remote server.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -59,6 +60,14 @@ import javax.xml.parsers.DocumentBuilder;
 public class ServerManagement
 {
    // Constants -----------------------------------------------------
+
+   // logging levels used by the remote client to forward log output on a remote server
+   public static int FATAL = 0;
+   public static int ERROR = 1;
+   public static int WARN = 2;
+   public static int INFO = 3;
+   public static int DEBUG = 4;
+   public static int TRACE = 5;
 
    // Static --------------------------------------------------------
 
@@ -176,6 +185,27 @@ public class ServerManagement
          {
             vmStarter.interrupt();
             vmStarter = null;
+         }
+      }
+   }
+
+   public static void log(int level, String text)
+   {
+      if (isRemote())
+      {
+         if (server == null)
+         {
+            log.warn("The remote server has not been created yet!");
+            return;
+         }
+         
+         try
+         {
+            server.log(level, text);
+         }
+         catch(Exception e)
+         {
+            log.error("failed to forward the logging request to the remote server", e);
          }
       }
    }

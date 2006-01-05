@@ -36,10 +36,13 @@ import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
+import org.jboss.messaging.util.Util;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.SynchronousChannel;
+
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -73,7 +76,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       }
       catch (RuntimeException e)
       {
-         log.error("RuntimeException was thrown from onMessage, the message will be redelivered", e);
+         Serializable id = m.getJMSMessageID();
+
+         log.error("RuntimeException was thrown from onMessage, " + Util.guidToString(id) + " will be redelivered", e);
          
          //See JMS1.1 spec 4.5.2
 
@@ -81,13 +86,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          {
             //Cancel the message - this means it will be immediately redelivered
 
-            cons.cancelMessage(m.getJMSMessageID());    
+            if (log.isTraceEnabled()) { log.trace("cancelling " + Util.guidToString(id)); }
+            cons.cancelMessage(id);
          }
          else
          {
             //Session is either transacted or CLIENT_ACKNOWLEDGE
             //We just deliver next message
-         }           
+            if (log.isTraceEnabled()) { log.trace("ignoring exception on " + Util.guidToString(id)); }
+         }
       }
             
       postDeliver(sess, consumerID, m, isConnectionConsumer);
@@ -358,7 +365,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                      return null;
                   }
                   
-                  if (log.isTraceEnabled()) { log.trace("Got message: " + m); }
+                  if (log.isTraceEnabled()) { log.trace("got " + m); }
                }
                else if (timeout == -1)
                {
@@ -372,7 +379,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                   
                   if (m == null)
                   {
-                     if (log.isTraceEnabled()) { log.trace("No message available"); }
+                     if (log.isTraceEnabled()) { log.trace("no message available"); }
                      return null;
                   }
                }

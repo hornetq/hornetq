@@ -65,7 +65,7 @@ class DeliveryRunnable extends Callback implements Runnable
    {
       try
       {
-         if (log.isTraceEnabled()) { log.trace("handing the message " + this.getCallbackObject() + " over to the remoting layer"); }
+         if (log.isTraceEnabled()) { log.trace("handing " + this.getCallbackObject() + " over to the remoting layer"); }
          callbackHandler.handleCallback(this);
       }
       catch(Throwable t)

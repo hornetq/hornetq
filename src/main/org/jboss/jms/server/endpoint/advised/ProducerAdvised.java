@@ -80,6 +80,11 @@ public class ProducerAdvised extends AdvisedSupport implements ProducerEndpoint
 
    // Public --------------------------------------------------------
 
+   public String toString()
+   {
+      return "ProducerAdvised->" + endpoint;
+   }
+
    // Protected -----------------------------------------------------
 
    // Package Private -----------------------------------------------

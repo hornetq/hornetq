@@ -32,7 +32,8 @@ import javax.jms.ObjectMessage;
  * Thin delegator for a JBossObjectMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
+ * $Id$
  */
 public class ObjectMessageDelegate extends MessageDelegate implements ObjectMessage
 {
@@ -57,5 +58,4 @@ public class ObjectMessageDelegate extends MessageDelegate implements ObjectMess
    {
       return ((ObjectMessage)message).getObject();
    }
-
 }

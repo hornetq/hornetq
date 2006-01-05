@@ -473,4 +473,10 @@ public class MessageDelegate implements Message, Serializable
       bodyReadOnly = false;
    }
 
+
+   public String toString()
+   {
+      return "delegator->" + message;
+   }
+
 }

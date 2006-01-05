@@ -170,6 +170,39 @@ public class RMIServer extends UnicastRemoteObject implements Server
       }
    }
 
+   public void log(int level, String text)
+   {
+      if (ServerManagement.FATAL == level)
+      {
+         log.fatal(text);
+      }
+      else if (ServerManagement.ERROR == level)
+      {
+         log.error(text);
+      }
+      else if (ServerManagement.WARN == level)
+      {
+         log.warn(text);
+      }
+      else if (ServerManagement.INFO == level)
+      {
+         log.info(text);
+      }
+      else if (ServerManagement.DEBUG == level)
+      {
+         log.debug(text);
+      }
+      else if (ServerManagement.TRACE == level)
+      {
+         log.trace(text);
+      }
+      else
+      {
+         // log everything else as INFO
+         log.info(text);
+      }
+   }
+
    public void exit() throws Exception
    {
       destroy();

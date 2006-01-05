@@ -87,4 +87,18 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       return endpoint;
    }
 
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "BrowserAdvised->" + endpoint;
+   }
+
+   // Protected -----------------------------------------------------
+
+   // Package Private -----------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner Classes -------------------------------------------------
 }

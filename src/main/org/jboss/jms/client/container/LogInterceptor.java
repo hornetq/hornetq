@@ -118,7 +118,7 @@ public class LogInterceptor implements Interceptor
             }
             else
             {
-               log.trace(target + "." + methodName + " oky");
+               log.trace(target + "." + methodName + "() ok");
             }
          }
       }

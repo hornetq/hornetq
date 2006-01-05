@@ -130,6 +130,11 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       return endpoint;
    }
 
+   public String toString()
+   {
+      return "SessionAdvised->" + endpoint;
+   }
+
    // Public --------------------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -156,9 +156,11 @@ public class NonRecoverableState implements State
    /*
     * We have redelivered a pre-existing message, so we add the delivery to the state
     */
-   public void redeliver(Delivery del) throws Throwable
+   public void redeliver(Delivery d) throws Throwable
    {
-      deliveries.add(del);       
+      deliveries.add(d);
+
+      if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory"); }
    }
    
    /*

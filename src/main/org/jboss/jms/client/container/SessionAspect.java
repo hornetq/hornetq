@@ -30,6 +30,7 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 
 /**
  * This aspect handles JMS session related logic
@@ -61,17 +62,15 @@ public class SessionAspect
       
       int ackMode = getState(invocation).getAcknowledgeMode();
       
-      if (log.isTraceEnabled()) { log.trace("Session ack mode is:" + ackMode); }
-      
-      if (ackMode != Session.SESSION_TRANSACTED && ackMode != Session.CLIENT_ACKNOWLEDGE) 
+      if (ackMode != Session.SESSION_TRANSACTED && ackMode != Session.CLIENT_ACKNOWLEDGE)
       {
          SessionDelegate del = (SessionDelegate)mi.getTargetObject();
          
          //We acknowledge immediately
-         
-         del.acknowledge();                
+         del.acknowledge();
+         if (log.isTraceEnabled()) { log.trace("ack mode is " + Util.acknowledgmentModeToString(ackMode)+ ", acknowledged on " + del); }
       }
-      
+
       return null;
    }
    

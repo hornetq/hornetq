@@ -37,6 +37,7 @@ import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+import org.jboss.messaging.util.Util;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -71,34 +72,21 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public void setMBeanServer(MBeanServer server)
    {
       this.server = server;
-      if (log.isTraceEnabled()) { log.trace("set MBeanServer " + this.server); }
+      if (log.isTraceEnabled()) { log.trace("set MBeanServer to " + this.server); }
    }
 
    public void setInvoker(ServerInvoker invoker)
    {
       this.invoker = invoker;
-      if (log.isTraceEnabled()) {log.trace("set ServerInvoker " + this.invoker); }
+      if (log.isTraceEnabled()) {log.trace("set ServerInvoker to " + this.invoker); }
    }
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
       MethodInvocation i = (MethodInvocation)invocation.getParameter();
 
-      if (log.isTraceEnabled())
-      {
-         Method m = i.getMethod();
-         if (m == null)
-         {
-            log.trace("handling remote invocation " + i);
-         }
-         else
-         {
-            log.trace("handling " + m.getName());
-         }
-      }
-
       String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
-      
+
       if (s != null)
       {
          Object callbackHandler = null;
@@ -108,6 +96,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
          if (callbackHandler != null)
          {
+            if (log.isTraceEnabled()) { log.trace("found calllback handler for session " + Util.guidToString(s)); }
             i.getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
          }
          else

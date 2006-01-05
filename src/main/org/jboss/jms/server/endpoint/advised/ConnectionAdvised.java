@@ -111,6 +111,11 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       return endpoint;
    }
 
+   public String toString()
+   {
+      return "ConnectionAdvised->" + endpoint;
+   }
+
    // Protected -----------------------------------------------------
 
    // Package Private -----------------------------------------------

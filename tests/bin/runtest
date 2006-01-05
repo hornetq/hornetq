@@ -31,6 +31,9 @@ if ! mkdir -p $outputdir/logs; then
    echo "failed to create $outputdir/logs"
 fi
 
+# reset the log files as by default log4j is configure to append
+rm -f $outputdir/logs/*.log
+
 cygwin=false;
 case "`uname`" in
     CYGWIN*)
