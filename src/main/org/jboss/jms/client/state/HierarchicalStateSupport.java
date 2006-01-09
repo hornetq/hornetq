@@ -39,7 +39,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
  *
  * $Id$
  */
-public class HierarchicalStateBase implements HierarchicalState
+public class HierarchicalStateSupport implements HierarchicalState
 {
    // Constants -----------------------------------------------------
 
@@ -55,7 +55,7 @@ public class HierarchicalStateBase implements HierarchicalState
 
    // Constructors --------------------------------------------------
 
-   public HierarchicalStateBase(HierarchicalState parent, Object delegate)
+   public HierarchicalStateSupport(HierarchicalState parent, Object delegate)
    {
       this.parent = parent;
       this.delegate = (DelegateSupport)delegate; // TODO - find a more elegant solution, delegate must implement an interface that has getID()

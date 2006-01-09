@@ -164,7 +164,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
                  
-         log.debug("created session delegate (sessionID=" + Util.guidToString(sessionID) + ")");         
+         log.debug("created session delegate (sessionID=" + Util.guidToString(sessionID) + ")");
+         log.debug("created and registered " + ep);
 
          return d;
       }

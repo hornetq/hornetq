@@ -37,7 +37,7 @@ import org.jboss.remoting.Client;
  *
  * $Id$
  */
-public class ConsumerState extends HierarchicalStateBase
+public class ConsumerState extends HierarchicalStateSupport
 {
    private Destination destination;
    

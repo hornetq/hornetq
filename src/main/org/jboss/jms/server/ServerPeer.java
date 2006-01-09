@@ -55,7 +55,6 @@ import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;

@@ -32,7 +32,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
  *
  * $Id$
  */
-public class BrowserState extends HierarchicalStateBase
+public class BrowserState extends HierarchicalStateSupport
 {
    public BrowserState(SessionState parent, BrowserDelegate delegate)
    {

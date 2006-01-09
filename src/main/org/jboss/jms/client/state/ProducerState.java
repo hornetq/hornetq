@@ -36,7 +36,7 @@ import org.jboss.jms.delegate.ProducerDelegate;
  *
  * $Id$
  */
-public class ProducerState extends HierarchicalStateBase
+public class ProducerState extends HierarchicalStateSupport
 {
    private Destination destination;
    

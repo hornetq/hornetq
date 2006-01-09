@@ -38,7 +38,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class SessionState extends HierarchicalStateBase
+public class SessionState extends HierarchicalStateSupport
 {
    private int acknowledgeMode;
    

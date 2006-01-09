@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
 
@@ -99,11 +98,13 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          if (callbackHandler != null)
          {
             if (log.isTraceEnabled()) { log.trace("found calllback handler for session " + Util.guidToString(s)); }
-            i.getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
+            i.getMetaData().addMetaData(MetaDataConstants.JMS,
+                                        MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
          }
          else
          {
-            throw new javax.jms.IllegalStateException("Cannot find callback handler for session id " + s);
+            throw new javax.jms.IllegalStateException("Cannot find callback handler " +
+                                                      "for session id " + s);
          }
       }
 

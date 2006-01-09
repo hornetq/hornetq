@@ -69,23 +69,29 @@ public class ConsumerAspect
       boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       //Create the message handler
-      SessionState sessState = (SessionState)((DelegateSupport)invocation.getTargetObject()).getState();
+      SessionState sessState =
+         (SessionState)((DelegateSupport)invocation.getTargetObject()).getState();
       
       ConnectionState connState = (ConnectionState)sessState.getParent();
       
-      MessageCallbackHandler messageHandler = new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
-                                                                         sessState.getExecutor(), connState.getPooledExecutor());
+      MessageCallbackHandler messageHandler =
+         new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
+                                    sessState.getExecutor(), connState.getPooledExecutor());
 
-      //We need to create new Client instance per consumer to handle the callbacks
-      //This is because we use the client session id on the server to associate the callback server to the consumer
-      //Ideally remoting would allow us to pass arbitrary meta data to do this more cleanly
+      // We need to create new Client instance per consumer to handle the callbacks.
+      // This is because we use the client session id on the server to associate the callback server
+      // to the consumer. Ideally remoting would allow us to pass arbitrary meta data to do this
+      // more cleanly.
       Client client = new Client(new InvokerLocator(connState.getServerURI()));
       
       client.addListener(messageHandler, connState.getCallbackServer().getLocator());
-      
+
+      log.debug("listener added");
+
       // I will need this on the server-side to create the ConsumerDelegate instance
-      invocation.getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID,
-                                     client.getSessionId(), PayloadKey.AS_IS);
+      invocation.getMetaData().addMetaData(MetaDataConstants.JMS,
+                                           MetaDataConstants.REMOTING_SESSION_ID,
+                                           client.getSessionId(), PayloadKey.AS_IS);
 
       ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
       

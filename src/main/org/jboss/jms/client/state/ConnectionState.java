@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  *
  * $Id$
  */
-public class ConnectionState extends HierarchicalStateBase
+public class ConnectionState extends HierarchicalStateSupport
 {
    private static final Logger log = Logger.getLogger(ConnectionState.class);
    

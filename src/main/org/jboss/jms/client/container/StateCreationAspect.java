@@ -41,13 +41,11 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 
 /**
- * Maintains the hierarchy of parent and child state objects
- * For each delegate, this interceptor maintains a state object
- * and it's children/parent.
- * The state object is then made accessible to any of the aspects/interceptors
- * in the chain.
- * This enables the aspects/interceptors to access and make use of the state
- * without having to resort to multiple messy get/set methods on the delegate API
+ * Maintains the hierarchy of parent and child state objects. For each delegate, this interceptor
+ * maintains a state object and it's children/parent. The state object is then made accessible to
+ * any of the aspects/interceptors in the chain. This enables the aspects/interceptors to access
+ * and make use of the state without having to resort to multiple messy get/set methods on the
+ * delegate API.
  * 
  * This interceptor is PER_VM.
  * 
@@ -75,7 +73,9 @@ public class StateCreationAspect
       
       delegate.init();
       
-      delegate.setState(new ConnectionState(delegate, delegate.getServerID(), delegate.getServerLocatorURI()));
+      delegate.setState(new ConnectionState(delegate,
+                                            delegate.getServerID(),
+                                            delegate.getServerLocatorURI()));
                   
       return delegate;
    }
@@ -117,11 +117,14 @@ public class StateCreationAspect
       Destination dest = (Destination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
       boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();    
-      boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();      
-      String consumerID = 
-         (String)((Advised)cons)._getInstanceAdvisor().getMetaData().getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID);
+      boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
+
+      String consumerID =
+         (String)((Advised)cons)._getInstanceAdvisor().getMetaData().
+         getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID);
       
-      ConsumerState state = new ConsumerState(sessState, cons, dest, selector, noLocal, consumerID, connectionConsumer);
+      ConsumerState state = new ConsumerState(sessState, cons, dest, selector, noLocal,
+                                              consumerID, connectionConsumer);
       
       delegate.setState(state);
       
