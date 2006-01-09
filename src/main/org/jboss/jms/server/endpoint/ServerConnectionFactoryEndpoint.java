@@ -105,7 +105,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       try
       {
          delegate = new ClientConnectionDelegate(connectionID,
-                                                 serverPeer.getLocator(),
+                                                 serverPeer.getLocatorURI(),
                                                  serverPeer.getServerPeerID(),
                                                  serverPeer.getVersion());
       }

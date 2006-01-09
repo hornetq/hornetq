@@ -24,9 +24,10 @@ package org.jboss.jms.client.delegate;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.remoting.InvokerLocator;
 import org.jboss.messaging.util.Util;
+import org.jboss.remoting.Client;
 
 /**
  * The client-side Browser delegate class.
@@ -50,9 +51,9 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    // Constructors --------------------------------------------------
 
-   public ClientBrowserDelegate(String objectID, InvokerLocator locator)
+   public ClientBrowserDelegate(String objectID)
    {
-      super(objectID, locator);
+      super(objectID);
    }
 
 
@@ -100,6 +101,12 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    }
 
    // Protected -----------------------------------------------------
+   
+   protected Client getClient()
+   {
+      //Use the Client in the Connection's state
+      return ((ConnectionState)state.getParent().getParent()).getClient();
+   }
 
    // Package Private -----------------------------------------------
 

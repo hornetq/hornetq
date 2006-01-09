@@ -30,7 +30,8 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionMetaData;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
@@ -120,8 +121,8 @@ public class ConnectionAspect implements ConnectionListener
       
       exceptionListener = (ExceptionListener)mi.getArguments()[0];            
       
-      Client client = (Client)invocation.getMetaData(MetaDataConstants.JMS, MetaDataConstants.INVOKER_CLIENT);
-
+      Client client = getState(invocation).getClient();
+      
       if (client == null)
       {
          throw new java.lang.IllegalStateException("Cannot find remoting client");
@@ -162,6 +163,17 @@ public class ConnectionAspect implements ConnectionListener
       return invocation.invokeNext();
    }
    
+   public Object handleClose(Invocation invocation) throws Throwable
+   {
+      Object ret = invocation.invokeNext();
+      
+      //Finished with the connection - we need to shutdown callback server
+      getState(invocation).getCallbackServer().stop();
+      getState(invocation).getClient().disconnect();
+      
+      return ret;
+   }
+   
    // ConnectionListener implementation -----------------------------------------------------------
    
    public void handlerConnectionException(Throwable t, Client c)
@@ -197,6 +209,11 @@ public class ConnectionAspect implements ConnectionListener
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private ConnectionState getState(Invocation inv)
+   {
+      return (ConnectionState)((DelegateSupport)inv.getTargetObject()).getState();
+   }
    
    // Inner classes -------------------------------------------------
 }

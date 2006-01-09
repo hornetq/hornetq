@@ -25,7 +25,9 @@ import java.util.Collections;
 
 import javax.jms.Destination;
 
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.remoting.Client;
 
 /**
  * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.
@@ -46,6 +48,11 @@ public class ConsumerState extends HierarchicalStateBase
    private String consumerID;
    
    private boolean isConnectionConsumer;
+   
+   private MessageCallbackHandler messageCallbackHandler;
+   
+   //We need to keep track of the client so we can remove the callback handler - this is kind of annoying
+   private Client callbackClient;
    
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
                         String selector, boolean noLocal, String consumerID, boolean isCC)
@@ -84,6 +91,25 @@ public class ConsumerState extends HierarchicalStateBase
       return isConnectionConsumer;
    }
    
+   public void setMessageCallbackHandler(MessageCallbackHandler handler)
+   {
+      this.messageCallbackHandler = handler;
+   }
+   
+   public MessageCallbackHandler getMessageCallbackHandler()
+   {
+      return messageCallbackHandler;
+   }
+   
+   public void setCallbackClient(Client client)
+   {
+      this.callbackClient = client;
+   }
+   
+   public Client getCallbackClient()
+   {
+      return callbackClient;
+   }
 }
 
 

@@ -83,6 +83,8 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
+      if (log.isTraceEnabled()) { log.trace("Invoking:" + invocation); }
+      
       MethodInvocation i = (MethodInvocation)invocation.getParameter();
 
       String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
@@ -109,14 +111,14 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)
-   {
+   {      
+      
       if (log.isTraceEnabled()) { log.trace("adding callback handler: " + callbackHandler); }
       
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
          ServerInvokerCallbackHandler h = (ServerInvokerCallbackHandler)callbackHandler;
-         // TODO - if I use ServerInvokerCallbackHandler.getCallbackSessionId(), that allows me to maintain multiple listeners per clientID
-         String id = h.getClientSessionId();
+         String id = h.getClientSessionId();         
          synchronized(callbackHandlers)
          {
             if (callbackHandlers.containsKey(id))

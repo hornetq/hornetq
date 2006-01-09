@@ -25,9 +25,10 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.remoting.InvokerLocator;
 import org.jboss.messaging.util.Util;
+import org.jboss.remoting.Client;
 
 /**
  * The client-side Producer delegate class.
@@ -51,9 +52,9 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    // Constructors --------------------------------------------------
 
-   public ClientProducerDelegate(String objectID, InvokerLocator locator)
+   public ClientProducerDelegate(String objectID)
    {
-      super(objectID, locator);
+      super(objectID);
    }
 
    // ProducerDelegate implementation -------------------------------
@@ -201,6 +202,12 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
    }
 
    // Protected -----------------------------------------------------
+   
+   protected Client getClient()
+   {
+      //Use the Client in the Connection's state
+      return ((ConnectionState)state.getParent().getParent()).getClient();
+   }
 
    // Package Private -----------------------------------------------
 

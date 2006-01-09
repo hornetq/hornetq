@@ -55,9 +55,15 @@
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createSessionDelegate(..))">
       <advice name="handleCreateSessionDelegate" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
-   </bind>      
+   </bind>         
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->close())">
+      <advice name="handleClose" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
+   </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createSessionDelegate(..))">
       <advice name="handleCreateSessionDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
+   </bind>
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->close())">
+      <advice name="handleClose" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
    </bind>
    
    <!-- Session Stack -->   

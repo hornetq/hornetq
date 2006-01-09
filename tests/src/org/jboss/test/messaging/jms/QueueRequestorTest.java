@@ -76,7 +76,7 @@ public class QueueRequestorTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
-      drainDestination(cf, queue);
+      drainDestination(cf, queue);     
    }
 
    public void tearDown() throws Exception
@@ -116,7 +116,6 @@ public class QueueRequestorTest extends MessagingTestCase
       
       conn1.close();
       conn2.close();
-      
       
    }
    

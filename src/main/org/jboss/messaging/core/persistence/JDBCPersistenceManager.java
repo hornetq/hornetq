@@ -48,6 +48,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
@@ -111,6 +112,15 @@ public class JDBCPersistenceManager implements PersistenceManager
    
    protected String rollbackMessageRef2 =
       "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='-' AND TRANSACTIONID=?";
+      
+   protected String rollbackNonPreparedTx1 =
+      "DELETE FROM MESSAGE_REFERENCE WHERE STATE='+' AND TRANSACTIONID IN (SELECT TRANSACTIONID FROM TRANSACTION WHERE STATE IS NULL)";
+   
+   protected String rollbackNonPreparedTx2 =
+      "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='-' AND TRANSACTIONID IN (SELECT TRANSACTIONID FROM TRANSACTION WHERE STATE IS NULL)";
+         
+   protected String deleteNonPreparedTx = 
+      "DELETE FROM TRANSACTION WHERE STATE IS NULL";
    
    protected String deleteChannelMessageRefs =
       "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=?";
@@ -225,8 +235,9 @@ public class JDBCPersistenceManager implements PersistenceManager
    protected boolean createTablesOnStartup;
    
    protected boolean txIdGUID;
-
-
+   
+   protected boolean performRecovery;
+   
    // Constructors --------------------------------------------------
 
    public JDBCPersistenceManager() throws Exception
@@ -1199,6 +1210,10 @@ public class JDBCPersistenceManager implements PersistenceManager
       {
          createSchema();
       }
+      if (performRecovery)
+      {
+         resolveAllUncommitedTXs();
+      }
    }
       
 
@@ -1301,15 +1316,17 @@ public class JDBCPersistenceManager implements PersistenceManager
       commitMessageRef1 = sqlProperties.getProperty("COMMIT_MESSAGE_REF1", commitMessageRef1);
       commitMessageRef2 = sqlProperties.getProperty("COMMIT_MESSAGE_REF2", commitMessageRef2);
       rollbackMessageRef1 = sqlProperties.getProperty("ROLLBACK_MESSAGE_REF1", rollbackMessageRef1);
-      rollbackMessageRef2 = sqlProperties.getProperty("ROLLBACK_MESSAGE_REF2", rollbackMessageRef2);
-      
+      rollbackMessageRef2 = sqlProperties.getProperty("ROLLBACK_MESSAGE_REF2", rollbackMessageRef2);      
       selectReferenceCount = sqlProperties.getProperty("SELECT_REF_COUNT", selectReferenceCount);
-      updateReferenceCount = sqlProperties.getProperty("UPDATE_REF_COUNT", updateReferenceCount);
-      
-      
+      updateReferenceCount = sqlProperties.getProperty("UPDATE_REF_COUNT", updateReferenceCount);      
+      rollbackNonPreparedTx1 = sqlProperties.getProperty("ROLLBACK_TX1", rollbackNonPreparedTx1);
+      rollbackNonPreparedTx2 = sqlProperties.getProperty("ROLLBACK_TX2", rollbackNonPreparedTx2);
+      deleteNonPreparedTx = sqlProperties.getProperty("DELETE_TX", deleteNonPreparedTx);
+            
       createTablesOnStartup = sqlProperties.getProperty("CREATE_TABLES_ON_STARTUP", "true").equalsIgnoreCase("true");      
       storeXid = sqlProperties.getProperty("STORE_XID", "true").equalsIgnoreCase("true");
       txIdGUID = sqlProperties.getProperty("TX_ID_IS_GUID", "false").equalsIgnoreCase("true");
+      performRecovery = sqlProperties.getProperty("PERFORM_NONXA_RECOVERY", "false").equalsIgnoreCase("true");  
    }
    
    protected void insertTx(Connection conn, Transaction tx) throws Exception
@@ -1626,6 +1643,94 @@ public class JDBCPersistenceManager implements PersistenceManager
             {}
          }
       }
+   }
+   
+   protected void resolveAllUncommitedTXs() throws Exception
+   {
+      Connection conn = null;
+      PreparedStatement stmt = null;
+      ResultSet rs = null;
+      TransactionWrapper tx = new TransactionWrapper();
+
+      log.info("Resolving any uncommitted transactions");
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         // Delete all the messages that were added but their tx's were not commited.
+         stmt = conn.prepareStatement(rollbackNonPreparedTx1);
+         int rows = stmt.executeUpdate();
+         stmt.close();
+         stmt = null;
+         if (rows != 0)
+         {
+            log.info("Rolled back " + rows + " message references added in uncommitted transactions");
+         }
+
+         // Restore all the messages that were removed but their tx's were not commited.
+         stmt = conn.prepareStatement(rollbackNonPreparedTx2);
+         rows = stmt.executeUpdate();
+         stmt.close();
+         stmt = null;
+         if (rows != 0)
+         {
+            log.info("Rolled back " + rows + " message references due to be removed in uncommitted transactions");
+         }
+
+         // Clear the transaction table (leave any prepared transactions)
+         stmt = conn.prepareStatement(deleteNonPreparedTx);
+         rows = stmt.executeUpdate();
+         stmt.close();
+         stmt = null;
+         if (rows != 0)
+         {
+            log.info("Deleted " + rows + " non-prepared transactions");
+         }
+         
+      }
+      catch (SQLException e)
+      {
+         tx.exceptionOccurred();
+         throw new JBossJMSException(
+            "Could not resolve uncommited transactions.  Message recovery may not be accurate",
+            e);
+      }
+      finally
+      {
+         try
+         {
+            if (rs != null)
+            {
+               rs.close();
+            }
+         }
+         catch (Throwable ignore)
+         {
+         }
+         try
+         {
+            if (stmt != null)
+            {
+               stmt.close();
+            }
+         }
+         catch (Throwable ignore)
+         {
+         }
+         try
+         {
+            if (conn != null)
+            {
+               conn.close();           
+            }
+         }
+         catch (Throwable ignore)
+         {
+         }
+         tx.end();
+      }
+
    }
    
    // Private -------------------------------------------------------

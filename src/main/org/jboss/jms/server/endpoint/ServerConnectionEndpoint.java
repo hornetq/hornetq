@@ -162,9 +162,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          SessionAdvised sessionAdvised = new SessionAdvised(ep);
          Dispatcher.singleton.registerTarget(sessionID, sessionAdvised);
 
-         ClientSessionDelegate d = new ClientSessionDelegate(sessionID, serverPeer.getLocator());
-
-         log.debug("created and registered " + ep);
+         ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
+                 
+         log.debug("created session delegate (sessionID=" + Util.guidToString(sessionID) + ")");         
 
          return d;
       }

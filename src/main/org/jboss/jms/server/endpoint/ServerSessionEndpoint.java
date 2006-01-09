@@ -145,7 +145,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ProducerAdvised producerAdvised = new ProducerAdvised(ep);
       Dispatcher.singleton.registerTarget(producerID, producerAdvised);
          
-      ClientProducerDelegate d = new ClientProducerDelegate(producerID, serverPeer.getLocator());
+      ClientProducerDelegate d = new ClientProducerDelegate(producerID);
       
       log.debug("created and registered " + ep);
 
@@ -293,7 +293,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
        
       Dispatcher.singleton.registerTarget(consumerID, new ConsumerAdvised(ep));
          
-      ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, serverPeer.getLocator());
+      ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID);
       
       if (subscription != null)
       {
@@ -346,8 +346,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   
 	   Dispatcher.singleton.registerTarget(browserID, new BrowserAdvised(ep));
 	   
-	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID, serverPeer.getLocator());
-
+	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
+	   
       log.debug("created and registered " + ep);
 
 	   return stub;

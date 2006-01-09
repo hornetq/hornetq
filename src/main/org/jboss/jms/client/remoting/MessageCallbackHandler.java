@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.client.remoting;
 
+import java.io.Serializable;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -31,18 +33,14 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.remoting.transport.Connector;
-import org.jboss.messaging.util.Util;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.SynchronousChannel;
-
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -302,26 +300,9 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       while (activationCount.get() != 0)
       {
          Thread.yield();
-      }
-      
-      // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-      try
-      {
-         // unregister this callback handler and stop the callback server
-
-         client.removeListener(this);
-         log.debug("Listener removed from server");
-
-         callbackServer.stop();
-         log.debug("Closed callback server " + callbackServer.getInvokerLocator());
-      }
-      catch(Throwable e)
-      {
-         log.warn("Failed to clean up callback handler/callback server", e);
-      }
+      }     
    }
    
- 
    /**
     * Method used by the client thread to get a Message, if available.
     *
@@ -463,21 +444,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    {
       return listener;
    }
-
-
-   /**
-    * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-    */
-   private Connector callbackServer;
-   // I keep the client reference since I need to use the same client to remove a listener (sessionID)
-   private Client client;
-   public void setCallbackServer(Connector callbackServer, Client client)
-   {
-      this.callbackServer = callbackServer;
-      this.client = client;
-   }
-
-
 
    public String toString()
    {

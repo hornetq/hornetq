@@ -25,8 +25,9 @@ import javax.jms.MessageListener;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
-import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.client.state.ConsumerState;
 
 /**
  * 
@@ -85,7 +86,7 @@ public class ReceiverAspect
       return null;
    }
    
-   public Object handleGetMessageListener(Invocation invocation) throws Throwable
+   public MessageListener handleGetMessageListener(Invocation invocation) throws Throwable
    {       
       return getHandler(invocation).getMessageListener();
    }
@@ -97,9 +98,9 @@ public class ReceiverAspect
    // Private -------------------------------------------------------
    
    private MessageCallbackHandler getHandler(Invocation inv)
-   {
-      return (MessageCallbackHandler)inv.
-         getMetaData(MetaDataConstants.JMS, MetaDataConstants.MESSAGE_HANDLER);
+   {      
+      ConsumerState state = (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
+      return state.getMessageCallbackHandler();      
    }
 
    // Inner classes -------------------------------------------------

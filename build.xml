@@ -220,13 +220,15 @@
 
      <!-- JBoss Remoting -->
 
+
      <property name="current.jboss.remoting.lib" value="${jboss.remoting.lib}"/>
-     <!--
+
+<!--
      <property name="current.jboss.remoting.lib" value="${module.root}/src/resources"/>
      <path id="jboss.remoting.classpath">
         <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
      </path>
-     -->
+-->
 
 
      <!-- JGroups -->

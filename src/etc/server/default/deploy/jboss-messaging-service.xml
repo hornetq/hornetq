@@ -36,7 +36,7 @@
       </attribute>
       <depends>jboss.messaging:service=NetworkRegistry</depends>      
    </mbean>
-
+      
    <mbean code="org.jboss.remoting.network.NetworkRegistry"
           name="jboss.messaging:service=NetworkRegistry"/>
    -->

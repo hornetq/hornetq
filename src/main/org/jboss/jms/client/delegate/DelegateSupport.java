@@ -34,10 +34,8 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.invocation.unified.marshall.InvocationMarshaller;
 import org.jboss.invocation.unified.marshall.InvocationUnMarshaller;
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
@@ -73,20 +71,15 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    protected String id;
    
-   protected InvokerLocator locator;
-   
-   private Client client;  
-   
-   private HierarchicalState state;
+   protected HierarchicalState state;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DelegateSupport(String objectID, InvokerLocator locator)
+   public DelegateSupport(String objectID)
    {
-      this.id = objectID;
-      this.locator = locator;      
+      this.id = objectID;    
    }
 
    // Interceptor implementation ------------------------------------
@@ -108,7 +101,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
                                            Dispatcher.OID,
                                            id, PayloadKey.AS_IS);
 
-      InvocationResponse response = (InvocationResponse)client.invoke(invocation, null);
+      InvocationResponse response = (InvocationResponse)getClient().invoke(invocation, null);
       invocation.setResponseContextInfo(response.getContextInfo());
 
       if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
@@ -128,6 +121,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       this.state = state;
    }
    
+   
    /**
     *  Add Invoking interceptor and prepare the stack for invocations.
     */
@@ -136,28 +130,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
       
       checkMarshallers();
-      
-      try
-      {
-         client = new Client(locator, "JMS");
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException("Failed to create client", e);  
-      }
-      
-      // Add to meta data
-
-      SimpleMetaData md = getMetaData();
-
-      md.addMetaData(MetaDataConstants.JMS,
-                     MetaDataConstants.INVOKER_CLIENT,
-                     client, PayloadKey.TRANSIENT);
-      
-      md.addMetaData(MetaDataConstants.JMS,
-                     MetaDataConstants.INVOKER_LOCATOR,
-                     locator, PayloadKey.TRANSIENT);
-      
+        
    }
 
    public String getID()
@@ -173,6 +146,9 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    {
       return ((Advised)this)._getInstanceAdvisor().getMetaData();
    }
+   
+   protected abstract Client getClient();
+
 
    // Private -------------------------------------------------------
 

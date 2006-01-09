@@ -36,12 +36,13 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.remoting.InvokerLocator;
 import org.jboss.messaging.util.Util;
+import org.jboss.remoting.Client;
 
 /**
  * The client-side Session delegate class.
@@ -65,9 +66,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    // Constructors --------------------------------------------------
 
-   public ClientSessionDelegate(String objectID, InvokerLocator locator)
+   public ClientSessionDelegate(String objectID)
    {
-      super(objectID, locator);
+      super(objectID);
    }
 
    // SessionDelegate implementation --------------------------------
@@ -377,6 +378,12 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    }
 
    // Protected -----------------------------------------------------
+   
+   protected Client getClient()
+   {
+      //Use the Client in the Connection's state
+      return ((ConnectionState)state.getParent()).getClient();
+   }
 
    // Package Private -----------------------------------------------
 

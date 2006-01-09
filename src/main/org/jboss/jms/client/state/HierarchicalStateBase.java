@@ -23,7 +23,6 @@ package org.jboss.jms.client.state;
 
 import java.util.Set;
 
-import org.jboss.remoting.Client;
 import org.jboss.jms.client.delegate.DelegateSupport;
 
 /**

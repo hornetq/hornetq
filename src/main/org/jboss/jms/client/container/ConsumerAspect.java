@@ -21,24 +21,20 @@
   */
 package org.jboss.jms.client.container;
 
-import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
-import org.jboss.jms.client.remoting.Remoting;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.transport.Connector;
 
 /**
  * 
@@ -70,26 +66,6 @@ public class ConsumerAspect
    {
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      //register/unregister a callback handler that deal with callbacks sent by the server
-
-      InvokerLocator serverLocator = (InvokerLocator)invocation.
-            getMetaData(MetaDataConstants.JMS, MetaDataConstants.INVOKER_LOCATOR);
-
-      if (serverLocator == null)
-      {
-         throw new RuntimeException("No InvokerLocator supplied. Can't invoke remotely!");
-      }
-      
-      // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-      Connector callbackServer = Remoting.getCallbackServer();
-      
-      InvokerLocator callbackServerLocator = callbackServer.getLocator();
-      
-      if (log.isTraceEnabled())
-      {
-         log.trace("Callback server listening on " + callbackServerLocator);
-      }
-
       boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       //Create the message handler
@@ -100,10 +76,13 @@ public class ConsumerAspect
       MessageCallbackHandler messageHandler = new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
                                                                          sessState.getExecutor(), connState.getPooledExecutor());
 
-      Client client = new Client(serverLocator, "JMS");
+      //We need to create new Client instance per consumer to handle the callbacks
+      //This is because we use the client session id on the server to associate the callback server to the consumer
+      //Ideally remoting would allow us to pass arbitrary meta data to do this more cleanly
+      Client client = new Client(new InvokerLocator(connState.getServerURI()));
       
-      client.addListener(messageHandler, callbackServerLocator);
-
+      client.addListener(messageHandler, connState.getCallbackServer().getLocator());
+      
       // I will need this on the server-side to create the ConsumerDelegate instance
       invocation.getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID,
                                      client.getSessionId(), PayloadKey.AS_IS);
@@ -117,27 +96,22 @@ public class ConsumerAspect
       messageHandler.setSessionDelegate(del);
       messageHandler.setConsumerDelegate(consumerDelegate);
       messageHandler.setConsumerID(theState.getConsumerID());
-      messageHandler.setCallbackServer(callbackServer, client); // TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-
-      //Add to the instance advisor's metadata
-      SimpleMetaData instanceMetaData = ((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData();
-      
-      instanceMetaData.addMetaData(MetaDataConstants.JMS, MetaDataConstants.MESSAGE_HANDLER, messageHandler, PayloadKey.TRANSIENT);
+  
+      theState.setMessageCallbackHandler(messageHandler);
+      theState.setCallbackClient(client);
       
       return consumerDelegate;
    }
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {
-      MessageCallbackHandler handler =
-         (MessageCallbackHandler)invocation.getMetaData(MetaDataConstants.JMS, MetaDataConstants.MESSAGE_HANDLER);
       
-      if (handler == null)
-      {
-         throw new IllegalStateException("Cannot find message handler");
-      }
+      ConsumerState state = getState(invocation);
+      Client client = state.getCallbackClient();
+      client.removeListener(state.getMessageCallbackHandler());
+      client.disconnect();
       
-      handler.close();  
+      state.getMessageCallbackHandler().close();  
       
       return invocation.invokeNext();
    }

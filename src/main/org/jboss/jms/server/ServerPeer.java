@@ -55,6 +55,7 @@ import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -107,7 +108,10 @@ public class ServerPeer
    protected MBeanServer mbeanServer;
 
    protected String serverPeerID;
-   protected ObjectName connector;
+   protected ObjectName connectorName;
+   
+   //protected Connector connector;
+   
    protected InvokerLocator locator;
    protected byte[] clientAOPConfig;
    private Version version;
@@ -138,7 +142,7 @@ public class ServerPeer
       this.connFactoryDelegates = new HashMap();
 
       // the default value to use, unless the JMX attribute is modified
-      connector = new ObjectName("jboss.remoting:service=Connector,transport=socket");
+      connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
       
       securityManager = new SecurityManager();
 
@@ -249,9 +253,13 @@ public class ServerPeer
       stateManager = null;
       
       // remove the JMS subsystem
-      mbeanServer.invoke(connector, "removeInvocationHandler",
+      mbeanServer.invoke(connectorName, "removeInvocationHandler",
                          new Object[] {"JMS"},
                          new String[] {"java.lang.String"});
+      
+//      connector.removeInvocationHandler("JMS");
+//      connector.stop();
+//      connector.destroy();
                         
       mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
       mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
@@ -328,12 +336,12 @@ public class ServerPeer
 
    public ObjectName getConnector()
    {
-      return connector;
+      return connectorName;
    }
 
    public void setConnector(ObjectName on)
    {
-      connector = on;
+      connectorName = on;
    }
       
    public void setSecurityDomain(String securityDomain)
@@ -376,11 +384,6 @@ public class ServerPeer
    public synchronized boolean isStarted()
    {
       return started;
-   }
-
-   public InvokerLocator getLocator()
-   {
-      return locator;
    }
 
    public ClientManager getClientManager()
@@ -518,7 +521,7 @@ public class ServerPeer
 
    private void initializeRemoting() throws Exception
    {
-      String s = (String)mbeanServer.invoke(connector, "getInvokerLocator",
+      String s = (String)mbeanServer.invoke(connectorName, "getInvokerLocator",
                                             new Object[0], new String[0]);
 
       locator = new InvokerLocator(s);
@@ -533,10 +536,19 @@ public class ServerPeer
       
       handler = new JMSServerInvocationHandler();
 
-      mbeanServer.invoke(connector, "addInvocationHandler",
+      mbeanServer.invoke(connectorName, "addInvocationHandler",
                          new Object[] {"JMS", handler},
                          new String[] {"java.lang.String",
-                                       "org.jboss.remoting.ServerInvocationHandler"});               
+                                       "org.jboss.remoting.ServerInvocationHandler"});  
+      
+//      connector = new Connector();
+//      locator = new InvokerLocator("multiplex://0.0.0.0:9099");
+//      connector.setInvokerLocator(locator.getLocatorURI());
+//      connector.create();
+//      handler = new JMSServerInvocationHandler();
+//      connector.addInvocationHandler("JMS", handler);
+//      connector.start(); 
+      
    }
 
 
@@ -596,7 +608,7 @@ public class ServerPeer
       ClientConnectionFactoryDelegate delegate;
       try
       {
-         delegate = new ClientConnectionFactoryDelegate(id, locator);
+         delegate = new ClientConnectionFactoryDelegate(id, getLocatorURI());
       }
       catch (Exception e)
       {

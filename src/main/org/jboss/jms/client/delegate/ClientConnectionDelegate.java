@@ -29,12 +29,13 @@ import javax.jms.ServerSessionPool;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.server.Version;
-import org.jboss.remoting.InvokerLocator;
+import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.util.Util;
+import org.jboss.remoting.Client;
 
 /**
  * The client-side Connection delegate class.
@@ -55,19 +56,23 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    // Attributes ----------------------------------------------------
 
    private String serverID;
+   
    private Version serverVersion;
+   
+   private String serverLocatorURI;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConnectionDelegate(String objectID, InvokerLocator locator,
+   public ClientConnectionDelegate(String objectID, String serverLocatorURI,
                                    String serverID, Version serverVersion)
    {
-      super(objectID, locator);
+      super(objectID);
       
       this.serverID = serverID;
       this.serverVersion = serverVersion;
+      this.serverLocatorURI = serverLocatorURI;
    }
 
    // ConnectionDelegate implementation -----------------------------
@@ -211,8 +216,18 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       return "ConnectionDelegate[" + Util.guidToString(id) + "]";
    }
+   
+   public String getServerLocatorURI()
+   {
+      return serverLocatorURI;
+   }
 
    // Protected -----------------------------------------------------
+   
+   protected Client getClient()
+   {
+      return ((ConnectionState)state).getClient();
+   }
 
    // Package Private -----------------------------------------------
 

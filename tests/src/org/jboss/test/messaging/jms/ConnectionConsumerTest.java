@@ -392,7 +392,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
              
             TextMessage tm = (TextMessage)message;
             
-            log.info("Got message " + tm.getText() + " count=" + count);
+            log.trace("Got message " + tm.getText() + " count=" + count);
             
             if (count == 1)
             {
@@ -400,7 +400,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                
                if (!tm.getText().equals("a"))
                {
-                  log.info("Expected a but was " + tm.getText());
+                  log.trace("Expected a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -411,7 +411,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                
                if (!tm.getText().equals("b"))
                {
-                  log.info("Expected b but was " + tm.getText());
+                  log.trace("Expected b but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -422,7 +422,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                
                if (!tm.getText().equals("c"))
                {
-                  log.info("Expected c but was " + tm.getText());
+                  log.trace("Expected c but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -430,7 +430,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                {
                   if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
                   {
-                     log.info("Rolling back");
+                     log.trace("Rolling back");
                      sess.rollback();
                   }                  
                }
@@ -441,7 +441,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                
                if (!tm.getText().equals("a"))
                {
-                  log.info("Expected a but was " + tm.getText());
+                  log.trace("Expected a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
@@ -458,13 +458,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
                
                if (!tm.getText().equals("b"))
                {
-                  log.info("Expected b but was " + tm.getText());
+                  log.trace("Expected b but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.info("Redelivered flag not set");
+                  log.trace("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -475,13 +475,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
                
                if (!tm.getText().equals("c"))
                {
-                  log.info("Expected c but was " + tm.getText());
+                  log.trace("Expected c but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
                if (!tm.getJMSRedelivered())
                {
-                  log.info("Redelivered flag not set");
+                  log.trace("Redelivered flag not set");
                   failed = true;
                   latch.release();
                }
@@ -489,7 +489,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
                {
                   if (sess.getAcknowledgeMode() == Session.SESSION_TRANSACTED)
                   {
-                     log.info("Committing");
+                     log.trace("Committing");
                      sess.commit();
                   }                 
                   latch.release();
