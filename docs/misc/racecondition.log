@@ -1,0 +1,109 @@
+2006-01-11 10:46:53,844 INFO  @main [org.jboss.test.messaging.jms.MessageConsumerTest] ####################################################### Start test: testSetMessageListenerTwice
+
+#
+# lots of inialization logs missing, they are irrelevant
+#
+2006-01-11 10:46:53,904 DEBUG @main [org.jboss.test.messaging.jms.MessageConsumerTest] setup done
+
+
+2006-01-11 10:46:53,904 TRACE @main [org.jboss.test.messaging.jms.MessageConsumerTest] testSetMessageListenerTwice
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] invoking ConsumerDelegate[...-eibzjpv6-29s].setMessageListener(org.jboss.test.messaging.jms.MessageConsumerTest$MessageListenerImpl@b54ef7)
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] ConsumerDelegate[...-eibzjpv6-29s].setMessageListener() ok
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.test.messaging.jms.MessageConsumerTest] Set message listener1
+
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] invoking ConsumerDelegate[...-eibzjpv6-29s].setMessageListener(org.jboss.test.messaging.jms.MessageConsumerTest$MessageListenerImpl@8fdcd1)
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] ConsumerDelegate[...-eibzjpv6-29s].setMessageListener() ok
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.test.messaging.jms.MessageConsumerTest] Set message listener2
+
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] invoking ConnectionDelegate[...-eibzjpum-29k].start()
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.delegate.DelegateSupport] invoking start on server
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.remoting.JMSServerInvocationHandler] Invoking:org.jboss.remoting.InvocationRequest@130f672
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.container.LogInterceptor] invoking ConnectionAdvised->ConnectionEndpoint[...-eibzjpum-29k].start()
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] setStarted: true
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] setStarted: true
+2006-01-11 10:46:53,914 DEBUG @main [org.jboss.jms.server.endpoint.ServerConnectionEndpoint] ConnectionEndpoint[...-eibzjpum-29k] started
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.container.LogInterceptor] ConnectionAdvised->ConnectionEndpoint[...-eibzjpum-29k].start() ok
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.delegate.DelegateSupport] got server response for start
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] ConnectionDelegate[...-eibzjpum-29k].start() ok
+
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] invoking SessionDelegate[...-eibzjpuw-29m].createMessage()
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] SessionDelegate[...-eibzjpuw-29m].createMessage() returned delegator->JBossMessage[null]:PERSISTENT
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] invoking ProducerDelegate[...-eibzjpv6-29o].send(null, delegator->JBossMessage[null]:PERSISTENT, -1, -1, 0)
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.ProducerAspect] Using producer's default delivery mode: 1
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.ProducerAspect] Using producer's default priority: 4
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.ProducerAspect] Using producer's default destination: JBossTopic[Topic]
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.delegate.DelegateSupport] invoking send on server
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.remoting.JMSServerInvocationHandler] Invoking:org.jboss.remoting.InvocationRequest@183e109
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.container.LogInterceptor] invoking ProducerAdvised->ProducerEndpoint[...-eibzjpv6-29o, JBossTopic[Topic]].send(null, JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT, -1, -1, 0)
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerProducerEndpoint] Sending message: JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConnectionEndpoint] sending JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT non-transactionally
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.CoreDestinationManager] getting core topic for Topic
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConnectionEndpoint] sending JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT to the core, destination: Topic, tx: null
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.local.Topic] Topic[Topic] handles JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT non-transactionally
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.ChannelSupport] Subscription[...-eibzjpv6-29t, Topic[Topic]] handles JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT non-transactionally
+
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] ConsumerEndpoint[...-eibzjpv6-29s] handling reference ...-eibzjpwa-2af
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] Not ready for message so returning null
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] ConsumerEndpoint[...-eibzjpv6-29s] rejecting ...-eibzjpwa-2af
+
+#
+# the channel gets a null delivery and prepares to store the message, but it doesn't yet ....
+#
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.ChannelSupport] Subscription[...-eibzjpv6-29t, Topic[Topic]]: no delivery returned for message; there is no receiver
+
+
+#
+# while the client reaches for the message .... This is the first listener that activates the consumer
+#
+
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.client.remoting.MessageCallbackHandler] activating consumer endpoint
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.client.container.LogInterceptor] invoking ConsumerDelegate[...-eibzjpv6-29s].activate()
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.client.delegate.DelegateSupport] invoking activate on server
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.server.remoting.JMSServerInvocationHandler] Invoking:org.jboss.remoting.InvocationRequest@12b304b
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.server.container.LogInterceptor] invoking ConsumerAdvised->ConsumerEndpoint[...-eibzjpv6-29s].activate()
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] ConsumerEndpoint[...-eibzjpv6-29s,active] activated
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] ConsumerEndpoint[...-eibzjpv6-29s,active] prompts delivery
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.messaging.core.ChannelSupport] ConsumerEndpoint[...-eibzjpv6-29s,active] requested delivery on Subscription[...-eibzjpv6-29t, Topic[Topic]]
+
+#
+# ... but the message is not there
+#
+
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.messaging.core.NonRecoverableState] State[Subscription[...-eibzjpv6-29t, Topic[Topic]]] removing the oldest message in memory returns null
+
+
+
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.server.container.LogInterceptor] ConsumerAdvised->ConsumerEndpoint[...-eibzjpv6-29s,active].activate() ok
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.client.delegate.DelegateSupport] got server response for activate
+2006-01-11 10:46:53,914 TRACE @Thread-259 [org.jboss.jms.client.container.LogInterceptor] ConsumerDelegate[...-eibzjpv6-29s].activate() ok
+
+
+#
+# The second listener that activates the consumer
+#
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.client.remoting.MessageCallbackHandler] activating consumer endpoint
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.client.container.LogInterceptor] invoking ConsumerDelegate[...-eibzjpv6-29s].activate()
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.client.delegate.DelegateSupport] invoking activate on server
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.server.remoting.JMSServerInvocationHandler] Invoking:org.jboss.remoting.InvocationRequest@6f97cf
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.server.container.LogInterceptor] invoking ConsumerAdvised->ConsumerEndpoint[...-eibzjpv6-29s,active].activate()
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] ConsumerEndpoint[...-eibzjpv6-29s,active] activated
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.server.endpoint.ServerConsumerEndpoint] ConsumerEndpoint[...-eibzjpv6-29s,active] prompts delivery
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.messaging.core.ChannelSupport] ConsumerEndpoint[...-eibzjpv6-29s,active] requested delivery on Subscription[...-eibzjpv6-29t, Topic[Topic]]
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.messaging.core.NonRecoverableState] State[Subscription[...-eibzjpv6-29t, Topic[Topic]]] removing the oldest message in memory returns null
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.server.container.LogInterceptor] ConsumerAdvised->ConsumerEndpoint[...-eibzjpv6-29s,active].activate() ok
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.client.delegate.DelegateSupport] got server response for activate
+2006-01-11 10:46:53,914 TRACE @Thread-260 [org.jboss.jms.client.container.LogInterceptor] ConsumerDelegate[...-eibzjpv6-29s].activate() ok
+
+
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.NonRecoverableState] State[Subscription[...-eibzjpv6-29t, Topic[Topic]]] adding Reference[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-RELIABLE non-transactionally
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.NonRecoverableState] State[Subscription[...-eibzjpv6-29t, Topic[Topic]]] added Reference[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-RELIABLE in memory
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.ChannelSupport] adding reference to state successfully
+
+#
+# Message is added just now
+#
+
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.messaging.core.local.PointToMultipointRouter] receiver Subscription[...-eibzjpv6-29t, Topic[Topic]] handled JBossMessage[ID:a1gm-jx8knk-eibzixj4-1-eibzjpwa-2af]:NON-PERSISTENT and returned Delivery(done)
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.server.container.LogInterceptor] ProducerAdvised->ProducerEndpoint[...-eibzjpv6-29o, JBossTopic[Topic]].send() ok
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.delegate.DelegateSupport] got server response for send
+2006-01-11 10:46:53,914 TRACE @main [org.jboss.jms.client.container.LogInterceptor] ProducerDelegate[...-eibzjpv6-29o].send() ok
