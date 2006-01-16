@@ -102,6 +102,7 @@
       <path refid="jboss.naming.classpath"/>
       <path refid="jboss.server.classpath"/>
       <path refid="jboss.remoting.classpath"/>
+      <path refid="jboss.security.classpath"/>
 
       <!-- these are only required to compile test support -->
       <path refid="jboss.jca.classpath"/>
