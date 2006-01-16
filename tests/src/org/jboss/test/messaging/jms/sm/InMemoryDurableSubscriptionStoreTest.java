@@ -21,8 +21,8 @@
 */
 package org.jboss.test.messaging.jms.sm;
 
-import org.jboss.jms.server.InMemoryStateManager;
-import org.jboss.jms.server.StateManager;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -35,15 +35,15 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class InMemoryStateManagerTest extends MessagingTestCase
+public class InMemoryDurableSubscriptionStoreTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
    
-   protected StateManager sm;
+   protected DurableSubscriptionStoreDelegate dssd;
    
    // Constructors --------------------------------------------------
 
-   public InMemoryStateManagerTest(String name)
+   public InMemoryDurableSubscriptionStoreTest(String name)
    {
       super(name);
    }
@@ -56,7 +56,7 @@ public class InMemoryStateManagerTest extends MessagingTestCase
       
       if (ServerManagement.isLocal())
       {
-         sm = createStateManager();
+         dssd = createStateManager(ServerManagement.getServerPeer());
       }
    }
 
@@ -81,26 +81,26 @@ public class InMemoryStateManagerTest extends MessagingTestCase
       
       ServerManagement.deployTopic(topicName);
             
-      DurableSubscription sub = sm.createDurableSubscription(topicName, clientID, subscriptionName, selector);
+      DurableSubscription sub = dssd.createDurableSubscription(topicName, clientID, subscriptionName, selector);
       
       assertEquals(sub.getTopic().getName(), topicName);
       assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
       assertEquals(sub.getSelector(), selector);
       
-      DurableSubscription sub_r = sm.getDurableSubscription(clientID, subscriptionName);
+      DurableSubscription sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
       
       assertEquals(sub_r.getTopic().getName(), topicName);
       assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
       assertEquals(sub_r.getSelector(), selector);
       
-      boolean removed = sm.removeDurableSubscription(clientID, subscriptionName);
+      boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
       
-      sub_r = sm.getDurableSubscription(clientID, subscriptionName);
+      sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
       
       assertNull(sub_r);
       
-      removed = sm.removeDurableSubscription(clientID, subscriptionName);
+      removed = dssd.removeDurableSubscription(clientID, subscriptionName);
       assertFalse(removed);
         
    }
@@ -118,26 +118,26 @@ public class InMemoryStateManagerTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
             
-      DurableSubscription sub = sm.createDurableSubscription(topicName, clientID, subscriptionName, null);
+      DurableSubscription sub = dssd.createDurableSubscription(topicName, clientID, subscriptionName, null);
       
       assertEquals(sub.getTopic().getName(), topicName);
       assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
       assertNull(sub.getSelector());      
       
-      DurableSubscription sub_r = sm.getDurableSubscription(clientID, subscriptionName);
+      DurableSubscription sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
       
       assertEquals(sub_r.getTopic().getName(), topicName);
       assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
       assertNull(sub_r.getSelector());
       
-      boolean removed = sm.removeDurableSubscription(clientID, subscriptionName);
+      boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
       
-      sub_r = sm.getDurableSubscription(clientID, subscriptionName);
+      sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
       
       assertNull(sub_r);
       
-      removed = sm.removeDurableSubscription(clientID, subscriptionName);
+      removed = dssd.removeDurableSubscription(clientID, subscriptionName);
       assertFalse(removed);
             
    }
@@ -149,7 +149,7 @@ public class InMemoryStateManagerTest extends MessagingTestCase
          return;
       }
       
-      String clientID = sm.getPreConfiguredClientID("blahblah");
+      String clientID = dssd.getPreConfiguredClientID("blahblah");
       assertNull(clientID);
    }
    
@@ -157,9 +157,12 @@ public class InMemoryStateManagerTest extends MessagingTestCase
 
    // Protected -----------------------------------------------------
 
-   protected StateManager createStateManager() throws Exception
+   protected DurableSubscriptionStoreDelegate createStateManager(ServerPeer serverPeer)
+      throws Exception
    {
-     return new InMemoryStateManager(ServerManagement.getServerPeer());
+     InMemorySubscriptionStore s = new InMemorySubscriptionStore();
+     s.setServerPeer(serverPeer);
+     return s; 
    }
 
    // Private -------------------------------------------------------

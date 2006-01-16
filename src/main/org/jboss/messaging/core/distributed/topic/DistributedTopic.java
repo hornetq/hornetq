@@ -28,7 +28,8 @@ import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.ViewKeeperSupport;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.logging.Logger;
@@ -60,12 +61,12 @@ public class DistributedTopic extends Topic implements Distributed
 
    protected TopicPeer peer;
    protected ViewKeeper viewKeeper;
-   protected PersistenceManager pm;
+   protected TransactionLogDelegate pm;
 
    // Constructors --------------------------------------------------
 
    public DistributedTopic(String name, MessageStore ms,
-                           PersistenceManager pm, RpcDispatcher dispatcher)
+                           TransactionLogDelegate pm, RpcDispatcher dispatcher)
    {
       super(name, ms);
       this.pm = pm;

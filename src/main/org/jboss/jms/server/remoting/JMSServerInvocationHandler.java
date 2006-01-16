@@ -114,7 +114,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public void addListener(InvokerCallbackHandler callbackHandler)
    {      
       
-      if (log.isTraceEnabled()) { log.trace("adding callback handler: " + callbackHandler); }
+      if (log.isTraceEnabled()) { log.trace("adding callback handler " + callbackHandler); }
       
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {

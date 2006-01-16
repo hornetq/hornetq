@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
 
@@ -47,14 +47,15 @@ public class Pipe extends ChannelSupport
       this(name, ms, null);
    }
    
-   public Pipe(String name, MessageStore ms, PersistenceManager pm)
+   public Pipe(String name, MessageStore ms, TransactionLogDelegate tl)
    {
-      this(name, ms, pm, false);
+      this(name, ms, tl, false);
    }
 
-   public Pipe(String name, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages)
+   public Pipe(String name, MessageStore ms, TransactionLogDelegate tl,
+               boolean acceptReliableMessages)
    {
-      super(name, ms, pm, acceptReliableMessages);
+      super(name, ms, tl, acceptReliableMessages);
       router = new SingleDestinationRouter();
    }
 

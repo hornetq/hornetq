@@ -24,8 +24,9 @@ package org.jboss.test.messaging.core.local;
 import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.DurableSubscription;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -41,7 +42,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
    
    // Attributes ----------------------------------------------------
 
-   private JDBCPersistenceManager pm;
+   private JDBCTransactionLog tl;
 
    // Constructors --------------------------------------------------
 
@@ -56,13 +57,14 @@ public class DurableSubscriptionTest extends ChannelTestBase
    {
       super.setUp();
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      ms = new PersistentMessageStore("persistent-message-store", pm);
-      tr.setPersistenceManager(pm);
+      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl.start();
 
-      channel =
-         new DurableSubscription("clientid123", "testDurableSubscription", null, null, ms, pm);
+      ms = new PersistentMessageStore("persistent-message-store", tl);
+      tr = new TransactionRepository(tl);
+
+      channel = new DurableSubscription("clientid123", "testDurableSubscription",
+                                        null, null, ms, tl);
 
       log.debug("setup done");
    }
@@ -74,7 +76,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
       channel.close();
       channel = null;
 
-      pm.stop();
+      tl.stop();
       ms = null;
 
       super.tearDown();
@@ -89,7 +91,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, pm);
+      channel = new Queue("test", ms, tl);
    }
 
    // Public --------------------------------------------------------

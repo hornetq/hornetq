@@ -28,14 +28,14 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 
 /**
- * 
  * This class maintains JMS Server local transactions
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -53,16 +53,16 @@ public class TransactionRepository
    
    protected Map globalToLocalMap;     
    
-   protected PersistenceManager pm;
+   protected TransactionLogDelegate transactionLog;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public TransactionRepository(PersistenceManager pm)
+   public TransactionRepository(TransactionLogDelegate transactionLog)
    {
       globalToLocalMap = new ConcurrentReaderHashMap();
-      this.pm = pm;  
+      this.transactionLog = transactionLog;
    }
    
    // Public --------------------------------------------------------
@@ -91,7 +91,7 @@ public class TransactionRepository
       
       try
       {
-         prepared = pm.retrievePreparedTransactions();
+         prepared = transactionLog.retrievePreparedTransactions();
       }
       catch (Exception e)
       {
@@ -134,7 +134,7 @@ public class TransactionRepository
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(xid, pm);
+      Transaction tx = new Transaction(xid, transactionLog);
       
       if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
       
@@ -144,16 +144,11 @@ public class TransactionRepository
    
    public Transaction createTransaction() throws TransactionException
    {
-      Transaction tx = new Transaction(null, pm);
+      Transaction tx = new Transaction(null, transactionLog);
 
       if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
 
       return tx;
-   }
-   
-   public void setPersistenceManager(PersistenceManager pm)
-   {
-      this.pm = pm;
    }
    
    // Package protected ---------------------------------------------

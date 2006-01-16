@@ -23,8 +23,10 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -40,7 +42,7 @@ public class RecoverableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private JDBCPersistenceManager pm;
+   private JDBCTransactionLog tl;
 
    // Constructors --------------------------------------------------
 
@@ -55,13 +57,14 @@ public class RecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      ms = new PersistentMessageStore("persistent-message-store", pm);
+      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl.start();
 
-      channel = new Queue("test", ms, pm);
+      ms = new PersistentMessageStore("persistent-message-store", tl);
+
+      channel = new Queue("test", ms, tl);
       
-      tr.setPersistenceManager(pm);
+      tr = new TransactionRepository(tl);
    }
 
    public void tearDown() throws Exception
@@ -69,7 +72,7 @@ public class RecoverableQueueTest extends QueueTestBase
       channel.close();
       channel = null;
 
-      pm.stop();
+      tl.stop();
       ms = null;
 
       super.tearDown();
@@ -84,7 +87,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, pm);
+      channel = new Queue("test", ms, tl);
    }
 
    // Public --------------------------------------------------------

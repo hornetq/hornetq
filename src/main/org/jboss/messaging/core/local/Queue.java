@@ -21,12 +21,10 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.CoreDestination;
-
-
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -49,9 +47,9 @@ public class Queue extends ChannelSupport implements CoreDestination
       this(name, ms, null);
    }
 
-   public Queue(String name, MessageStore ms, PersistenceManager pm)
+   public Queue(String name, MessageStore ms, TransactionLogDelegate tl)
    {
-      super(name, ms, pm, false);
+      super(name, ms, tl, false);
       router = new PointToPointRouter();
    }
 

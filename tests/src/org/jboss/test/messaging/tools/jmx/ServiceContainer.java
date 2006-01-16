@@ -29,17 +29,22 @@ import org.jboss.resource.connectionmanager.CachedConnectionManager;
 import org.jboss.resource.connectionmanager.JBossManagedConnectionPool;
 import org.jboss.system.ServiceController;
 import org.jboss.system.Registry;
+import org.jboss.system.ServiceCreator;
 import org.jboss.tm.TxManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
+import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.jms.server.DestinationManagerImpl;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
+import javax.management.Attribute;
+import javax.management.MBeanInfo;
+import javax.management.MBeanAttributeInfo;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
 import javax.transaction.TransactionManager;
@@ -78,6 +83,7 @@ public class ServiceContainer
    // Static --------------------------------------------------------
 
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
+   public static ObjectName CLASS_LOADER_OBJECT_NAME;
    public static ObjectName TRANSACTION_MANAGER_OBJECT_NAME;
    public static ObjectName CACHED_CONNECTION_MANAGER_OBJECT_NAME;
    public static ObjectName CONNECTION_MANAGER_OBJECT_NAME;
@@ -86,12 +92,17 @@ public class ServiceContainer
    public static ObjectName WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME;
    public static ObjectName REMOTING_OBJECT_NAME;
 
+   public static String DATA_SOURCE_JNDI_NAME = "java:/DefaultDS";
+   public static String TRANSACTION_MANAGER_JNDI_NAME = "java:/TransactionManager";
+
    static
    {
       try
       {
          SERVICE_CONTROLLER_OBJECT_NAME =
          new ObjectName("jboss.system:service=ServiceController");
+         CLASS_LOADER_OBJECT_NAME =
+         new ObjectName("jboss.system:service=ClassLoader");
          TRANSACTION_MANAGER_OBJECT_NAME =
          new ObjectName("jboss:service=TransactionManager");
          CACHED_CONNECTION_MANAGER_OBJECT_NAME =
@@ -118,6 +129,7 @@ public class ServiceContainer
    private TransactionManager tm;
 
    private MBeanServer mbeanServer;
+   private ServiceCreator serviceCreator; // the 'creator' helps in creating and registering XMBeans
    private InitialContext initialContext;
    private String jndiNamingFactory;
    private Server hsqldbServer;
@@ -126,11 +138,52 @@ public class ServiceContainer
    private boolean database;
    private boolean jca;
    private boolean remoting;
-   private boolean aop;
    private boolean security;
 
    private List toUnbindAtExit;
    private String ipAddressOrHostName;
+
+   // Static --------------------------------------------------------
+
+   public static Object type(MBeanInfo mbeanInfo, String attributeName, String valueAsString)
+      throws Exception
+   {
+      MBeanAttributeInfo[] attrs = mbeanInfo.getAttributes();
+      MBeanAttributeInfo attr = null;
+
+      for(int i = 0; i < attrs.length; i++)
+      {
+         if (attrs[i].getName().equals(attributeName))
+         {
+            attr = attrs[i];
+            break;
+         }
+      }
+
+      if (attr == null)
+      {
+         throw new Exception("No such attribute: " + attributeName);
+      }
+
+      String type = attr.getType();
+
+      if ("int".equals(type) || "java.lang.Integer".equals(type))
+      {
+         int i = Integer.parseInt(valueAsString);
+         return new Integer(i);
+      }
+      else if ("java.lang.String".equals(type))
+      {
+         return valueAsString;
+      }
+      else if ("javax.management.ObjectName".equals(type))
+      {
+         return new ObjectName(valueAsString);
+      }
+
+      throw new Exception("Don't know to handle type " + type);
+
+   }
 
    // Constructors --------------------------------------------------
 
@@ -141,9 +194,9 @@ public class ServiceContainer
 
    /**
     * @param config - A comma separated list of services to be started. Available services:
-    *        transaction, jca, database, remoting, aop.  Example: "transaction, database, remoting".
+    *        transaction, jca, database, remoting.  Example: "transaction, database, remoting".
     *        "all" will start every service available. A dash in front of a service name will
-    *        disable that service. Example "all,-aop".
+    *        disable that service. Example "all,-database".
     * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
     *        If null, the default JBoss TransactionManager implementation will be used.
     */
@@ -183,9 +236,32 @@ public class ServiceContainer
 
          initialContext = new InitialContext();
 
+         boolean java5 = false;
+
+         try
+         {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            cl.loadClass("java.lang.management.ManagementFactory");
+            java5 = true;
+         }
+         catch(ClassNotFoundException e)
+         {
+            // OK
+         }
+
+         if (java5)
+         {
+            System.setProperty("javax.management.builder.initial",
+                               "org.jboss.test.messaging.tools.jmx.MBeanServerBuilder");
+         }
+
          mbeanServer = MBeanServerFactory.createMBeanServer("jboss");
 
+         serviceCreator = new ServiceCreator(mbeanServer);
+
          startServiceController();
+
+         registerClassLoader();
 
          if (database)
          {
@@ -208,11 +284,6 @@ public class ServiceContainer
             startRemoting();
          }
 
-         if (aop)
-         {
-            loadAspects();
-         }
-
          if (security)
          {
             startSecurityManager();
@@ -220,23 +291,18 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
-         log.debug("ServiceContainer started");
+         log.debug(this + " started");
       }
       catch(Throwable e)
       {
          log.error("Failed to start ServiceContainer", e);
-         throw new Exception("Failed to start ServiceContainer");
+         throw new Exception("Failed to start ServiceContainer", e);
       }
    }
 
    public void stop() throws Exception
    {
       unloadJNDIContexts();
-
-      if (aop)
-      {
-         unloadAspects();
-      }
 
       stopService(REMOTING_OBJECT_NAME);
       stopService(WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
@@ -249,6 +315,8 @@ public class ServiceContainer
       {
          stopInVMDatabase();
       }
+
+      unregisterClassLoader();
       stopServiceController();
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
       
@@ -266,12 +334,39 @@ public class ServiceContainer
          System.setProperty("java.naming.factory.initial", jndiNamingFactory);
       }
             
-      log.debug("ServiceContainer stopped");
+      log.debug(this + " stopped");
    }
 
    public DataSource getDataSource()
    {
-      return null;
+      DataSource ds = null;
+      try
+      {
+         InitialContext ic = new InitialContext();
+         ds = (DataSource)ic.lookup(DATA_SOURCE_JNDI_NAME);
+         ic.close();
+      }
+      catch(Exception e)
+      {
+         log.error("Failed to look up DataSource", e);
+      }
+      return ds;
+   }
+
+   public TransactionManager getTransactionManager()
+   {
+      TransactionManager tm = null;
+      try
+      {
+         InitialContext ic = new InitialContext();
+         tm = (TransactionManager)ic.lookup(TRANSACTION_MANAGER_JNDI_NAME);
+         ic.close();
+      }
+      catch(Exception e)
+      {
+         log.error("Failed to look up transaction manager", e);
+      }
+      return tm;
    }
 
    public UserTransaction getUserTransaction()
@@ -282,6 +377,86 @@ public class ServiceContainer
    public Object getService(ObjectName on) throws Exception
    {
       return mbeanServer.invoke(on, "getInstance", new Object[0], new String[0]);
+   }
+
+   /**
+    * Note that this method makes no assumption on whether the service was created or started, nor
+    * does it attempt to create/start the service.
+    *
+    * @param service - a Standard/DynamicMBean instance.
+    */
+   public void registerService(Object service, ObjectName on) throws Exception
+   {
+      mbeanServer.registerMBean(service, on);
+      log.debug(service + " registered as " + on);
+   }
+
+   /**
+    * Creates and registers a service based on the MBean service descriptor element. Supports
+    * XMBeans. The implementing class and the ObjectName are inferred from the mbean element. If
+    * there are configuration attributed specified in the deployment descriptor, they are applied
+    * to the service instance.
+    */
+   public ObjectName registerAndConfigureService(MBeanConfigurationElement mbeanConfig)
+      throws Exception
+   {
+      ObjectName on = mbeanConfig.getObjectName();
+      serviceCreator.install(on, CLASS_LOADER_OBJECT_NAME, mbeanConfig.getDelegate());
+
+      // inject dependencies
+      for(Iterator i = mbeanConfig.dependencyOptionalAttributeNames().iterator(); i.hasNext(); )
+      {
+         String name = (String)i.next();
+         String value = mbeanConfig.getDependencyOptionalAttributeValue(name);
+         setAttribute(on, name, value);
+      }
+
+      // apply attributes
+      for(Iterator i = mbeanConfig.attributeNames().iterator(); i.hasNext();)
+      {
+         String name = (String)i.next();
+         String value = mbeanConfig.getAttributeValue(name);
+         setAttribute(on, name, value);
+      }
+
+      log.debug(mbeanConfig + " registered and configured");
+      return on;
+   }
+
+   /**
+    * Note that this method makes no assumption on whether the service was stopped or destroyed, nor
+    * does it attempt to stop/destroy the service.
+    */
+   public void unregisterService(ObjectName on) throws Exception
+   {
+      mbeanServer.unregisterMBean(on);
+      log.debug(on + " unregistered");
+   }
+
+   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
+      throws Exception
+   {
+      return mbeanServer.invoke(on, operationName, params, signature);
+   }
+
+   /**
+    * Set the attribute value, performing String -> Object conversion as appropriate.
+    */
+   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
+   {
+      MBeanInfo mbeanInfo = mbeanServer.getMBeanInfo(on);
+      Object value = type(mbeanInfo, name, valueAsString);
+      mbeanServer.setAttribute(on, new Attribute(name, value));
+   }
+
+   public Object getAttribute(ObjectName on, String name) throws Exception
+   {
+      return mbeanServer.getAttribute(on, name);
+   }
+
+   public String toString()
+   {
+      return "ServiceContainer[" + Integer.toHexString(hashCode()) + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -303,7 +478,7 @@ public class ServiceContainer
          ipAddressOrHostName = s;
       }
 
-      log.debug("All server sockets will be open on address: " + ipAddressOrHostName);
+      log.debug("all server sockets will be open on address: " + ipAddressOrHostName);
    }
 
    private void loadJNDIContexts() throws Exception
@@ -320,7 +495,7 @@ public class ServiceContainer
          catch(NameNotFoundException e)
          {
             JNDIUtil.createContext(initialContext, names[i]);
-            log.debug("Created context /" + names[i]);
+            log.debug("created context /" + names[i]);
          }
       }
    }
@@ -331,20 +506,6 @@ public class ServiceContainer
       JNDIUtil.tearDownRecursively(c);
       c = (Context)initialContext.lookup("/queue");
       JNDIUtil.tearDownRecursively(c);
-   }
-
-   private void loadAspects() throws Exception
-   {
-      // These specific aspects will be loaded by the JMS server itself, if it needs them
-//      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-//      AspectXmlLoader.deployXML(url);
-   }
-
-   private void unloadAspects() throws Exception
-   {
-      // These specific aspects will be unloaded by the JMS server itself, if it's the case
-//      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-//      AspectXmlLoader.undeployXML(url);
    }
 
    private void startServiceController() throws Exception
@@ -358,6 +519,21 @@ public class ServiceContainer
    private void stopServiceController() throws Exception
    {
       mbeanServer.unregisterMBean(SERVICE_CONTROLLER_OBJECT_NAME);
+   }
+
+
+   /**
+    * Register a class loader used to instantiate other services.
+    */
+   private void registerClassLoader() throws Exception
+   {
+      ClassLoader cl = getClass().getClassLoader();
+      mbeanServer.registerMBean(new ClassLoaderJMXWrapper(cl), CLASS_LOADER_OBJECT_NAME);
+   }
+
+   private void unregisterClassLoader() throws Exception
+   {
+      mbeanServer.unregisterMBean(CLASS_LOADER_OBJECT_NAME);
    }
 
 
@@ -406,10 +582,10 @@ public class ServiceContainer
       mbeanServer.invoke(TRANSACTION_MANAGER_OBJECT_NAME, "start", new Object[0], new String[0]);
       log.debug("started " + TRANSACTION_MANAGER_OBJECT_NAME);
 
-      initialContext.bind("java:/TransactionManager", tm);
-      toUnbindAtExit.add("java:/TransactionManager");
+      initialContext.bind(TRANSACTION_MANAGER_JNDI_NAME, tm);
+      toUnbindAtExit.add(TRANSACTION_MANAGER_JNDI_NAME);
 
-      log.debug("bound java:/TransactionManager");
+      log.debug("bound " + TRANSACTION_MANAGER_JNDI_NAME);
 
       // to get this to work I need to bind DTMTransactionFactory in JNDI
 //      ClientUserTransaction singleton = ClientUserTransaction.getSingleton();
@@ -479,7 +655,7 @@ public class ServiceContainer
    private void startWrapperDataSourceService() throws Exception
    {
       WrapperDataSourceService wdss = new WrapperDataSourceService();
-      wdss.setJndiName("java:/DefaultDS");
+      wdss.setJndiName(DATA_SOURCE_JNDI_NAME);
 
       // dependencies
       wdss.setConnectionManager(CONNECTION_MANAGER_OBJECT_NAME);
@@ -489,6 +665,7 @@ public class ServiceContainer
 
       mbeanServer.registerMBean(wdss, WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
       mbeanServer.invoke(WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME, "start", new Object[0], new String[0]);
+
       log.debug("started " + WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
    }
 
@@ -507,7 +684,7 @@ public class ServiceContainer
       MockJBossSecurityManager sm = new MockJBossSecurityManager();
       this.initialContext.bind(MockJBossSecurityManager.TEST_SECURITY_DOMAIN, sm);
       
-      log.debug("Started JBoss Mock Security Manager");
+      log.debug("started JBoss Mock Security Manager");
    }
 
    private void stopService(ObjectName target) throws Exception
@@ -552,7 +729,6 @@ public class ServiceContainer
             database = true;
             jca = true;
             remoting = true;
-            aop = true;
             security = true;
          }
          else if ("transaction".equals(tok))
@@ -587,14 +763,6 @@ public class ServiceContainer
                remoting = false;
             }
 
-         }
-         else if ("aop".equals(tok))
-         {
-            aop = true;
-            if (minus)
-            {
-               aop = false;
-            }
          }
          else if ("security".equals(tok))
          {

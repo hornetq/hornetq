@@ -38,6 +38,7 @@ $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
+$reldir/../../../system/output/lib/jboss-system.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP} \
 -Dtest.bind.address=localhost \
 org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer

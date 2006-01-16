@@ -27,8 +27,8 @@ import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
@@ -45,7 +45,7 @@ import java.util.ArrayList;
  * The Channel test strategy is to try as many combination as it makes sense of the following
  * variables:
  *
- * 1. The channel can be non-recoverable (does not have access to a PersistenceManager) or
+ * 1. The channel can be non-recoverable (does not have access to a TransactionLogDelegate) or
  *    recoverable. A non-recoverable channel can accept reliable messages or not.
  * 2. The channel may have zero or one receivers (the behavior for more than one receiver depends
  *    on the particular router implementation).
@@ -76,8 +76,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    
    // Attributes ----------------------------------------------------
 
-   // the MessageStore requires a PersistenceManager, othewise it will reject reliable messages
-   protected PersistenceManager msPersistenceManager;
+   // the MessageStore requires a TransactionLogDelegate, othewise it will reject reliable messages
+   protected TransactionLogDelegate msTransactionLogDelegate;
    protected TransactionRepository tr;
    protected MessageStore ms;
 
@@ -98,9 +98,12 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       tr = new TransactionRepository(null);
       ic.close();
 
-      msPersistenceManager = new JDBCPersistenceManager();
-      msPersistenceManager.start();
-      ms = new PersistentMessageStore("message-store", msPersistenceManager);
+      msTransactionLogDelegate =
+         new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+
+      ((JDBCTransactionLog)msTransactionLogDelegate).start();
+
+      ms = new PersistentMessageStore("message-store", msTransactionLogDelegate);
    }
 
    public void tearDown() throws Exception

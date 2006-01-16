@@ -118,7 +118,9 @@ public class Topic implements CoreDestination
 
    public boolean remove(Receiver receiver)
    {
-      return router.remove(receiver);
+      boolean removed = router.remove(receiver);
+      if (log.isTraceEnabled()) { log.trace(this + (removed ? " removed " : " did NOT remove ") + receiver); }
+      return removed;
    }
 
    // Public --------------------------------------------------------

@@ -29,10 +29,11 @@ import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null
- * PersistenceManager is available, it supports recoverability of reliable messages.
+ * TransactionLogDelegate is available, it supports recoverability of reliable messages.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
@@ -53,32 +54,32 @@ public abstract class ChannelSupport implements Channel
    protected Serializable channelID;
    protected Router router;
    protected State state;
-   protected PersistenceManager pm;
+   protected TransactionLogDelegate tl;
    protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
    /**
-    * @param acceptReliableMessages - it only makes sense if pm is null. Otherwise ignored (a
+    * @param acceptReliableMessages - it only makes sense if tl is null. Otherwise ignored (a
     *        recoverable channel always accepts reliable messages)
     */
    protected ChannelSupport(Serializable channelID,
                             MessageStore ms,
-                            PersistenceManager pm,
+                            TransactionLogDelegate tl,
                             boolean acceptReliableMessages)
    {
-      if (log.isTraceEnabled()) { log.trace("creating " + (pm != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
+      if (log.isTraceEnabled()) { log.trace("creating " + (tl != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
 
       this.channelID = channelID;
       this.ms = ms;
-      this.pm = pm;
-      if (pm == null)
+      this.tl = tl;
+      if (tl == null)
       {
          state = new NonRecoverableState(this, acceptReliableMessages);
       }
       else
       {
-         state = new RecoverableState(this, pm);
+         state = new RecoverableState(this, tl);
          // acceptReliableMessage ignored, the channel alwyas accepts reliable messages
       }
    }
@@ -176,7 +177,10 @@ public abstract class ChannelSupport implements Channel
 
    public boolean remove(Receiver r)
    {
-      return router.remove(r);
+      boolean removed = router.remove(r);
+
+      if (log.isTraceEnabled()) { log.trace(this + (removed ? " removed ":" did NOT remove ") + r); }
+      return removed;
    }
 
    public void clear()
@@ -308,14 +312,13 @@ public abstract class ChannelSupport implements Channel
       if (del == null)
       {
          // no receiver, receiver didn't accept the message or broken receivers        
-         if (log.isTraceEnabled()){ log.trace(this + ": no delivery returned for message; there is no receiver"); }
+         if (log.isTraceEnabled()){ log.trace(this + " did not get a delivery, there is no receiver"); }
 
          processMessageBeforeStorage(ref);
 
          try
          {                        
             state.add(ref);
-
             if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
          }
          catch(Throwable t)

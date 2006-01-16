@@ -28,10 +28,10 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 
@@ -55,7 +55,7 @@ public abstract class TopicTestBase extends MessagingTestCase
 
    protected CoreDestination topic;
 
-   protected PersistenceManager pm;
+   protected TransactionLogDelegate tl;
    protected MessageStore ms;
 
    // Constructors --------------------------------------------------
@@ -71,17 +71,18 @@ public abstract class TopicTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      sc = new ServiceContainer("all,-aop,-remoting,-security");
+      sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      ms = new PersistentMessageStore("persistent-store", pm);
+      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl).start();
+      
+      ms = new PersistentMessageStore("persistent-store", tl);
    }
 
    public void tearDown() throws Exception
    {
-      pm = null;
+      tl = null;
       ms = null;
       sc.stop();
       sc = null;

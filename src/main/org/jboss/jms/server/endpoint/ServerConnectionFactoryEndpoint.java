@@ -80,7 +80,9 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       //See if there is a preconfigured client id for the user
       if (username != null)
       {
-         String preconfClientID = serverPeer.getStateManager().getPreConfiguredClientID(username);
+         String preconfClientID =
+            serverPeer.getDurableSubscriptionStoreDelegate().getPreConfiguredClientID(username);
+         
          if (preconfClientID != null)
          {
             clientID = preconfClientID;

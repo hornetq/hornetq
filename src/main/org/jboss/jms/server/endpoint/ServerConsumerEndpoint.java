@@ -36,6 +36,7 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
@@ -50,9 +51,6 @@ import org.jboss.messaging.core.local.Subscription;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
-
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-
 
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
@@ -90,7 +88,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    protected Selector messageSelector;
    
-   protected PooledExecutor threadPool;
+   protected ThreadPoolDelegate threadPoolDelegate;
    
    protected volatile boolean started;
    
@@ -115,18 +113,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                           String selector, boolean noLocal)
       throws InvalidSelectorException
    {
-      log.debug("creating ServerConsumerDelegate[" + Util.guidToString(id) + "]");
+      log.debug("creating ConsumerEndpoint[" + Util.guidToString(id) + "]");
       
       this.id = id;
-      
       this.channel = channel;
-      
       this.sessionEndpoint = sessionEndpoint;
-      
       this.callbackHandler = callbackHandler;
-      
-      this.threadPool = sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPool();
-      
+      this.threadPoolDelegate =
+         sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPoolDelegate();
       this.noLocal = noLocal;
       
       if (selector != null)
@@ -137,9 +131,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       
       this.deliveries = new ArrayList();
-      
       this.started = sessionEndpoint.connectionEndpoint.started;
-      
       this.channel.add(this);
       
    }
@@ -148,11 +140,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    public synchronized Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      if (log.isTraceEnabled()) { log.trace(this + " handling reference " + Util.guidToString(reference.getMessageID())); }
-      
-      if (!wantReference())
+      if (log.isTraceEnabled()) { log.trace(this + " receives reference " + Util.guidToString(reference.getMessageID()) + " for delivery"); }
+
+      if (!isReady())
       {
-         if (log.isTraceEnabled()) { log.trace(this + " rejecting " + Util.guidToString(reference.getMessageID())); }
+         if (log.isTraceEnabled()) { log.trace(this + " rejects " + Util.guidToString(reference.getMessageID())); }
          return null;
       }
       
@@ -197,7 +189,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             try
             {
                if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }               
-               threadPool.execute(new DeliveryRunnable(callbackHandler, md));
+               threadPoolDelegate.execute(new DeliveryRunnable(callbackHandler, md));
             }
             catch (InterruptedException e)
             {
@@ -253,7 +245,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    public synchronized void closing() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace(this.id + " closing"); }
+      if (log.isTraceEnabled()) { log.trace(this + " closing"); }
    }
    
    public synchronized void close() throws JMSException
@@ -263,13 +255,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          throw new IllegalStateException("Consumer is already closed");
       }
       
-      if (log.isTraceEnabled()) { log.trace(this.id + " close"); }
+      if (log.isTraceEnabled()) { log.trace(this + " close"); }
       
       closed = true;
       
-      //On close we only disconnect the consumer from the Channel we don't actually remove it
-      //This is because it may still contain deliveries that may well be acknowledged after
-      //the consumer has closed. This is perfectly valid.
+      // On close we only disconnect the consumer from the Channel we don't actually remove it
+      // This is because it may still contain deliveries that may well be acknowledged after
+      // the consumer has closed. This is perfectly valid.
       disconnect();
       
       Dispatcher.singleton.unregisterTarget(this.id);
@@ -356,7 +348,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
 
       active = true;
-      if (log.isTraceEnabled()) { log.trace(this + " activated"); }
+      if (log.isTraceEnabled()) { log.trace(this + " just activated"); }
 
       promptDelivery();
    }
@@ -365,7 +357,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
    public String toString()
    {
-      return "ConsumerEndpoint[" + Util.guidToString(id) + (active ? ",active" : "") + "]";
+      return "ConsumerEndpoint[" + Util.guidToString(id) + "]" + (active ? "(active)" : "");
    }
 
    // Package protected ---------------------------------------------
@@ -400,7 +392,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       if (this.channel instanceof Subscription)
       {
-         ((Subscription)channel).closeConsumer(this.sessionEndpoint.serverPeer.getPersistenceManager());
+         ((Subscription)channel).closeConsumer();
       }
       
       this.sessionEndpoint.consumers.remove(this.id);
@@ -476,7 +468,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    synchronized void setStarted(boolean started)
    {
-      if (log.isTraceEnabled()) { log.trace("setStarted: " + started); } 
+      if (log.isTraceEnabled()) { log.trace(this + (started ? " started" : " stopped")); }
       
       this.started = started;   
       
@@ -499,38 +491,36 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    }
    
    /**
-    * Disconnect this consumer from the Channel that feeds it.
-    * This method does not clear up any deliveries
-    *
+    * Disconnect this consumer from the Channel that feeds it. This method does not clear up
+    * any deliveries.
     */
    protected void disconnect()
    {
       boolean removed = channel.remove(this);
       
-      if (log.isTraceEnabled()) log.trace("receiver " + (removed ? "" : "NOT ")  + "removed");
-      
       if (removed)
       {
          disconnected = true;
+         if (log.isTraceEnabled()) { log.trace(this + " disconnected from the channel"); }
       }
    }
    
    /*
     * Do we want to handle the message? (excluding filter check)
     */
-   protected boolean wantReference()
+   protected boolean isReady()
    {
       // If the client side consumer is not ready to accept a message and have it sent to it
       // or we're not grabbing a message for receiveNoWait we return null to refuse the message
       if (!active && !grabbing)
       {
-         if (log.isTraceEnabled()) { log.trace("Not ready for message so returning null"); }
+         if (log.isTraceEnabled()) { log.trace(this + " not ready"); }
          return false;
       }
       
       if (closed)
       {
-         if (log.isTraceEnabled()) { log.trace(this + " closed, rejecting message" ); }
+         if (log.isTraceEnabled()) { log.trace(this + " closed"); }
          return false;
       }
       

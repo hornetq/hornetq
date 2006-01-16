@@ -36,7 +36,6 @@ import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityManager;
 import org.jboss.jms.server.security.SecurityMetadata;
-import org.jboss.logging.Logger;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -50,8 +49,6 @@ public class SecurityAspect
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(SecurityAspect.class);
-   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -62,8 +59,6 @@ public class SecurityAspect
    
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("Checking if user has permissions to create consumer"); }
-      
       MethodInvocation mi = (MethodInvocation)invocation;
       
       //read permission required on the destination
@@ -93,8 +88,6 @@ public class SecurityAspect
       //Null represents an anonymous producer - the destination
       //for this is specified at send time
       
-      if (log.isTraceEnabled()) { log.trace("Checking if user has permissions to create producer"); }
-      
       MethodInvocation mi = (MethodInvocation)invocation;
       
       Destination dest = (Destination)mi.getArguments()[0];
@@ -114,8 +107,6 @@ public class SecurityAspect
    {
       //read permission required on the destination
       
-      if (log.isTraceEnabled()) { log.trace("Checking if user has permissions to create browser"); }
-      
       MethodInvocation mi = (MethodInvocation)invocation;
       
       Destination dest = (Destination)mi.getArguments()[0];
@@ -133,8 +124,6 @@ public class SecurityAspect
       //anonymous producer
       
       //if destination is not null then write permissions required
-      
-      if (log.isTraceEnabled()) { log.trace("Checking if user has permissions to send on anon. producer"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -169,12 +158,12 @@ public class SecurityAspect
       {
          throw new JMSSecurityException("No security configuration avaliable for " + jbDest.getName());         
       }
-      
-      //Authenticate
+
+      // Authenticate
       securityManager.authenticate(conn.getUsername(), conn.getPassword());
-      
-      //Authorize
-      Set principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() : 
+
+      // Authorize
+      Set principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() :
                        checkType == CheckType.WRITE ? securityMetadata.getWritePrincipals() :
                        securityMetadata.getCreatePrincipals();
                        

@@ -49,8 +49,7 @@ public class ClientManagerImpl implements ClientManager
 
    protected ServerPeer serverPeer;
    protected Map connections;
-   
-   
+
    // Constructors --------------------------------------------------
 
    public ClientManagerImpl(ServerPeer serverPeer)

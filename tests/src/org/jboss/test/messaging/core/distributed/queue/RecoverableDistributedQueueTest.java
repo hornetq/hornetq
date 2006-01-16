@@ -21,11 +21,11 @@
 */
 package org.jboss.test.messaging.core.distributed.queue;
 
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 
 /**
@@ -42,9 +42,9 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private JDBCPersistenceManager pm;
-   private JDBCPersistenceManager pm2;
-   private JDBCPersistenceManager pm3;
+   private JDBCTransactionLog tl;
+   private JDBCTransactionLog tl2;
+   private JDBCTransactionLog tl3;
 
    // Constructors --------------------------------------------------
 
@@ -59,22 +59,23 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
    {
       super.setUp();
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      pm2 = new JDBCPersistenceManager();
-      pm2.start();
-      pm3 = new JDBCPersistenceManager();
-      pm3.start();
+      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl.start();
+      tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl2.start();
+      tl3 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl3.start();
 
-      ms = new PersistentMessageStore("persistent-message-store", pm);
-      ms2 = new PersistentMessageStore("persistent-message-store2", pm2);
-      ms3 = new PersistentMessageStore("persistent-message-store3", pm3);
+      ms = new PersistentMessageStore("persistent-message-store", tl);
+      ms2 = new PersistentMessageStore("persistent-message-store2", tl2);
+      ms3 = new PersistentMessageStore("persistent-message-store3", tl3);
 
-      channel = new DistributedQueue("test", ms, pm, dispatcher);
-      channel2 = new DistributedQueue("test", ms2, pm2, dispatcher2);
-      channel3 = new DistributedQueue("test", ms3, pm3, dispatcher3);
+      channel = new DistributedQueue("test", ms, tl, dispatcher);
+      channel2 = new DistributedQueue("test", ms2, tl2, dispatcher2);
+      channel3 = new DistributedQueue("test", ms3, tl3, dispatcher3);
 
-      tr.setPersistenceManager(pm);
+      // re-create the transaction repository with the new transaction log
+      tr = new TransactionRepository(tl);
 
       log.debug("setup done");
    }
@@ -90,13 +91,13 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
       channel3.close();
       channel3 = null;
 
-      pm.stop();
+      tl.stop();
       ms = null;
 
-      pm2.stop();
+      tl2.stop();
       ms2 = null;
 
-      pm3.stop();
+      tl3.stop();
       ms3 = null;
 
       super.tearDown();
@@ -111,7 +112,7 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, pm);
+      channel = new Queue("test", ms, tl);
    }
 
 

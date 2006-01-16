@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+
+
+<mbean>
+   <description>A deployable JBoss Messaging Queue</description>
+   <class>org.jboss.jms.server.destination.Queue</class>
+
+   <!-- Managed constructors -->
+
+   <constructor>
+      <name>Queue</name>
+   </constructor>
+
+   <constructor>
+      <name>Queue</name>
+      <parameter>
+         <name>jndiName</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </constructor>
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getName">
+      <description>The destination's name</description>
+      <name>Name</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getJNDIName">
+      <description>The destination's JNDI name</description>
+      <name>JNDIName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getServerPeer" setMethod="setServerPeer">
+      <description>The ObjectName of the server peer this destination was deployed on</description>
+      <name>ServerPeer</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getSecurityConfig" setMethod="setSecurityConfig">
+      <description>The destination's security configuration</description>
+      <name>SecurityConfig</name>
+      <type>org.w3c.dom.Element</type>
+   </attribute>
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>
+   
+</mbean>

@@ -54,8 +54,8 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
 
       channel = new DistributedQueue("test", ms, dispatcher);
 
-      ms2 = new PersistentMessageStore("message-store-2", msPersistenceManager);
-      ms3 = new PersistentMessageStore("message-store-3", msPersistenceManager);
+      ms2 = new PersistentMessageStore("message-store-2", msTransactionLogDelegate);
+      ms3 = new PersistentMessageStore("message-store-3", msTransactionLogDelegate);
 
       channel2 = new DistributedQueue("test", ms2, dispatcher2);
       channel3 = new DistributedQueue("test", ms3, dispatcher3);

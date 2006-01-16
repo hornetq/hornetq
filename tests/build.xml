@@ -182,9 +182,9 @@
    <property name="junit.haltonfailure" value="false"/>
    <property name="junit.fork" value="false"/>
    <property name="junit.includeantruntime" value="true"/>
-   <property name="junit.timeout" value="2400000"/>
+   <property name="junit.timeout" value="600000"/>
 
-   <property name="junit.timeout2" value="2400000"/>
+   <property name="junit.timeout2" value="600000"/>
 
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
@@ -233,6 +233,7 @@
             <!-- <path location="../src/resources/jboss-remoting.jar"/> -->
             <path refid="jboss.remoting.classpath"/>
             <path refid="jboss.j2se.classpath"/>
+            <path refid="jboss.system.classpath"/>
             <pathelement location="${module.root}/etc"/>
             <pathelement location="${module.output}/classes"/>
             <pathelement location="${module.root}/../output/classes"/>
@@ -281,7 +282,7 @@
       </junit>
    </target>
 
-   <target name="remote-tests"
+   <target name="remote-tests" depends="tests-jar, prepare-testdirs"
       description="Runs remotely all tests for which it makes sense to run remotely">
 
       <antcall target="stop-rmi-server"/>
@@ -511,7 +512,7 @@
       <antcall target="stop-rmi-server"/>
    </target>
 
-   <target name="compile-stylesheets">
+   <target name="copy-stylesheets">
       <mkdir dir="${build.tests.stylesheets}"/>
       <copy todir="${build.tests.stylesheets}" filtering="yes">
          <fileset dir="${source.tests.stylesheets}">
@@ -520,9 +521,8 @@
       </copy>
    </target>
 
-   <target name="report" depends="tests, compile-stylesheets">
+   <target name="compile-report">
       <mkdir dir="${build.tests.reports}/html"/>
-
       <junitreport todir="${build.tests.reports}">
          <fileset dir="${build.tests.reports}">
             <include name="TEST-*.xml"/>
@@ -533,55 +533,15 @@
       </junitreport>
    </target>
 
-   <target name="jmsreport" depends="jmstests, compile-stylesheets">
-      <mkdir dir="${build.tests.reports}/html"/>
+   <target name="report" depends="tests, copy-stylesheets, compile-report"/>
 
-      <junitreport todir="${build.tests.reports}">
-         <fileset dir="${build.tests.reports}">
-            <include name="TEST-*.xml"/>
-         </fileset>
-         <report format="frames"
-            todir="${build.tests.reports}/html"
-            styledir="${build.tests.stylesheets}"/>
-      </junitreport>
-   </target>
+   <target name="remote-tests-report" depends="remote-tests, copy-stylesheets, compile-report"/>
 
-   <target name="messagereport" depends="messagetests, compile-stylesheets">
-      <mkdir dir="${build.tests.reports}/html"/>
+   <target name="jmsreport" depends="jmstests, copy-stylesheets, compile-report"/>
 
-      <junitreport todir="${build.tests.reports}">
-         <fileset dir="${build.tests.reports}">
-            <include name="TEST-*.xml"/>
-         </fileset>
-         <report format="frames"
-            todir="${build.tests.reports}/html"
-            styledir="${build.tests.stylesheets}"/>
-      </junitreport>
-   </target>
+   <target name="messagereport" depends="messagetests, copy-stylesheets, compile-report"/>
 
-   <target name="corereport" depends="coretests, compile-stylesheets">
-      <mkdir dir="${build.tests.reports}/html"/>
-
-      <junitreport todir="${build.tests.reports}">
-         <fileset dir="${build.tests.reports}">
-            <include name="TEST-*.xml"/>
-         </fileset>
-         <report format="frames"
-            todir="${build.tests.reports}/html"
-            styledir="${build.tests.stylesheets}"/>
-      </junitreport>
-   </target>
-
-   <target name="build-report" >
-     <junitreport todir="${build.tests.reports}">
-        <fileset dir="${build.tests.reports}">
-           <include name="TEST-*.xml"/>
-        </fileset>
-        <report format="frames"
-           todir="${build.tests.reports}/html"
-           styledir="${build.tests.stylesheets}"/>
-     </junitreport>
-   </target>
+   <target name="corereport" depends="coretests, copy-stylesheets, compile-report"/>
 
    <target name="functional-tests" depends="tests"/>
 

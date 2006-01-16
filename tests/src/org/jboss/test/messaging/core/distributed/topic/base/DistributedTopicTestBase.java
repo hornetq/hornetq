@@ -32,9 +32,10 @@ import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -55,7 +56,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected PersistenceManager pm2, pm3;
+   protected TransactionLogDelegate tl2, tl3;
    protected MessageStore ms2, ms3;
 
    protected DistributedTopic topic2, topic3;
@@ -73,13 +74,13 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    {
       super.setUp();
 
-      pm2 = new JDBCPersistenceManager();
-      pm2.start();
-      ms2 = new PersistentMessageStore("store2", pm2);
+      tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl2).start();
+      ms2 = new PersistentMessageStore("store2", tl2);
 
-      pm3 = new JDBCPersistenceManager();
-      pm3.start();
-      ms3 = new PersistentMessageStore("store1", pm3);
+      tl3 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl3).start();
+      ms3 = new PersistentMessageStore("store1", tl3);
 
       jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
       jchannel2 = new JChannel(JGroupsUtil.generateProperties(900000, 1));
@@ -101,12 +102,12 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       jchannel2.close();
       jchannel3.close();
 
-      pm2.stop();
-      pm2 = null;
+      ((JDBCTransactionLog)tl2).stop();
+      tl2 = null;
       ms2 = null;
 
-      pm3.stop();
-      pm3 = null;
+      ((JDBCTransactionLog)tl3).stop();
+      tl3 = null;
       ms3 = null;
 
       super.tearDown();

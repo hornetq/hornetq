@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -45,14 +47,14 @@ public class RecoverableState extends NonRecoverableState
    
    // Attributes ----------------------------------------------------
 
-   private PersistenceManager pm;
+   private TransactionLogDelegate pm;
    private Serializable channelID;
    private Serializable storeID;
    private MessageStore messageStore;
 
    // Constructors --------------------------------------------------
 
-   public RecoverableState(Channel channel, PersistenceManager pm)
+   public RecoverableState(Channel channel, TransactionLogDelegate pm)
    {
       super(channel, true);
       if (pm == null)

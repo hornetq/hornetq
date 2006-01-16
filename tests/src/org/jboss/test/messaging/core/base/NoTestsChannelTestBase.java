@@ -58,7 +58,7 @@ public abstract class NoTestsChannelTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      sc = new ServiceContainer("all,-aop,-remoting,-security");
+      sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
    }
 

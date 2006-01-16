@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+
+
+<mbean>
+   <description>A JDBC durable subscription store</description>
+   <class>org.jboss.messaging.core.plugin.JDBCDurableSubscriptionStore</class>
+
+   <!-- Managed constructors -->
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getInstance">
+      <description>The instance to plug into the server peer</description>
+      <name>Instance</name>
+      <type>java.lang.Object</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">
+      <description>The JNDI name of the DataSource used by this transaction log</description>
+      <name>DataSource</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getTransactionManager" setMethod="setTransactionManager">
+      <description>The ObjectName of the TransactionManager used by this transaction log</description>
+      <name>TransactionManager</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>
+
+</mbean>

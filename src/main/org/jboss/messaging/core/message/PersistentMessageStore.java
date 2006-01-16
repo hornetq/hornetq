@@ -26,7 +26,8 @@ import java.io.Serializable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -45,11 +46,11 @@ public class PersistentMessageStore extends InMemoryMessageStore
    
    // Attributes ----------------------------------------------------
 
-   private PersistenceManager pm;
+   private TransactionLogDelegate pm;
 
    // Constructors --------------------------------------------------
 
-   public PersistentMessageStore(Serializable storeID, PersistenceManager pm)
+   public PersistentMessageStore(Serializable storeID, TransactionLogDelegate pm)
    {
       super(storeID, true);
       
@@ -141,7 +142,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
 
    // Public --------------------------------------------------------
 
-   public PersistenceManager getPersistenceManager()
+   public TransactionLogDelegate getPersistenceManager()
    {
       return pm;
    }

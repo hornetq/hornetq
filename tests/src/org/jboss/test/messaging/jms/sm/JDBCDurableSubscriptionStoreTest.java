@@ -31,7 +31,7 @@ import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.StateManager;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerService;
@@ -44,13 +44,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JDBCStateManagerTest extends InMemoryStateManagerTest
+public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptionStoreTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JDBCStateManagerTest(String name)
+   public JDBCDurableSubscriptionStoreTest(String name)
    {
       super(name);
    }
@@ -65,11 +65,11 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
       super.tearDown();
    }
    
-   protected StateManager createStateManager() throws Exception
+   protected DurableSubscriptionStoreDelegate createStateManager() throws Exception
    {
 
-      sm = ServerManagement.getStateManager();
-      return sm;
+      dssd = ServerManagement.getDurableSubscriptionStoreDelegate();
+      return dssd;
    }
    
    public void testGetPreConfClientId() throws Exception
@@ -98,7 +98,7 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
          mgr.resume(txOld);
       }
       conn.close();
-      String theClientID = sm.getPreConfiguredClientID(username);
+      String theClientID = dssd.getPreConfiguredClientID(username);
       assertNotNull(theClientID);
       assertEquals(clientID, theClientID);
            
@@ -118,11 +118,11 @@ public class JDBCStateManagerTest extends InMemoryStateManagerTest
       for (int i = 0; i < NUM_SUBS; i++)
       {
          subs[i] =
-            sm.createDurableSubscription("topic1", new GUID().toString(), new GUID().toString(), new GUID().toString());         
-         sm.createDurableSubscription("topic2", new GUID().toString(), new GUID().toString(), new GUID().toString());
+            dssd.createDurableSubscription("topic1", new GUID().toString(), new GUID().toString(), new GUID().toString());
+         dssd.createDurableSubscription("topic2", new GUID().toString(), new GUID().toString(), new GUID().toString());
       }
       
-      Set loaded = sm.loadDurableSubscriptionsForTopic("topic1");
+      Set loaded = dssd.loadDurableSubscriptionsForTopic("topic1");
       assertNotNull(loaded);
       assertEquals(NUM_SUBS, loaded.size());
       

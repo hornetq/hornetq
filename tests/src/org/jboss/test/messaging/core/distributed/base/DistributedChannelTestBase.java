@@ -3507,7 +3507,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
 //      sm = null;
 //      System.gc();
 //
-//      int cnt =((JDBCPersistenceManager)msPersistenceManager).
+//      int cnt =((JDBCTransactionLog)msTransactionLogDelegate).
 //            getMessageReferenceCount(m.getMessageID());
 //
 //      assertEquals(1, cnt);

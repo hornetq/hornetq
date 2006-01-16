@@ -39,9 +39,11 @@ public interface DestinationManager
     * @param jndiName - the JNDI name to bind the newly created queue to. If null, the queue
     *        will be bound in JNDI under the default context using the specified queue name.
     *
+    * @return the name under which the queue was bound in JNDI.
+    *
     * @throws Exception
     */
-   public void createQueue(String name, String jndiName) throws Exception;
+   public String createQueue(String name, String jndiName) throws Exception;
 
    /**
     * Removes the queue both from JNDI and DestinationManager.
@@ -55,9 +57,11 @@ public interface DestinationManager
     * @param jndiName - the JNDI name to bind the newly created topic to. If null, the topic
     *        will be bound in JNDI under the default context using the specified topic name.
     *
+    * @return the name under which the topic was bound in JNDI.
+    *
     * @throws Exception
     */
-   public void createTopic(String name, String jndiName) throws Exception;
+   public String createTopic(String name, String jndiName) throws Exception;
 
    /**
     * Removes the topic both from JNDI and DestinationManager.

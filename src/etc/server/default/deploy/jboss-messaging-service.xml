@@ -45,13 +45,17 @@
    <mbean code="org.jboss.jms.server.ServerPeer"
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml">
+
       <constructor>
          <!-- serverPeerID -->
          <arg type="java.lang.String" value="0" />
       </constructor>
-      <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>      
-      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      <depends>jboss:service=TransactionManager</depends>
+
+      <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
+      <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
+      <depends optional-attribute-name="TransactionLog">jboss.messaging:service=TransactionLog</depends>
+      <depends optional-attribute-name="DurableSubscriptionStore">jboss.messaging:service=DurableSubscriptionStore</depends>
+
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
 		<security>				
@@ -59,14 +63,49 @@
 		</security>
       </attribute>
    </mbean>
-   
-  
-   
-   <!-- Test destinations -->
-      
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=testTopic">
+
+   <!-- Plug-ins -->
+
+   <mbean code="org.jboss.jms.server.plugin.DefaultThreadPool"
+      name="jboss.messaging:service=ThreadPool"
+      xmbean-dd="xmdesc/DefaultThreadPool-xmbean.xml">
+      <constructor>
+         <!-- the default pool size -->
+         <arg type="int" value="40" />
+      </constructor>
+   </mbean>
+
+   <mbean code="org.jboss.messaging.core.plugin.JDBCTransactionLog"
+      name="jboss.messaging:service=TransactionLog"
+      xmbean-dd="xmdesc/JDBCTransactionLog-xmbean.xml">
+
+      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
+           the DataSource JNDI name in order to actually get a reference to it. Fix this.
+      -->
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore"
+      name="jboss.messaging:service=DurableSubscriptionStore"
+      xmbean-dd="xmdesc/JDBCDurableSubscriptionStore-xmbean.xml">
+
+      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
+           the DataSource JNDI name in order to actually get a reference to it. Fix this.
+      -->
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+   </mbean>
+
+   <!-- ConnectionFactories -->
+
+   <!-- Test destinations --> <!--
+
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=testTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <attribute name="SecurityConfig">
          <security>
@@ -76,11 +115,10 @@
          </security>
       </attribute>
    </mbean>
-   
-   
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=securedTopic">
+
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=securedTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <attribute name="SecurityConfig">
          <security>
@@ -89,8 +127,9 @@
       </attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=testDurableTopic">
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=testDurableTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <attribute name="SecurityConfig">
          <security>
@@ -101,8 +140,9 @@
       </attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=testQueue">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=testQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <attribute name="SecurityConfig">
          <security>
@@ -111,155 +151,46 @@
             <role name="noacc" read="false" write="false" create="false"/>
          </security>
       </attribute>
-   </mbean>
+   </mbean>                                           -->
 
-   <!-- We need this to deploy MDBs -->
+   <!-- We need this to deploy MDBs -->                  <!--
 
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=DLQ">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=DLQ"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
+   </mbean>                                                  -->
 
-     
-   <!-- Example queues -->   
+   <!-- Example queues -->                                      <!--
    
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=A">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=A"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
    
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=B">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=B"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
    
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=C">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=C"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
    
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=D">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=D"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>   
 
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=ex">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=ex"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
+   </mbean>                                             -->
    
-   <!-- Needed for performance testing -->
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-         name="jboss.messaging.destination:service=Queue,name=perfTestQueue">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue0">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue1">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue2">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue3">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue4">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue5">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue6">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue7">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue8">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=perfTestQueue9">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-         name="jboss.messaging.destination:service=Topic,name=perfTestTopic">
-         <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic0">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic1">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic2">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic3">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic4">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic5">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic6">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic7">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic8">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=perfTestTopic9">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>
-   
-
-
 </server>

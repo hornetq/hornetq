@@ -2248,20 +2248,25 @@ public class MessageConsumerTest extends MessagingTestCase
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+         log.debug("creating first durable subscription");
          sess1.createDurableSubscriber(topic, "mySubscription1");
+
+         log.debug("creating the second durable subscription");
          sess1.createDurableSubscriber(topic, "mySubscription2");
 
+         log.debug("closing conn1");
          conn1.close();
-
-
 
          conn2 = cf.createConnection();
          conn2.setClientID(CLIENT_ID1);
+
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = sess2.createProducer(topic);
          producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          final int NUM_MESSAGES = 50;
+
+         log.debug("sending messages");
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -2269,12 +2274,11 @@ public class MessageConsumerTest extends MessagingTestCase
             producer.send(tm);
          }
 
+         log.debug("all " + NUM_MESSAGES + " messages sent");
+
          sess2.unsubscribe("mySubscription1");
 
          conn2.close();
-
-
-
 
          Connection conn3 = cf.createConnection();
          conn3.setClientID(CLIENT_ID1);

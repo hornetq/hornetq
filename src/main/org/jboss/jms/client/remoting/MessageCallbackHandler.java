@@ -155,16 +155,15 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    protected int ackMode;
    
-   //Executor used for executing onMessage methods - there is one per session
+   // Executor used for executing onMessage methods - there is one per session
    protected Executor onMessageExecutor;
    
-   //Executor for executing activateConsumer methods asynchronously - there is one pool per connection
+   // Executor for executing activateConsumer methods asynchronously, there is one pool per connection
    protected Executor pooledExecutor;
    
-   //We need to keep track of how many calls to activate we have made so when we close the 
-   //consumer we can wait for the last one to complete otherwise
-   //we can end up with closing the consumer and then a call to activate occurs
-   //causing an exception
+   // We need to keep track of how many calls to activate we have made so when we close the consumer
+   // we can wait for the last one to complete otherwise we can end up with closing the consumer and
+   // then a call to activate occurs causing an exception
    protected SynchronizedInt activationCount;
    
 
@@ -196,10 +195,10 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       if (closed)
       {
          log.warn("Consumer is closed - ignoring message");
-         //Note - we do not cancel the message if the handler is closed.
-         //If the handler is closed then the corresponding serverconsumerdelegate
-         //is either already closed or about to close, in which case it's deliveries
-         //will be cancelled anyway.
+
+         // Note - we do not cancel the message if the handler is closed. If the handler is closed
+         // then the corresponding server consumer endpoint is either already closed or about to
+         // close, in which case its deliveries will be cancelled anyway.
          return;
       }
       
@@ -275,18 +274,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
     
    public synchronized void setMessageListener(MessageListener listener) throws JMSException
    {
-      //JMS consumer is single threaded, so it shouldn't be possible to
-      //set a MessageListener while another thread is receiving
+      // JMS consumer is single threaded, so it shouldn't be possible to set a MessageListener
+      // while another thread is receiving
       
       if (receiverThread != null)
       {
-         //Should never happen
+         // Should never happen
          throw new javax.jms.IllegalStateException("Another thread is already receiving");
       }
       
-      this.listener = listener;            
-      
-      activateConsumer();      
+      this.listener = listener;
+
+      if (log.isTraceEnabled()) { log.trace("installed listener " + listener); }
+
+      activateConsumer();
    }
  
    
@@ -311,8 +312,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
     *        or null if one is not immediately available. Returns null if the consumer is
     *        concurrently closed.
     */
-   public Message receive(long timeout)
-      throws JMSException
+   public Message receive(long timeout) throws JMSException
    {                 
       
       if (listener != null)
@@ -494,13 +494,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    protected void activateConsumer() throws JMSException
    {
-      //We execute this on a separate thread to avoid the case where the asynch delivery
-      //arrives before we have returned from the synch call, which would
-      //cause us to lose the message
+      // We execute this on a separate thread to avoid the case where the asynchronous delivery
+      // arrives before we have returned from the synchronus call, which would cause us to lose
+      // the message
       
       try
-      {         
-         pooledExecutor.execute(new ConsumerActivationRunnable());     
+      {
+         if (log.isTraceEnabled()) { log.trace("initiating activation"); }
+         pooledExecutor.execute(new ConsumerActivationRunnable());
          activationCount.increment();
       }
       catch (InterruptedException e)
@@ -531,7 +532,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    {
       Message m = null;
       
-      //If it's receiveNoWait then get the message directly
+      // If it's receiveNoWait then get the message directly
       if (timeout == -1)
       {
          waiting = false;
@@ -541,8 +542,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       }
       else
       {
-         //otherwise we active the server side consumer and 
-         //wait for a message to arrive asynchronously
+         // ... otherwise we activate the server side consumer and wait for a message to arrive
+         // asynchronously
          
          waiting = true;
          

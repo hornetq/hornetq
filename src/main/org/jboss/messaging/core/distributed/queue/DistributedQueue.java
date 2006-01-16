@@ -23,7 +23,7 @@ package org.jboss.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.MessageReference;
@@ -80,10 +80,10 @@ public class DistributedQueue extends Queue implements Distributed
    /**
     * A recoverable queue peer.
     */
-   public DistributedQueue(String name, MessageStore ms, PersistenceManager pm,
+   public DistributedQueue(String name, MessageStore ms, TransactionLogDelegate tl,
                            RpcDispatcher dispatcher)
    {
-      super(name, ms, pm);
+      super(name, ms, tl);
       viewKeeper = new QueueViewKeeper();
       peer = new QueuePeer(this, dispatcher);
    }

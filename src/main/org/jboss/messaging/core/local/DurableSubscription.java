@@ -24,7 +24,8 @@ package org.jboss.messaging.core.local;
 import javax.jms.JMSException;
 
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.util.Util;
 
 /**
  * 
@@ -47,9 +48,9 @@ public class DurableSubscription extends Subscription
    // Constructors --------------------------------------------------
 
    public DurableSubscription(String clientID, String subName, Topic topic, String selector,
-                              MessageStore ms, PersistenceManager pm)
+                              MessageStore ms, TransactionLogDelegate tl)
    {
-      super(clientID + "." + subName, topic, selector, ms, pm);
+      super(clientID + "." + subName, topic, selector, ms, tl);
       this.subName = subName;
    }
    
@@ -58,9 +59,9 @@ public class DurableSubscription extends Subscription
 
    // Public --------------------------------------------------------
    
-   public void closeConsumer(PersistenceManager pm) throws JMSException
+   public void closeConsumer() throws JMSException
    {
-      //do nothing - this is durable
+      // do nothing - this is durable
    }
    
    public String getSubName()
@@ -71,6 +72,11 @@ public class DurableSubscription extends Subscription
    public void load() throws Exception
    {
       this.state.load();
+   }
+
+   public String toString()
+   {
+      return "DurableSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------

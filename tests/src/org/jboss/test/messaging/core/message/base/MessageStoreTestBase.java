@@ -38,7 +38,7 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
  * variables:
  *
  * 1. The message store can be can be non-recoverable (does not have access to a
- *    PersistenceManager) or recoverable. A non-recoverable message store can accept reliable
+ *    TransactionLogDelegate) or recoverable. A non-recoverable message store can accept reliable
  *    messages or not.
  * 2. The message can be non-reliable or reliable.
  * 3. One or multiple messages can be stored.
@@ -105,7 +105,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      sc = new ServiceContainer("all,-aop,-remoting,-security");
+      sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
       headers = new HashMap();

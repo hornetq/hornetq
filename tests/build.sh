@@ -148,7 +148,7 @@ main() {
     ANT_OPTS="-Djava.protocol.handler.pkgs=org.jboss.net.protocol"
 
     # setup some build properties
-    ANT_OPTS="$ANT_OPTS -Dbuild.script=$0"
+    ANT_OPTS="$ANT_OPTS -Dbuild.script=$0 -Xmx512M"
 
     # debugging options
     #ANT_OPTS="$ANT_OPTS -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=n,address=antitself"

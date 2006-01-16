@@ -31,11 +31,11 @@ public class RecoverableStateTest extends StateTestBase
    {
       super.setUp();
 
-      ms = new PersistentMessageStore("ms0", pm);
+      ms = new PersistentMessageStore("ms0", transactionLogDelegate);
       channel = new SimpleChannel("test-channel", ms);
 
       // the state accepts reliable messages
-      state = new RecoverableState(channel, pm);
+      state = new RecoverableState(channel, transactionLogDelegate);
 
       log.debug("setup done");
    }

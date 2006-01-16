@@ -43,7 +43,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.StateManager;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
@@ -79,22 +79,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Attributes ----------------------------------------------------
 
    protected String sessionID;
-   
-   protected ServerConnectionEndpoint connectionEndpoint;
-      
-   protected Map producers;
-   
-   protected Map consumers;
-   
-	protected Map browsers;
-	
-	protected int acknowledgmentMode;
-
-   protected ServerPeer serverPeer;
-   
-   private InvokerCallbackHandler callbackHandler;
-   
+   protected int acknowledgmentMode;
    private boolean closed;
+
+   protected Map producers;
+   protected Map consumers;
+	protected Map browsers;
+
+   protected ServerConnectionEndpoint connectionEndpoint;
+   protected ServerPeer serverPeer;
+   private InvokerCallbackHandler callbackHandler;
    
    // Constructors --------------------------------------------------
 
@@ -102,18 +96,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
 								 int acknowledgmentMode)
    {
       this.sessionID = sessionID;
-      
 		this.acknowledgmentMode = acknowledgmentMode;
-      
-      this.connectionEndpoint = connectionEndpoint;  
-      
-      producers = new HashMap();
-      
-      consumers = new HashMap();
-      
-		browsers = new HashMap();
-      
+      this.connectionEndpoint = connectionEndpoint;
       serverPeer = connectionEndpoint.getServerPeer();
+
+      producers = new HashMap();
+      consumers = new HashMap();
+		browsers = new HashMap();
    }
 
    // SessionDelegate implementation --------------------------------
@@ -170,23 +159,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       JBossDestination d = (JBossDestination)jmsDestination;
       
-      if (log.isTraceEnabled()) { log.trace("creating ServerConsumerDelegate for dest:" + d.getName() +
-            " selector:" + selector + " noLocal:" + noLocal + " subName:" + subscriptionName); }
+      if (log.isTraceEnabled()) { log.trace("creating consumer endpoint for " + d + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName); }
             
       if (d.isTemporary())
       {
-         //Can only create a consumer for a temporary destination on the same connection
-         //that created it
+         // Can only create a consumer for a temporary destination on the same connection
+         // that created it
          if (!this.connectionEndpoint.temporaryDestinations.contains(d))
          {
-            throw new IllegalStateException("Cannot create a message consumer " +
-                  "on a different connection to that which created the temporary destination");
+            String msg = "Cannot create a message consumer on a different connection " +
+                         "to that which created the temporary destination";
+            throw new IllegalStateException(msg);
          }
       }
       
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-    
       Distributor destination = dm.getCoreDestination(jmsDestination);
       if (destination == null)
       {
@@ -201,6 +189,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       Subscription subscription = null;
+
       if (d.isTopic())
       {
          MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
@@ -208,80 +197,71 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          if (subscriptionName != null)
          {
-            //Look-up the durable subscription
-         
+            // look-up the durable subscription
+
             String clientID = connectionEndpoint.getClientID();
             if (clientID == null)
             {
                throw new JMSException("Cannot create durable subscriber without having set client ID");
             }
-                     
-            //It's a durable subscription - have we already got one with that name?
-            StateManager stateManager = serverPeer.getStateManager();
-                       
-            subscription = stateManager.getDurableSubscription(clientID, subscriptionName);                        
-         
-            if (subscription != null)
-            {
-               
-               if (log.isTraceEnabled()) { log.trace("Subscription with name " + subscriptionName +
-                                          " already exists"); }                        
-                                       
-               /* From javax.jms.Session Javadoc:
-                * 
-                * A client can change an existing durable subscription by creating a durable
-                * TopicSubscriber with the same name and a new topic and/or message selector.
-                * Changing a durable subscriber is equivalent to unsubscribing (deleting)
-                * the old one and creating a new one.
-                */
 
-               //Has the selector changed?
-               boolean selectorChanged = (selector == null && subscription.getSelector() != null) ||
-                         (subscription.getSelector() == null && selector != null) ||
-                         (subscription.getSelector() != null && selector != null && 
-                          !subscription.getSelector().equals(selector));
-            
-               if (log.isTraceEnabled()) { log.trace("Selector has changed? " + selectorChanged); }
-               
-               //Has the Topic changed?               
+            // it's a durable subscription - have we already got one with that name?
+            DurableSubscriptionStoreDelegate dsd = serverPeer.getDurableSubscriptionStoreDelegate();
+
+            subscription = dsd.getDurableSubscription(clientID, subscriptionName);
+
+            if (subscription == null)
+            {
+               if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + destination); }
+               subscription = dsd.
+                  createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
+            }
+            else
+            {
+               if (log.isTraceEnabled()) { log.trace("subscription " + subscriptionName + " already exists"); }
+
+               // From javax.jms.Session Javadoc:
+               // A client can change an existing durable subscription by creating a durable
+               // TopicSubscriber with the same name and a new topic and/or message selector.
+               // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
+               // one and creating a new one.
+
+               // has the selector changed?
+               boolean selectorChanged =
+                  (selector == null && subscription.getSelector() != null) ||
+                  (subscription.getSelector() == null && selector != null) ||
+                  (subscription.getSelector() != null && selector != null &&
+                  !subscription.getSelector().equals(selector));
+
+               if (log.isTraceEnabled()) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
+
+               // has the Topic changed?
                boolean topicChanged = subscription.getTopic() != destination;
-               
-               if (log.isTraceEnabled()) { log.trace("Topic has changed? " + topicChanged); }
-              
+
+               if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
+
                if (selectorChanged || topicChanged)
                {
-                  if (log.isTraceEnabled()) { log.trace("Changed so deleting old subscription"); }
-                  
-                  boolean removed = this.serverPeer.getStateManager().
+                  if (log.isTraceEnabled()) { log.trace("topic or selector changed so deleting old subscription"); }
+
+                  boolean removed = dsd.
                      removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
-   
+
                   if (!removed)
                   {
-                     throw new InvalidDestinationException("Cannot find durable subscription with name " +
-                        subscriptionName + " to unsubscribe");
+                     throw new InvalidDestinationException("Cannot find durable subscription " +
+                                                           subscriptionName + " to unsubscribe");
                   }
-   
+
                   subscription.unsubscribe();
                   subscription = null;
                }
             }
-         
-         
-            if (subscription == null)
-            {
-               //Create a new durable subscription
-                        
-               if (log.isTraceEnabled()) { log.trace("Creating new durable subscription on topic " + destination); }
-             
-               subscription = stateManager.createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
-            }
-         } //durable sub
+         }
          else
          {
-            //Non durable subscription
-            
-            if (log.isTraceEnabled()) { log.trace("Creating new non-durable subscription on topic " + destination); }
-            
+            // Non durable subscription
+            if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + destination); }
             subscription = new Subscription(topic, selector, ms);    
          }
       } 
@@ -409,7 +389,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (log.isTraceEnabled()) log.trace("close()");
             
-      //Clone to avoid ConcurrentModificationException
+      // clone to avoid ConcurrentModificationException
       HashSet consumerSet = new HashSet(consumers.values());
       
       for(Iterator i = consumerSet.iterator(); i.hasNext(); )
@@ -539,7 +519,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          throw new InvalidDestinationException("Destination is null");
       }
-      DurableSubscription subscription = this.serverPeer.getStateManager().getDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+
+      DurableSubscriptionStoreDelegate dsd = this.serverPeer.getDurableSubscriptionStoreDelegate();
+
+      DurableSubscription subscription =
+         dsd.getDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
 
       if (subscription == null)
       {
@@ -547,8 +531,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                subscriptionName + " to unsubscribe");
       }
       
-      boolean removed = 
-         this.serverPeer.getStateManager().removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+      boolean removed = dsd.removeDurableSubscription(this.connectionEndpoint.clientID,
+                                                      subscriptionName);
       
       if (!removed)
       {
@@ -560,7 +544,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       try
       {
-         this.serverPeer.getPersistenceManager().removeAllMessageData(subscription.getChannelID());
+         this.serverPeer.getTransactionLogDelegate().
+            removeAllMessageData(subscription.getChannelID());
       }
       catch (Exception e)
       {

@@ -29,6 +29,6 @@ package org.jboss.jms.server;
  */
 public interface DestinationManagerImplMBean extends DestinationManager
 {
-   public void createQueue(String name) throws Exception;
-   public void createTopic(String name) throws Exception;
+   public String createQueue(String name) throws Exception;
+   public String createTopic(String name) throws Exception;
 }

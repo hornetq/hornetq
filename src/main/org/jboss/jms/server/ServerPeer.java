@@ -46,19 +46,19 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityManager;
+import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 
 /**
  * A JMS server peer.
@@ -81,25 +81,6 @@ public class ServerPeer
    
    public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
    
-   private static ObjectName DESTINATION_MANAGER_OBJECT_NAME;
-   
-   private static ObjectName STATE_MANAGER_OBJECT_NAME;
-
-   static
-   {
-      try
-      {
-         DESTINATION_MANAGER_OBJECT_NAME =
-         new ObjectName("jboss.messaging:service=DestinationManager");
-         STATE_MANAGER_OBJECT_NAME =
-            new ObjectName("jboss.messaging:service=StateManager");
-      }
-      catch(Exception e)
-      {
-         log.error(e);
-      }
-   }
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -117,22 +98,30 @@ public class ServerPeer
 
    protected boolean started;
 
-   protected DestinationManagerImpl destinationManager;
+   protected int connFactoryIDSequence;
+   protected Map connFactoryDelegates;
+
+   // wired components
+
+   protected DestinationManagerImpl dm;
    protected ClientManager clientManager;
    protected SecurityManager securityManager;
    protected TransactionRepository txRepository;
    protected JMSServerInvocationHandler handler;
 
-   protected PersistenceManager pm;
-   protected MessageStore ms;
-   protected StateManager stateManager;
-   protected PooledExecutor threadPool; // manages threads used to deliver messages to consumers
+   // plugins
 
-   protected int connFactoryIDSequence;
-   protected Map connFactoryDelegates;
+   protected ObjectName threadPoolObjectName;
+   protected ThreadPoolDelegate threadPoolDelegate;
+   protected ObjectName transactionLogObjectName;
+   protected TransactionLogDelegate transactionLogDelegate;
+   protected MessageStore ms; // TODO get rid of this
+   protected ObjectName messageStoreObjectName;
+   protected MessageStoreDelegate messageStoreDelegate;
+   protected ObjectName durableSubscriptionStoreObjectName;
+   protected DurableSubscriptionStoreDelegate durableSubscriptionStoreDelegate;
 
    // Constructors --------------------------------------------------
-
 
    public ServerPeer(String serverPeerID) throws Exception
    {
@@ -158,62 +147,62 @@ public class ServerPeer
 
    public synchronized void create()
    {
-      log.debug(this + " created");
+      // noop
    }
 
    public synchronized void start() throws Exception
    {
       try
       {
-         
          if (started)
          {
             return;
          }
-         
+
+         log.debug(this + " starting");
+
          loadClientAOPConfig();
          
          loadServerAOPConfig();
-         
-         log.info(this + " starting");
-         
+
          mbeanServer = findMBeanServer();
-   
-         JDBCPersistenceManager jpm = new JDBCPersistenceManager();
-         jpm.start();
-         pm = jpm;
-         
-         txRepository = new TransactionRepository(pm);
-         txRepository.loadPreparedTransactions();
-               
+
+         // Acquire references to plugins. Each plug-in will be accessed directly via a reference
+         // circumventing the MBeanServer. However, they are installed as services to take advantage
+         // of their automatically-creating managment interface.
+
+         threadPoolDelegate =
+            (ThreadPoolDelegate)mbeanServer.getAttribute(threadPoolObjectName, "Instance");
+
+         transactionLogDelegate =
+            (TransactionLogDelegate)mbeanServer.getAttribute(transactionLogObjectName, "Instance");
+
          // TODO: is should be possible to share this with other peers
-         ms = new PersistentMessageStore(serverPeerID, pm);
-   
+         // TODO messageStoreDelegate here
+         ms = new PersistentMessageStore(serverPeerID, transactionLogDelegate);
+
+         durableSubscriptionStoreDelegate = (DurableSubscriptionStoreDelegate)mbeanServer.
+            getAttribute(durableSubscriptionStoreObjectName, "Instance");
+
+         // TODO this assignments should go away
+         ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setServerPeer(this);
+         ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setTransactionLog(transactionLogDelegate);
+         //((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setMessageStore(messageStoreDelegate);
+         ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setMessageStore(ms);
+
+         // initialize the rest of the internal components
+
+         txRepository = new TransactionRepository(transactionLogDelegate);
+         txRepository.loadPreparedTransactions();
+
          clientManager = new ClientManagerImpl(this);
-         
-         destinationManager = new DestinationManagerImpl(this);
-               
-         JDBCStateManager jdbcStateManager = new JDBCStateManager(this);
-         jdbcStateManager.start();
-         stateManager = jdbcStateManager;
-         
-         // This pooled executor controls how threads are allocated to deliver messages
-         // to consumers.
-         // The buffer(queue) of the pool must be unbounded to avoid potential distributed deadlock
-         // Since the buffer is unbounded, the minimum pool size has to be the same as the maximum.
-         // Otherwise, we will never have more than getMinimumPoolSize threads running.
-                     
-         threadPool = new PooledExecutor(new LinkedQueue(), 50);
-         threadPool.setMinimumPoolSize(50); 
-         
-         initializeRemoting();
-   
-         mbeanServer.registerMBean(destinationManager, DESTINATION_MANAGER_OBJECT_NAME);
-         
-         mbeanServer.registerMBean(stateManager, STATE_MANAGER_OBJECT_NAME);
-                                                   
+
+         dm = new DestinationManagerImpl(this);
+
          securityManager.init();
-         
+
+         initializeRemoting();
+
          setupConnectionFactories();
          
          createRecoverable();
@@ -236,21 +225,19 @@ public class ServerPeer
       {
          return;
       }
+
+      log.debug(this + " stopping");
       
       unloadServerAOPConfig();
       
-      log.debug(this + " stopping");
-      
       tearDownConnectionFactories();
       
-      destinationManager.destroyAllDestinations();
-      pm = null;      
-      txRepository = null;      
+      dm.destroyAllDestinations();
+      txRepository = null;
       ms = null;
       clientManager = null;      
-      destinationManager = null;      
-      stateManager = null;
-      
+      dm = null;
+
       // remove the JMS subsystem
       mbeanServer.invoke(connectorName, "removeInvocationHandler",
                          new Object[] {"JMS"},
@@ -260,9 +247,6 @@ public class ServerPeer
 //      connector.stop();
 //      connector.destroy();
                         
-      mbeanServer.unregisterMBean(DESTINATION_MANAGER_OBJECT_NAME);
-      mbeanServer.unregisterMBean(STATE_MANAGER_OBJECT_NAME);
-      
       removeRecoverable();
 
       started = false;
@@ -273,9 +257,29 @@ public class ServerPeer
 
    public synchronized void destroy()
    {
-      log.debug(this + " destroyed");
+      // noop
    }
-   
+
+   public String createQueue(String name, String jndiName) throws Exception
+   {
+      return dm.createQueue(name, jndiName);
+   }
+
+   public void destroyQueue(String name) throws Exception
+   {
+      dm.destroyQueue(name);
+   }
+
+   public String createTopic(String name, String jndiName) throws Exception
+   {
+      return dm.createTopic(name, jndiName);
+   }
+
+   public void destroyTopic(String name) throws Exception
+   {
+      dm.destroyTopic(name);
+   }
+
    //
    // end of JMX operations
    //
@@ -318,6 +322,38 @@ public class ServerPeer
    {
       return version.getProviderMinorVersion();
    }
+
+   public ObjectName getThreadPool()
+   {
+      return threadPoolObjectName;
+   }
+
+   public void setThreadPool(ObjectName on)
+   {
+      threadPoolObjectName = on;
+   }
+
+   public ObjectName getTransactionLog()
+   {
+      return transactionLogObjectName;
+   }
+
+   public void setTransactionLog(ObjectName on)
+   {
+      transactionLogObjectName = on;
+   }
+
+   public ObjectName getDurableSubscriptionStore()
+   {
+      return durableSubscriptionStoreObjectName;
+   }
+
+   public void setDurableSubscriptionStore(ObjectName on)
+   {
+      durableSubscriptionStoreObjectName = on;
+   }
+
+   // TODO review these below
 
    public String getServerPeerID()
    {
@@ -374,7 +410,13 @@ public class ServerPeer
    //
    // end of JMX attributes
    //
-   
+
+
+   public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate()
+   {
+      return durableSubscriptionStoreDelegate;
+   }
+
    public TransactionRepository getTxRepository()
    {
       return txRepository;
@@ -390,16 +432,11 @@ public class ServerPeer
       return clientManager;
    }
    
-   public StateManager getStateManager()
-   {
-      return stateManager;
-   }
-
    public DestinationManagerImpl getDestinationManager()
    {
-      return destinationManager;
+      return dm;
    }
-   
+
    public SecurityManager getSecurityManager()
    {
       return securityManager;
@@ -410,21 +447,11 @@ public class ServerPeer
       return (ConnectionFactoryDelegate)connFactoryDelegates.get(connectionFactoryID);
    }
 
-   public PooledExecutor getThreadPool()
-   {
-      return threadPool;
-   }
-
    public MessageStore getMessageStore()
    {
       return ms;
    }
 
-   public PersistenceManager getPersistenceManager()
-   {
-      return pm;
-   }
-   
    public byte[] getClientAOPConfig()
    {
       return clientAOPConfig;
@@ -435,13 +462,21 @@ public class ServerPeer
       return version;
    }
 
+   // access to plugin references
+
+   public ThreadPoolDelegate getThreadPoolDelegate()
+   {
+      return threadPoolDelegate;
+   }
+
+   public TransactionLogDelegate getTransactionLogDelegate()
+   {
+      return transactionLogDelegate;
+   }
+
    public String toString()
    {
-      StringBuffer sb = new StringBuffer();
-      sb.append("ServerPeer (id=");
-      sb.append(getServerPeerID());
-      sb.append(")");
-      return sb.toString();
+      return "ServerPeer [" + getServerPeerID() + "]";
    }
    
 

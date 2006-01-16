@@ -118,8 +118,6 @@ public class SecurityManager
     */
    public SecurityMetadata getSecurityMetadata(String destName)
    {
-      if (log.isTraceEnabled()) { log.trace("Getting security metadata for " + destName); }
-      
       SecurityMetadata m = (SecurityMetadata) securityConf.get(destName);
       if (m == null)
       {
@@ -163,27 +161,24 @@ public class SecurityManager
    {
       boolean trace = log.isTraceEnabled();
       
-      if (trace)
-      {
-         log.trace("Authenticating, username=" + user);
-      }
+      if (trace) { log.trace("authenticating user " + user); }
       
       SimplePrincipal principal = new SimplePrincipal(user);
       char[] passwordChars = null;
       if (password != null)
+      {
          passwordChars = password.toCharArray();
+      }
+
       Subject subject = new Subject();
       
       if (authMgr.isValid(principal, passwordChars, subject))
       {
          SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-         if (trace)
-            log.trace("Username: " + user + " is authenticated");                  
          return subject;
       }
       else
       {
-         if (trace) { log.trace("User " + user + " is NOT authenticated"); }
          throw new JMSSecurityException("User " + user + " is NOT authenticated");
       }
    }
@@ -195,18 +190,16 @@ public class SecurityManager
     * @return true if the subject is authorized, or false if not
     */
    public boolean authorize(String user, Set rolePrincipals)
-   {   
-      if (log.isTraceEnabled()) { log.trace("Checking authorize on user " + user + " for rolePrincipals " + rolePrincipals.toString()); }
+   {
+      boolean trace = log.isTraceEnabled();
+      if (trace) { log.trace("authorizing user " + user + " for role(s) " + rolePrincipals.toString()); }
       
       Principal principal = user == null ? null : new SimplePrincipal(user);
       
       boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
            
-      if (log.isTraceEnabled())
-      {
-         log.trace("User is authorized? " + hasRole);
-      }
-    
+      if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
+
       return hasRole;
    }
    

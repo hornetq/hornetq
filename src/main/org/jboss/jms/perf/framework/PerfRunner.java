@@ -233,7 +233,7 @@ public class PerfRunner
    
    protected Execution createExecution(String benchmarkName)
    {
-      //Benchmark bm = pm.getBenchmark(benchmarkName);
+      //Benchmark bm = tl.getBenchmark(benchmarkName);
       Execution exec = new Execution(new Benchmark(benchmarkName), new Date(), providerName);
       return exec;
    }

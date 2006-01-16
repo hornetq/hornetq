@@ -63,6 +63,30 @@
       <type>int</type>
    </attribute>
 
+
+
+
+
+   <attribute access="read-write" getMethod="getThreadPool" setMethod="setThreadPool">
+      <description>The ObjectName of the thread pool plugin</description>
+      <name>ThreadPool</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getTransactionLog" setMethod="setTransactionLog">
+      <description>The ObjectName of the transaction log</description>
+      <name>TransactionLog</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDurableSubscriptionStore" setMethod="setDurableSubscriptionStore">
+      <description>The ObjectName of the durable subscription store</description>
+      <name>DurableSubscriptionStore</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+
+
    <attribute access="read-only" getMethod="getServerPeerID">
       <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
       <name>serverPeerID</name>
@@ -95,10 +119,10 @@
    </attribute>
    
    <attribute access="read-write" getMethod="getDefaultSecurityConfig" setMethod="setDefaultSecurityConfig">
-      <description>The Ssecurity config to use when the destination does not supply any</description>
+      <description>The Security config to use when the destination does not supply any</description>
       <name>DefaultSecurityConfig</name>
       <type>org.w3c.dom.Element</type>
-   </attribute>   
+   </attribute>
 
    <!-- Managed operations -->
 
@@ -121,7 +145,53 @@
       <description>JBoss Service lifecycle operation</description>
       <name>destroy</name>
    </operation>
-   
+
+   <operation>
+      <description>Creates a queue with the specified name/JNDI name</description>
+      <name>createQueue</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>jndiName</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+
+   <operation>
+      <description>Destroys an existing queue</description>
+      <name>destroyQueue</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </operation>
+
+   <operation>
+      <description>Creates a topic with the specified name/JNDI name</description>
+      <name>createTopic</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>jndiName</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+
+   <operation>
+      <description>Destroys an existing topic</description>
+      <name>destroyTopic</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </operation>
+
    <operation>
       <description>Set the security config for a destination</description>
       <name>setSecurityConfig</name>

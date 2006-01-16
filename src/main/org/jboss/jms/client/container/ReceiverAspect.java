@@ -60,9 +60,7 @@ public class ReceiverAspect
    public Object handleReceive(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation)invocation;
-      
-      Object[] args = mi.getArguments();      
-      
+      Object[] args = mi.getArguments();
       long timeout = args == null ? 0 : ((Long)args[0]).longValue();
       
       return getHandler(invocation).receive(timeout);
@@ -76,10 +74,8 @@ public class ReceiverAspect
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
    {   
       MethodInvocation mi = (MethodInvocation)invocation;
-      
       Object[] args = mi.getArguments();
-      
-      MessageListener l = (MessageListener)args[0];     
+      MessageListener l = (MessageListener)args[0];
       
       getHandler(invocation).setMessageListener(l);
       

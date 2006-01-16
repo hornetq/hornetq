@@ -514,7 +514,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       Routable r = (Routable)m;
     
-      if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core, destination: " + jmsDestination.getName() + ", tx: " + tx); }
+      if (log.isTraceEnabled()) { log.trace("sending " + r + " to the core destination " + jmsDestination.getName() + (tx == null ? "": ", tx " + tx)); }
       
       Delivery d = coreDestination.handle(null, r, tx);
       

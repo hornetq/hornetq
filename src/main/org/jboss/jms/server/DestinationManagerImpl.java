@@ -86,14 +86,14 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
    // DestinationManager implementation -----------------------------
 
 
-   public void createQueue(String name) throws Exception
+   public String createQueue(String name) throws Exception
    {
-      createDestination(true, name, null);
+      return createDestination(true, name, null);
    }
 
-   public void createQueue(String name, String jndiName) throws Exception
+   public String createQueue(String name, String jndiName) throws Exception
    {
-      createDestination(true, name, jndiName);
+      return createDestination(true, name, jndiName);
    }
 
    public void destroyQueue(String name) throws Exception
@@ -101,14 +101,14 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       removeDestination(true, name);
    }
 
-   public void createTopic(String name) throws Exception
+   public String createTopic(String name) throws Exception
    {
-      createDestination(false, name, null);
+      return createDestination(false, name, null);
    }
 
-   public void createTopic(String name, String jndiName) throws Exception
+   public String createTopic(String name, String jndiName) throws Exception
    {
-      createDestination(false, name, jndiName);
+      return createDestination(false, name, jndiName);
    }
 
    public void destroyTopic(String name) throws Exception
@@ -173,7 +173,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
 
    // Private -------------------------------------------------------
 
-   private void createDestination(boolean isQueue, String name, String jndiName) throws Exception
+   private String createDestination(boolean isQueue, String name, String jndiName) throws Exception
    {
       String parentContext;
       String jndiNameInContext;
@@ -203,8 +203,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       {
          initialContext.lookup(jndiName);
          
-         //Already exists - remove it - this allows the dest to be updated with any
-         //new values
+         // Already exists - remove it - this allows the dest to be updated with any new values
          //this.removeDestination(isQueue, name);
          throw new InvalidDestinationException("Destination " + name + " already exists");
             
@@ -214,9 +213,8 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
          // OK
       }
 
-      Destination jmsDestination = isQueue ?
-                                   (Destination) new JBossQueue(name) :
-                                   (Destination) new JBossTopic(name);
+      Destination jmsDestination =
+         isQueue ? (Destination) new JBossQueue(name) : (Destination) new JBossTopic(name);
 
       coreDestinationManager.addCoreDestination(jmsDestination);
 
@@ -240,7 +238,9 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       }
 
       log.debug((isQueue ? "Queue" : "Topic") + " " + name +
-               " created and bound in JNDI as " + jndiName );
+                " created and bound in JNDI as " + jndiName );
+
+      return jndiName;
    }
 
 

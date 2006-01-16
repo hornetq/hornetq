@@ -26,15 +26,20 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
+import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.StateManager;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
 
+import javax.management.ObjectName;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
+import java.net.URL;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space. The same RMI
@@ -90,9 +95,16 @@ public class RMIServer extends UnicastRemoteObject implements Server
    // Attributes ----------------------------------------------------
 
    private ServiceContainer sc;
-   private ServerPeer serverPeer;
    private boolean remote;
    private RMINamingDelegate namingDelegate;
+
+   // service dependencies
+   private ObjectName threadPoolObjectName;
+   private ObjectName transactionLogObjectName;
+   private ObjectName durableSubscriptionStoreObjectName;
+
+   // the server MBean itself
+   private ServerPeer serverPeer;
 
    // Constructors --------------------------------------------------
 
@@ -121,14 +133,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
       sc = new ServiceContainer(containerConfig, null);
       sc.start();
 
-      log.debug("starting JMS server");
-
-      serverPeer = new ServerPeer("ServerPeer0");
-      serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
-      final String defaultSecurityConfig =
-         "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      serverPeer.setDefaultSecurityConfig(ServerManagement.stringToElement(defaultSecurityConfig));
-      serverPeer.start();
+      startServerPeer();
 
       log.info("server started");
    }
@@ -140,13 +145,9 @@ public class RMIServer extends UnicastRemoteObject implements Server
          return;
       }
 
-      log.debug("stopping service container");
+      stopServerPeer();
 
-      if (serverPeer != null)
-      {
-         serverPeer.stop();
-         serverPeer = null;
-      }
+      log.debug("stopping service container");
 
       sc.stop();
       sc = null;
@@ -216,12 +217,78 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
    public void startServerPeer() throws Exception
    {
+      log.debug("creating ServerPeer instance");
+
+      serverPeer = new ServerPeer("ServerPeer0");
+      serverPeer.setSecurityDomain(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+      final String defaultSecurityConfig =
+         "<security><role name=\"guest\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+      serverPeer.setDefaultSecurityConfig(XMLUtil.stringToElement(defaultSecurityConfig));
+      
+      log.debug("starting ServerPeer's plug-in dependencies");
+
+      // we are using the "default" service deployment descriptors available in
+      // src/etc/server/default/deploy/jboss-messaging-service.xml. This will allow to test the
+      // default parameters we are recommending.
+
+      String filename = "server/default/deploy/jboss-messaging-service.xml";
+      URL sddURL = getClass().getClassLoader().getResource(filename);
+      if (sddURL == null)
+      {
+         throw new Exception("Cannot find " + filename + " in the classpath");
+      }
+
+      ServiceDeploymentDescriptor sdd = new ServiceDeploymentDescriptor(sddURL);
+
+      MBeanConfigurationElement threadPoolConfig =
+         (MBeanConfigurationElement)sdd.query("service", "ThreadPool").iterator().next();
+      threadPoolObjectName = sc.registerAndConfigureService(threadPoolConfig);
+      sc.invoke(threadPoolObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(threadPoolObjectName, "start", new Object[0], new String[0]);
+      serverPeer.setThreadPool(threadPoolObjectName); // inject dependency into server peer
+
+      MBeanConfigurationElement transactionLogConfig =
+         (MBeanConfigurationElement)sdd.query("service", "TransactionLog").iterator().next();
+      transactionLogObjectName = sc.registerAndConfigureService(transactionLogConfig);
+      sc.invoke(transactionLogObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(transactionLogObjectName, "start", new Object[0], new String[0]);
+      serverPeer.setTransactionLog(transactionLogObjectName); // inject dependency into server peer
+
+      MBeanConfigurationElement durableSubscriptionStoreConfig =
+         (MBeanConfigurationElement)sdd.query("service", "DurableSubscriptionStore").iterator().next();
+      durableSubscriptionStoreObjectName = sc.registerAndConfigureService(durableSubscriptionStoreConfig);
+      sc.invoke(durableSubscriptionStoreObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(durableSubscriptionStoreObjectName, "start", new Object[0], new String[0]);
+      serverPeer.setDurableSubscriptionStore(durableSubscriptionStoreObjectName); // inject dependency into server peer
+
+      log.debug("starting JMS server");
       serverPeer.start();
    }
 
    public void stopServerPeer() throws Exception
    {
+      if (serverPeer == null)
+      {
+         return;
+      }
+
+      log.debug("stopping JMS server");
       serverPeer.stop();
+      serverPeer = null;
+
+      log.debug("stopping ServerPeer's plug-in dependencies");
+
+      sc.invoke(threadPoolObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(threadPoolObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(threadPoolObjectName);
+
+      sc.invoke(transactionLogObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(transactionLogObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(transactionLogObjectName);
+
+      sc.invoke(durableSubscriptionStoreObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(durableSubscriptionStoreObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(durableSubscriptionStoreObjectName);
    }
 
    /**
@@ -257,48 +324,49 @@ public class RMIServer extends UnicastRemoteObject implements Server
       return serverPeer.getMessageStore();
    }
 
-   public StateManager getStateManager() throws Exception
+   public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate() throws Exception
    {
       // TODO
-      return serverPeer.getStateManager();
+      return (DurableSubscriptionStoreDelegate)sc.getAttribute(durableSubscriptionStoreObjectName,
+                                                               "Instance");
    }
 
    public void deployTopic(String name, String jndiName) throws Exception
    {
-      serverPeer.getDestinationManager().createTopic(name, jndiName);
+      serverPeer.createTopic(name, jndiName);
    }
 
    public void undeployTopic(String name) throws Exception
    {
-      serverPeer.getDestinationManager().destroyTopic(name);
+      serverPeer.destroyTopic(name);
    }
 
    public void deployQueue(String name, String jndiName) throws Exception
    {
-      serverPeer.getDestinationManager().createQueue(name, jndiName);
+      serverPeer.createQueue(name, jndiName);
    }
 
    public void undeployQueue(String name) throws Exception
    {
-      serverPeer.getDestinationManager().destroyQueue(name);
+      serverPeer.destroyQueue(name);
    }
 
    public void setSecurityConfig(String destName, String config) throws Exception
    {
-      Element element = ServerManagement.stringToElement(config);
+      Element element = XMLUtil.stringToElement(config);
       serverPeer.setSecurityConfig(destName, element);
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
    {
-      Element element = ServerManagement.stringToElement(config);
+      Element element = XMLUtil.stringToElement(config);
       serverPeer.setDefaultSecurityConfig(element);
    }
 
    public String getDefaultSecurityConfig() throws Exception
    {
       Element element = serverPeer.getDefaultSecurityConfig();
-      return ServerManagement.elementToString(element);
+      return XMLUtil.elementToString(element);
    }
 
    // Public --------------------------------------------------------

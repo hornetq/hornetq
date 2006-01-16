@@ -27,8 +27,8 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 
 /**
@@ -38,7 +38,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.com">Ovidiu Feodorov</a>
  * 
- * partially based on org.jboss.mq.pm.Tx by
+ * partially based on org.jboss.mq.tl.Tx by
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
  * @version $Revision 1.1$
@@ -61,7 +61,7 @@ public class Transaction
    
    protected List callbacks;;
    
-   protected PersistenceManager pm;
+   protected TransactionLogDelegate transactionLog;
    
    //True if the transaction has resulted in a tx record being inserted in the db
    protected boolean insertedTXRecord;
@@ -108,11 +108,11 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction(Xid xid, PersistenceManager mgr)
+   Transaction(Xid xid, TransactionLogDelegate transactionLog)
    {
       state = STATE_ACTIVE;
       this.xid = xid;
-      pm = mgr;
+      this.transactionLog = transactionLog;
       callbacks = new ArrayList();
    }
    
@@ -148,11 +148,12 @@ public class Transaction
       
       if (insertedTXRecord)
       {
-         if (pm == null)
+         if (transactionLog == null)
          {
-            throw new IllegalStateException("Reliable messages were handled in the transaction, but there is no persistence manager!");
+            throw new IllegalStateException("Reliable messages were handled in the transaction, " +
+                                            "but there is no transaction log delegate!");
          }
-         pm.commitTx(this);
+         transactionLog.commitTx(this);
       }
       
       Iterator iter = callbacks.iterator();
@@ -170,7 +171,7 @@ public class Transaction
          //Write record in db saying we have prepared the tx
         if (insertedTXRecord)
         {
-           pm.prepareTx(this);
+           transactionLog.prepareTx(this);
         }
       }
       
@@ -187,7 +188,7 @@ public class Transaction
       
       if (insertedTXRecord)
       {
-         pm.rollbackTx(this);
+         transactionLog.rollbackTx(this);
       }
       
       Iterator iter = callbacks.iterator();

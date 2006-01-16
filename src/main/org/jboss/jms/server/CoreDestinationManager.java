@@ -124,7 +124,7 @@ class CoreDestinationManager
       // TODO I am using LocalQueues for the time being, switch to distributed Queues
       if (isQueue)
       {
-         cd = new Queue(name, sp.getMessageStore(), sp.getPersistenceManager());
+         cd = new Queue(name, sp.getMessageStore(), sp.getTransactionLogDelegate());
          
          try
          {
@@ -153,7 +153,9 @@ class CoreDestinationManager
          //or in the StateManager - I'm not sure it really belongs here
          
          //Load any durable subscriptions for the Topic
-         Set durableSubs = sp.getStateManager().loadDurableSubscriptionsForTopic(name);
+         Set durableSubs =
+            sp.getDurableSubscriptionStoreDelegate().loadDurableSubscriptionsForTopic(name);
+
          Iterator iter = durableSubs.iterator();
          while (iter.hasNext())
          {

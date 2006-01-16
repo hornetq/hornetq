@@ -4,11 +4,8 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.server;
+package org.jboss.jms.server.plugin;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,6 +21,7 @@ import java.util.Set;
 
 import javax.jms.JMSException;
 import javax.management.ObjectName;
+import javax.management.MBeanServerInvocationHandler;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.Status;
@@ -31,25 +29,23 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
-import org.jboss.tm.TransactionManagerService;
+import org.jboss.messaging.core.persistence.JDBCUtil;
+import org.jboss.tm.TransactionManagerServiceMBean;
 
 /**
- * StateManager that maintains state in a database
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Partially derived from org.jboss.mq.sm.jdbc.JDBCStateManager by:
- * @author Adrian Brock (Adrian@jboss.org)
- * @author Ivelin Ivanov (ivelin@jboss.org)
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:ivelin@jboss.org">Ivelin Ivanov</a>
  *
  * $Id$
  */
-public class JDBCStateManager extends InMemoryStateManager implements JDBCStateManagerMBean
+public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSupport
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(JDBCStateManager.class);
-   
+   private static final Logger log = Logger.getLogger(JDBCDurableSubscriptionStore.class);
+
    private String createUserTable =
       "CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128),"
          + " PRIMARY KEY(USERID))";
@@ -81,148 +77,120 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
 
    // Attributes ----------------------------------------------------
       
+   protected String dataSourceJNDIName;
    protected DataSource ds;
+   protected ObjectName tmObjectName;
+   protected TransactionManager tm;
 
-   protected TransactionManager mgr;
-   
-   protected Properties sqlProperties;
-
-   protected ObjectName connectionManagerName;
-   
    protected boolean createTablesOnStartup;
-   
+   protected Properties sqlProperties;
    protected List populateTables;
-   
 
-   
-   
    // Constructors --------------------------------------------------
   
-   public JDBCStateManager(ServerPeer serverPeer)
+   public JDBCDurableSubscriptionStore()
    {
-      super(serverPeer);
+      super();
       
       sqlProperties = new Properties();
-   
       populateTables = new ArrayList();
    }
-   
-   // MBean operations ----------------------------------------------
-   
-   
-   public ObjectName getConnectionManager()
+
+   // ServiceMBeanSupport overrides ---------------------------------
+
+   protected void startService() throws Exception
    {
-      return connectionManagerName;
-   }
-
-   public void setConnectionManager(ObjectName connectionManagerName)
-   {
-      this.connectionManagerName = connectionManagerName;
-   }
-
-
-   public String getSqlProperties()
-   {
-      try
+      // these are supposed to be set by dependencies, this is just a safeguard
+      if (ds == null)
       {
-         ByteArrayOutputStream boa = new ByteArrayOutputStream();
-         sqlProperties.store(boa, "");
-         return new String(boa.toByteArray());
+         throw new Exception("No DataSource found. This service dependencies must  " +
+                             "have not been enforced correctly!");
       }
-      catch (IOException shouldnothappen)
+      if (tm == null)
       {
-         return "";
+         throw new Exception("No TransactionManager found. This service dependencies must " +
+                             "have not been enforced correctly!");
       }
-   }
 
-   public void setSqlProperties(String value)
-   {
-      try
-      {
-
-         ByteArrayInputStream is = new ByteArrayInputStream(value.getBytes());
-         sqlProperties = new Properties();
-         sqlProperties.load(is);
-
-      }
-      catch (IOException shouldnothappen)
-      {
-         log.error("Caught IOException", shouldnothappen);
-      }
-   }
-   
-
-
-   // Public --------------------------------------------------------
-   
-   public void start() throws Exception
-   {
-
-      InitialContext ctx = new InitialContext();
-      try
-      {
-         ds = (DataSource) ctx.lookup("java:/DefaultDS");
-         mgr = (TransactionManager) ctx.lookup(TransactionManagerService.JNDI_NAME);
-      }
-      finally
-      {
-         ctx.close();
-      }
-      
       initSqlProperties();
+
       if (createTablesOnStartup)
       {
          createSchema();
       }
+
+      log.debug(this + " started");
    }
-   
-   
-   
+
+   protected void stopService() throws Exception
+   {
+      log.debug(this + " stopped");
+   }
+
+   // DurableSubscriptionStoreDelegate implementation ---------------
+
+   public Object getInstance()
+   {
+      return this;
+   }
 
    public DurableSubscription getDurableSubscription(String clientID, String subscriptionName)
       throws JMSException
    {
       //Look in memory first
       DurableSubscription sub = super.getDurableSubscription(clientID, subscriptionName);
-      
+
       if (sub != null)
       {
          return sub;
       }
-      
+
       try
       {
-      
+
          Connection conn = null;
          PreparedStatement ps  = null;
          ResultSet rs = null;
          TransactionWrapper wrap = new TransactionWrapper();
-   
+
          try
          {
             conn = ds.getConnection();
-            
+
             ps = conn.prepareStatement(selectSubscription);
-            
+
             ps.setString(1, clientID);
-            
             ps.setString(2, subscriptionName);
-            
-            rs = ps.executeQuery();
-            
-            if (rs.next())
+
+            boolean exists = false;
+
+            try
+            {
+               rs = ps.executeQuery();
+               exists = rs.next();
+            }
+            finally
+            {
+               if (log.isTraceEnabled())
+               {
+                  String s = JDBCUtil.statementToString(selectSubscription, clientID, subscriptionName);
+                  log.trace(s + (rs == null ? " failed!" : (exists ? " returned rows" : " did NOT return rows")));
+               }
+            }
+
+            if (exists)
             {
                String name = rs.getString(1);
                String topicName = rs.getString(2);
                String selector = rs.getString(3);
-               
-               //Create in memory
+
+               // create in memory
                sub = super.createDurableSubscription(topicName, clientID, name, selector);
-               
-               //load it's state
+
+               // load its state
                sub.load();
             }
-            
+
             return sub;
          }
          finally
@@ -250,49 +218,54 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          e2.setLinkedException(e);
          throw e2;
       }
-              
+
    }
-   
+
    public DurableSubscription createDurableSubscription(String topicName, String clientID,
                                                         String subscriptionName, String selector)
          throws JMSException
    {
       try
       {
-      
+
          Connection conn = null;
-         PreparedStatement ps  = null;         
+         PreparedStatement ps  = null;
          TransactionWrapper wrap = new TransactionWrapper();
-   
+         boolean failed = false;
+
          try
          {
             conn = ds.getConnection();
-            
+
             ps = conn.prepareStatement(insertSubscription);
-            
+
             ps.setString(1, clientID);
-            
             ps.setString(2, subscriptionName);
-            
             ps.setString(3, topicName);
-            
             ps.setString(4, selector);
-            
+
             ps.executeUpdate();
-            
-            //Create in memory too
-            DurableSubscription sub = super.createDurableSubscription(topicName, clientID,
-                                                                      subscriptionName, selector);
-            
+
+            // create it in memory too
+            DurableSubscription sub =
+               super.createDurableSubscription(topicName, clientID, subscriptionName, selector);
+
             return sub;
          }
          catch (SQLException e)
          {
+            failed = true;
             wrap.exceptionOccurred();
             throw e;
          }
          finally
          {
+            if (log.isTraceEnabled())
+            {
+               String s = JDBCUtil.statementToString(insertSubscription, clientID, subscriptionName, topicName, selector);
+               log.trace(s + (failed ? " failed!" : " executed successfully"));
+            }
+
             if (ps != null)
             {
                ps.close();
@@ -313,29 +286,29 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          throw e2;
       }
    }
-   
+
    public boolean removeDurableSubscription(String clientID, String subscriptionName)
       throws JMSException
    {
       try
       {
-      
+
          Connection conn = null;
-         PreparedStatement ps  = null;         
+         PreparedStatement ps  = null;
          TransactionWrapper wrap = new TransactionWrapper();
-   
+
          try
          {
             conn = ds.getConnection();
-            
+
             ps = conn.prepareStatement(deleteSubscription);
-            
+
             ps.setString(1, clientID);
-            
-            ps.setString(2, subscriptionName);                        
-            
+
+            ps.setString(2, subscriptionName);
+
             int rows = ps.executeUpdate();
-            
+
             if (rows == 1)
             {
                boolean removed = super.removeDurableSubscription(clientID, subscriptionName);
@@ -366,40 +339,40 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
       }
       catch (Exception e)
       {
-         final String msg = "Failed to delete subscription";
+         final String msg = "Failed to remove subscription";
          log.error(msg, e);
          JMSException e2 = new JMSException(msg);
          e2.setLinkedException(e);
          throw e2;
       }
    }
-   
+
    public String getPreConfiguredClientID(String username) throws JMSException
    {
       try
-      {      
+      {
          Connection conn = null;
-         PreparedStatement ps  = null;     
+         PreparedStatement ps  = null;
          ResultSet rs = null;
          TransactionWrapper wrap = new TransactionWrapper();
-   
+
          try
          {
             conn = ds.getConnection();
-            
+
             ps = conn.prepareStatement(selectPreConfClientId);
-            
+
             ps.setString(1, username);
-            
+
             rs = ps.executeQuery();
-            
+
             String clientID = null;
-            
+
             if (rs.next())
             {
                clientID = rs.getString(1);
-            }            
-            
+            }
+
             return clientID;
          }
          catch (SQLException e)
@@ -433,34 +406,34 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          throw e2;
       }
    }
-   
+
    public Set loadDurableSubscriptionsForTopic(String topicName) throws JMSException
    {
       try
-      {      
+      {
          Connection conn = null;
-         PreparedStatement ps  = null;     
+         PreparedStatement ps  = null;
          ResultSet rs = null;
          TransactionWrapper wrap = new TransactionWrapper();
-   
+
          try
          {
             conn = ds.getConnection();
-            
+
             ps = conn.prepareStatement(selectSubscriptionsForTopic);
-            
+
             ps.setString(1, topicName);
-            
+
             rs = ps.executeQuery();
-            
+
             Set subs = new HashSet();
-            
+
             while (rs.next())
             {
                String clientID = rs.getString(1);
                String subName = rs.getString(2);
                String selector = rs.getString(3);
-               
+
                DurableSubscription sub = super.getDurableSubscription(clientID, subName);
                if (sub == null)
                {
@@ -501,7 +474,93 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
          throw e2;
       }
    }
+
+   // MBean operations ----------------------------------------------
+
+//   public ObjectName getConnectionManager()
+//   {
+//      return connectionManagerName;
+//   }
+//
+//   public void setConnectionManager(ObjectName connectionManagerName)
+//   {
+//      this.connectionManagerName = connectionManagerName;
+//   }
+//
+//
+//   public String getSqlProperties()
+//   {
+//      try
+//      {
+//         ByteArrayOutputStream boa = new ByteArrayOutputStream();
+//         sqlProperties.store(boa, "");
+//         return new String(boa.toByteArray());
+//      }
+//      catch (IOException shouldnothappen)
+//      {
+//         return "";
+//      }
+//   }
+//
+//   public void setSqlProperties(String value)
+//   {
+//      try
+//      {
+//
+//         ByteArrayInputStream is = new ByteArrayInputStream(value.getBytes());
+//         sqlProperties = new Properties();
+//         sqlProperties.load(is);
+//
+//      }
+//      catch (IOException shouldnothappen)
+//      {
+//         log.error("Caught IOException", shouldnothappen);
+//      }
+//   }
    
+   // Public --------------------------------------------------------
+
+   /**
+    * Managed attribute.
+    */
+   public void setDataSource(String dataSourceJNDIName) throws Exception
+   {
+      this.dataSourceJNDIName = dataSourceJNDIName;
+
+      InitialContext ic = new InitialContext();
+      ds = (DataSource)ic.lookup(dataSourceJNDIName);
+      ic.close();
+   }
+
+   /**
+    * Managed attribute.
+    */
+   public String getDataSource()
+   {
+      return dataSourceJNDIName;
+   }
+
+   /**
+    * Managed attribute.
+    */
+   public void setTransactionManager(ObjectName tmObjectName) throws Exception
+   {
+      this.tmObjectName = tmObjectName;
+
+      TransactionManagerServiceMBean tms =
+         (TransactionManagerServiceMBean)MBeanServerInvocationHandler.
+         newProxyInstance(getServer(), tmObjectName, TransactionManagerServiceMBean.class, false);
+
+      tm = tms.getTransactionManager();
+   }
+
+   /**
+    * Managed attribute.
+    */
+   public ObjectName getTransactionManager()
+   {
+      return tmObjectName;
+   }
 
    // Package protected ---------------------------------------------
    
@@ -610,8 +669,7 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
    // Inner classes -------------------------------------------------
    
    /*
-    * TODO This inner class is duplicated from HSQLPersistenceManager - need to avoid
-    * code duplication
+    * TODO This inner class is duplicated from HSQLPersistenceManager - need to avoid code duplication
     */
    class TransactionWrapper
    {
@@ -619,36 +677,36 @@ public class JDBCStateManager extends InMemoryStateManager implements JDBCStateM
 
       private TransactionWrapper() throws Exception
       {
-         oldTx = mgr.suspend();
+         oldTx = tm.suspend();
 
-         mgr.begin();
+         tm.begin();
       }
 
       private void end() throws Exception
       {
          try
          {
-            if (Status.STATUS_MARKED_ROLLBACK == mgr.getStatus())
+            if (Status.STATUS_MARKED_ROLLBACK == tm.getStatus())
             {
-               mgr.rollback();
+               tm.rollback();
             }
             else
             {
-               mgr.commit();
+               tm.commit();
             }
          }
          finally
          {
             if (oldTx != null)
             {
-               mgr.resume(oldTx);
+               tm.resume(oldTx);
             }
          }
       }
 
       private void exceptionOccurred() throws Exception
       {
-         mgr.setRollbackOnly();
+         tm.setRollbackOnly();
       }
    }
    

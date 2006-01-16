@@ -9,8 +9,8 @@ package org.jboss.test.messaging.core;
 import org.jboss.test.messaging.core.base.StateTestBase;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.NonRecoverableState;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 
 
 /**
@@ -24,7 +24,7 @@ public class NonRecoverableState2Test extends StateTestBase
    // Attributes ----------------------------------------------------
 
    // requuired by the message store
-   PersistenceManager pm;
+   TransactionLogDelegate transactionLogDelegate;
 
    // Constructors --------------------------------------------------
 
@@ -39,21 +39,23 @@ public class NonRecoverableState2Test extends StateTestBase
    {
       super.setUp();
 
+      transactionLogDelegate =
+         new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      ms = new PersistentMessageStore("ms0", pm);
+      ((JDBCTransactionLog)transactionLogDelegate).start();
+
+      ms = new PersistentMessageStore("ms0", transactionLogDelegate);
+
       channel = new SimpleChannel("test-channel", ms);
 
       // the state ACCEPTS reliable messages
       state = new NonRecoverableState(channel, true);
-
    }
 
    public void tearDown()throws Exception
    {
       ms = null;
-      pm = null;
+      transactionLogDelegate = null;
       state = null;
       channel = null;
 

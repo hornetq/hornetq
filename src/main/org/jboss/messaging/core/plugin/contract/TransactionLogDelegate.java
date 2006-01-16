@@ -19,15 +19,17 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.messaging.core.plugin.contract;
 
 import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 
 /**
- * A PersistenceManager is responsible for managing persistent message state in a persistent store.
+ * The main interface to the transactional log.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,8 +37,24 @@ import org.jboss.messaging.core.tx.Transaction;
  *
  * $Id$
  */
-public interface PersistenceManager
+public interface TransactionLogDelegate
 {
+
+   // TODO used by the TransactionRepository
+
+   void prepareTx(Transaction tx) throws Exception;
+
+   void commitTx(Transaction tx) throws Exception;
+
+   void rollbackTx(Transaction tx) throws Exception;
+
+   List retrievePreparedTransactions() throws Exception;
+
+
+   // TODO used by ServerSessionEndpoint, Subscription
+
+   void removeAllMessageData(Serializable channelID) throws Exception;
+
    /**
     * If the message doesn't exist in the database, it physically adds it. Otherwise, it increments
     * the reference count.
@@ -50,32 +68,26 @@ public interface PersistenceManager
    boolean removeMessage(String messageID) throws Exception;
 
    Message retrieveMessage(Serializable messageID) throws Exception;
-   
-   
-   
+
+
    void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
-      
+
    void removeReference(Serializable channelID, MessageReference ref, Transaction tx)  throws Exception;
-   
-   
+
 
    /**
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
     */
    List messageRefs(Serializable storeID, Serializable channelID) throws Exception;
 
-   void removeAllMessageData(Serializable channelID) throws Exception;
-   
-   void prepareTx(Transaction tx) throws Exception;
-   
-   void commitTx(Transaction tx) throws Exception;
-   
-   void rollbackTx(Transaction tx) throws Exception;
-   
-   List retrievePreparedTransactions() throws Exception;
-   
-   void start() throws Exception;
+//   void removeAllMessageData(Serializable channelID) throws Exception;
 
-   void stop() throws Exception;
+//   void prepareTx(Transaction tx) throws Exception;
+//
+//   void commitTx(Transaction tx) throws Exception;
+//
+//   void rollbackTx(Transaction tx) throws Exception;
+//
+//   List retrievePreparedTransactions() throws Exception;
 
 }

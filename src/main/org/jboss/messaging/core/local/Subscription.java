@@ -26,7 +26,8 @@ import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.util.Util;
 import org.jboss.util.id.GUID;
 
 /**
@@ -58,15 +59,14 @@ public class Subscription extends Pipe
    }
    
    protected Subscription(String name, Topic topic, String selector,
-                          MessageStore ms, PersistenceManager pm)
+                          MessageStore ms, TransactionLogDelegate tl)
    {
       // A Subscription must accept reliable messages, even if itself is non-recoverable
-      super(name, ms, pm, true);
+      super(name, ms, tl, true);
       this.topic = topic;
       this.selector = selector;
    }
    
-
    // Channel implementation ----------------------------------------
 
    // Public --------------------------------------------------------
@@ -78,15 +78,18 @@ public class Subscription extends Pipe
    
    public void unsubscribe() throws JMSException
    {
-      topic.remove(this);      
+      topic.remove(this);
    }
    
-   public void closeConsumer(PersistenceManager pm) throws JMSException
+   public void closeConsumer() throws JMSException
    {
       unsubscribe();
       try
       {
-         pm.removeAllMessageData(this.channelID);
+         if (tl != null)
+         {
+            tl.removeAllMessageData(this.channelID);
+         }
       }
       catch (Exception e)
       {
@@ -105,7 +108,12 @@ public class Subscription extends Pipe
    {
       return selector;
    }
-   
+
+   public String toString()
+   {
+      return "Subscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

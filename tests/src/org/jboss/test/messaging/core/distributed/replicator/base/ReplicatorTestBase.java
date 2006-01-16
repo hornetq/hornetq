@@ -29,8 +29,9 @@ import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
@@ -84,7 +85,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
    protected ServiceContainer sc;
 
-   protected PersistenceManager pm, pm2;
+   protected TransactionLogDelegate tl, tl2;
    protected MessageStore ms2;
 
    protected Replicator replicator, replicator2, replicator3;
@@ -102,18 +103,19 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
    public void setUp() throws Exception
    {
-      sc = new ServiceContainer("all,-aop,-remoting,-security");
+      sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
       super.setUp();
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      pm2 = new JDBCPersistenceManager();
-      pm2.start();
+      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl).start();
 
-      ms = new PersistentMessageStore("persistent-ms", pm);
-      ms2 = new PersistentMessageStore("persistent-ms2", pm2);
+      tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl2).start();
+
+      ms = new PersistentMessageStore("persistent-ms", tl);
+      ms2 = new PersistentMessageStore("persistent-ms2", tl2);
 
       // override previous definitions of distributed and distributed2
       distributed = createDistributed("test", ms, dispatcher);
@@ -126,9 +128,9 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       replicator2 = (Replicator)distributed2;
       replicator3 = (Replicator)distributed3;
 
-      outputms = new PersistentMessageStore("persistent-outputms", pm);
-      outputms2 = new PersistentMessageStore("persistent-outputms2", pm);
-      outputms3 = new PersistentMessageStore("persistent-outputms3", pm);
+      outputms = new PersistentMessageStore("persistent-outputms", tl);
+      outputms2 = new PersistentMessageStore("persistent-outputms2", tl);
+      outputms3 = new PersistentMessageStore("persistent-outputms3", tl);
    }
 
    public void tearDown() throws Exception
@@ -140,10 +142,10 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       outputms = null;
       outputms2 = null;
       outputms3 = null;
-      pm.stop();
-      pm = null;
-      pm2.stop();
-      pm2 = null;
+      ((JDBCTransactionLog)tl).stop();
+      tl = null;
+      ((JDBCTransactionLog)tl2).stop();
+      tl2 = null;
       sc.stop();
       sc = null;
       super.tearDown();

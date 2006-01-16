@@ -25,11 +25,13 @@ import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.persistence.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -47,9 +49,9 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected PersistenceManager pm;
+   protected TransactionLogDelegate tl;
 
-   protected PersistenceManager pm2;
+   protected TransactionLogDelegate tl2;
    protected MessageStore ms2;
 
    // Constructors --------------------------------------------------
@@ -65,13 +67,15 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
    {
       super.setUp();
 
-      pm = new JDBCPersistenceManager();
-      pm.start();
-      ms = new PersistentMessageStore("test-persistent-store", pm);
+      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl).start();
 
-      pm2 = new JDBCPersistenceManager();
-      pm2.start();
-      ms2 = new PersistentMessageStore("test-persistent-store2", pm2);
+      ms = new PersistentMessageStore("test-persistent-store", tl);
+
+      tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCTransactionLog)tl2).start();
+
+      ms2 = new PersistentMessageStore("test-persistent-store2", tl2);
 
       log.debug("setup done");
    }
@@ -79,7 +83,7 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
    public void tearDown() throws Exception
    {
       ms = null;
-      pm = null;
+      tl = null;
 
       super.tearDown();
    }
@@ -91,24 +95,24 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
    {
       Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
 
-      assertEquals(0, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
+      assertEquals(0, ((JDBCTransactionLog)tl).getMessageReferenceCount(m.getMessageID()));
 
       MessageReference ref = ms.reference(m);      
       log.debug("referenced " + m + " using " + ms);
       assertCorrectReference(ref, ms.getStoreID(), m);
-      assertEquals(1, ((JDBCPersistenceManager)pm).getMessageReferenceCount(m.getMessageID()));
+      assertEquals(1, ((JDBCTransactionLog)tl).getMessageReferenceCount(m.getMessageID()));
 
       // add the same message to the second store
       MessageReference ref2 = ms2.reference(m);
       log.debug("referenced " + m + " using " + ms2);
       assertCorrectReference(ref2, ms2.getStoreID(), m);
-      assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+      assertEquals(2, ((JDBCTransactionLog)tl2).getMessageReferenceCount(m.getMessageID()));
 
       assertFalse(ref == ref2);
 
       ref.release();
 
-      assertEquals(1, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+      assertEquals(1, ((JDBCTransactionLog)tl2).getMessageReferenceCount(m.getMessageID()));
 
       // ... but because the message is still in the database, trying to get a new reference
       // is successful.
@@ -116,14 +120,14 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       ref = ms.reference((String)m.getMessageID());
       assertCorrectReference(ref, ms.getStoreID(), m);
       
-      assertEquals(2, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+      assertEquals(2, ((JDBCTransactionLog)tl2).getMessageReferenceCount(m.getMessageID()));
 
       ref.release();
       ref2.release();      
 
       assertNull(ms.reference((String)m.getMessageID()));
       assertNull(ms2.reference((String)m.getMessageID()));
-      assertEquals(0, ((JDBCPersistenceManager)pm2).getMessageReferenceCount(m.getMessageID()));
+      assertEquals(0, ((JDBCTransactionLog)tl2).getMessageReferenceCount(m.getMessageID()));
    }
 
 

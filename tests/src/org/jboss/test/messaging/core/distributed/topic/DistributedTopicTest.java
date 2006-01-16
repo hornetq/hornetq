@@ -51,9 +51,9 @@ public class DistributedTopicTest extends DistributedTopicTestBase
    {
       super.setUp();
 
-      topic = new DistributedTopic("test", ms, pm, dispatcher);
-      topic2 = new DistributedTopic("test", ms2, pm2, dispatcher2);
-      topic3 = new DistributedTopic("test", ms3, pm3, dispatcher3);
+      topic = new DistributedTopic("test", ms, tl, dispatcher);
+      topic2 = new DistributedTopic("test", ms2, tl2, dispatcher2);
+      topic3 = new DistributedTopic("test", ms3, tl3, dispatcher3);
 
       log.debug("setup done");
    }
