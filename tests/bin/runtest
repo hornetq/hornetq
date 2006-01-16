@@ -112,6 +112,7 @@ $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
+$reldir/../../../common/output/lib/jboss-xml-binding.jar${SEP}\
 $reldir/../../../system/output/lib/jboss-system.jar${SEP}\
 $reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
 $reldir/../../../security/output/lib/jbosssx.jar${SEP}\
