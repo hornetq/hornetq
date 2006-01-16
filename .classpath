@@ -15,7 +15,6 @@
 	<classpathentry kind="src" path="/aspects"/>
 	<classpathentry kind="lib" path="/thirdparty/gnu-regexp/lib/gnu-regexp.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/server"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/connector"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
 	<classpathentry kind="lib" path="src/resources/hsqldb.jar"/>
@@ -26,5 +25,9 @@
 	<classpathentry kind="lib" path="/thirdparty/apache-logging/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/ant.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/ant-junit.jar"/>
+	<classpathentry kind="src" path="/security"/>
+	<classpathentry kind="src" path="/server"/>
+	<classpathentry kind="src" path="/jmx"/>
+	<classpathentry kind="src" path="/mbeans"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
