@@ -338,6 +338,8 @@
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/managed/**"/>
+               <exclude name="org/jboss/test/messaging/jms/server/plugin/**"/>
+               <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
             </fileset>
          </batchtest>
       </junit>
@@ -522,7 +524,7 @@
       </copy>
    </target>
 
-   <target name="compile-report">
+   <target name="compile-report" depends="copy-stylesheets">
       <mkdir dir="${build.tests.reports}/html"/>
       <junitreport todir="${build.tests.reports}">
          <fileset dir="${build.tests.reports}">

@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.jms.sm;
+package org.jboss.test.messaging.jms.server.plugin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,13 +32,18 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.persistence.JDBCUtil;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.util.id.GUID;
 
 
 /**
+ * These tests must not be ran in remote mode!
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -47,7 +52,9 @@ import org.jboss.util.id.GUID;
 public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptionStoreTest
 {
    // Attributes ----------------------------------------------------
-   
+
+   protected TransactionLogDelegate tl;
+
    // Constructors --------------------------------------------------
 
    public JDBCDurableSubscriptionStoreTest(String name)
@@ -55,9 +62,18 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
       super(name);
    }
 
+   // Public --------------------------------------------------------
+
    public void setUp() throws Exception
    {
-      super.setUp();      
+      if (ServerManagement.isRemote())
+      {
+         fail("This test must not be ran in remote mode!");
+      }
+
+      super.setUp();
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -65,25 +81,19 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
       super.tearDown();
    }
    
-   protected DurableSubscriptionStoreDelegate createStateManager() throws Exception
-   {
-
-      dssd = ServerManagement.getDurableSubscriptionStoreDelegate();
-      return dssd;
-   }
-   
    public void testGetPreConfClientId() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       InitialContext ctx = new InitialContext();
-      TransactionManager mgr = (TransactionManager) ctx.lookup(TransactionManagerService.JNDI_NAME);
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
       String username = new GUID().toString();
       String clientID = new GUID().toString();
       String password = new GUID().toString();
+
       Transaction txOld = mgr.suspend();
       mgr.begin();
+
       Connection conn = ds.getConnection();
       String sql = "INSERT INTO JMS_USER (USERID, CLIENTID, PASSWD) VALUES (?,?,?)";
       PreparedStatement ps = conn.prepareStatement(sql);
@@ -91,14 +101,22 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
       ps.setString(2, clientID);
       ps.setString(3, password);
       int rows = ps.executeUpdate();
+
+      log.debug(JDBCUtil.statementToString(sql, username, clientID, password) + " completed successfully");
+
       assertEquals(1, rows);
+
       mgr.commit();
+
       if (txOld != null)
       {
          mgr.resume(txOld);
       }
+
       conn.close();
+
       String theClientID = dssd.getPreConfiguredClientID(username);
+
       assertNotNull(theClientID);
       assertEquals(clientID, theClientID);
            
@@ -106,8 +124,6 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
    
    public void testLoadDurableSubscriptionsForTopic() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       final int NUM_SUBS = 10;
       
       ServerManagement.deployTopic("topic1");
@@ -147,9 +163,24 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
             fail();
          }
       }
-       
    }
-  
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected DurableSubscriptionStoreDelegate createStateManager(ServerPeer serverPeer)
+      throws Exception
+   {
+      // serverPeer is ignored
+
+      return ServerManagement.getDurableSubscriptionStoreDelegate();
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }
 
 

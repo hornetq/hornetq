@@ -411,6 +411,10 @@ public class ServerPeer
    // end of JMX attributes
    //
 
+   public boolean isDeployed(boolean isQueue, String name)
+   {
+      return dm.isDeployed(isQueue, name);
+   }
 
    public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate()
    {

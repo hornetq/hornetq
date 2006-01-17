@@ -166,6 +166,11 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       return coreDestinationManager.getCoreDestination(isQueue, name);
    }
 
+   public boolean isDeployed(boolean isQueue, String name)
+   {
+      return isQueue ? queueNameToJNDI.containsKey(name) : topicNameToJNDI.containsKey(name);
+   }
+
 
    // Package protected ---------------------------------------------
    

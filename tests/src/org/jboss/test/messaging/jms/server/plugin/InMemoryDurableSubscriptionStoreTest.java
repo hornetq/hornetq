@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.jms.sm;
+package org.jboss.test.messaging.jms.server.plugin;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.ServerPeer;
@@ -30,6 +30,8 @@ import org.jboss.util.id.GUID;
 
 
 /**
+ * These tests must not be ran in remote mode!
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -50,30 +52,24 @@ public class InMemoryDurableSubscriptionStoreTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-      super.setUp();
-      
-      ServerManagement.start("all");
-      
-      if (ServerManagement.isLocal())
+      if (ServerManagement.isRemote())
       {
-         dssd = createStateManager(ServerManagement.getServerPeer());
+         fail("This test must not be ran in remote mode!");
       }
+
+      super.setUp();
+
+      ServerManagement.start("all");
+      dssd = createStateManager(ServerManagement.getServerPeer());
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
-      
-      
    }
    
    public void testCreateGetRemoveDurableSubscription() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
@@ -107,11 +103,6 @@ public class InMemoryDurableSubscriptionStoreTest extends MessagingTestCase
    
    public void testCreateGetRemoveDurableSubscriptionNullSelector() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
@@ -144,11 +135,6 @@ public class InMemoryDurableSubscriptionStoreTest extends MessagingTestCase
    
    public void testGetPreConfClientId() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       String clientID = dssd.getPreConfiguredClientID("blahblah");
       assertNull(clientID);
    }

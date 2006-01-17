@@ -55,8 +55,7 @@ public class JBossMapMessagePersistenceManagerTest extends JBossMessagePersisten
    {
       super.tearDown();
    }
-  
-   
+
    protected Message createMessage(int i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         

@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.tools.jmx.rmi;
 
 import org.jboss.messaging.core.MessageStore;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.remoting.transport.Connector;
 
 import java.rmi.Remote;
@@ -67,8 +67,10 @@ public interface Server extends Remote
 
    void deployTopic(String name, String jndiName) throws Exception;
    void undeployTopic(String name) throws Exception;
+   boolean isTopicDeployed(String name) throws Exception;
    void deployQueue(String name, String jndiName) throws Exception;
    void undeployQueue(String name) throws Exception;
+   boolean isQueueDeployed(String name) throws Exception;
 
 
    /**

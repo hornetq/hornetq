@@ -175,8 +175,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       // look-up destination
       DestinationManagerImpl dm = serverPeer.getDestinationManager();
-      Distributor destination = dm.getCoreDestination(jmsDestination);
-      if (destination == null)
+      Distributor coreDestination = dm.getCoreDestination(jmsDestination);
+      if (coreDestination == null)
       {
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
       }
@@ -193,26 +193,29 @@ public class ServerSessionEndpoint implements SessionEndpoint
       if (d.isTopic())
       {
          MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
-         Topic topic = (Topic)destination;
+         Topic topic = (Topic)coreDestination;
 
-         if (subscriptionName != null)
+         if (subscriptionName == null)
          {
-            // look-up the durable subscription
-
+            // non-durable subscription
+            if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
+            subscription = new Subscription(topic, selector, ms);
+         }
+         else
+         {
+            // we have a durable subscription, look it up
             String clientID = connectionEndpoint.getClientID();
             if (clientID == null)
             {
-               throw new JMSException("Cannot create durable subscriber without having set client ID");
+               throw new JMSException("Cannot create durable subscriber without a valid client ID");
             }
 
-            // it's a durable subscription - have we already got one with that name?
             DurableSubscriptionStoreDelegate dsd = serverPeer.getDurableSubscriptionStoreDelegate();
-
             subscription = dsd.getDurableSubscription(clientID, subscriptionName);
 
             if (subscription == null)
             {
-               if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + destination); }
+               if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + coreDestination); }
                subscription = dsd.
                   createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
             }
@@ -220,29 +223,27 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {
                if (log.isTraceEnabled()) { log.trace("subscription " + subscriptionName + " already exists"); }
 
-               // From javax.jms.Session Javadoc:
+               // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                // A client can change an existing durable subscription by creating a durable
                // TopicSubscriber with the same name and a new topic and/or message selector.
                // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
                // one and creating a new one.
 
-               // has the selector changed?
                boolean selectorChanged =
                   (selector == null && subscription.getSelector() != null) ||
                   (subscription.getSelector() == null && selector != null) ||
                   (subscription.getSelector() != null && selector != null &&
                   !subscription.getSelector().equals(selector));
-
                if (log.isTraceEnabled()) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
 
-               // has the Topic changed?
-               boolean topicChanged = subscription.getTopic() != destination;
-
+               boolean topicChanged = subscription.getTopic() != coreDestination;
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
 
-               if (selectorChanged || topicChanged)
+               boolean noLocalChanged = false; // TODO detect noLocal change
+
+               if (selectorChanged || topicChanged || noLocalChanged)
                {
-                  if (log.isTraceEnabled()) { log.trace("topic or selector changed so deleting old subscription"); }
+                  if (log.isTraceEnabled()) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
 
                   boolean removed = dsd.
                      removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
@@ -254,21 +255,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   }
 
                   subscription.unsubscribe();
-                  subscription = null;
+
+                  // create a fresh new subscription
+                  subscription =
+                     dsd.createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
                }
             }
          }
-         else
-         {
-            // Non durable subscription
-            if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + destination); }
-            subscription = new Subscription(topic, selector, ms);    
-         }
-      } 
+      }
       
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID,
-                                    subscription == null ? (Channel)destination : subscription,
+                                    subscription == null ? (Channel)coreDestination : subscription,
                                     callbackHandler, this, selector, noLocal);
        
       Dispatcher.singleton.registerTarget(consumerID, new ConsumerAdvised(ep));

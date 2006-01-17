@@ -2476,7 +2476,7 @@ public class MessageConsumerTest extends MessagingTestCase
             prod.send(topic, tm);
          }
 
-         final int NUM_TO_RECEIVE = 1;
+         final int NUM_TO_RECEIVE = NUM_MESSAGES - 1;
 
          for (int i = 0; i < NUM_TO_RECEIVE; i++)
          {

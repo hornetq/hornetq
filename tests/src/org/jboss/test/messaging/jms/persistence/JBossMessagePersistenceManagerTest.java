@@ -26,6 +26,7 @@ import java.util.Map;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest;
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
 
 
@@ -48,6 +49,11 @@ public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersisten
 
    public void setUp() throws Exception
    {
+      if (ServerManagement.isRemote())
+      {
+         fail("This test must not be ran in remote mode!");
+      }
+
       super.setUp();
    }
 

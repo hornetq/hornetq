@@ -341,6 +341,11 @@ public class RMIServer extends UnicastRemoteObject implements Server
       serverPeer.destroyTopic(name);
    }
 
+   public boolean isTopicDeployed(String name) throws Exception
+   {
+      return serverPeer.isDeployed(false, name);
+   }
+
    public void deployQueue(String name, String jndiName) throws Exception
    {
       serverPeer.createQueue(name, jndiName);
@@ -349,6 +354,11 @@ public class RMIServer extends UnicastRemoteObject implements Server
    public void undeployQueue(String name) throws Exception
    {
       serverPeer.destroyQueue(name);
+   }
+
+   public boolean isQueueDeployed(String name) throws Exception
+   {
+      return serverPeer.isDeployed(true, name);
    }
 
    public void setSecurityConfig(String destName, String config) throws Exception

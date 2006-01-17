@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.jms.sm;
+package org.jboss.test.messaging.jms.server.plugin;
 
 import java.util.Set;
 import java.util.Collections;

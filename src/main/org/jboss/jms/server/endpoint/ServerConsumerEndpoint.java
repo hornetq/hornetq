@@ -528,6 +528,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       // channel for delivery later.
       if (!started)
       {
+         // this is a common programming error, make this visible in the debug logs
+         // TODO: anaylize performance implications
+         log.debug(this + " NOT started yet!");
          return false;
       }
       

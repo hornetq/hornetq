@@ -282,6 +282,12 @@ public class ServerManagement
       server.undeployTopic(name);
    }
 
+   public static boolean isTopicDeployed(String name) throws Exception
+   {
+      insureStarted();
+      return server.isTopicDeployed(name);
+   }
+
    public static void deployQueue(String name) throws Exception
    {
       deployQueue(name, null);
@@ -297,6 +303,12 @@ public class ServerManagement
    {
       insureStarted();
       server.undeployQueue(name);
+   }
+
+   public static boolean isQueueDeployed(String name) throws Exception
+   {
+      insureStarted();
+      return server.isQueueDeployed(name);
    }
 
    public static Hashtable getJNDIEnvironment()
