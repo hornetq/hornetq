@@ -58,7 +58,7 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       }
    }
 
-   public synchronized boolean cancel(Delivery d)
+   public synchronized void cancel(Delivery d)
    {
       log.info("Delivery " + d + " was cancelled");
       if (toBeCancelled == d)
@@ -66,7 +66,7 @@ public class SimpleDeliveryObserver implements DeliveryObserver
          toBeCancelled = null;
          notifyAll();
       }
-      return true;
+      return;
    }
 
    // Public --------------------------------------------------------

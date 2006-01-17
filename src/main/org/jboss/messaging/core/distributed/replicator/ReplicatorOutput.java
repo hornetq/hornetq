@@ -451,19 +451,20 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
          sendAsynchronousResponse(collectorAddress, ref.getMessageID(), Acknowledgment.ACCEPTED);
       }
 
-      public boolean cancel(Delivery d) throws Throwable
+      public void cancel(Delivery d) throws Throwable
       {
          MessageReference ref = d.getReference();
 
          if (!ref.isReliable())
          {
-            return false; // no cancellation is sent back
+            return; // no cancellation is sent back
          }
 
          if (log.isTraceEnabled()) { log.trace(this + " cancelling " + d); }
          Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
-         return sendAsynchronousResponse(collectorAddress, ref.getMessageID(),
-                                         Acknowledgment.CANCELLED);
+         sendAsynchronousResponse(collectorAddress, ref.getMessageID(),
+                                  Acknowledgment.CANCELLED);
+         return;
       }
 
       // Public --------------------------------------------------------

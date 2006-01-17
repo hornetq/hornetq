@@ -29,7 +29,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * A channel's state.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Added tx support
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
@@ -71,35 +71,24 @@ public interface State
     * @param tx The JMS local transaction
     * @throws Throwable
     */
-   void add(MessageReference ref, Transaction tx) throws Throwable;
+   void addReference(MessageReference ref, Transaction tx) throws Throwable;
    
    /**
-    * This method is called after a new message arrives at the Channel but the message is
-    * not delivered either due to no receivers, broken receivers, or receivers unwilling to
-    * accept the message.
-    * The method updates the Channel state to include the message reference.
+    * Add a MessageReference to the State
     * 
     * @param ref The MessageReference to add
+    * @return true if the addition results in the ref being at the head of the queue. I.e. the queue
+    * was empty when the add occurred
     * @throws Throwable
     */
-   void add(MessageReference ref) throws Throwable;
-   
-   /**
-    * This method is called after a new message arrives at the Channel and is succesfully delivered.
-    * At no point is a message reference added to the state.
-    * 
-    * @param d The Delivery to add
-    * @throws Throwable
-    */
-   void deliver(Delivery d) throws Throwable;
+   boolean addReference(MessageReference ref) throws Throwable;
 
    /**
-    * A message that was already in the state has now been successully delivered.  
-    *
+    * Add a Delivery to the state
     * @param d The set of delivery instances to add
     * @throws Throwable
     */
-   void redeliver(Delivery d) throws Throwable;
+   void addDelivery(Delivery d) throws Throwable;
    
    /**
     * A Delivery has been cancelled. 
@@ -107,7 +96,7 @@ public interface State
     * @param d The delivery to cancel
     * @throws Throwable
     */
-   void cancel(Delivery d) throws Throwable;
+   void cancelDelivery(Delivery d) throws Throwable;
       
    /**
     * A Delivery has been acknowledged in the presence of a JMS local transaction. 
@@ -136,13 +125,12 @@ public interface State
    MessageReference removeFirst();
    
    /**
-    * Replace the MessageReference at the head of the queue. Note that this operation *does not*
-    * replace the MessageReference in RecoverableState - it only replaces it in NonRecoverableState.
-    *
-    * @param ref The MessageReference to replace
+    * Peek the MessageReference at the head of the state without actually removing it
+    * 
+    * @return The MessageReference
     */
-   void replaceFirst(MessageReference ref);
-
+   MessageReference peekFirst();
+   
    /**
     * A list of message references of messages in process of being delivered.
     *

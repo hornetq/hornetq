@@ -30,7 +30,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 

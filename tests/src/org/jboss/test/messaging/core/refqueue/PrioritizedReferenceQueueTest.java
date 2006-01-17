@@ -110,22 +110,22 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
 
    }
    
-   public void testRemove() throws Exception
-   {
-      deque.addLast(a, 0);
-      deque.addLast(b, 0);
-      deque.addLast(c, 0);
-      deque.addLast(d, 0);
-      deque.addLast(e, 0);
-      
-      deque.remove(b);
-      deque.remove(d);
-      
-      assertEquals(a, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertNull(deque.removeFirst());
-   }
+//   public void testRemove() throws Exception
+//   {
+//      deque.addLast(a, 0);
+//      deque.addLast(b, 0);
+//      deque.addLast(c, 0);
+//      deque.addLast(d, 0);
+//      deque.addLast(e, 0);
+//      
+//      deque.remove(b);
+//      deque.remove(d);
+//      
+//      assertEquals(a, deque.removeFirst());
+//      assertEquals(c, deque.removeFirst());
+//      assertEquals(e, deque.removeFirst());
+//      assertNull(deque.removeFirst());
+//   }
    
    public void testRemoveFirst() throws Exception
    {

@@ -50,8 +50,19 @@ public class DoubleLinkedDeque implements Deque
       }
       return ret;      
    }
+   
+   public Object peekFirst()
+   {    
+      Object ret = null;
+      if (head != null)
+      {
+         ret = head.object;
+      }
+      return ret;      
+   }
             
-   public Node addFirst(Object object)
+
+   public boolean addFirst(Object object)
    {         
       DequeNode node = new DequeNode(object, null, head);
       if (head != null)
@@ -65,11 +76,11 @@ public class DoubleLinkedDeque implements Deque
          tail = node;
       }
             
-      return node;      
+      return tail == node;     
       
    }
    
-   public Node addLast(Object object)
+   public boolean addLast(Object object)
    {
       DequeNode node = new DequeNode(object, tail, null);
       if (tail != null)
@@ -81,7 +92,7 @@ public class DoubleLinkedDeque implements Deque
       {
          head = node;
       }
-      return node;      
+      return head == node;    
    }
    
    public List getAll()
@@ -96,7 +107,7 @@ public class DoubleLinkedDeque implements Deque
       return all;      
    }
    
-   protected void remove(DequeNode node)
+   private void remove(DequeNode node)
    {
       if (head == node)
       {

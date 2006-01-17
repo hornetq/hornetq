@@ -34,13 +34,13 @@ import java.util.List;
  */
 public interface Deque
 {
-   Node addFirst(Object obj);
+   boolean addFirst(Object obj);
    
-   Node addLast(Object obj);
+   boolean addLast(Object obj);
    
    Object removeFirst();
    
-   //Object removeLast();
+   Object peekFirst();
          
    List getAll();
    

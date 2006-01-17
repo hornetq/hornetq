@@ -37,11 +37,5 @@ public class MetaDataConstants
    
    public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
    
-   //public static final String INVOKER_LOCATOR = "INVOKER_LOCATOR";
-   
-   public static final String CONSUMER_ID = "CONSUMER_ID";
-   
-   //public static final String MESSAGE_HANDLER = "MESSAGE_HANDLER";
-   
-   //public static final String INVOKER_CLIENT = "INVOKER_CLIENT";
+   public static final String CONSUMER_ID = "CONSUMER_ID";   
 }

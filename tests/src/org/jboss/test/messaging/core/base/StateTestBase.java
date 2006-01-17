@@ -138,7 +138,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
 
       // non-recoverable state, unreliable message, non-transactional add
-      state.add(ref);
+      state.addReference(ref);
 
       assertTrue(state.delivering(null).isEmpty());
 
@@ -179,7 +179,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, non-transactional add
-         state.add(refs[i]);
+         state.addReference(refs[i]);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -222,7 +222,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // non-recoverable state, unreliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -269,7 +269,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -312,7 +312,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // non-recoverable state, unreliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -353,7 +353,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -396,7 +396,7 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
-      state.add(ref);
+      state.addReference(ref);
 
 
       MessageReference rref = state.removeFirst();
@@ -429,7 +429,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -473,7 +473,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // non-recoverable state, unreliable delivery, non-transactional add
-      state.deliver(d);
+      state.addDelivery(d);
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
@@ -514,7 +514,7 @@ public abstract class StateTestBase extends MessagingTestCase
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // non-recoverable state, unreliable delivery, non-transactional add
-         state.deliver(d);
+         state.addDelivery(d);
       }
 
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
@@ -553,7 +553,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
-      state.deliver(d);
+      state.addDelivery(d);
 
       // non-recoverable state, unreliable delivery, non-transactional remove
       state.acknowledge(d);
@@ -591,7 +591,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -637,7 +637,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -688,7 +688,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -738,7 +738,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -795,7 +795,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          refs[i] =  ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -849,7 +849,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
 
       // non-recoverable state, unreliable message, non-transactional add
-      state.add(ref);
+      state.addReference(ref);
 
       assertTrue(state.delivering(null).isEmpty());
 
@@ -889,7 +889,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, non-transactional add
-         state.add(refs[i]);
+         state.addReference(refs[i]);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -925,7 +925,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
 
       // non-recoverable state, reliable message, non-transactional add
-      state.add(ref);
+      state.addReference(ref);
 
       assertTrue(state.delivering(null).isEmpty());
 
@@ -965,7 +965,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
 
          // non-recoverable state, reliable message, non-transactional add
-         state.add(refs[i]);
+         state.addReference(refs[i]);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -1007,7 +1007,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // non-recoverable state, unreliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -1054,7 +1054,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -1097,7 +1097,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // non-recoverable state, reliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -1144,7 +1144,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
 
          // non-recoverable state, reliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -1188,7 +1188,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // non-recoverable state, unreliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -1229,7 +1229,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -1268,7 +1268,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // non-recoverable state, reliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -1309,7 +1309,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
 
          // non-recoverable state, reliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -1353,7 +1353,7 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
-      state.add(ref);
+      state.addReference(ref);
 
 
       MessageReference rref = state.removeFirst();
@@ -1386,7 +1386,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -1423,7 +1423,7 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
-      state.add(ref);
+      state.addReference(ref);
 
 
       MessageReference rref = state.removeFirst();
@@ -1456,7 +1456,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -1488,7 +1488,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, i % 2 == 0, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -1533,7 +1533,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // non-recoverable state, unreliable delivery, non-transactional add
-      state.deliver(d);
+      state.addDelivery(d);
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
@@ -1574,7 +1574,7 @@ public abstract class StateTestBase extends MessagingTestCase
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // non-recoverable state, unreliable delivery, non-transactional add
-         state.deliver(d);
+         state.addDelivery(d);
       }
 
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
@@ -1610,7 +1610,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // non-recoverable state, reliable delivery, non-transactional add
-      state.deliver(d);
+      state.addDelivery(d);
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
@@ -1651,7 +1651,7 @@ public abstract class StateTestBase extends MessagingTestCase
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // non-recoverable state, reliable delivery, non-transactional add
-         state.deliver(d);
+         state.addDelivery(d);
       }
 
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
@@ -1691,7 +1691,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
-      state.deliver(d);
+      state.addDelivery(d);
 
       // non-recoverable state, unreliable delivery, non-transactional remove
       state.acknowledge(d);
@@ -1729,7 +1729,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -1771,7 +1771,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
-      state.deliver(d);
+      state.addDelivery(d);
 
       // non-recoverable state, reliable delivery, non-transactional remove
       state.acknowledge(d);
@@ -1809,7 +1809,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -1856,7 +1856,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -1907,7 +1907,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -1952,7 +1952,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -2003,7 +2003,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -2054,7 +2054,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -2111,7 +2111,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          refs[i] =  ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -2156,7 +2156,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -2213,7 +2213,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          refs[i] =  ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -2264,7 +2264,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
 
       // recoverable state, unreliable message, non-transactional add
-      state.add(ref);
+      state.addReference(ref);
 
       assertTrue(state.delivering(null).isEmpty());
 
@@ -2298,7 +2298,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // recoverable state, unreliable message, non-transactional add
-         state.add(refs[i]);
+         state.addReference(refs[i]);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -2328,7 +2328,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
 
       // recoverable state, reliable message, non-transactional add
-      state.add(ref);
+      state.addReference(ref);
 
       assertTrue(state.delivering(null).isEmpty());
 
@@ -2362,7 +2362,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
 
          // recoverable state, reliable message, non-transactional add
-         state.add(refs[i]);
+         state.addReference(refs[i]);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -2398,7 +2398,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // recoverable state, unreliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -2439,7 +2439,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // recoverable state, unreliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -2476,7 +2476,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // recoverable state, reliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -2517,7 +2517,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
 
          // recoverable state, reliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -2555,7 +2555,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // recoverable state, unreliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -2590,7 +2590,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
 
          // recoverable state, unreliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -2623,7 +2623,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Transaction tx = tr.createTransaction();
 
       // recoverable state, reliable message, transactional add
-      state.add(ref, tx);
+      state.addReference(ref, tx);
 
       assertTrue(state.delivering(null).isEmpty());
       assertTrue(state.undelivered(null).isEmpty());
@@ -2659,7 +2659,7 @@ public abstract class StateTestBase extends MessagingTestCase
          refs[i] = ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
 
          // recoverable state, reliable message, transactional add
-         state.add(refs[i], tx);
+         state.addReference(refs[i], tx);
       }
 
       assertTrue(state.delivering(null).isEmpty());
@@ -2696,7 +2696,7 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
-      state.add(ref);
+      state.addReference(ref);
 
 
       MessageReference rref = state.removeFirst();
@@ -2723,7 +2723,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -2754,7 +2754,7 @@ public abstract class StateTestBase extends MessagingTestCase
       }
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
-      state.add(ref);
+      state.addReference(ref);
 
 
       MessageReference rref = state.removeFirst();
@@ -2781,7 +2781,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -2808,7 +2808,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, i % 2 == 0, "payload" + i));
-         state.add(ref);
+         state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -2847,7 +2847,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // recoverable state, unreliable delivery, non-transactional add
-      state.deliver(d);
+      state.addDelivery(d);
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
@@ -2882,7 +2882,7 @@ public abstract class StateTestBase extends MessagingTestCase
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // recoverable state, unreliable delivery, non-transactional add
-         state.deliver(d);
+         state.addDelivery(d);
       }
 
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
@@ -2912,7 +2912,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // recoverable state, reliable delivery, non-transactional add
-      state.deliver(d);
+      state.addDelivery(d);
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
@@ -2947,7 +2947,7 @@ public abstract class StateTestBase extends MessagingTestCase
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // recoverable state, reliable delivery, non-transactional add
-         state.deliver(d);
+         state.addDelivery(d);
       }
 
       ChannelTestBase.assertEqualSets(refs, state.delivering(null));
@@ -2981,7 +2981,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
-      state.deliver(d);
+      state.addDelivery(d);
 
       // recoverable state, unreliable delivery, non-transactional remove
       state.acknowledge(d);
@@ -3013,7 +3013,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -3049,7 +3049,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
-      state.deliver(d);
+      state.addDelivery(d);
 
       // recoverable state, reliable delivery, non-transactional remove
       state.acknowledge(d);
@@ -3080,7 +3080,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -3121,7 +3121,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -3165,7 +3165,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -3204,7 +3204,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -3248,7 +3248,7 @@ public abstract class StateTestBase extends MessagingTestCase
          MessageReference ref =
                ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -3293,7 +3293,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -3343,7 +3343,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          refs[i] =  ms.reference(MessageFactory.createMessage("message" + i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();
@@ -3382,7 +3382,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
       MessageReference ref = ms.reference(MessageFactory.createMessage("message0", true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
-      state.deliver(d);
+      state.addDelivery(d);
 
       Transaction tx = tr.createTransaction();
 
@@ -3432,7 +3432,7 @@ public abstract class StateTestBase extends MessagingTestCase
       {
          refs[i] =  ms.reference(MessageFactory.createMessage("message" + i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
-         state.deliver(deliveries[i]);
+         state.addDelivery(deliveries[i]);
       }
 
       Transaction tx = tr.createTransaction();

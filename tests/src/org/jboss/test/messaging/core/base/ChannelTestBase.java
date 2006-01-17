@@ -792,6 +792,125 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertEquals(0, channel.browse().size());
 
    }
+   
+   public void testNonRecoverableChannel_8_1_mixed_1() throws Exception
+   {
+      if (channel.isRecoverable())
+      {
+         // we test only non-recoverable channels now
+         return;
+      }
+
+      if (channel.acceptReliableMessages())
+      {
+         // we test channels that don't accept reliable messages
+         return;
+      }
+
+      // the channel has no receivers
+      assertFalse(channel.iterator().hasNext());
+
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      Transaction tx = tr.createTransaction();
+
+      Message[] messages = new Message[NUMBER_OF_MESSAGES * 2];
+      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         // send a mixture of reliable and non-reliable messages
+         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+
+         // transacted send, reliable/non-reliable messages, multiple messages
+         // for a transactional send, handle() return value is unspecified
+         channel.handle(observer, messages[i], tx);
+      }
+      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         // send a mixture of reliable and non-reliable messages
+         messages[i + NUMBER_OF_MESSAGES] = MessageFactory.createMessage("message" + (i + NUMBER_OF_MESSAGES) , true, "payload" + i);
+
+         // transacted send, reliable/non-reliable messages, multiple messages
+         // for a transactional send, handle() return value is unspecified
+         channel.handle(observer, messages[i + NUMBER_OF_MESSAGES], tx);
+      }
+
+      // no messages in the channel yet
+      assertEquals(0, channel.browse().size());
+
+      try
+      {
+         tx.commit();
+         fail("this should throw exception");
+      }
+      catch(Exception e)
+      {
+         // OK
+      }
+
+      // still no messages in the channel
+      assertEquals(0, channel.browse().size());
+
+   }
+   
+
+   public void testNonRecoverableChannel_8_1_mixed_2() throws Exception
+   {
+      if (channel.isRecoverable())
+      {
+         // we test only non-recoverable channels now
+         return;
+      }
+
+      if (channel.acceptReliableMessages())
+      {
+         // we test channels that don't accept reliable messages
+         return;
+      }
+
+      // the channel has no receivers
+      assertFalse(channel.iterator().hasNext());
+
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      Transaction tx = tr.createTransaction();
+
+      Message[] messages = new Message[NUMBER_OF_MESSAGES * 2];
+      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         // send a mixture of reliable and non-reliable messages
+         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+
+         // transacted send, reliable/non-reliable messages, multiple messages
+         // for a transactional send, handle() return value is unspecified
+         channel.handle(observer, messages[i], tx);
+      }
+      for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         // send a mixture of reliable and non-reliable messages
+         messages[i + NUMBER_OF_MESSAGES] = MessageFactory.createMessage("message" + (i + NUMBER_OF_MESSAGES) , true, "payload" + i);
+
+         // transacted send, reliable/non-reliable messages, multiple messages
+         // for a transactional send, handle() return value is unspecified
+         channel.handle(observer, messages[i + NUMBER_OF_MESSAGES], tx);
+      }
+
+      // no messages in the channel yet
+      assertEquals(0, channel.browse().size());
+
+      try
+      {
+         tx.commit();
+         fail("this should throw exception");
+      }
+      catch(Exception e)
+      {
+         // OK
+      }
+
+      // still no messages in the channel
+      assertEquals(0, channel.browse().size());
+
+   }
 
    ///////////
    /////////// Channel accepts reliable messages

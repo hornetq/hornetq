@@ -99,7 +99,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      final int NUM_MESSAGES = 10;
+      final int NUM_MESSAGES = 1000;
       
       final int NUM_RECOVERIES = 8;
       
@@ -115,7 +115,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       MessageConsumer cons = sess2.createConsumer(queue);
       
       conn.start();
-      
+     
       for (int j = 0; j < NUM_RECOVERIES; j++)
       {      
          for (int i = 0; i < NUM_MESSAGES; i++)
@@ -151,7 +151,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
 
       conn.start();
       
-      final int NUM_MESSAGES = 30;
+      final int NUM_MESSAGES = 300;
       
       final int NUM_RECOVERIES = 9;
       
@@ -229,7 +229,6 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       {
          try
          {
-            //log.info("in run(), numr=" + numRecoveries + " numMesages:" +numMessages);
             Message lastMessage = null;
             for (int j = 0; j < numRecoveries; j++)
             {
@@ -238,8 +237,6 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
                {                  
                   TextMessage tm = (TextMessage)cons.receive();
                   lastMessage = tm;
-                  
-                  //log.info("Actual: " + tm.getIntProperty("JMSXDeliveryCount") + " expected:" + j);
                   
                   if (tm == null)
                   {                     
@@ -251,16 +248,13 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
                      log.error("Out of order!!");
                      failed = true;
                   }
-                  
-                  //log.info(name + " recieved message:" + i);
-                  
+
                   if (tm.getIntProperty("JMSXDeliveryCount") != j)
                   {
-                     log.error("Delivery count not expected value");
+                     log.error("Delivery count not expected value:" + j + " actual:" + tm.getIntProperty("JMSXDeliveryCount"));;
                      failed = true;
                   }
                }
-               //log.info("Recovering:" + j);
                if (j != numRecoveries -1)
                {
                   sess.recover();

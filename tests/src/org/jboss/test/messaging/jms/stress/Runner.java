@@ -19,33 +19,40 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
+package org.jboss.test.messaging.jms.stress;
 
-package org.jboss.messaging.core.refqueue;
-
-import java.util.List;
+import javax.jms.Session;
 
 /**
- * A deque that returns objects according to a priority.<br>
  * 
- * Also allows removes from the middle.
+ * A Runner.
+ * 
+ * Base class for running components of a stress test
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.1
  *
- * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
- *
- * $Id$
+ * Runner.java,v 1.1 2006/01/17 12:15:33 timfox Exp
  */
-public interface PrioritizedDeque
+public abstract class Runner implements Runnable
 {
+   protected Session sess;
+   
+   protected int numMessages;
+   
+   protected boolean failed;
 
-   boolean addFirst(Object obj, int priority);
+   public Runner(Session sess, int numMessages)
+   {
+      this.sess = sess;
+      this.numMessages = numMessages;
+   }
    
-   boolean addLast(Object obj, int priority);
+   public abstract void run();
    
-   Object removeFirst();
-   
-   Object peekFirst();
-   
-   List getAll();
-   
-   void clear();
-   
+   public boolean isFailed()
+   {
+      return failed;
+   }
+
 }

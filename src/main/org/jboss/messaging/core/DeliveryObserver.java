@@ -33,5 +33,5 @@ public interface DeliveryObserver
 {
    void acknowledge(Delivery d, Transaction tx);
 
-   boolean cancel(Delivery d) throws Throwable;
+   void cancel(Delivery d) throws Throwable;
 }

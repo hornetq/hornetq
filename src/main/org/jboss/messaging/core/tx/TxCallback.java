@@ -31,7 +31,7 @@ package org.jboss.messaging.core.tx;
  */
 public interface TxCallback
 {
-   void afterCommit();
+   void afterCommit() throws TransactionException;
    
-   void afterRollback();
+   void afterRollback() throws TransactionException;
 }

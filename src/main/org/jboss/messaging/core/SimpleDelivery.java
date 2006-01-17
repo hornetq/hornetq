@@ -23,13 +23,14 @@ package org.jboss.messaging.core;
 
 import java.io.Serializable;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * A simple Delivery implementation.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Added tx support
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
@@ -41,6 +42,9 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
    private static final long serialVersionUID = 4995034535739753957L;
 
    // Static --------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(SimpleDelivery.class);
+
    
    // Attributes ----------------------------------------------------
 
@@ -107,23 +111,28 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    public synchronized void acknowledge(Transaction tx) throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace(this + " acknowledging delivery in tx:" + tx); }
+      
       // deals with the race condition when acknowledgment arrives before the delivery
-      // is returned back to the sending delivery observer
+      // is returned back to the sending delivery observer      
+      observer.acknowledge(this, tx);
       if (tx == null)
       {
+         if (log.isTraceEnabled()) { log.trace(this + " setting done to true"); }
          //TODO Why don't we set done to true if the ack is transactional???
          //     http://jira.jboss.org/jira/browse/JBMESSAGING-173
          done = true;
       }
-      observer.acknowledge(this, tx);
    }
 
-   public synchronized boolean cancel() throws Throwable
+   public synchronized void cancel() throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace(this + " cancelling delivery"); }
+      
       // deals with the race condition when cancellation arrives before the delivery
-      // is returned back to the sending delivery observer
+      // is returned back to the sending delivery observer      
+      observer.cancel(this);
       cancelled = true;
-      return observer.cancel(this);
    }
 
    // Public --------------------------------------------------------

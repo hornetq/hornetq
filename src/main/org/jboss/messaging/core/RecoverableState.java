@@ -26,9 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -80,9 +79,9 @@ public class RecoverableState extends NonRecoverableState
       return true;
    }
    
-   public void add(MessageReference ref, Transaction tx) throws Throwable
+   public void addReference(MessageReference ref, Transaction tx) throws Throwable
    {    
-      super.add(ref, tx);
+      super.addReference(ref, tx);
 
       if (ref.isReliable())
       {
@@ -95,9 +94,9 @@ public class RecoverableState extends NonRecoverableState
       if (log.isTraceEnabled()) { log.trace("added an Add callback to transaction " + tx); }            
    }
 
-   public void add(MessageReference ref) throws Throwable
+   public boolean addReference(MessageReference ref) throws Throwable
    {  
-      super.add(ref);
+      boolean first =  super.addReference(ref);
 
       if (ref.isReliable())
       {
@@ -105,22 +104,10 @@ public class RecoverableState extends NonRecoverableState
          if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database non-transactionally"); }
          pm.addReference(channelID, ref, null);
       }      
+      
+      return first;
    }
    
-   /*
-    * We have successfully delivered a new message
-    */
-   public void deliver(Delivery d) throws Throwable
-   {
-      super.deliver(d);
-      
-      if (d.getReference().isReliable())
-      {
-         //This is a new message that has been delivered so we add the message ref in the database
-         pm.addReference(channelID, d.getReference(), null);
-      }      
-   }
-
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {      
       super.acknowledge(d, tx);

@@ -92,10 +92,7 @@ public class NonRecoverableState implements State
       return acceptReliableMessages;
    }
    
-   /*
-    * Add a ref transactionally
-    */
-   public void add(MessageReference ref, Transaction tx) throws Throwable
+   public void addReference(MessageReference ref, Transaction tx) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "transactionally in transaction: " + tx); }
 
@@ -115,10 +112,7 @@ public class NonRecoverableState implements State
       }  
    }
 
-   /* Add a message reference non transactionally.
-    * This occurs when a new message arrives but is not delivered
-    */
-   public void add(MessageReference ref) throws Throwable
+   public boolean addReference(MessageReference ref) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + " non-transactionally"); }
 
@@ -128,35 +122,14 @@ public class NonRecoverableState implements State
                                          " cannot be added to non-recoverable state");
       }
 
-      messageRefs.addLast(ref, ref.getPriority());    
+      if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " in memory"); } 
       
-      if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " in memory"); }      
+      return messageRefs.addLast(ref, ref.getPriority());    
+             
    }
   
-   /*
-    * We have delivered a new message so add the delivery to state
-    */
-   public void deliver(Delivery d) throws Throwable
-   {
-      if (d.getReference().isReliable() && !acceptReliableMessages)
-      {
-         throw new IllegalStateException("Delivery " + d + " of a reliable reference " +
-                                         " cannot be added to non-recoverable state");
-      }
 
-      // Note! Adding of deliveries to the state is NEVER done in a transactional context.
-      // The only things that are done in a transactional context are sending of messages
-      // and removing deliveries (acking).
-      
-      deliveries.add(d);
-      
-      if (log.isTraceEnabled()) { log.trace(this + " added " + d + " to memory"); }
-   }
-   
-   /*
-    * We have redelivered a pre-existing message, so we add the delivery to the state
-    */
-   public void redeliver(Delivery d) throws Throwable
+   public void addDelivery(Delivery d) throws Throwable
    {
       deliveries.add(d);
 
@@ -167,8 +140,10 @@ public class NonRecoverableState implements State
     * Cancel an outstanding delivery.
     * This removes the delivery and adds the message reference back into the state
     */
-   public void cancel(Delivery del) throws Throwable
+   public void cancelDelivery(Delivery del) throws Throwable
    {
+      if (log.isTraceEnabled()) { log.trace(this + " cancelling " + del + " in memory"); }
+      
       boolean removed = deliveries.remove(del);
       
       if (!removed)
@@ -179,10 +154,13 @@ public class NonRecoverableState implements State
          
          //In this case we don't want to add the message reference back into the state
          //since it was never removed in the first place
+         
+         if (log.isTraceEnabled()) { log.trace(this + "Can't find delivery " + del + " in state so not replacing messsage ref"); }
       }
       else
       {         
          messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
+         if (log.isTraceEnabled()) { log.trace(this + " added " + del.getReference() + " back into state"); }
       }
    }
    
@@ -213,21 +191,13 @@ public class NonRecoverableState implements State
       return result;
    }
    
-   public void replaceFirst(MessageReference ref)
+   public MessageReference peekFirst()
    {
-      if (log.isTraceEnabled()) { log.trace(this + " adding " + ref + "at the top of the list in memory"); }
+      MessageReference result = (MessageReference)messageRefs.peekFirst();
 
-      if (ref.isReliable() && !acceptReliableMessages)
-      {
-         throw new IllegalStateException("Reliable reference " + ref +
-                                         " cannot be added to non-recoverable state");
-      }
-
-      messageRefs.addFirst(ref, ref.getPriority());
-      
-      if (log.isTraceEnabled()) { log.trace(this + " added " + ref + " at the top of the list in memory"); }
+      if (log.isTraceEnabled()) { log.trace(this + " peeking the oldest message in memory returns " + result); }
+      return result;
    }
-   
  
    public List delivering(Filter filter)
    {
@@ -365,16 +335,14 @@ public class NonRecoverableState implements State
          {
             MessageReference ref = (MessageReference)i.next();
             if (log.isTraceEnabled()) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-            messageRefs.addLast(ref, ref.getPriority());
+            boolean first = messageRefs.addLast(ref, ref.getPriority());                       
             
-            //FIXME
-            //For JMS We only need to call channel.deliver(null) once for the whole transaction
-            //However some of the core tests still assume all deliver() semantics i.e. delivery
-            //is attempted for all messages in channel on commit, hence they will fail if we only
-            //call deliver once
-            channel.deliver(null);
+            if (first)
+            {
+               channel.deliver(null);
+            }
          }
-
+         
          txToAddReferenceCallbacks.remove(tx);
       } 
       
@@ -415,20 +383,15 @@ public class NonRecoverableState implements State
             if (log.isTraceEnabled()) { log.trace(this + " removing " + d + " after commit"); }
             deliveries.remove(d);
             d.getReference().release();
+            if (log.isTraceEnabled()) { log.trace(this + " releasing reference for " + d.getReference()); }
          }
          txToRemoveDeliveryCallbacks.remove(tx);
       }   
       
       public void afterRollback()
       {
-         for(Iterator i = dels.iterator(); i.hasNext(); )
-         {
-            Delivery d = (Delivery)i.next();
-            if (log.isTraceEnabled()) { log.trace(this + " releasing reference for " + d.getReference()); }
-         }
          txToRemoveDeliveryCallbacks.remove(tx);
       }
    }
-
    
 }

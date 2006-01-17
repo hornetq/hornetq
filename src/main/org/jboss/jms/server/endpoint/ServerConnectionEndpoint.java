@@ -392,7 +392,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                if (log.isTraceEnabled()) { log.trace("One phase rollback request received"); }
                
                //We just need to cancel deliveries
-               processRollback(request.getState());
+               cancelDeliveriesForTransaction(request.getState());
             }
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
             {                        
@@ -413,13 +413,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             {
                if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
                tx = txRep.getPreparedTx(request.getXid());
-               
-               if (request.getState() != null)
-               {
-                  //We just need to cancel deliveries
-                  processRollback(request.getState());
-               }
-   
+                  
                if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
                tx.rollback();
             }      
@@ -624,16 +618,15 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (log.isTraceEnabled()) { log.trace("Done the acks"); }
    }
    
-   private void processRollback(TxState txState) throws JMSException
+   private void cancelDeliveriesForTransaction(TxState txState) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("processing rollback"); }
+      if (log.isTraceEnabled()) { log.trace("Cancelling deliveries for transaction"); }
       
-      //On a rollback of a transaction we cancel deliveries of any messages
+      //On a rollback of a transaction (1PC) we cancel deliveries of any messages
       //delivered in the tx
       
       //Need to cancel in reverse order in order to retain delivery order
       
-      //FIXME Need to do this atomically      
       List acks = txState.getAcks();
       for (int i = acks.size() - 1; i >= 0; i--)
       {   

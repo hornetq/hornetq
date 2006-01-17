@@ -28,7 +28,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * or active. This type of delivery is returned by a stateless receiver.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Added tx support
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -37,6 +37,6 @@ public interface SingleReceiverDelivery extends Delivery
 {
    void acknowledge(Transaction tx) throws Throwable;
 
-   boolean cancel() throws Throwable;
+   void cancel() throws Throwable;
    
 }

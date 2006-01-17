@@ -88,7 +88,9 @@ public abstract class ChannelSupport implements Channel
    // Receiver implementation ---------------------------------------
 
    public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
-   {
+   {            
+      checkClosed();
+      
       if (r == null)
       {
          return null;
@@ -96,30 +98,58 @@ public abstract class ChannelSupport implements Channel
 
       if (log.isTraceEnabled()){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
 
+      // don't even attempt synchronous delivery for a reliable message when we have an
+      // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
+      // situation where we need to reliably store an active delivery of a reliable message, which
+      // in these conditions cannot be done.
+
       MessageReference ref = ref(r);
-
-      if (tx == null)
-      {
-         Delivery del = push(null, ref);
-         if (del == null)
-         {
-            //Not handled
-            
-            //FIXME - Also want to do this if an exception is thrown
-            ref.release();
-         }
-         return del;
-      }
-
-      if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
-
+      
       try
       {
-         state.add(ref, tx);
+         
+         if (tx == null)
+         {      
+            if (r.isReliable() && !state.acceptReliableMessages())
+            {
+               log.error("Cannot handle reliable message " + r +
+                         " because the channel has a non-recoverable state!");
+               return null;
+            }
+            
+            //This returns true if the ref was added to an empty ref queue
+            boolean first = state.addReference(ref);
+                        
+            //Previously we would call push() at this point to push the reference to the consumer
+            //One of the problems this had was it would end up leap-frogging messages that were
+            //already in the queue.
+            //So now we add the message to the back of the queue and call deliver()            
+            //In fact we only need to call deliver() if the queue was empty before we added
+            //the ref.
+            //If the queue wasn't empty there would be no active waiting receiver, so there
+            //would be no need to call deliver()
+            //Once I have improve the locking on the ref queue, this should result in very little (if any)
+            //lock contention between the thread depositing the message on the queue and the thread
+            //activating the consumer and prompting delivery.
+            
+            if (first)
+            {
+               deliver(this, null);         
+            }
+         }
+         else
+         {   
+            if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
+            
+            state.addReference(ref, tx);         
+         }
       }
       catch (Throwable t)
       {
-         log.error("Failed to add message reference " + ref + " to state", t);
+         log.error("Failed to handle message", t);
+         
+         ref.release();
+         
          return null;
       }
 
@@ -151,15 +181,13 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   public boolean cancel(Delivery d) throws Throwable
+   public void cancel(Delivery d) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("cancel " + d); }
       
-      state.cancel(d);
+      state.cancelDelivery(d);
       
       if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
-      
-      return true;
    }
 
    // Distributor implementation ------------------------------------
@@ -245,7 +273,18 @@ public abstract class ChannelSupport implements Channel
    public boolean deliver(Receiver r)
    {
       if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "generic delivery requested on " + this); }
-      return deliver(this, r);
+      
+      checkClosed();
+      
+      try
+      {
+         return deliver(this, r);
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to deliver message", t);
+         return false;
+      }
    }
    
    public void close()
@@ -297,59 +336,6 @@ public abstract class ChannelSupport implements Channel
          return null;
       }      
    }
-   
-   protected Delivery push(Receiver receiver, MessageReference ref)
-   {
-      checkClosed();
-      
-      if (!checkRef(ref))
-      {
-         return null;
-      }
-      
-      Delivery del = getDelivery(receiver, ref);
-      
-      if (del == null)
-      {
-         // no receiver, receiver didn't accept the message or broken receivers        
-         if (log.isTraceEnabled()){ log.trace(this + " did not get a delivery, there is no receiver"); }
-
-         processMessageBeforeStorage(ref);
-
-         try
-         {                        
-            state.add(ref);
-            if (log.isTraceEnabled()){ log.trace("adding reference to state successfully"); }
-         }
-         catch(Throwable t)
-         {
-            // this channel cannot safely hold the message, so it doesn't accept it
-            log.error("Cannot handle the message", t);
-            return null;
-         }
-      }
-      else
-      {
-         // delivered
-         try
-         {            
-            if (!del.isDone())
-            {
-               state.deliver(del);                                   
-            }                   
-         }
-         catch(Throwable t)
-         {
-            // TODO: this should be done atomically
-            log.error(this + " failed to manage the delivery, rejecting the message", t);
-            return null;
-         }
-      }
-
-      // the channel can safely assume responsibility for delivery
-      return new SimpleDelivery(true);
-   }
-   
 
    /**
     * Give subclass a chance to process the message before storing it internally. Useful to get
@@ -359,24 +345,22 @@ public abstract class ChannelSupport implements Channel
    {
       // by default a noop
    }
-   
-   //TODO - Possibly combine this with the push method since they are similar
-   protected boolean deliver(DeliveryObserver sender, Receiver receiver)
+        
+   /*
+    * Delivery for the channel must be synchronized.
+    * Otherwise we can end up with the same message being delivered more than once to the same consumer
+    * (if deliver() is called concurrently) or messages being delivered in the wrong order.
+    */
+   protected synchronized boolean deliver(DeliveryObserver sender, Receiver receiver) throws Throwable
    {
-      checkClosed();
 
-      //This removes the reference at the head of the queue from the in memory state.
-      //Note: It *only* removes it from the in-memory NonRecoverableState - it does
-      //not remove it from the persistent state.
-      //This means that if the server crashes shortly after removing it, when it recovers
-      //the message is still in the state and will be redelivered. :)
-      MessageReference ref = state.removeFirst();
-
-      if (!checkRef(ref))
+      MessageReference ref = state.peekFirst();
+      
+      if (ref == null)
       {
          return false;
       }
-
+      
       if (log.isTraceEnabled()){ log.trace(this + " delivering " + ref); }
 
       Delivery del = getDelivery(receiver, ref);
@@ -385,37 +369,45 @@ public abstract class ChannelSupport implements Channel
       {
          // no receiver, receiver that doesn't accept the message or broken receiver
 
-         if (log.isTraceEnabled()){ log.trace(this + ": no delivery returned for message; there is no receiver"); }
-
-         //The message wasn't delivered - so we replace the message back to the front of the queue
-         //Note we only do this to the in-memory nonrecoverable state!
-         //This is not done to persistent state
-         
-         
-         //FIXME - We also want to do this if an exception is thrown
-         state.replaceFirst(ref);
+         if (log.isTraceEnabled()){ log.trace(this + ": no delivery returned for message" + ref); }
 
          return false;
       }
       else
       {
-         // delivered
-         try
+         if (log.isTraceEnabled()){ log.trace(this + ": delivery returned for message:" + ref); }
+         
+         //We must synchronize here to cope with another race condition where message is cancelled/acked
+         //in flight while the following few actions are being performed.
+         //e.g. delivery could be cancelled acked after being removed from state but before delivery being added
+         //(observed)
+         synchronized (del)
          {
+            if (log.isTraceEnabled()) { log.trace(this + " incrementing delivery count for " + del); }    
+            
+            //FIXME - It's actually possible the delivery could be cancelled before it reaches
+            //here, in which case we wouldn't get a delivery but we still need to increment the
+            //delivery count
+            del.getReference().incrementDeliveryCount();
+                        
+            if (del.isCancelled())
+            {
+               return false;
+            }
+                        
+            state.removeFirst();
+            
+            // delivered
             if (!del.isDone())
             {
                //Add the delivery to state
-               state.redeliver(del);
-            }
-   
+               state.addDelivery(del);
+            }                                
+            
             //Delivery successful
-            return true;            
+            return true;               
          }
-         catch(Throwable t)
-         {
-            log.error(this + " cannot manage redelivery", t);
-            return false;
-         }
+         
       }
    }
 
@@ -458,52 +450,19 @@ public abstract class ChannelSupport implements Channel
       {
          try
          {
-            d = receiver.handle(this, ref, null);
-   
-            if (d != null && d.isCancelled())
-            {
-               d = null;               
-            }   
+            d = receiver.handle(this, ref, null);                          
          }
          catch(Throwable t)
          {
             // broken receiver - log the exception and ignore it
             log.error("The receiver " + receiver + " is broken", t);
          }
-      }
-      
-      if (d != null)
-      {
-         ref.incrementDeliveryCount();
-      }
+      }            
       
       return d;
    }
    
-   private boolean checkRef(MessageReference ref)
-   {
-      if (ref == null)
-      {
-         return false;
-      }
 
-      // don't even attempt synchronous delivery for a reliable message when we have an
-      // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
-      // situation where we need to reliably store an active delivery of a reliable message, which
-      // in these conditions cannot be done.
-
-      if (ref.isReliable() && !state.acceptReliableMessages())
-      {
-         log.error("Cannot handle reliable message " + ref +
-                   " because the channel has a non-recoverable state!");
-         return false;
-      }
-      
-      return true;
-   }
-
-   
-   
    private void acknowledgeNoTx(Delivery d)
    {
       checkClosed();

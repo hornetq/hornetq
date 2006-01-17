@@ -46,24 +46,25 @@ public class BasicSynchronizedPrioritizedDeque implements PrioritizedDeque
       this.deque = deque;
    }
 
-   public synchronized void addFirst(Object obj, int priority)
+   public synchronized boolean addFirst(Object obj, int priority)
    {
-      deque.addFirst(obj, priority);      
+      return deque.addFirst(obj, priority);      
    }
+   
 
-   public synchronized void addLast(Object obj, int priority)
+   public synchronized boolean addLast(Object obj, int priority)
    {
-      deque.addLast(obj, priority);
-   }
-
-   public synchronized boolean remove(Object obj)
-   {
-      return deque.remove(obj);
+      return deque.addLast(obj, priority);
    }
 
    public synchronized Object removeFirst()
    {
       return deque.removeFirst();
+   }
+   
+   public synchronized Object peekFirst()
+   {
+      return deque.peekFirst();
    }
 
    public synchronized void clear()

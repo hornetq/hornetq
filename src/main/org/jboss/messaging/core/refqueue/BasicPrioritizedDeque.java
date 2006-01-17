@@ -22,9 +22,7 @@
 package org.jboss.messaging.core.refqueue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A basic non synchronized PrioritizedDeque implementation. It implements this by maintaining an
@@ -47,35 +45,20 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
    
    protected int priorities;
    
-   protected Map lookUp;
-   
    public BasicPrioritizedDeque(int priorities)
    {
       this.priorities = priorities;
       init();
    }
    
-   public void addFirst(Object obj, int priority)
+   public boolean addFirst(Object obj, int priority)
    {
-      Node node = deques[priority].addFirst(obj);  
-      lookUp.put(obj, node);
+      return deques[priority].addFirst(obj);  
    }
 
-   public void addLast(Object obj, int priority)
+   public boolean addLast(Object obj, int priority)
    {
-      Node node = deques[priority].addLast(obj);    
-      lookUp.put(obj, node);
-   }
-
-   public boolean remove(Object obj)
-   {      
-      DoubleLinkedDeque.DequeNode node = (DoubleLinkedDeque.DequeNode)lookUp.remove(obj);
-      if (node == null)
-      {
-         return false;
-      }
-      node.remove();
-      return true;
+      return deques[priority].addLast(obj);    
    }
 
    public Object removeFirst()
@@ -91,6 +74,28 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       for (int i = priorities - 1; i >= 0; i--)
       {
          obj = deques[i].removeFirst();
+         if (obj != null)
+         {
+            break;
+         }
+      }
+      
+      return obj;      
+   }
+   
+   public Object peekFirst()
+   {
+      Object obj = null;
+      
+      //Initially we are just using a simple prioritization algorithm:
+      //Highest priority refs always get returned first.
+      //This could cause starvation of lower priority refs.
+      
+      //TODO - A better prioritization algorithm
+      
+      for (int i = priorities - 1; i >= 0; i--)
+      {
+         obj = deques[i].peekFirst();
          if (obj != null)
          {
             break;
@@ -123,7 +128,7 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       {
          deques[i] = new DoubleLinkedDeque();
       }
-      lookUp = new HashMap();
+      //lookUp = new HashMap();
    }
        
 }

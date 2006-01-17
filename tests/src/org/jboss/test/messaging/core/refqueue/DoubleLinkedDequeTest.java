@@ -143,72 +143,72 @@ public class DoubleLinkedDequeTest extends MessagingTestCase
       assertTrue(all.isEmpty());
    }
    
-   public void testRemove() throws Exception
-   {
-      deque.addLast(a);
-      Node nb = deque.addLast(b);
-      deque.addLast(c);
-      Node nc = deque.addLast(d);
-      deque.addLast(e);
-      
-      nb.remove();
-      nc.remove();
-      
-      Iterator iter = deque.getAll().iterator();
-      int count = 0;
-      while (iter.hasNext())
-      {
-         Object o = iter.next();
-         if (count == 0)
-         {
-            assertEquals(a, o);            
-         }
-         if (count == 1)
-         {
-            assertEquals(c, o);            
-         }
-         if (count == 2)
-         {
-            assertEquals(e, o);            
-         }
-         count++;
-      }
-      assertEquals(3, count);
-      
-   }
-   
-   public void testRemoveHeadAndTail() throws Exception
-   {
-      Node na = deque.addLast(a);
-      deque.addLast(b);
-      deque.addLast(c);
-      deque.addLast(d);
-      Node ne = deque.addLast(e);
-      
-      na.remove();
-      ne.remove();
-      
-      Iterator iter = deque.getAll().iterator();
-      int count = 0;
-      while (iter.hasNext())
-      {
-         Object o = iter.next();
-         if (count == 0)
-         {
-            assertEquals(b, o);            
-         }
-         if (count == 1)
-         {
-            assertEquals(c, o);            
-         }
-         if (count == 2)
-         {
-            assertEquals(d, o);            
-         }
-         count++;
-      }
-      assertEquals(3, count);
-      
-   }
+//   public void testRemove() throws Exception
+//   {
+//      deque.addLast(a);
+//      Node nb = deque.addLast(b);
+//      deque.addLast(c);
+//      Node nc = deque.addLast(d);
+//      deque.addLast(e);
+//      
+//      nb.remove();
+//      nc.remove();
+//      
+//      Iterator iter = deque.getAll().iterator();
+//      int count = 0;
+//      while (iter.hasNext())
+//      {
+//         Object o = iter.next();
+//         if (count == 0)
+//         {
+//            assertEquals(a, o);            
+//         }
+//         if (count == 1)
+//         {
+//            assertEquals(c, o);            
+//         }
+//         if (count == 2)
+//         {
+//            assertEquals(e, o);            
+//         }
+//         count++;
+//      }
+//      assertEquals(3, count);
+//      
+//   }
+//   
+//   public void testRemoveHeadAndTail() throws Exception
+//   {
+//      Node na = deque.addLast(a);
+//      deque.addLast(b);
+//      deque.addLast(c);
+//      deque.addLast(d);
+//      Node ne = deque.addLast(e);
+//      
+//      na.remove();
+//      ne.remove();
+//      
+//      Iterator iter = deque.getAll().iterator();
+//      int count = 0;
+//      while (iter.hasNext())
+//      {
+//         Object o = iter.next();
+//         if (count == 0)
+//         {
+//            assertEquals(b, o);            
+//         }
+//         if (count == 1)
+//         {
+//            assertEquals(c, o);            
+//         }
+//         if (count == 2)
+//         {
+//            assertEquals(d, o);            
+//         }
+//         count++;
+//      }
+//      assertEquals(3, count);
+//      
+//   }
    
 }
