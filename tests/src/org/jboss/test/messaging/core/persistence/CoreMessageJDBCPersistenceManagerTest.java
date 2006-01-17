@@ -66,12 +66,16 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-      super.setUp();
-      if (!ServerManagement.isRemote())
+      if (ServerManagement.isRemote())
       {
-         sc = new ServiceContainer("all");
-         sc.start();
+         fail("This test is not supposed to run remotely!");
       }
+
+      super.setUp();
+
+      sc = new ServiceContainer("all");
+      sc.start();
+
    }
 
    public void tearDown() throws Exception
@@ -86,8 +90,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddReference() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
@@ -122,8 +124,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRemoveReference() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
@@ -160,8 +160,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddRetrieveRemoveMessage() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
@@ -197,8 +195,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
    public void testGetMessageReferences() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
@@ -236,8 +232,6 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRemoveAllMessageData() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
@@ -276,110 +270,91 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
  
    public void testCommit_NotXA_Long_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(false, false, false);
    }
    
    public void testCommit_NotXA_Long_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       doTransactionCommit(false, false, true);
    }
    
    public void testCommit_NotXA_Guid_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(false, true, false);
    }
    
    public void testCommit_NotXA_Guid_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(false, true, true);
    }
          
    public void testCommit_XA_Long_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(true, false, false);
    }
    
    public void testCommit_XA_Long_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(true, false, true);
    }
    
    public void testCommit_XA_Guid_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(true, true, false);
    }
    
    public void testCommit_XA_Guid_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionCommit(true, true, true);
    }
    
    public void testRollback_NotXA_Long_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(false, false, false);
    }
    
    public void testRollback_NotXA_Long_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(false, false, true);
    }
    
    public void testRollback_NotXA_Guid_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(false, true, false);
    }
    
    public void testRollback_NotXA_Guid_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(false, true, true);
    }
          
    public void testRollback_XA_Long_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(true, false, false);
    }
    
    public void testRollback_XA_Long_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(true, false, true);
    }
    
    public void testRollback_XA_Guid_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(true, true, false);
    }
    
    public void testRollback_XA_Guid_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       doTransactionRollback(true, true, true);
    }
    
    public void testRetrievePreparedTransactions_Long() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       retrievePreparedTransactions(false);
    }
    
    public void testRetrievePreparedTransactions_Guid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       retrievePreparedTransactions(true);
    }
    
@@ -437,29 +412,23 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testNonXARecovery_Long_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       nonXARecovery(false, true);
    }
    
    public void testNonXARecovery_Long_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       nonXARecovery(false, false);
    }
    
    public void testNonXARecovery_Guid_StoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       nonXARecovery(true, true);
    }
    
    public void testNonXARecovery_Guid_NotStoreXid() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       nonXARecovery(true, false);
    }
-   
-
    
    protected void nonXARecovery(boolean guid, boolean storeXid) throws Exception
    {
