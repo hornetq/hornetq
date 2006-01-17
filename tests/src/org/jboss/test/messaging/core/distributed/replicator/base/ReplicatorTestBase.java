@@ -21,26 +21,25 @@
 */
 package org.jboss.test.messaging.core.distributed.replicator.base;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-
-import java.util.Set;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The test strategy is to try as many combination as it makes sense of the following

@@ -339,6 +339,7 @@ public class NonRecoverableState implements State
             
             if (first)
             {
+               //No need to call prompt delivery if there are already messages in the queue
                channel.deliver(null);
             }
          }

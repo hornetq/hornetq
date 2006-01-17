@@ -21,17 +21,15 @@
 */
 package org.jboss.test.messaging.core.message;
 
-import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.PersistentMessageStore;
-import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

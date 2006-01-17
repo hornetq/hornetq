@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.messaging.core.refqueue.DoubleLinkedDeque;
-import org.jboss.messaging.core.refqueue.Node;
 import org.jboss.test.messaging.MessagingTestCase;
 
 /**

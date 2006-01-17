@@ -21,8 +21,6 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
-import org.jboss.tm.TxManager;
-
 import javax.transaction.TransactionManager;
 
 

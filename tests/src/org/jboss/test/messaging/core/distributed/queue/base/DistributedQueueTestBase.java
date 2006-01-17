@@ -21,14 +21,13 @@
 */
 package org.jboss.test.messaging.core.distributed.queue.base;
 
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import java.util.List;
+
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.DistributedChannelTestBase;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

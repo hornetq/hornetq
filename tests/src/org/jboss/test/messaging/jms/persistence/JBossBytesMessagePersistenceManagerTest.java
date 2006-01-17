@@ -26,7 +26,6 @@ import java.util.Map;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
