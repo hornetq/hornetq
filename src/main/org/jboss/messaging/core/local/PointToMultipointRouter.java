@@ -66,7 +66,7 @@ public class PointToMultipointRouter implements Router
    {
       Set deliveries = new HashSet();
 
-      //synchronizing this is going to produce a bottleneck, do we really need to?
+      // TODO synchronizing this is going to produce a bottleneck, do we really need to?
       synchronized(receivers)
       {
          for(Iterator i = receivers.iterator(); i.hasNext(); )

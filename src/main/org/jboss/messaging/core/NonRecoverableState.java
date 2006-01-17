@@ -155,7 +155,7 @@ public class NonRecoverableState implements State
          //In this case we don't want to add the message reference back into the state
          //since it was never removed in the first place
          
-         if (log.isTraceEnabled()) { log.trace(this + "Can't find delivery " + del + " in state so not replacing messsage ref"); }
+         if (log.isTraceEnabled()) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
       }
       else
       {         
