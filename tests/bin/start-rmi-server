@@ -57,6 +57,7 @@ $reldir/../../../thirdparty/apache-httpclient/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../../common/output/lib/jboss-common.jar${SEP}\
+$reldir/../../../common/output/lib/jboss-xml-binding.jar${SEP}\
 $reldir/../../../system/output/lib/jboss-system.jar${SEP}\
 $reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
 $reldir/../../../security/output/lib/jbosssx.jar${SEP}\
