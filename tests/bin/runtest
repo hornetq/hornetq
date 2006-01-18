@@ -69,8 +69,8 @@ done
 
 JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST"
 
-REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
-#REMOTING_LIB=$reldir/../resources/jboss-remoting.jar
+#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
+REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
 
 JGROUPS_LIB=$reldir/../../../thirdparty/jgroups/lib/jgroups.jar
 #JGROUPS_LIB=$reldir/../resources/jgroups-core.jar

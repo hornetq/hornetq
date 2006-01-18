@@ -24,41 +24,57 @@ package org.jboss.messaging.core.refqueue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.logging.Logger;
+
 /**
  * A basic non synchronized PrioritizedDeque implementation. It implements this by maintaining an
- * individual DoubleLinkedDeque for each priority level. This should give significantly better
+ * individual SingleLinkedDeque for each priority level. This should give significantly better
  * performance than storing all objects in the same list and applying some kind of ordering.<br>
+ * 
+ * Adds cannot execute concurrently, but an add can execute concurrently with a remove
  *
- * It also maintains a Map of references to Nodes to allow fast removes from the middle. Currently
- * it has a simple priority algorithm that always returns objects with the highest priority first,
- * if available (which can cause starvation).<br>
- * 
- * This class is not synchronized.
- * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class BasicPrioritizedDeque implements PrioritizedDeque
 {
-   protected DoubleLinkedDeque[] deques;
+   private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
+      
+   protected SingleLinkedDeque[] deques;
    
    protected int priorities;
+   
+   protected Object addLock;
    
    public BasicPrioritizedDeque(int priorities)
    {
       this.priorities = priorities;
-      init();
+      this.addLock = new Object();
+      initDeques();
    }
    
    public boolean addFirst(Object obj, int priority)
    {
-      return deques[priority].addFirst(obj);  
+      synchronized (addLock)
+      {      
+         deques[priority].addFirst(obj); 
+         
+         //Now check if there is exactly one Object
+         return containsOne();         
+      }
    }
-
+   
    public boolean addLast(Object obj, int priority)
    {
-      return deques[priority].addLast(obj);    
+      synchronized (addLock)
+      {
+         deques[priority].addLast(obj);
+         
+         //Now check if there is exactly one Object
+         return containsOne();
+      }
    }
 
    public Object removeFirst()
@@ -110,25 +126,37 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       List all = new ArrayList();
       for (int i = priorities - 1; i >= 0; i--)
       {
-         DoubleLinkedDeque queue = deques[i];
-         all.addAll(queue.getAll());
+         SingleLinkedDeque deque = deques[i];
+         all.addAll(deque.getAll());
       }
       return all;
    }
    
    public void clear()
    {
-      init();
+      initDeques();
    }
    
-   protected void init()
+   protected void initDeques()
    {      
-      deques = new DoubleLinkedDeque[priorities];
+      deques = new SingleLinkedDeque[priorities];
       for (int i = 0; i < priorities; i++)
       {
-         deques[i] = new DoubleLinkedDeque();
+         deques[i] = new SingleLinkedDeque();
       }
-      //lookUp = new HashMap();
    }
-       
+   
+   protected boolean containsOne()
+   {
+      int count = 0;
+      for (int i = 0; i < priorities; i++)
+      {
+         count += deques[i].size();            
+         if (count > 1)
+         {
+            break;        
+         }
+      }
+      return count == 1;
+   }       
 }

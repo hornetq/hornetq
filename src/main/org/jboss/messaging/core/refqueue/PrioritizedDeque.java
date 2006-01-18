@@ -30,12 +30,12 @@ import java.util.List;
  * Also allows removes from the middle.
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public interface PrioritizedDeque
 {
-
    boolean addFirst(Object obj, int priority);
    
    boolean addLast(Object obj, int priority);
@@ -46,6 +46,5 @@ public interface PrioritizedDeque
    
    List getAll();
    
-   void clear();
-   
+   void clear();   
 }

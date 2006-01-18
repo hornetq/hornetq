@@ -74,6 +74,131 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    {
       super.tearDown();
    }
+   
+   public void testContainsOne() throws Exception
+   {
+      boolean one = deque.addFirst(a, 0);
+      assertTrue(one);
+      one = deque.addFirst(a, 0);
+      assertFalse(one);
+            
+      one = deque.addFirst(b, 1);
+      assertFalse(one);
+      one = deque.addFirst(b, 1);
+      assertFalse(one);
+      
+      one = deque.addFirst(c, 2);
+      assertFalse(one);
+      one = deque.addFirst(c, 2);
+      assertFalse(one);
+      
+      one = deque.addFirst(d, 3);
+      assertFalse(one);
+      one = deque.addFirst(d, 3);
+      assertFalse(one);
+      
+      one = deque.addFirst(e, 4);
+      assertFalse(one);
+      one = deque.addFirst(e, 4);
+      assertFalse(one);
+      
+      one = deque.addFirst(f, 5);
+      assertFalse(one);
+      one = deque.addFirst(f, 5);
+      assertFalse(one);
+      
+      one = deque.addFirst(g, 6);
+      assertFalse(one);
+      one = deque.addFirst(g, 6);
+      assertFalse(one);
+      
+      one = deque.addFirst(h, 7);
+      assertFalse(one);
+      one = deque.addFirst(h, 7);
+      assertFalse(one);
+      
+      one = deque.addFirst(i, 8);
+      assertFalse(one);
+      one = deque.addFirst(i, 8);
+      assertFalse(one);
+            
+      one = deque.addFirst(j, 9);
+      assertFalse(one);
+      one = deque.addFirst(j, 9);
+      assertFalse(one);
+      
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      deque.removeFirst();
+      
+      one = deque.addLast(a, 0);
+      assertTrue(one);
+      one = deque.addLast(a, 0);
+      assertFalse(one);
+            
+      one = deque.addLast(b, 1);
+      assertFalse(one);
+      one = deque.addLast(b, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(c, 1);
+      assertFalse(one);
+      one = deque.addLast(c, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(d, 1);
+      assertFalse(one);
+      one = deque.addLast(d, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(e, 1);
+      assertFalse(one);
+      one = deque.addLast(e, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(f, 1);
+      assertFalse(one);
+      one = deque.addLast(f, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(g, 1);
+      assertFalse(one);
+      one = deque.addLast(g, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(h, 1);
+      assertFalse(one);
+      one = deque.addLast(h, 1);
+      assertFalse(one);
+      
+      one = deque.addLast(i, 1);
+      assertFalse(one);
+      one = deque.addLast(i, 1);
+      assertFalse(one);
+            
+      one = deque.addLast(j, 1);
+      assertFalse(one);
+      one = deque.addLast(j, 1);
+      assertFalse(one);
+      
+   }
 
    
    public void testAddFirst() throws Exception

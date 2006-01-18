@@ -84,7 +84,7 @@ public class MessagingTestCase extends TestCase
          "####################################################### Stop test: " + getName();
 
       log.info(banner);
-
+      
       if (isRemote())
       {
          // log the test stop in the remote log, this will make hunting through logs so much easier

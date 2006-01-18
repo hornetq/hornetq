@@ -71,7 +71,7 @@
       <path location="../src/resources/hsqldb.jar"/>
       <path location="../src/resources/jcommon-1.0.0-rc1.jar"/>
       <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>
-      <!-- <path location="../src/resources/jboss-remoting.jar"/> -->
+      <path location="../src/resources/jboss-remoting.jar"/>
 
    </path>
 
@@ -101,7 +101,7 @@
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.naming.classpath"/>
       <path refid="jboss.server.classpath"/>
-      <path refid="jboss.remoting.classpath"/>
+      <!-- <path refid="jboss.remoting.classpath"/> -->
       <path refid="jboss.security.classpath"/>
 
       <!-- these are only required to compile test support -->
@@ -231,8 +231,8 @@
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer">
          <classpath>
             <path refid="jboss.common.classpath"/>
-            <!-- <path location="../src/resources/jboss-remoting.jar"/> -->
-            <path refid="jboss.remoting.classpath"/>
+            <path location="../src/resources/jboss-remoting.jar"/>
+            <!-- <path refid="jboss.remoting.classpath"/> -->
             <path refid="jboss.j2se.classpath"/>
             <path refid="jboss.system.classpath"/>
             <pathelement location="${module.root}/etc"/>

@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.refqueue;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -29,18 +30,23 @@ import java.util.List;
  * A double ended queue.
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public interface Deque
 {
-   boolean addFirst(Object obj);
+   void addFirst(Object obj);
    
-   boolean addLast(Object obj);
+   void addLast(Object obj);
    
    Object removeFirst();
    
    Object peekFirst();
+   
+   Iterator iterator();
+   
+   int size();
          
    List getAll();
    

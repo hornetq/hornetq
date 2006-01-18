@@ -176,7 +176,7 @@ public class ConnectionAspect implements ConnectionListener
    
    // ConnectionListener implementation -----------------------------------------------------------
    
-   public void handlerConnectionException(Throwable t, Client c)
+   public void handleConnectionException(Throwable t, Client c)
    {
       if (log.isTraceEnabled())
       {

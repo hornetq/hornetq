@@ -22,21 +22,20 @@
 package org.jboss.messaging.core;
 
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
-import org.jboss.messaging.core.refqueue.BasicSynchronizedPrioritizedDeque;
 import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.util.ConcurrentHashSet;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -74,7 +73,7 @@ public class NonRecoverableState implements State
    {
       this.channel = channel;
       this.acceptReliableMessages = acceptReliableMessages;
-      messageRefs = new BasicSynchronizedPrioritizedDeque(new BasicPrioritizedDeque(10));
+      messageRefs = new BasicPrioritizedDeque(10);
       deliveries = new ConcurrentHashSet();
       txToAddReferenceCallbacks = new ConcurrentHashMap();
       txToRemoveDeliveryCallbacks = new ConcurrentHashMap();
