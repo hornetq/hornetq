@@ -7,8 +7,9 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.core.base.StateTestBase;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.RecoverableState;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

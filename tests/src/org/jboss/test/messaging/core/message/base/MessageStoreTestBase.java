@@ -27,10 +27,10 @@ import java.util.Map;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 
 /**
@@ -88,7 +88,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected ServiceContainer sc;
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
 
    protected Map headers;
 

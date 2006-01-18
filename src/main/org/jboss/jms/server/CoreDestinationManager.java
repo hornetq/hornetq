@@ -124,7 +124,7 @@ class CoreDestinationManager
       // TODO I am using LocalQueues for the time being, switch to distributed Queues
       if (isQueue)
       {
-         cd = new Queue(name, sp.getMessageStore(), sp.getTransactionLogDelegate());
+         cd = new Queue(name, sp.getMessageStoreDelegate(), sp.getTransactionLogDelegate());
          
          try
          {
@@ -144,7 +144,7 @@ class CoreDestinationManager
       else
       {
          // TODO I am using LocalTopics for the time being, switch to distributed Topics
-         cd = new Topic(name, sp.getMessageStore());
+         cd = new Topic(name, sp.getMessageStoreDelegate());
          
          topicMap.put(name, cd);
          

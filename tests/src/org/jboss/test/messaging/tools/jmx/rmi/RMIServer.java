@@ -31,7 +31,7 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.messaging.core.MessageStore;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
 
@@ -101,6 +101,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
    // service dependencies
    private ObjectName threadPoolObjectName;
    private ObjectName transactionLogObjectName;
+   private ObjectName messageStoreObjectName;
    private ObjectName durableSubscriptionStoreObjectName;
 
    // the server MBean itself
@@ -254,6 +255,13 @@ public class RMIServer extends UnicastRemoteObject implements Server
       sc.invoke(transactionLogObjectName, "start", new Object[0], new String[0]);
       serverPeer.setTransactionLog(transactionLogObjectName); // inject dependency into server peer
 
+      MBeanConfigurationElement messageStoreConfig =
+         (MBeanConfigurationElement)sdd.query("service", "MessageStore").iterator().next();
+      messageStoreObjectName = sc.registerAndConfigureService(messageStoreConfig);
+      sc.invoke(transactionLogObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(transactionLogObjectName, "start", new Object[0], new String[0]);
+      serverPeer.setMessageStore(messageStoreObjectName); // inject dependency into server peer
+
       MBeanConfigurationElement durableSubscriptionStoreConfig =
          (MBeanConfigurationElement)sdd.query("service", "DurableSubscriptionStore").iterator().next();
       durableSubscriptionStoreObjectName = sc.registerAndConfigureService(durableSubscriptionStoreConfig);
@@ -278,17 +286,21 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
       log.debug("stopping ServerPeer's plug-in dependencies");
 
-      sc.invoke(threadPoolObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(threadPoolObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(threadPoolObjectName);
+      sc.invoke(durableSubscriptionStoreObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(durableSubscriptionStoreObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(durableSubscriptionStoreObjectName);
+
+      sc.invoke(messageStoreObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(messageStoreObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(messageStoreObjectName);
 
       sc.invoke(transactionLogObjectName, "stop", new Object[0], new String[0]);
       sc.invoke(transactionLogObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(transactionLogObjectName);
 
-      sc.invoke(durableSubscriptionStoreObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(durableSubscriptionStoreObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(durableSubscriptionStoreObjectName);
+      sc.invoke(threadPoolObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(threadPoolObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(threadPoolObjectName);
    }
 
    /**
@@ -318,10 +330,17 @@ public class RMIServer extends UnicastRemoteObject implements Server
       return remoting.getConnector();
    }
 
-   public MessageStore getMessageStore() throws Exception
+   /**
+    * Only for in-VM use!
+    */
+   public MessageStoreDelegate getMessageStore() throws Exception
    {
-      //TODO
-      return serverPeer.getMessageStore();
+      if (isRemote())
+      {
+         throw new IllegalStateException("This method shouldn't be invoked on a remote server");
+      }
+
+      return serverPeer.getMessageStoreDelegate();
    }
 
    public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate() throws Exception

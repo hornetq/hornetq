@@ -29,9 +29,10 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
+
 
 /**
  * TODO Not used yoet.
@@ -85,7 +86,7 @@ public class CachingInterceptor implements Interceptor
                   if (log.isTraceEnabled()) log.trace("caching message " + id);
 
                   ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();
-                  MessageStore ms = spd.getServerPeer().getMessageStore();
+                  MessageStoreDelegate ms = spd.getServerPeer().getMessageStoreDelegate();
 
                   MessageReference r = ms.reference((org.jboss.messaging.core.Message)m);
 

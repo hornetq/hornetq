@@ -91,7 +91,7 @@ public class TransactionalReceiver extends Receiver
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
-               Integer msgCount = Integer.valueOf(m.getIntProperty("MSG_NUMBER"));  
+               Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
                
                log.trace(this + "Received message(commit): " + prodName + ":" + msgCount);
                
@@ -151,7 +151,7 @@ public class TransactionalReceiver extends Receiver
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");               
-               Integer msgCount = Integer.valueOf(m.getIntProperty("MSG_NUMBER"));
+               Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
                
                log.trace("Received message(rollback): " + prodName + ":" + msgCount);
                

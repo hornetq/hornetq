@@ -340,6 +340,7 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="org/jboss/test/messaging/jms/server/plugin/**"/>
                <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
+               <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
             </fileset>
          </batchtest>
       </junit>

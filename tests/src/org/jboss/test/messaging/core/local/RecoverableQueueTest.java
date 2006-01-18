@@ -22,10 +22,11 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -29,8 +29,8 @@ import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.util.RpcServer;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.message.InMemoryMessageStore;
+import org.jboss.jms.server.plugin.InMemoryMessageStore;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -60,7 +60,7 @@ public abstract class PeerTestBase extends MessagingTestCase
    protected Peer peer, peer2, peer3;
 
    // will be shared, but it doesn't matter, the test doesn't use it anyway
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
 
    // Constructors --------------------------------------------------
 
@@ -944,7 +944,9 @@ public abstract class PeerTestBase extends MessagingTestCase
    
    // Protected -----------------------------------------------------
 
-   protected abstract Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d);
+   protected abstract Distributed createDistributed(String name,
+                                                    MessageStoreDelegate ms,
+                                                    RpcDispatcher d);
 
    // Private -------------------------------------------------------
 

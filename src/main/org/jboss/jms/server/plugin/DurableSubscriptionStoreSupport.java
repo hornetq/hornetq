@@ -14,9 +14,9 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -134,10 +134,10 @@ public abstract class DurableSubscriptionStoreSupport
    }
 
    // TODO this should go away! Replace it with proper dependencies.
-   private MessageStore ms;
+   private MessageStoreDelegate ms;
 
    // TODO this should go away! Replace it with proper dependencies.
-   public void setMessageStore(MessageStore ms)
+   public void setMessageStore(MessageStoreDelegate ms)
    {
       this.ms = ms;
    }

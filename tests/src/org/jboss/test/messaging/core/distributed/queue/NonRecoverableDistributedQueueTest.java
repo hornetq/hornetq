@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.distributed.queue;
 
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

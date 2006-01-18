@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.server.plugin.contract;
 
+import org.jboss.messaging.core.plugin.contract.ServerPlugin;
+
 /**
  * A thread pool contract. The pool implementation controls how threads are allocated to deliver
  * messages to consumers.

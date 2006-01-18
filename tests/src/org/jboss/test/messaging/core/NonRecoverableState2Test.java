@@ -7,10 +7,11 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.core.base.StateTestBase;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.NonRecoverableState;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 
 
 /**

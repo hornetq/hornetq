@@ -30,13 +30,13 @@ import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.util.RpcServer;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -60,7 +60,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected MessageStore ms2, ms3;
+   protected MessageStoreDelegate ms2, ms3;
    protected Channel channel2, channel3;
 
    // Constructors --------------------------------------------------

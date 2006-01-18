@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.message;
+package org.jboss.jms.server.plugin;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -27,18 +27,18 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
+import org.jboss.messaging.core.message.WeakMessageReference;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * A MessageStore implementation that stores messages in an in-memory cache.
  * 
- * This message store, stores one instance of the actual message in memory
- * and returns new WeakMessageReference instances to those messages via one
- * of the reference() methods.
- * Calling one of the reference() methods causes the reference count for the message to
- * be increased.
+ * It stores one instance of the actual message in memory and returns new WeakMessageReference
+ * instances to those messages via one of the reference() methods. Calling one of the reference()
+ * methods causes the reference count for the message to be increased.
  *   
  * TODO - do spillover onto disc at low memory by reusing jboss mq message cache.
  *
@@ -48,7 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  *
  * $Id$
  */
-public class InMemoryMessageStore implements MessageStore
+public class InMemoryMessageStore extends ServiceMBeanSupport implements MessageStoreDelegate
 {
    // Constants -----------------------------------------------------
 
@@ -67,12 +67,25 @@ public class InMemoryMessageStore implements MessageStore
 
    // Constructors --------------------------------------------------
 
+   public InMemoryMessageStore(boolean acceptReliableMessages)
+   {
+      this(null, acceptReliableMessages);
+   }
+
+   /**
+    * TODO get rid of this
+    * @param storeID
+    */
    public InMemoryMessageStore(Serializable storeID)
    {
       // by default, a memory message store DOES NOT accept reliable messages
       this(storeID, false);
    }
 
+   /**
+    * TODO get rid of this
+    * @param storeID
+    */
    public InMemoryMessageStore(Serializable storeID, boolean acceptReliableMessages)
    {
       this.storeID = storeID;
@@ -84,7 +97,24 @@ public class InMemoryMessageStore implements MessageStore
       log.debug(this + " initialized");
    }
 
-   // MessageStore implementation -----------------------------------
+   // ServiceMBeanSupport overrides ---------------------------------
+
+   protected void startService() throws Exception
+   {
+      log.debug(this + " started");
+   }
+
+   protected void stopService() throws Exception
+   {
+      log.debug(this + " stopped");
+   }
+
+   // MessageStoreDelegate implementation ---------------------------
+
+   public Object getInstance()
+   {
+      return this;
+   }
 
    public Serializable getStoreID()
    {
@@ -101,7 +131,6 @@ public class InMemoryMessageStore implements MessageStore
       return acceptReliableMessages;
    }
 
- 
    public MessageReference reference(Message m)
    {
       if (m.isReliable() && !acceptReliableMessages)
@@ -126,7 +155,6 @@ public class InMemoryMessageStore implements MessageStore
 
       return ref;
    }
-   
 
    /* Create a reference from a message id. The message id must correspond to a message
     * already known to the store
@@ -165,9 +193,7 @@ public class InMemoryMessageStore implements MessageStore
       
       return ref;
    }
-   
-   
-   
+
    public Message retrieveMessage(String messageId) throws Exception
    {
       MessageHolder holder = (MessageHolder)messages.get(messageId);
@@ -220,8 +246,12 @@ public class InMemoryMessageStore implements MessageStore
       }
    }
    
-
    // Public --------------------------------------------------------
+
+   public void setStoreID(String storeID)
+   {
+      this.storeID = storeID;
+   }
 
    public String toString()
    {
@@ -279,5 +309,4 @@ public class InMemoryMessageStore implements MessageStore
          return msg;
       }
    }
-        
 }

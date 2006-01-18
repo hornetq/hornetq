@@ -64,8 +64,7 @@
    </attribute>
 
 
-
-
+   <!-- plugins ObjectNames -->
 
    <attribute access="read-write" getMethod="getThreadPool" setMethod="setThreadPool">
       <description>The ObjectName of the thread pool plugin</description>
@@ -76,6 +75,12 @@
    <attribute access="read-write" getMethod="getTransactionLog" setMethod="setTransactionLog">
       <description>The ObjectName of the transaction log</description>
       <name>TransactionLog</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getMessageStore" setMethod="setTransactionLog">
+      <description>The ObjectName of the message store</description>
+      <name>MessageStore</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 

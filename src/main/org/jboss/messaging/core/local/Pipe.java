@@ -22,8 +22,8 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 
 
@@ -42,17 +42,17 @@ public class Pipe extends ChannelSupport
    
    // Constructors --------------------------------------------------
 
-   public Pipe(String name, MessageStore ms)
+   public Pipe(String name, MessageStoreDelegate ms)
    {
       this(name, ms, null);
    }
    
-   public Pipe(String name, MessageStore ms, TransactionLogDelegate tl)
+   public Pipe(String name, MessageStoreDelegate ms, TransactionLogDelegate tl)
    {
       this(name, ms, tl, false);
    }
 
-   public Pipe(String name, MessageStore ms, TransactionLogDelegate tl,
+   public Pipe(String name, MessageStoreDelegate ms, TransactionLogDelegate tl,
                boolean acceptReliableMessages)
    {
       super(name, ms, tl, acceptReliableMessages);

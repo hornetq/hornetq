@@ -106,7 +106,7 @@ public class Transactional2PCReceiver extends Receiver
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
-               Integer msgCount = Integer.valueOf(m.getIntProperty("MSG_NUMBER"));  
+               Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
                
                Count count = (Count)counts.get(prodName);
                if (count == null)
@@ -173,7 +173,7 @@ public class Transactional2PCReceiver extends Receiver
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");               
-               Integer msgCount = Integer.valueOf(m.getIntProperty("MSG_NUMBER"));
+               Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
                
                Count count = (Count)counts.get(prodName);
                if (count == null)

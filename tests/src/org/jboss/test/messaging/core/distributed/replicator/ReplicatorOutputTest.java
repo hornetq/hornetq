@@ -23,9 +23,9 @@ package org.jboss.test.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.core.distributed.SimpleViewKeeper;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**
@@ -81,7 +81,7 @@ public class ReplicatorOutputTest extends PeerTestBase
    
    // Protected -----------------------------------------------------
 
-   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
+   protected Distributed createDistributed(String name, MessageStoreDelegate ms, RpcDispatcher d)
    {
       return new ReplicatorOutput(name, d, ms, null);
    }

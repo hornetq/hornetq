@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.distributed.topic;
 
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Delivery;
@@ -31,6 +30,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 
 /**
@@ -56,7 +56,7 @@ class RemoteTopic extends ChannelSupport
    // Constructors --------------------------------------------------
 
    protected RemoteTopic(String topicName,
-                         MessageStore ms,
+                         MessageStoreDelegate ms,
                          TransactionLogDelegate tl,
                          Replicator replicator)
    {

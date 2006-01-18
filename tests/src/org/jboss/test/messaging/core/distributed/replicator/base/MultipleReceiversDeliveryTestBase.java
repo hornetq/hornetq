@@ -12,10 +12,10 @@ import org.jboss.test.messaging.core.base.DeliveryTestBase;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.messaging.core.distributed.replicator.MultipleReceiversDelivery;
 import org.jboss.messaging.core.distributed.replicator.Acknowledgment;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.message.InMemoryMessageStore;
+import org.jboss.jms.server.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 import java.io.Serializable;
 
@@ -37,7 +37,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
    // Attributes ----------------------------------------------------
 
    protected SimpleDeliveryObserver observer;
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
    protected MessageReference ref;
 
    // Constructors --------------------------------------------------
@@ -243,8 +243,6 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
 
    /**
     * Three receivers that ACCEPT, REJECT and CANCEL.
-    *
-    * @see ReplicatorTestBase#testMixedAcknowledgments
     */
    public void testMixedAcknowledgments() throws Throwable
    {

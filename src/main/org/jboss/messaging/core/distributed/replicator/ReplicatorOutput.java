@@ -34,13 +34,13 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.MessageListener;
 import org.jgroups.ChannelListener;
 import org.jgroups.Address;
@@ -80,7 +80,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
    
    // Attributes ----------------------------------------------------
 
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
    protected Receiver receiver;
    protected ChannelListener channelListener;
    protected DelegatingMessageListener messageListener;
@@ -89,7 +89,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
    // Constructors --------------------------------------------------
 
    public ReplicatorOutput(Serializable replicatorID, RpcDispatcher dispatcher,
-                           MessageStore ms, Receiver receiver)
+                           MessageStoreDelegate ms, Receiver receiver)
    {
       super(new GUID().toString(), replicatorID, dispatcher);
       this.ms = ms;

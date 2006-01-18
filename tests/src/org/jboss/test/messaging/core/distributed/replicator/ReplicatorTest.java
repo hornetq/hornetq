@@ -23,8 +23,8 @@ package org.jboss.test.messaging.core.distributed.replicator;
 
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.core.distributed.replicator.base.ReplicatorTestBase;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**
@@ -71,7 +71,7 @@ public class ReplicatorTest extends ReplicatorTestBase
    
    // Protected -----------------------------------------------------
 
-   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
+   protected Distributed createDistributed(String name, MessageStoreDelegate ms, RpcDispatcher d)
    {
       // replicator doesn't cancel an active delivery on message rejection.
       return new Replicator(name, d, ms, false);

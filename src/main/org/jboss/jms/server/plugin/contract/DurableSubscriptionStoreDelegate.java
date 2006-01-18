@@ -7,6 +7,7 @@
 package org.jboss.jms.server.plugin.contract;
 
 import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.plugin.contract.ServerPlugin;
 
 import javax.jms.JMSException;
 import java.util.Set;

@@ -25,10 +25,10 @@ package org.jboss.messaging.core.local;
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.util.Util;
 import org.jboss.util.id.GUID;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 /**
  * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold
@@ -53,13 +53,13 @@ public class Subscription extends Pipe
    
    // Constructors --------------------------------------------------
 
-   public Subscription(Topic topic, String selector, MessageStore ms)
+   public Subscription(Topic topic, String selector, MessageStoreDelegate ms)
    {
       this("sub" + new GUID().toString(), topic, selector, ms, null);
    }
    
    protected Subscription(String name, Topic topic, String selector,
-                          MessageStore ms, TransactionLogDelegate tl)
+                          MessageStoreDelegate ms, TransactionLogDelegate tl)
    {
       // A Subscription must accept reliable messages, even if itself is non-recoverable
       super(name, ms, tl, true);

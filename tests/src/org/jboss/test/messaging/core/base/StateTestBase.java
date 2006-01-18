@@ -13,7 +13,6 @@ import java.util.List;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.SimpleDelivery;
@@ -23,6 +22,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 
 /**
@@ -59,7 +59,7 @@ public abstract class StateTestBase extends MessagingTestCase
    protected ServiceContainer sc;
    protected TransactionRepository tr;
    protected TransactionLogDelegate transactionLogDelegate;
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
    protected State state;
    protected Channel channel;
 

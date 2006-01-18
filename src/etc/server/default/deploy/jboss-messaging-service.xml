@@ -87,6 +87,12 @@
       <attribute name="DataSource">java:/DefaultDS</attribute>
    </mbean>
 
+   <mbean code="org.jboss.jms.server.plugin.PersistentMessageStore"
+      name="jboss.messaging:service=MessageStore"
+      xmbean-dd="xmdesc/PersistentMessageStore-xmbean.xml">
+      <depends>jboss.messaging:service=TransactionLog</depends>
+   </mbean>
+
    <mbean code="org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore"
       name="jboss.messaging:service=DurableSubscriptionStore"
       xmbean-dd="xmdesc/JDBCDurableSubscriptionStore-xmbean.xml">

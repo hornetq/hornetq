@@ -30,8 +30,8 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -66,6 +66,11 @@ public class ReferencingTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
+      if (ServerManagement.isRemote())
+      {
+         fail("this test is not supposed to run in a remote configuration!");
+      }
+
       super.setUp();
       ServerManagement.start("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
@@ -92,9 +97,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testAutoAck1() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -122,9 +125,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testAutoAck2() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -154,9 +155,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testClientAck1() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -191,9 +190,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testClientAck2() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -230,9 +227,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testRedelivery() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -281,9 +276,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testTransactionCommit() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -317,9 +310,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testTransactionRollback() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -364,9 +355,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void cancelTest() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
-      MessageStore store = ServerManagement.getMessageStore();
+      MessageStoreDelegate store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -412,7 +401,6 @@ public class ReferencingTest extends MessagingTestCase
       
       assertNull(ref);
    }
-   
    
 }
 

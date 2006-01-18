@@ -17,11 +17,11 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 /**
  * A test Channel implementation.
@@ -42,12 +42,12 @@ public class SimpleChannel implements Channel
    // Attributes ----------------------------------------------------
 
    private String channelID;
-   private MessageStore ms;
+   private MessageStoreDelegate ms;
    private boolean deliveryNotification = false;
 
    // Constructors --------------------------------------------------
 
-   public SimpleChannel(String channelID, MessageStore ms)
+   public SimpleChannel(String channelID, MessageStoreDelegate ms)
    {
       this.channelID = channelID;
       this.ms = ms;
@@ -80,7 +80,7 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
 
-   public MessageStore getMessageStore()
+   public MessageStoreDelegate getMessageStore()
    {
       return ms;
    }

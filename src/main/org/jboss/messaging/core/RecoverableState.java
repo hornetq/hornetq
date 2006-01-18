@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -49,7 +50,7 @@ public class RecoverableState extends NonRecoverableState
    private TransactionLogDelegate pm;
    private Serializable channelID;
    private Serializable storeID;
-   private MessageStore messageStore;
+   private MessageStoreDelegate messageStore;
 
    // Constructors --------------------------------------------------
 

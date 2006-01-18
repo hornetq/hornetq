@@ -19,13 +19,14 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.message;
+package org.jboss.jms.server.plugin;
 
 import java.io.Serializable;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.message.WeakMessageReference;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 
 /**
@@ -45,15 +46,21 @@ public class PersistentMessageStore extends InMemoryMessageStore
    
    // Attributes ----------------------------------------------------
 
-   private TransactionLogDelegate pm;
+   private TransactionLogDelegate tl;
 
    // Constructors --------------------------------------------------
 
-   public PersistentMessageStore(Serializable storeID, TransactionLogDelegate pm)
+   public PersistentMessageStore()
+   {
+      super(true);
+   }
+
+   // TODO get rid of this
+   public PersistentMessageStore(Serializable storeID, TransactionLogDelegate tl)
    {
       super(storeID, true);
       
-      this.pm = pm;
+      this.tl = tl;
    }
 
    // MessageStore overrides ----------------------------------------
@@ -73,7 +80,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
       {         
          try
          {
-            pm.storeMessage(m);
+            tl.storeMessage(m);
          }
          catch (Exception e)
          {
@@ -124,7 +131,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
       
       if (m == null)
       {
-         m = pm.retrieveMessage(messageId);
+         m = tl.retrieveMessage(messageId);
          
          if (m != null)
          {
@@ -137,13 +144,17 @@ public class PersistentMessageStore extends InMemoryMessageStore
       
       return m;      
    }
-   
 
    // Public --------------------------------------------------------
 
-   public TransactionLogDelegate getPersistenceManager()
+   public void setTransactionLog(TransactionLogDelegate tl)
    {
-      return pm;
+      this.tl = tl;
+   }
+
+   public TransactionLogDelegate getTransactionLog()
+   {
+      return tl;
    }
 
    public String toString()
@@ -162,7 +173,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
       if (reliable)
       {
          if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + messageId + " on disk"); }
-         pm.removeMessage(messageId);
+         tl.removeMessage(messageId);
          if (log.isTraceEnabled()) { log.trace(messageId + " removed (or reference count decremented) on disk"); }
       }
    }

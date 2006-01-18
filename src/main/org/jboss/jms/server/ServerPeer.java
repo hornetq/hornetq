@@ -50,12 +50,11 @@ import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.messaging.core.message.PersistentMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
@@ -115,7 +114,6 @@ public class ServerPeer
    protected ThreadPoolDelegate threadPoolDelegate;
    protected ObjectName transactionLogObjectName;
    protected TransactionLogDelegate transactionLogDelegate;
-   protected MessageStore ms; // TODO get rid of this
    protected ObjectName messageStoreObjectName;
    protected MessageStoreDelegate messageStoreDelegate;
    protected ObjectName durableSubscriptionStoreObjectName;
@@ -178,8 +176,12 @@ public class ServerPeer
             (TransactionLogDelegate)mbeanServer.getAttribute(transactionLogObjectName, "Instance");
 
          // TODO: is should be possible to share this with other peers
-         // TODO messageStoreDelegate here
-         ms = new PersistentMessageStore(serverPeerID, transactionLogDelegate);
+         messageStoreDelegate =
+            (MessageStoreDelegate)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
+
+         // TODO this assignments should go away
+         ((PersistentMessageStore)messageStoreDelegate).setStoreID(serverPeerID);
+         ((PersistentMessageStore)messageStoreDelegate).setTransactionLog(transactionLogDelegate);
 
          durableSubscriptionStoreDelegate = (DurableSubscriptionStoreDelegate)mbeanServer.
             getAttribute(durableSubscriptionStoreObjectName, "Instance");
@@ -187,8 +189,7 @@ public class ServerPeer
          // TODO this assignments should go away
          ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setServerPeer(this);
          ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setTransactionLog(transactionLogDelegate);
-         //((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setMessageStore(messageStoreDelegate);
-         ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setMessageStore(ms);
+         ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setMessageStore(messageStoreDelegate);
 
          // initialize the rest of the internal components
 
@@ -217,8 +218,6 @@ public class ServerPeer
       }
    }
 
-
-
    public synchronized void stop() throws Exception
    {
       if (!started)
@@ -234,8 +233,7 @@ public class ServerPeer
       
       dm.destroyAllDestinations();
       txRepository = null;
-      ms = null;
-      clientManager = null;      
+      clientManager = null;
       dm = null;
 
       // remove the JMS subsystem
@@ -341,6 +339,16 @@ public class ServerPeer
    public void setTransactionLog(ObjectName on)
    {
       transactionLogObjectName = on;
+   }
+
+   public ObjectName getMessageStore()
+   {
+      return messageStoreObjectName;
+   }
+
+   public void setMessageStore(ObjectName on)
+   {
+      messageStoreObjectName = on;
    }
 
    public ObjectName getDurableSubscriptionStore()
@@ -451,11 +459,6 @@ public class ServerPeer
       return (ConnectionFactoryDelegate)connFactoryDelegates.get(connectionFactoryID);
    }
 
-   public MessageStore getMessageStore()
-   {
-      return ms;
-   }
-
    public byte[] getClientAOPConfig()
    {
       return clientAOPConfig;
@@ -476,6 +479,11 @@ public class ServerPeer
    public TransactionLogDelegate getTransactionLogDelegate()
    {
       return transactionLogDelegate;
+   }
+
+   public MessageStoreDelegate getMessageStoreDelegate()
+   {
+      return messageStoreDelegate;
    }
 
    public String toString()

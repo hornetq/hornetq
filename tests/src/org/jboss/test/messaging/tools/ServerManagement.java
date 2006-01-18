@@ -30,12 +30,12 @@ import java.rmi.Naming;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.RMIServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.remoting.transport.Connector;
 
 /**
@@ -234,7 +234,7 @@ public class ServerManagement
       return server.getConnector();
    }
 
-   public static MessageStore getMessageStore() throws Exception
+   public static MessageStoreDelegate getMessageStore() throws Exception
    {
       insureStarted();
       return server.getMessageStore();

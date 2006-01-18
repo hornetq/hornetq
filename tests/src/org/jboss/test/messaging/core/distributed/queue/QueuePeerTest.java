@@ -23,8 +23,8 @@ package org.jboss.test.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.distributed.Distributed;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**
@@ -66,7 +66,7 @@ public class QueuePeerTest extends PeerTestBase
    
    // Protected -----------------------------------------------------
 
-   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
+   protected Distributed createDistributed(String name, MessageStoreDelegate ms, RpcDispatcher d)
    {
       return new DistributedQueue(name, ms, d);
    }

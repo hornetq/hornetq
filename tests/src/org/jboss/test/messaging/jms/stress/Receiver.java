@@ -150,7 +150,7 @@ public class Receiver extends Runner implements MessageListener
                return;
             }
             String prodName = m.getStringProperty("PROD_NAME");
-            Integer msgCount = Integer.valueOf(m.getIntProperty("MSG_NUMBER"));
+            Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
                       
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)

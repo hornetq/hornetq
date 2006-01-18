@@ -23,7 +23,6 @@ package org.jboss.test.messaging.core.base;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
@@ -32,7 +31,8 @@ import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 
@@ -79,7 +79,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    // the MessageStore requires a TransactionLogDelegate, othewise it will reject reliable messages
    protected TransactionLogDelegate msTransactionLogDelegate;
    protected TransactionRepository tr;
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
 
    // Constructors --------------------------------------------------
 

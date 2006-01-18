@@ -30,6 +30,7 @@ import java.util.Set;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null
@@ -55,7 +56,7 @@ public abstract class ChannelSupport implements Channel
    protected Router router;
    protected State state;
    protected TransactionLogDelegate tl;
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
 
    // Constructors --------------------------------------------------
 
@@ -64,7 +65,7 @@ public abstract class ChannelSupport implements Channel
     *        recoverable channel always accepts reliable messages)
     */
    protected ChannelSupport(Serializable channelID,
-                            MessageStore ms,
+                            MessageStoreDelegate ms,
                             TransactionLogDelegate tl,
                             boolean acceptReliableMessages)
    {
@@ -264,7 +265,7 @@ public abstract class ChannelSupport implements Channel
       return messages;
    }
 
-   public MessageStore getMessageStore()
+   public MessageStoreDelegate getMessageStore()
    {
       return ms;
    }

@@ -29,8 +29,8 @@ import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.logging.Logger;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
@@ -87,7 +87,7 @@ class TopicPeer extends PeerSupport implements TopicFacade
 
    protected void doJoin() throws DistributedException
    {
-      MessageStore ms = topic.getMessageStore();
+      MessageStoreDelegate ms = topic.getMessageStore();
       replicator = new Replicator(replicatorID, dispatcher, ms, false);
       replicator.join();
       log.debug(replicator + " successfully joined the group");

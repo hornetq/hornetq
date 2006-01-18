@@ -44,13 +44,13 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.DestinationManagerImpl;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
@@ -192,7 +192,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       if (d.isTopic())
       {
-         MessageStore ms = connectionEndpoint.getServerPeer().getMessageStore();
+         MessageStoreDelegate ms = connectionEndpoint.getServerPeer().getMessageStoreDelegate();
          Topic topic = (Topic)coreDestination;
 
          if (subscriptionName == null)

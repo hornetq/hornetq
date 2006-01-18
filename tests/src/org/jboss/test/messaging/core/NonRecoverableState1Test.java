@@ -7,7 +7,7 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.core.base.StateTestBase;
-import org.jboss.messaging.core.message.InMemoryMessageStore;
+import org.jboss.jms.server.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.NonRecoverableState;
 
 

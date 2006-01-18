@@ -25,7 +25,7 @@ import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.message.PersistentMessageStore;
+import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**

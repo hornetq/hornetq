@@ -25,7 +25,6 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.Receiver;
@@ -39,6 +38,7 @@ import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.util.Set;
@@ -79,7 +79,7 @@ public class Replicator extends ReplicatorPeer implements Distributed, Router
    // Attributes ----------------------------------------------------
 
    protected AcknowledgmentCollector collector;
-   protected MessageStore ms;
+   protected MessageStoreDelegate ms;
    protected boolean cancelOnMessageRejection;
 
    // Constructors --------------------------------------------------
@@ -93,7 +93,7 @@ public class Replicator extends ReplicatorPeer implements Distributed, Router
     *        message rejections are ignored.
     */
    public Replicator(Serializable replicatorID, RpcDispatcher dispatcher,
-                     MessageStore ms, boolean cancelOnMessageRejection)
+                     MessageStoreDelegate ms, boolean cancelOnMessageRejection)
    {
       super(new GUID().toString(), replicatorID, dispatcher);
       this.ms = ms;

@@ -27,13 +27,12 @@ import org.jboss.messaging.core.distributed.ViewKeeper;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.ViewKeeperSupport;
-import org.jboss.messaging.core.MessageStore;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
@@ -65,7 +64,7 @@ public class DistributedTopic extends Topic implements Distributed
 
    // Constructors --------------------------------------------------
 
-   public DistributedTopic(String name, MessageStore ms,
+   public DistributedTopic(String name, MessageStoreDelegate ms,
                            TransactionLogDelegate pm, RpcDispatcher dispatcher)
    {
       super(name, ms);
@@ -133,7 +132,7 @@ public class DistributedTopic extends Topic implements Distributed
 
    // Package protected ---------------------------------------------
 
-   MessageStore getMessageStore()
+   MessageStoreDelegate getMessageStore()
    {
       return ms;
    }

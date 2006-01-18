@@ -23,9 +23,9 @@ package org.jboss.messaging.core.local;
 
 import javax.jms.JMSException;
 
-import org.jboss.messaging.core.MessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.util.Util;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 
 /**
  * 
@@ -48,7 +48,7 @@ public class DurableSubscription extends Subscription
    // Constructors --------------------------------------------------
 
    public DurableSubscription(String clientID, String subName, Topic topic, String selector,
-                              MessageStore ms, TransactionLogDelegate tl)
+                              MessageStoreDelegate ms, TransactionLogDelegate tl)
    {
       super(clientID + "." + subName, topic, selector, ms, tl);
       this.subName = subName;

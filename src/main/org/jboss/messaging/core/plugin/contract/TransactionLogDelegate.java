@@ -37,7 +37,7 @@ import org.jboss.messaging.core.MessageReference;
  *
  * $Id$
  */
-public interface TransactionLogDelegate
+public interface TransactionLogDelegate extends ServerPlugin
 {
 
    // TODO used by the TransactionRepository
