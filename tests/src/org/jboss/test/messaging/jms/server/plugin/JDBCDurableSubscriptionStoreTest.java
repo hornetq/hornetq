@@ -133,9 +133,16 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
       
       for (int i = 0; i < NUM_SUBS; i++)
       {
-         subs[i] =
-            dssd.createDurableSubscription("topic1", new GUID().toString(), new GUID().toString(), new GUID().toString());
-         dssd.createDurableSubscription("topic2", new GUID().toString(), new GUID().toString(), new GUID().toString());
+         subs[i] = dssd.createDurableSubscription("topic1",
+                                                  new GUID().toString(),
+                                                  new GUID().toString(),
+                                                  new GUID().toString(),
+                                                  false);
+         dssd.createDurableSubscription("topic2",
+                                        new GUID().toString(),
+                                        new GUID().toString(),
+                                        new GUID().toString(),
+                                        false);
       }
       
       Set loaded = dssd.loadDurableSubscriptionsForTopic("topic1");

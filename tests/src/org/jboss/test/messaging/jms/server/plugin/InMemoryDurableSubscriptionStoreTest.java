@@ -77,7 +77,8 @@ public class InMemoryDurableSubscriptionStoreTest extends MessagingTestCase
       
       ServerManagement.deployTopic(topicName);
             
-      DurableSubscription sub = dssd.createDurableSubscription(topicName, clientID, subscriptionName, selector);
+      DurableSubscription sub =
+         dssd.createDurableSubscription(topicName, clientID, subscriptionName, selector, false);
       
       assertEquals(sub.getTopic().getName(), topicName);
       assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
@@ -109,7 +110,8 @@ public class InMemoryDurableSubscriptionStoreTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
             
-      DurableSubscription sub = dssd.createDurableSubscription(topicName, clientID, subscriptionName, null);
+      DurableSubscription sub =
+         dssd.createDurableSubscription(topicName, clientID, subscriptionName, null, false);
       
       assertEquals(sub.getTopic().getName(), topicName);
       assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
