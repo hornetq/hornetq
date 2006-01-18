@@ -45,12 +45,14 @@ public class DurableSubscription extends Subscription
    
    protected String subName;
    
+   
    // Constructors --------------------------------------------------
 
    public DurableSubscription(String clientID, String subName, Topic topic, String selector,
+                              boolean noLocal,
                               MessageStoreDelegate ms, TransactionLogDelegate tl)
    {
-      super(clientID + "." + subName, topic, selector, ms, tl);
+      super(clientID + "." + subName, topic, selector, noLocal, ms, tl);
       this.subName = subName;
    }
    

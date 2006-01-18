@@ -51,7 +51,7 @@ public class SubscriptionTest extends QueueTestBase
    {
       super.setUp();
 
-      channel = new Subscription(null, null, ms);
+      channel = new Subscription(null, null, false, ms);
       
       log.debug("setup done");
    }

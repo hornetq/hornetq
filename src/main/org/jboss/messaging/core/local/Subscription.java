@@ -50,21 +50,23 @@ public class Subscription extends Pipe
    
    protected Topic topic;
    protected String selector;
+   protected boolean noLocal;
    
    // Constructors --------------------------------------------------
 
-   public Subscription(Topic topic, String selector, MessageStoreDelegate ms)
+   public Subscription(Topic topic, String selector, boolean noLocal, MessageStoreDelegate ms)
    {
-      this("sub" + new GUID().toString(), topic, selector, ms, null);
+      this("sub" + new GUID().toString(), topic, selector, noLocal, ms, null);
    }
    
-   protected Subscription(String name, Topic topic, String selector,
+   protected Subscription(String name, Topic topic, String selector, boolean noLocal,
                           MessageStoreDelegate ms, TransactionLogDelegate tl)
    {
       // A Subscription must accept reliable messages, even if itself is non-recoverable
       super(name, ms, tl, true);
       this.topic = topic;
       this.selector = selector;
+      this.noLocal = noLocal;
    }
    
    // Channel implementation ----------------------------------------
@@ -107,6 +109,11 @@ public class Subscription extends Pipe
    public String getSelector()
    {
       return selector;
+   }
+   
+   public boolean isNoLocal()
+   {
+      return noLocal;
    }
 
    public String toString()

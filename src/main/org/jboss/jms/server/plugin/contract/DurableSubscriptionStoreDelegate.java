@@ -26,7 +26,8 @@ public interface DurableSubscriptionStoreDelegate extends ServerPlugin
    DurableSubscription createDurableSubscription(String topicName,
                                                  String clientID,
                                                  String subscriptionName,
-                                                 String selector)
+                                                 String selector,
+                                                 boolean noLocal)
       throws JMSException;
 
    DurableSubscription getDurableSubscription(String clientID,

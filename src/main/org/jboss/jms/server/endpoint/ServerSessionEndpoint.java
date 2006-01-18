@@ -199,10 +199,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             // non-durable subscription
             if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
-            subscription = new Subscription(topic, selector, ms);
+            subscription = new Subscription(topic, selector, noLocal, ms);
          }
          else
          {
+            if (d.isTemporary())
+            {
+               throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
+            }
+            
             // we have a durable subscription, look it up
             String clientID = connectionEndpoint.getClientID();
             if (clientID == null)
@@ -217,7 +222,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {
                if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + coreDestination); }
                subscription = dsd.
-                  createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
+                  createDurableSubscription(d.getName(), clientID, subscriptionName, selector, noLocal);
             }
             else
             {
@@ -239,7 +244,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                boolean topicChanged = subscription.getTopic() != coreDestination;
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
 
-               boolean noLocalChanged = false; // TODO detect noLocal change
+               boolean noLocalChanged = noLocal != subscription.isNoLocal();
 
                if (selectorChanged || topicChanged || noLocalChanged)
                {
@@ -258,7 +263,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
                   // create a fresh new subscription
                   subscription =
-                     dsd.createDurableSubscription(d.getName(), clientID, subscriptionName, selector);
+                     dsd.createDurableSubscription(d.getName(), clientID, subscriptionName, selector, noLocal);
                }
             }
          }

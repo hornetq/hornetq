@@ -64,7 +64,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
       tr = new TransactionRepository(tl);
 
       channel = new DurableSubscription("clientid123", "testDurableSubscription",
-                                        null, null, ms, tl);
+                                        null, null, false, ms, tl);
 
       log.debug("setup done");
    }

@@ -56,6 +56,8 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
 
@@ -107,6 +109,7 @@ public class ServerPeer
    protected SecurityManager securityManager;
    protected TransactionRepository txRepository;
    protected JMSServerInvocationHandler handler;
+   protected ConnectionListener connectionListener;
 
    // plugins
 
@@ -167,7 +170,7 @@ public class ServerPeer
 
          // Acquire references to plugins. Each plug-in will be accessed directly via a reference
          // circumventing the MBeanServer. However, they are installed as services to take advantage
-         // of their automatically-creating managment interface.
+         // of their automatically-creating management interface.
 
          threadPoolDelegate =
             (ThreadPoolDelegate)mbeanServer.getAttribute(threadPoolObjectName, "Instance");
@@ -236,7 +239,12 @@ public class ServerPeer
       clientManager = null;
       dm = null;
 
-      // remove the JMS subsystem
+      //remove the connection listener
+//      mbeanServer.invoke(connectorName, "removeConnectionListener",
+//            new Object[] {connectionListener},
+//            new String[] {"org.jboss.remoting.ConnectionListener"}); 
+      
+      // remove the JMS subsystem invocation handler
       mbeanServer.invoke(connectorName, "removeInvocationHandler",
                          new Object[] {"JMS"},
                          new String[] {"java.lang.String"});
@@ -578,7 +586,7 @@ public class ServerPeer
 
       log.debug("LocatorURI: " + getLocatorURI());
 
-      // add the JMS subsystem
+      // add the JMS subsystem invocation handler
       
       handler = new JMSServerInvocationHandler();
 
@@ -586,6 +594,13 @@ public class ServerPeer
                          new Object[] {"JMS", handler},
                          new String[] {"java.lang.String",
                                        "org.jboss.remoting.ServerInvocationHandler"});  
+      
+      //install the connection listener that listens for failed connections
+//      connectionListener = new ServerConnectionListener();
+//      
+//      mbeanServer.invoke(connectorName, "addConnectionListener",
+//            new Object[] {connectionListener},
+//            new String[] {"org.jboss.remoting.ConnectionListener"}); 
       
 //      connector = new Connector();
 //      locator = new InvokerLocator("multiplex://0.0.0.0:9099");
@@ -742,5 +757,15 @@ public class ServerPeer
    }
 
    // Inner classes -------------------------------------------------
+   
+   class ServerConnectionListener implements ConnectionListener
+   {
+
+      public void handleConnectionException(Throwable t, Client client)
+      {
+         
+      }
+      
+   }
 
 }

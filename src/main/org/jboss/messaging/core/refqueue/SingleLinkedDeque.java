@@ -185,8 +185,8 @@ public class SingleLinkedDeque implements Deque
       //Keeping a direct count of the number of objects in the deque
       //would require synchronizing a value between the add and remove methods
       //thus causing thread contention for locks.
-      //To avoid this we keep separate add and remove counts and only zero them
-      //every 100000 objects or so
+      //To avoid this we keep separate add and remove counts and only zero the removeCount
+      //when the add count reaches Integer.MAX_VALUE
       
       return addCount - removeCount;
    }

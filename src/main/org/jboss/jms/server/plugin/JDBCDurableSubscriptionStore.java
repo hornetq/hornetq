@@ -54,13 +54,13 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          + " PRIMARY KEY(USERID, ROLEID))";
 
    private String createSubscriptionTable = "CREATE TABLE JMS_SUBSCRIPTION (CLIENTID VARCHAR(128) NOT NULL, NAME VARCHAR(128) NOT NULL,"
-         + " TOPIC VARCHAR(255) NOT NULL, SELECTOR VARCHAR(255)," + " PRIMARY KEY(CLIENTID, NAME))";
+         + " TOPIC VARCHAR(255) NOT NULL, SELECTOR VARCHAR(255), NOLOCAL CHAR(1), " + " PRIMARY KEY(CLIENTID, NAME))";
    
    private String selectSubscription = 
       "SELECT NAME, TOPIC, SELECTOR FROM JMS_SUBSCRIPTION WHERE CLIENTID=? AND NAME=?";
    
    private String insertSubscription = 
-      "INSERT INTO JMS_SUBSCRIPTION (CLIENTID, NAME, TOPIC, SELECTOR) VALUES (?, ?, ?, ?)";
+      "INSERT INTO JMS_SUBSCRIPTION (CLIENTID, NAME, TOPIC, SELECTOR, NOLOCAL) VALUES (?, ?, ?, ?, ?)";
    
    private String deleteSubscription = 
       "DELETE FROM JMS_SUBSCRIPTION WHERE CLIENTID=? AND NAME=?";
@@ -69,7 +69,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       "SELECT CLIENTID FROM JMS_USER WHERE USERID=?";
    
    private String selectSubscriptionsForTopic = 
-      "SELECT CLIENTID, NAME, SELECTOR FROM JMS_SUBSCRIPTION WHERE TOPIC=?";
+      "SELECT CLIENTID, NAME, SELECTOR, NOLOCAL FROM JMS_SUBSCRIPTION WHERE TOPIC=?";
    
 
       
@@ -183,9 +183,10 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                String name = rs.getString(1);
                String topicName = rs.getString(2);
                String selector = rs.getString(3);
+               boolean noLocal = rs.getString(4).equals("Y");
 
                // create in memory
-               sub = super.createDurableSubscription(topicName, clientID, name, selector);
+               sub = super.createDurableSubscription(topicName, clientID, name, selector, noLocal);
 
                // load its state
                sub.load();
@@ -222,7 +223,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
    }
 
    public DurableSubscription createDurableSubscription(String topicName, String clientID,
-                                                        String subscriptionName, String selector)
+                                                        String subscriptionName, String selector, boolean noLocal)
          throws JMSException
    {
       try
@@ -243,12 +244,13 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
             ps.setString(2, subscriptionName);
             ps.setString(3, topicName);
             ps.setString(4, selector);
+            ps.setString(5, noLocal ? "Y" : "N");
 
             ps.executeUpdate();
 
             // create it in memory too
             DurableSubscription sub =
-               super.createDurableSubscription(topicName, clientID, subscriptionName, selector);
+               super.createDurableSubscription(topicName, clientID, subscriptionName, selector, noLocal);
 
             return sub;
          }
@@ -262,7 +264,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          {
             if (log.isTraceEnabled())
             {
-               String s = JDBCUtil.statementToString(insertSubscription, clientID, subscriptionName, topicName, selector);
+               String s = JDBCUtil.statementToString(insertSubscription, clientID, subscriptionName, topicName, selector, Boolean.valueOf(noLocal));
                log.trace(s + (failed ? " failed!" : " executed successfully"));
             }
 
@@ -433,11 +435,12 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                String clientID = rs.getString(1);
                String subName = rs.getString(2);
                String selector = rs.getString(3);
+               boolean noLocal = rs.getString(4).equals("Y");
 
                DurableSubscription sub = super.getDurableSubscription(clientID, subName);
                if (sub == null)
                {
-                  sub = super.createDurableSubscription(topicName, clientID, subName, selector);
+                  sub = super.createDurableSubscription(topicName, clientID, subName, selector, noLocal);
                }
                subs.add(sub);
             }

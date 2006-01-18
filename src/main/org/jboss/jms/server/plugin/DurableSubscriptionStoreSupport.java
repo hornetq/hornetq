@@ -59,7 +59,8 @@ public abstract class DurableSubscriptionStoreSupport
    public DurableSubscription createDurableSubscription(String topicName,
                                                         String clientID,
                                                         String subscriptionName,
-                                                        String selector)
+                                                        String selector,
+                                                        boolean noLocal)
       throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
@@ -70,7 +71,7 @@ public abstract class DurableSubscriptionStoreSupport
       }
 
       DurableSubscription subscription =
-         internalCreateDurableSubscription(clientID, subscriptionName, topicName, selector);
+         internalCreateDurableSubscription(clientID, subscriptionName, topicName, selector, noLocal);
 
       subs.put(subscriptionName, subscription);
 
@@ -147,7 +148,8 @@ public abstract class DurableSubscriptionStoreSupport
    // Protected -----------------------------------------------------
    
    private DurableSubscription internalCreateDurableSubscription(String clientID, String subName,
-                                                                 String topicName, String selector)
+                                                                 String topicName, String selector,
+                                                                 boolean noLocal)
          throws JMSException
    {
       Topic topic = (Topic)serverPeer.getDestinationManager().getCoreDestination(false, topicName);
@@ -156,7 +158,7 @@ public abstract class DurableSubscriptionStoreSupport
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
 
-      DurableSubscription sub = new DurableSubscription(clientID, subName, topic, selector, ms, tl);
+      DurableSubscription sub = new DurableSubscription(clientID, subName, topic, selector, noLocal, ms, tl);
       return sub;
    }
    
