@@ -28,5 +28,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/jmx"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/mbeans"/>
 	<classpathentry kind="lib" path="src/resources/jboss-remoting.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/security"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
