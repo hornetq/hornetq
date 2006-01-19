@@ -101,7 +101,7 @@
     <!-- ========= -->
 
     &libraries;
-    &modules;
+
 
     <!-- The combined library classpath -->
     <path id="library.classpath">
@@ -120,6 +120,8 @@
     <!-- ======= -->
     <!-- Modules -->
     <!-- ======= -->
+
+     &modules;
 
      <!-- The combined dependent module classpath -->
      <path id="dependentmodule.classpath">
@@ -471,7 +473,7 @@
   <target name="all" depends="jars, docs"
       description="Builds everything."/>
 
-  <target name="most" depends="clean, jars"
+  <target name="most" depends="jars"
       description="Builds almost everything."/>
 
   <target name="help"
