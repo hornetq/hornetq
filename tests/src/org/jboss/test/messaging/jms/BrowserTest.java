@@ -170,7 +170,7 @@ public class BrowserTest extends MessagingTestCase
 		int count = 0;
 		while (en.hasMoreElements())
 		{
-			Message m = (Message)en.nextElement();
+			en.nextElement();
 			count++;
 		}
 		

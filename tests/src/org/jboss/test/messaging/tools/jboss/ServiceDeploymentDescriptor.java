@@ -43,12 +43,20 @@ public class ServiceDeploymentDescriptor
 
    // Constructors --------------------------------------------------
 
+   public ServiceDeploymentDescriptor(String config) throws Exception
+   {
+      this(XMLUtil.stringToElement(config));
+   }
+
    public ServiceDeploymentDescriptor(URL descriptorURL) throws Exception
    {
-      Element top = XMLUtil.urlToElement(descriptorURL);
+      this(XMLUtil.urlToElement(descriptorURL));
+   }
 
+   public ServiceDeploymentDescriptor(Element service) throws Exception
+   {
       elements = new ArrayList();
-      NodeList l = top.getChildNodes();
+      NodeList l = service.getChildNodes();
       for(int i = 0; i < l.getLength(); i++)
       {
          elements.add(l.item(i));

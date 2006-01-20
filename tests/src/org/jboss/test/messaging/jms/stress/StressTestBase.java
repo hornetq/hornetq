@@ -105,10 +105,10 @@ public class StressTestBase extends MessagingTestCase
       ServerManagement.undeployQueue("Queue3");
       ServerManagement.undeployQueue("Queue4");
 
-      ServerManagement.undeployTopic("Topic1");
-      ServerManagement.undeployTopic("Topic2");
-      ServerManagement.undeployTopic("Topic3");
-      ServerManagement.undeployTopic("Topic4");
+      ServerManagement.undeployQueue("Topic1");
+      ServerManagement.undeployQueue("Topic2");
+      ServerManagement.undeployQueue("Topic3");
+      ServerManagement.undeployQueue("Topic4");
       
       super.tearDown();            
    }

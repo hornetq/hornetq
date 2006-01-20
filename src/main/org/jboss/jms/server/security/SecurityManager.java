@@ -203,21 +203,19 @@ public class SecurityManager
       return hasRole;
    }
    
-   // SecurityManagerMBean implementation ----------------------------------
-   
    public void setSecurityConfig(String destName, Element conf) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("Adding security config. for destination:" + destName); }
+      if (log.isTraceEnabled()) { log.trace("adding security configuration for destination " + destName); }
       SecurityMetadata m = new SecurityMetadata(conf);
       securityConf.put(destName, m);
    }
 
-   public void removeSecurityConf(String destName)
-   {
-      if (log.isTraceEnabled()) { log.trace("Removing security config. for destination:" + destName); }
-      securityConf.remove(destName);
-   }
-   
+//   public void removeSecurityConf(String destName)
+//   {
+//      if (log.isTraceEnabled()) { log.trace("Removing security config. for destination:" + destName); }
+//      securityConf.remove(destName);
+//   }
+//
    public Element getDefaultSecurityConfig()
    {
       return this.defaultSecurityConfig;

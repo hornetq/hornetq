@@ -158,8 +158,7 @@ public abstract class DurableSubscriptionStoreSupport
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
 
-      DurableSubscription sub = new DurableSubscription(clientID, subName, topic, selector, noLocal, ms, tl);
-      return sub;
+      return new DurableSubscription(clientID, subName, topic, selector, noLocal, ms, tl);
    }
    
    // Private -------------------------------------------------------

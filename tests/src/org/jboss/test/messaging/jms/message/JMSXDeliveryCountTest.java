@@ -70,10 +70,10 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
-      ServerManagement.undeployQueue("Queue");      
+      ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       
-      ServerManagement.undeployTopic("Topic");      
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
       
       queue = (Queue)initialContext.lookup("/queue/Queue");

@@ -129,7 +129,7 @@ public class SecurityTest extends MessagingTestCase
    {      
       ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
       ServerManagement.undeployQueue("testQueue");
-      ServerManagement.undeployQueue("testTopic");
+      ServerManagement.undeployTopic("testTopic");
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.undeployTopic("unsecuredTopic");
       
@@ -729,9 +729,9 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"noacc\" read=\"false\" write=\"false\" create=\"false\"/>" +
          "</security>";
                      
-      ServerManagement.setSecurityConfig("testQueue", testQueueConf);
+      ServerManagement.configureSecurityForDestination("testQueue", testQueueConf);
       
-      ServerManagement.undeployTopic("testTopic");
+      ServerManagement.undeployTopic("TestTopic");
       ServerManagement.deployTopic("testTopic");
             
       final String testTopicConf = 
@@ -741,7 +741,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>" +
          "</security>";
                      
-      ServerManagement.setSecurityConfig("testTopic", testTopicConf);
+      ServerManagement.configureSecurityForDestination("testTopic", testTopicConf);
       
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.deployTopic("securedTopic");
@@ -751,7 +751,7 @@ public class SecurityTest extends MessagingTestCase
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
          "</security>";
                      
-      ServerManagement.setSecurityConfig("testSecuredTopic", testSecuredTopicConf);
+      ServerManagement.configureSecurityForDestination("testSecuredTopic", testSecuredTopicConf);
       
       ServerManagement.undeployTopic("unsecuredTopic");
       ServerManagement.deployTopic("unsecuredTopic");

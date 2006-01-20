@@ -23,9 +23,9 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.remoting.transport.Connector;
 
+import javax.management.ObjectName;
 import java.rmi.Remote;
 
 /**
@@ -43,19 +43,28 @@ public interface Server extends Remote
    void destroy() throws Exception;
 
    /**
+    * Deploys and registers a service based on the MBean service descriptor element, specified as
+    * a String. Supports XMBeans. The implementing class and the ObjectName are inferred from the
+    * mbean element. If there are configuration attributed specified in the deployment descriptor,
+    * they are applied to the service instance.
+    */
+   ObjectName deploy(String mbeanConfiguration) throws Exception;
+   public void undeploy(ObjectName on) throws Exception;
+   public Object getAttribute(ObjectName on, String attribute) throws Exception;
+   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception;
+   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
+      throws Exception;
+
+   /**
     * Only for remote use!
     */
    void log(int level, String text) throws Exception;
 
    void startServerPeer() throws Exception;
    void stopServerPeer() throws Exception;
+   public ObjectName getServerPeerObjectName() throws Exception;
 
    boolean isStarted() throws Exception;
-
-   /**
-    * Only for in-VM use!
-    */
-   ServerPeer getServerPeer() throws Exception;
 
    /**
     * Only for in-VM use!
@@ -71,18 +80,14 @@ public interface Server extends Remote
    DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate() throws Exception;
 
    void deployTopic(String name, String jndiName) throws Exception;
-   void undeployTopic(String name) throws Exception;
-   boolean isTopicDeployed(String name) throws Exception;
    void deployQueue(String name, String jndiName) throws Exception;
-   void undeployQueue(String name) throws Exception;
-   boolean isQueueDeployed(String name) throws Exception;
-
+   void undeployDestination(boolean isQueue, String name) throws Exception;
 
    /**
     * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
     *        NotSerializableExceptions that show up when running tests on JDK 1.4.
     */
-   void setSecurityConfig(String destName, String config) throws Exception;
+   void configureSecurityForDestination(String destName, String config) throws Exception;
 
    /**
     * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid

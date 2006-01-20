@@ -54,6 +54,7 @@
       <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
       <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
       <depends optional-attribute-name="TransactionLog">jboss.messaging:service=TransactionLog</depends>
+      <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
       <depends optional-attribute-name="DurableSubscriptionStore">jboss.messaging:service=DurableSubscriptionStore</depends>
 
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
@@ -107,7 +108,7 @@
 
    <!-- ConnectionFactories -->
 
-   <!-- Test destinations --> <!--
+   <!-- Test destinations -->
 
    <mbean code="org.jboss.jms.server.destination.Topic"
       name="jboss.messaging.destination:service=Topic,name=testTopic"
@@ -157,17 +158,17 @@
             <role name="noacc" read="false" write="false" create="false"/>
          </security>
       </attribute>
-   </mbean>                                           -->
+   </mbean>
 
-   <!-- We need this to deploy MDBs -->                  <!--
+   <!-- We need this to deploy MDBs -->
 
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=DLQ"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>                                                  -->
+   </mbean>
 
-   <!-- Example queues -->                                      <!--
+   <!-- Example queues -->
    
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=A"
@@ -197,6 +198,6 @@
       name="jboss.messaging.destination:service=Queue,name=ex"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>                                             -->
+   </mbean>
    
 </server>

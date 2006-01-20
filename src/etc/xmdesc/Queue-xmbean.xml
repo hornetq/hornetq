@@ -15,14 +15,6 @@
       <name>Queue</name>
    </constructor>
 
-   <constructor>
-      <name>Queue</name>
-      <parameter>
-         <name>jndiName</name>
-         <type>java.lang.String</type>
-      </parameter>
-   </constructor>
-
    <!-- Managed attributes -->
 
    <attribute access="read-only" getMethod="getName">
@@ -31,12 +23,20 @@
       <type>java.lang.String</type>
    </attribute>
 
-   <attribute access="read-only" getMethod="getJNDIName">
+   <!-- This attribute is writable to allow configuring an arbitarty JNDI name in the queue's
+        service deployment descriptor. Any attempt to change the attribute after initialization
+        will be ignored.
+   -->
+   <attribute access="read-write" getMethod="getJNDIName" setMethod="setJNDIName">
       <description>The destination's JNDI name</description>
       <name>JNDIName</name>
       <type>java.lang.String</type>
    </attribute>
 
+   <!-- ServerPeer ObjectName is configured as a dependency optional-attribute-name, this is the
+        only reason for this attribute to be writable. Any write attempt on this attribute after
+        initialization will be ignored.
+   -->
    <attribute access="read-write" getMethod="getServerPeer" setMethod="setServerPeer">
       <description>The ObjectName of the server peer this destination was deployed on</description>
       <name>ServerPeer</name>

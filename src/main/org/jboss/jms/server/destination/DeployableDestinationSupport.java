@@ -40,21 +40,24 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
 
    protected String jndiName;
 
+   protected boolean started = false;
+
    private final String createDestinationMethodName, destroyDestinationMethodName;
 
    // Constructors --------------------------------------------------
 
-   protected DeployableDestinationSupport(String jndiName)
+   protected DeployableDestinationSupport()
    {
-      this.jndiName = jndiName;
       createDestinationMethodName = "create" + (isQueue() ? "Queue" : "Topic");
-      destroyDestinationMethodName = "create" + (isQueue() ? "Queue" : "Topic");
+      destroyDestinationMethodName = "destroy" + (isQueue() ? "Queue" : "Topic");
    }
 
    // ServiceMBeanSupport overrides ---------------------------------
 
-   public void startService() throws Exception
+   public synchronized void startService() throws Exception
    {
+      started = true;
+
       if (serviceName != null)
       {
          name = serviceName.getKeyProperty("name");
@@ -66,16 +69,24 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
                                           " name was not properly set in the service's ObjectName");
       }
 
-      if (securityConfig != null)
-      {
-         server.invoke(serverPeerObjectName, "setSecurityConfig",
-                       new Object[] {name, securityConfig},
-                       new String[] {"java.lang.String", "org.w3c.dom.Element"});
-      }
-
       jndiName = (String)server.invoke(serverPeerObjectName, createDestinationMethodName,
                                        new Object[] {name, jndiName},
                                        new String[] {"java.lang.String", "java.lang.String"});
+
+      if (securityConfig != null)
+      {
+         server.invoke(serverPeerObjectName, "configureSecurityForDestination",
+                       new Object[] {name, securityConfig},
+                       new String[] {"java.lang.String", "org.w3c.dom.Element"});
+      }
+      else
+      {
+         // relying on the server's default, expose it in the management interface for convenience
+         Element defConfig = (Element)server.getAttribute(serverPeerObjectName,
+                                                          "DefaultSecurityConfig");
+
+         setSecurityConfig(defConfig);
+      }
 
       log.info(this + " started");
    }
@@ -86,13 +97,38 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
                     new Object[] {name},
                     new String[] {"java.lang.String"});
 
+      started = false;
+
       log.info(this + " stopped");
    }
 
    // JMX managed attributes ----------------------------------------
 
+   public String getJNDIName()
+   {
+      return jndiName;
+   }
+
+   public void setJNDIName(String jndiName)
+   {
+      if (started)
+      {
+         log.warn("Cannot change the value of the JNDI name after initialization!");
+         return;
+      }
+
+      this.jndiName = jndiName;
+   }
+
    public void setServerPeer(ObjectName on)
    {
+      if (started)
+      {
+         log.warn("Cannot change the value of associated " +
+                  "server's ObjectName after initialization!");
+         return;
+      }
+
       serverPeerObjectName = on;
    }
 
@@ -114,11 +150,6 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
    public String getName()
    {
       return name;
-   }
-
-   public String getJNDIName()
-   {
-      return jndiName;
    }
 
    // JMX managed operations ----------------------------------------

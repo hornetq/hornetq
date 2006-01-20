@@ -134,7 +134,15 @@ public class DurableSubscriptionTest extends MessagingTestCase
     */
    public void testDurableSubscriptionOnTopicRedeployment() throws Exception
    {
-      assertFalse(ServerManagement.isTopicDeployed("CompletelyNewTopic"));
+      try
+      {
+         ic.lookup("/topic/CompletelyNewTopic");
+         fail("should throw exception, topic shouldn't be deployed on the server");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
 
       ServerManagement.deployTopic("CompletelyNewTopic");
 

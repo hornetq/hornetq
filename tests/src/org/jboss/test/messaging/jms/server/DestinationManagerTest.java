@@ -21,13 +21,12 @@
   */
 package org.jboss.test.messaging.jms.server;
 
-import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
-import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.FacadeDestinationManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -58,11 +57,15 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
+      if (ServerManagement.isRemote())
+      {
+         fail("this test is not supposed to run in a remote configuration!");
+      }
+
       super.setUp();
       ServerManagement.start("all");
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
-      //destinationManager = ServerManagement.getServerPeer().getDestinationManager();
       ServerManagement.undeployQueue("testQueue");
       ServerManagement.undeployTopic("testTopic");
       ServerManagement.undeployQueue("SomeName");
@@ -77,42 +80,37 @@ public class DestinationManagerTest extends MessagingTestCase
       ServerManagement.undeployQueue("SomeName");
       ServerManagement.undeployTopic("SomeName");
       
-      
-      //destinationManager = null;
       super.tearDown();
-      
-      
    }
 
    public void testCreateQueue() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       String name = "testQueue";
-      this.createQueue(name, null);
 
-      Queue q = (Queue)initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      ServerManagement.deployQueue(name, null);
+
+      Queue q = (Queue)initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
    }
 
    public void testCreateTopic() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
-      this.createTopic(name, null);
 
-      Topic t = (Topic)initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      ServerManagement.deployTopic(name, null);
+
+      Topic t = (Topic)initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
    }
 
    public void testCreateQueueDifferentJNDIName() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       String jndiName = "/a/b/c/testQueue2";
-      this.createQueue(name, jndiName);
+
+      ServerManagement.deployQueue(name, jndiName);
 
       Queue q = (Queue)initialContext.lookup(jndiName);
       assertEquals(name, q.getQueueName());
@@ -120,10 +118,10 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateQueueDifferentJNDIName2() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
       String jndiName = "testQueue";
-      this.createQueue(name, jndiName);
+
+      ServerManagement.deployQueue(name, jndiName);
 
       Queue q = (Queue)initialContext.lookup(jndiName);
       assertEquals(name, q.getQueueName());
@@ -132,10 +130,10 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateTopicDifferrentJNDIName() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
       String jndiName = "/a/b/c/testTopic2";
-      this.createTopic(name, jndiName);
+
+      ServerManagement.deployTopic(name, jndiName);
 
       Topic t = (Topic)initialContext.lookup(jndiName);
       assertEquals(name, t.getTopicName());
@@ -143,16 +141,16 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateQueue() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
-      this.createQueue(name, null);
+
+      ServerManagement.deployQueue(name, null);
 
       try
       {
-         this.createQueue(name, null);
+         ServerManagement.deployQueue(name, null);
          fail("should have thrown exception");
       }
-      catch(JMSException e)
+      catch(Exception e)
       {
          // OK
       }
@@ -160,16 +158,16 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateTopic() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
-      this.createTopic(name, null);
+
+      ServerManagement.deployTopic(name, null);
 
       try
       {
-         this.createTopic(name, null);
+         ServerManagement.deployTopic(name, null);
          fail("should have thrown exception");
       }
-      catch(JMSException e)
+      catch(Exception e)
       {
          // OK
       }
@@ -177,17 +175,17 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateQueueDifferentJNDIName() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
-      this.createQueue(name, null);
+
+      ServerManagement.deployQueue(name, null);
 
       try
       {
-         this.createQueue(name, "x/y/z/testQueueA");
+         ServerManagement.deployQueue(name, "x/y/z/testQueueA");
 
          fail("should have thrown exception");
       }
-      catch(JMSException e)
+      catch(Exception e)
       {
          // OK
       }
@@ -195,31 +193,31 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testCreateDuplicateTopicDifferentJNDIName() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
-      this.createTopic(name, null);
+
+      ServerManagement.deployTopic(name, null);
 
       try
       {
-         this.createTopic(name, "x/y/z/testTopicA");
+         ServerManagement.deployTopic(name, "x/y/z/testTopicA");
          fail("should have thrown exception");
       }
-      catch(JMSException e)
+      catch(Exception e)
       {
          // OK
       }
    }
 
-
    public void testCreateQueueAndTopicWithTheSameName() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "SomeName";
-      this.createQueue(name, null);
-      this.createTopic(name, null);
 
-      Queue q = (Queue)initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
-      Topic t = (Topic)initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      ServerManagement.deployQueue(name, null);
+
+      ServerManagement.deployTopic(name, null);
+
+      Queue q = (Queue)initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
       assertEquals(name, t.getTopicName());
@@ -227,34 +225,31 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testDestroyInexistentQueue() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      this.destroyQueue("there is not such a queue");
+      ServerManagement.undeployQueue("there is not such a queue");
    }
 
    public void testDestroyInexistentTopic() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      this.destroyTopic("there is not such a topic");
+      ServerManagement.undeployTopic("there is not such a topic");
    }
-
 
    public void testDestroyQueue() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testQueue";
-      this.createQueue(name, null);
 
-      Queue q = (Queue)initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      ServerManagement.deployQueue(name, null);
+
+      Queue q = (Queue)initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
 
-      this.destroyQueue(name);
+      ServerManagement.undeployQueue(name);
 
       //assertNull(((DestinationManager)destinationManager).getCoreDestination(q));
 
       try
       {
-         Object o = initialContext.lookup(DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT + "/" + name);
+         Object o = initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
          fail("should have thrown exception, but got " + o);
       }
       catch(NameNotFoundException e)
@@ -265,21 +260,21 @@ public class DestinationManagerTest extends MessagingTestCase
 
    public void testDestroyTopic() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
       String name = "testTopic";
-      this.createTopic(name, null);
 
-      Topic t = (Topic)initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      ServerManagement.deployTopic(name, null);
+
+      Topic t = (Topic)initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
 
-      this.destroyTopic(name);
+      ServerManagement.undeployTopic(name);
 
       //assertNull(((DestinationManager)destinationManager).getCoreDestination(t));
 
       try
       {
-         Object o = initialContext.lookup(DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT + "/" + name);
+         Object o = initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
          fail("should have thrown exception but got " + o);
       }
       catch(NameNotFoundException e)
@@ -288,38 +283,11 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
-
-
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
    
-   private void createQueue(String name, String jndiName)
-      throws Exception
-   {
-      ServerManagement.deployQueue(name, jndiName);
-   }
-   
-   private void createTopic(String name, String jndiName)
-      throws Exception
-   {
-      ServerManagement.deployTopic(name, jndiName);
-   }
-   
-   private void destroyQueue(String name)
-      throws Exception
-   {
-      ServerManagement.undeployQueue(name);
-   }
-   
-   private void destroyTopic(String name)
-      throws Exception
-   {
-      ServerManagement.undeployTopic(name);
-   }
-   
-   // Inner classes -------------------------------------------------   
+   // Inner classes -------------------------------------------------
 }

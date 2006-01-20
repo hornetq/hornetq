@@ -36,8 +36,9 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.FacadeDestinationManager;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -45,6 +46,7 @@ import javax.management.ObjectName;
 import javax.management.Attribute;
 import javax.management.MBeanInfo;
 import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
 import javax.transaction.TransactionManager;
@@ -61,6 +63,7 @@ import java.util.StringTokenizer;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -179,6 +182,10 @@ public class ServiceContainer
       else if ("javax.management.ObjectName".equals(type))
       {
          return new ObjectName(valueAsString);
+      }
+      else if ("org.w3c.dom.Element".equals(type))
+      {
+         return XMLUtil.stringToElement(valueAsString);
       }
 
       throw new Exception("Don't know to handle type " + type);
@@ -380,6 +387,14 @@ public class ServiceContainer
    }
 
    /**
+    * @return Set<ObjectName>
+    */
+   public Set query(ObjectName pattern)
+   {
+      return mbeanServer.queryNames(pattern, null);
+   }
+
+   /**
     * Note that this method makes no assumption on whether the service was created or started, nor
     * does it attempt to create/start the service.
     *
@@ -436,7 +451,15 @@ public class ServiceContainer
    public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
       throws Exception
    {
-      return mbeanServer.invoke(on, operationName, params, signature);
+      try
+      {
+         return mbeanServer.invoke(on, operationName, params, signature);
+      }
+      catch(MBeanException e)
+      {
+         // unwrap the exception thrown by the service
+         throw (Exception)e.getCause();
+      }
    }
 
    /**
@@ -483,8 +506,8 @@ public class ServiceContainer
 
    private void loadJNDIContexts() throws Exception
    {
-      String[] names = {DestinationManagerImpl.DEFAULT_QUEUE_CONTEXT,
-                        DestinationManagerImpl.DEFAULT_TOPIC_CONTEXT};
+      String[] names = {FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT,
+                        FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT};
 
       for (int i = 0; i < names.length; i++)
       {

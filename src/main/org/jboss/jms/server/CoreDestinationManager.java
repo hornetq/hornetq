@@ -62,11 +62,11 @@ class CoreDestinationManager
    // <name - CoreDestination>
    protected Map topicMap;
 
-   protected DestinationManagerImpl destinationManager;
+   protected FacadeDestinationManager destinationManager;
 
    // Constructors --------------------------------------------------
 
-   CoreDestinationManager(DestinationManagerImpl destinationManager) throws Exception
+   CoreDestinationManager(FacadeDestinationManager destinationManager) throws Exception
    {
       queueMap = new ConcurrentReaderHashMap();
       topicMap = new ConcurrentReaderHashMap();

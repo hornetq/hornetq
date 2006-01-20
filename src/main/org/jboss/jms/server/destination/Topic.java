@@ -24,16 +24,6 @@ public class Topic extends DeployableDestinationSupport
 
    // Constructors --------------------------------------------------
 
-   public Topic()
-   {
-      super(null);
-   }
-
-   public Topic(String jndiName)
-   {
-      super(jndiName);
-   }
-
    // JMX managed attributes ----------------------------------------
 
    // JMX managed operations ----------------------------------------

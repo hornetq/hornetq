@@ -41,7 +41,7 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.DestinationManagerImpl;
+import org.jboss.jms.server.FacadeDestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
@@ -115,7 +115,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
             
       // look-up destination
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      FacadeDestinationManager dm = serverPeer.getDestinationManager();
       if (jmsDestination != null)
       {
          if (dm.getCoreDestination(jmsDestination) == null)
@@ -174,7 +174,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       // look-up destination
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      FacadeDestinationManager dm = serverPeer.getDestinationManager();
       Distributor coreDestination = dm.getCoreDestination(jmsDestination);
       if (coreDestination == null)
       {
@@ -306,7 +306,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   }
 	   
 	   // look-up destination
-	   DestinationManagerImpl dm = serverPeer.getDestinationManager();
+	   FacadeDestinationManager dm = serverPeer.getDestinationManager();
 	   
 	   Distributor destination = dm.getCoreDestination(jmsDestination);
 	   
@@ -343,7 +343,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      FacadeDestinationManager dm = serverPeer.getDestinationManager();
       
       Distributor coreDestination = dm.getCoreDestination(true, name);
 
@@ -367,7 +367,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      DestinationManagerImpl dm = serverPeer.getDestinationManager();
+      FacadeDestinationManager dm = serverPeer.getDestinationManager();
       Distributor coreDestination = dm.getCoreDestination(false, name);
 
       if (coreDestination == null)

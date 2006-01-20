@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.rmi.Naming;
 
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.logging.Logger;
@@ -37,6 +36,8 @@ import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.remoting.transport.Connector;
+
+import javax.management.ObjectName;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
@@ -179,13 +180,47 @@ public class ServerManagement
       }
    }
 
+   public static ObjectName deploy(String mbeanConfiguration) throws Exception
+   {
+      insureStarted();
+      return server.deploy(mbeanConfiguration);
+   }
+
+   public static void undeploy(ObjectName on) throws Exception
+   {
+      insureStarted();
+      server.undeploy(on);
+   }
+
+   public static Object getAttribute(ObjectName on, String attribute) throws Exception
+   {
+      insureStarted();
+      return server.getAttribute(on, attribute);
+   }
+
+   public static void setAttribute(ObjectName on, String name, String valueAsString)
+      throws Exception
+   {
+      insureStarted();
+      server.setAttribute(on, name, valueAsString);
+   }
+
+
+   public static Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
+      throws Exception
+   {
+      insureStarted();
+      return server.invoke(on, operationName, params, signature);
+   }
+
    public static void log(int level, String text)
    {
       if (isRemote())
       {
          if (server == null)
          {
-            log.warn("The remote server has not been created yet!");
+            log.debug("The remote server has not been created yet " +
+                      "so this log won't make it to the server!");
             return;
          }
          
@@ -212,15 +247,10 @@ public class ServerManagement
       server.stopServerPeer();
    }
 
-   public static ServerPeer getServerPeer() throws Exception
+   public static ObjectName getServerPeerObjectName() throws Exception
    {
-      if (isRemote())
-      {
-         throw new IllegalStateException("Cannot get a remote server peer!");
-      }
-
       insureStarted();
-      return server.getServerPeer();
+      return server.getServerPeerObjectName();
    }
 
    public static Connector getConnector() throws Exception
@@ -247,10 +277,11 @@ public class ServerManagement
       return server.getDurableSubscriptionStoreDelegate();
    }
 
-   public static void setSecurityConfig(String destName, String config) throws Exception
+   public static void configureSecurityForDestination(String destName, String config)
+      throws Exception
    {
       insureStarted();
-      server.setSecurityConfig(destName, config);
+      server.configureSecurityForDestination(destName, config);
    }
    
    public static void setDefaultSecurityConfig(String config) throws Exception
@@ -276,18 +307,6 @@ public class ServerManagement
       server.deployTopic(name, jndiName);
    }
 
-   public static void undeployTopic(String name) throws Exception
-   {
-      insureStarted();
-      server.undeployTopic(name);
-   }
-
-   public static boolean isTopicDeployed(String name) throws Exception
-   {
-      insureStarted();
-      return server.isTopicDeployed(name);
-   }
-
    public static void deployQueue(String name) throws Exception
    {
       deployQueue(name, null);
@@ -301,14 +320,18 @@ public class ServerManagement
 
    public static void undeployQueue(String name) throws Exception
    {
-      insureStarted();
-      server.undeployQueue(name);
+      undeployDestination(true, name);
    }
 
-   public static boolean isQueueDeployed(String name) throws Exception
+   public static void undeployTopic(String name) throws Exception
+   {
+      undeployDestination(false, name);
+   }
+
+   private static void undeployDestination(boolean isQueue, String name) throws Exception
    {
       insureStarted();
-      return server.isQueueDeployed(name);
+      server.undeployDestination(isQueue, name);
    }
 
    public static Hashtable getJNDIEnvironment()

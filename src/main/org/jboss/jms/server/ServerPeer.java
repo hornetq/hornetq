@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.XAConnectionFactory;
@@ -104,7 +105,7 @@ public class ServerPeer
 
    // wired components
 
-   protected DestinationManagerImpl dm;
+   protected FacadeDestinationManager dm;
    protected ClientManager clientManager;
    protected SecurityManager securityManager;
    protected TransactionRepository txRepository;
@@ -141,6 +142,9 @@ public class ServerPeer
    }
 
    // Public --------------------------------------------------------
+
+   // TODO
+   // The future Server interface -----------------------------------
 
    //
    // JMX operations
@@ -201,7 +205,7 @@ public class ServerPeer
 
          clientManager = new ClientManagerImpl(this);
 
-         dm = new DestinationManagerImpl(this);
+         dm = new FacadeDestinationManager(this);
 
          securityManager.init();
 
@@ -284,6 +288,20 @@ public class ServerPeer
    public void destroyTopic(String name) throws Exception
    {
       dm.destroyTopic(name);
+   }
+
+   /**
+    * Used by destinations at deployment.
+    */
+   public void configureSecurityForDestination(String destinationName, Element configuration) 
+      throws Exception
+   {
+      securityManager.setSecurityConfig(destinationName, configuration);
+   }
+
+   public Set getDestinations() throws Exception
+   {
+      return dm.getDestinations();
    }
 
    //
@@ -405,8 +423,7 @@ public class ServerPeer
       return securityManager.getSecurityDomain();
    }
 
-   public void setDefaultSecurityConfig(Element conf)
-      throws Exception
+   public void setDefaultSecurityConfig(Element conf) throws Exception
    {
       securityManager.setDefaultSecurityConfig(conf);
    }
@@ -416,13 +433,6 @@ public class ServerPeer
       return securityManager.getDefaultSecurityConfig();
    }
    
-   public void setSecurityConfig(String dest, Element conf)
-      throws Exception
-   {
-      securityManager.setSecurityConfig(dest, conf);
-   }
-   
-
    //
    // end of JMX attributes
    //
@@ -452,7 +462,7 @@ public class ServerPeer
       return clientManager;
    }
    
-   public DestinationManagerImpl getDestinationManager()
+   public FacadeDestinationManager getDestinationManager()
    {
       return dm;
    }

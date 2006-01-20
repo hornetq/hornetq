@@ -6,8 +6,9 @@
        <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
    </loader-repository>
 
-   <mbean code="org.jboss.jms.server.jmx.Queue"
-      name="jboss.messaging.destination:service=Queue,name=SmokeTestQueue">
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=SmokeTestQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 

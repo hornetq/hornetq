@@ -6,9 +6,11 @@
        <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
    </loader-repository>
 
-   <mbean code="org.jboss.jms.server.jmx.Topic"
-      name="jboss.messaging.destination:service=Topic,name=SmokeTestTopic">
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=SmokeTestTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
 </server>
+

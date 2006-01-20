@@ -23,6 +23,9 @@ package org.jboss.jms.server;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collections;
+import java.util.HashSet;
 
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
@@ -41,19 +44,18 @@ import org.jboss.messaging.core.CoreDestination;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * Manages destinations. Manages JNDI mapping and delegates core destination management to a
- * CoreDestinationManager.
+ * Manages JNDI mapping and delegates core destination management to a CoreDestinationManager.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class DestinationManagerImpl implements DestinationManagerImplMBean
+public class FacadeDestinationManager
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DestinationManagerImpl.class);
+   private static final Logger log = Logger.getLogger(FacadeDestinationManager.class);
    
    public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
    public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
@@ -66,14 +68,15 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
    protected Context initialContext;
    protected CoreDestinationManager coreDestinationManager;
 
-   // < name - JNDI name>
+   // TODO synchronize access to these
+   // <name - JNDI name>
    protected Map queueNameToJNDI;
    protected Map topicNameToJNDI;
 
 
    // Constructors --------------------------------------------------
 
-   public DestinationManagerImpl(ServerPeer serverPeer) throws Exception
+   public FacadeDestinationManager(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
       //TODO close this inital context when DestinationManager stops
@@ -84,7 +87,6 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
    }
 
    // DestinationManager implementation -----------------------------
-
 
    public String createQueue(String name) throws Exception
    {
@@ -138,7 +140,6 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
          destroyTopic(topicName);
       }
    }
-   
 
    public synchronized void addTemporaryDestination(Destination jmsDestination) throws JMSException
    {
@@ -171,6 +172,28 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       return isQueue ? queueNameToJNDI.containsKey(name) : topicNameToJNDI.containsKey(name);
    }
 
+   public Set getDestinations()
+   {
+      Set destinations = Collections.EMPTY_SET;
+
+      for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         if (destinations == Collections.EMPTY_SET)
+         {
+            destinations = new HashSet();
+         }
+         destinations.add(new JBossQueue((String)i.next()));
+      }
+      for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         if (destinations == Collections.EMPTY_SET)
+         {
+            destinations = new HashSet();
+         }
+         destinations.add(new JBossTopic((String)i.next()));
+      }
+      return destinations;
+   }
 
    // Package protected ---------------------------------------------
    
@@ -207,11 +230,7 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
       try
       {
          initialContext.lookup(jndiName);
-         
-         // Already exists - remove it - this allows the dest to be updated with any new values
-         //this.removeDestination(isQueue, name);
          throw new InvalidDestinationException("Destination " + name + " already exists");
-            
       }
       catch(NameNotFoundException e)
       {
@@ -247,7 +266,6 @@ public class DestinationManagerImpl implements DestinationManagerImplMBean
 
       return jndiName;
    }
-
 
    private void removeDestination(boolean isQueue, String name) throws Exception
    {

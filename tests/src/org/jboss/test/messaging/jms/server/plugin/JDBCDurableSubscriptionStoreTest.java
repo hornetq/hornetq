@@ -32,11 +32,11 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.util.id.GUID;
 
@@ -49,11 +49,12 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptionStoreTest
+public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
 
    protected TransactionLogDelegate tl;
+   protected DurableSubscriptionStoreDelegate dssd;
 
    // Constructors --------------------------------------------------
 
@@ -73,15 +74,93 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
 
       super.setUp();
 
+      ServerManagement.start("all");
+
+      dssd = ServerManagement.getDurableSubscriptionStoreDelegate();
+
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
+      log.debug("starting tear down");
       super.tearDown();
    }
-   
-   public void testGetPreConfClientId() throws Exception
+
+   public void testCreateGetRemoveDurableSubscription() throws Exception
+   {
+      String topicName = new GUID().toString();
+      String clientID = new GUID().toString();
+      String subscriptionName = new GUID().toString();
+      String selector = new GUID().toString();
+
+      ServerManagement.deployTopic(topicName);
+
+      DurableSubscription sub =
+         dssd.createDurableSubscription(topicName, clientID, subscriptionName, selector, false);
+
+      assertEquals(sub.getTopic().getName(), topicName);
+      assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
+      assertEquals(sub.getSelector(), selector);
+
+      DurableSubscription sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+
+      assertEquals(sub_r.getTopic().getName(), topicName);
+      assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
+      assertEquals(sub_r.getSelector(), selector);
+
+      boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      assertTrue(removed);
+
+      sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+
+      assertNull(sub_r);
+
+      removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      assertFalse(removed);
+
+   }
+
+   public void testCreateGetRemoveDurableSubscriptionNullSelector() throws Exception
+   {
+      String topicName = new GUID().toString();
+      String clientID = new GUID().toString();
+      String subscriptionName = new GUID().toString();
+
+      ServerManagement.deployTopic(topicName);
+
+      DurableSubscription sub =
+         dssd.createDurableSubscription(topicName, clientID, subscriptionName, null, false);
+
+      assertEquals(sub.getTopic().getName(), topicName);
+      assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
+      assertNull(sub.getSelector());
+
+      DurableSubscription sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+
+      assertEquals(sub_r.getTopic().getName(), topicName);
+      assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
+      assertNull(sub_r.getSelector());
+
+      boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      assertTrue(removed);
+
+      sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+
+      assertNull(sub_r);
+
+      removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      assertFalse(removed);
+
+   }
+
+   public void testGetPreConfClientId_1() throws Exception
+   {
+      String clientID = dssd.getPreConfiguredClientID("blahblah");
+      assertNull(clientID);
+   }
+
+   public void testGetPreConfClientId_2() throws Exception
    {
       InitialContext ctx = new InitialContext();
 
@@ -175,14 +254,6 @@ public class JDBCDurableSubscriptionStoreTest extends InMemoryDurableSubscriptio
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected DurableSubscriptionStoreDelegate createStateManager(ServerPeer serverPeer)
-      throws Exception
-   {
-      // serverPeer is ignored
-
-      return ServerManagement.getDurableSubscriptionStoreDelegate();
-   }
 
    // Private -------------------------------------------------------
 

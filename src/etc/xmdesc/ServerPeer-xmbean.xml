@@ -78,7 +78,7 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getMessageStore" setMethod="setTransactionLog">
+   <attribute access="read-write" getMethod="getMessageStore" setMethod="setMessageStore">
       <description>The ObjectName of the message store</description>
       <name>MessageStore</name>
       <type>javax.management.ObjectName</type>
@@ -198,8 +198,8 @@
    </operation>
 
    <operation>
-      <description>Set the security config for a destination</description>
-      <name>setSecurityConfig</name>
+      <description>Configure security for a specific destination. Used by destination at deployment.</description>
+      <name>configureSecurityForDestination</name>
       <parameter>
          <name>destinationName</name>
          <type>java.lang.String</type>
@@ -209,5 +209,12 @@
          <type>org.w3c.dom.Element</type>
       </parameter>
    </operation>
+
+   <operation>
+      <description>Returns a Set of javax.jms.Destinations (Queues and Topics) containing the current active destinations</description>
+      <name>getDestinations</name>
+      <return-type>java.util.Set</return-type>
+   </operation>
+
 
 </mbean>

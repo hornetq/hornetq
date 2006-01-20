@@ -25,6 +25,8 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.xml.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.management.ObjectName;
 import java.util.Set;
@@ -170,5 +172,45 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
                    mbeanConfig.getDependencyOptionalAttributeValue("SomeName"));
    }
 
+   public void testXMLAttribute() throws Exception
+   {
+      String s =
+         "<mbean name=\"somedomain:service=SomeService\"" +
+         "       code=\"org.example.SomeClass\"" +
+         "       xmbean-dd=\"xmdesc/somefile.xml\">" +
+         "       <attribute name=\"xmlattribute\"> " +
+         "             <something>" +
+         "                 <somethingelse/> " +
+         "             </something>" +
+         "       </attribute>" +
+         "</mbean>";
+
+      Element e = XMLUtil.stringToElement(s);
+      MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
+
+      Set optionalAttributeNames = mbeanConfig.attributeNames();
+      assertEquals(1, optionalAttributeNames.size());
+      assertTrue(optionalAttributeNames.contains("xmlattribute"));
+
+      String attributeValue = mbeanConfig.getAttributeValue("xmlattribute");
+
+      Node n = XMLUtil.stringToElement(attributeValue);
+      assertEquals("something", n.getNodeName());
+
+      NodeList nl = n.getChildNodes();
+      boolean sonethingelseFound = false;
+
+      for(int i = 0; i < nl.getLength(); i++)
+      {
+         Node c = nl.item(i);
+         if ("somethingelse".equals(c.getNodeName()))
+         {
+            sonethingelseFound = true;
+            break;
+         }
+      }
+
+      assertTrue(sonethingelseFound);
+   }
 
 }
