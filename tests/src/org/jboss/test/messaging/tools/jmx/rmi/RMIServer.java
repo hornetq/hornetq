@@ -204,6 +204,11 @@ public class RMIServer extends UnicastRemoteObject implements Server
       return sc.invoke(on, operationName, params, signature);
    }
 
+   public Set query(ObjectName pattern) throws Exception
+   {
+      return sc.query(pattern);
+   }
+
    public void log(int level, String text)
    {
       if (ServerManagement.FATAL == level)
@@ -455,12 +460,19 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
    public void configureSecurityForDestination(String destName, String config) throws Exception
    {
-      Element element = XMLUtil.stringToElement(config);
+      Set s = sc.query(new ObjectName("*:service=Queue,name=" + destName));
+      for(Iterator i = s.iterator(); i.hasNext();)
+      {
+         ObjectName on = (ObjectName)i.next();
+         sc.setAttribute(on, "SecurityConfig", config);
+      }
 
-      sc.invoke(serverPeerObjectName,
-                "configureSecurityForDestination",
-                new Object[] { destName, element },
-                new String[] {"java.lang.String", "org.w3c.dom.Element"});
+      s = sc.query(new ObjectName("*:service=Topic,name=" + destName));
+      for(Iterator i = s.iterator(); i.hasNext();)
+      {
+         ObjectName on = (ObjectName)i.next();
+         sc.setAttribute(on, "SecurityConfig", config);
+      }
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception

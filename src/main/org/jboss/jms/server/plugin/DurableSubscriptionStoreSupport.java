@@ -152,7 +152,7 @@ public abstract class DurableSubscriptionStoreSupport
                                                                  boolean noLocal)
          throws JMSException
    {
-      Topic topic = (Topic)serverPeer.getDestinationManager().getCoreDestination(false, topicName);
+      Topic topic = (Topic)serverPeer.getCoreDestination(false, topicName);
       if (topic == null)
       {
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");

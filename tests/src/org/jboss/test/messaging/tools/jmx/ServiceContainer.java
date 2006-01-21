@@ -34,11 +34,13 @@ import org.jboss.tm.TxManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.jms.util.JNDIUtil;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.jms.server.FacadeDestinationManager;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -506,8 +508,8 @@ public class ServiceContainer
 
    private void loadJNDIContexts() throws Exception
    {
-      String[] names = {FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT,
-                        FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT};
+      String[] names = {ServerPeer.DEFAULT_QUEUE_CONTEXT,
+                        ServerPeer.DEFAULT_TOPIC_CONTEXT};
 
       for (int i = 0; i < names.length; i++)
       {

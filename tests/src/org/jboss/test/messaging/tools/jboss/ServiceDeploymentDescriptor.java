@@ -12,6 +12,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
 import org.jboss.test.messaging.tools.xml.XMLUtil;
 import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
 
 import javax.management.ObjectName;
 import java.net.URL;

@@ -3,8 +3,6 @@
       "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
       "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
 
-
-
 <mbean>
    <description>A deployable JBoss Messaging Topic</description>
    <class>org.jboss.jms.server.destination.Topic</class>
@@ -15,15 +13,32 @@
       <name>Topic</name>
    </constructor>
 
+   <constructor>
+      <name>Topic</name>
+      <parameter>
+         <name>isCreatedProgrammatically</name>
+         <type>boolean</type>
+      </parameter>
+   </constructor>
+
    <!-- Managed attributes -->
 
    <attribute access="read-only" getMethod="getName">
-      <description>The destination's name</description>
+      <description>The destination name</description>
       <name>Name</name>
       <type>java.lang.String</type>
    </attribute>
 
-   <!-- This attribute is writable to allow configuring an arbitarty JNDI name in the topic's
+   <!-- This managed attribute is exposed here for backward compatibility with JBossMQ topics
+        management interface only. It will probably dissapear in the future.
+   -->
+   <attribute access="read-only" getMethod="getName">
+      <description>The topic name (deprecated management attribute)</description>
+      <name>TopicName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <!-- This attribute is writable to allow configuring an arbitrary JNDI name in the topic's
         service deployment descriptor. Any attempt to change the attribute after initialization
         will be ignored.
    -->
@@ -47,6 +62,12 @@
       <description>The destination's security configuration</description>
       <name>SecurityConfig</name>
       <type>org.w3c.dom.Element</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="isCreatedProgrammatically">
+      <description>True if this destination was created programmatically</description>
+      <name>CreatedProgrammatically</name>
+      <type>boolean</type>
    </attribute>
 
    <!-- Managed operations -->

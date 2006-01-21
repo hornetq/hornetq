@@ -23,6 +23,7 @@ package org.jboss.test.messaging.jms.server.destination.base;
 
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
@@ -75,7 +76,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       super.tearDown();
    }
 
-   public void testDeployDestination() throws Exception
+   public void testDeployDestinationAdministratively() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
@@ -93,7 +94,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
 
       String jndiName = (isQueue() ? "/queue" : "/topic") + "/Kirkwood";
-      assertEquals(jndiName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
+      String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
+      assertEquals(jndiName, s);
 
 
       Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
@@ -221,8 +223,111 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       ServerManagement.setAttribute(destObjectName, "JNDIName", "total/junk");
       assertEquals(testJNDIName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
 
-      ServerManagement.undeploy(destObjectName);
+      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
    }
+
+
+   public void testDeployDestinationProgramatically() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String destinationType = isQueue() ? "Queue" : "Topic";
+      String createMethod = "create" + destinationType;
+      String destroyMethod = "destroy" + destinationType;
+      String destinationName = "BlahBlah";
+      String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
+      ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
+                                                 destinationType +",name=" + destinationName);
+
+      // deploy it
+
+      String jndiName = (String)ServerManagement.
+         invoke(serverPeerObjectName, createMethod,
+                new Object[] { destinationName, null },
+                new String[] { "java.lang.String", "java.lang.String" });
+
+      assertEquals(expectedJNDIName, jndiName);
+
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      if (isQueue())
+      {
+         Queue q = (Queue)ic.lookup(jndiName);
+         assertEquals(destinationName, q.getQueueName());
+      }
+      else
+      {
+         Topic t = (Topic)ic.lookup(jndiName);
+         assertEquals(destinationName, t.getTopicName());
+      }
+
+      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
+      assertEquals(expectedJNDIName,
+                   (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
+
+      // undeploy it
+
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+                                                   new Object[] { destinationName },
+                                                   new String[] { "java.lang.String" });
+
+      assertTrue(b.booleanValue());
+
+      try
+      {
+         ic.lookup(expectedJNDIName);
+         fail("should throw exception");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
+
+      Set set = ServerManagement.query(destObjectName);
+      assertTrue(set.isEmpty());
+
+      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
+                                         new Object[0], new String[0]);
+
+      assertTrue(set.isEmpty());
+
+      ic.close();
+
+   }
+
+   public void testDestroyNonProgrammaticDestination() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String destinationType = isQueue() ? "Queue" : "Topic";
+      String destroyMethod = "destroy" + destinationType;
+      String destinationName = "XXX";
+
+      // deploy "classically"
+
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"jboss.messaging.destination:service=@TOREPLACE@,name=" + destinationName + "\" " +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">" + serverPeerObjectName + "</depends>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
+
+      // try to undeploy programatically
+
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+                                                   new Object[] { destinationName },
+                                                   new String[] { "java.lang.String" });
+
+      assertFalse(b.booleanValue());
+   }
+
+
 
    // Package protected ---------------------------------------------
    

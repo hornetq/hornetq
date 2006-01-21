@@ -24,6 +24,7 @@ package org.jboss.test.messaging.tools.client;
 import org.jboss.logging.Logger;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 
 /**
@@ -66,12 +67,14 @@ public class Colocated extends Client
 
    public void deployTopic(String name) throws Exception
    {
-      serverPeer.getDestinationManager().createTopic(name, null);
+      throw new NotYetImplementedException();
+      //serverPeer.getDestinationManager().createTopic(name, null);
    }
 
    public void deployQueue(String name) throws Exception
    {
-      serverPeer.getDestinationManager().createQueue(name, null);
+      throw new NotYetImplementedException();
+      //serverPeer.getDestinationManager().createQueue(name, null);
    }
 
    public void exit() throws Exception

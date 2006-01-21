@@ -39,7 +39,6 @@ import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.FacadeDestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.AckInfo;
@@ -330,11 +329,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             sess.close();
          }
          
-         FacadeDestinationManager dm = serverPeer.getDestinationManager();
          iter = this.temporaryDestinations.iterator();
          while (iter.hasNext())
          {
-            dm.removeTemporaryDestination((JBossDestination)iter.next());
+            serverPeer.destroyTemporaryDestination((JBossDestination)iter.next());
          }
          
          this.temporaryDestinations.clear();
@@ -493,8 +491,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          throw new IllegalStateException("JMSDestination header not set!");
       }
 
-      FacadeDestinationManager dm = serverPeer.getDestinationManager();
-      CoreDestination coreDestination = dm.getCoreDestination(jmsDestination);
+      CoreDestination coreDestination = serverPeer.getCoreDestination(jmsDestination);
       
       if (coreDestination == null)
       {

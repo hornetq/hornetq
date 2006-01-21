@@ -38,7 +38,7 @@ import org.jboss.messaging.core.local.Topic;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * Manages access to destinations (local or distributed). There is a single CoreDestinationManager
+ * Manages access to destinations (local or distributed). There is a single CoreDestinationStore
  * instance for each server peer.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -46,11 +46,11 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-class CoreDestinationManager
+class CoreDestinationStore
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(CoreDestinationManager.class);
+   private static final Logger log = Logger.getLogger(CoreDestinationStore.class);
 
    // Static --------------------------------------------------------
 
@@ -62,17 +62,17 @@ class CoreDestinationManager
    // <name - CoreDestination>
    protected Map topicMap;
 
-   protected FacadeDestinationManager destinationManager;
+   protected DestinationJNDIMapper destinationManager;
 
    // Constructors --------------------------------------------------
 
-   CoreDestinationManager(FacadeDestinationManager destinationManager) throws Exception
+   CoreDestinationStore(DestinationJNDIMapper destinationManager) throws Exception
    {
       queueMap = new ConcurrentReaderHashMap();
       topicMap = new ConcurrentReaderHashMap();
       this.destinationManager = destinationManager;
 
-      log.debug("CoreDestinationManager created");
+      log.debug("CoreDestinationStore created");
    }
 
    // Public --------------------------------------------------------
@@ -101,13 +101,13 @@ class CoreDestinationManager
    }
 
    /**
-    * Add a JMS Deestination.
+    * Creates the state (core destination) correspoding to an external (JMS) destination.
     * 
-    * @param jmsDestination - the JMS destination to add.
+    * @param jmsDestination - the JMS destination to create the state for.
     *
     * @throws JMSException if the destination with that name already exists
     */
-   void addCoreDestination(Destination jmsDestination) throws JMSException
+   void createCoreDestination(Destination jmsDestination) throws JMSException
    {
       JBossDestination d = (JBossDestination)jmsDestination;
       String name = d.getName();
@@ -179,20 +179,20 @@ class CoreDestinationManager
    }
    
    /**
-    * Remove an AbstractDestination.
+    * Cleans up the state (core destination) corresponding to an external (JMS) destination,
     */
-   CoreDestination removeCoreDestination(boolean isQueue, String name)
+   CoreDestination destroyCoreDestination(boolean isQueue, String name)
    {
-  
       if (isQueue)
       {
+         // TODO maybe we should perform cleanup of the core destination before removing
          return (CoreDestination)queueMap.remove(name);
       }
       else
       {
+         // TODO maybe we should perform cleanup of the core destination before removing
          return (CoreDestination)topicMap.remove(name);
       }
-      
    }
 
    // Package protected ---------------------------------------------

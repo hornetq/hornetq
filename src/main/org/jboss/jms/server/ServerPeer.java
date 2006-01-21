@@ -24,17 +24,16 @@ package org.jboss.jms.server;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.XAConnectionFactory;
+import javax.jms.JMSException;
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
+import javax.management.Attribute;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -57,9 +56,13 @@ import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.system.ServiceCreator;
+import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
 /**
@@ -71,7 +74,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class ServerPeer
+public class ServerPeer extends ServiceMBeanSupport implements DestinationManager
 {
    // Constants -----------------------------------------------------
 
@@ -82,16 +85,17 @@ public class ServerPeer
    private static final String XACONNECTION_FACTORY_JNDI_NAME = "XAConnectionFactory";
    
    public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
-   
+
+   public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
+   public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   protected MBeanServer mbeanServer;
-
    protected String serverPeerID;
    protected ObjectName connectorName;
-   
+
    //protected Connector connector;
    
    protected InvokerLocator locator;
@@ -105,9 +109,9 @@ public class ServerPeer
 
    // wired components
 
-   protected FacadeDestinationManager dm;
+   protected DestinationJNDIMapper destinationJNDIMapper;
+   protected SecurityManager sm;
    protected ClientManager clientManager;
-   protected SecurityManager securityManager;
    protected TransactionRepository txRepository;
    protected JMSServerInvocationHandler handler;
    protected ConnectionListener connectionListener;
@@ -134,7 +138,7 @@ public class ServerPeer
       // the default value to use, unless the JMX attribute is modified
       connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
       
-      securityManager = new SecurityManager();
+      sm = new SecurityManager();
 
       version = new Version("VERSION");
 
@@ -146,16 +150,72 @@ public class ServerPeer
    // TODO
    // The future Server interface -----------------------------------
 
-   //
-   // JMX operations
-   //
-
-   public synchronized void create()
+   public Object getInstance()
    {
-      // noop
+      return this;
    }
 
-   public synchronized void start() throws Exception
+   // DestinationManager interface ----------------------------------
+
+   public String registerDestination(boolean isQueue, String name, String jndiName,
+                                     Element securityConfiguration) throws JMSException
+   {
+      jndiName = destinationJNDIMapper.registerDestination(isQueue, name, jndiName);
+
+      if (securityConfiguration == null)
+      {
+         // relying on the server's default
+         securityConfiguration = getDefaultSecurityConfig();
+      }
+
+      sm.setSecurityConfig(name, securityConfiguration);
+      return jndiName;
+   }
+   
+   public void unregisterDestination(boolean isQueue, String name) throws JMSException
+   {
+      destinationJNDIMapper.unregisterDestination(isQueue, name);
+      sm.clearSecurityConfig(name);
+   }
+
+   public CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
+   {
+      return destinationJNDIMapper.getCoreDestination(isQueue, name);
+   }
+
+   public CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException
+   {
+      boolean isQueue = d instanceof javax.jms.Queue;
+      String name =
+         isQueue ? ((javax.jms.Queue)d).getQueueName() : ((javax.jms.Topic)d).getTopicName();
+
+      return getCoreDestination(isQueue, name);
+   }
+
+   public void createTemporaryDestination(javax.jms.Destination d) throws JMSException
+   {
+      destinationJNDIMapper.createTemporaryDestination(d);
+   }
+
+   public void destroyTemporaryDestination(javax.jms.Destination d) throws JMSException
+   {
+      destinationJNDIMapper.destroyTemporaryDestination(d);
+   }
+
+   public Element getDefaultSecurityConfiguration()
+   {
+      return sm.getDefaultSecurityConfig();
+   }
+
+   public void setSecurityConfiguration(boolean isQueue, String name, Element securityConfig)
+      throws JMSException
+   {
+      sm.setSecurityConfig(name, securityConfig);
+   }
+
+   // ServiceMBeanSupport overrides ---------------------------------
+
+   public synchronized void startService() throws Exception
    {
       try
       {
@@ -167,10 +227,10 @@ public class ServerPeer
          log.debug(this + " starting");
 
          loadClientAOPConfig();
-         
+
          loadServerAOPConfig();
 
-         mbeanServer = findMBeanServer();
+         MBeanServer mbeanServer = getServer();
 
          // Acquire references to plugins. Each plug-in will be accessed directly via a reference
          // circumventing the MBeanServer. However, they are installed as services to take advantage
@@ -205,18 +265,18 @@ public class ServerPeer
 
          clientManager = new ClientManagerImpl(this);
 
-         dm = new FacadeDestinationManager(this);
+         destinationJNDIMapper = new DestinationJNDIMapper(this);
 
-         securityManager.init();
+         sm.init();
 
-         initializeRemoting();
+         initializeRemoting(mbeanServer);
 
          setupConnectionFactories();
-         
+
          createRecoverable();
-         
+
          started = true;
-   
+
          log.info("JMS " + this + " started");
       }
       catch (Exception e)
@@ -225,7 +285,7 @@ public class ServerPeer
       }
    }
 
-   public synchronized void stop() throws Exception
+   public synchronized void stopService() throws Exception
    {
       if (!started)
       {
@@ -233,75 +293,65 @@ public class ServerPeer
       }
 
       log.debug(this + " stopping");
-      
+
       unloadServerAOPConfig();
-      
+
       tearDownConnectionFactories();
-      
-      dm.destroyAllDestinations();
+
+      destinationJNDIMapper.destroyAllDestinations();
+
       txRepository = null;
       clientManager = null;
-      dm = null;
+      destinationJNDIMapper = null;
 
       //remove the connection listener
 //      mbeanServer.invoke(connectorName, "removeConnectionListener",
 //            new Object[] {connectionListener},
-//            new String[] {"org.jboss.remoting.ConnectionListener"}); 
-      
+//            new String[] {"org.jboss.remoting.ConnectionListener"});
+
       // remove the JMS subsystem invocation handler
-      mbeanServer.invoke(connectorName, "removeInvocationHandler",
+      getServer().invoke(connectorName, "removeInvocationHandler",
                          new Object[] {"JMS"},
                          new String[] {"java.lang.String"});
-      
+
 //      connector.removeInvocationHandler("JMS");
 //      connector.stop();
 //      connector.destroy();
-                        
+
       removeRecoverable();
 
       started = false;
 
       log.info("JMS " + this + " stopped");
-
    }
 
-   public synchronized void destroy()
-   {
-      // noop
-   }
+   //
+   // JMX operations
+   //
 
    public String createQueue(String name, String jndiName) throws Exception
    {
-      return dm.createQueue(name, jndiName);
+      return createDestination(true, name, jndiName);
    }
 
-   public void destroyQueue(String name) throws Exception
+   public boolean destroyQueue(String name) throws Exception
    {
-      dm.destroyQueue(name);
+      return destroyDestination(true, name);
    }
 
    public String createTopic(String name, String jndiName) throws Exception
    {
-      return dm.createTopic(name, jndiName);
+      return createDestination(false, name, jndiName);
    }
 
-   public void destroyTopic(String name) throws Exception
+   public boolean destroyTopic(String name) throws Exception
    {
-      dm.destroyTopic(name);
-   }
-
-   /**
-    * Used by destinations at deployment.
-    */
-   public void configureSecurityForDestination(String destinationName, Element configuration) 
-      throws Exception
-   {
-      securityManager.setSecurityConfig(destinationName, configuration);
+      return destroyDestination(false, name);
    }
 
    public Set getDestinations() throws Exception
    {
-      return dm.getDestinations();
+      return destinationJNDIMapper.getDestinations();
    }
 
    //
@@ -415,22 +465,22 @@ public class ServerPeer
       
    public void setSecurityDomain(String securityDomain)
    {
-      securityManager.setSecurityDomain(securityDomain);
+      sm.setSecurityDomain(securityDomain);
    }
    
    public String getSecurityDomain()
    {
-      return securityManager.getSecurityDomain();
+      return sm.getSecurityDomain();
    }
 
    public void setDefaultSecurityConfig(Element conf) throws Exception
    {
-      securityManager.setDefaultSecurityConfig(conf);
+      sm.setDefaultSecurityConfig(conf);
    }
    
    public Element getDefaultSecurityConfig()
    {
-      return securityManager.getDefaultSecurityConfig();
+      return sm.getDefaultSecurityConfig();
    }
    
    //
@@ -439,7 +489,7 @@ public class ServerPeer
 
    public boolean isDeployed(boolean isQueue, String name)
    {
-      return dm.isDeployed(isQueue, name);
+      return destinationJNDIMapper.isDeployed(isQueue, name);
    }
 
    public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate()
@@ -462,14 +512,14 @@ public class ServerPeer
       return clientManager;
    }
    
-   public FacadeDestinationManager getDestinationManager()
+   public DestinationJNDIMapper getDestinationManager()
    {
-      return dm;
+      return destinationJNDIMapper;
    }
 
    public SecurityManager getSecurityManager()
    {
-      return securityManager;
+      return sm;
    }
 
    public ConnectionFactoryDelegate getConnectionFactoryDelegate(String connectionFactoryID)
@@ -562,28 +612,28 @@ public class ServerPeer
       }   
    }
 
-   /**
-    * @return - may return null if it doesn't find a "jboss" MBeanServer.
-    */
-   private MBeanServer findMBeanServer()
-   {
-      System.setProperty("jmx.invoke.getters", "true");
+//   /**
+//    * @return - may return null if it doesn't find a "jboss" MBeanServer.
+//    */
+//   private MBeanServer findMBeanServer()
+//   {
+//      System.setProperty("jmx.invoke.getters", "true");
+//
+//      MBeanServer result = null;
+//      ArrayList l = MBeanServerFactory.findMBeanServer(null);
+//      for(Iterator i = l.iterator(); i.hasNext(); )
+//      {
+//         MBeanServer s = (MBeanServer)l.iterator().next();
+//         if ("jboss".equals(s.getDefaultDomain()))
+//         {
+//            result = s;
+//            break;
+//         }
+//      }
+//      return result;
+//   }
 
-      MBeanServer result = null;
-      ArrayList l = MBeanServerFactory.findMBeanServer(null);
-      for(Iterator i = l.iterator(); i.hasNext(); )
-      {
-         MBeanServer s = (MBeanServer)l.iterator().next();
-         if ("jboss".equals(s.getDefaultDomain()))
-         {
-            result = s;
-            break;
-         }
-      }
-      return result;
-   }
-
-   private void initializeRemoting() throws Exception
+   private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
       String s = (String)mbeanServer.invoke(connectorName, "getInvokerLocator",
                                             new Object[0], new String[0]);
@@ -764,6 +814,63 @@ public class ServerPeer
             os.close();
          }
       }
+   }
+
+   private String createDestination(boolean isQueue, String name, String jndiName) throws Exception
+   {
+      //
+      // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
+      //
+
+      String destType = isQueue ? "Queue" : "Topic";
+      String className = "org.jboss.jms.server.destination." + destType;
+      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
+      ObjectName on = new ObjectName(ons);
+
+      MBeanServer mbeanServer = getServer();
+
+      String destinationMBeanConfig =
+         "<mbean code=\"" + className + "\" " +
+         "       name=\"" + ons + "\" " +
+         "       xmbean-dd=\"xmdesc/" + destType + "-xmbean.xml\">\n" +
+         "    <constructor>" +
+         "        <arg type=\"boolean\" value=\"true\"/>" +
+         "    </constructor>" +
+         "</mbean>";
+
+      Element element = Util.stringToElement(destinationMBeanConfig);
+
+      ServiceCreator sc = new ServiceCreator(mbeanServer);
+      sc.install(on, null, element);
+
+      // inject dependencies
+      mbeanServer.setAttribute(on, new Attribute("ServerPeer", getServiceName()));
+      mbeanServer.setAttribute(on, new Attribute("JNDIName", jndiName));
+      mbeanServer.invoke(on, "create", new Object[0], new String[0]);
+      mbeanServer.invoke(on, "start", new Object[0], new String[0]);
+
+      return (String)mbeanServer.getAttribute(on, "JNDIName");
+   }
+
+   private boolean destroyDestination(boolean isQueue, String name) throws Exception
+   {
+      String destType = isQueue ? "Queue" : "Topic";
+      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
+      ObjectName on = new ObjectName(ons);
+
+      MBeanServer mbeanServer = getServer();
+
+      // we can only destroy destinations that have been created programatically
+      Boolean b = (Boolean)mbeanServer.getAttribute(on, "CreatedProgrammatically");
+      if (!b.booleanValue())
+      {
+         log.warn("Cannot destroy a destination that has not been created programatically");
+         return false;
+      }
+      mbeanServer.invoke(on, "stop", new Object[0], new String[0]);
+      mbeanServer.invoke(on, "destroy", new Object[0], new String[0]);
+      mbeanServer.unregisterMBean(on);
+      return true;
    }
 
    // Inner classes -------------------------------------------------

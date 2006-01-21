@@ -21,6 +21,42 @@
 
    <!-- Managed attributes -->
 
+   <!-- plugins ObjectNames -->
+
+   <attribute access="read-write" getMethod="getThreadPool" setMethod="setThreadPool">
+      <description>The ObjectName of the thread pool plugin</description>
+      <name>ThreadPool</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getTransactionLog" setMethod="setTransactionLog">
+      <description>The ObjectName of the transaction log</description>
+      <name>TransactionLog</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getMessageStore" setMethod="setMessageStore">
+      <description>The ObjectName of the message store</description>
+      <name>MessageStore</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDurableSubscriptionStore" setMethod="setDurableSubscriptionStore">
+      <description>The ObjectName of the durable subscription store</description>
+      <name>DurableSubscriptionStore</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <!-- instance access -->
+
+   <attribute access="read-only" getMethod="getInstance">
+      <description>The instance to be accessed by select plugins via a typed hard reference</description>
+      <name>Instance</name>
+      <type>java.lang.Object</type>
+   </attribute>
+
+   <!-- regular JMX attributes -->
+
    <attribute access="read-only" getMethod="getJMSVersion">
       <description>The version of the JMS specification implemented by this provider</description>
       <name>JMSVersion</name>
@@ -63,35 +99,6 @@
       <type>int</type>
    </attribute>
 
-
-   <!-- plugins ObjectNames -->
-
-   <attribute access="read-write" getMethod="getThreadPool" setMethod="setThreadPool">
-      <description>The ObjectName of the thread pool plugin</description>
-      <name>ThreadPool</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-
-   <attribute access="read-write" getMethod="getTransactionLog" setMethod="setTransactionLog">
-      <description>The ObjectName of the transaction log</description>
-      <name>TransactionLog</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-
-   <attribute access="read-write" getMethod="getMessageStore" setMethod="setMessageStore">
-      <description>The ObjectName of the message store</description>
-      <name>MessageStore</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-
-   <attribute access="read-write" getMethod="getDurableSubscriptionStore" setMethod="setDurableSubscriptionStore">
-      <description>The ObjectName of the durable subscription store</description>
-      <name>DurableSubscriptionStore</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-
-
-
    <attribute access="read-only" getMethod="getServerPeerID">
       <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
       <name>serverPeerID</name>
@@ -110,13 +117,6 @@
       <type>javax.management.ObjectName</type>
    </attribute>
     
-   <attribute access="read-only" getMethod="getServerPeer">
-      <description>Get a reference to the ServerPeer object</description>
-      <name>ServerPeer</name>
-      <type>org.jboss.jms.server.ServerPeer</type>
-   </attribute>
-   
-   
    <attribute access="read-write" getMethod="getSecurityDomain" setMethod="setSecurityDomain">
       <description>The Security Domain to be used by the Server Peer</description>
       <name>SecurityDomain</name>
@@ -152,7 +152,7 @@
    </operation>
 
    <operation>
-      <description>Creates a queue with the specified name/JNDI name</description>
+      <description>Creates a queue with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started</description>
       <name>createQueue</name>
       <parameter>
          <name>name</name>
@@ -166,16 +166,17 @@
    </operation>
 
    <operation>
-      <description>Destroys an existing queue</description>
+      <description>Stops and destroys the corresponding destination service. If the destination was created dynamically (via createQueue()), then the service is also unregistered from the MBean server.</description>
       <name>destroyQueue</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
       </parameter>
+       <return-type>boolean</return-type>
    </operation>
 
    <operation>
-      <description>Creates a topic with the specified name/JNDI name</description>
+      <description>Creates a topic with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started</description>
       <name>createTopic</name>
       <parameter>
          <name>name</name>
@@ -189,25 +190,13 @@
    </operation>
 
    <operation>
-      <description>Destroys an existing topic</description>
+      <description>Stops and destroys the corresponding destination service. If can only destroy destinations that have been created programatically.</description>
       <name>destroyTopic</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
       </parameter>
-   </operation>
-
-   <operation>
-      <description>Configure security for a specific destination. Used by destination at deployment.</description>
-      <name>configureSecurityForDestination</name>
-      <parameter>
-         <name>destinationName</name>
-         <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-         <name>securityConfig</name>
-         <type>org.w3c.dom.Element</type>
-      </parameter>
+      <return-type>boolean</return-type>
    </operation>
 
    <operation>

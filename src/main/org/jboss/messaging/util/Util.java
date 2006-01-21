@@ -21,7 +21,14 @@
   */
 package org.jboss.messaging.util;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+
 import javax.jms.Session;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import java.io.StringReader;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -74,6 +81,18 @@ public class Util
          return "SESSION_TRANSACTED";
       }
       return "UNKNOWN: " + ackMode;
+   }
+
+   /**
+    * TODO this is a duplicate of test.XMLUtil.stringToElement().
+    *      Only used by ServerPeer.createDestination(). Get rid of this when I fix that method.
+    */
+   public static Element stringToElement(String s) throws Exception
+   {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder parser = factory.newDocumentBuilder();
+      Document doc = parser.parse(new InputSource(new StringReader(s)));
+      return doc.getDocumentElement();
    }
 
    // Attributes ----------------------------------------------------

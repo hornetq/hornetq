@@ -7,19 +7,21 @@
 package org.jboss.jms.server.destination;
 
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.jms.server.DestinationManager;
 import org.w3c.dom.Element;
 
 import javax.management.ObjectName;
 
 /**
- * The base of a deployable JBoss Messaging destination.
+ * The base of a  JBoss Messaging destination service. Both deployed or programatically created
+ * destinations will eventually get one of these.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
+public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
 
@@ -27,29 +29,21 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
    
    // Attributes ----------------------------------------------------
 
-   // A destination interacts with the server peer via detyped JMX invocations. This decouples the
-   // destination service from the server service and allows each of them to be hot redeployed
-   // independently of each other.
-   // TODO - test for that
    protected ObjectName serverPeerObjectName;
-
+   protected DestinationManager dm;
    protected Element securityConfig;
 
-   // the destination name
    protected String name;
-
    protected String jndiName;
 
    protected boolean started = false;
-
-   private final String createDestinationMethodName, destroyDestinationMethodName;
+   private boolean createdProgrammatically = false;
 
    // Constructors --------------------------------------------------
 
-   protected DeployableDestinationSupport()
+   public DestinationServiceSupport(boolean createdProgrammatically)
    {
-      createDestinationMethodName = "create" + (isQueue() ? "Queue" : "Topic");
-      destroyDestinationMethodName = "destroy" + (isQueue() ? "Queue" : "Topic");
+      this.createdProgrammatically = createdProgrammatically;
    }
 
    // ServiceMBeanSupport overrides ---------------------------------
@@ -69,23 +63,14 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
                                           " name was not properly set in the service's ObjectName");
       }
 
-      jndiName = (String)server.invoke(serverPeerObjectName, createDestinationMethodName,
-                                       new Object[] {name, jndiName},
-                                       new String[] {"java.lang.String", "java.lang.String"});
+      dm = (DestinationManager)server.getAttribute(serverPeerObjectName, "Instance");
 
-      if (securityConfig != null)
-      {
-         server.invoke(serverPeerObjectName, "configureSecurityForDestination",
-                       new Object[] {name, securityConfig},
-                       new String[] {"java.lang.String", "org.w3c.dom.Element"});
-      }
-      else
-      {
-         // relying on the server's default, expose it in the management interface for convenience
-         Element defConfig = (Element)server.getAttribute(serverPeerObjectName,
-                                                          "DefaultSecurityConfig");
+      jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
 
-         setSecurityConfig(defConfig);
+      if (securityConfig == null)
+      {
+         // refresh my security config to be identical with server's default
+         securityConfig = dm.getDefaultSecurityConfiguration();
       }
 
       log.info(this + " started");
@@ -93,12 +78,8 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
 
    public void stopService() throws Exception
    {
-      server.invoke(serverPeerObjectName, destroyDestinationMethodName,
-                    new Object[] {name},
-                    new String[] {"java.lang.String"});
-
+      dm.unregisterDestination(isQueue(), name);
       started = false;
-
       log.info(this + " stopped");
    }
 
@@ -137,8 +118,14 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
       return serverPeerObjectName;
    }
 
-   public void setSecurityConfig(Element securityConfig)
+   public void setSecurityConfig(Element securityConfig) throws Exception
    {
+      // push security update to the server
+      if (dm != null)
+      {
+         dm.setSecurityConfiguration(isQueue(), name, securityConfig);
+      }
+
       this.securityConfig = securityConfig;
    }
 
@@ -150,6 +137,11 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
    public String getName()
    {
       return name;
+   }
+
+   public boolean isCreatedProgrammatically()
+   {
+      return createdProgrammatically;
    }
 
    // JMX managed operations ----------------------------------------
@@ -203,7 +195,11 @@ public abstract class DeployableDestinationSupport extends ServiceMBeanSupport
    public String toString()
    {
       String nameFromJNDI = jndiName;
-      int idx = jndiName.lastIndexOf('/');
+      int idx = -1;
+      if (jndiName != null)
+      {
+         jndiName.lastIndexOf('/');
+      }
       if (idx != -1)
       {
          nameFromJNDI = jndiName.substring(idx + 1);

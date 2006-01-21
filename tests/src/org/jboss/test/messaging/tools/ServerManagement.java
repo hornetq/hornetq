@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.tools;
 
 import java.util.Hashtable;
+import java.util.Set;
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -205,12 +206,17 @@ public class ServerManagement
       server.setAttribute(on, name, valueAsString);
    }
 
-
-   public static Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
-      throws Exception
+   public static Object invoke(ObjectName on, String operationName,
+                               Object[] params, String[] signature) throws Exception
    {
       insureStarted();
       return server.invoke(on, operationName, params, signature);
+   }
+
+   public static Set query(ObjectName pattern) throws Exception
+   {
+      insureStarted();
+      return server.query(pattern);
    }
 
    public static void log(int level, String text)

@@ -113,7 +113,7 @@
    <target name="ping-queue">
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${ENV.JBOSS_HOME}/bin">
-         <arg line="get jboss.messaging.destination:name=SmokeTestQueue,service=Queue QueueName"/>
+         <arg line="get jboss.messaging.destination:name=SmokeTestQueue,service=Queue Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>
@@ -128,7 +128,7 @@
    <target name="ping-topic">
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${ENV.JBOSS_HOME}/bin">
-         <arg line="get jboss.messaging.destination:name=SmokeTestTopic,service=Topic TopicName"/>
+         <arg line="get jboss.messaging.destination:name=SmokeTestTopic,service=Topic Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>

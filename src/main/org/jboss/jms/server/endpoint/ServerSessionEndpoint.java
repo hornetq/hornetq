@@ -41,7 +41,6 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.FacadeDestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
@@ -51,6 +50,7 @@ import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
@@ -114,11 +114,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
             
-      // look-up destination
-      FacadeDestinationManager dm = serverPeer.getDestinationManager();
       if (jmsDestination != null)
       {
-         if (dm.getCoreDestination(jmsDestination) == null)
+         if (serverPeer.getCoreDestination(jmsDestination) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
@@ -173,9 +171,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      // look-up destination
-      FacadeDestinationManager dm = serverPeer.getDestinationManager();
-      Distributor coreDestination = dm.getCoreDestination(jmsDestination);
+      CoreDestination coreDestination = serverPeer.getCoreDestination(jmsDestination);
       if (coreDestination == null)
       {
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
@@ -305,10 +301,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	      throw new InvalidDestinationException("null destination");
 	   }
 	   
-	   // look-up destination
-	   FacadeDestinationManager dm = serverPeer.getDestinationManager();
-	   
-	   Distributor destination = dm.getCoreDestination(jmsDestination);
+	   CoreDestination destination = serverPeer.getCoreDestination(jmsDestination);
 	   
 	   if (destination == null)
 	   {
@@ -343,9 +336,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      FacadeDestinationManager dm = serverPeer.getDestinationManager();
-      
-      Distributor coreDestination = dm.getCoreDestination(true, name);
+      CoreDestination coreDestination = serverPeer.getCoreDestination(true, name);
 
       if (coreDestination == null)
       {
@@ -367,8 +358,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      FacadeDestinationManager dm = serverPeer.getDestinationManager();
-      Distributor coreDestination = dm.getCoreDestination(false, name);
+      Distributor coreDestination = serverPeer.getCoreDestination(false, name);
 
       if (coreDestination == null)
       {
@@ -463,7 +453,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
       this.connectionEndpoint.temporaryDestinations.add(dest);
-      serverPeer.getDestinationManager().addTemporaryDestination(dest);
+      serverPeer.createTemporaryDestination(dest);
    }
    
    public void deleteTemporaryDestination(Destination dest) throws JMSException
@@ -480,7 +470,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       //It is illegal to delete a temporary destination if there any active consumers on it
-      Distributor destination = serverPeer.getDestinationManager().getCoreDestination(dest);
+      CoreDestination destination = serverPeer.getCoreDestination(dest);
       
       if (destination == null)
       {
@@ -508,7 +498,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      serverPeer.getDestinationManager().removeTemporaryDestination(dest);
+      serverPeer.destroyTemporaryDestination(dest);
       this.connectionEndpoint.temporaryDestinations.remove(dest);
    }
    

@@ -56,11 +56,11 @@ public class Util
    {
       MBeanServerConnection mBeanServer = lookupMBeanServerProxy();
 
-      ObjectName destinationManager = new ObjectName("jboss.messaging:service=DestinationManager");
+      ObjectName serverObjectName = new ObjectName("jboss.messaging:service=ServerPeer");
 
       String queueName = jndiName.substring(jndiName.lastIndexOf('/') + 1);
 
-      mBeanServer.invoke(destinationManager, "createQueue",
+      mBeanServer.invoke(serverObjectName, "createQueue",
                          new Object[] {queueName, jndiName},
                          new String[] {"java.lang.String", "java.lang.String"});
 
@@ -71,11 +71,11 @@ public class Util
    {
       MBeanServerConnection mBeanServer = lookupMBeanServerProxy();
 
-      ObjectName destinationManager = new ObjectName("jboss.messaging:service=DestinationManager");
+      ObjectName serverObjectName = new ObjectName("jboss.messaging:service=ServerPeer");
 
       String queueName = jndiName.substring(jndiName.lastIndexOf('/') + 1);
 
-      mBeanServer.invoke(destinationManager, "destroyQueue",
+      mBeanServer.invoke(serverObjectName, "destroyQueue",
                          new Object[] {queueName},
                          new String[] {"java.lang.String"});
 

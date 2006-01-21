@@ -15,15 +15,32 @@
       <name>Queue</name>
    </constructor>
 
+   <constructor>
+      <name>Queue</name>
+      <parameter>
+         <name>isCreatedProgrammatically</name>
+         <type>boolean</type>
+      </parameter>
+   </constructor>
+   
    <!-- Managed attributes -->
 
    <attribute access="read-only" getMethod="getName">
-      <description>The destination's name</description>
+      <description>The destination name</description>
       <name>Name</name>
       <type>java.lang.String</type>
    </attribute>
 
-   <!-- This attribute is writable to allow configuring an arbitarty JNDI name in the queue's
+   <!-- This managed attribute is exposed here for backward compatibility with JBossMQ queues
+        management interface only. It will probably dissapear in the future.
+   -->
+   <attribute access="read-only" getMethod="getName">
+      <description>The queue name (deprecated management attribute)</description>
+      <name>QueueName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <!-- This attribute is writable to allow configuring an arbitrary JNDI name in the queue's
         service deployment descriptor. Any attempt to change the attribute after initialization
         will be ignored.
    -->
@@ -47,6 +64,12 @@
       <description>The destination's security configuration</description>
       <name>SecurityConfig</name>
       <type>org.w3c.dom.Element</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="isCreatedProgrammatically">
+      <description>True if this destination was created programmatically</description>
+      <name>CreatedProgrammatically</name>
+      <type>boolean</type>
    </attribute>
 
    <!-- Managed operations -->

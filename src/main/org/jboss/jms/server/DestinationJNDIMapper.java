@@ -38,27 +38,25 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JNDIUtil;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * Manages JNDI mapping and delegates core destination management to a CoreDestinationManager.
+ * Manages JNDI mapping and delegates core destination state management to a CoreDestinationStore.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class FacadeDestinationManager
+class DestinationJNDIMapper
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(FacadeDestinationManager.class);
-   
-   public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
-   public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
+   private static final Logger log = Logger.getLogger(DestinationJNDIMapper.class);
    
    // Static --------------------------------------------------------
    
@@ -66,56 +64,23 @@ public class FacadeDestinationManager
 
    protected ServerPeer serverPeer;
    protected Context initialContext;
-   protected CoreDestinationManager coreDestinationManager;
+   protected CoreDestinationStore coreDestinationStore;
 
    // TODO synchronize access to these
    // <name - JNDI name>
    protected Map queueNameToJNDI;
    protected Map topicNameToJNDI;
 
-
    // Constructors --------------------------------------------------
 
-   public FacadeDestinationManager(ServerPeer serverPeer) throws Exception
+   public DestinationJNDIMapper(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
       //TODO close this inital context when DestinationManager stops
       initialContext = new InitialContext();
-      coreDestinationManager = new CoreDestinationManager(this);
+      coreDestinationStore = new CoreDestinationStore(this);
       queueNameToJNDI = new ConcurrentReaderHashMap();
       topicNameToJNDI = new ConcurrentReaderHashMap();
-   }
-
-   // DestinationManager implementation -----------------------------
-
-   public String createQueue(String name) throws Exception
-   {
-      return createDestination(true, name, null);
-   }
-
-   public String createQueue(String name, String jndiName) throws Exception
-   {
-      return createDestination(true, name, jndiName);
-   }
-
-   public void destroyQueue(String name) throws Exception
-   {
-      removeDestination(true, name);
-   }
-
-   public String createTopic(String name) throws Exception
-   {
-      return createDestination(false, name, null);
-   }
-
-   public String createTopic(String name, String jndiName) throws Exception
-   {
-      return createDestination(false, name, jndiName);
-   }
-
-   public void destroyTopic(String name) throws Exception
-   {
-      removeDestination(false, name);
    }
 
    // Public --------------------------------------------------------
@@ -124,52 +89,147 @@ public class FacadeDestinationManager
    {
       return serverPeer;
    }
-   
+
+   public String registerDestination(boolean isQueue, String name, String jndiName)
+      throws JMSException
+   {
+      String parentContext;
+      String jndiNameInContext;
+
+      if (jndiName == null)
+      {
+         parentContext =
+            isQueue ? ServerPeer.DEFAULT_QUEUE_CONTEXT : ServerPeer.DEFAULT_TOPIC_CONTEXT;
+         jndiNameInContext = name;
+         jndiName = parentContext + "/" + jndiNameInContext;
+      }
+      else
+      {
+         // TODO more solid parsing + test cases
+         int sepIndex = jndiName.lastIndexOf('/');
+         if (sepIndex == -1)
+         {
+            parentContext = "";
+         }
+         else
+         {
+            parentContext = jndiName.substring(0, sepIndex);
+         }
+         jndiNameInContext = jndiName.substring(sepIndex + 1);
+      }
+
+      try
+      {
+         initialContext.lookup(jndiName);
+         throw new InvalidDestinationException("Destination " + name + " already exists");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("JNDI failure", e);
+      }
+
+      Destination jmsDestination =
+         isQueue ? (Destination) new JBossQueue(name) : (Destination) new JBossTopic(name);
+
+      coreDestinationStore.createCoreDestination(jmsDestination);
+
+      try
+      {
+         Context c = JNDIUtil.createContext(initialContext, parentContext);
+         c.rebind(jndiNameInContext, jmsDestination);
+         if (isQueue)
+         {
+            queueNameToJNDI.put(name, jndiName);
+         }
+         else
+         {
+            topicNameToJNDI.put(name, jndiName);
+         }
+      }
+      catch(Exception e)
+      {
+         coreDestinationStore.destroyCoreDestination(isQueue, name);
+         throw new JBossJMSException("JNDI failure", e);
+      }
+
+      log.debug((isQueue ? "queue" : "topic") + " " + name +
+                " registered and bound in JNDI as " + jndiName );
+
+      return jndiName;
+   }
+
+   public void unregisterDestination(boolean isQueue, String name) throws JMSException
+   {
+      coreDestinationStore.destroyCoreDestination(isQueue, name);
+
+      String jndiName = null;
+      if (isQueue)
+      {
+         jndiName = (String)queueNameToJNDI.remove(name);
+      }
+      else
+      {
+         jndiName = (String)topicNameToJNDI.remove(name);
+      }
+      if (jndiName == null)
+      {
+         return;
+      }
+
+      try
+      {
+         initialContext.unbind(jndiName);
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("JNDI failure", e);
+      }
+      log.debug("unregistered " + (isQueue ? "queue " : "topic ") + name);
+   }
+
+   public synchronized void createTemporaryDestination(Destination jmsDestination)
+      throws JMSException
+   {
+      coreDestinationStore.createCoreDestination(jmsDestination);
+   }
+
+   public void destroyTemporaryDestination(Destination jmsDestination)
+   {
+      JBossDestination d = (JBossDestination)jmsDestination;
+      boolean isQueue = d.isQueue();
+      String name = d.getName();
+      coreDestinationStore.destroyCoreDestination(isQueue, name);
+   }
+
+   public CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
+   {
+      return coreDestinationStore.getCoreDestination(isQueue, name);
+   }
+
+   public boolean isDeployed(boolean isQueue, String name)
+   {
+      return isQueue ? queueNameToJNDI.containsKey(name) : topicNameToJNDI.containsKey(name);
+   }
+
    public void destroyAllDestinations() throws Exception
    {
       Iterator iter = queueNameToJNDI.keySet().iterator();
       while (iter.hasNext())
       {
          String queueName = (String)iter.next();
-         destroyQueue(queueName);
+         unregisterDestination(true, queueName);
       }
+
       iter = topicNameToJNDI.keySet().iterator();
       while (iter.hasNext())
       {
          String topicName = (String)iter.next();
-         destroyTopic(topicName);
+         unregisterDestination(false, topicName);
       }
-   }
-
-   public synchronized void addTemporaryDestination(Destination jmsDestination) throws JMSException
-   {
-      coreDestinationManager.addCoreDestination(jmsDestination);
-   }
-
-   public void removeTemporaryDestination(Destination jmsDestination)
-   {
-      JBossDestination d = (JBossDestination)jmsDestination;
-      boolean isQueue = d.isQueue();
-      String name = d.getName();
-      coreDestinationManager.removeCoreDestination(isQueue, name);
-   }
-
-   public CoreDestination getCoreDestination(Destination jmsDestination) throws JMSException
-   {
-      JBossDestination d = (JBossDestination)jmsDestination;
-      boolean isQueue = d.isQueue();
-      String name = d.getName();
-      return getCoreDestination(isQueue, name);
-   }
-
-   public CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
-   {
-      return coreDestinationManager.getCoreDestination(isQueue, name);
-   }
-
-   public boolean isDeployed(boolean isQueue, String name)
-   {
-      return isQueue ? queueNameToJNDI.containsKey(name) : topicNameToJNDI.containsKey(name);
    }
 
    public Set getDestinations()
@@ -200,92 +260,6 @@ public class FacadeDestinationManager
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private String createDestination(boolean isQueue, String name, String jndiName) throws Exception
-   {
-      String parentContext;
-      String jndiNameInContext;
-
-      if (jndiName == null)
-      {
-         parentContext = (isQueue ? DEFAULT_QUEUE_CONTEXT : DEFAULT_TOPIC_CONTEXT);
-         jndiNameInContext = name;
-         jndiName = parentContext + "/" + jndiNameInContext;
-      }
-      else
-      {
-         // TODO more solid parsing + test cases
-         int sepIndex = jndiName.lastIndexOf('/');
-         if (sepIndex == -1)
-         {
-            parentContext = "";
-         }
-         else
-         {
-            parentContext = jndiName.substring(0, sepIndex);
-         }
-         jndiNameInContext = jndiName.substring(sepIndex + 1);
-      }
-
-      try
-      {
-         initialContext.lookup(jndiName);
-         throw new InvalidDestinationException("Destination " + name + " already exists");
-      }
-      catch(NameNotFoundException e)
-      {
-         // OK
-      }
-
-      Destination jmsDestination =
-         isQueue ? (Destination) new JBossQueue(name) : (Destination) new JBossTopic(name);
-
-      coreDestinationManager.addCoreDestination(jmsDestination);
-
-      try
-      {
-         Context c = JNDIUtil.createContext(initialContext, parentContext);
-         c.rebind(jndiNameInContext, jmsDestination);
-         if (isQueue)
-         {
-            queueNameToJNDI.put(name, jndiName);
-         }
-         else
-         {
-            topicNameToJNDI.put(name, jndiName);
-         }
-      }
-      catch(Exception e)
-      {
-         coreDestinationManager.removeCoreDestination(isQueue, name);
-         throw e;
-      }
-
-      log.debug((isQueue ? "Queue" : "Topic") + " " + name +
-                " created and bound in JNDI as " + jndiName );
-
-      return jndiName;
-   }
-
-   private void removeDestination(boolean isQueue, String name) throws Exception
-   {
-
-      coreDestinationManager.removeCoreDestination(isQueue, name);
-      String jndiName = null;
-      if (isQueue)
-      {
-         jndiName = (String)queueNameToJNDI.remove(name);
-      }
-      else
-      {
-         jndiName = (String)topicNameToJNDI.remove(name);
-      }
-      if (jndiName == null)
-      {
-         return;
-      }
-      initialContext.unbind(jndiName);
-   }
 
    // Inner classes -------------------------------------------------
 }

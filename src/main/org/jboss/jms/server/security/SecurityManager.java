@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jms.JMSSecurityException;
+import javax.jms.JMSException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
@@ -36,6 +37,7 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectSecurityManager;
+import org.jboss.jms.util.JBossJMSException;
 import org.w3c.dom.Element;
 
 /**
@@ -203,19 +205,28 @@ public class SecurityManager
       return hasRole;
    }
    
-   public void setSecurityConfig(String destName, Element conf) throws Exception
+   public void setSecurityConfig(String destName, Element conf) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("adding security configuration for destination " + destName); }
-      SecurityMetadata m = new SecurityMetadata(conf);
+      SecurityMetadata m = null;
+
+      try
+      {
+         m = new SecurityMetadata(conf);
+      }
+      catch(Exception e)
+      {
+         throw new JBossJMSException("Cannot create security metadata", e);
+      }
       securityConf.put(destName, m);
    }
 
-//   public void removeSecurityConf(String destName)
-//   {
-//      if (log.isTraceEnabled()) { log.trace("Removing security config. for destination:" + destName); }
-//      securityConf.remove(destName);
-//   }
-//
+   public void clearSecurityConfig(String name) throws JMSException
+   {
+      if (log.isTraceEnabled()) { log.trace("clearing security configuration for destination " + name); }
+      securityConf.remove(name);
+   }
+
    public Element getDefaultSecurityConfig()
    {
       return this.defaultSecurityConfig;

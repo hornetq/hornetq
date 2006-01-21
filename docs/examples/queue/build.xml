@@ -14,8 +14,8 @@
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
    <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
-   <property name="jboss.configuration.name" value="default"/>
-   <property name="example.queue.name" value="testQueue"/>
+   <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+   <property name="example.queue.name" value="SmokeTestQueue"/>
 
    <path id="common.compilation.classpath">
       <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
@@ -88,9 +88,7 @@
       <java classname="org.jboss.example.jms.queue.QueueExample"
          classpathref="execution.classpath" fork="yes" failonerror="true">
          <sysproperty key="example.queue.name" value="${example.queue.name}"/>
-         <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
-          -->
       </java>
    </target>
 

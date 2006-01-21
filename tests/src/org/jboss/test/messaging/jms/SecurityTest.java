@@ -109,8 +109,7 @@ public class SecurityTest extends MessagingTestCase
          "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
       oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
       ServerManagement.setDefaultSecurityConfig(defaultSecurityConfig);
- 
-            
+
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -121,8 +120,8 @@ public class SecurityTest extends MessagingTestCase
       unsecuredTopic = (Topic)ic.lookup("/topic/unsecuredTopic");
       
       drainDestination(cf, testQueue);
-            
-     
+
+      log.debug("setup done");
    }
    
    protected void tearDown() throws Exception
@@ -722,16 +721,16 @@ public class SecurityTest extends MessagingTestCase
       ServerManagement.undeployQueue("testQueue");
       ServerManagement.deployQueue("testQueue");
             
-      final String testQueueConf = 
+      final String testQueueConf =
          "<security>" +
             "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
             "<role name=\"noacc\" read=\"false\" write=\"false\" create=\"false\"/>" +
          "</security>";
-                     
+
       ServerManagement.configureSecurityForDestination("testQueue", testQueueConf);
       
-      ServerManagement.undeployTopic("TestTopic");
+      ServerManagement.undeployTopic("testTopic");
       ServerManagement.deployTopic("testTopic");
             
       final String testTopicConf = 

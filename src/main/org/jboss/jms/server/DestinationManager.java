@@ -21,6 +21,11 @@
   */
 package org.jboss.jms.server;
 
+import org.w3c.dom.Element;
+import org.jboss.messaging.core.CoreDestination;
+
+import javax.jms.JMSException;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -29,44 +34,30 @@ package org.jboss.jms.server;
  */
 public interface DestinationManager
 {
-   public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
-   public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
+   /**
+    * Method called by a destination service to register itself with the server peer. The server
+    * peer will create and maintain state on behalf of the destination until the destination
+    * unregisters itself.
+    *
+    * @return the name under which the destination was bound in JNDI.
+    */
+   String registerDestination(boolean isQueue, String name, String jndiName, Element securityConfig)
+      throws JMSException;
 
    /**
-    * Creates and binds in JNDI a queue. The queue name is unique per JMS provider instance.
-    *
-    * @param name - the queue name.
-    * @param jndiName - the JNDI name to bind the newly created queue to. If null, the queue
-    *        will be bound in JNDI under the default context using the specified queue name.
-    *
-    * @return the name under which the queue was bound in JNDI.
-    *
-    * @throws Exception
+    * Method called by a destination service to unregister itself from the server peer. The server
+    * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
     */
-   public String createQueue(String name, String jndiName) throws Exception;
+   void unregisterDestination(boolean isQueue, String name) throws JMSException;
 
-   /**
-    * Removes the queue both from JNDI and DestinationManager.
-    */
-   public void destroyQueue(String name) throws Exception;
+   CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException;
+   CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException;
 
-   /**
-    * Creates and binds in JNDI a topic. The topic name is unique per JMS provider instance.
-    *
-    * @param name - the topic name.
-    * @param jndiName - the JNDI name to bind the newly created topic to. If null, the topic
-    *        will be bound in JNDI under the default context using the specified topic name.
-    *
-    * @return the name under which the topic was bound in JNDI.
-    *
-    * @throws Exception
-    */
-   public String createTopic(String name, String jndiName) throws Exception;
+   void createTemporaryDestination(javax.jms.Destination d) throws JMSException;
+   void destroyTemporaryDestination(javax.jms.Destination d) throws JMSException;
 
-   /**
-    * Removes the topic both from JNDI and DestinationManager.
-    */
-   public void destroyTopic(String name) throws Exception;
-
+   Element getDefaultSecurityConfiguration();
+   void setSecurityConfiguration(boolean isQueue, String name, Element securityConfig)
+      throws JMSException;
 
 }

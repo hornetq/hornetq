@@ -14,7 +14,7 @@ package org.jboss.jms.server.destination;
  *
  * $Id$
  */
-public class Topic extends DeployableDestinationSupport
+public class Topic extends DestinationServiceSupport
 {
    // Constants -----------------------------------------------------
 
@@ -23,6 +23,16 @@ public class Topic extends DeployableDestinationSupport
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
+
+   public Topic()
+   {
+      super(false);
+   }
+
+   public Topic(boolean createProgrammatically)
+   {
+      super(createProgrammatically);
+   }
 
    // JMX managed attributes ----------------------------------------
 

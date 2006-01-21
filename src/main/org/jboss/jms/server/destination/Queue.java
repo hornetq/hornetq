@@ -14,7 +14,7 @@ package org.jboss.jms.server.destination;
  *
  * $Id$
  */
-public class Queue extends DeployableDestinationSupport
+public class Queue extends DestinationServiceSupport
 {
    // Constants -----------------------------------------------------
 
@@ -23,6 +23,16 @@ public class Queue extends DeployableDestinationSupport
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
+
+   public Queue()
+   {
+      super(false);
+   }
+
+   public Queue(boolean createProgrammatically)
+   {
+      super(createProgrammatically);
+   }
 
    // JMX managed attributes ----------------------------------------
 

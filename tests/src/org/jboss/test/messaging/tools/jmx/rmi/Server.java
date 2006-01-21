@@ -27,6 +27,7 @@ import org.jboss.remoting.transport.Connector;
 
 import javax.management.ObjectName;
 import java.rmi.Remote;
+import java.util.Set;
 
 /**
  * The remote interface exposed by RMIServer.
@@ -49,11 +50,15 @@ public interface Server extends Remote
     * they are applied to the service instance.
     */
    ObjectName deploy(String mbeanConfiguration) throws Exception;
-   public void undeploy(ObjectName on) throws Exception;
-   public Object getAttribute(ObjectName on, String attribute) throws Exception;
-   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception;
-   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
+   void undeploy(ObjectName on) throws Exception;
+   Object getAttribute(ObjectName on, String attribute) throws Exception;
+   void setAttribute(ObjectName on, String name, String valueAsString) throws Exception;
+   Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
       throws Exception;
+   /**
+    * Returns a set of ObjectNames corresponding to installed services.
+    */
+   Set query(ObjectName pattern) throws Exception;
 
    /**
     * Only for remote use!

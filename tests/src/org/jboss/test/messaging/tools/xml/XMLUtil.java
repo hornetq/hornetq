@@ -13,6 +13,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.xml.XMLRuntimeException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -161,9 +162,14 @@ public class XMLUtil
 
    public static void assertEquivalent(Node node, Node node2)
    {
-      if (node == null || node2 == null)
+      if (node == null)
       {
-         throw new XMLRuntimeException("at least on of the node is null");
+         throw new XMLRuntimeException("the first node to be compared is null");
+      }
+
+      if (node2 == null)
+      {
+         throw new XMLRuntimeException("the second node to be compared is null");
       }
 
       if (!node.getNodeName().equals(node2.getNodeName()))

@@ -26,9 +26,9 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
-import org.jboss.jms.server.FacadeDestinationManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.server.ServerPeer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -89,7 +89,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       ServerManagement.deployQueue(name, null);
 
-      Queue q = (Queue)initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Queue q = (Queue)initialContext.lookup(ServerPeer.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
    }
@@ -100,7 +100,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       ServerManagement.deployTopic(name, null);
 
-      Topic t = (Topic)initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(ServerPeer.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
    }
@@ -216,8 +216,8 @@ public class DestinationManagerTest extends MessagingTestCase
 
       ServerManagement.deployTopic(name, null);
 
-      Queue q = (Queue)initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
-      Topic t = (Topic)initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      Queue q = (Queue)initialContext.lookup(ServerPeer.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(ServerPeer.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
       assertEquals(name, t.getTopicName());
@@ -239,7 +239,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       ServerManagement.deployQueue(name, null);
 
-      Queue q = (Queue)initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      Queue q = (Queue)initialContext.lookup(ServerPeer.DEFAULT_QUEUE_CONTEXT + "/" + name);
 
       assertEquals(name, q.getQueueName());
 
@@ -249,7 +249,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       try
       {
-         Object o = initialContext.lookup(FacadeDestinationManager.DEFAULT_QUEUE_CONTEXT + "/" + name);
+         Object o = initialContext.lookup(ServerPeer.DEFAULT_QUEUE_CONTEXT + "/" + name);
          fail("should have thrown exception, but got " + o);
       }
       catch(NameNotFoundException e)
@@ -264,7 +264,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       ServerManagement.deployTopic(name, null);
 
-      Topic t = (Topic)initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      Topic t = (Topic)initialContext.lookup(ServerPeer.DEFAULT_TOPIC_CONTEXT + "/" + name);
 
       assertEquals(name, t.getTopicName());
 
@@ -274,7 +274,7 @@ public class DestinationManagerTest extends MessagingTestCase
 
       try
       {
-         Object o = initialContext.lookup(FacadeDestinationManager.DEFAULT_TOPIC_CONTEXT + "/" + name);
+         Object o = initialContext.lookup(ServerPeer.DEFAULT_TOPIC_CONTEXT + "/" + name);
          fail("should have thrown exception but got " + o);
       }
       catch(NameNotFoundException e)
