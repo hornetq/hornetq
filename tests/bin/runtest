@@ -50,11 +50,17 @@ fi
 while [ "$1" != "" ]; do
     if [ "$1" = "-debug" ]; then
         if [ $cygwin = false ]; then
-            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
+            if [ "$DEBUG_OPTS_SOCKET" = "" ]; then
+                echo "No configured socket debugging options. Set DEBUG_OPTS_SOCKET in your environment or .testrc" 1>&2
+                exit 1
+            fi
+            JAVA_OPTS="$DEBUG_OPTS_SOCKET"
         else
-            #JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"
-            #Eclipse doesn't support remote debugging with shared memory afaik
-            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
+            if [ "$DEBUG_OPTS" = "" ]; then
+                echo "No configured debugging options. Set DEBUG_OPTS in your environment or .testrc" 1>&2
+                exit 1
+            fi
+            JAVA_OPTS="$DEBUG_OPTS"
         fi
     fi
     if [ "$1" = "-remote" ]; then
