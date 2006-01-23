@@ -12,7 +12,7 @@
    <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
        <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
    </loader-repository>
-   -->   
+   -->
 
    <!-- JBoss 5 has a remoting connector already deployed. For JBoss 4, I need to deploy it. -->
    <!--
@@ -30,13 +30,13 @@
                <attribute name="serverBindPort">4457</attribute>
             </invoker>
             <handlers>
-               <handler subsystem="placeholder">org.jboss.jms.client.remoting.ServerInvocationHandlerImpl</handler>
+               <handler subsystem="why_the_heck_do_I_need_this">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
             </handlers>
          </config>
       </attribute>
-      <depends>jboss.messaging:service=NetworkRegistry</depends>      
+      <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
-      
+
    <mbean code="org.jboss.remoting.network.NetworkRegistry"
           name="jboss.messaging:service=NetworkRegistry"/>
    -->
@@ -59,9 +59,9 @@
 
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
-		<security>				
-			<role name="guest" read="true" write="true" create="true"/>
-		</security>
+        <security>
+            <role name="guest" read="true" write="true" create="true"/>
+        </security>
       </attribute>
    </mbean>
 
@@ -169,35 +169,35 @@
    </mbean>
 
    <!-- Example queues -->
-   
+
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=A"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
-   
+
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=B"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
-   
+
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=C"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
-   
+
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=D"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-   </mbean>   
+   </mbean>
 
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=ex"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
-   
+
 </server>

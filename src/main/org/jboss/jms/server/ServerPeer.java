@@ -647,8 +647,9 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
-      String s = (String)mbeanServer.invoke(connectorName, "getInvokerLocator",
-                                            new Object[0], new String[0]);
+      log.info("Getting invokerlocator for " + connectorName);
+      
+      String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
 
       locator = new InvokerLocator(s);
       

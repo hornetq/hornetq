@@ -266,6 +266,12 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
    protected void startService() throws Exception
    {
       // these are supposed to be set by dependencies, this is just a safeguard
+      
+      
+      InitialContext ic = new InitialContext();
+      ds = (DataSource)ic.lookup(dataSourceJNDIName);
+      ic.close();
+      
       if (ds == null)
       {
          throw new Exception("No DataSource found. This service dependencies must  " +
@@ -1218,10 +1224,6 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
    public void setDataSource(String dataSourceJNDIName) throws Exception
    {
       this.dataSourceJNDIName = dataSourceJNDIName;
-
-      InitialContext ic = new InitialContext();
-      ds = (DataSource)ic.lookup(dataSourceJNDIName);
-      ic.close();
    }
 
    /**

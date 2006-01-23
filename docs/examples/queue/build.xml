@@ -82,6 +82,8 @@
          </patternset>
       </unjar>
 
+      <echo> running queue Example </echo>
+
       <!-- QueueExample expects to find the name of the queue to connect to as value of the
            'example.queue.name' property, which *may* be defined by calling ants when this example
             is used in a smoke test -->

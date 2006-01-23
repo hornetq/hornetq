@@ -116,13 +116,19 @@
       <name>Connector</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-    
+
+   <attribute access="read-only" getMethod="getDestinations">
+      <description>Returns a Set of javax.jms.Destinations (Queues and Topics) containing the current active destinations</description>
+      <name>getDestinations</name>
+      <type>java.util.Set</type>
+   </attribute>
+
    <attribute access="read-write" getMethod="getSecurityDomain" setMethod="setSecurityDomain">
       <description>The Security Domain to be used by the Server Peer</description>
       <name>SecurityDomain</name>
       <type>java.lang.String</type>
    </attribute>
-   
+
    <attribute access="read-write" getMethod="getDefaultSecurityConfig" setMethod="setDefaultSecurityConfig">
       <description>The Security config to use when the destination does not supply any</description>
       <name>DefaultSecurityConfig</name>
@@ -199,11 +205,7 @@
       <return-type>boolean</return-type>
    </operation>
 
-   <operation>
-      <description>Returns a Set of javax.jms.Destinations (Queues and Topics) containing the current active destinations</description>
-      <name>getDestinations</name>
-      <return-type>java.util.Set</return-type>
-   </operation>
+
 
 
 </mbean>
