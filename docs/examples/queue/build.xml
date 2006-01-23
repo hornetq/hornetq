@@ -14,8 +14,8 @@
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
    <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
-   <property name="jboss.configuration.name" value="messaging-smoke-test"/>
-   <property name="example.queue.name" value="SmokeTestQueue"/>
+   <property name="jboss.configuration.name" value="default"/>
+   <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
       <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
