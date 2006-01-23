@@ -29,6 +29,7 @@ import javax.jms.ServerSessionPool;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -59,20 +60,19 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    
    private Version serverVersion;
    
-   private String serverLocatorURI;
+   private transient JMSRemotingConnection connection;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConnectionDelegate(String objectID, String serverLocatorURI,
+   public ClientConnectionDelegate(String objectID,
                                    String serverID, Version serverVersion)
    {
       super(objectID);
       
       this.serverID = serverID;
       this.serverVersion = serverVersion;
-      this.serverLocatorURI = serverLocatorURI;
    }
 
    // ConnectionDelegate implementation -----------------------------
@@ -217,16 +217,21 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       return "ConnectionDelegate[" + Util.guidToString(id) + "]";
    }
    
-   public String getServerLocatorURI()
+   public void setConnnectionState(JMSRemotingConnection conn)
    {
-      return serverLocatorURI;
+      this.connection = conn;
+   }
+   
+   public JMSRemotingConnection getRemotingConnection()
+   {
+      return connection;
    }
 
    // Protected -----------------------------------------------------
    
    protected Client getClient()
    {
-      return ((ConnectionState)state).getClient();
+      return ((ConnectionState)state).getRemotingConnection().getInvokingClient();
    }
 
    // Package Private -----------------------------------------------

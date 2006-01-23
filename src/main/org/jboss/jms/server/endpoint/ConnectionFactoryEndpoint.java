@@ -37,7 +37,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
  */
 public interface ConnectionFactoryEndpoint
 {
-   ConnectionDelegate createConnectionDelegate(String username, String password)
+   ConnectionDelegate createConnectionDelegate(String username, String password, String clientConnectionID)
       throws JMSException;
    
    byte[] getClientAOPConfig();

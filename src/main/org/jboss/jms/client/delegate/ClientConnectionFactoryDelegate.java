@@ -23,8 +23,15 @@ package org.jboss.jms.client.delegate;
 
 import javax.jms.JMSException;
 
+import org.jboss.aop.Dispatcher;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.InvocationResponse;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
@@ -46,11 +53,12 @@ public class ClientConnectionFactoryDelegate
    
    private static final long serialVersionUID = 2512460695662741413L;
    
+   private static final Logger log = Logger.getLogger(ClientConnectionFactoryDelegate.class);
+
+   
    // Attributes ----------------------------------------------------
    
    protected String serverLocatorURI;
-   
-   protected Client client;
    
    // Static --------------------------------------------------------
    
@@ -69,8 +77,8 @@ public class ClientConnectionFactoryDelegate
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ConnectionDelegate createConnectionDelegate(String username, String password)
-   throws JMSException
+   public ConnectionDelegate createConnectionDelegate(String username, String password, String clientConnectionID)
+      throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -85,25 +93,84 @@ public class ClientConnectionFactoryDelegate
    }
    
    // Public --------------------------------------------------------
-   
-   public void init()
+    
+   public Object invoke(Invocation invocation) throws Throwable
    {
-      super.init();
+      if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
+
+      invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
+                                           Dispatcher.OID,
+                                           id, PayloadKey.AS_IS);
       
-      //Initialise the client
-      try
-      {
-         InvokerLocator locator = new InvokerLocator(this.serverLocatorURI);
-         
-         client = new Client(locator);
-         
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException("Failed to create client", e);  
-      }
+      String methodName = ((MethodInvocation)invocation).getMethod().getName();
       
+      InvocationResponse response = null;
+      
+      if ("getClientAOPConfig".equals(methodName))
+      {
+         //This is invoked on it's own connection
+         InvokerLocator locator = new InvokerLocator(serverLocatorURI);
+         
+         Client client = new Client(locator);
+         
+         try
+         {            
+            response = (InvocationResponse)client.invoke(invocation, null);
+            
+            invocation.setResponseContextInfo(response.getContextInfo());
+         }
+         finally
+         {
+            client.disconnect();
+         }
+      }
+      else if ("createConnectionDelegate".equals(methodName))
+      {
+         //This must be invoked on the same connection subsequently used by the created JMS connection
+         JMSRemotingConnection connection = new JMSRemotingConnection(serverLocatorURI);
+         
+         MethodInvocation mi = (MethodInvocation)invocation;
+         
+         //Fill in the client connection id - this is needed on the server side
+         //so if the connection fails we can tie together the failed remoting connection
+         //and the server side connectiondelegate object so we can clean them up
+         Object[] args = mi.getArguments();
+         args[2] = connection.getId();
+             
+         try
+         {            
+            response = (InvocationResponse)connection.getInvokingClient().invoke(invocation, null);
+            
+            invocation.setResponseContextInfo(response.getContextInfo());
+            
+            //TODO - We should simplify this by considering combining the "state" and the "client delegate"
+            //objects - right now this is somewhat over complex
+            //with some state being stored in the client delegate objects and other state
+            //stored in the client state objects.
+            //We could probably get rid of the client state objects and just use the client delegate objects
+            //for storing state.
+            
+            ClientConnectionDelegate delegate = (ClientConnectionDelegate)response.getResponse();
+            
+            delegate.setConnnectionState(connection);
+         }
+         catch (Throwable t)
+         {
+            connection.close();
+            
+            throw t;
+         } 
+      }
+      else
+      {
+         throw new IllegalStateException("Unknown invocation");
+      }
+
+      if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
+
+      return response.getResponse();
    }
+   
    
    public String toString()
    {
@@ -114,7 +181,7 @@ public class ClientConnectionFactoryDelegate
    
    protected Client getClient()
    {
-      return client;
+      return null;
    }
    
    // Package Private -----------------------------------------------

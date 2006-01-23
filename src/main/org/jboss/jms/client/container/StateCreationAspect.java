@@ -75,7 +75,7 @@ public class StateCreationAspect
       
       delegate.setState(new ConnectionState(delegate,
                                             delegate.getServerID(),
-                                            delegate.getServerLocatorURI()));
+                                            delegate.getRemotingConnection()));
                   
       return delegate;
    }

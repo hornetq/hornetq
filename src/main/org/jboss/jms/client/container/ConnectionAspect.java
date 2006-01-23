@@ -121,7 +121,7 @@ public class ConnectionAspect implements ConnectionListener
       
       exceptionListener = (ExceptionListener)mi.getArguments()[0];            
       
-      Client client = getState(invocation).getClient();
+      Client client = getState(invocation).getRemotingConnection().getInvokingClient();
       
       if (client == null)
       {
@@ -168,8 +168,7 @@ public class ConnectionAspect implements ConnectionListener
       Object ret = invocation.invokeNext();
       
       //Finished with the connection - we need to shutdown callback server
-      getState(invocation).getCallbackServer().stop();
-      getState(invocation).getClient().disconnect();
+      getState(invocation).getRemotingConnection().close();
       
       return ret;
    }

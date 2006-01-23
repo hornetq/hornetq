@@ -29,11 +29,11 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.XAConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.XAConnectionFactory;
+import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.management.Attribute;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -43,27 +43,32 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.jms.server.security.SecurityManager;
-import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.server.security.SecurityManager;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * A JMS server peer.
@@ -95,9 +100,6 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
 
    protected String serverPeerID;
    protected ObjectName connectorName;
-
-   //protected Connector connector;
-   
    protected InvokerLocator locator;
    protected byte[] clientAOPConfig;
    private Version version;
@@ -106,6 +108,7 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
 
    protected int connFactoryIDSequence;
    protected Map connFactoryDelegates;
+   protected Map connections;
 
    // wired components
 
@@ -134,6 +137,8 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
       this.serverPeerID = serverPeerID;
       
       this.connFactoryDelegates = new HashMap();
+      
+      this.connections = new ConcurrentHashMap();
 
       // the default value to use, unless the JMX attribute is modified
       connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
@@ -307,16 +312,13 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
       //remove the connection listener
 //      mbeanServer.invoke(connectorName, "removeConnectionListener",
 //            new Object[] {connectionListener},
-//            new String[] {"org.jboss.remoting.ConnectionListener"});
+//            new String[] {"org.jboss.remoting.ConnectionListener"}); 
+//      
 
       // remove the JMS subsystem invocation handler
       getServer().invoke(connectorName, "removeInvocationHandler",
                          new Object[] {"JMS"},
                          new String[] {"java.lang.String"});
-
-//      connector.removeInvocationHandler("JMS");
-//      connector.stop();
-//      connector.destroy();
 
       removeRecoverable();
 
@@ -536,6 +538,16 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
    {
       return version;
    }
+   
+   public void registerConnection(String clientConnectionId, ServerConnectionEndpoint endpoint)
+   {
+      connections.put(clientConnectionId, endpoint);
+   }
+   
+   public void unregisterConnection(String clientConnectionId)
+   {
+      connections.remove(clientConnectionId);
+   }
 
    // access to plugin references
 
@@ -655,20 +667,12 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
                          new String[] {"java.lang.String",
                                        "org.jboss.remoting.ServerInvocationHandler"});  
       
-      //install the connection listener that listens for failed connections
+//      //install the connection listener that listens for failed connections
 //      connectionListener = new ServerConnectionListener();
 //      
 //      mbeanServer.invoke(connectorName, "addConnectionListener",
 //            new Object[] {connectionListener},
 //            new String[] {"org.jboss.remoting.ConnectionListener"}); 
-      
-//      connector = new Connector();
-//      locator = new InvokerLocator("multiplex://0.0.0.0:9099");
-//      connector.setInvokerLocator(locator.getLocatorURI());
-//      connector.create();
-//      handler = new JMSServerInvocationHandler();
-//      connector.addInvocationHandler("JMS", handler);
-//      connector.start(); 
       
    }
 
@@ -880,9 +884,45 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
 
       public void handleConnectionException(Throwable t, Client client)
       {
-         
-      }
-      
-   }
-
+         String clientConnectionID =
+            (String)client.getConfiguration().get(MetaDataConstants.CLIENT_CONNECTION_ID);
+         if (clientConnectionID == null)
+         {
+            log.error("Can't find client connection id in meta-data for " + client);
+         }
+         else
+         {            
+            if (t instanceof ClientDisconnectedException)
+            {
+               //This is ok
+               if (log.isTraceEnabled()) { log.trace("Client " + client + " has disconnected"); } 
+            }
+            else
+            {
+               log.error("Broken client connection " + clientConnectionID, t);
+               
+               if (log.isTraceEnabled()) { log.trace("Clearing up server resources for this connection"); }
+               
+               ServerConnectionEndpoint endpoint = 
+                  (ServerConnectionEndpoint)connections.get(clientConnectionID);
+               
+               if (endpoint == null)
+               {
+                  log.error("Cannot find ServerConnectionEndpoint for client connection id " + clientConnectionID);
+               }
+               else
+               {       
+                  try
+                  {
+                     endpoint.close();
+                  }
+                  catch (JMSException e)
+                  {
+                     log.error("Failed to close connection", e);
+                  }
+               }
+            }
+         }  
+      } 
+   }   
 }

@@ -102,10 +102,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    protected ReadWriteLock closeLock;
    
+   protected String clientConnectionId;
+   
    
    // Constructors --------------------------------------------------
    
-   ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username, String password)
+   ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username,
+                            String password, String clientConnectionId)
    {
       this.serverPeer = serverPeer;
       
@@ -126,6 +129,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.password = password;
       
       this.closeLock = new WriterPreferenceReadWriteLock();
+      
+      this.clientConnectionId = clientConnectionId;
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -338,6 +343,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          this.temporaryDestinations.clear();
          this.consumers.clear();
          this.serverPeer.getClientManager().removeConnectionDelegate(this.connectionID);
+         this.serverPeer.unregisterConnection(clientConnectionId);
+
          Dispatcher.singleton.unregisterTarget(this.connectionID);
          closed = true;
       }

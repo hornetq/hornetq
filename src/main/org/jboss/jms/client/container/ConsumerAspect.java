@@ -34,7 +34,6 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
 
 /**
  * 
@@ -78,13 +77,7 @@ public class ConsumerAspect
          new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
                                     sessState.getExecutor(), connState.getPooledExecutor());
 
-      // We need to create new Client instance per consumer to handle the callbacks.
-      // This is because we use the client session id on the server to associate the callback server
-      // to the consumer. Ideally remoting would allow us to pass arbitrary meta data to do this
-      // more cleanly.
-      Client client = new Client(new InvokerLocator(connState.getServerURI()));
-      
-      client.addListener(messageHandler, connState.getCallbackServer().getLocator());
+      Client client = connState.getRemotingConnection().registerCallbackHandler(messageHandler);
 
       log.debug("listener added");
 

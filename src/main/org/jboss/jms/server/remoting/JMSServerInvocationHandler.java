@@ -119,7 +119,8 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
          ServerInvokerCallbackHandler h = (ServerInvokerCallbackHandler)callbackHandler;
-         String id = h.getClientSessionId();         
+         String id = h.getClientSessionId(); 
+
          synchronized(callbackHandlers)
          {
             if (callbackHandlers.containsKey(id))

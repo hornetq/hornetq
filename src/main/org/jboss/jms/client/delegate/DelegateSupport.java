@@ -155,7 +155,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    private static boolean checked;
 
    /**
-    * Check that the correct marshallers have been registered wit the MarshalFactory.
+    * Check that the correct marshallers have been registered with the MarshalFactory.
     * This is only done once.
     */
    private synchronized void checkMarshallers()

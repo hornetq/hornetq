@@ -149,11 +149,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    protected volatile boolean stopping;
    
-   protected volatile boolean waiting;
-   
    protected int deliveryAttempts;
    
    protected int ackMode;
+   
+   protected Object activationLock;
    
    // Executor used for executing onMessage methods - there is one per session
    protected Executor onMessageExecutor;
@@ -176,6 +176,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       isConnectionConsumer = isCC;
        
       receiverLock = new Object();
+      
+      activationLock = new Object();
       
       this.ackMode = ackMode;
       
@@ -223,33 +225,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          try
          {                    
             //We attempt to put the message in the Channel
-            //The call will return false if the message is not picked up the receiving or listening
+            //The call will return false if the message is not picked up the receiving
             //thread in which case we need to cancel it
             
-            boolean handled = false;
-            while (waiting)
-            {
-               //channel.offer will *only* return true if there is a thread waiting to take a
-               //message using take() or poll() hence we can guarantee there is no chance any
-               //messages can arrive and are left in the channel without being handled -  this is
-               //why we use a SynchronousChannel :)
-               
-               //We do this in a while loop to deal with a possible race condition where
-               //waiting had been set but the main consumer thread hadn't quite blocked on the call
-               //to take or poll from the channel
-               
-               handled = buffer.offer(processMessage(md), 0);
-                              
-               if (handled)
-               {
-                  break;
-               } 
-               
-               //ust yield to other threads - otherwise all CPU is eaten in this loop and everything
-               //slows down
-               Thread.yield();               
-            }
+            //channel.offer will *only* return true if there is a thread waiting to take a
+            //message using take() or poll() hence we can guarantee there is no chance any
+            //messages can arrive and are left in the channel without being handled -  this is
+            //why we use a SynchronousChannel :)
             
+            //We do this in a while loop to deal with a possible race condition where
+            //waiting had been set but the main consumer thread hadn't quite blocked on the call
+            //to take or poll from the channel
+            
+            boolean handled = buffer.offer(processMessage(md), 500);
+                                             
             if (!handled)
             {
                //There is no-one waiting for our message so we cancel it
@@ -298,10 +287,20 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       stopReceiver();       
       
       //There may still be pending calls to activateConsumer - we wait for them to complete (or fail)
-      while (activationCount.get() != 0)
+      synchronized (activationLock)
       {
-         Thread.yield();
-      }     
+         while (activationCount.get() != 0)
+         {
+            try
+            {
+               activationLock.wait();
+            }
+            catch (InterruptedException e)
+            {
+               log.error("Thread interrupted", e);
+            }
+         } 
+      }
    }
    
    /**
@@ -535,18 +534,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       // If it's receiveNoWait then get the message directly
       if (timeout == -1)
       {
-         waiting = false;
-         
          m = getMessageNow();
-          
+         
       }
       else
       {
          // ... otherwise we activate the server side consumer and wait for a message to arrive
          // asynchronously
-         
-         waiting = true;
-         
+
          activateConsumer();
       
          try
@@ -565,7 +560,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          finally
          {
             //We only need to call this if we didn't receive a message synchronously
-            waiting = false;
             
             if (!closed)
             {
@@ -656,7 +650,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          }
          finally
          {
-            activationCount.decrement();
+            synchronized (activationLock)
+            {
+               activationCount.decrement();
+               activationLock.notifyAll();
+            }
          } 
         
       } 

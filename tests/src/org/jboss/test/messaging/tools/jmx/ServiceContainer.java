@@ -21,54 +21,53 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
-import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
-import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
-import org.jboss.resource.connectionmanager.TxConnectionManager;
-import org.jboss.resource.connectionmanager.CachedConnectionManagerMBean;
-import org.jboss.resource.connectionmanager.CachedConnectionManager;
-import org.jboss.resource.connectionmanager.JBossManagedConnectionPool;
-import org.jboss.system.ServiceController;
-import org.jboss.system.Registry;
-import org.jboss.system.ServiceCreator;
-import org.jboss.tm.TxManager;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.jms.util.JNDIUtil;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
-import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
-import javax.management.Attribute;
-import javax.management.MBeanInfo;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanException;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
-import javax.transaction.TransactionManager;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.Context;
-import javax.naming.spi.NamingManager;
-
-import org.hsqldb.Server;
-import org.hsqldb.persist.HsqlProperties;
-
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.management.Attribute;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
+import javax.management.MBeanInfo;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.spi.NamingManager;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+
+import org.hsqldb.Server;
+import org.hsqldb.persist.HsqlProperties;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.util.JNDIUtil;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.InvokerLocator;
+import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
+import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
+import org.jboss.resource.connectionmanager.CachedConnectionManager;
+import org.jboss.resource.connectionmanager.CachedConnectionManagerMBean;
+import org.jboss.resource.connectionmanager.JBossManagedConnectionPool;
+import org.jboss.resource.connectionmanager.TxConnectionManager;
+import org.jboss.system.Registry;
+import org.jboss.system.ServiceController;
+import org.jboss.system.ServiceCreator;
+import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.tm.TxManager;
+
 
 /**
  * An MBeanServer and a configurable set of services (TransactionManager, Remoting, etc) available
@@ -142,7 +141,8 @@ public class ServiceContainer
    private boolean transaction;
    private boolean database;
    private boolean jca;
-   private boolean remoting;
+   private boolean remotingSocket;
+   private boolean remotingMultiplex;
    private boolean security;
 
    private List toUnbindAtExit;
@@ -288,11 +288,14 @@ public class ServiceContainer
             startConnectionManager();
             startWrapperDataSourceService();
          }
-         if (remoting)
+         if (remotingSocket)
          {
-            startRemoting();
+            startRemoting(false);
          }
-
+         if (remotingMultiplex)
+         {
+            startRemoting(true);
+         }
          if (security)
          {
             startSecurityManager();
@@ -490,19 +493,19 @@ public class ServiceContainer
 
    // Private -------------------------------------------------------
 
-   private void configureAddress()
+   private void configureAddress() throws Exception
    {
 
       String s = System.getProperty("test.bind.address");
       if (s == null)
       {
-         ipAddressOrHostName = "localhost";
+         ipAddressOrHostName = "localhost";         
       }
       else
       {
          ipAddressOrHostName = s;
       }
-
+      
       log.debug("all server sockets will be open on address: " + ipAddressOrHostName);
    }
 
@@ -694,10 +697,27 @@ public class ServiceContainer
       log.debug("started " + WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
    }
 
-   private void startRemoting() throws Exception
+   private void startRemoting(boolean multiplex) throws Exception
    {
-      RemotingJMXWrapper mbean =
-            new RemotingJMXWrapper(new InvokerLocator("socket://" + ipAddressOrHostName + ":19895"));
+      RemotingJMXWrapper mbean;
+      
+      String locatorURI;
+      if (multiplex)
+      {
+         locatorURI = "multiplex://" + ipAddressOrHostName + ":9111";                  
+      }
+      else
+      {
+         locatorURI = "socket://" + ipAddressOrHostName + ":9111";
+      }
+      
+      log.debug("Using the following locator uri:" + locatorURI);
+      
+      InvokerLocator locator = new InvokerLocator(locatorURI);
+      
+      log.debug("Started remoting connector on uri:" + locator.getLocatorURI());
+      
+      mbean = new RemotingJMXWrapper(locator);
       mbeanServer.registerMBean(mbean, REMOTING_OBJECT_NAME);
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
       log.debug("started " + REMOTING_OBJECT_NAME);
@@ -753,7 +773,7 @@ public class ServiceContainer
             transaction = true;
             database = true;
             jca = true;
-            remoting = true;
+            remotingSocket = true;
             security = true;
          }
          else if ("transaction".equals(tok))
@@ -782,10 +802,19 @@ public class ServiceContainer
          }
          else if ("remoting".equals(tok))
          {
-            remoting = true;
+            remotingSocket = true;
             if (minus)
             {
-               remoting = false;
+               remotingSocket = false;
+            }
+
+         }
+         else if ("remoting-multiplex".equals(tok))
+         {
+            remotingMultiplex = true;
+            if (minus)
+            {
+               remotingMultiplex = false;
             }
 
          }

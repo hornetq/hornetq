@@ -21,20 +21,13 @@
   */
 package org.jboss.jms.client.state;
 
-import java.net.Socket;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.transport.Connector;
-import org.jboss.remoting.transport.PortUtil;
-import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -55,18 +48,15 @@ public class ConnectionState extends HierarchicalStateSupport
 {
    private static final Logger log = Logger.getLogger(ConnectionState.class);
    
-   private Client client;
+   private JMSRemotingConnection remotingConnection;
    
    private ResourceManager resourceManager;
-   
-   private Connector callbackServer;
-   
-   private String serverURI;
    
    //Thread pool used for making asynch calls to server - e.g. activateConsumer
    private PooledExecutor pooledExecutor;
    
-   public ConnectionState(ConnectionDelegate delegate, String serverId, String serverLocatorURI)
+   public ConnectionState(ConnectionDelegate delegate, String serverId,
+         JMSRemotingConnection remotingConnection)
       throws Exception
    {
       super(null, delegate);
@@ -81,83 +71,7 @@ public class ConnectionState extends HierarchicalStateSupport
       pooledExecutor = new PooledExecutor(new LinkedQueue(), 50);
       pooledExecutor.setMinimumPoolSize(50);
       
-      
-      //NOTE
-      //Multiplex code is commented out and we have reverted to socket transport until
-      //it is fixed
-      
-      
-            
-//      String guid = new GUID().toString();
-//      
-//      int bindPort;
-//      
-//      synchronized (PortUtil.class)
-//      {
-//         bindPort = PortUtil.findFreePort();
-//      }
-      
-//      String callbackServerURI = "multiplex://0.0.0.0:" + bindPort + "/?serverMultiplexId=" + guid;
-      
-      String callbackServerURI = "socket://0.0.0.0:0";
-            
-      InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
-      
-      //Create a Client for invoking on the server
-      //The same Client is used for all server invocations for all "child objects" of the connection
-      
-      //String bindHost = callbackServerLocator.getHost();
-
-//      InvokerLocator dummy = new InvokerLocator(serverLocatorURI);
-//      String serverHost = dummy.getHost();
-//      int serverPort = dummy.getPort();
-//      Map serverParams = dummy.getParameters();
-//      String protocol = dummy.getProtocol();
-//      
-//      serverURI = protocol + "://" + serverHost + ":" + serverPort +
-//         "/?bindHost=" + bindHost + "&bindPort=" + bindPort + "&clientMultiplexId=" + guid;
-//      
-//      if (serverParams != null && !serverParams.isEmpty())
-//      {
-//         Iterator iter = serverParams.entrySet().iterator();
-//         while (iter.hasNext())
-//         {
-//            Map.Entry entry = (Map.Entry)iter.next();
-//            String key = (String)entry.getKey();
-//            String value = (String)entry.getValue();
-//            serverURI += "&" + key + "=" + value;
-//         }
-//      }
-//                                 
-//      InvokerLocator serverLocator =  new InvokerLocator(serverURI);            
-//      
-      serverURI = serverLocatorURI;
-      InvokerLocator serverLocator = new InvokerLocator(serverLocatorURI);
-      
-      if (log.isTraceEnabled()) { log.trace("Connecting with server URI:" + serverURI); }
-            
-      client = new Client(serverLocator);
-
-      if (log.isTraceEnabled()) { log.trace("Created client"); }
-      
-      //We create a "virtual" callback server on the client.
-      //This doesn't actually create a "real" server listening with any
-      //real server sockets.
-                 
-      callbackServer = new Connector();      
-       
-      if (log.isTraceEnabled()) { log.trace("Starting virtual callback server with uri:" 
-            + callbackServerLocator.getLocatorURI()); }
-            
-      callbackServer.setInvokerLocator(callbackServerLocator.getLocatorURI());
-      
-      callbackServer.create();
-      
-      callbackServer.start();
-      
-      if (log.isTraceEnabled()) { log.trace("Created callback server"); }
-      
-      client.connect();               
+      this.remotingConnection = remotingConnection;
       
    }
     
@@ -171,20 +85,9 @@ public class ConnectionState extends HierarchicalStateSupport
       return pooledExecutor;
    }
    
-   public Client getClient()
+   public JMSRemotingConnection getRemotingConnection()
    {
-      return client;
+      return remotingConnection;
    }
-   
-   public Connector getCallbackServer()
-   {
-      return callbackServer;
-   }
-   
-   public String getServerURI()
-   {
-      return serverURI;
-   }
-      
-   
+    
 }

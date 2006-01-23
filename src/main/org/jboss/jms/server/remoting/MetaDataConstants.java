@@ -38,4 +38,6 @@ public class MetaDataConstants
    public static final String CALLBACK_HANDLER = "CALLBACK_HANDLER";
    
    public static final String CONSUMER_ID = "CONSUMER_ID";   
+   
+   public static final String CLIENT_CONNECTION_ID = "CC_ID";
 }

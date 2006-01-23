@@ -69,7 +69,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation ----------------------
 
-   public ConnectionDelegate createConnectionDelegate(String username, String password)
+   public ConnectionDelegate createConnectionDelegate(String username, String password, String clientConnectionId)
       throws JMSException
    {
       log.debug("Creating a new connection with username=" + username);
@@ -92,7 +92,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(serverPeer, clientID, username, password);
+         new ServerConnectionEndpoint(serverPeer, clientID, username, password, clientConnectionId);
 
 
       String connectionID = endpoint.getConnectionID();
@@ -100,14 +100,15 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       serverPeer.getClientManager().putConnectionDelegate(connectionID, endpoint);
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
       Dispatcher.singleton.registerTarget(connectionID, connAdvised);
+      
+      serverPeer.registerConnection(clientConnectionId, endpoint);
 
       log.debug("created and registered " + endpoint);
 
       ClientConnectionDelegate delegate;
       try
       {
-         delegate = new ClientConnectionDelegate(connectionID,
-                                                 serverPeer.getLocatorURI(),
+         delegate = new ClientConnectionDelegate(connectionID,                                                 
                                                  serverPeer.getServerPeerID(),
                                                  serverPeer.getVersion());
       }

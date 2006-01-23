@@ -60,7 +60,7 @@ public class InjectionAspect
        
        return invocation.invokeNext();
     }
-
+    
     // Package protected ---------------------------------------------
 
     // Protected -----------------------------------------------------
