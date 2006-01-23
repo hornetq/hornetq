@@ -60,6 +60,7 @@ import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
+import org.jboss.mx.loading.UnifiedClassLoader3;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
@@ -825,6 +826,8 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
    {
       //
       // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
+      // TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
+      //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
       //
 
       String destType = isQueue ? "Queue" : "Topic";
@@ -846,7 +849,15 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
       Element element = Util.stringToElement(destinationMBeanConfig);
 
       ServiceCreator sc = new ServiceCreator(mbeanServer);
-      sc.install(on, null, element);
+
+      ClassLoader cl = this.getClass().getClassLoader();
+      ObjectName loaderObjectName = null;
+      if (cl instanceof UnifiedClassLoader3)
+      {
+         loaderObjectName = ((UnifiedClassLoader3)cl).getObjectName();
+      }
+
+      sc.install(on, loaderObjectName, element);
 
       // inject dependencies
       mbeanServer.setAttribute(on, new Attribute("ServerPeer", getServiceName()));
@@ -855,6 +866,10 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
 
       return (String)mbeanServer.getAttribute(on, "JNDIName");
+
+      //
+      // end of TODO
+      //
    }
 
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
