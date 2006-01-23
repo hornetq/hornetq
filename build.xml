@@ -135,6 +135,9 @@
         <path refid="jboss.security.classpath"/>
         <path refid="jboss.server.classpath"/>
         <path refid="jboss.transaction.classpath"/>
+        
+        <!-- If I don't use directly UnifiedClassLoader3, this should go away -->
+        <path refid="jboss.jmx.classpath"/>
      </path>
 
     <!-- ===== -->
@@ -542,12 +545,12 @@
       <copy file="${javassist.javassist.lib}/javassist.jar" todir="${build.classes}"/>
       <copy file="${trove.trove.lib}/trove.jar" todir="${build.classes}"/>
 
+      <mkdir dir="${build.classes}/tmp"/>
       <!-- I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
            org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
            like javaURLContextFactory, which will mess up JNDI and other things.
       -->
-      <mkdir dir="${build.classes}/tmp"/>
       <unjar src="${jboss.server.lib}/jboss.jar"
          dest="${build.classes}/tmp">
          <patternset>
@@ -555,6 +558,21 @@
          </patternset>
       </unjar>
       <jar jarfile="${build.classes}/jboss-unified-invoker.jar">
+         <fileset dir="${build.classes}/tmp">
+            <include name="**"/>
+         </fileset>
+      </jar>
+      <delete>
+         <fileset dir="${build.classes}/tmp" includes="**"/>
+      </delete>
+      <!-- I also need org.jboss.util.stream.* -->
+      <unjar src="${jboss.common.lib}/jboss-common.jar"
+         dest="${build.classes}/tmp">
+         <patternset>
+            <include name="org/jboss/util/stream/**"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.classes}/jboss-common-stream.jar">
          <fileset dir="${build.classes}/tmp">
             <include name="**"/>
          </fileset>

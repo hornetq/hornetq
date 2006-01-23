@@ -75,6 +75,7 @@
          <patternset>
             <include name="jboss-remoting.jar"/>
             <include name="jboss-unified-invoker.jar"/>
+            <include name="jboss-common-stream.jar"/>
             <include name="jboss-serialization.jar"/>
             <include name="jboss-aop.jar"/>
             <include name="javassist.jar"/>

@@ -75,6 +75,7 @@
          <patternset>
             <include name="jboss-remoting.jar"/>
             <include name="jboss-unified-invoker.jar"/>
+            <include name="jboss-common-stream.jar"/>
             <include name="jboss-serialization.jar"/>
             <include name="jboss-aop.jar"/>
             <include name="javassist.jar"/>
@@ -82,15 +83,15 @@
          </patternset>
       </unjar>
 
-      <echo> running queue Example </echo>
-
       <!-- QueueExample expects to find the name of the queue to connect to as value of the
            'example.queue.name' property, which *may* be defined by calling ants when this example
             is used in a smoke test -->
       <java classname="org.jboss.example.jms.queue.QueueExample"
          classpathref="execution.classpath" fork="yes" failonerror="true">
          <sysproperty key="example.queue.name" value="${example.queue.name}"/>
+         <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
+         -->
       </java>
    </target>
 
