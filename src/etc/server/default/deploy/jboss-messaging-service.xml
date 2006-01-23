@@ -30,7 +30,7 @@
                <attribute name="serverBindPort">4457</attribute>
             </invoker>
             <handlers>
-               <handler subsystem="why_the_heck_do_I_need_this">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
+               <handler subsystem="why_do_I_need_this">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
             </handlers>
          </config>
       </attribute>
