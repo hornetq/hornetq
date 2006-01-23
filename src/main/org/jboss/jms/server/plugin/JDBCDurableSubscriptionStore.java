@@ -109,7 +109,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       
       if (ds == null)
       {
-         throw new Exception("No DataSource found. This service dependencies must  " +
+         throw new Exception("No DataSource found. This service dependencies must " +
                              "have not been enforced correctly!");
       }
       if (tm == null)
