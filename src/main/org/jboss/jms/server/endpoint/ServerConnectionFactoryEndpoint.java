@@ -69,8 +69,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation ----------------------
 
-   public ConnectionDelegate createConnectionDelegate(String username, String password, String clientConnectionId)
-      throws JMSException
+   public ConnectionDelegate createConnectionDelegate(String username, String password,
+                                                      String clientConnectionId) throws JMSException
    {
       log.debug("Creating a new connection with username=" + username);
       

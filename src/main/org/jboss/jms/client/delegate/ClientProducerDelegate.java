@@ -135,7 +135,8 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(Destination destination, Message message, int deliveryMode,
+                    int priority, long timeToLive) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -205,8 +206,9 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
    
    protected Client getClient()
    {
-      //Use the Client in the Connection's state
-      return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().getInvokingClient();
+      // Use the Client in the Connection's state
+      return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
+         getInvokingClient();
    }
 
    // Package Private -----------------------------------------------

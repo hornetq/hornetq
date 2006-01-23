@@ -37,13 +37,11 @@ import org.jboss.util.id.GUID;
 
 
 /**
+ * Encapsulates the state and behaviour from jboss remoting needed for a JMS connection.
  * 
- * Encapsulates the state and behaviour from jboss remoting needed for a 
- * JMS connection.
- * 
- * Each JMS connection maintains a single Client instance for invoking on the
- * server, and a Connector instance that represents the callback server used
- * to receive push callbacks from the server.
+ * Each JMS connection maintains a single Client instance for invoking on the server, and a
+ * Connector instance that represents the callback server used to receive push callbacks from the
+ * server.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1

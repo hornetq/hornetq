@@ -30,6 +30,8 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ * $Id$
  */
 public class InjectionAspect
 {
@@ -50,7 +52,8 @@ public class InjectionAspect
        MethodInvocation mi = (MethodInvocation)invocation;
        
        InvokerCallbackHandler handler =
-          (InvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CALLBACK_HANDLER);
+          (InvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS,
+                                                 MetaDataConstants.CALLBACK_HANDLER);
        if (handler != null)
        {
           SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
