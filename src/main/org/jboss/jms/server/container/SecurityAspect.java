@@ -67,7 +67,7 @@ public class SecurityAspect
       SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
       ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
       
-      check(mi, dest, CheckType.READ, sess.getConnectionEndpoint());
+      check(dest, CheckType.READ, sess.getConnectionEndpoint());
       
       //if creating a durable subscription then need create permission
       
@@ -75,7 +75,7 @@ public class SecurityAspect
       if (subscriptionName != null)
       {
          //durable
-         check(mi, dest, CheckType.CREATE, sess.getConnectionEndpoint());
+         check(dest, CheckType.CREATE, sess.getConnectionEndpoint());
       }
       
       return invocation.invokeNext();
@@ -97,7 +97,7 @@ public class SecurityAspect
          SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
          ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
                         
-         check(mi, dest, CheckType.WRITE, sess.getConnectionEndpoint());
+         check(dest, CheckType.WRITE, sess.getConnectionEndpoint());
       }
       
       return invocation.invokeNext();
@@ -114,7 +114,7 @@ public class SecurityAspect
       SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
       ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
                   
-      check(mi, dest, CheckType.READ, sess.getConnectionEndpoint());
+      check(dest, CheckType.READ, sess.getConnectionEndpoint());
       
       return invocation.invokeNext();
    }
@@ -135,7 +135,7 @@ public class SecurityAspect
       if (dest != null)
       {
          //Anonymous producer
-         check(mi, dest, CheckType.WRITE, prod.getSessionEndpoint().getConnectionEndpoint());
+         check(dest, CheckType.WRITE, prod.getSessionEndpoint().getConnectionEndpoint());
       }
       
       return invocation.invokeNext();
@@ -147,13 +147,15 @@ public class SecurityAspect
    
    // Private -------------------------------------------------------
    
-   private void check(Invocation inv, Destination dest, CheckType checkType,
-                      ServerConnectionEndpoint conn)
+   private void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
-      JBossDestination jbDest = (JBossDestination)dest;           
-      SecurityManager securityManager = conn.getServerPeer().getSecurityManager();      
-      SecurityMetadata securityMetadata = securityManager.getSecurityMetadata(jbDest.getName());
+      JBossDestination jbDest = (JBossDestination)dest;
+
+      SecurityManager securityManager = conn.getServerPeer().getSecurityManager();
+      SecurityMetadata securityMetadata =
+         securityManager.getSecurityMetadata(jbDest.isQueue(), jbDest.getName());
+
       if (securityMetadata == null)
       {
          throw new JMSSecurityException("No security configuration avaliable for " + jbDest.getName());         

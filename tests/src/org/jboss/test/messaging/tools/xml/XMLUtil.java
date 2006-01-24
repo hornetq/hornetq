@@ -13,7 +13,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.xml.XMLRuntimeException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -22,6 +21,8 @@ import java.io.Reader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -230,17 +231,21 @@ public class XMLUtil
          NodeList nl = node.getChildNodes();
          NodeList nl2 = node2.getChildNodes();
 
-         int length = nl.getLength();
+         short[] toFilter = new short[] {Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE};
+         List nodes = filter(nl, toFilter);
+         List nodes2 = filter(nl2, toFilter);
 
-         if (length != nl2.getLength())
+         int length = nodes.size();
+
+         if (length != nodes2.size())
          {
             throw new XMLRuntimeException("nodes hava a different number of children");
          }
 
          for(int i = 0; i < length; i++)
          {
-            Node n = nl.item(i);
-            Node n2 = nl2.item(i);
+            Node n = (Node)nodes.get(i);
+            Node n2 = (Node)nodes2.get(i);
             assertEquivalent(n, n2);
          }
       }
@@ -257,6 +262,26 @@ public class XMLUtil
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+
+   private static List filter(NodeList nl, short[] typesToFilter)
+   {
+      List nodes = new ArrayList();
+
+      outer: for(int i = 0; i < nl.getLength(); i++)
+      {
+         Node n = nl.item(i);
+         short type = n.getNodeType();
+         for(int j = 0; j < typesToFilter.length; j++)
+         {
+            if (typesToFilter[j] == type)
+            {
+               continue outer;
+            }
+         }
+         nodes.add(n);
+      }
+      return nodes;
+   }
 
    // Inner classes -------------------------------------------------
 }

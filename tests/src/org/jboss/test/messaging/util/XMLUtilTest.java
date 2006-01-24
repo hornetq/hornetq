@@ -198,12 +198,13 @@ public class XMLUtilTest extends MessagingTestCase
          // OK
          log.debug("STACK TRACE", e);
       }
-
    }
 
+   public void testEquivalent_8() throws Exception
+   {
+      String s = "<a><!-- some comment --><b/><!--some other comment --><c/><!-- blah --></a>";
+      String s2 = "<a><b/><!--blah blah--><c/></a>";
 
-
-
-
-
+      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+   }
 }

@@ -67,12 +67,6 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
       jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
 
-      if (securityConfig == null)
-      {
-         // refresh my security config to be identical with server's default
-         securityConfig = dm.getDefaultSecurityConfiguration();
-      }
-
       log.info(this + " started");
    }
 

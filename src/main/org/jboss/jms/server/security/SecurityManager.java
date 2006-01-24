@@ -48,6 +48,7 @@ import org.w3c.dom.Element;
  * @author Scott.Stark@jboss.org
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
+ *
  * $Id$
  */
 public class SecurityManager
@@ -59,26 +60,30 @@ public class SecurityManager
    
    // Attributes ----------------------------------------------------
    
-   private Map securityConf = new HashMap();
-   
+   private Map queueSecurityConf;
+   private Map topicSecurityConf;
+
    private AuthenticationManager authMgr;
-   
    private RealmMapping realmMapping;
    
    private Element defaultSecurityConfig;
-   
    private String securityDomain;
-   
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
+   public SecurityManager()
+   {
+      queueSecurityConf = new HashMap();
+      topicSecurityConf = new HashMap();
+   }
+
    // Public --------------------------------------------------------
    
    public void init() throws NamingException
    {
-      if (log.isTraceEnabled()) { log.trace("Creating SecurityManager"); }
+      if (log.isTraceEnabled()) { log.trace("initializing SecurityManager"); }
 
       // Get the JBoss security manager from JNDI
       InitialContext ic = new InitialContext();
@@ -87,17 +92,17 @@ public class SecurityManager
       {
          Object mgr = ic.lookup(securityDomain);
 
-         if (log.isTraceEnabled()) { log.trace("JaasSecurityManager is: " + mgr); }
+         if (log.isTraceEnabled()) { log.trace("JaasSecurityManager is " + mgr); }
 
          authMgr = (AuthenticationManager)mgr;
          realmMapping = (RealmMapping)mgr;
 
-         log.trace("JMS SecurityManager initialized");
+         log.trace("SecurityManager initialized");
       }
       catch (NamingException e)
       {
          // Apparently there is no security context, try adding java:/jaas
-         log.warn("Failed to lookup securityDomain=" + securityDomain, e);
+         log.warn("Failed to lookup securityDomain " + securityDomain, e);
 
          if (securityDomain.startsWith("java:/jaas/") == false)
          {
@@ -116,18 +121,18 @@ public class SecurityManager
       
    /**
     * Get the security meta-data for the given destination.
-    * 
     */
-   public SecurityMetadata getSecurityMetadata(String destName)
+   public SecurityMetadata getSecurityMetadata(boolean isQueue, String destName)
    {
-      SecurityMetadata m = (SecurityMetadata) securityConf.get(destName);
+      SecurityMetadata m = (SecurityMetadata)
+         (isQueue ? queueSecurityConf.get(destName) : topicSecurityConf.get(destName));
+
       if (m == null)
       {
-         // No SecurityMetadata was configured for the dest,
-         // Apply the default
+         // No SecurityMetadata was configured for the destination, apply the default
          if (defaultSecurityConfig != null)
          {
-            log.debug("No SecurityMetadadata was available for " + destName + " using default security config");
+            log.debug("No SecurityMetadadata was available for " + destName + ", using default security config");
             try
             {
                m = new SecurityMetadata(defaultSecurityConfig);
@@ -141,10 +146,13 @@ public class SecurityManager
          else
          {
             // default to guest
-            log.warn("No SecurityMetadadata was available for " + destName + " adding guest");
+            log.warn("No SecurityMetadadata was available for " + destName + ", adding guest");
             m = new SecurityMetadata();
          }
-         securityConf.put(destName, m);
+
+         // don't cache it! this way the callers will be able to take advantage of default security
+         // configuration updates
+         // securityConf.put(destName, m);
       }
       return m;
    }
@@ -205,9 +213,9 @@ public class SecurityManager
       return hasRole;
    }
    
-   public void setSecurityConfig(String destName, Element conf) throws JMSException
+   public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("adding security configuration for destination " + destName); }
+      if (log.isTraceEnabled()) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
       SecurityMetadata m = null;
 
       try
@@ -218,13 +226,28 @@ public class SecurityManager
       {
          throw new JBossJMSException("Cannot create security metadata", e);
       }
-      securityConf.put(destName, m);
+
+      if (isQueue)
+      {
+         queueSecurityConf.put(destName, m);
+      }
+      else
+      {
+         topicSecurityConf.put(destName, m);
+      }
    }
 
-   public void clearSecurityConfig(String name) throws JMSException
+   public void clearSecurityConfig(boolean isQueue, String name) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("clearing security configuration for destination " + name); }
-      securityConf.remove(name);
+      if (log.isTraceEnabled()) { log.trace("clearing security configuration for " + (isQueue ? "queue " : "topic ") + name); }
+      if (isQueue)
+      {
+         queueSecurityConf.remove(name);
+      }
+      else
+      {
+         topicSecurityConf.remove(name);
+      }
    }
 
    public Element getDefaultSecurityConfig()

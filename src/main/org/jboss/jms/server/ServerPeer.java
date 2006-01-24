@@ -168,20 +168,22 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
    {
       jndiName = destinationJNDIMapper.registerDestination(isQueue, name, jndiName);
 
-      if (securityConfiguration == null)
+      if (securityConfiguration != null)
       {
-         // relying on the server's default
-         securityConfiguration = getDefaultSecurityConfig();
+         sm.setSecurityConfig(isQueue, name, securityConfiguration);
+
+         // if the destination comes with no security configuration, then the security manager will
+         // always use its current default security configuration when requested to authorize
+         // requests for that destination
       }
 
-      sm.setSecurityConfig(name, securityConfiguration);
       return jndiName;
    }
    
    public void unregisterDestination(boolean isQueue, String name) throws JMSException
    {
       destinationJNDIMapper.unregisterDestination(isQueue, name);
-      sm.clearSecurityConfig(name);
+      sm.clearSecurityConfig(isQueue, name);
    }
 
    public CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
@@ -216,7 +218,7 @@ public class ServerPeer extends ServiceMBeanSupport implements DestinationManage
    public void setSecurityConfiguration(boolean isQueue, String name, Element securityConfig)
       throws JMSException
    {
-      sm.setSecurityConfig(name, securityConfig);
+      sm.setSecurityConfig(isQueue, name, securityConfig);
    }
 
    // ServiceMBeanSupport overrides ---------------------------------

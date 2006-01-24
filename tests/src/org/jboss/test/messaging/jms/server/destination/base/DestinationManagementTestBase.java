@@ -140,13 +140,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       ObjectName destObjectName = deploy(config);
 
-      Element defaultSecurity =
-         (Element)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(),
-                                                "DefaultSecurityConfig");
-
-      Element security = (Element)ServerManagement.getAttribute(destObjectName, "SecurityConfig");
-
-      XMLUtil.assertEquivalent(defaultSecurity, security);
+      assertNull(ServerManagement.getAttribute(destObjectName, "SecurityConfig"));
 
       undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
    }

@@ -215,23 +215,6 @@ class DestinationJNDIMapper
       return isQueue ? queueNameToJNDI.containsKey(name) : topicNameToJNDI.containsKey(name);
    }
 
-   public void destroyAllDestinations() throws Exception
-   {
-      Iterator iter = queueNameToJNDI.keySet().iterator();
-      while (iter.hasNext())
-      {
-         String queueName = (String)iter.next();
-         unregisterDestination(true, queueName);
-      }
-
-      iter = topicNameToJNDI.keySet().iterator();
-      while (iter.hasNext())
-      {
-         String topicName = (String)iter.next();
-         unregisterDestination(false, topicName);
-      }
-   }
-
    public Set getDestinations()
    {
       Set destinations = Collections.EMPTY_SET;
@@ -256,7 +239,20 @@ class DestinationJNDIMapper
    }
 
    // Package protected ---------------------------------------------
-   
+
+   void destroyAllDestinations() throws Exception
+   {
+      for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         unregisterDestination(true, (String)i.next());
+      }
+
+      for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         unregisterDestination(false, (String)i.next());
+      }
+   }
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------

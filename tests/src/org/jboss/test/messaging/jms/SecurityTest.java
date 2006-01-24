@@ -32,13 +32,14 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import javax.management.ObjectName;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.xml.XMLUtil;
 
 /**
- * 
  * Test JMS Security.
  * 
  * This test must be run with the Test security config. on the server
@@ -65,10 +66,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *     </login-module>
  *    </authentication>
  *   </application-policy>
- *   
- *   
- * 
- * 
+ *
  * @version <tt>$Revision$</tt>
  *
  */
@@ -80,7 +78,9 @@ public class SecurityTest extends MessagingTestCase
    protected static final String TEST_TOPIC = "topic/testTopic";
    protected static final String SECURED_TOPIC = "topic/securedTopic";
    protected static final String UNSECURED_TOPIC = "topic/unsecuredTopic";
-   
+
+   protected InitialContext ic;
+
    protected ConnectionFactory cf;
    protected Queue testQueue;
    protected Topic testTopic;
@@ -110,7 +110,7 @@ public class SecurityTest extends MessagingTestCase
       oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
       ServerManagement.setDefaultSecurityConfig(defaultSecurityConfig);
 
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
@@ -125,23 +125,18 @@ public class SecurityTest extends MessagingTestCase
    }
    
    protected void tearDown() throws Exception
-   {      
+   {
       ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
       ServerManagement.undeployQueue("testQueue");
       ServerManagement.undeployTopic("testTopic");
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.undeployTopic("unsecuredTopic");
-      
+
+      ic.close();
    }
    
-   
-   // Constructors --------------------------------------------------
-   
-   
    // Public --------------------------------------------------------
-   
-   
-   
+
    private boolean canReadDestination(Connection conn, Destination dest) throws Exception
    {
       
@@ -708,8 +703,106 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
-  
-   
+
+   /**
+    * This test makes sure that changing the default security configuration on the server has effect
+    * over already deployed destinations.
+    */
+   public void testDefaultSecurityUpdate() throws Exception
+   {
+      String defSecConf = ServerManagement.getDefaultSecurityConfig();
+
+      // Make sure it is the default security configuration I rely on
+      String def = "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+      XMLUtil.assertEquivalent(XMLUtil.stringToElement(def),
+                               XMLUtil.stringToElement(defSecConf));
+
+      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
+      ServerManagement.deployQueue("SomeQueue");
+      Connection conn = null;
+
+      try
+      {
+         Queue someQueue = (Queue)ic.lookup("/queue/SomeQueue");
+
+         conn = cf.createConnection("john", "needle");
+         assertTrue(canReadDestination(conn, someQueue));
+         assertTrue(canWriteDestination(conn, someQueue));
+
+
+         String newSecurityConfig =
+            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
+
+         assertFalse(canReadDestination(conn, someQueue));
+         assertFalse(canWriteDestination(conn, someQueue));
+
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
+
+         ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
+
+         assertTrue(canReadDestination(conn, someQueue));
+         assertFalse(canWriteDestination(conn, someQueue));
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
+
+         assertTrue(canReadDestination(conn, someQueue));
+         assertTrue(canWriteDestination(conn, someQueue));
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("SomeQueue");
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   public void testSecurityForQueuesAndTopicsWithTheSameName() throws Exception
+   {
+      ServerManagement.deployQueue("Accounting");
+      ServerManagement.deployTopic("Accounting");
+
+      Connection conn = null;
+
+      try
+      {
+         // configure the queue to allow "def" to read
+         String config = "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
+         ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Accounting");
+         ServerManagement.setAttribute(on, "SecurityConfig", config);
+
+         // configure the topic to prevent "def" from reading
+         config = "<security><role name=\"def\" read=\"false\" write=\"false\" create=\"false\"/></security>";
+         on = new ObjectName("jboss.messaging.destination:service=Topic,name=Accounting");
+         ServerManagement.setAttribute(on, "SecurityConfig", config);
+
+         Queue queue = (Queue)ic.lookup("/queue/Accounting");
+         Topic topic = (Topic)ic.lookup("/topic/Accounting");
+
+         conn = cf.createConnection("john", "needle");
+
+         assertTrue(canReadDestination(conn, queue));
+         assertFalse(canReadDestination(conn, topic));
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("Accounting");
+         ServerManagement.undeployTopic("Accounting");
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    /* Setup all the destinations needed for the tests.
     * We need the following destinations:
     * 
