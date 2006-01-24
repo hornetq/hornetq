@@ -185,7 +185,7 @@
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="600000"/>
 
-   <property name="junit.timeout2" value="600000"/>
+   <property name="junit.timeout2" value="300000"/>
 
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
