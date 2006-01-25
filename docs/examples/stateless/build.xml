@@ -14,12 +14,13 @@
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
    <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+   <property name="jboss.home" value="${jboss.home}"/>
    <property name="jboss.configuration.name" value="default"/>
    <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
-      <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2ee.jar"/>
-      <fileset file="${ENV.JBOSS_HOME}/client/jboss-j2se.jar"/>
+      <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
+      <fileset file="${jboss.home}/client/jboss-j2se.jar"/>
    </path>
 
    <path id="example.compilation.classpath">
@@ -30,12 +31,13 @@
    <path id="execution.classpath">
       <pathelement path="./etc"/>
       <pathelement path="../common/output"/>
+      <pathelement path="./output"/>
       <pathelement path="./output/classes"/>
       <fileset dir="./output" includes="*.jar"/>
-      <fileset file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"/>
-      <fileset dir="${ENV.JBOSS_HOME}/client" includes="*.jar"/>
-      <fileset file="${ENV.JBOSS_HOME}/server/default/lib/javax.servlet.jar"/>
-      <fileset file="${ENV.JBOSS_HOME}/lib/commons-httpclient.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"/>
+      <fileset dir="${jboss.home}/client" includes="*.jar"/>
+      <fileset file="${jboss.home}/server/default/lib/javax.servlet.jar"/>
+      <fileset file="${jboss.home}/lib/commons-httpclient.jar"/>
    </path>
 
    <target name="identify">
@@ -45,9 +47,9 @@
 
    <target name="sanity-check" depends="identify">
       <fail message="The example needs JBOSS_HOME to run!" unless="ENV.JBOSS_HOME"/>
-      <available file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
+      <available file="${jboss.home}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
          property="sar.present"/>
-      <fail message="Could not find ${messaging.deployment.archive.name} in ${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy"
+      <fail message="Could not find ${messaging.deployment.archive.name} in ${jboss.home}/server/${jboss.configuration.name}/deploy"
          unless="sar.present"/>
    </target>
 
@@ -79,14 +81,14 @@
 
    <target name="deploy" depends="jar">
       <copy file="./output/lib/stateless-example.jar"
-         todir="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy"/>
+         todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
 
    <target name="run" depends="deploy">
 
       <!-- extract jboss-remoting.jar, jboss.jar from jboss messaging sar and store it locally -->
-      <unjar src="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
+      <unjar src="${jboss.home}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
          dest="./output">
          <patternset>
             <include name="jboss-remoting.jar"/>
@@ -118,7 +120,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${ENV.JBOSS_HOME}/server/${jboss.configuration.name}/deploy/stateless-example.jar"
+      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/stateless-example.jar"
          quiet="true"/>
    </target>
 

@@ -31,7 +31,6 @@ import javax.jms.Topic;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.util.XMLUtil;
 import org.w3c.dom.Element;
 
 import java.util.Set;

@@ -2,9 +2,11 @@
 
 <server>
 
+   <!--
    <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
        <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
    </loader-repository>
+   -->
 
    <mbean code="org.jboss.jms.server.destination.Topic"
       name="jboss.messaging.destination:service=Topic,name=SmokeTestTopic"
