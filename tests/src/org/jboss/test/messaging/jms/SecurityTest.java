@@ -37,7 +37,8 @@ import javax.management.ObjectName;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
 
 /**
  * Test JMS Security.

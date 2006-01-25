@@ -191,7 +191,7 @@ public class InVMContext implements Context
 
    public void destroySubcontext(String name) throws NamingException
    {
-      throw new NotYetImplementedException();
+       map.remove(trimSlashes(name));
    }
 
    public Context createSubcontext(Name name) throws NamingException
@@ -201,6 +201,7 @@ public class InVMContext implements Context
 
    public Context createSubcontext(String name) throws NamingException
    {
+      name = trimSlashes(name);
       if (map.get(name) != null)
       {
          throw new NameAlreadyBoundException(name);

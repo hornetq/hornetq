@@ -65,8 +65,17 @@ public interface Server extends Remote
     */
    void log(int level, String text) throws Exception;
 
-   void startServerPeer() throws Exception;
+   /**
+    * @param serverPeerID - if null, the jboss-service.xml value will be used.
+    * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
+    * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
+    */
+   void startServerPeer(String serverPeerID,
+                        String defaultQueueJNDIContext,
+                        String defaultTopicJNDIContext) throws Exception;
    void stopServerPeer() throws Exception;
+   boolean isServerPeerStarted() throws Exception;
+
    public ObjectName getServerPeerObjectName() throws Exception;
 
    boolean isStarted() throws Exception;

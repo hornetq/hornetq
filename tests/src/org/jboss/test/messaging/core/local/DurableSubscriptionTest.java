@@ -26,7 +26,6 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -61,7 +60,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
       tl.start();
 
       ms = new PersistentMessageStore("persistent-message-store", tl);
-      tr = new TransactionRepository(tl);
+      tr.start(tl);
 
       channel = new DurableSubscription("clientid123", "testDurableSubscription",
                                         null, null, false, ms, tl);

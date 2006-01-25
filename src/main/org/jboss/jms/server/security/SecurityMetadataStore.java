@@ -32,6 +32,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
 
+import org.jboss.jms.server.SecurityManager;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
@@ -41,29 +42,29 @@ import org.jboss.jms.util.JBossJMSException;
 import org.w3c.dom.Element;
 
 /**
- * A security manager for JMS. Mainly delegates to the JaasSecurityManager but also stores security
- * information for destinations.
+ * A security metadate store for JMS. Stores security information for destinations and delegates
+ * authentication and authorization to a JaasSecurityManager.
  *
  * @author Peter Antman
- * @author Scott.Stark@jboss.org
+ * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class SecurityManager
+public class SecurityMetadataStore implements SecurityManager
 {
-   
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(SecurityManager.class);
+   private static final Logger log = Logger.getLogger(SecurityMetadataStore.class);
    
    // Attributes ----------------------------------------------------
    
    private Map queueSecurityConf;
    private Map topicSecurityConf;
 
-   private AuthenticationManager authMgr;
+   private AuthenticationManager authenticationManager;
    private RealmMapping realmMapping;
    
    private Element defaultSecurityConfig;
@@ -73,55 +74,14 @@ public class SecurityManager
    
    // Constructors --------------------------------------------------
 
-   public SecurityManager()
+   public SecurityMetadataStore()
    {
       queueSecurityConf = new HashMap();
       topicSecurityConf = new HashMap();
    }
 
-   // Public --------------------------------------------------------
-   
-   public void init() throws NamingException
-   {
-      if (log.isTraceEnabled()) { log.trace("initializing SecurityManager"); }
+   // SecurityManager implementation --------------------------------
 
-      // Get the JBoss security manager from JNDI
-      InitialContext ic = new InitialContext();
-
-      try
-      {
-         Object mgr = ic.lookup(securityDomain);
-
-         if (log.isTraceEnabled()) { log.trace("JaasSecurityManager is " + mgr); }
-
-         authMgr = (AuthenticationManager)mgr;
-         realmMapping = (RealmMapping)mgr;
-
-         log.trace("SecurityManager initialized");
-      }
-      catch (NamingException e)
-      {
-         // Apparently there is no security context, try adding java:/jaas
-         log.warn("Failed to lookup securityDomain " + securityDomain, e);
-
-         if (securityDomain.startsWith("java:/jaas/") == false)
-         {
-            authMgr = (SubjectSecurityManager)ic.lookup("java:/jaas/" + securityDomain);
-         }
-         else
-         {
-            throw e;
-         }
-      }
-      finally
-      {
-         ic.close();
-      }
-   }
-      
-   /**
-    * Get the security meta-data for the given destination.
-    */
    public SecurityMetadata getSecurityMetadata(boolean isQueue, String destName)
    {
       SecurityMetadata m = (SecurityMetadata)
@@ -156,66 +116,11 @@ public class SecurityManager
       }
       return m;
    }
-   
 
-   /**
-    *  Authenticate the specified user with the given password
-    *  Delegates to the JBoss AuthenticationManager
-    * 
-    * @param user
-    * @param password
-    * @return Subject 
-    * @throws JMSSecurityException if the user is not authenticated
-    */
-   public Subject authenticate(String user, String password) throws JMSSecurityException
-   {
-      boolean trace = log.isTraceEnabled();
-      
-      if (trace) { log.trace("authenticating user " + user); }
-      
-      SimplePrincipal principal = new SimplePrincipal(user);
-      char[] passwordChars = null;
-      if (password != null)
-      {
-         passwordChars = password.toCharArray();
-      }
-
-      Subject subject = new Subject();
-      
-      if (authMgr.isValid(principal, passwordChars, subject))
-      {
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-         return subject;
-      }
-      else
-      {
-         throw new JMSSecurityException("User " + user + " is NOT authenticated");
-      }
-   }
-   
-   /**
-    * Authorize that the subject has at least one of the specified roles
-    * 
-    * @param rolePrincipals - The set of roles allowed to read/write/create the destination
-    * @return true if the subject is authorized, or false if not
-    */
-   public boolean authorize(String user, Set rolePrincipals)
-   {
-      boolean trace = log.isTraceEnabled();
-      if (trace) { log.trace("authorizing user " + user + " for role(s) " + rolePrincipals.toString()); }
-      
-      Principal principal = user == null ? null : new SimplePrincipal(user);
-      
-      boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
-           
-      if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
-
-      return hasRole;
-   }
-   
    public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
+
       SecurityMetadata m = null;
 
       try
@@ -240,6 +145,7 @@ public class SecurityManager
    public void clearSecurityConfig(boolean isQueue, String name) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("clearing security configuration for " + (isQueue ? "queue " : "topic ") + name); }
+
       if (isQueue)
       {
          queueSecurityConf.remove(name);
@@ -250,32 +156,111 @@ public class SecurityManager
       }
    }
 
-   public Element getDefaultSecurityConfig()
+   public Subject authenticate(String user, String password) throws JMSSecurityException
    {
-      return this.defaultSecurityConfig;
+      boolean trace = log.isTraceEnabled();
+
+      if (trace) { log.trace("authenticating user " + user); }
+
+      SimplePrincipal principal = new SimplePrincipal(user);
+      char[] passwordChars = null;
+      if (password != null)
+      {
+         passwordChars = password.toCharArray();
+      }
+
+      Subject subject = new Subject();
+
+      if (authenticationManager.isValid(principal, passwordChars, subject))
+      {
+         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
+         return subject;
+      }
+      else
+      {
+         throw new JMSSecurityException("User " + user + " is NOT authenticated");
+      }
    }
-   
-   public void setDefaultSecurityConfig(Element conf)
-      throws Exception
+
+   public boolean authorize(String user, Set rolePrincipals)
    {
-      defaultSecurityConfig = conf;
-      // Force a parse
-      new SecurityMetadata(conf);
+      boolean trace = log.isTraceEnabled();
+      if (trace) { log.trace("authorizing user " + user + " for role(s) " + rolePrincipals.toString()); }
+
+      Principal principal = user == null ? null : new SimplePrincipal(user);
+
+      boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
+
+      if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
+
+      return hasRole;
+   }
+
+   // Public --------------------------------------------------------
+   
+   public void start() throws NamingException
+   {
+      if (log.isTraceEnabled()) { log.trace("initializing SecurityMetadataStore"); }
+
+      // Get the JBoss security manager from JNDI
+      InitialContext ic = new InitialContext();
+
+      try
+      {
+         Object mgr = ic.lookup(securityDomain);
+
+         if (log.isTraceEnabled()) { log.trace("JaasSecurityManager is " + mgr); }
+
+         authenticationManager = (AuthenticationManager)mgr;
+         realmMapping = (RealmMapping)mgr;
+
+         log.trace("SecurityMetadataStore initialized");
+      }
+      catch (NamingException e)
+      {
+         // Apparently there is no security context, try adding java:/jaas
+         log.warn("Failed to lookup securityDomain " + securityDomain, e);
+
+         if (securityDomain.startsWith("java:/jaas/") == false)
+         {
+            authenticationManager =
+               (SubjectSecurityManager)ic.lookup("java:/jaas/" + securityDomain);
+         }
+         else
+         {
+            throw e;
+         }
+      }
+      finally
+      {
+         ic.close();
+      }
+   }
+
+   public void stop() throws Exception
+   {
    }
 
    public String getSecurityDomain()
    {
       return this.securityDomain;
    }
-   
+
    public void setSecurityDomain(String securityDomain)
    {
       this.securityDomain = securityDomain;
    }
-   
-   public SecurityManager getSecurityManager()
+
+   public Element getDefaultSecurityConfig()
    {
-      return this;
+      return this.defaultSecurityConfig;
+   }
+
+   public void setDefaultSecurityConfig(Element conf) throws Exception
+   {
+      // Force a parse
+      new SecurityMetadata(conf);
+      defaultSecurityConfig = conf;
    }
 
    // Protected -----------------------------------------------------
@@ -283,5 +268,7 @@ public class SecurityManager
    // Package Private -----------------------------------------------
 
    // Private -------------------------------------------------------
-   
-} // SecurityManager
+
+   // Inner class ---------------------------------------------------
+
+}

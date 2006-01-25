@@ -29,12 +29,12 @@ import javax.jms.JMSSecurityException;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
-import org.jboss.jms.server.security.SecurityManager;
 import org.jboss.jms.server.security.SecurityMetadata;
 
 /**
@@ -150,32 +150,33 @@ public class SecurityAspect
    private void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
-      JBossDestination jbDest = (JBossDestination)dest;
+      JBossDestination jbd = (JBossDestination)dest;
+      boolean isQueue = jbd.isQueue();
+      String name = jbd.getName();
 
-      SecurityManager securityManager = conn.getServerPeer().getSecurityManager();
-      SecurityMetadata securityMetadata =
-         securityManager.getSecurityMetadata(jbDest.isQueue(), jbDest.getName());
+      SecurityManager sm = conn.getSecurityManager();
+      SecurityMetadata securityMetadata = sm.getSecurityMetadata(isQueue, name);
 
       if (securityMetadata == null)
       {
-         throw new JMSSecurityException("No security configuration avaliable for " + jbDest.getName());         
+         throw new JMSSecurityException("No security configuration avaliable for " + name);
       }
 
       // Authenticate
-      securityManager.authenticate(conn.getUsername(), conn.getPassword());
+      sm.authenticate(conn.getUsername(), conn.getPassword());
 
       // Authorize
       Set principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() :
                        checkType == CheckType.WRITE ? securityMetadata.getWritePrincipals() :
                        securityMetadata.getCreatePrincipals();
                        
-      if (!securityManager.authorize(conn.getUsername(), principals))
+      if (!sm.authorize(conn.getUsername(), principals))
       {
          String msg = "User: " + conn.getUsername() + 
             " is not authorized to " +
             (checkType == CheckType.READ ? "read from" : 
              checkType == CheckType.WRITE ? "write to" : "create durable sub on") +
-            " destination " + jbDest.getName();
+            " destination " + name;
              
          throw new JMSSecurityException(msg);                        
       }

@@ -61,6 +61,9 @@ public class ServerManagement
    public static int DEBUG = 4;
    public static int TRACE = 5;
 
+   public static final String DEFAULT_QUEUE_CONTEXT = "/queue";
+   public static final String DEFAULT_TOPIC_CONTEXT = "/topic";
+
    // Static --------------------------------------------------------
 
    private static Logger log = Logger.getLogger(ServerManagement.class);
@@ -243,14 +246,32 @@ public class ServerManagement
 
    public static void startServerPeer() throws Exception
    {
+      startServerPeer(null, null, null);
+   }
+
+   /**
+    * @param serverPeerID - if null, the jboss-service.xml value will be used.
+    * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
+    * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
+    */
+   public static void startServerPeer(String serverPeerID,
+                                      String defaultQueueJNDIContext,
+                                      String defaultTopicJNDIContext) throws Exception
+   {
       insureStarted();
-      server.startServerPeer();
+      server.startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext);
    }
 
    public static void stopServerPeer() throws Exception
    {
       insureStarted();
       server.stopServerPeer();
+   }
+
+   public static boolean isServerPeerStarted() throws Exception
+   {
+      insureStarted();
+      return server.isServerPeerStarted();
    }
 
    public static ObjectName getServerPeerObjectName() throws Exception

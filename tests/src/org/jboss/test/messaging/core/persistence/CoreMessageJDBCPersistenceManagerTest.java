@@ -373,9 +373,10 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       MessageStoreDelegate ms = new PersistentMessageStore("persistentMessageStore0", tl);
       Channel channel = new SimpleChannel("channel0", ms);
       
-      TransactionRepository txRep = new TransactionRepository(tl);
-            
-      Message[] messages = createMessages();  
+      TransactionRepository txRep = new TransactionRepository();
+      txRep.start(tl);
+
+      Message[] messages = createMessages();
       
       Xid[] xids = new Xid[messages.length];
       Transaction[] txs = new Transaction[messages.length];
@@ -489,7 +490,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref7 = ms.reference(m7);
       MessageReference ref8 = ms.reference(m8);
       
-      TransactionRepository txRep = new TransactionRepository(tl);
+      TransactionRepository txRep = new TransactionRepository();
+      txRep.start(tl);
       Transaction tx = txRep.createTransaction();
       tl.addReference(channel.getChannelID(), ref6, tx);
       tl.addReference(channel.getChannelID(), ref7, tx);
@@ -876,7 +878,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
       MessageStoreDelegate ms = new PersistentMessageStore("persistentMessageStore0", tl);
       Channel channel = new SimpleChannel("channel0", ms);
-      TransactionRepository txRep = new TransactionRepository(tl);
+      TransactionRepository txRep = new TransactionRepository();
+      txRep.start(tl);
 
       tl.start();
 
@@ -966,7 +969,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       tl.setStoringXid(storeXid);
       MessageStoreDelegate ms = new PersistentMessageStore("persistentMessageStore0", tl);
       Channel channel = new SimpleChannel("channel0", ms);      
-      TransactionRepository txRep = new TransactionRepository(tl);
+      TransactionRepository txRep = new TransactionRepository();
+      txRep.start(tl);
       tl.start();
       
       Message[] messages = createMessages();     

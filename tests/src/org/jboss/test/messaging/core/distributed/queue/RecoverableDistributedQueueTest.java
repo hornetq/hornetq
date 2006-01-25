@@ -25,9 +25,7 @@ import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -75,8 +73,8 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
       channel2 = new DistributedQueue("test", ms2, tl2, dispatcher2);
       channel3 = new DistributedQueue("test", ms3, tl3, dispatcher3);
 
-      // re-create the transaction repository with the new transaction log
-      tr = new TransactionRepository(tl);
+      // initialize the transaction repository with the new transaction log
+      tr.start(tl);
 
       log.debug("setup done");
    }

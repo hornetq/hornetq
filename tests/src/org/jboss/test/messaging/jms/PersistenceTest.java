@@ -65,17 +65,30 @@ public class PersistenceTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
+      if (ServerManagement.isRemote())
+      {
+         fail("This test is not supposed to run in a remote configuration!");
+      }
+
       super.setUp();
+
       ServerManagement.start("all");
+
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
+
       queue = (Queue)initialContext.lookup("/queue/Queue");
       topic = (Topic)initialContext.lookup("/topic/Topic");
+
       drainDestination(cf, queue);
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -93,8 +106,6 @@ public class PersistenceTest extends MessagingTestCase
     */
    public void testQueuePersistence() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess.createProducer(queue);
@@ -137,10 +148,8 @@ public class PersistenceTest extends MessagingTestCase
    /**
     * First test that message order survives a restart 
     */
-   public void testMessageOrderPersistence1() throws Exception
+   public void testMessageOrderPersistence_1() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       Connection conn = cf.createConnection();
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sessSend.createProducer(queue);
@@ -252,10 +261,8 @@ public class PersistenceTest extends MessagingTestCase
    /**
     * Second test that message order survives a restart 
     */
-   public void testMessageOrderPersistence2() throws Exception
+   public void testMessageOrderPersistence_2() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       Connection conn = cf.createConnection();
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sessSend.createProducer(queue);
@@ -359,8 +366,6 @@ public class PersistenceTest extends MessagingTestCase
     */
    public void testDurableSubscriptionPersistence() throws Exception
    {
-      if (ServerManagement.isRemote()) return;
-      
       Connection conn = cf.createConnection();
       conn.setClientID("Sausages");
       

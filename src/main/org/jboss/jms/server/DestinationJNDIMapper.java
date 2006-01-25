@@ -41,6 +41,7 @@ import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
+import org.w3c.dom.Element;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -52,7 +53,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-class DestinationJNDIMapper
+class DestinationJNDIMapper implements DestinationManager
 {
    // Constants -----------------------------------------------------
 
@@ -76,30 +77,24 @@ class DestinationJNDIMapper
    public DestinationJNDIMapper(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
-      //TODO close this inital context when DestinationManager stops
-      initialContext = new InitialContext();
       coreDestinationStore = new CoreDestinationStore(this);
       queueNameToJNDI = new ConcurrentReaderHashMap();
       topicNameToJNDI = new ConcurrentReaderHashMap();
    }
-
-   // Public --------------------------------------------------------
-
-   ServerPeer getServerPeer()
-   {
-      return serverPeer;
-   }
-
-   public String registerDestination(boolean isQueue, String name, String jndiName)
-      throws JMSException
+   
+   // DestinationManager implementation -----------------------------
+   
+   public String registerDestination(boolean isQueue, String name, String jndiName,
+                                     Element securityConfiguration) throws JMSException
    {
       String parentContext;
       String jndiNameInContext;
 
       if (jndiName == null)
       {
-         parentContext =
-            isQueue ? ServerPeer.DEFAULT_QUEUE_CONTEXT : ServerPeer.DEFAULT_TOPIC_CONTEXT;
+         parentContext = isQueue ?
+            serverPeer.getDefaultQueueJNDIContext() : serverPeer.getDefaultTopicJNDIContext();
+
          jndiNameInContext = name;
          jndiName = parentContext + "/" + jndiNameInContext;
       }
@@ -156,6 +151,15 @@ class DestinationJNDIMapper
          throw new JBossJMSException("JNDI failure", e);
       }
 
+      // if the destination has no security configuration, then the security manager will always
+      // use its current default security configuration when requested to authorize requests for
+      // that destination
+      if (securityConfiguration != null)
+      {
+         serverPeer.getSecurityManager().setSecurityConfig(isQueue, name, securityConfiguration);
+
+      }
+
       log.debug((isQueue ? "queue" : "topic") + " " + name +
                 " registered and bound in JNDI as " + jndiName );
 
@@ -188,16 +192,19 @@ class DestinationJNDIMapper
       {
          throw new JBossJMSException("JNDI failure", e);
       }
+
+      serverPeer.getSecurityManager().clearSecurityConfig(isQueue, name);
+
       log.debug("unregistered " + (isQueue ? "queue " : "topic ") + name);
    }
 
-   public synchronized void createTemporaryDestination(Destination jmsDestination)
+   public synchronized void createTemporaryDestination(javax.jms.Destination jmsDestination)
       throws JMSException
    {
       coreDestinationStore.createCoreDestination(jmsDestination);
    }
 
-   public void destroyTemporaryDestination(Destination jmsDestination)
+   public void destroyTemporaryDestination(javax.jms.Destination jmsDestination)
    {
       JBossDestination d = (JBossDestination)jmsDestination;
       boolean isQueue = d.isQueue();
@@ -208,6 +215,50 @@ class DestinationJNDIMapper
    public CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
    {
       return coreDestinationStore.getCoreDestination(isQueue, name);
+   }
+
+   public CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException
+   {
+      boolean isQueue = d instanceof javax.jms.Queue;
+      String name =
+         isQueue ? ((javax.jms.Queue)d).getQueueName() : ((javax.jms.Topic)d).getTopicName();
+
+      return getCoreDestination(isQueue, name);
+   }
+
+   // Public --------------------------------------------------------
+
+   void start() throws Exception
+   {
+      initialContext = new InitialContext();
+
+      // see if the default queue/topic contexts are there, and if they're not, create them
+      createContext(serverPeer.getDefaultQueueJNDIContext());
+      createContext(serverPeer.getDefaultTopicJNDIContext());
+   }
+
+   void stop() throws Exception
+   {
+      // destroy all destinations
+      for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         unregisterDestination(true, (String)i.next());
+      }
+
+      for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         unregisterDestination(false, (String)i.next());
+      }
+
+      initialContext.destroySubcontext(serverPeer.getDefaultQueueJNDIContext());
+      initialContext.destroySubcontext(serverPeer.getDefaultTopicJNDIContext());
+
+      initialContext.close();
+   }
+
+   ServerPeer getServerPeer()
+   {
+      return serverPeer;
    }
 
    public boolean isDeployed(boolean isQueue, String name)
@@ -240,22 +291,29 @@ class DestinationJNDIMapper
 
    // Package protected ---------------------------------------------
 
-   void destroyAllDestinations() throws Exception
-   {
-      for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
-      {
-         unregisterDestination(true, (String)i.next());
-      }
-
-      for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
-      {
-         unregisterDestination(false, (String)i.next());
-      }
-   }
-
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void createContext(String contextName) throws Exception
+   {
+      Object context = null;
+      try
+      {
+         context = initialContext.lookup(contextName);
+
+         if (!(context instanceof Context))
+         {
+            throw new JBossJMSException(contextName + " is already bound " +
+                                        " and is not a JNDI context!");
+         }
+      }
+      catch(NameNotFoundException e)
+      {
+         initialContext.createSubcontext(contextName);
+         log.debug(contextName + " subcontext created");
+      }
+   }
 
    // Inner classes -------------------------------------------------
 }

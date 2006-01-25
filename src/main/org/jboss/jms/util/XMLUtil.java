@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.tools.xml;
+package org.jboss.jms.util;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
@@ -55,7 +55,7 @@ public class XMLUtil
       return doc.getDocumentElement();
    }
 
-   public static String elementToString(Node n) throws Exception
+   public static String elementToString(Node n) throws XMLException
    {
 
       String name = n.getNodeName();
@@ -77,23 +77,46 @@ public class XMLUtil
          }
       }
 
+      String textContent = null;
       NodeList children = n.getChildNodes();
 
       if (children.getLength() == 0)
       {
-         sb.append("/>").append('\n');
+         if ((textContent = XMLUtil.getTextContent(n)) != null && !"".equals(textContent))
+         {
+            sb.append(textContent).append("</").append(name).append('>');;
+         }
+         else
+         {
+            sb.append("/>").append('\n');
+         }
       }
       else
       {
          sb.append('>').append('\n');
+         boolean hasValidChildren = false;
          for(int i = 0; i < children.getLength(); i++)
          {
-            sb.append(elementToString(children.item(i)));
-
+            String childToString = elementToString(children.item(i));
+            if (!"".equals(childToString))
+            {
+               sb.append(childToString);
+               hasValidChildren = true;
+            }
          }
+
+         if (!hasValidChildren && ((textContent = XMLUtil.getTextContent(n)) != null))
+         {
+            sb.append(textContent);
+         }
+
          sb.append("</").append(name).append('>');
       }
       return sb.toString();
+
+
+
+
    }
 
 
@@ -106,7 +129,7 @@ public class XMLUtil
     * Note: if the content is another element or set of elements, it returns a string representation
     *       of the hierarchy.
     */
-   public static String getTextContent(Node n) throws Exception
+   public static String getTextContent(Node n) throws XMLException
    {
       if (n.hasChildNodes())
       {

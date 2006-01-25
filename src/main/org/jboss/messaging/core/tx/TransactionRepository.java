@@ -58,14 +58,22 @@ public class TransactionRepository
    
    // Constructors --------------------------------------------------
    
-   public TransactionRepository(TransactionLogDelegate transactionLog)
+   public TransactionRepository()
    {
       globalToLocalMap = new ConcurrentReaderHashMap();
-      this.transactionLog = transactionLog;
    }
    
    // Public --------------------------------------------------------
-   
+
+   public void start(TransactionLogDelegate transactionLog) throws Exception
+   {
+      this.transactionLog = transactionLog;
+   }
+
+   public void stop() throws Exception
+   {
+   }
+
    public List getPreparedTransactions()
    {
       ArrayList prepared = new ArrayList();

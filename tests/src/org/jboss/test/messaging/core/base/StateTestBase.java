@@ -84,7 +84,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
       ((JDBCTransactionLog)transactionLogDelegate).start();
 
-      tr = new TransactionRepository(transactionLogDelegate);
+      tr = new TransactionRepository();
+      tr.start(transactionLogDelegate);
 
       // message store and state to be initialized by subclasses
    }

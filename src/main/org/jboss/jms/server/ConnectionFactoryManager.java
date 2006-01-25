@@ -21,25 +21,25 @@
   */
 package org.jboss.jms.server;
 
-import java.io.Serializable;
-
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.connectionfactory.JNDIBindings;
 
 /**
- * A ClientManager manages client connections
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface ClientManager
+public interface ConnectionFactoryManager
 {
+   /**
+    * @param jndiBindings - if null, the connection factory will be created and registered with the
+    *        AOP subsystem, but not bound in JNDI.
+    *
+    * @return an identifier that uniques identifies the registered ConnectionFactory.
+    */
+   String registerConnectionFactory(String clientID, JNDIBindings jndiBindings) throws Exception;
 
-   ServerConnectionEndpoint putConnectionDelegate(Serializable connectionID,
-                                                  ServerConnectionEndpoint d);
+   void unregisterConnectionFactory(String connectionFactoryID) throws Exception;
 
-   void removeConnectionDelegate(Serializable connectionID);
-
-   ServerConnectionEndpoint getConnectionDelegate(Serializable connectionID);
-   
+   javax.jms.ConnectionFactory getConnectionFactory(String connectionFactoryID);
 }

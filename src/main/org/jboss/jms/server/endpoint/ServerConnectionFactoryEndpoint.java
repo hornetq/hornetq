@@ -27,6 +27,7 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
@@ -51,20 +52,23 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    // Attributes ----------------------------------------------------
 
    protected ServerPeer serverPeer;
-   
    protected String clientID;
-   
    protected String id;
+   protected JNDIBindings jndiBindings;
 
    // Constructors --------------------------------------------------
 
-   public ServerConnectionFactoryEndpoint(String id, ServerPeer serverPeer, String defaultClientID)
+   /**
+    * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
+    *        JNDI.
+    */
+   public ServerConnectionFactoryEndpoint(String id, ServerPeer serverPeer,
+                                          String defaultClientID, JNDIBindings jndiBindings)
    {
       this.serverPeer = serverPeer;
-      
       this.clientID = defaultClientID;
-      
       this.id = id;
+      this.jndiBindings = jndiBindings;
    }
 
    // ConnectionFactoryDelegate implementation ----------------------
@@ -72,12 +76,12 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public ConnectionDelegate createConnectionDelegate(String username, String password,
                                                       String clientConnectionId) throws JMSException
    {
-      log.debug("Creating a new connection with username=" + username);
+      log.debug("creating a new connection for user " + username);
       
-      //authenticate the user
+      // authenticate the user
       serverPeer.getSecurityManager().authenticate(username, password);
     
-      //See if there is a preconfigured client id for the user
+      // see if there is a preconfigured client id for the user
       if (username != null)
       {
          String preconfClientID =
@@ -97,7 +101,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       String connectionID = endpoint.getConnectionID();
 
-      serverPeer.getClientManager().putConnectionDelegate(connectionID, endpoint);
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
       Dispatcher.singleton.registerTarget(connectionID, connAdvised);
       
@@ -130,6 +133,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public String getID()
    {
       return id;
+   }
+
+   public JNDIBindings getJNDIBindings()
+   {
+      return jndiBindings;
    }
 
    // Package protected ---------------------------------------------

@@ -59,11 +59,11 @@ public class ClientConnectionFactoryDelegate
    // Attributes ----------------------------------------------------
    
    protected String serverLocatorURI;
-   
+
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   
+
    public ClientConnectionFactoryDelegate(String objectID, String serverLocatorURI)
    {
       super(objectID);

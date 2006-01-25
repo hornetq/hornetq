@@ -95,7 +95,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       super.setUp();
 
       InitialContext ic = new InitialContext();
-      tr = new TransactionRepository(null);
+      tr = new TransactionRepository();
       ic.close();
 
       msTransactionLogDelegate =

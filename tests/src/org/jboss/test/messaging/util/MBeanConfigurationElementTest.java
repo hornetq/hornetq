@@ -22,10 +22,9 @@
 package org.jboss.test.messaging.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -215,4 +214,41 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
       assertTrue(sonethingelseFound);
    }
 
+   public void testConstructor() throws Exception
+   {
+      String s =
+         "<mbean name=\"somedomain:service=SomeService\"" +
+         "       code=\"org.example.SomeClass\"" +
+         "       xmbean-dd=\"xmdesc/somefile.xml\">" +
+         "       <attribute name=\"xmlattribute\">somevalue</attribute>" +
+         "       <depends optional-attribute-name=\"SomeDependency\">somedomain:somekey=somevalue</depends>" +
+         "       <constructor>\n" +
+         "           <arg type=\"java.lang.String\" value=\"blah\" />\n" +
+         "           <arg type=\"java.lang.Integer\" value=\"55\" />\n" +
+         "           <arg type=\"int\" value=\"77\" />\n" +
+         "       </constructor>" +
+         "</mbean>";
+
+      Element e = XMLUtil.stringToElement(s);
+      MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
+
+      assertEquals(new ObjectName("somedomain:service=SomeService"), mbeanConfig.getObjectName());
+      assertEquals("org.example.SomeClass", mbeanConfig.getMBeanClassName());
+
+
+      assertEquals(String.class,  mbeanConfig.getConstructorArgumentType(0, 0));
+      assertEquals("blah", mbeanConfig.getConstructorArgumentValue(0, 0));
+
+      assertEquals(Integer.class,  mbeanConfig.getConstructorArgumentType(0, 1));
+      assertEquals("55", mbeanConfig.getConstructorArgumentValue(0, 1));
+
+      assertEquals(Integer.TYPE,  mbeanConfig.getConstructorArgumentType(0, 2));
+      assertEquals("77", mbeanConfig.getConstructorArgumentValue(0, 2));
+
+      // test constructor argument value change
+
+      mbeanConfig.setConstructorArgumentValue(0, 0, "xerxex");
+      assertEquals("xerxex", mbeanConfig.getConstructorArgumentValue(0, 0));
+
+   }
 }

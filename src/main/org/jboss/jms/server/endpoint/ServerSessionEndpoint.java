@@ -42,6 +42,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
@@ -51,6 +52,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
@@ -86,10 +88,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
    protected Map consumers;
 	protected Map browsers;
 
-   protected ServerConnectionEndpoint connectionEndpoint;
-   protected ServerPeer serverPeer;
    private InvokerCallbackHandler callbackHandler;
-   
+
+   protected ServerConnectionEndpoint connectionEndpoint;
+
+   protected DestinationManager dm;
+   protected DurableSubscriptionStoreDelegate dsm;
+   protected TransactionLogDelegate tl;
+   protected MessageStoreDelegate ms;
+
+
    // Constructors --------------------------------------------------
 
    ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
@@ -98,7 +106,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       this.sessionID = sessionID;
 		this.acknowledgmentMode = acknowledgmentMode;
       this.connectionEndpoint = connectionEndpoint;
-      serverPeer = connectionEndpoint.getServerPeer();
+
+      ServerPeer sp = connectionEndpoint.getServerPeer();
+
+      dm = sp.getDestinationManager();
+      dsm = sp.getDurableSubscriptionStoreDelegate();
+      tl = sp.getTransactionLogDelegate();
+      ms = sp.getMessageStoreDelegate();
 
       producers = new HashMap();
       consumers = new HashMap();
@@ -116,7 +130,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
       if (jmsDestination != null)
       {
-         if (serverPeer.getCoreDestination(jmsDestination) == null)
+         if (dm.getCoreDestination(jmsDestination) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
@@ -163,7 +177,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          // Can only create a consumer for a temporary destination on the same connection
          // that created it
-         if (!this.connectionEndpoint.temporaryDestinations.contains(d))
+         if (!connectionEndpoint.temporaryDestinations.contains(d))
          {
             String msg = "Cannot create a message consumer on a different connection " +
                          "to that which created the temporary destination";
@@ -171,7 +185,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      CoreDestination coreDestination = serverPeer.getCoreDestination(jmsDestination);
+      CoreDestination coreDestination = dm.getCoreDestination(jmsDestination);
       if (coreDestination == null)
       {
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
@@ -188,7 +202,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       if (d.isTopic())
       {
-         MessageStoreDelegate ms = connectionEndpoint.getServerPeer().getMessageStoreDelegate();
          Topic topic = (Topic)coreDestination;
 
          if (subscriptionName == null)
@@ -211,14 +224,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                throw new JMSException("Cannot create durable subscriber without a valid client ID");
             }
 
-            DurableSubscriptionStoreDelegate dsd = serverPeer.getDurableSubscriptionStoreDelegate();
-            subscription = dsd.getDurableSubscription(clientID, subscriptionName);
+            subscription = dsm.getDurableSubscription(clientID, subscriptionName);
 
             if (subscription == null)
             {
                if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + coreDestination); }
-               subscription = dsd.
-                  createDurableSubscription(d.getName(), clientID, subscriptionName, selector, noLocal);
+               subscription = dsm.createDurableSubscription(d.getName(), clientID, subscriptionName,
+                                                            selector, noLocal);
             }
             else
             {
@@ -246,8 +258,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                {
                   if (log.isTraceEnabled()) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
 
-                  boolean removed = dsd.
-                     removeDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+                  boolean removed =
+                     dsm.removeDurableSubscription(connectionEndpoint.clientID, subscriptionName);
 
                   if (!removed)
                   {
@@ -258,8 +270,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   subscription.unsubscribe();
 
                   // create a fresh new subscription
-                  subscription =
-                     dsd.createDurableSubscription(d.getName(), clientID, subscriptionName, selector, noLocal);
+                  subscription = dsm.createDurableSubscription(d.getName(), clientID,
+                                                               subscriptionName, selector, noLocal);
                }
             }
          }
@@ -301,7 +313,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	      throw new InvalidDestinationException("null destination");
 	   }
 	   
-	   CoreDestination destination = serverPeer.getCoreDestination(jmsDestination);
+	   CoreDestination destination = dm.getCoreDestination(jmsDestination);
 	   
 	   if (destination == null)
 	   {
@@ -336,7 +348,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      CoreDestination coreDestination = serverPeer.getCoreDestination(true, name);
+      CoreDestination coreDestination = dm.getCoreDestination(true, name);
 
       if (coreDestination == null)
       {
@@ -358,7 +370,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      Distributor coreDestination = serverPeer.getCoreDestination(false, name);
+      Distributor coreDestination = dm.getCoreDestination(false, name);
 
       if (coreDestination == null)
       {
@@ -397,7 +409,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          ((ServerProducerEndpoint)i.next()).close();
       }
       
-      this.connectionEndpoint.sessions.remove(this.sessionID);
+      connectionEndpoint.sessions.remove(this.sessionID);
       
       Dispatcher.singleton.unregisterTarget(this.sessionID);
       
@@ -452,8 +464,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
-      this.connectionEndpoint.temporaryDestinations.add(dest);
-      serverPeer.createTemporaryDestination(dest);
+      connectionEndpoint.temporaryDestinations.add(dest);
+      dm.createTemporaryDestination(dest);
    }
    
    public void deleteTemporaryDestination(Destination dest) throws JMSException
@@ -470,7 +482,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       //It is illegal to delete a temporary destination if there any active consumers on it
-      CoreDestination destination = serverPeer.getCoreDestination(dest);
+      CoreDestination destination = dm.getCoreDestination(dest);
       
       if (destination == null)
       {
@@ -498,8 +510,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      serverPeer.destroyTemporaryDestination(dest);
-      this.connectionEndpoint.temporaryDestinations.remove(dest);
+      dm.destroyTemporaryDestination(dest);
+      connectionEndpoint.temporaryDestinations.remove(dest);
    }
    
    public void unsubscribe(String subscriptionName) throws JMSException
@@ -513,10 +525,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("Destination is null");
       }
 
-      DurableSubscriptionStoreDelegate dsd = this.serverPeer.getDurableSubscriptionStoreDelegate();
-
       DurableSubscription subscription =
-         dsd.getDurableSubscription(this.connectionEndpoint.clientID, subscriptionName);
+         dsm.getDurableSubscription(connectionEndpoint.clientID, subscriptionName);
 
       if (subscription == null)
       {
@@ -524,8 +534,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                subscriptionName + " to unsubscribe");
       }
       
-      boolean removed = dsd.removeDurableSubscription(this.connectionEndpoint.clientID,
-                                                      subscriptionName);
+      boolean removed =
+         dsm.removeDurableSubscription(connectionEndpoint.clientID, subscriptionName);
       
       if (!removed)
       {
@@ -537,16 +547,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       try
       {
-         this.serverPeer.getTransactionLogDelegate().
-            removeAllMessageData(subscription.getChannelID());
+         tl.removeAllMessageData(subscription.getChannelID());
       }
       catch (Exception e)
       {
          log.error("Failed to remove message data", e);
          throw new IllegalStateException("Failed to remove message data");
       }
-      
-   }     
+   }
    
    // Public --------------------------------------------------------
 

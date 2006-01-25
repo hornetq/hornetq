@@ -21,10 +21,7 @@
   */
 package org.jboss.jms.server;
 
-import org.w3c.dom.Element;
-import org.jboss.messaging.core.CoreDestination;
-
-import javax.jms.JMSException;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,28 +29,12 @@ import javax.jms.JMSException;
  *
  * $Id$
  */
-public interface DestinationManager
+public interface ConnectionManager
 {
-   /**
-    * Method called by a destination service to register itself with the server peer. The server
-    * peer will create and maintain state on behalf of the destination until the destination
-    * unregisters itself.
-    *
-    * @return the name under which the destination was bound in JNDI.
-    */
-   String registerDestination(boolean isQueue, String name, String jndiName, Element securityConfig)
-      throws JMSException;
+   void registerConnection(String clientConnectionID, ServerConnectionEndpoint endpoint);
 
    /**
-    * Method called by a destination service to unregister itself from the server peer. The server
-    * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
+    * @return null if there is no such connection.
     */
-   void unregisterDestination(boolean isQueue, String name) throws JMSException;
-
-   CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException;
-   CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException;
-
-   void createTemporaryDestination(javax.jms.Destination d) throws JMSException;
-   void destroyTemporaryDestination(javax.jms.Destination d) throws JMSException;
-
+   ServerConnectionEndpoint unregisterConnection(String clientConnectionID);
 }

@@ -49,8 +49,8 @@ import javax.transaction.UserTransaction;
 
 import org.hsqldb.Server;
 import org.hsqldb.persist.HsqlProperties;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.JNDIUtil;
+import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
@@ -65,7 +65,8 @@ import org.jboss.system.ServiceCreator;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TxManager;
 
 
@@ -511,8 +512,8 @@ public class ServiceContainer
 
    private void loadJNDIContexts() throws Exception
    {
-      String[] names = {ServerPeer.DEFAULT_QUEUE_CONTEXT,
-                        ServerPeer.DEFAULT_TOPIC_CONTEXT};
+      String[] names = {ServerManagement.DEFAULT_QUEUE_CONTEXT,
+                        ServerManagement.DEFAULT_TOPIC_CONTEXT};
 
       for (int i = 0; i < names.length; i++)
       {
@@ -530,10 +531,22 @@ public class ServiceContainer
 
    private void unloadJNDIContexts() throws Exception
    {
-      Context c = (Context)initialContext.lookup("/topic");
-      JNDIUtil.tearDownRecursively(c);
-      c = (Context)initialContext.lookup("/queue");
-      JNDIUtil.tearDownRecursively(c);
+      // ServerPeer should do that upon its shutdown, this is redundant
+
+      String[] context = { "/topic", "/queue" };
+      for(int i = 0; i < context.length; i++)
+      {
+         try
+         {
+            Context c = (Context)initialContext.lookup(context[i]);
+            JNDIUtil.tearDownRecursively(c);
+         }
+         catch(NameNotFoundException e)
+         {
+            // OK
+            log.debug("no context " + context[i] + " to unload, cleanup already performed");
+         }
+      }
    }
 
    private void startServiceController() throws Exception

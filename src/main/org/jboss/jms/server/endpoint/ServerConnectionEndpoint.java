@@ -40,6 +40,9 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.SecurityManager;
+import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
@@ -77,60 +80,60 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected String connectionID;
-   
-   protected ServerPeer serverPeer;
-   
-   protected Map sessions;
-   
-   protected Set temporaryDestinations;
-   
+
+   protected boolean closed;
    protected volatile boolean started;
-   
+
+   protected String connectionID;
+   protected String clientConnectionID;
    protected String clientID;
-   
+
    // We keep a map of consumers to prevent us to recurse through the attached session in order to
    // find the ServerConsumerDelegate so we can ack the message
    protected Map consumers;
-   
+   protected Map sessions;
+   protected Set temporaryDestinations;
+
    protected String username;
-   
    protected String password;
-   
-   protected boolean closed;
-   
+
    protected ReadWriteLock closeLock;
-   
-   protected String clientConnectionId;
-   
-   
+
+   // the server itself
+   protected ServerPeer serverPeer;
+
+   // access to server's extensions
+   protected DestinationManager dm;
+   protected SecurityManager sm;
+   protected ConnectionManager connm;
+   protected TransactionRepository tr;
+
    // Constructors --------------------------------------------------
    
    ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username,
                             String password, String clientConnectionId)
    {
       this.serverPeer = serverPeer;
-      
-      sessions = new ConcurrentReaderHashMap();
-      
-      temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
-      
+
+      dm = serverPeer.getDestinationManager();
+      sm = serverPeer.getSecurityManager();
+      tr = serverPeer.getTxRepository();
+      connm = serverPeer.getConnectionManager();
+
       started = false;
-      
-      connectionID = new GUID().toString();
-      
-      consumers = new ConcurrentReaderHashMap();
-      
+
+      this.connectionID = new GUID().toString();
+      this.clientConnectionID = clientConnectionId;
       this.clientID = clientID;
-      
+
+      consumers = new ConcurrentReaderHashMap();
+      sessions = new ConcurrentReaderHashMap();
+      temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
+
       this.username = username;
-      
       this.password = password;
       
-      this.closeLock = new WriterPreferenceReadWriteLock();
-      
-      this.clientConnectionId = clientConnectionId;
+      closeLock = new WriterPreferenceReadWriteLock();
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -327,23 +330,22 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
           
          //We clone to avoid concurrent modification exceptions
-         Iterator iter = new HashSet(this.sessions.values()).iterator();
+         Iterator iter = new HashSet(sessions.values()).iterator();
          while (iter.hasNext())
          {
             ServerSessionEndpoint sess = (ServerSessionEndpoint)iter.next();
             sess.close();
          }
          
-         iter = this.temporaryDestinations.iterator();
+         iter = temporaryDestinations.iterator();
          while (iter.hasNext())
          {
-            serverPeer.destroyTemporaryDestination((JBossDestination)iter.next());
+            dm.destroyTemporaryDestination((JBossDestination)iter.next());
          }
          
-         this.temporaryDestinations.clear();
-         this.consumers.clear();
-         this.serverPeer.getClientManager().removeConnectionDelegate(this.connectionID);
-         this.serverPeer.unregisterConnection(clientConnectionId);
+         temporaryDestinations.clear();
+         consumers.clear();
+         connm.unregisterConnection(clientConnectionID);
 
          Dispatcher.singleton.unregisterTarget(this.connectionID);
          closed = true;
@@ -377,8 +379,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Connection is closed");
          }
          
-         TransactionRepository txRep = serverPeer.getTxRepository();
-         
          Transaction tx = null;
          
          try
@@ -388,7 +388,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             {
                if (log.isTraceEnabled()) { log.trace("One phase commit request received"); }
                
-               tx = txRep.createTransaction();
+               tx = tr.createTransaction();
                processCommit(request.getState(), tx);
                tx.commit();         
             }
@@ -402,14 +402,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
             {                        
                if (log.isTraceEnabled()) { log.trace("Two phase commit prepare request received"); }        
-               tx = txRep.createTransaction(request.getXid());
+               tx = tr.createTransaction(request.getXid());
                processCommit(request.getState(), tx);     
                tx.prepare();
             }
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
             {   
                if (log.isTraceEnabled()) { log.trace("Two phase commit commit request received"); }
-               tx = txRep.getPreparedTx(request.getXid());
+               tx = tr.getPreparedTx(request.getXid());
    
                if (log.isTraceEnabled()) { log.trace("committing " + tx); }
                tx.commit();
@@ -417,7 +417,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
             {
                if (log.isTraceEnabled()) { log.trace("Two phase commit rollback request received"); }
-               tx = txRep.getPreparedTx(request.getXid());
+               tx = tr.getPreparedTx(request.getXid());
                   
                if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
                tx.rollback();
@@ -443,7 +443,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     */
    public Xid[] getPreparedTransactions()
    {
-      List xids = this.serverPeer.getTxRepository().getPreparedTransactions();
+      List xids = tr.getPreparedTransactions();
       
       return (Xid[])xids.toArray(new Xid[xids.size()]);
    }
@@ -470,14 +470,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return (ServerSessionEndpoint)sessions.get(sessionID);
    }
    
-   public ServerPeer getServerPeer()
-   {
-      return serverPeer;
-   }
-   
    public String getConnectionID()
    {
       return connectionID;
+   }
+
+   public SecurityManager getSecurityManager()
+   {
+      return sm;
    }
 
    public String toString()
@@ -486,7 +486,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
 
    // Package protected ---------------------------------------------
-   
+
+   ServerPeer getServerPeer()
+   {
+      return serverPeer;
+   }
+
    void sendMessage(Message m, Transaction tx) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
@@ -498,7 +503,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          throw new IllegalStateException("JMSDestination header not set!");
       }
 
-      CoreDestination coreDestination = serverPeer.getCoreDestination(jmsDestination);
+      CoreDestination coreDestination = dm.getCoreDestination(jmsDestination);
       
       if (coreDestination == null)
       {

@@ -22,8 +22,9 @@
 package org.jboss.test.messaging.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
-import org.jboss.test.messaging.tools.xml.XMLRuntimeException;
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.jms.util.XMLRuntimeException;
+import org.jboss.jms.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -207,4 +208,36 @@ public class XMLUtilTest extends MessagingTestCase
 
       XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
    }
+
+   public void testElementToString_1() throws Exception
+   {
+      String s = "<a b=\"something\">somethingelse</a>";
+      Element e = XMLUtil.stringToElement(s);
+      String tostring = XMLUtil.elementToString(e);
+      Element convertedAgain = XMLUtil.stringToElement(tostring);
+      //System.out.println(tostring);
+      XMLUtil.assertEquivalent(e, convertedAgain);
+   }
+
+   public void testElementToString_2() throws Exception
+   {
+      String s = "<a b=\"something\"></a>";
+      Element e = XMLUtil.stringToElement(s);
+      String tostring = XMLUtil.elementToString(e);
+      //System.out.println(tostring);
+      Element convertedAgain = XMLUtil.stringToElement(tostring);
+      XMLUtil.assertEquivalent(e, convertedAgain);
+   }
+
+   public void testElementToString_3() throws Exception
+   {
+      String s = "<a b=\"something\"/>";
+      Element e = XMLUtil.stringToElement(s);
+      String tostring = XMLUtil.elementToString(e);
+      //System.out.println(tostring);
+      Element convertedAgain = XMLUtil.stringToElement(tostring);
+      XMLUtil.assertEquivalent(e, convertedAgain);
+   }
+
+
 }

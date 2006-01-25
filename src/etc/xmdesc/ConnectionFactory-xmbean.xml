@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+
+
+<mbean>
+   <description>A deployable JBoss Messaging Connection Factory</description>
+   <class>org.jboss.jms.server.connectionfactory.ConnectionFactory</class>
+
+   <!-- Managed constructors -->
+
+   <constructor>
+      <name>ConnectionFactoryService</name>
+   </constructor>
+
+   <constructor>
+      <name>ConnectionFactoryService</name>
+      <parameter>
+         <name>ClientID</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </constructor>
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getClientID">
+      <description>The connection factory client identifier</description>
+      <name>ClientID</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+
+   <!-- This attribute is writable to allow configuring an arbitrary set of JNDI names in the
+        queue's service deployment descriptor. Any attempt to change the attribute after
+        initialization will be ignored.
+   -->
+   <attribute access="read-write" getMethod="getJNDIBindings" setMethod="setJNDIBindings">
+      <description>The element containing the JNDI bindings this connection factory is to be bound under</description>
+      <name>JNDIBindings</name>
+      <type>org.w3c.dom.Element</type>
+   </attribute>
+
+   <!-- ServerPeer ObjectName is configured as a dependency optional-attribute-name, this is the
+        only reason for this attribute to be writable. Any write attempt on this attribute after
+        initialization will be ignored.
+   -->
+   <attribute access="read-write" getMethod="getServerPeer" setMethod="setServerPeer">
+      <description>The ObjectName of the server peer this destination was deployed on</description>
+      <name>ServerPeer</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>
+   
+</mbean>

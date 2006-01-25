@@ -341,6 +341,7 @@
                <exclude name="org/jboss/test/messaging/jms/server/**"/>
                <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
                <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
             </fileset>
          </batchtest>
       </junit>

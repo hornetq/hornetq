@@ -8,6 +8,8 @@ package org.jboss.jms.server.destination;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.SecurityManager;
+import org.jboss.jms.server.ServerPeer;
 import org.w3c.dom.Element;
 
 import javax.management.ObjectName;
@@ -31,6 +33,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    protected ObjectName serverPeerObjectName;
    protected DestinationManager dm;
+   protected SecurityManager sm;
    protected Element securityConfig;
 
    protected String name;
@@ -63,7 +66,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
                                           " name was not properly set in the service's ObjectName");
       }
 
-      dm = (DestinationManager)server.getAttribute(serverPeerObjectName, "Instance");
+      ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+      dm = serverPeer.getDestinationManager();
+      sm = serverPeer.getSecurityManager();
 
       jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
 
@@ -115,9 +120,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    public void setSecurityConfig(Element securityConfig) throws Exception
    {
       // push security update to the server
-      if (dm != null)
+      if (sm != null)
       {
-         dm.setSecurityConfiguration(isQueue(), name, securityConfig);
+         sm.setSecurityConfig(isQueue(), name, securityConfig);
       }
 
       this.securityConfig = securityConfig;

@@ -19,74 +19,97 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server;
+package org.jboss.jms.server.connectionfactory;
 
-import java.io.Serializable;
-import java.util.Map;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.jboss.jms.util.XMLException;
+import org.jboss.jms.util.XMLUtil;
 
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.logging.Logger;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
- * Implementation of ClientManager
- * 
- * FIXME - Is this used any more??
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ClientManagerImpl implements ClientManager
+public class JNDIBindings
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ClientManagerImpl.class);
 
    // Static --------------------------------------------------------
-
+   
    // Attributes ----------------------------------------------------
 
-   protected ServerPeer serverPeer;
-   protected Map connections;
+   private Element delegate;
+   private List names;
 
    // Constructors --------------------------------------------------
 
-   public ClientManagerImpl(ServerPeer serverPeer)
+   public JNDIBindings(Element delegate) throws XMLException
    {
-      this.serverPeer = serverPeer;
-      connections = new ConcurrentReaderHashMap();
-      log.debug("ClientManager created");
+      parse(delegate);
+      this.delegate = delegate;
    }
 
    // Public --------------------------------------------------------
-   
 
-   public ServerConnectionEndpoint putConnectionDelegate(Serializable connectionID,
-                                                         ServerConnectionEndpoint d)
+   public Element getDelegate()
    {
-      return (ServerConnectionEndpoint)connections.put(connectionID, d);
-   }
-   
-   public void removeConnectionDelegate(Serializable connectionID)
-   {
-      connections.remove(connectionID);
+      return delegate;
    }
 
-   public ServerConnectionEndpoint getConnectionDelegate(Serializable connectionID)
+   /**
+    * @return List<String>
+    */
+   public List getNames()
    {
-      return (ServerConnectionEndpoint)connections.get(connectionID);
+      return names;
    }
-   
-   
+
    // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
 
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   private void parse(Element e) throws XMLException
+   {
+      if (!"bindings".equals(e.getNodeName()))
+      {
+         throw new XMLException("The element is not a <bindings> element");
+      }
+
+      if (!e.hasChildNodes())
+      {
+         names = Collections.EMPTY_LIST;
+         return;
+      }
+
+      NodeList nl= e.getChildNodes();
+      for(int i = 0; i < nl.getLength(); i++)
+      {
+         Node n = nl.item(i);
+         if ("binding".equals(n.getNodeName()))
+         {
+            String text = XMLUtil.getTextContent(n).trim();
+            if (names == null)
+            {
+               names = new ArrayList();
+            }
+            names.add(text);
+         }
+      }
+
+      if (names == null)
+      {
+         names = Collections.EMPTY_LIST;
+      }
+   }
+
+   // Inner classes -------------------------------------------------
 }

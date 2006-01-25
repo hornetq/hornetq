@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.util;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.w3c.dom.Element;

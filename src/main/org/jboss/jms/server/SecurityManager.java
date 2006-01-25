@@ -21,10 +21,13 @@
   */
 package org.jboss.jms.server;
 
+import org.jboss.jms.server.security.SecurityMetadata;
 import org.w3c.dom.Element;
-import org.jboss.messaging.core.CoreDestination;
 
+import javax.security.auth.Subject;
+import javax.jms.JMSSecurityException;
 import javax.jms.JMSException;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,28 +35,31 @@ import javax.jms.JMSException;
  *
  * $Id$
  */
-public interface DestinationManager
+public interface SecurityManager
 {
    /**
-    * Method called by a destination service to register itself with the server peer. The server
-    * peer will create and maintain state on behalf of the destination until the destination
-    * unregisters itself.
-    *
-    * @return the name under which the destination was bound in JNDI.
+    * @return the security meta-data for the given destination.
     */
-   String registerDestination(boolean isQueue, String name, String jndiName, Element securityConfig)
-      throws JMSException;
+   SecurityMetadata getSecurityMetadata(boolean isQueue, String destName);
+
+   void setSecurityConfig(boolean isQueue, String destName, Element conf) throws JMSException;
+   void clearSecurityConfig(boolean isQueue, String name) throws JMSException;
 
    /**
-    * Method called by a destination service to unregister itself from the server peer. The server
-    * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
+    * Authenticate the specified user with the given password. Implementations are most likely to
+    * delegates to a JBoss AuthenticationManager.
+    *
+    * @throws JMSSecurityException if the user is not authenticated
     */
-   void unregisterDestination(boolean isQueue, String name) throws JMSException;
+   Subject authenticate(String user, String password) throws JMSSecurityException;
 
-   CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException;
-   CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException;
-
-   void createTemporaryDestination(javax.jms.Destination d) throws JMSException;
-   void destroyTemporaryDestination(javax.jms.Destination d) throws JMSException;
+   /**
+    * Authorize that the subject has at least one of the specified roles. Implementations are most
+    * likely to delegates to a JBoss AuthenticationManager.
+    *
+    * @param rolePrincipals - The set of roles allowed to read/write/create the destination.
+    * @return true if the subject is authorized, or false if not.
+    */
+   boolean authorize(String user, Set rolePrincipals);
 
 }

@@ -26,11 +26,12 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.xml.XMLUtil;
+import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
 import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
 
@@ -44,6 +45,8 @@ import java.rmi.registry.LocateRegistry;
 import java.net.URL;
 import java.util.Set;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space. The same RMI
@@ -111,6 +114,9 @@ public class RMIServer extends UnicastRemoteObject implements Server
    // the server MBean itself
    private ObjectName serverPeerObjectName;
 
+   // List<ObjectName>
+   private List connFactoryObjectNames;
+
    // Constructors --------------------------------------------------
 
    public RMIServer(boolean remote) throws Exception
@@ -122,6 +128,8 @@ public class RMIServer extends UnicastRemoteObject implements Server
       {
          namingDelegate = new RMINamingDelegate();
       }
+
+      connFactoryObjectNames = new ArrayList();
    }
 
    // Server implementation -----------------------------------------
@@ -138,7 +146,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
       sc = new ServiceContainer(containerConfig, null);
       sc.start();
 
-      startServerPeer();
+      startServerPeer(null, null, null);
 
       log.info("server started");
    }
@@ -253,7 +261,9 @@ public class RMIServer extends UnicastRemoteObject implements Server
       return sc != null;
    }
 
-   public void startServerPeer() throws Exception
+   public void startServerPeer(String serverPeerID,
+                               String defaultQueueJNDIContext,
+                               String defaultTopicJNDIContext) throws Exception
    {
       log.debug("creating ServerPeer instance");
 
@@ -299,6 +309,21 @@ public class RMIServer extends UnicastRemoteObject implements Server
       // register server peer as a service, dependencies are injected automatically
       MBeanConfigurationElement serverPeerConfig =
          (MBeanConfigurationElement)sdd.query("service", "ServerPeer").iterator().next();
+
+      // overwrite the file configuration, if needed
+      if (serverPeerID != null)
+      {
+         serverPeerConfig.setConstructorArgumentValue(0, 0, serverPeerID);
+      }
+      if (defaultQueueJNDIContext != null)
+      {
+         serverPeerConfig.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
+      }
+      if (defaultTopicJNDIContext != null)
+      {
+         serverPeerConfig.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
+      }
+
       serverPeerObjectName = sc.registerAndConfigureService(serverPeerConfig);
 
       // overwrite the config file security domain
@@ -309,10 +334,43 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
       sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
+
+       log.debug("deploying connection factories");
+
+      List connFactoryElements = sdd.query("service", "ConnectionFactory");
+      connFactoryObjectNames.clear();
+      for(Iterator i = connFactoryElements.iterator(); i.hasNext(); )
+      {
+         MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement)i.next();
+         ObjectName on = sc.registerAndConfigureService(connFactoryElement);
+         // dependencies have been automatically injected already
+         sc.invoke(on, "create", new Object[0], new String[0]);
+         sc.invoke(on, "start", new Object[0], new String[0]);
+         connFactoryObjectNames.add(on);
+      }
    }
 
    public void stopServerPeer() throws Exception
    {
+      // if we don't find a ServerPeer instance registered under the serverPeerObjectName
+      // ObjectName, we assume that the server was already stopped and we silently exit
+      if (sc.query(serverPeerObjectName).isEmpty())
+      {
+         log.warn("ServerPeer already stopped");
+         return;
+      }
+
+      log.debug("stopping connection factories");
+
+      for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
+      {
+         ObjectName on = (ObjectName)i.next();
+         sc.invoke(on, "stop", new Object[0], new String[0]);
+         sc.invoke(on, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(on);
+      }
+      connFactoryObjectNames.clear();
+
       log.debug("stopping all destinations");
 
       Set destinations =
@@ -361,6 +419,18 @@ public class RMIServer extends UnicastRemoteObject implements Server
       sc.invoke(threadPoolObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(threadPoolObjectName);
    }
+
+   public boolean isServerPeerStarted() throws Exception
+   {
+      if (sc.query(serverPeerObjectName).isEmpty())
+      {
+         return false;
+      }
+      ServerPeer sp = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
+      sp.getVersion();
+      return true;
+   }
+
 
    public ObjectName getServerPeerObjectName()
    {
