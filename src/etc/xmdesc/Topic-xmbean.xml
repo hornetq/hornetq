@@ -16,7 +16,7 @@
    <constructor>
       <name>Topic</name>
       <parameter>
-         <name>isCreatedProgrammatically</name>
+         <name>IsCreatedProgrammatically</name>
          <type>boolean</type>
       </parameter>
    </constructor>

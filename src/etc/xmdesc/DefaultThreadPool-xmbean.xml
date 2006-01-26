@@ -14,7 +14,7 @@
    <constructor>
       <name>DefaultThreadPool</name>
       <parameter>
-         <name>size</name>
+         <name>Size</name>
          <type>int</type>
       </parameter>
    </constructor>

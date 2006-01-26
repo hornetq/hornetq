@@ -31,7 +31,6 @@
       <type>java.lang.String</type>
    </attribute>
 
-
    <!-- This attribute is writable to allow configuring an arbitrary set of JNDI names in the
         queue's service deployment descriptor. Any attempt to change the attribute after
         initialization will be ignored.

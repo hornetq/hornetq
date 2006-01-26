@@ -27,16 +27,18 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.WeakMessageReference;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.util.Util;
 
 /**
+ * An abstract class that interfaces the access to a persistent store.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class PersistentMessageStore extends InMemoryMessageStore
+public abstract class PersistentMessageStore extends InMemoryMessageStore
 {
    // Constants -----------------------------------------------------
 
@@ -46,21 +48,11 @@ public class PersistentMessageStore extends InMemoryMessageStore
    
    // Attributes ----------------------------------------------------
 
-   private TransactionLog tl;
-
    // Constructors --------------------------------------------------
 
-   public PersistentMessageStore()
-   {
-      super(true);
-   }
-
-   // TODO get rid of this
-   public PersistentMessageStore(Serializable storeID, TransactionLog tl)
+   protected PersistentMessageStore(Serializable storeID)
    {
       super(storeID, true);
-      
-      this.tl = tl;
    }
 
    // MessageStore overrides ----------------------------------------
@@ -80,7 +72,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
       {         
          try
          {
-            tl.storeMessage(m);
+            storeMessage(m);
          }
          catch (Exception e)
          {
@@ -131,7 +123,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
       
       if (m == null)
       {
-         m = tl.retrieveMessage(messageId);
+         m = getMessage(messageId);
          
          if (m != null)
          {
@@ -139,7 +131,6 @@ public class PersistentMessageStore extends InMemoryMessageStore
             
             if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage:" + m); }    
          }
-                       
       }
       
       return m;      
@@ -147,19 +138,9 @@ public class PersistentMessageStore extends InMemoryMessageStore
 
    // Public --------------------------------------------------------
 
-   public void setTransactionLog(TransactionLog tl)
-   {
-      this.tl = tl;
-   }
-
-   public TransactionLog getTransactionLog()
-   {
-      return tl;
-   }
-
    public String toString()
    {
-      return "PersistentStore[" + getStoreID() + "]";
+      return "PersistentStore[" + Util.guidToString(getStoreID()) + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -173,10 +154,27 @@ public class PersistentMessageStore extends InMemoryMessageStore
       if (reliable)
       {
          if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + messageId + " on disk"); }
-         tl.removeMessage(messageId);
+         removeMessage(messageId);
          if (log.isTraceEnabled()) { log.trace(messageId + " removed (or reference count decremented) on disk"); }
       }
    }
+
+   /**
+    * Store the message reliably. If the message doesn't exist in the reliable store, it physically
+    * adds it. Otherwise, it increments the message's reference count.
+    */
+   protected abstract void storeMessage(Message m) throws Exception;
+
+   /**
+    * Removes the message from the reliable store. If the message's reference count is bigger than
+    * one, it just decrements it. If it is 1, it physically removes the message from the store.
+    */
+   protected abstract boolean removeMessage(String messageID) throws Exception;
+
+   /**
+    * Returns the full message corresponding to the given message ID.
+    */
+   protected abstract Message getMessage(Serializable messageID) throws Exception;
 
    // Private -------------------------------------------------------
    

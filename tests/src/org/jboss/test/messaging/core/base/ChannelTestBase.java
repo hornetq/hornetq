@@ -31,7 +31,7 @@ import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
@@ -103,7 +103,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       ((JDBCTransactionLog)msTransactionLogDelegate).start();
 
-      ms = new PersistentMessageStore("message-store", msTransactionLogDelegate);
+      ms = new JDBCMessageStore("s47", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms).start();
    }
 
    public void tearDown() throws Exception

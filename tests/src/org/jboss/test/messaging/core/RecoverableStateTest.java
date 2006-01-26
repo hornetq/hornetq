@@ -7,9 +7,8 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.core.base.StateTestBase;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.RecoverableState;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,7 +31,9 @@ public class RecoverableStateTest extends StateTestBase
    {
       super.setUp();
 
-      ms = new PersistentMessageStore("ms0", transactionLogDelegate);
+      ms = new JDBCMessageStore("s60", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms).start();
+
       channel = new SimpleChannel("test-channel", ms);
 
       // the state accepts reliable messages

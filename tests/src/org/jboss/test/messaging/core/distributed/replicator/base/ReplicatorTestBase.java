@@ -32,7 +32,7 @@ import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
@@ -113,8 +113,11 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       ((JDBCTransactionLog)tl2).start();
 
-      ms = new PersistentMessageStore("persistent-ms", tl);
-      ms2 = new PersistentMessageStore("persistent-ms2", tl2);
+      ms = new JDBCMessageStore("s40", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms).start();
+
+      ms2 = new JDBCMessageStore("s41", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms2).start();
 
       // override previous definitions of distributed and distributed2
       distributed = createDistributed("test", ms, dispatcher);
@@ -127,9 +130,14 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       replicator2 = (Replicator)distributed2;
       replicator3 = (Replicator)distributed3;
 
-      outputms = new PersistentMessageStore("persistent-outputms", tl);
-      outputms2 = new PersistentMessageStore("persistent-outputms2", tl);
-      outputms3 = new PersistentMessageStore("persistent-outputms3", tl);
+      outputms = new JDBCMessageStore("s42", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)outputms).start();
+
+      outputms2 = new JDBCMessageStore("s43", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)outputms2).start();
+
+      outputms3 = new JDBCMessageStore("s44", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)outputms3).start();
    }
 
    public void tearDown() throws Exception

@@ -297,8 +297,8 @@ public class RMIServer extends UnicastRemoteObject implements Server
       MBeanConfigurationElement messageStoreConfig =
          (MBeanConfigurationElement)sdd.query("service", "MessageStore").iterator().next();
       messageStoreObjectName = sc.registerAndConfigureService(messageStoreConfig);
-      sc.invoke(transactionLogObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(transactionLogObjectName, "start", new Object[0], new String[0]);
+      sc.invoke(messageStoreObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(messageStoreObjectName, "start", new Object[0], new String[0]);
 
       MBeanConfigurationElement durableSubscriptionStoreConfig =
          (MBeanConfigurationElement)sdd.query("service", "DurableSubscriptionStore").iterator().next();

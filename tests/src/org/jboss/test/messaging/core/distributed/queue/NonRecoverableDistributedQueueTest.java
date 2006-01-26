@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.distributed.queue;
 
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -54,8 +54,11 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
 
       channel = new DistributedQueue("test", ms, dispatcher);
 
-      ms2 = new PersistentMessageStore("message-store-2", msTransactionLogDelegate);
-      ms3 = new PersistentMessageStore("message-store-3", msTransactionLogDelegate);
+      ms2 = new JDBCMessageStore("s45", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms2).start();
+
+      ms3 = new JDBCMessageStore("s46", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms3).start();
 
       channel2 = new DistributedQueue("test", ms2, dispatcher2);
       channel3 = new DistributedQueue("test", ms3, dispatcher3);

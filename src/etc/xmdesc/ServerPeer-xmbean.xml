@@ -14,15 +14,15 @@
    <constructor>
       <name>ServerPeer</name>
       <parameter>
-         <name>serverPeerID</name>
+         <name>ServerPeerID</name>
          <type>java.lang.String</type>
       </parameter>
       <parameter>
-         <name>defaultQueueJNDIContext</name>
+         <name>DefaultQueueJNDIContext</name>
          <type>java.lang.String</type>
       </parameter>
       <parameter>
-         <name>defaultTopicJNDIContext</name>
+         <name>DefaultTopicJNDIContext</name>
          <type>java.lang.String</type>
       </parameter>
    </constructor>

@@ -23,6 +23,7 @@ package org.jboss.test.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
@@ -65,9 +66,14 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
       tl3 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl3.start();
 
-      ms = new PersistentMessageStore("persistent-message-store", tl);
-      ms2 = new PersistentMessageStore("persistent-message-store2", tl2);
-      ms3 = new PersistentMessageStore("persistent-message-store3", tl3);
+      ms = new JDBCMessageStore("s50", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms).start();
+
+      ms2 = new JDBCMessageStore("s51", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms2).start();
+
+      ms3 = new JDBCMessageStore("s52", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms3).start();
 
       channel = new DistributedQueue("test", ms, tl, dispatcher);
       channel2 = new DistributedQueue("test", ms2, tl2, dispatcher2);

@@ -30,6 +30,7 @@ import org.jboss.jms.util.XMLUtil;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -69,6 +70,26 @@ public class JNDIBindings
    public List getNames()
    {
       return names;
+   }
+
+   public String toString()
+   {
+      if (names == null)
+      {
+         return "";
+      }
+
+      StringBuffer sb = new StringBuffer();
+
+      for(Iterator i = names.iterator(); i.hasNext(); )
+      {
+         sb.append(i.next());
+         if (i.hasNext())
+         {
+            sb.append(',');
+         }
+      }
+      return sb.toString();
    }
 
    // Package protected ---------------------------------------------

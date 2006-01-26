@@ -39,7 +39,6 @@ import javax.naming.NamingException;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
@@ -192,10 +191,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       // TODO: is should be possible to share this with other peers
       messageStoreDelegate =
          (MessageStore)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
-
-      // TODO this assignments should go away
-      ((PersistentMessageStore)messageStoreDelegate).setStoreID(serverPeerID);
-      ((PersistentMessageStore)messageStoreDelegate).setTransactionLog(transactionLogDelegate);
 
       durableSubscriptionStoreDelegate = (DurableSubscriptionStore)mbeanServer.
          getAttribute(durableSubscriptionStoreObjectName, "Instance");

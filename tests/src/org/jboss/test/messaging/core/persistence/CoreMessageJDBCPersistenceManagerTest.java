@@ -34,8 +34,7 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -93,7 +92,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s0", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
 
       Message[] messages = createMessages();     
@@ -127,7 +128,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s1", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
 
       Message[] messages = createMessages();     
@@ -160,8 +163,8 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddRetrieveRemoveMessage() throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
+      JDBCMessageStore ms = new JDBCMessageStore("s2", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
 
       Message[] messages = createMessages();
 
@@ -170,26 +173,26 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
          Message m = messages[i];
          String id = (String)m.getMessageID();
 
-         tl.storeMessage(m);
-         assertEquals(1, tl.getMessageReferenceCount(id));
+         ms.storeMessage(m);
+         assertEquals(1, ms.getMessageReferenceCount(id));
 
-         Message m2 = tl.retrieveMessage(id);
+         Message m2 = ms.retrieveMessage(id);
          assertNotNull(m2);
          checkEquivalent(m, m2);
-         assertEquals(2, tl.getMessageReferenceCount(id));
+         assertEquals(2, ms.getMessageReferenceCount(id));
 
-         boolean removed = tl.removeMessage(id);
+         boolean removed = ms.removeMessage(id);
          assertTrue(removed);
-         assertEquals(1, tl.getMessageReferenceCount(id));
+         assertEquals(1, ms.getMessageReferenceCount(id));
 
-         removed = tl.removeMessage(id);
+         removed = ms.removeMessage(id);
          assertTrue(removed);
-         assertEquals(0, tl.getMessageReferenceCount(id));
+         assertEquals(0, ms.getMessageReferenceCount(id));
 
-         Message m3 = tl.retrieveMessage(id);
+         Message m3 = ms.getMessage(id);
          assertNull(m3);
 
-         assertFalse(tl.removeMessage(id));
+         assertFalse(ms.removeMessage(id));
       }
    }
 
@@ -198,7 +201,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s3", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
       
       Message[] messages = createMessages();     
@@ -235,7 +240,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s4", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
       
       Message[] messages = createMessages();     
@@ -370,7 +377,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       }    
       
       tl.start();
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s5", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
       
       TransactionRepository txRep = new TransactionRepository();
@@ -448,7 +457,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       }
       
       tl.start();
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s6", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
       
       List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
@@ -876,7 +887,9 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       tl.setTxIdGuid(idIsGuid);
       tl.setStoringXid(storeXid);
 
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
+      JDBCMessageStore ms = new JDBCMessageStore("s7", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
       Channel channel = new SimpleChannel("channel0", ms);
       TransactionRepository txRep = new TransactionRepository();
       txRep.start(tl);
@@ -967,8 +980,10 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
       }
       tl.setTxIdGuid(idIsGuid);
       tl.setStoringXid(storeXid);
-      MessageStore ms = new PersistentMessageStore("persistentMessageStore0", tl);
-      Channel channel = new SimpleChannel("channel0", ms);      
+      JDBCMessageStore ms = new JDBCMessageStore("s8", sc.getDataSource(), sc.getTransactionManager());
+      ms.start();
+
+      Channel channel = new SimpleChannel("channel0", ms);
       TransactionRepository txRep = new TransactionRepository();
       txRep.start(tl);
       tl.start();

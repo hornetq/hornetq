@@ -28,6 +28,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.WeakMessageReference;
+import org.jboss.messaging.util.Util;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -67,14 +68,9 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
 
    // Constructors --------------------------------------------------
 
-   public InMemoryMessageStore(boolean acceptReliableMessages)
-   {
-      this(null, acceptReliableMessages);
-   }
-
    /**
-    * TODO get rid of this
-    * @param storeID
+    * @param storeID - if more than one message store is to be used in a distributed messaging
+    *        configuration, each store must have an unique store ID.
     */
    public InMemoryMessageStore(Serializable storeID)
    {
@@ -83,8 +79,8 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
    }
 
    /**
-    * TODO get rid of this
-    * @param storeID
+    * @param storeID - if more than one message store is to be used in a distributed messaging
+    *        configuration, each store must have an unique store ID.
     */
    public InMemoryMessageStore(Serializable storeID, boolean acceptReliableMessages)
    {
@@ -229,7 +225,6 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
    {
       //TODO - This can be optimized by storing a reference to the actual 
       //MessageHolder in the MessageReference thus preventing this look-up
-      
 
       MessageHolder holder = (MessageHolder)messages.get(ref.getMessageID());
       
@@ -255,7 +250,7 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
 
    public String toString()
    {
-      return "MemoryStore[" + storeID + "]";
+      return "MemoryStore[" + Util.guidToString(storeID) + "]";
    }
 
    // Package protected ---------------------------------------------

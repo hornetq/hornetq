@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 
 /**
@@ -52,20 +51,6 @@ public interface TransactionLog extends ServerPlugin
    // TODO used by ServerSessionEndpoint, Subscription
 
    void removeAllMessageData(Serializable channelID) throws Exception;
-
-   /**
-    * If the message doesn't exist in the database, it physically adds it. Otherwise, it increments
-    * the reference count.
-    */
-   void storeMessage(Message m) throws Exception;
-
-   /**
-    * If the message's reference count is bigger than 1, it just decrements it. If it is 1, it
-    * physically removes the message from the database.
-    */
-   boolean removeMessage(String messageID) throws Exception;
-
-   Message retrieveMessage(Serializable messageID) throws Exception;
 
    void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 

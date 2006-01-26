@@ -18,7 +18,7 @@
    <constructor>
       <name>Queue</name>
       <parameter>
-         <name>isCreatedProgrammatically</name>
+         <name>IsCreatedProgrammatically</name>
          <type>boolean</type>
       </parameter>
    </constructor>

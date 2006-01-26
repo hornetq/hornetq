@@ -48,7 +48,7 @@
 
       <constructor>
          <!-- ServerPeerID -->
-         <arg type="java.lang.String" value="0" />
+         <arg type="java.lang.String" value="server.0" />
          <!-- DefaultQueueJNDIContext -->
          <arg type="java.lang.String" value="/queue" />
          <!-- DefaultTopicJNDIContext -->
@@ -92,10 +92,19 @@
       <attribute name="DataSource">java:/DefaultDS</attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.plugin.PersistentMessageStore"
+   <mbean code="org.jboss.jms.server.plugin.JDBCMessageStore"
       name="jboss.messaging:service=MessageStore"
-      xmbean-dd="xmdesc/PersistentMessageStore-xmbean.xml">
-      <depends>jboss.messaging:service=TransactionLog</depends>
+      xmbean-dd="xmdesc/JDBCMessageStore-xmbean.xml">
+      <constructor>
+         <!-- StoreID -->
+         <arg type="java.lang.String" value="store.0" />
+      </constructor>
+      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
+           the DataSource JNDI name in order to actually get a reference to it. Fix this.
+      -->
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
    </mbean>
 
    <mbean code="org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore"

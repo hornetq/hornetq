@@ -33,6 +33,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
+import org.jboss.jms.server.plugin.JDBCMessageStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 
 import java.util.Iterator;
@@ -77,7 +78,9 @@ public abstract class TopicTestBase extends MessagingTestCase
       tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
       ((JDBCTransactionLog)tl).start();
       
-      ms = new PersistentMessageStore("persistent-store", tl);
+      ms = new JDBCMessageStore("s33", sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCMessageStore)ms).start();
+
    }
 
    public void tearDown() throws Exception
