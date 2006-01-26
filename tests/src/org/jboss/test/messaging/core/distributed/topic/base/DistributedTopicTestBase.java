@@ -29,12 +29,12 @@ import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.test.messaging.core.local.base.TopicTestBase;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -55,8 +55,8 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected TransactionLogDelegate tl2, tl3;
-   protected MessageStoreDelegate ms2, ms3;
+   protected TransactionLog tl2, tl3;
+   protected MessageStore ms2, ms3;
 
    protected DistributedTopic topic2, topic3;
 

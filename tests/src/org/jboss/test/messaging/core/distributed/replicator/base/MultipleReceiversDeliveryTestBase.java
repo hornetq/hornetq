@@ -15,7 +15,7 @@ import org.jboss.messaging.core.distributed.replicator.Acknowledgment;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.jms.server.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 import java.io.Serializable;
 
@@ -37,7 +37,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
    // Attributes ----------------------------------------------------
 
    protected SimpleDeliveryObserver observer;
-   protected MessageStoreDelegate ms;
+   protected MessageStore ms;
    protected MessageReference ref;
 
    // Constructors --------------------------------------------------

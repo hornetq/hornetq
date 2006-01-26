@@ -17,11 +17,11 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision$</ttH>
  *
  * $Id$
  */
-public interface MessageStoreDelegate extends ServerPlugin
+public interface MessageStore extends ServerPlugin
 {
    Serializable getStoreID();
 
@@ -39,7 +39,6 @@ public interface MessageStoreDelegate extends ServerPlugin
     * @return false if the channel doesn't accept reliable messages.
     */
    public boolean acceptReliableMessages();
-
 
    /**
     * Creates a new MessageReference that reference Message m

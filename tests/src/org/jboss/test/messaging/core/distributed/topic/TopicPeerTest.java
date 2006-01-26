@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core.distributed.topic;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**
@@ -66,7 +66,7 @@ public class TopicPeerTest extends PeerTestBase
    
    // Protected -----------------------------------------------------
 
-   protected Distributed createDistributed(String name, MessageStoreDelegate ms, RpcDispatcher d)
+   protected Distributed createDistributed(String name, MessageStore ms, RpcDispatcher d)
    {
       return new DistributedTopic(name, ms, null, d);
    }

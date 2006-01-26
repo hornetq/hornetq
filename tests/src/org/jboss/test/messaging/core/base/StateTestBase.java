@@ -13,7 +13,7 @@ import java.util.List;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.State;
@@ -22,14 +22,14 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 
 /**
  * The State test strategy is to try as many combination as it makes sense of the following
  * variables:
  *
- * 1. State can be non-recoverable (does not have access to a TransactionLogDelegate) or
+ * 1. State can be non-recoverable (does not have access to a TransactionLog) or
  *    recoverable. A non-recoverable state can accept reliable messages or not.
  * 2. Messages can be added non-transactionally or transactionally (and then can commit or rollback
  *    transaction).
@@ -58,8 +58,8 @@ public abstract class StateTestBase extends MessagingTestCase
 
    protected ServiceContainer sc;
    protected TransactionRepository tr;
-   protected TransactionLogDelegate transactionLogDelegate;
-   protected MessageStoreDelegate ms;
+   protected TransactionLog transactionLogDelegate;
+   protected MessageStore ms;
    protected State state;
    protected Channel channel;
 

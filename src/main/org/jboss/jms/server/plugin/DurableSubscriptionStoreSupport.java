@@ -13,10 +13,10 @@ import javax.jms.JMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Topic;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -32,7 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * $Id$
  */
 public abstract class DurableSubscriptionStoreSupport
-   extends ServiceMBeanSupport implements DurableSubscriptionStoreDelegate
+   extends ServiceMBeanSupport implements DurableSubscriptionStore
 {
 
    // Constants -----------------------------------------------------
@@ -54,7 +54,17 @@ public abstract class DurableSubscriptionStoreSupport
 
    // ServiceMBeanSupport overrides ---------------------------------
 
-   // DurableSubscriptionStoreDelegate implementation ---------------
+   protected void startService() throws Exception
+   {
+      log.debug(this + " started");
+   }
+
+   protected void stopService() throws Exception
+   {
+      log.debug(this + " stopped");
+   }
+
+   // DurableSubscriptionStore implementation ---------------
 
    public DurableSubscription createDurableSubscription(String topicName,
                                                         String clientID,
@@ -126,19 +136,19 @@ public abstract class DurableSubscriptionStoreSupport
    }
 
    // TODO this should go away! Replace it with proper dependencies.
-   private TransactionLogDelegate tl;
+   private TransactionLog tl;
 
    // TODO this should go away! Replace it with proper dependencies.
-   public void setTransactionLog(TransactionLogDelegate tl)
+   public void setTransactionLog(TransactionLog tl)
    {
       this.tl = tl;
    }
 
    // TODO this should go away! Replace it with proper dependencies.
-   private MessageStoreDelegate ms;
+   private MessageStore ms;
 
    // TODO this should go away! Replace it with proper dependencies.
-   public void setMessageStore(MessageStoreDelegate ms)
+   public void setMessageStore(MessageStore ms)
    {
       this.ms = ms;
    }

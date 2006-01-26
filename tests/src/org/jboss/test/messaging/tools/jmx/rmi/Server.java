@@ -21,8 +21,8 @@
 */
 package org.jboss.test.messaging.tools.jmx.rmi;
 
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.remoting.transport.Connector;
 
 import javax.management.ObjectName;
@@ -88,10 +88,10 @@ public interface Server extends Remote
    /**
     * Only for in-VM use!
     */
-   MessageStoreDelegate getMessageStore() throws Exception;
+   MessageStore getMessageStore() throws Exception;
 
 
-   DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate() throws Exception;
+   DurableSubscriptionStore getDurableSubscriptionStoreDelegate() throws Exception;
 
    void deployTopic(String name, String jndiName) throws Exception;
    void deployQueue(String name, String jndiName) throws Exception;

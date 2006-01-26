@@ -30,7 +30,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 
 /**
@@ -38,7 +38,7 @@ import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
  * variables:
  *
  * 1. The message store can be can be non-recoverable (does not have access to a
- *    TransactionLogDelegate) or recoverable. A non-recoverable message store can accept reliable
+ *    TransactionLog) or recoverable. A non-recoverable message store can accept reliable
  *    messages or not.
  * 2. The message can be non-reliable or reliable.
  * 3. One or multiple messages can be stored.
@@ -88,7 +88,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected ServiceContainer sc;
-   protected MessageStoreDelegate ms;
+   protected MessageStore ms;
 
    protected Map headers;
 

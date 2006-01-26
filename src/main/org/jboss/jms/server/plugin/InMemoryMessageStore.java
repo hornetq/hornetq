@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.WeakMessageReference;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -48,7 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  *
  * $Id$
  */
-public class InMemoryMessageStore extends ServiceMBeanSupport implements MessageStoreDelegate
+public class InMemoryMessageStore extends ServiceMBeanSupport implements MessageStore
 {
    // Constants -----------------------------------------------------
 
@@ -109,7 +109,7 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
       log.debug(this + " stopped");
    }
 
-   // MessageStoreDelegate implementation ---------------------------
+   // MessageStore implementation ---------------------------
 
    public Object getInstance()
    {

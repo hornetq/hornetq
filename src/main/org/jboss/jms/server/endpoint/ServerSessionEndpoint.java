@@ -43,8 +43,8 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
@@ -52,7 +52,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Subscription;
@@ -93,9 +93,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
    protected ServerConnectionEndpoint connectionEndpoint;
 
    protected DestinationManager dm;
-   protected DurableSubscriptionStoreDelegate dsm;
-   protected TransactionLogDelegate tl;
-   protected MessageStoreDelegate ms;
+   protected DurableSubscriptionStore dsm;
+   protected TransactionLog tl;
+   protected MessageStore ms;
 
 
    // Constructors --------------------------------------------------

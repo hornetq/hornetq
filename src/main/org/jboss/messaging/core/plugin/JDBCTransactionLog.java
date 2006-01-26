@@ -55,7 +55,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.persistence.JDBCUtil;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.tx.Transaction;
@@ -76,7 +76,7 @@ import org.jboss.tm.TransactionManagerServiceMBean;
  *
  * $Id$
  */
-public class JDBCTransactionLog extends ServiceMBeanSupport implements TransactionLogDelegate
+public class JDBCTransactionLog extends ServiceMBeanSupport implements TransactionLog
 {
    // Constants -----------------------------------------------------
 
@@ -303,7 +303,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
       log.debug(this + " stopped");
    }
 
-   // TransactionLogDelegate implementation -------------------------
+   // TransactionLog implementation -------------------------
 
    public Object getInstance()
    {

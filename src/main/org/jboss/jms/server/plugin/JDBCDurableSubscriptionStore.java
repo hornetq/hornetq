@@ -130,7 +130,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       log.debug(this + " stopped");
    }
 
-   // DurableSubscriptionStoreDelegate implementation ---------------
+   // DurableSubscriptionStore implementation ---------------
 
    public Object getInstance()
    {

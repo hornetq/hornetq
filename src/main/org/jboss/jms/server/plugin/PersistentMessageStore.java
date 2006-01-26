@@ -27,7 +27,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.WeakMessageReference;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -46,7 +46,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
    
    // Attributes ----------------------------------------------------
 
-   private TransactionLogDelegate tl;
+   private TransactionLog tl;
 
    // Constructors --------------------------------------------------
 
@@ -56,7 +56,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
    }
 
    // TODO get rid of this
-   public PersistentMessageStore(Serializable storeID, TransactionLogDelegate tl)
+   public PersistentMessageStore(Serializable storeID, TransactionLog tl)
    {
       super(storeID, true);
       
@@ -147,12 +147,12 @@ public class PersistentMessageStore extends InMemoryMessageStore
 
    // Public --------------------------------------------------------
 
-   public void setTransactionLog(TransactionLogDelegate tl)
+   public void setTransactionLog(TransactionLog tl)
    {
       this.tl = tl;
    }
 
-   public TransactionLogDelegate getTransactionLog()
+   public TransactionLog getTransactionLog()
    {
       return tl;
    }

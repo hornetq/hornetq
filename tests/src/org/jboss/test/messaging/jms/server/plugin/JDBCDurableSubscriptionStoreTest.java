@@ -31,10 +31,10 @@ import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.tm.TransactionManagerService;
@@ -53,8 +53,8 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
 
-   protected TransactionLogDelegate tl;
-   protected DurableSubscriptionStoreDelegate dssd;
+   protected TransactionLog tl;
+   protected DurableSubscriptionStore dssd;
 
    // Constructors --------------------------------------------------
 

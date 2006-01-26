@@ -28,7 +28,7 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 
 
 /**
@@ -61,7 +61,7 @@ public class Transaction
    
    protected List callbacks;;
    
-   protected TransactionLogDelegate transactionLog;
+   protected TransactionLog transactionLog;
    
    //True if the transaction has resulted in a tx record being inserted in the db
    protected boolean insertedTXRecord;
@@ -108,7 +108,7 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction(Xid xid, TransactionLogDelegate transactionLog)
+   Transaction(Xid xid, TransactionLog transactionLog)
    {
       state = STATE_ACTIVE;
       this.xid = xid;

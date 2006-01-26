@@ -27,9 +27,9 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -47,10 +47,10 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected TransactionLogDelegate tl;
+   protected TransactionLog tl;
 
-   protected TransactionLogDelegate tl2;
-   protected MessageStoreDelegate ms2;
+   protected TransactionLog tl2;
+   protected MessageStore ms2;
 
    // Constructors --------------------------------------------------
 

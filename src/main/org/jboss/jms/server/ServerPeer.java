@@ -40,16 +40,16 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
-import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -103,19 +103,20 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    protected SecurityMetadataStore securityStore;
    protected ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
    protected TransactionRepository txRepository;
-   protected JMSServerInvocationHandler handler;
-   protected ConnectionListener connectionListener;
 
    // plugins
 
    protected ObjectName threadPoolObjectName;
-   protected ThreadPoolDelegate threadPoolDelegate;
+   protected ThreadPool threadPoolDelegate;
    protected ObjectName transactionLogObjectName;
-   protected TransactionLogDelegate transactionLogDelegate;
+   protected TransactionLog transactionLogDelegate;
    protected ObjectName messageStoreObjectName;
-   protected MessageStoreDelegate messageStoreDelegate;
+   protected MessageStore messageStoreDelegate;
    protected ObjectName durableSubscriptionStoreObjectName;
-   protected DurableSubscriptionStoreDelegate durableSubscriptionStoreDelegate;
+   protected DurableSubscriptionStore durableSubscriptionStoreDelegate;
+
+   protected JMSServerInvocationHandler handler;
+   protected ConnectionListener connectionListener;
 
    // Constructors --------------------------------------------------
 
@@ -183,20 +184,20 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       // of their automatically-creating management interface.
 
       threadPoolDelegate =
-         (ThreadPoolDelegate)mbeanServer.getAttribute(threadPoolObjectName, "Instance");
+         (ThreadPool)mbeanServer.getAttribute(threadPoolObjectName, "Instance");
 
       transactionLogDelegate =
-         (TransactionLogDelegate)mbeanServer.getAttribute(transactionLogObjectName, "Instance");
+         (TransactionLog)mbeanServer.getAttribute(transactionLogObjectName, "Instance");
 
       // TODO: is should be possible to share this with other peers
       messageStoreDelegate =
-         (MessageStoreDelegate)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
+         (MessageStore)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
 
       // TODO this assignments should go away
       ((PersistentMessageStore)messageStoreDelegate).setStoreID(serverPeerID);
       ((PersistentMessageStore)messageStoreDelegate).setTransactionLog(transactionLogDelegate);
 
-      durableSubscriptionStoreDelegate = (DurableSubscriptionStoreDelegate)mbeanServer.
+      durableSubscriptionStoreDelegate = (DurableSubscriptionStore)mbeanServer.
          getAttribute(durableSubscriptionStoreObjectName, "Instance");
 
       // TODO this assignments should go away
@@ -433,7 +434,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       return destinationJNDIMapper.isDeployed(isQueue, name);
    }
 
-   public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate()
+   public DurableSubscriptionStore getDurableSubscriptionStoreDelegate()
    {
       return durableSubscriptionStoreDelegate;
    }
@@ -482,17 +483,17 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
 
    // access to plugin references
 
-   public ThreadPoolDelegate getThreadPoolDelegate()
+   public ThreadPool getThreadPoolDelegate()
    {
       return threadPoolDelegate;
    }
 
-   public TransactionLogDelegate getTransactionLogDelegate()
+   public TransactionLog getTransactionLogDelegate()
    {
       return transactionLogDelegate;
    }
 
-   public MessageStoreDelegate getMessageStoreDelegate()
+   public MessageStore getMessageStoreDelegate()
    {
       return messageStoreDelegate;
    }

@@ -21,22 +21,19 @@ import java.util.Set;
  *
  * $Id$
  */
-public interface DurableSubscriptionStoreDelegate extends ServerPlugin
+public interface DurableSubscriptionStore extends ServerPlugin
 {
    DurableSubscription createDurableSubscription(String topicName,
                                                  String clientID,
                                                  String subscriptionName,
                                                  String selector,
-                                                 boolean noLocal)
-      throws JMSException;
+                                                 boolean noLocal) throws JMSException;
 
    DurableSubscription getDurableSubscription(String clientID,
-                                              String subscriptionName)
-      throws JMSException;
+                                              String subscriptionName) throws JMSException;
 
    boolean removeDurableSubscription(String clientID,
-                                     String subscriptionName)
-      throws JMSException;
+                                     String subscriptionName) throws JMSException;
 
    String getPreConfiguredClientID(String username) throws JMSException;
 

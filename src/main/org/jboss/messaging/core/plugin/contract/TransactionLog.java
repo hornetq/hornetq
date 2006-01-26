@@ -37,9 +37,8 @@ import org.jboss.messaging.core.MessageReference;
  *
  * $Id$
  */
-public interface TransactionLogDelegate extends ServerPlugin
+public interface TransactionLog extends ServerPlugin
 {
-
    // TODO used by the TransactionRepository
 
    void prepareTx(Transaction tx) throws Exception;
@@ -49,7 +48,6 @@ public interface TransactionLogDelegate extends ServerPlugin
    void rollbackTx(Transaction tx) throws Exception;
 
    List retrievePreparedTransactions() throws Exception;
-
 
    // TODO used by ServerSessionEndpoint, Subscription
 
@@ -69,11 +67,9 @@ public interface TransactionLogDelegate extends ServerPlugin
 
    Message retrieveMessage(Serializable messageID) throws Exception;
 
-
    void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 
-   void removeReference(Serializable channelID, MessageReference ref, Transaction tx)  throws Exception;
-
+   void removeReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 
    /**
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.

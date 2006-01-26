@@ -37,7 +37,7 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.selector.Selector;
-import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
+import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -92,7 +92,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    protected Selector messageSelector;
    
-   protected ThreadPoolDelegate threadPoolDelegate;
+   protected ThreadPool threadPoolDelegate;
    
    protected volatile boolean started;
    

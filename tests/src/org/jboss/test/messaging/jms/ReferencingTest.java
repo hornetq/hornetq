@@ -30,7 +30,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -97,7 +97,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testAutoAck1() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -125,7 +125,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testAutoAck2() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -155,7 +155,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testClientAck1() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -190,7 +190,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testClientAck2() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -227,7 +227,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testRedelivery() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -276,7 +276,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testTransactionCommit() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -310,7 +310,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void testTransactionRollback() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       
@@ -355,7 +355,7 @@ public class ReferencingTest extends MessagingTestCase
    
    public void cancelTest() throws Exception
    {
-      MessageStoreDelegate store = ServerManagement.getMessageStore();
+      MessageStore store = ServerManagement.getMessageStore();
       
       Connection conn = cf.createConnection();
       

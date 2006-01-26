@@ -21,10 +21,10 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.CoreDestination;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -42,12 +42,12 @@ public class Queue extends ChannelSupport implements CoreDestination
    
    // Constructors --------------------------------------------------
 
-   public Queue(String name, MessageStoreDelegate ms)
+   public Queue(String name, MessageStore ms)
    {
       this(name, ms, null);
    }
 
-   public Queue(String name, MessageStoreDelegate ms, TransactionLogDelegate tl)
+   public Queue(String name, MessageStore ms, TransactionLog tl)
    {
       super(name, ms, tl, false);
       router = new PointToPointRouter();

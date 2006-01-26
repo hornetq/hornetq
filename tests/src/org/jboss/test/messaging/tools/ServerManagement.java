@@ -29,8 +29,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.rmi.Naming;
 
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.RMIServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
@@ -291,13 +291,13 @@ public class ServerManagement
       return server.getConnector();
    }
 
-   public static MessageStoreDelegate getMessageStore() throws Exception
+   public static MessageStore getMessageStore() throws Exception
    {
       insureStarted();
       return server.getMessageStore();
    }
 
-   public static DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate()
+   public static DurableSubscriptionStore getDurableSubscriptionStoreDelegate()
       throws Exception
    {
       insureStarted();

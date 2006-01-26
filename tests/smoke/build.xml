@@ -80,7 +80,7 @@
          <substitution expression="\1>&lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;&lt;/login-module&gt;"/>
       </replaceregexp>
       <!-- replace with a 'custom' remoting -->
-      <copy file="../../src/resources/jboss-remoting.jar" todir="${jboss.home}/server/messaging-smoke-test/lib"/>
+      <!-- <copy file="../../src/resources/jboss-remoting.jar" todir="${jboss.home}/server/messaging-smoke-test/lib"/> -->
 
    </target>
 

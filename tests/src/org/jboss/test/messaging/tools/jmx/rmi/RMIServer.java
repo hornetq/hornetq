@@ -29,8 +29,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStoreDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.remoting.transport.Connector;
 import org.w3c.dom.Element;
@@ -455,27 +455,27 @@ public class RMIServer extends UnicastRemoteObject implements Server
    /**
     * Only for in-VM use!
     */
-   public MessageStoreDelegate getMessageStore() throws Exception
+   public MessageStore getMessageStore() throws Exception
    {
       if (isRemote())
       {
          throw new IllegalStateException("This method shouldn't be invoked on a remote server");
       }
 
-      return (MessageStoreDelegate)sc.getAttribute(messageStoreObjectName, "Instance");
+      return (MessageStore)sc.getAttribute(messageStoreObjectName, "Instance");
    }
 
    /**
     * Only for in-VM use!
     */
-   public DurableSubscriptionStoreDelegate getDurableSubscriptionStoreDelegate() throws Exception
+   public DurableSubscriptionStore getDurableSubscriptionStoreDelegate() throws Exception
    {
       if (isRemote())
       {
          throw new IllegalStateException("This method shouldn't be invoked on a remote server");
       }
 
-      return (DurableSubscriptionStoreDelegate)sc.
+      return (DurableSubscriptionStore)sc.
          getAttribute(durableSubscriptionStoreObjectName, "Instance");
    }
 

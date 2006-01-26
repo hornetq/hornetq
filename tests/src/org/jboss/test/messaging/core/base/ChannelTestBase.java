@@ -26,13 +26,13 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 
@@ -45,7 +45,7 @@ import java.util.ArrayList;
  * The Channel test strategy is to try as many combination as it makes sense of the following
  * variables:
  *
- * 1. The channel can be non-recoverable (does not have access to a TransactionLogDelegate) or
+ * 1. The channel can be non-recoverable (does not have access to a TransactionLog) or
  *    recoverable. A non-recoverable channel can accept reliable messages or not.
  * 2. The channel may have zero or one receivers (the behavior for more than one receiver depends
  *    on the particular router implementation).
@@ -76,10 +76,10 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    
    // Attributes ----------------------------------------------------
 
-   // the MessageStore requires a TransactionLogDelegate, othewise it will reject reliable messages
-   protected TransactionLogDelegate msTransactionLogDelegate;
+   // the MessageStore requires a TransactionLog, othewise it will reject reliable messages
+   protected TransactionLog msTransactionLogDelegate;
    protected TransactionRepository tr;
-   protected MessageStoreDelegate ms;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 

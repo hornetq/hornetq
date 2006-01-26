@@ -6,7 +6,7 @@
  */
 package org.jboss.jms.server.plugin;
 
-import org.jboss.jms.server.plugin.contract.ThreadPoolDelegate;
+import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
@@ -24,7 +24,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  *
  * $Id$
  */
-public class DefaultThreadPool extends ServiceMBeanSupport implements ThreadPoolDelegate
+public class DefaultThreadPool extends ServiceMBeanSupport implements ThreadPool
 {
    // Constants -----------------------------------------------------
 
@@ -57,7 +57,7 @@ public class DefaultThreadPool extends ServiceMBeanSupport implements ThreadPool
       log.debug(this + " stopped");
    }
 
-   // ThreadPoolDelegate implementation -----------------------------
+   // ThreadPool implementation -----------------------------
 
    public Object getInstance()
    {

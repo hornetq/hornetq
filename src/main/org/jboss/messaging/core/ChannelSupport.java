@@ -29,12 +29,12 @@ import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null
- * TransactionLogDelegate is available, it supports recoverability of reliable messages.
+ * TransactionLog is available, it supports recoverability of reliable messages.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
@@ -55,8 +55,8 @@ public abstract class ChannelSupport implements Channel
    protected Serializable channelID;
    protected Router router;
    protected State state;
-   protected TransactionLogDelegate tl;
-   protected MessageStoreDelegate ms;
+   protected TransactionLog tl;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
@@ -65,8 +65,8 @@ public abstract class ChannelSupport implements Channel
     *        recoverable channel always accepts reliable messages)
     */
    protected ChannelSupport(Serializable channelID,
-                            MessageStoreDelegate ms,
-                            TransactionLogDelegate tl,
+                            MessageStore ms,
+                            TransactionLog tl,
                             boolean acceptReliableMessages)
    {
       if (log.isTraceEnabled()) { log.trace("creating " + (tl != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
@@ -265,7 +265,7 @@ public abstract class ChannelSupport implements Channel
       return messages;
    }
 
-   public MessageStoreDelegate getMessageStore()
+   public MessageStore getMessageStore()
    {
       return ms;
    }

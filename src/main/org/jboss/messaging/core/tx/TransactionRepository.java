@@ -29,13 +29,13 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 
 /**
- * This class maintains JMS Server local transactions
+ * This class maintains JMS Server local transactions.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision 1.1 $
@@ -52,7 +52,7 @@ public class TransactionRepository
    
    protected Map globalToLocalMap;     
    
-   protected TransactionLogDelegate transactionLog;
+   protected TransactionLog transactionLog;
 
    // Static --------------------------------------------------------
    
@@ -65,7 +65,7 @@ public class TransactionRepository
    
    // Public --------------------------------------------------------
 
-   public void start(TransactionLogDelegate transactionLog) throws Exception
+   public void start(TransactionLog transactionLog) throws Exception
    {
       this.transactionLog = transactionLog;
    }

@@ -17,7 +17,7 @@ import org.jboss.messaging.core.plugin.contract.ServerPlugin;
  *
  * $Id$
  */
-public interface ThreadPoolDelegate extends ServerPlugin
+public interface ThreadPool extends ServerPlugin
 {
    void execute(Runnable runnable) throws InterruptedException;
 }

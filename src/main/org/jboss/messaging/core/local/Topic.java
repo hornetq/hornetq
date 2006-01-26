@@ -34,7 +34,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -54,11 +54,11 @@ public class Topic implements CoreDestination
    
    protected Router router;
    protected String name;
-   protected MessageStoreDelegate ms;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
-   public Topic(String name, MessageStoreDelegate ms)
+   public Topic(String name, MessageStore ms)
    {
       this.name = name;
       this.ms = ms;

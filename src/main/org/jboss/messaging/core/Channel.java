@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core;
 
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 import java.util.List;
 import java.io.Serializable;
@@ -88,7 +88,7 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
     */
    List browse(Filter filter);
 
-   MessageStoreDelegate getMessageStore();
+   MessageStore getMessageStore();
 
    /**
     * Synchronously pushes the "oldest" message stored by the channel to the receiver. If receiver

@@ -36,7 +36,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -60,7 +60,7 @@ public abstract class DistributedChannelTestBase extends ChannelTestBase
    protected JChannel jchannel, jchannel2, jchannel3;
    protected RpcDispatcher dispatcher, dispatcher2, dispatcher3;
 
-   protected MessageStoreDelegate ms2, ms3;
+   protected MessageStore ms2, ms3;
    protected Channel channel2, channel3;
 
    // Constructors --------------------------------------------------

@@ -9,7 +9,7 @@ package org.jboss.test.messaging.core;
 import org.jboss.test.messaging.core.base.StateTestBase;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.NonRecoverableState;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
 
@@ -25,7 +25,7 @@ public class NonRecoverableState2Test extends StateTestBase
    // Attributes ----------------------------------------------------
 
    // requuired by the message store
-   TransactionLogDelegate transactionLogDelegate;
+   TransactionLog transactionLogDelegate;
 
    // Constructors --------------------------------------------------
 

@@ -34,12 +34,12 @@ import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
  * The test strategy is to try as many combination as it makes sense of the following
@@ -84,12 +84,12 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
    protected ServiceContainer sc;
 
-   protected TransactionLogDelegate tl, tl2;
-   protected MessageStoreDelegate ms2;
+   protected TransactionLog tl, tl2;
+   protected MessageStore ms2;
 
    protected Replicator replicator, replicator2, replicator3;
 
-   private MessageStoreDelegate outputms, outputms2, outputms3;
+   private MessageStore outputms, outputms2, outputms3;
 
    // Constructors --------------------------------------------------
 

@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.MessageReference;
@@ -37,7 +37,7 @@ import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
@@ -72,7 +72,7 @@ public class DistributedQueue extends Queue implements Distributed
    /**
     * An non-recoverable queue peer.
     */
-   public DistributedQueue(String name, MessageStoreDelegate ms, RpcDispatcher dispatcher)
+   public DistributedQueue(String name, MessageStore ms, RpcDispatcher dispatcher)
    {
       this(name, ms, null, dispatcher);
    }
@@ -80,7 +80,7 @@ public class DistributedQueue extends Queue implements Distributed
    /**
     * A recoverable queue peer.
     */
-   public DistributedQueue(String name, MessageStoreDelegate ms, TransactionLogDelegate tl,
+   public DistributedQueue(String name, MessageStore ms, TransactionLog tl,
                            RpcDispatcher dispatcher)
    {
       super(name, ms, tl);

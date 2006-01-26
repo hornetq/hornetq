@@ -27,13 +27,13 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.plugin.contract.TransactionLogDelegate;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.jms.server.plugin.contract.MessageStoreDelegate;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 import java.util.Iterator;
 
@@ -55,8 +55,8 @@ public abstract class TopicTestBase extends MessagingTestCase
 
    protected CoreDestination topic;
 
-   protected TransactionLogDelegate tl;
-   protected MessageStoreDelegate ms;
+   protected TransactionLog tl;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
    
