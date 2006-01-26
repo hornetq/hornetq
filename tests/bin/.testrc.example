@@ -147,8 +147,8 @@ DEBUG_OPTS=$DEBUG_OPTS_SHMEM
 #TARGET_TEST=testAddReference
 #TARGET_CLASS=org.jboss.test.messaging.jms.SecurityTest
 #TARGET_TEST=testSecurityForQueuesAndTopicsWithTheSameName
-TARGET_CLASS=org.jboss.test.messaging.jms.PersistenceTest
-TARGET_TEST=testQueuePersistence
+#TARGET_CLASS=org.jboss.test.messaging.jms.PersistenceTest
+#TARGET_TEST=testQueuePersistence
 #
 # JMS Facade server
 #
@@ -188,5 +188,5 @@ TARGET_TEST=testQueuePersistence
 #TARGET_CLASS=org.jboss.test.messaging.jms.message.ObjectMessageTest
 #
 #
-#TARGET_CLASS=org.jboss.test.messaging.jms.JMSTest
-#TARGET_TEST=testAll
+TARGET_CLASS=org.jboss.test.messaging.jms.JMSTest
+TARGET_TEST=testAll
