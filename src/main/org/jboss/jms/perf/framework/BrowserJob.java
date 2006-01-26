@@ -38,11 +38,11 @@ public class BrowserJob extends BaseThroughputJob
 
    public BrowserJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
-         int numSessions, int numMessages, String selector)
+         int numSessions, int numMessages, long timeToStart, String selector)
    {
       super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
             numSessions, false, 0,
-            numMessages);
+            numMessages, timeToStart);
       this.selector = selector;
    }
 

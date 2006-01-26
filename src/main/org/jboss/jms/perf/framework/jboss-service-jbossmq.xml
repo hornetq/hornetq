@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<server>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue">
+        <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue0">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue1">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue2">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue3">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue4">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue5">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue6">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue7">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue8">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=perfTestQueue9">
+          <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+      <mbean code="org.jboss.mq.server.jmx.Topic"
+             name="jboss.mq.destination:service=Topic,name=perfTestTopic">
+              <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+    <mbean code="org.jboss.mq.server.jmx.Topic"
+             name="jboss.mq.destination:service=Topic,name=perfTestTopic0">
+            <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+      <mbean code="org.jboss.mq.server.jmx.Topic"
+             name="jboss.mq.destination:service=Topic,name=perfTestTopic1">
+              <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic2">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic3">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic4">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic5">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic6">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic7">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic8">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+      </mbean>
+
+        <mbean code="org.jboss.mq.server.jmx.Topic"
+                 name="jboss.mq.destination:service=Topic,name=perfTestTopic9">
+                <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+
+
+   <mbean code="org.jboss.jms.perf.framework.PerfRunner"
+      name="jboss.messaging:service=PerfRunner"
+      xmbean-dd="xmdesc/PerfRunner-xmbean.xml">
+
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue0</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue1</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue2</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue3</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue4</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue5</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue6</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue7</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue8</depends>
+      <depends>jboss.mq.destination:service=Queue,name=perfTestQueue9</depends>
+
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic0</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic1</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic2</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic3</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic4</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic5</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic6</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic7</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic8</depends>
+      <depends>jboss.mq.destination:service=Topic,name=perfTestTopic9</depends>
+
+   </mbean>
+
+</server>

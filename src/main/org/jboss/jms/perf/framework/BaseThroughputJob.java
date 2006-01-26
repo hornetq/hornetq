@@ -45,11 +45,11 @@ public abstract class BaseThroughputJob extends BaseJob
    
    protected int numMessages;
    
-   protected long testTime;
-   
    protected long startTime;
    
-   protected long initTime;
+   protected long endTime;
+   
+   protected long timeToStart;
    
    protected Throwable[] throwables;
          
@@ -66,24 +66,18 @@ public abstract class BaseThroughputJob extends BaseJob
       else
       {
          log.info("Didn't fail");
-         res.initTime = initTime;
-         res.testTime = testTime;
+         res.startTime = startTime;
+         res.endTime = endTime;
       }
       
       return res;
    }
    
-//   public Throwable[] getThrowables()
-//   {
-//      return throwables;
-//   }
    
    public void run()
    {
       try
       {
-         startTime = System.currentTimeMillis();
-         
          log.info("==============Running job:" + this);
          setup();
          logInfo();
@@ -112,9 +106,23 @@ public abstract class BaseThroughputJob extends BaseJob
          servitors[i] = servitor;
       }      
             
-      long testStartTime = System.currentTimeMillis();
-      initTime = testStartTime - startTime;
+      long now = System.currentTimeMillis();
       
+      //Wait until timeToStart
+      if (now >= timeToStart)
+      {
+         log.error("Already passed timeToStart");
+         failed = true;
+         return;
+      }
+      
+      long toSleep = timeToStart - now;
+      log.info("Sleeping for " + toSleep + " ms");
+      Thread.sleep(toSleep);
+      log.info("Done sleeping");
+      
+      startTime = System.currentTimeMillis();
+            
       for (int i = 0; i < numSessions; i++)
       {         
          servitorThreads[i] = new Thread(servitors[i]);
@@ -126,13 +134,8 @@ public abstract class BaseThroughputJob extends BaseJob
          servitorThreads[i].join();
       }
       
-      long endTime = System.currentTimeMillis();
-      
-      
-      testTime = endTime - testStartTime;
-      
-      System.out.println("*********************************************Test time is:" + testTime);
-      
+      endTime = System.currentTimeMillis();
+
       List throwablesList = new ArrayList();
       
       for (int i = 0; i < numSessions; i++)
@@ -234,7 +237,7 @@ public abstract class BaseThroughputJob extends BaseJob
    
    public BaseThroughputJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
-         int numSessions, boolean transacted, int transactionSize, int numMessages)
+         int numSessions, boolean transacted, int transactionSize, int numMessages, long timeToStart)
    {
       super(slaveURL, jndiProperties, destinationName, connectionFactoryJndiName);
       this.numConnections = numConnections;
@@ -242,6 +245,7 @@ public abstract class BaseThroughputJob extends BaseJob
       this.transacted = transacted;
       this.transactionSize = transactionSize;
       this.numMessages = numMessages;
+      this.timeToStart = timeToStart;
    }
    
 

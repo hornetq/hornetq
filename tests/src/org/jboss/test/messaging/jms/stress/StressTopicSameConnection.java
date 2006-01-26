@@ -171,8 +171,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 20, 3, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 20, 3, true) };
 
       runRunners(runners);
 
@@ -191,8 +191,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -211,8 +211,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -231,8 +231,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -251,8 +251,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -272,8 +272,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -291,8 +291,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -311,8 +311,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -331,8 +331,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -351,8 +351,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -371,8 +371,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -391,8 +391,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -411,8 +411,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -431,8 +431,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -451,8 +451,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -472,8 +472,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -492,8 +492,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -512,8 +512,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -532,8 +532,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -552,8 +552,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -572,8 +572,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -592,8 +592,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -612,8 +612,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -632,8 +632,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -652,8 +652,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -673,8 +673,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -693,8 +693,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -713,8 +713,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -733,8 +733,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -753,8 +753,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -774,8 +774,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 0, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 0, true) };
 
       runRunners(runners);
 
@@ -794,8 +794,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 0, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 0, true) };
 
       runRunners(runners);
 
@@ -814,8 +814,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -834,8 +834,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -854,8 +854,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -875,8 +875,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -895,8 +895,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -915,8 +915,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -935,8 +935,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -955,8 +955,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -975,8 +975,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -995,8 +995,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -1015,8 +1015,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -1035,8 +1035,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -1055,8 +1055,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -1076,8 +1076,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -1096,8 +1096,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -1116,8 +1116,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -1136,8 +1136,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -1156,8 +1156,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -1177,8 +1177,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -1197,8 +1197,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -1217,8 +1217,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
 
       runRunners(runners);
 
@@ -1237,8 +1237,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -1257,8 +1257,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
 
       runRunners(runners);
 
@@ -1277,8 +1277,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -1298,8 +1298,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -1318,8 +1318,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
 
       runRunners(runners);
 
@@ -1338,8 +1338,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 
@@ -1358,8 +1358,8 @@ public class StressTopicSameConnection extends StressTestBase
       MessageProducer prod = sessSend.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
       runRunners(runners);
 

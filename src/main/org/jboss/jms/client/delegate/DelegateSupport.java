@@ -164,7 +164,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       {
          return;
       }
-
+      
       // We shouldn't have to do this programmatically - it should pick it up from the params
       // on the locator uri, but that doesn't seem to work.
       Marshaller marshaller = new InvocationMarshaller();

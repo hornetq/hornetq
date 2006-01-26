@@ -139,7 +139,7 @@
 
    <attribute access="read-only" getMethod="getDestinations">
       <description>Returns a Set of javax.jms.Destinations (Queues and Topics) containing the current active destinations</description>
-      <name>getDestinations</name>
+      <name>Destinations</name>
       <type>java.util.Set</type>
    </attribute>
 

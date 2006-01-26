@@ -37,6 +37,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.aop.AspectXmlLoader;
+import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
@@ -45,7 +46,6 @@ import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.server.security.SecurityMetadataStore;
-import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;

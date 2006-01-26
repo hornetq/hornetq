@@ -98,8 +98,11 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals(jndiName, s);
 
 
-      Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
-                                                      new Object[0], new String[0]);
+//      Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
+//                                                      new Object[0], new String[0]);
+      
+      Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
 
       assertEquals(1, destinations.size());
 
@@ -280,8 +283,11 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       Set set = ServerManagement.query(destObjectName);
       assertTrue(set.isEmpty());
 
-      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
-                                         new Object[0], new String[0]);
+//      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
+//                                         new Object[0], new String[0]);
+      
+      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
 
       assertTrue(set.isEmpty());
 

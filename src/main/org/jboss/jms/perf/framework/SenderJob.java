@@ -54,11 +54,11 @@ public class SenderJob extends BaseThroughputJob
    public SenderJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
          int numSessions, boolean transacted, int transactionSize, 
-         int numMessages, boolean anon, int messageSize,
+         int numMessages, long timeToStart, boolean anon, int messageSize,
          MessageFactory messageFactory, int deliveryMode, long initialPause)
    {
       super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
-            numSessions, transacted, transactionSize, numMessages);
+            numSessions, transacted, transactionSize, numMessages, timeToStart);
       this.anon = anon;
       this.msgSize = messageSize;
       this.mf = messageFactory;

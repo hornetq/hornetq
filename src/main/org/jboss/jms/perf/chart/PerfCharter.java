@@ -45,7 +45,7 @@ public class PerfCharter
 {
    // Constants -----------------------------------------------------
 
-   private static final String OUTPUT_DIR = "perf-output";
+   private static final String OUTPUT_DIR = "../output";
    
    private static final String OUTPUT_FILE = "jms-perf-results.html";
    
@@ -302,6 +302,7 @@ public class PerfCharter
       catch (Exception e)
       {
          log.error("Failed to chart", e);
+         e.printStackTrace();
       }
    }
    

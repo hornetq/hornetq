@@ -21,32 +21,33 @@
 */
 package org.jboss.test.messaging.tools.jmx.rmi;
 
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
-import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.XMLUtil;
-import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
-import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.remoting.transport.Connector;
-import org.w3c.dom.Element;
+import java.net.URL;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import javax.management.ObjectName;
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
-import java.rmi.server.UnicastRemoteObject;
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
-import java.net.URL;
-import java.util.Set;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
+import javax.management.ObjectName;
+
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.transport.Connector;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
+import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
+import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.w3c.dom.Element;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space. The same RMI
@@ -373,8 +374,11 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
       log.debug("stopping all destinations");
 
-      Set destinations =
-         (Set)sc.invoke(serverPeerObjectName, "getDestinations", new Object[0], new String[0]);
+// Hmmm I don't see how this ever worked      
+//      Set destinations =
+//         (Set)sc.invoke(serverPeerObjectName, "getDestinations", new Object[0], new String[0]);
+      
+      Set destinations = (Set)sc.getAttribute(serverPeerObjectName, "Destinations");
 
       for(Iterator i = destinations.iterator(); i.hasNext(); )
       {

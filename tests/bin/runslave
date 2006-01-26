@@ -1,38 +1,11 @@
 #!/bin/sh
 #
-# bash script for running a single unit test case.
-#
-# It expects TARGET_CLASS and TARGET_TEST to be set. If they are not, it tries to load them
-# from ./.testrc.
-#
-# Options:
-#    -debug start the client VM in debugging mode
-#    -remote set the "remote" system property so the server start in a remote VM
-#    -remotedebug starts the VM that runs the remote server in debugging mode. The remote VM
-#            will attempt to connect to the debugger, which should be lisening on 'rmiserver'
+# bash script for running a jms performance test slave
 #
 #
 
 
 reldir=`dirname $0`
-
-if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
-   . $reldir/.testrc
-fi
-
-if [ -z "$TARGET_CLASS" ]; then
-   echo "No TARGET_CLASS found! Set the TARGET_CLASS environment variable and try again." 1>&2
-   exit 1
-fi
-
-outputdir="$reldir/../output"
-
-if ! mkdir -p $outputdir/logs; then
-   echo "failed to create $outputdir/logs"
-fi
-
-# reset the log files as by default log4j is configure to append
-rm -f $outputdir/logs/*.log
 
 cygwin=false;
 case "`uname`" in
@@ -50,46 +23,21 @@ fi
 while [ "$1" != "" ]; do
     if [ "$1" = "-debug" ]; then
         if [ $cygwin = false ]; then
-            if [ "$DEBUG_OPTS_SOCKET" = "" ]; then
-                echo "No configured socket debugging options. Set DEBUG_OPTS_SOCKET in your environment or .testrc" 1>&2
-                exit 1
-            fi
-            JAVA_OPTS="$DEBUG_OPTS_SOCKET"
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
         else
-            if [ "$DEBUG_OPTS" = "" ]; then
-                echo "No configured debugging options. Set DEBUG_OPTS in your environment or .testrc" 1>&2
-                exit 1
-            fi
-            JAVA_OPTS="$DEBUG_OPTS"
+            #JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"
+            #Eclipse doesn't support remote debugging with shared memory afaik
+            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
         fi
     fi
-    if [ "$1" = "-remote" ]; then
-        isRemote=true;
-        REMOTE_TEST="-Dremote=true"
-    fi
-    if [ "$1" = "-remotedebug" ]; then
-        REMOTE_DEBUG_FLAG="-debug"
-    fi
+    ARGS="$ARGS $1"
     shift
 done
 
-JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST"
+JAVA_OPTS="-Xmx1024M $JAVA_OPTS"
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
-
-JGROUPS_LIB=$reldir/../../../thirdparty/jgroups/lib/jgroups.jar
-#JGROUPS_LIB=$reldir/../resources/jgroups-core.jar
-
-
-if [ "$TARGET_TEST" != "" ]; then
-   TARGET_TEST="-t $TARGET_TEST"
-fi
-
-if [ "$isRemote" = "true" ]; then
-  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG
-fi
-
 
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
@@ -123,11 +71,5 @@ $reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
 $reldir/../../../build/output/jboss-5.0.0alpha/client/jbossall-client.jar${SEP}\
-${JGROUPS_LIB}${SEP}\
- org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
-
-
-if [ "$isRemote" = "true" ]; then
-  $reldir/stop-rmi-server
-fi
+ org.jboss.jms.perf.framework.Slave $ARGS
 

@@ -6,7 +6,8 @@
  */
 package org.jboss.jms.perf.framework;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 import java.util.Properties;
 
@@ -29,14 +30,16 @@ import org.jboss.jms.perf.framework.persistence.PersistenceManager;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * 
- * Runs all the tests in the performance test suite
+ * Runs all the tests in the performance test suite.
+ * Can run the tests remote or invm
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class PerfRunner
+public class PerfRunner extends ServiceMBeanSupport
 {
    private static final Logger log = Logger.getLogger(PerfRunner.class);   
    
@@ -74,6 +77,8 @@ public class PerfRunner
    
    protected int numSlaves;
    
+   protected boolean local;
+   
    public PerfRunner()
    {      
    }
@@ -103,10 +108,10 @@ public class PerfRunner
       testQueue14();
       testQueue15();
       testQueue16();
-      testQueue17();
-      testQueue18();
-      testQueue19();
-      testQueue20();
+//      testQueue17();
+//      testQueue18();
+//      testQueue19();
+//      testQueue20();
       
       testTopic1();
       testTopic2();
@@ -119,32 +124,33 @@ public class PerfRunner
       testTopic9();
       testTopic10();
       
-      testMessageSizeThroughput();
+   //   testMessageSizeThroughput();
       
-      testQueueScale1();
-      testQueueScale2();
-      testQueueScale3();
-      
-      testTopicScale1();
-      testTopicScale2();
-      testTopicScale3();
-      
+//      testQueueScale1();
+//      testQueueScale2();
+//      testQueueScale3();
+//      
+//      testTopicScale1();
+//      testTopicScale2();
+//      testTopicScale3();
+//      
       tearDown();
    }
    
    protected Properties loadProps(String filename) throws Exception
    {
-      FileInputStream fis = null;
+      InputStream is = null;
       try
       {
-         fis = new FileInputStream(filename);         
+         URL url = this.getClass().getClassLoader().getResource(filename);
+         is = url.openStream();      
          Properties props = new Properties();
-         props.load(fis);
+         props.load(is);
          return props;
       }
       finally
       {
-         if (fis != null) fis.close();
+         if (is != null) is.close();
       }
    }
    
@@ -155,11 +161,22 @@ public class PerfRunner
       
          log.trace("Setting up PerfRunner");
          
-         String jndiPropertiesFileName = System.getProperty("perf.jndiProperties", "jndi.properties");
+         String jndiPropertiesFileName;
          
+         String perfPropertiesFileName;
+         
+         if (local)
+         {
+            jndiPropertiesFileName = "perf-jndi.properties";
+            perfPropertiesFileName = "perf.properties";
+         }
+         else
+         {
+            jndiPropertiesFileName = System.getProperty("perf.jndiProperties", "jndi.properties");
+            perfPropertiesFileName = System.getProperty("perf.properties", "perf.properties");
+         }
+                  
          this.jndiProperties = loadProps(jndiPropertiesFileName);
-         
-         String perfPropertiesFileName = System.getProperty("perf.properties", "perf.properties");
          
          Properties perfProperties = loadProps(perfPropertiesFileName);
          
@@ -176,7 +193,7 @@ public class PerfRunner
          scaleNumber = new Integer(perfProperties.getProperty("perf.scaleNumber", "8")).intValue();
          standardMessageSize = new Integer(perfProperties.getProperty("perf.standardMessageSize", "1024")).intValue();
          log.info(perfProperties.getProperty("perf.initialPause"));
-         initialPause = new Integer(perfProperties.getProperty("perf.initialPause", "5000")).intValue();
+         initialPause = new Integer(perfProperties.getProperty("perf.initialPause", "3000")).intValue();
          clientID = perfProperties.getProperty("perf.clientID", "perfTestClientID");
          numSlaves = new Integer(perfProperties.getProperty("perf.numSlaves", "2")).intValue();
    
@@ -186,8 +203,14 @@ public class PerfRunner
             slaveURLs[i] = perfProperties.getProperty("perf.slaveURL" + (i + 1), "socket://localhost:1234/?socketTimeout=0");
          }
          
+         if (local)
+         {
+            providerName += "-INVM";
+         }
+         
          //log.info("jndiServerURL:" + this.jndiServerURL);
          log.info("jndiProperties file:" + jndiPropertiesFileName);
+         log.info("connectionFactoryJndiName:" + connectionFactoryJndiName);
          log.info("queueName:" + this.queueName);
          log.info("topicName:" + this.topicName);
          log.info("subscriptionName:" + this.subscriptionName);
@@ -229,6 +252,13 @@ public class PerfRunner
    {
       log.trace("Tearing down PerfRunner");
       pm.stop();
+   }
+   
+   public void startService() throws Exception
+   {
+      local = true;
+      
+      run();
    }
    
    protected Execution createExecution(String benchmarkName)
@@ -282,7 +312,7 @@ public class PerfRunner
          SenderJob sender = createDefaultSenderJob(queueName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
@@ -292,7 +322,7 @@ public class PerfRunner
             return;
          }
          
-         long result = res.testTime;
+         long result = res.endTime - res.startTime;
          
          Execution execution = createExecution("Queue1");
          
@@ -333,7 +363,7 @@ public class PerfRunner
             return;
          }
          
-         long result = res.testTime;
+         long result = res.endTime - res.startTime;
          
          Execution execution = createExecution("Queue2");
          
@@ -364,7 +394,7 @@ public class PerfRunner
          SenderJob sender = createDefaultSenderJob(queueName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(true);
          sender.setTransactionSize(100);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -376,7 +406,7 @@ public class PerfRunner
             return;
          }
          
-         long result = res.testTime;
+         long result = res.endTime - res.startTime;
          
          Execution execution = createExecution("Queue3");
          
@@ -408,7 +438,7 @@ public class PerfRunner
          SenderJob sender = createDefaultSenderJob(queueName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(true);
          sender.setTransactionSize(100);
          sender.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -420,7 +450,7 @@ public class PerfRunner
             return;
          }
          
-         long result = res.testTime;
+         long result = res.endTime - res.startTime;
          
          Execution execution = createExecution("Queue4");
          
@@ -446,8 +476,8 @@ public class PerfRunner
             
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
-      sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMsgSize(0);
+      sender.setMf(new MessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       sender.setSlaveURL(slaveURLs[0]);
@@ -465,17 +495,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentiall different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
-      
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Execution execution = createExecution("Queue5");
       
@@ -498,7 +518,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
       sender.setSlaveURL(slaveURLs[0]);
@@ -516,17 +536,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
-      
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Execution execution = createExecution("Queue6");
       
@@ -548,7 +558,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -569,17 +579,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
-      
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Execution execution = createExecution("Queue7");
       
@@ -601,7 +601,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -622,17 +622,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
-      
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Execution execution = createExecution("Queue8");
       
@@ -654,7 +644,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       sender.setSlaveURL(slaveURLs[0]);
@@ -673,17 +663,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
-      
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Execution execution = createExecution("Queue9");
       
@@ -705,7 +685,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
       sender.setSlaveURL(slaveURLs[0]);
@@ -724,17 +704,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
-      
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Execution execution = createExecution("Queue10");
       
@@ -757,7 +727,7 @@ public class PerfRunner
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
       fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
+      fillJob.setMf(new TextMessageMessageFactory());
       runJob(fillJob);
       
       ReceiverJob receiver = createDefaultReceiverJob(queueName);
@@ -775,7 +745,7 @@ public class PerfRunner
       
       Execution execution = createExecution("Queue11");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
       pm.saveExecution(execution);
       
       log.info("Test Queue11 finished");
@@ -793,7 +763,7 @@ public class PerfRunner
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
+      fillJob.setMf(new TextMessageMessageFactory());
       runJob(fillJob);
       
       ReceiverJob receiver = createDefaultReceiverJob(queueName);
@@ -811,7 +781,7 @@ public class PerfRunner
       
       Execution execution = createExecution("Queue12");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
       pm.saveExecution(execution);
       
       log.info("Test Queue12 finished");
@@ -829,7 +799,7 @@ public class PerfRunner
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
       fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
+      fillJob.setMf(new TextMessageMessageFactory());
       runJob(fillJob);
       
       ReceiverJob receiver = createDefaultReceiverJob(queueName);
@@ -847,7 +817,7 @@ public class PerfRunner
       
       Execution execution = createExecution("Queue13");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
       pm.saveExecution(execution);
       
       log.info("Test Queue13 finished");
@@ -865,7 +835,7 @@ public class PerfRunner
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
+      fillJob.setMf(new TextMessageMessageFactory());
       runJob(fillJob);
       
       ReceiverJob receiver = createDefaultReceiverJob(queueName);
@@ -883,7 +853,7 @@ public class PerfRunner
       
       Execution execution = createExecution("Queue14");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
       pm.saveExecution(execution);
       
       log.info("Test Queue14 finished");
@@ -902,7 +872,7 @@ public class PerfRunner
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
       fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
+      fillJob.setMf(new TextMessageMessageFactory());
       runJob(fillJob);
       
       ReceiverJob receiver = createDefaultReceiverJob(queueName);
@@ -924,7 +894,7 @@ public class PerfRunner
       
       Execution execution = createExecution("Queue15");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
       pm.saveExecution(execution);
       
       log.info("Test Queue15 finished");
@@ -942,7 +912,7 @@ public class PerfRunner
       FillJob fillJob = createDefaultFillJob(queueName, numMessages);
       fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       fillJob.setMsgSize(standardMessageSize);
-      fillJob.setMf(new BytesMessageMessageFactory());
+      fillJob.setMf(new TextMessageMessageFactory());
       runJob(fillJob);
       
       ReceiverJob receiver = createDefaultReceiverJob(queueName);
@@ -965,7 +935,7 @@ public class PerfRunner
       
       Execution execution = createExecution("Queue16");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / result.testTime));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
       pm.saveExecution(execution);
       
       log.info("Test Queue16 finished");
@@ -985,7 +955,7 @@ public class PerfRunner
          FillJob fillJob = createDefaultFillJob(queueName, numMessages);
          fillJob.setDeliveryMode(DeliveryMode.PERSISTENT);
          fillJob.setMsgSize(standardMessageSize);
-         fillJob.setMf(new BytesMessageMessageFactory());
+         fillJob.setMf(new TextMessageMessageFactory());
          runJob(fillJob);
          
          BrowserJob job  = createDefaultBrowserJob(queueName);
@@ -998,7 +968,7 @@ public class PerfRunner
          
          Execution execution = createExecution("Queue17");
          
-         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / result.testTime));
+         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / (result.endTime - result.startTime)));
          pm.saveExecution(execution);
          
          log.info("Test Queue17 finished");
@@ -1022,7 +992,7 @@ public class PerfRunner
          FillJob fillJob = createDefaultFillJob(queueName, numMessages);
          fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          fillJob.setMsgSize(standardMessageSize);
-         fillJob.setMf(new BytesMessageMessageFactory());
+         fillJob.setMf(new TextMessageMessageFactory());
          runJob(fillJob);
          
          BrowserJob job  = createDefaultBrowserJob(queueName);
@@ -1035,7 +1005,7 @@ public class PerfRunner
          
          Execution execution = createExecution("Queue18");
          
-         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / result.testTime));
+         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / (result.endTime - result.startTime)));
          
          pm.saveExecution(execution);
          
@@ -1059,7 +1029,7 @@ public class PerfRunner
          FillJob fillJob = createDefaultFillJob(queueName, numMessages);
          fillJob.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          fillJob.setMsgSize(standardMessageSize);
-         fillJob.setMf(new BytesMessageMessageFactory());
+         fillJob.setMf(new TextMessageMessageFactory());
          runJob(fillJob);
          
          //This should always be true
@@ -1076,7 +1046,7 @@ public class PerfRunner
          
          Execution execution = createExecution("Queue19");
          
-         execution.addMeasurement(new Measurement("timeTaken", result.testTime));
+         execution.addMeasurement(new Measurement("timeTaken", (result.endTime - result.startTime)));
          pm.saveExecution(execution);
          
          log.info("Test Queue19 finished");
@@ -1104,7 +1074,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1124,17 +1094,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
-      
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic1");
       
@@ -1156,7 +1116,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1176,16 +1136,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic2");
       
@@ -1208,7 +1159,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -1229,16 +1180,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic3");
       
@@ -1260,7 +1202,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -1281,16 +1223,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic4");
       
@@ -1312,7 +1245,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1332,16 +1265,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic5");
       
@@ -1363,7 +1287,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1383,16 +1307,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic6");
       
@@ -1416,7 +1331,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1441,16 +1356,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic7");
       
@@ -1473,7 +1379,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1500,16 +1406,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic8");
       
@@ -1537,7 +1434,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1559,16 +1456,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].testTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic9");
       
@@ -1596,7 +1484,7 @@ public class PerfRunner
       SenderJob sender = createDefaultSenderJob(topicName);
       sender.setNumMessages(numMessages);
       sender.setMsgSize(standardMessageSize);
-      sender.setMf(new BytesMessageMessageFactory());
+      sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1619,16 +1507,7 @@ public class PerfRunner
          return;
       }
       
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentially different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+      long totalTimeTaken = results[0].endTime - results[1].startTime;
       
       Execution execution = createExecution("Topic10");
       
@@ -1665,13 +1544,13 @@ public class PerfRunner
         
          int msgSize = msgsSize[i];
          
-         log.trace("Doing message size " + msgSize);
+         log.info("Doing message size " + msgSize);
          
       
          SenderJob sender = createDefaultSenderJob(topicName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(msgSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1681,7 +1560,7 @@ public class PerfRunner
          
          receiver.setAckMode(Session.AUTO_ACKNOWLEDGE);
          receiver.setTransacted(false);
-         receiver.setNumMessages(numMessages);
+         receiver.setNumMessages(1000);
          receiver.setSlaveURL(slaveURLs[1]);
          
          JobResult[] results = runJobs(new Job[] {sender, receiver});
@@ -1691,16 +1570,7 @@ public class PerfRunner
             return;
          }
          
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
-         long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].testTime;
+         long totalTimeTaken = results[1].endTime - results[0].startTime;
          
          Measurement measure = new Measurement("throughput", 1000 * (double)numMessages / totalTimeTaken);
          measure.setVariableValue("messageSize", msgSize);
@@ -1740,7 +1610,7 @@ public class PerfRunner
             jobs[j * 2] = sender;
             sender.setNumMessages(numMessages);
             sender.setMsgSize(standardMessageSize);
-            sender.setMf(new BytesMessageMessageFactory());
+            sender.setMf(new TextMessageMessageFactory());
             sender.setTransacted(false);
             sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             sender.setSlaveURL(slaveURLs[j % this.numSlaves]);
@@ -1761,24 +1631,15 @@ public class PerfRunner
             return;
          }
          
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
          long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
             JobResult senderResult = results[j * 2];
             JobResult receiverResult = results[j * 2 + 1];
-            long timeOfFirstSend = senderResult.initTime;
+            long timeOfFirstSend = senderResult.startTime;
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.initTime + receiverResult.testTime;
+            long timeOfLastReceive = receiverResult.endTime;
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1788,6 +1649,7 @@ public class PerfRunner
          Measurement measure = new Measurement("throughput", 1000 * ((double)totalMessagesSent) / totalTimeTaken);
          measure.setVariableValue("numberOfQueues", i);
          execution.addMeasurement(measure);
+         
       }
       
       pm.saveExecution(execution);
@@ -1822,7 +1684,7 @@ public class PerfRunner
             SenderJob sender = createDefaultSenderJob(this.queueName);
             jobs[j] = sender;
             sender.setNumMessages(numMessages);
-            sender.setMf(new BytesMessageMessageFactory());
+            sender.setMf(new TextMessageMessageFactory());
             sender.setTransacted(false);
             sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             sender.setSlaveURL(slaveURLs[j % this.numSlaves]);                     
@@ -1844,22 +1706,16 @@ public class PerfRunner
             return;
          }
          
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
          long minTimeOfFirstSend = Long.MAX_VALUE;
-         long maxTimeOfLastReceive = results[i].testTime + results[i].initTime;
+         long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
-            JobResult senderResult = results[j];
-            long timeOfFirstSend = senderResult.initTime;
+            JobResult senderResult = results[j * 2];
+            JobResult receiverResult = results[j * 2 + 1];
+            long timeOfFirstSend = senderResult.startTime;
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
+            long timeOfLastReceive = receiverResult.endTime;
+            maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
          long totalTimeTaken = maxTimeOfLastReceive - minTimeOfFirstSend;
@@ -1868,6 +1724,7 @@ public class PerfRunner
          Measurement measure = new Measurement("throughput", 1000 * ((double)totalMessagesSent) / totalTimeTaken);
          measure.setVariableValue("numberOfConnections", i);
          execution.addMeasurement(measure);
+
       }
       
       pm.saveExecution(execution);
@@ -1896,7 +1753,7 @@ public class PerfRunner
          SenderJob sender = createDefaultSenderJob(queueName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          sender.setNumConnections(1);
@@ -1916,16 +1773,7 @@ public class PerfRunner
             return;
          }
          
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
-         long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
+         long totalTimeTaken = results[1].endTime - results[0].startTime;
          
          int totalMessages = i * numMessages;
          
@@ -1973,7 +1821,7 @@ public class PerfRunner
             jobs[j * 2 + 1] = sender;
             sender.setNumMessages(numMessages);
             sender.setMsgSize(standardMessageSize);
-            sender.setMf(new BytesMessageMessageFactory());
+            sender.setMf(new TextMessageMessageFactory());
             sender.setTransacted(false);
             sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -1988,25 +1836,15 @@ public class PerfRunner
          {
             return;
          }
-         
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
          long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
-            JobResult senderResult = results[j * 2 + 1];
-            JobResult receiverResult = results[j * 2];
-            long timeOfFirstSend = senderResult.initTime;
+            JobResult senderResult = results[j * 2];
+            JobResult receiverResult = results[j * 2 + 1];
+            long timeOfFirstSend = senderResult.startTime;
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.initTime + receiverResult.testTime;
+            long timeOfLastReceive = receiverResult.endTime;
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -2016,6 +1854,7 @@ public class PerfRunner
          Measurement measure = new Measurement("throughput", 1000 * ((double)totalMessagesSent) / totalTimeTaken);
          measure.setVariableValue("numberOfTopics", i);
          execution.addMeasurement(measure);
+         
       }
       
       pm.saveExecution(execution);
@@ -2061,7 +1900,7 @@ public class PerfRunner
          jobs[i] = sender;
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          sender.setSlaveURL(slaveURLs[i % this.numSlaves]);
@@ -2073,30 +1912,25 @@ public class PerfRunner
          {
             return;
          }
-         
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
-         long minTimeOfFirstSend = results[i].initTime;
+         long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
-            JobResult receiverResult = results[j];
-            long timeOfLastReceive = receiverResult.initTime + receiverResult.testTime;
+            JobResult senderResult = results[j * 2];
+            JobResult receiverResult = results[j * 2 + 1];
+            long timeOfFirstSend = senderResult.startTime;
+            minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
+            long timeOfLastReceive = receiverResult.endTime;
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
          long totalTimeTaken = maxTimeOfLastReceive - minTimeOfFirstSend;
+         long totalMessagesSent = i * numMessages;
          
-         Measurement measure = new Measurement("throughput", 1000 * (double)numMessages / totalTimeTaken);
+         Measurement measure = new Measurement("throughput", 1000 * ((double)totalMessagesSent) / totalTimeTaken);
          measure.setVariableValue("numberOfConnections", i);
          execution.addMeasurement(measure);
+         
       }
       
       pm.saveExecution(execution);
@@ -2125,7 +1959,7 @@ public class PerfRunner
          SenderJob sender = createDefaultSenderJob(topicName);
          sender.setNumMessages(numMessages);
          sender.setMsgSize(standardMessageSize);
-         sender.setMf(new BytesMessageMessageFactory());
+         sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);             
          sender.setInitialPause(initialPause); //enough time for receiver to get ready
@@ -2146,16 +1980,7 @@ public class PerfRunner
             return;
          }
          
-         /*
-          * NB.
-          * When we calculating the total time taken from first send to last receive, there is some
-          * error involved due to the differences in network latency and other remoting overhead
-          * when sending the jobs to be executed on potentially different remote machines.
-          * We make the assumption that this this difference is very small compared with time taken
-          * to run the tests as to be negligible.
-          */
-         
-         long totalTimeTaken = results[0].testTime + results[0].initTime - results[1].initTime;
+         long totalTimeTaken = results[1].endTime - results[0].endTime;
          
          int totalMessages = numMessages;
          
@@ -2214,17 +2039,8 @@ public class PerfRunner
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
-      
-      /*
-       * NB.
-       * When we calculating the total time taken from first send to last receive, there is some
-       * error involved due to the differences in network latency and other remoting overhead
-       * when sending the jobs to be executed on potentiall different remote machines.
-       * We make the assumption that this this difference is very small compared with time taken
-       * to run the tests as to be negligible.
-       */
-      
-      long totalTimeTaken = results[1].testTime + results[1].initTime - results[0].initTime;
+
+      long totalTimeTaken = results[1].endTime - results[0].startTime;
       
       Measurement measure = new Measurement("msgsSentPerSec", 1000 * (double)numMessages / totalTimeTaken);
       
@@ -2235,7 +2051,15 @@ public class PerfRunner
 
    protected JobResult runJob(Job job)
    {
-      return sendRequestToSlave(job.getSlaveURL(), new RunRequest(job));
+      if (local)
+      {
+         job.run();
+         return job.getResult();
+      }
+      else
+      {
+         return sendRequestToSlave(job.getSlaveURL(), new RunRequest(job));
+      }
    }
    
    /*
@@ -2264,7 +2088,7 @@ public class PerfRunner
       JobResult[] results = new JobResult[jobs.length];
       for (int i = 0; i < jobs.length; i++)
       {
-         results[i] = jobs[i].getResult();
+         results[i] = runners[i].result;
       }
       return results;
       
@@ -2320,22 +2144,22 @@ public class PerfRunner
    protected SenderJob createDefaultSenderJob(String destName)
    {
       return new SenderJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName,  1,
-            1, false, 0, numMessages,
+            1, false, 0, numMessages, System.currentTimeMillis() + 20000,
             false, standardMessageSize,
-            new BytesMessageMessageFactory(), DeliveryMode.NON_PERSISTENT, 0);           
+            new TextMessageMessageFactory(), DeliveryMode.NON_PERSISTENT, 0);           
    }
    
    protected ReceiverJob createDefaultReceiverJob(String destName)
    {
       return new ReceiverJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, 1,
-            1, false, 0, numMessages,
+            1, false, 0, numMessages, System.currentTimeMillis() + 10000,
             Session.AUTO_ACKNOWLEDGE, null, null, false, false, null);
    }
    
    protected BrowserJob createDefaultBrowserJob(String destName)
    {
       return new BrowserJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, 1,
-            1, numMessages, null);
+            1, numMessages, System.currentTimeMillis() + 10000, null);
    }
    
    protected DrainJob createDefaultDrainJob(String destName)
@@ -2345,7 +2169,7 @@ public class PerfRunner
    
    protected FillJob createDefaultFillJob(String destName, int numMessages)
    {
-      return new FillJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, numMessages, standardMessageSize, new BytesMessageMessageFactory(),
+      return new FillJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, numMessages, standardMessageSize, new TextMessageMessageFactory(),
             DeliveryMode.NON_PERSISTENT);      
    }
    

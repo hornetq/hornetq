@@ -714,14 +714,19 @@ public class ServiceContainer
    {
       RemotingJMXWrapper mbean;
       
+      String params = "/?datatype=invocation&" +
+                      "marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&" +
+                      "unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller&" +
+                      "serializationtype=jboss&" +
+                      "socketTimeout=600000";
       String locatorURI;
       if (multiplex)
       {
-         locatorURI = "multiplex://" + ipAddressOrHostName + ":9111";                  
+         locatorURI = "multiplex://" + ipAddressOrHostName + ":9111" + params;                  
       }
       else
       {
-         locatorURI = "socket://" + ipAddressOrHostName + ":9111";
+         locatorURI = "socket://" + ipAddressOrHostName + ":9111" + params;
       }
       
       log.debug("Using the following locator uri:" + locatorURI);

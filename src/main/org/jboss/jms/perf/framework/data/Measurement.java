@@ -10,10 +10,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
+
 public class Measurement implements Serializable
 {      
    private static final long serialVersionUID = 7208068351755451288L;
 
+   private static final Logger log = Logger.getLogger(Measurement.class);
+   
    protected String name;
    
    protected Double value;
@@ -24,6 +28,7 @@ public class Measurement implements Serializable
    {
       this.name = name;
       this.value = new Double(value);
+      log.info("Measurement, name=" + name + ", value=" + value);
       variables = new HashMap();
    }
    

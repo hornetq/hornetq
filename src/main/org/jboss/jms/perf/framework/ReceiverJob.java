@@ -50,12 +50,12 @@ public class ReceiverJob extends BaseThroughputJob
    public ReceiverJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
          int numSessions, boolean transacted, int transactionSize,
-         int numMessages, int ackMode, String subName,
+         int numMessages, long timeToStart, int ackMode, String subName,
          String selector, boolean noLocal, boolean asynch, String clientID)
    {
       super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
             numSessions, transacted, transactionSize,
-            numMessages);
+            numMessages, timeToStart);
       this.ackMode = ackMode;
       this.subName = subName;
       this.selector = selector;
@@ -170,7 +170,7 @@ public class ReceiverJob extends BaseThroughputJob
                }    
                else
                {
-                  log.error("!!!!!!!!!!!!!!Failed to receive messages!!!!");
+                  log.error("Failed to receive messages");
                   failed = true;
                   break;
                }

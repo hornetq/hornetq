@@ -135,7 +135,7 @@
         <path refid="jboss.security.classpath"/>
         <path refid="jboss.server.classpath"/>
         <path refid="jboss.transaction.classpath"/>
-        
+
         <!-- If I don't use directly UnifiedClassLoader3, this should go away -->
         <path refid="jboss.jmx.classpath"/>
      </path>
@@ -157,6 +157,7 @@
     <property name="build.gen-src" value="${module.output}/gen-src"/>
     <property name="build.gen" value="${module.output}/gen"/>
     <property name="build.parsers" value="${module.output}/parsers"/>
+    <property name="build.perfsar" value="${module.output}/perfsar"/>
 
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>
@@ -680,26 +681,55 @@
    <target name="test">
    </target>
 
-   <!-- Performance framework -->
-
-   <target name="perf-jar"
-             depends="compile"
-             description="Creates the jar for the performance tests">
-
-      <mkdir dir="${build.lib}"/>
-
-      <!-- Build the perf jar -->
-      <jar jarfile="${build.lib}/perf-framework.jar">
-          <fileset dir="${build.classes}">
-              <include name="org/jboss/test/messaging/jms/perf/**"/>
-              <exclude name="org/jboss/test/messaging/jms/perf/PerfTest.class"/>
-          </fileset>
-      </jar>
-
+   <target name="smoke">
+      <ant dir="tests/smoke" antfile="build.xml" target="smoke-test" inheritAll="false"/>
    </target>
 
-   <target name="smoke">
-      <ant dir="tests/smoke" antfile="build.xml" target="smoke" inheritAll="false"/>
+
+   <!-- TODO Move all the perf related stuff to own build.xml and separate out into sub project -->
+
+   <target name="perf-sar-structure-messaging" depends="compile">
+      <mkdir dir="${build.lib}"/>
+      <mkdir dir="${build.perfsar}/META-INF"/>
+      <mkdir dir="${build.perfsar}/xmdesc"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/PerfRunner-xmbean.xml" tofile="${build.perfsar}/xmdesc/PerfRunner-xmbean.xml"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/jboss-service-jbossmessaging.xml" tofile="${build.perfsar}/META-INF/jboss-service.xml"/>
+      <copy file="${module.source}/../tests/bin/perf-jndi.properties" tofile="${build.perfsar}/perf-jndi.properties"/>
+      <copy file="${module.source}/../tests/bin/jbossmessaging-perf.properties" tofile="${build.perfsar}/perf.properties"/>
+      <copy todir="${build.perfsar}"> <fileset dir="${build.classes}"> <include name="**/jms/perf/**/*.class"/> </fileset> </copy>
+   </target>
+
+
+   <target name="perf-sar-messaging" depends="perf-sar-structure-messaging">
+      <jar jarfile="${build.lib}/jboss-perf-messaging.sar" manifest="${build.etc}/default.mf">
+          <fileset dir="${build.perfsar}">
+             <include name="**"/>
+          </fileset>
+      </jar>
+   </target>
+
+   <target name="perf-sar-structure-mq" depends="compile">
+      <mkdir dir="${build.lib}"/>
+      <mkdir dir="${build.perfsar}/META-INF"/>
+      <mkdir dir="${build.perfsar}/xmdesc"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/PerfRunner-xmbean.xml" tofile="${build.perfsar}/xmdesc/PerfRunner-xmbean.xml"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/jboss-service-jbossmq.xml" tofile="${build.perfsar}/META-INF/jboss-service.xml"/>
+      <copy file="${module.source}/../tests/bin/perf-jndi.properties" tofile="${build.perfsar}/perf-jndi.properties"/>
+      <copy file="${module.source}/../tests/bin/jbossmq-perf.properties" tofile="${build.perfsar}/perf.properties"/>
+      <copy todir="${build.perfsar}">
+         <fileset dir="${build.classes}">
+            <include name="**/jms/perf/**/*.class"/>
+         </fileset>
+      </copy>
+   </target>
+
+
+   <target name="perf-sar-mq" depends="perf-sar-structure-mq">
+      <jar jarfile="${build.lib}/jboss-perf-mq.sar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.perfsar}">
+            <include name="**"/>
+         </fileset>
+      </jar>
    </target>
 
 </project>

@@ -23,6 +23,7 @@ package org.jboss.jms.delegate;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 
 import org.jboss.jms.server.endpoint.ProducerEndpoint;
 
@@ -61,5 +62,11 @@ public interface ProducerDelegate extends ProducerEndpoint
    Destination getDestination() throws JMSException;
    
    void setDestination(Destination dest);
+   
+   void send(Destination destination,
+             Message message,
+             int deliveryMode,
+             int priority,
+             long timeToLive) throws JMSException;
    
 }

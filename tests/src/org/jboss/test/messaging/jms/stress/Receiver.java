@@ -180,6 +180,7 @@ public class Receiver extends Runner implements MessageListener
             processingDone();
          }
          
+         log.info("Received:" + numMessages);
       }
       catch (Exception e)
       {

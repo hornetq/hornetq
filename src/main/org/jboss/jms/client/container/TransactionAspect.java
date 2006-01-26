@@ -121,7 +121,7 @@ public class TransactionAspect
       return null;            
    }
    
-   public Object handleSend(Invocation invocation) throws Throwable
+   public Object handleSendMessage(Invocation invocation) throws Throwable
    {
       ProducerState state = (ProducerState)getState(invocation);
       
@@ -142,7 +142,7 @@ public class TransactionAspect
          
          MethodInvocation mi = (MethodInvocation)invocation;
          
-         Message m = (Message)mi.getArguments()[1];         
+         Message m = (Message)mi.getArguments()[0];         
          
          connState.getResourceManager().addMessage(txID, m);
          

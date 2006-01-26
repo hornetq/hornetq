@@ -41,7 +41,7 @@ public class StressTestBase extends MessagingTestCase
 {
    protected static final int NUM_PERSISTENT_MESSAGES = 200;
    
-   protected static final int NUM_NON_PERSISTENT_MESSAGES = 1000;
+   protected static final int NUM_NON_PERSISTENT_MESSAGES = 100000;
    
    protected ConnectionFactory cf;
 

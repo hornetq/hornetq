@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.server.endpoint.advised;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
@@ -66,9 +65,9 @@ public class ProducerAdvised extends AdvisedSupport implements ProducerEndpoint
       endpoint.closing();
    }
 
-   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void sendMessage(Message message) throws JMSException
    {
-      endpoint.send(destination, message, deliveryMode, priority, timeToLive);
+      endpoint.sendMessage(message);
    }
 
    // AdvisedSupport overrides --------------------------------------

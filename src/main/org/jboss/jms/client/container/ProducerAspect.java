@@ -28,6 +28,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.logging.Logger;
@@ -170,10 +171,11 @@ public class ProducerAspect
          del.setSent();
       }
               
-      // send the copy down the stack
-      args[1] = toSend;
+      //We now invoker the send method - we don't want to pass the rest of the arguments
+      //across the wire
+      ((ProducerDelegate)invocation.getTargetObject()).sendMessage(toSend);
       
-      return invocation.invokeNext();
+      return null;
    }
    
    public Object handleSetDisableMessageID(Invocation invocation) throws Throwable

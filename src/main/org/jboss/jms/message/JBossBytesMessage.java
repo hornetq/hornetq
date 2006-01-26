@@ -694,7 +694,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       throws IOException, ClassNotFoundException
    {
       int length = in.readInt();
-      if (length < 0)
+      if (length == 0)
       {
          return null;
       }

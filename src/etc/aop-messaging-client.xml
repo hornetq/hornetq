@@ -216,8 +216,8 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setTimeToLive(..))">
       <advice name="handleSetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(..))">
-      <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->sendMessage(..))">
+      <advice name="handleSendMessage" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>
    
    <!-- Browser Stack -->   
