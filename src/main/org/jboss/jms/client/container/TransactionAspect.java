@@ -121,7 +121,7 @@ public class TransactionAspect
       return null;            
    }
    
-   public Object handleSendMessage(Invocation invocation) throws Throwable
+   public Object handleSend(Invocation invocation) throws Throwable
    {
       ProducerState state = (ProducerState)getState(invocation);
       

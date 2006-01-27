@@ -65,9 +65,9 @@ public class ProducerAdvised extends AdvisedSupport implements ProducerEndpoint
       endpoint.closing();
    }
 
-   public void sendMessage(Message message) throws JMSException
+   public void send(Message message) throws JMSException
    {
-      endpoint.sendMessage(message);
+      endpoint.send(message);
    }
 
    // AdvisedSupport overrides --------------------------------------

@@ -96,7 +96,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
       closed = true;
    }
    
-   public void sendMessage(Message m) throws JMSException
+   public void send(Message m) throws JMSException
    {
       if (closed)
       {

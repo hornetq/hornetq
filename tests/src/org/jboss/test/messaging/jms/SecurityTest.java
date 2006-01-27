@@ -38,7 +38,6 @@ import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.util.XMLUtil;
 
 /**
  * Test JMS Security.
@@ -73,7 +72,7 @@ import org.jboss.jms.util.XMLUtil;
  */
 public class SecurityTest extends MessagingTestCase
 {
-   protected Logger log = Logger.getLogger(getClass());
+   protected Logger log = Logger.getLogger(SecurityTest.class);
    
    protected static final String TEST_QUEUE = "queue/testQueue";
    protected static final String TEST_TOPIC = "topic/testTopic";
@@ -296,6 +295,7 @@ public class SecurityTest extends MessagingTestCase
    /*
     * user/pwd with preconfigured clientID, should return preconf
     */
+   // TODO
    /*
     
     
@@ -335,7 +335,8 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
-   
+
+   // TODO
    /*
     * Try setting client ID on preconfigured connection - should throw exception
     */
@@ -402,11 +403,14 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("john", "needle");        
-         assertTrue(this.canWriteDestination(conn, testTopic));
+         assertTrue(canWriteDestination(conn, testTopic));
       }        
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
    
@@ -420,11 +424,14 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("nobody", "nobody");        
-         assertFalse(this.canWriteDestination(conn, testTopic));
+         assertFalse(canWriteDestination(conn, testTopic));
       }    
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
    
@@ -438,11 +445,14 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("john", "needle");        
-         assertTrue(this.canReadDestination(conn, testTopic));
+         assertTrue(canReadDestination(conn, testTopic));
       }    
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
    
@@ -455,7 +465,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("nobody", "nobody");        
-         assertFalse(this.canReadDestination(conn, testTopic));
+         assertFalse(canReadDestination(conn, testTopic));
       }    
       finally
       {
@@ -577,8 +587,9 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
-   
-   
+
+
+   // TODO
    /*
     * Test valid durable subscription creation for connection preconfigured with client id
     */
@@ -607,8 +618,9 @@ public class SecurityTest extends MessagingTestCase
    /*
     * Test invalid durable subscription creation for connection preconfigured with client id
     */
-   
-   
+
+
+   // TODO
    /*
     
     This test will not work until client id is automatically preconfigured into
@@ -629,11 +641,9 @@ public class SecurityTest extends MessagingTestCase
     
     */
    
-   
    /*
     * Test valid durable subscription creation for connection not preconfigured with client id
     */
-   
    public void testValidDurableSubscriptionCreationNotPreConf() throws Exception
    {
       Connection conn = null;
@@ -648,14 +658,10 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
-   
-   
-   
+
    /*
     * Test invalid durable subscription creation for connection not preconfigured with client id
     */
-   
-   
    public void testInvalidDurableSubscriptionCreationNotPreConf() throws Exception
    {
       Connection conn = null;

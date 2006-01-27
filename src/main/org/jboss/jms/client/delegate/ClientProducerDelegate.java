@@ -145,7 +145,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void sendMessage(Message message) throws JMSException
+   public void send(Message message) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");  
    }

@@ -28,10 +28,8 @@ import javax.jms.Message;
 import org.jboss.jms.server.endpoint.ProducerEndpoint;
 
 /**
- * Represents the minimal set of operations to provide producer
- * functionality.
- * Some of the methods may be implemented on the server, others
- * will be handled in the advice stack.
+ * Represents the minimal set of operations to provide producer functionality.
+ * Some of the methods may be implemented on the server, others will be handled in the advice stack.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -62,7 +60,11 @@ public interface ProducerDelegate extends ProducerEndpoint
    Destination getDestination() throws JMSException;
    
    void setDestination(Destination dest);
-   
+
+   /**
+    * This method is only handled by the advice stack, the corresponding invocation is never sent
+    * to the server.
+    */
    void send(Destination destination,
              Message message,
              int deliveryMode,

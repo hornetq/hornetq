@@ -27,8 +27,8 @@ import javax.jms.Message;
 import org.jboss.jms.client.Closeable;
 
 /**
- * Represents the set of methods from the ProducerDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
+ * Represents the set of methods from the ProducerDelegate that are handled on the server. The rest
+ * of the methods are handled in the advice stack.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -43,6 +43,6 @@ public interface ProducerEndpoint extends Closeable
     *
     * @param message - the message to be sent.
    */
-   void sendMessage(Message message) throws JMSException;
+   void send(Message message) throws JMSException;
 }
 

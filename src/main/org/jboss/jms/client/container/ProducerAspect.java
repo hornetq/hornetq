@@ -171,9 +171,9 @@ public class ProducerAspect
          del.setSent();
       }
               
-      //We now invoker the send method - we don't want to pass the rest of the arguments
-      //across the wire
-      ((ProducerDelegate)invocation.getTargetObject()).sendMessage(toSend);
+      // We now invoke the send(Message) method - we don't want to pass the rest of the arguments
+      // across the wire
+      ((ProducerDelegate)invocation.getTargetObject()).send(toSend);
       
       return null;
    }

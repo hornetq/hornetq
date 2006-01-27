@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
+import javax.jms.Message;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -123,12 +124,13 @@ public class SecurityAspect
    
    public Object handleSend(Invocation invocation) throws Throwable
    {
-      // anonymous producer -if destination is not null then write permissions required
+      // anonymous producer - if destination is not null then write permissions required
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      Destination dest = (Destination)mi.getArguments()[0];
-      
+      Message m = (Message)mi.getArguments()[0];
+      Destination dest = m.getJMSDestination();
+
       ProducerAdvised del = (ProducerAdvised)invocation.getTargetObject();
       ServerProducerEndpoint prod = (ServerProducerEndpoint)del.getEndpoint();
                   
