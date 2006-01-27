@@ -229,7 +229,7 @@ public class XMLUtil
 
             for(int j = 0; j < length; j++)
             {
-               Node n2 = attrs2.item(i);
+               Node n2 = attrs2.item(j);
                String name2 = n2.getNodeName();
                String value2 = n2.getNodeValue();
 
