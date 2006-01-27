@@ -36,6 +36,7 @@ import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
+import org.jboss.logging.Logger;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -48,7 +49,9 @@ import org.jboss.jms.server.security.SecurityMetadata;
 public class SecurityAspect
 {
    // Constants -----------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(SecurityAspect.class);
+
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -61,7 +64,7 @@ public class SecurityAspect
    {
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      //read permission required on the destination
+      // read permission required on the destination
       Destination dest = (Destination)mi.getArguments()[0];
       
       SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
@@ -69,12 +72,12 @@ public class SecurityAspect
       
       check(dest, CheckType.READ, sess.getConnectionEndpoint());
       
-      //if creating a durable subscription then need create permission
+      // if creating a durable subscription then need create permission
       
       String subscriptionName = (String)mi.getArguments()[3];
       if (subscriptionName != null)
       {
-         //durable
+         // durable
          check(dest, CheckType.CREATE, sess.getConnectionEndpoint());
       }
       
@@ -83,10 +86,9 @@ public class SecurityAspect
    
    public Object handleCreateProducerDelegate(Invocation invocation) throws Throwable
    {
-      //write permission required on the destination
+      // write permission required on the destination
       
-      //Null represents an anonymous producer - the destination
-      //for this is specified at send time
+      // Null represents an anonymous producer - the destination for this is specified at send time
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -105,7 +107,7 @@ public class SecurityAspect
    
    public Object handleCreateBrowserDelegate(Invocation invocation) throws Throwable
    {
-      //read permission required on the destination
+      // read permission required on the destination
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -121,9 +123,7 @@ public class SecurityAspect
    
    public Object handleSend(Invocation invocation) throws Throwable
    {
-      //anonymous producer
-      
-      //if destination is not null then write permissions required
+      // anonymous producer -if destination is not null then write permissions required
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -134,7 +134,7 @@ public class SecurityAspect
                   
       if (dest != null)
       {
-         //Anonymous producer
+         // Anonymous producer
          check(dest, CheckType.WRITE, prod.getSessionEndpoint().getConnectionEndpoint());
       }
       
@@ -150,6 +150,9 @@ public class SecurityAspect
    private void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
+
+      if (log.isTraceEnabled()) { log.trace("checking access permissions to " + dest); }
+
       JBossDestination jbd = (JBossDestination)dest;
       boolean isQueue = jbd.isQueue();
       String name = jbd.getName();
