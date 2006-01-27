@@ -72,6 +72,12 @@
       <type>boolean</type>
    </attribute>
 
+   <attribute access="read-only" getMethod="getCurrentMessageCount">
+      <description>The number of undelivered messages in the queue</description>
+      <name>CurrentMessageCount</name>
+      <type>int</type>
+   </attribute>
+
    <!-- Managed operations -->
 
    <operation>

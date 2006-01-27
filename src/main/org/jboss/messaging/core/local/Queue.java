@@ -24,6 +24,7 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.ManageableQueue;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
@@ -32,7 +33,7 @@ import org.jboss.jms.server.plugin.contract.MessageStore;
  *
  * $Id$
  */
-public class Queue extends ChannelSupport implements CoreDestination
+public class Queue extends ChannelSupport implements CoreDestination, ManageableQueue
 {
    // Constants -----------------------------------------------------
 
@@ -70,6 +71,11 @@ public class Queue extends ChannelSupport implements CoreDestination
    public void load() throws Exception
    {
       state.load();
+   }
+   
+   public int getCurrentMessageCount()
+   {
+	   return (state.undelivered(null)).size();
    }
 
    // Package protected ---------------------------------------------

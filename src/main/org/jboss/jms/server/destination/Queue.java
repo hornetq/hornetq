@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.server.destination;
 
+import org.jboss.messaging.core.ManageableQueue;
+
 /**
  * A deployable JBoss Messaging queue.
  *
@@ -35,6 +37,12 @@ public class Queue extends DestinationServiceSupport
    }
 
    // JMX managed attributes ----------------------------------------
+   
+   public int getCurrentMessageCount() throws Exception
+   {
+	   ManageableQueue q = (ManageableQueue)dm.getCoreDestination(true, name);
+	   return q.getCurrentMessageCount();
+   }
 
    // JMX managed operations ----------------------------------------
 
