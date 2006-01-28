@@ -6,7 +6,8 @@
  */
 package org.jboss.jms.server.destination;
 
-import org.jboss.messaging.core.ManageableQueue;
+import org.jboss.messaging.core.local.ManageableQueue;
+import org.jboss.messaging.core.local.ManageableQueue;
 
 /**
  * A deployable JBoss Messaging queue.
