@@ -32,6 +32,8 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
@@ -54,6 +56,8 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected TransactionLog tl;
+   protected DestinationManager dm;
+   protected MessageStore ms;
    protected DurableSubscriptionStore dssd;
 
    // Constructors --------------------------------------------------
@@ -76,7 +80,9 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       ServerManagement.start("all");
 
-      dssd = ServerManagement.getDurableSubscriptionStoreDelegate();
+      dm = ServerManagement.getDestinationManager();
+      ms = ServerManagement.getMessageStore();
+      dssd = ServerManagement.getDurableSubscriptionStore();
 
       log.debug("setup done");
    }
@@ -96,14 +102,20 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
 
-      DurableSubscription sub =
-         dssd.createDurableSubscription(topicName, clientID, subscriptionName, selector, false);
+      DurableSubscription sub = dssd.createDurableSubscription(topicName,
+                                                               clientID,
+                                                               subscriptionName,
+                                                               selector,
+                                                               false,
+                                                               dm, ms, tl);
 
       assertEquals(sub.getTopic().getName(), topicName);
       assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
       assertEquals(sub.getSelector(), selector);
 
-      DurableSubscription sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+      DurableSubscription sub_r = dssd.getDurableSubscription(clientID,
+                                                              subscriptionName,
+                                                              dm, ms, tl);
 
       assertEquals(sub_r.getTopic().getName(), topicName);
       assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
@@ -112,7 +124,7 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
       boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
 
-      sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+      sub_r = dssd.getDurableSubscription(clientID, subscriptionName, dm, ms, tl);
 
       assertNull(sub_r);
 
@@ -129,14 +141,20 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
 
-      DurableSubscription sub =
-         dssd.createDurableSubscription(topicName, clientID, subscriptionName, null, false);
+      DurableSubscription sub = dssd.createDurableSubscription(topicName,
+                                                               clientID,
+                                                               subscriptionName,
+                                                               null,
+                                                               false,
+                                                               dm, ms, tl);
 
       assertEquals(sub.getTopic().getName(), topicName);
       assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
       assertNull(sub.getSelector());
 
-      DurableSubscription sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+      DurableSubscription sub_r = dssd.getDurableSubscription(clientID,
+                                                              subscriptionName,
+                                                              dm, ms, tl);
 
       assertEquals(sub_r.getTopic().getName(), topicName);
       assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
@@ -145,7 +163,7 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
       boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
 
-      sub_r = dssd.getDurableSubscription(clientID, subscriptionName);
+      sub_r = dssd.getDurableSubscription(clientID, subscriptionName, dm, ms, tl);
 
       assertNull(sub_r);
 
@@ -216,15 +234,17 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
                                                   new GUID().toString(),
                                                   new GUID().toString(),
                                                   new GUID().toString(),
-                                                  false);
+                                                  false,
+                                                  dm, ms, tl);
          dssd.createDurableSubscription("topic2",
                                         new GUID().toString(),
                                         new GUID().toString(),
                                         new GUID().toString(),
-                                        false);
+                                        false,
+                                        dm, ms, tl);
       }
       
-      Set loaded = dssd.loadDurableSubscriptionsForTopic("topic1");
+      Set loaded = dssd.loadDurableSubscriptionsForTopic("topic1", dm, ms, tl);
       assertNotNull(loaded);
       assertEquals(NUM_SUBS, loaded.size());
       

@@ -77,7 +77,9 @@ class DestinationJNDIMapper implements DestinationManager
    public DestinationJNDIMapper(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
-      coreDestinationStore = new CoreDestinationStore(this);
+      coreDestinationStore = new CoreDestinationStore(this,
+                                                      serverPeer.getMessageStoreDelegate(),
+                                                      serverPeer.getTransactionLogDelegate());
       queueNameToJNDI = new ConcurrentReaderHashMap();
       topicNameToJNDI = new ConcurrentReaderHashMap();
    }

@@ -36,6 +36,7 @@ import javax.jms.Topic;
 import javax.management.ObjectName;
 
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.jms.util.XMLUtil;
@@ -59,11 +60,11 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class RMIServer extends UnicastRemoteObject implements Server
+public class TestServer extends UnicastRemoteObject implements Server
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(RMIServer.class);
+   private static final Logger log = Logger.getLogger(TestServer.class);
 
    public static final int RMI_REGISTRY_PORT = 25989;
    public static final String RMI_SERVER_NAME = "messaging-rmi-server";
@@ -91,11 +92,11 @@ public class RMIServer extends UnicastRemoteObject implements Server
       registry = LocateRegistry.createRegistry(RMI_REGISTRY_PORT);
       log.debug("registry created");
 
-      RMIServer rmiServer = new RMIServer(true);
+      TestServer testServer = new TestServer(true);
       log.debug("RMI server created");
 
-      registry.bind(RMI_SERVER_NAME, rmiServer);
-      registry.bind(NAMING_SERVER_NAME, rmiServer.getNamingDelegate());
+      registry.bind(RMI_SERVER_NAME, testServer);
+      registry.bind(NAMING_SERVER_NAME, testServer.getNamingDelegate());
 
       log.info("RMI server bound");
    }
@@ -120,7 +121,7 @@ public class RMIServer extends UnicastRemoteObject implements Server
 
    // Constructors --------------------------------------------------
 
-   public RMIServer(boolean remote) throws Exception
+   public TestServer(boolean remote) throws Exception
    {
       super();
       this.remote = remote;
@@ -472,7 +473,21 @@ public class RMIServer extends UnicastRemoteObject implements Server
    /**
     * Only for in-VM use!
     */
-   public DurableSubscriptionStore getDurableSubscriptionStoreDelegate() throws Exception
+   public DestinationManager getDestinationManager() throws Exception
+   {
+      if (isRemote())
+      {
+         throw new IllegalStateException("This method shouldn't be invoked on a remote server");
+      }
+
+      ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
+      return serverPeer.getDestinationManager();
+   }
+
+   /**
+    * Only for in-VM use!
+    */
+   public DurableSubscriptionStore getDurableSubscriptionStore() throws Exception
    {
       if (isRemote())
       {

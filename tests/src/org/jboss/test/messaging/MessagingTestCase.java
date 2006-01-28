@@ -67,7 +67,8 @@ public class MessagingTestCase extends TestCase
    protected void setUp() throws Exception
    {
       String banner =
-         "####################################################### Start test: " + getName();
+         "####################################################### Start " +
+         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
 
       log.info(banner);
 
@@ -81,7 +82,8 @@ public class MessagingTestCase extends TestCase
    protected void tearDown() throws Exception
    {
       String banner =
-         "####################################################### Stop test: " + getName();
+         "####################################################### Stop " + 
+         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
 
       log.info(banner);
       

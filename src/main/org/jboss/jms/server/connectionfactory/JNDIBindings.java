@@ -86,7 +86,7 @@ public class JNDIBindings
          sb.append(i.next());
          if (i.hasNext())
          {
-            sb.append(',');
+            sb.append(", ");
          }
       }
       return sb.toString();

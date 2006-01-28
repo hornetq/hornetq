@@ -29,8 +29,10 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
@@ -62,15 +64,20 @@ class CoreDestinationStore
    // <name - CoreDestination>
    protected Map topicMap;
 
-   protected DestinationJNDIMapper destinationManager;
+   protected DestinationJNDIMapper dm;
+   protected MessageStore ms;
+   protected TransactionLog tl;
 
    // Constructors --------------------------------------------------
 
-   CoreDestinationStore(DestinationJNDIMapper destinationManager) throws Exception
+   CoreDestinationStore(DestinationJNDIMapper dm, MessageStore ms, TransactionLog tl)
+      throws Exception
    {
       queueMap = new ConcurrentReaderHashMap();
       topicMap = new ConcurrentReaderHashMap();
-      this.destinationManager = destinationManager;
+      this.dm = dm;
+      this.ms = ms;
+      this.tl = tl;
 
       log.debug("CoreDestinationStore created");
    }
@@ -119,7 +126,7 @@ class CoreDestinationStore
          throw new JMSException("Destination " + jmsDestination + " already exists");
       }
 
-      ServerPeer sp = destinationManager.getServerPeer();
+      ServerPeer sp = dm.getServerPeer();
 
       // TODO I am using LocalQueues for the time being, switch to distributed Queues
       if (isQueue)
@@ -153,8 +160,8 @@ class CoreDestinationStore
          //or in the StateManager - I'm not sure it really belongs here
          
          //Load any durable subscriptions for the Topic
-         Set durableSubs =
-            sp.getDurableSubscriptionStoreDelegate().loadDurableSubscriptionsForTopic(name);
+         Set durableSubs = sp.getDurableSubscriptionStoreDelegate().
+            loadDurableSubscriptionsForTopic(name, dm, ms, tl);
 
          Iterator iter = durableSubs.iterator();
          while (iter.hasNext())

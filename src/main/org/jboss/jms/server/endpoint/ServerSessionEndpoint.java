@@ -224,13 +224,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
                throw new JMSException("Cannot create durable subscriber without a valid client ID");
             }
 
-            subscription = dsm.getDurableSubscription(clientID, subscriptionName);
+            subscription = dsm.getDurableSubscription(clientID, subscriptionName, dm, ms, tl);
 
             if (subscription == null)
             {
                if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + coreDestination); }
-               subscription = dsm.createDurableSubscription(d.getName(), clientID, subscriptionName,
-                                                            selector, noLocal);
+               subscription = dsm.createDurableSubscription(d.getName(),
+                                                            clientID,
+                                                            subscriptionName,
+                                                            selector,
+                                                            noLocal,
+                                                            dm, ms, tl);
             }
             else
             {
@@ -270,8 +274,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   subscription.unsubscribe();
 
                   // create a fresh new subscription
-                  subscription = dsm.createDurableSubscription(d.getName(), clientID,
-                                                               subscriptionName, selector, noLocal);
+                  subscription = dsm.createDurableSubscription(d.getName(),
+                                                               clientID,
+                                                               subscriptionName,
+                                                               selector,
+                                                               noLocal,
+                                                               dm, ms, tl);
                }
             }
          }
@@ -526,7 +534,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
 
       DurableSubscription subscription =
-         dsm.getDurableSubscription(connectionEndpoint.clientID, subscriptionName);
+         dsm.getDurableSubscription(connectionEndpoint.clientID, subscriptionName, dm, ms, tl);
 
       if (subscription == null)
       {

@@ -8,6 +8,8 @@ package org.jboss.jms.server.plugin.contract;
 
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.jms.server.DestinationManager;
 
 import javax.jms.JMSException;
 import java.util.Set;
@@ -27,16 +29,24 @@ public interface DurableSubscriptionStore extends ServerPlugin
                                                  String clientID,
                                                  String subscriptionName,
                                                  String selector,
-                                                 boolean noLocal) throws JMSException;
+                                                 boolean noLocal,
+                                                 DestinationManager dm,
+                                                 MessageStore ms,
+                                                 TransactionLog tl) throws JMSException;
 
    DurableSubscription getDurableSubscription(String clientID,
-                                              String subscriptionName) throws JMSException;
+                                              String subscriptionName,
+                                              DestinationManager dm,
+                                              MessageStore ms,
+                                              TransactionLog tl) throws JMSException;
 
-   boolean removeDurableSubscription(String clientID,
-                                     String subscriptionName) throws JMSException;
+   boolean removeDurableSubscription(String clientID, String subscriptionName) throws JMSException;
 
    String getPreConfiguredClientID(String username) throws JMSException;
 
-   Set loadDurableSubscriptionsForTopic(String topicName) throws JMSException;
+   Set loadDurableSubscriptionsForTopic(String topicName, 
+                                        DestinationManager dm,
+                                        MessageStore ms,
+                                        TransactionLog tl) throws JMSException;
 
 }

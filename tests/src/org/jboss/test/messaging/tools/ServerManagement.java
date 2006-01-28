@@ -31,8 +31,9 @@ import java.rmi.Naming;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.rmi.RMIServer;
+import org.jboss.test.messaging.tools.jmx.rmi.TestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
@@ -93,7 +94,7 @@ public class ServerManagement
 
       if (isLocal())
       {
-         server = new RMIServer(false);
+         server = new TestServer(false);
          return;
       }
 
@@ -125,7 +126,7 @@ public class ServerManagement
 //      if (server == null)
 //      {
 //         throw new IllegalStateException("Cannot find remote server " +
-//                                         RMIServer.RMI_SERVER_NAME + " in registry");
+//                                         TestServer.RMI_SERVER_NAME + " in registry");
 //      }
    }
 
@@ -297,11 +298,18 @@ public class ServerManagement
       return server.getMessageStore();
    }
 
-   public static DurableSubscriptionStore getDurableSubscriptionStoreDelegate()
+   public static DestinationManager getDestinationManager()
       throws Exception
    {
       insureStarted();
-      return server.getDurableSubscriptionStoreDelegate();
+      return server.getDestinationManager();
+   }
+
+   public static DurableSubscriptionStore getDurableSubscriptionStore()
+      throws Exception
+   {
+      insureStarted();
+      return server.getDurableSubscriptionStore();
    }
 
    public static void configureSecurityForDestination(String destName, String config)
@@ -399,7 +407,7 @@ public class ServerManagement
 
    private static Server acquireRemote(int initialRetries)
    {
-      String name = "//localhost:" + RMIServer.RMI_REGISTRY_PORT + "/" + RMIServer.RMI_SERVER_NAME;
+      String name = "//localhost:" + TestServer.RMI_REGISTRY_PORT + "/" + TestServer.RMI_SERVER_NAME;
       Server s = null;
       int retries = initialRetries;
       while(s == null && retries > 0)
@@ -439,7 +447,7 @@ public class ServerManagement
    {
       public void run()
       {
-         // start a remote java process that runs a RMIServer
+         // start a remote java process that runs a TestServer
 
          String userDir = System.getProperty("user.dir");
          String javaClassPath = System.getProperty("java.class.path");
@@ -460,7 +468,7 @@ public class ServerManagement
             javaClassPath,
             "-Dmodule.output=" + moduleOutput,
             "-Dremote.test.suffix=-remote",
-            "org.jboss.test.messaging.tools.jmx.rmi.RMIServer",
+            "org.jboss.test.messaging.tools.jmx.rmi.TestServer",
          };
 
          String[] environment;

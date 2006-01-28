@@ -68,4 +68,4 @@ $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../thirdparty/jgroups/lib/jgroups.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP} \
 -Dtest.bind.address=localhost \
-org.jboss.test.messaging.tools.jmx.rmi.RMIServer &
+org.jboss.test.messaging.tools.jmx.rmi.TestServer &

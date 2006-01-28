@@ -30,7 +30,10 @@ import javax.transaction.TransactionManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.tm.TransactionManagerServiceMBean;
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -137,10 +140,14 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       return this;
    }
 
-   public DurableSubscription getDurableSubscription(String clientID, String subscriptionName)
+   public DurableSubscription getDurableSubscription(String clientID, 
+                                                     String subscriptionName,
+                                                     DestinationManager dm,
+                                                     MessageStore ms,
+                                                     TransactionLog tl)
       throws JMSException
    {
-      //Look in memory first
+      // Look in memory first
       DurableSubscription sub = super.getDurableSubscription(clientID, subscriptionName);
 
       if (sub != null)
@@ -189,7 +196,12 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                boolean noLocal = rs.getString(4).equals("Y");
 
                // create in memory
-               sub = super.createDurableSubscription(topicName, clientID, name, selector, noLocal);
+               sub = super.createDurableSubscription(topicName, 
+                                                     clientID,
+                                                     name,
+                                                     selector,
+                                                     noLocal,
+                                                     dm, ms, tl);
 
                // load its state
                sub.load();
@@ -225,8 +237,14 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
 
    }
 
-   public DurableSubscription createDurableSubscription(String topicName, String clientID,
-                                                        String subscriptionName, String selector, boolean noLocal)
+   public DurableSubscription createDurableSubscription(String topicName, 
+                                                        String clientID,
+                                                        String subscriptionName, 
+                                                        String selector, 
+                                                        boolean noLocal,
+                                                        DestinationManager dm,
+                                                        MessageStore ms,
+                                                        TransactionLog tl)
          throws JMSException
    {
       try
@@ -252,8 +270,12 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
             ps.executeUpdate();
 
             // create it in memory too
-            DurableSubscription sub =
-               super.createDurableSubscription(topicName, clientID, subscriptionName, selector, noLocal);
+            DurableSubscription sub = super.createDurableSubscription(topicName,
+                                                                      clientID,
+                                                                      subscriptionName,
+                                                                      selector,
+                                                                      noLocal,
+                                                                      dm, ms, tl);
 
             return sub;
          }
@@ -267,7 +289,9 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          {
             if (log.isTraceEnabled())
             {
-               String s = JDBCUtil.statementToString(insertSubscription, clientID, subscriptionName, topicName, selector, Boolean.valueOf(noLocal));
+               String s = JDBCUtil.
+                  statementToString(insertSubscription, clientID, subscriptionName,
+                                    topicName, selector, Boolean.valueOf(noLocal));
                log.trace(s + (failed ? " failed!" : " executed successfully"));
             }
 
@@ -412,7 +436,10 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       }
    }
 
-   public Set loadDurableSubscriptionsForTopic(String topicName) throws JMSException
+   public Set loadDurableSubscriptionsForTopic(String topicName,
+                                               DestinationManager dm,
+                                               MessageStore ms,
+                                               TransactionLog tl) throws JMSException
    {
       try
       {
@@ -443,7 +470,12 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                DurableSubscription sub = super.getDurableSubscription(clientID, subName);
                if (sub == null)
                {
-                  sub = super.createDurableSubscription(topicName, clientID, subName, selector, noLocal);
+                  sub = super.createDurableSubscription(topicName,
+                                                        clientID,
+                                                        subName,
+                                                        selector,
+                                                        noLocal,
+                                                        dm, ms, tl);
                }
                subs.add(sub);
             }

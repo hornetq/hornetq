@@ -29,7 +29,9 @@ package org.jboss.messaging.core;
 * 
 * $Id$
 */
-public interface ManageableQueue extends ManageableCoreDestination {
+public interface ManageableQueue extends ManageableCoreDestination
+{
 	int getCurrentMessageCount();
+
 	// TODO adding more manageable operations
 }

@@ -115,7 +115,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
    public String toString()
    {
-      return jndiBindings.toString();
+      return "[" + jndiBindings.toString() + "]";
    }
 
    // Package protected ---------------------------------------------

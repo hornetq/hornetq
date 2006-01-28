@@ -153,7 +153,7 @@
       </javac>
 
       <!-- Call rmi compiler to create stub for server -->
-      <rmic base="${build.tests.classes}" includes="**/RMIServer.class,**/RMINamingDelegate.class">
+      <rmic base="${build.tests.classes}" includes="**/TestServer.class,**/RMINamingDelegate.class">
          <classpath refid="test.classpath"/>
       </rmic>
    </target>
@@ -210,7 +210,7 @@
 
    <target name="start-rmi-server"
            description="Starts the RMI server used by remote tests">
-      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMIServer" fork="true" spawn="true">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.TestServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="remote.test.suffix" value="-remote"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>

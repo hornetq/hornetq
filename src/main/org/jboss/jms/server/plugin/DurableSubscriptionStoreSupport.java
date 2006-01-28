@@ -14,7 +14,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
@@ -70,7 +70,10 @@ public abstract class DurableSubscriptionStoreSupport
                                                         String clientID,
                                                         String subscriptionName,
                                                         String selector,
-                                                        boolean noLocal)
+                                                        boolean noLocal,
+                                                        DestinationManager dm,
+                                                        MessageStore ms,
+                                                        TransactionLog tl)
       throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
@@ -81,7 +84,12 @@ public abstract class DurableSubscriptionStoreSupport
       }
 
       DurableSubscription subscription =
-         internalCreateDurableSubscription(clientID, subscriptionName, topicName, selector, noLocal);
+         internalCreateDurableSubscription(clientID,
+                                           subscriptionName,
+                                           topicName,
+                                           selector,
+                                           noLocal,
+                                           dm, ms, tl);
 
       subs.put(subscriptionName, subscription);
 
@@ -126,43 +134,21 @@ public abstract class DurableSubscriptionStoreSupport
 
    // Public --------------------------------------------------------
 
-   // TODO this should go away! Replace it with proper dependencies.
-   private ServerPeer serverPeer;
-
-   // TODO this should go away! Replace it with proper dependencies.
-   public void setServerPeer(ServerPeer serverPeer)
-   {
-      this.serverPeer = serverPeer;
-   }
-
-   // TODO this should go away! Replace it with proper dependencies.
-   private TransactionLog tl;
-
-   // TODO this should go away! Replace it with proper dependencies.
-   public void setTransactionLog(TransactionLog tl)
-   {
-      this.tl = tl;
-   }
-
-   // TODO this should go away! Replace it with proper dependencies.
-   private MessageStore ms;
-
-   // TODO this should go away! Replace it with proper dependencies.
-   public void setMessageStore(MessageStore ms)
-   {
-      this.ms = ms;
-   }
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
-   private DurableSubscription internalCreateDurableSubscription(String clientID, String subName,
-                                                                 String topicName, String selector,
-                                                                 boolean noLocal)
+   private DurableSubscription internalCreateDurableSubscription(String clientID, 
+                                                                 String subName,
+                                                                 String topicName, 
+                                                                 String selector,
+                                                                 boolean noLocal,
+                                                                 DestinationManager dm,
+                                                                 MessageStore ms,
+                                                                 TransactionLog tl)
          throws JMSException
    {
-      Topic topic = (Topic)serverPeer.getDestinationManager().getCoreDestination(false, topicName);
+      Topic topic = (Topic)dm.getCoreDestination(false, topicName);
       if (topic == null)
       {
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");

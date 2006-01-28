@@ -39,7 +39,6 @@ import javax.naming.NamingException;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
@@ -194,11 +193,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
 
       durableSubscriptionStoreDelegate = (DurableSubscriptionStore)mbeanServer.
          getAttribute(durableSubscriptionStoreObjectName, "Instance");
-
-      // TODO this assignments should go away
-      ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setServerPeer(this);
-      ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setTransactionLog(transactionLogDelegate);
-      ((JDBCDurableSubscriptionStore)durableSubscriptionStoreDelegate).setMessageStore(messageStoreDelegate);
 
       // start the rest of the internal components
 

@@ -29,6 +29,7 @@ package org.jboss.messaging.core;
  * 
  * $Id$
  */
-public interface ManageableCoreDestination {
+public interface ManageableCoreDestination
+{
 	// TODO adding more common manageable operations
 }

@@ -23,6 +23,7 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.remoting.transport.Connector;
 
 import javax.management.ObjectName;
@@ -30,7 +31,7 @@ import java.rmi.Remote;
 import java.util.Set;
 
 /**
- * The remote interface exposed by RMIServer.
+ * The remote interface exposed by TestServer.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -90,8 +91,15 @@ public interface Server extends Remote
     */
    MessageStore getMessageStore() throws Exception;
 
+   /**
+    * Only for in-VM use!
+    */
+   DestinationManager getDestinationManager() throws Exception;
 
-   DurableSubscriptionStore getDurableSubscriptionStoreDelegate() throws Exception;
+   /**
+    * Only for in-VM use!
+    */
+   DurableSubscriptionStore getDurableSubscriptionStore() throws Exception;
 
    void deployTopic(String name, String jndiName) throws Exception;
    void deployQueue(String name, String jndiName) throws Exception;
