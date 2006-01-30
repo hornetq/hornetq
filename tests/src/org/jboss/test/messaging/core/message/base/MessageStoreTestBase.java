@@ -30,7 +30,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
 /**

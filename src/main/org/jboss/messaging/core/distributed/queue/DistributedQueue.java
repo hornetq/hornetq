@@ -23,6 +23,7 @@ package org.jboss.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.MessageReference;
@@ -37,7 +38,7 @@ import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;

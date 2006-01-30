@@ -9,6 +9,7 @@ package org.jboss.jms.server.plugin.contract;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 
 import javax.jms.JMSException;

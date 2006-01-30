@@ -25,7 +25,7 @@ import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.core.distributed.SimpleViewKeeper;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**

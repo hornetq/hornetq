@@ -29,7 +29,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;

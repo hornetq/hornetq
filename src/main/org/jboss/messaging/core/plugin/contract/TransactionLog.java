@@ -38,7 +38,9 @@ import org.jboss.messaging.core.MessageReference;
  */
 public interface TransactionLog extends ServerPlugin
 {
-   // TODO used by the TransactionRepository
+   //
+   // Used by the TransactionRepository
+   //
 
    void prepareTx(Transaction tx) throws Exception;
 
@@ -48,9 +50,9 @@ public interface TransactionLog extends ServerPlugin
 
    List retrievePreparedTransactions() throws Exception;
 
-   // TODO used by ServerSessionEndpoint, Subscription
-
-   void removeAllMessageData(Serializable channelID) throws Exception;
+   //
+   // Used by Channel's RecoverableState
+   //
 
    void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 
@@ -61,14 +63,13 @@ public interface TransactionLog extends ServerPlugin
     */
    List messageRefs(Serializable storeID, Serializable channelID) throws Exception;
 
-//   void removeAllMessageData(Serializable channelID) throws Exception;
+   //
+   // Used by ServerSessionEndpoint
+   //
 
-//   void prepareTx(Transaction tx) throws Exception;
-//
-//   void commitTx(Transaction tx) throws Exception;
-//
-//   void rollbackTx(Transaction tx) throws Exception;
-//
-//   List retrievePreparedTransactions() throws Exception;
+   /**
+    * TODO Do we really need this method?
+    */
+   void removeAllMessageData(Serializable channelID) throws Exception;
 
 }

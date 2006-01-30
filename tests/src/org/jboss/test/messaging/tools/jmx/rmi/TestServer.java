@@ -38,7 +38,7 @@ import javax.management.ObjectName;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.transport.Connector;
@@ -48,6 +48,7 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.w3c.dom.Element;
 
 /**

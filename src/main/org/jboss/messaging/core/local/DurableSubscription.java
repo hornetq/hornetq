@@ -25,7 +25,7 @@ import javax.jms.JMSException;
 
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.util.Util;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * 

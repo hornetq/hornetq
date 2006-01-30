@@ -28,11 +28,12 @@ import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.ViewKeeperSupport;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;

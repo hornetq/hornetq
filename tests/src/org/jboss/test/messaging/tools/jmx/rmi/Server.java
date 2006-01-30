@@ -22,9 +22,10 @@
 package org.jboss.test.messaging.tools.jmx.rmi;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.remoting.transport.Connector;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 import javax.management.ObjectName;
 import java.rmi.Remote;

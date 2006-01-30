@@ -33,7 +33,7 @@ import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.tm.TransactionManagerServiceMBean;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -38,7 +38,7 @@ import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.util.Set;

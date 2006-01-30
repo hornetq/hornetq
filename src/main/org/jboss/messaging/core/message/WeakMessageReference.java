@@ -29,7 +29,8 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.jms.server.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 
 /**
  * A MessageReference implementation that contains a weak reference to a message

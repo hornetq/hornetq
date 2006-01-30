@@ -29,8 +29,10 @@ import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.util.RpcServer;
-import org.jboss.jms.server.plugin.InMemoryMessageStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 

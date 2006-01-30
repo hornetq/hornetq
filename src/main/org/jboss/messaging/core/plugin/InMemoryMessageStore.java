@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.plugin;
+package org.jboss.messaging.core.plugin;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -27,9 +27,9 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.message.WeakMessageReference;
 import org.jboss.messaging.util.Util;
-import org.jboss.jms.server.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;

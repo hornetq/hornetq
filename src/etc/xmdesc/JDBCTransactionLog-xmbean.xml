@@ -7,7 +7,7 @@
 
 <mbean>
    <description>A JDBC transaction log</description>
-   <class>org.jboss.jms.server.plugin.JDBCMessageStore</class>
+   <class>org.jboss.messaging.core.plugin.JDBCMessageStore</class>
 
    <!-- Managed constructors -->
 

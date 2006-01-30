@@ -19,9 +19,10 @@ import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * A test Channel implementation.

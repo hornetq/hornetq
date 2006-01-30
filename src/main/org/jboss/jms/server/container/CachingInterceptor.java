@@ -29,9 +29,10 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
 /**

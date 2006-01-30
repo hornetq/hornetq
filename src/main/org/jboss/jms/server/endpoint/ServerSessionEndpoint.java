@@ -44,7 +44,7 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;

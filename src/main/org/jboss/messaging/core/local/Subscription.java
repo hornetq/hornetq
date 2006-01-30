@@ -26,9 +26,10 @@ import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.util.Util;
 import org.jboss.util.id.GUID;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold

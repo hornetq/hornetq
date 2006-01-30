@@ -32,14 +32,15 @@ import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * The test strategy is to try as many combination as it makes sense of the following

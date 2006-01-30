@@ -24,10 +24,12 @@ package org.jboss.test.messaging.core.message;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

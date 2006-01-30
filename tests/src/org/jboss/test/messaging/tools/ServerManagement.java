@@ -30,7 +30,7 @@ import java.io.PrintStream;
 import java.rmi.Naming;
 
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.TestServer;

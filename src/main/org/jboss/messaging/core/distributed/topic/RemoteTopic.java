@@ -30,7 +30,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.util.Util;
 import org.jboss.logging.Logger;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
 /**

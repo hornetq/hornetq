@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.core.distributed.queue;
 
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.jms.server.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;

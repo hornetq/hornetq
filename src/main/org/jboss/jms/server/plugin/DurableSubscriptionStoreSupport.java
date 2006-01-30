@@ -14,9 +14,10 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -96,15 +97,6 @@ public abstract class DurableSubscriptionStoreSupport
       return subscription;
    }
 
-   public DurableSubscription getDurableSubscription(String clientID,
-                                                     String subscriptionName)
-      throws JMSException
-   {
-      Map subs = (Map)subscriptions.get(clientID);
-      return subs == null ? null : (DurableSubscription)subs.get(subscriptionName);
-   }
-
-
    public boolean removeDurableSubscription(String clientID, String subscriptionName)
       throws JMSException
    {
@@ -137,10 +129,19 @@ public abstract class DurableSubscriptionStoreSupport
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
-   private DurableSubscription internalCreateDurableSubscription(String clientID, 
+
+   protected DurableSubscription getDurableSubscription(String clientID,
+                                                        String subscriptionName) throws JMSException
+   {
+      Map subs = (Map)subscriptions.get(clientID);
+      return subs == null ? null : (DurableSubscription)subs.get(subscriptionName);
+   }
+
+   // Private -------------------------------------------------------
+
+   private DurableSubscription internalCreateDurableSubscription(String clientID,
                                                                  String subName,
-                                                                 String topicName, 
+                                                                 String topicName,
                                                                  String selector,
                                                                  boolean noLocal,
                                                                  DestinationManager dm,
@@ -156,9 +157,7 @@ public abstract class DurableSubscriptionStoreSupport
 
       return new DurableSubscription(clientID, subName, topic, selector, noLocal, ms, tl);
    }
-   
-   // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
    
 }

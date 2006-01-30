@@ -27,8 +27,9 @@ import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -47,22 +48,22 @@ public class RecoverableState extends NonRecoverableState
    
    // Attributes ----------------------------------------------------
 
-   private TransactionLog pm;
+   private TransactionLog tl;
    private Serializable channelID;
    private Serializable storeID;
    private MessageStore messageStore;
 
    // Constructors --------------------------------------------------
 
-   public RecoverableState(Channel channel, TransactionLog pm)
+   public RecoverableState(Channel channel, TransactionLog tl)
    {
       super(channel, true);
-      if (pm == null)
+      if (tl == null)
       {
           throw new IllegalArgumentException("RecoverableState requires a " +
                                              "non-null persistence manager");
       }
-      this.pm = pm;
+      this.tl = tl;
 
       // the channel isn't going to change, so cache its id
       this.channelID = channel.getChannelID();
@@ -88,7 +89,7 @@ public class RecoverableState extends NonRecoverableState
       {
          //Reliable message in a recoverable state - also add to db
          if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-         pm.addReference(channelID, ref, tx);
+         tl.addReference(channelID, ref, tx);
       }
 
       addAddReferenceCallback(tx); //FIXME What is the point of this??
@@ -103,7 +104,7 @@ public class RecoverableState extends NonRecoverableState
       {
          //Reliable message in a recoverable state - also add to db
          if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database non-transactionally"); }
-         pm.addReference(channelID, ref, null);
+         tl.addReference(channelID, ref, null);
       }      
       
       return first;
@@ -115,7 +116,7 @@ public class RecoverableState extends NonRecoverableState
 
       if (d.getReference().isReliable())
       {
-         pm.removeReference(channelID, d.getReference(), tx);            
+         tl.removeReference(channelID, d.getReference(), tx);
       }     
    }
    
@@ -129,14 +130,14 @@ public class RecoverableState extends NonRecoverableState
       //We should add a flag to check this
       if (d.getReference().isReliable())
       {
-         pm.removeReference(channelID, d.getReference(), null);            
+         tl.removeReference(channelID, d.getReference(), null);
       }     
    }
    
    public void clear()
    {
       super.clear();
-      pm = null;
+      tl = null;
       // the persisted state remains
    }
    
@@ -145,7 +146,7 @@ public class RecoverableState extends NonRecoverableState
     */
    public void load() throws Exception
    {
-      List refs = pm.messageRefs(storeID, channelID);
+      List refs = tl.messageRefs(storeID, channelID);
       
       Iterator iter = refs.iterator();
       while (iter.hasNext())

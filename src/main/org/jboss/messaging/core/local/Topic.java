@@ -32,9 +32,10 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

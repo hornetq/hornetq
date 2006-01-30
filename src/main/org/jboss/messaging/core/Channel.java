@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core;
 
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 import java.util.List;
 import java.io.Serializable;

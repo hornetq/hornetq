@@ -23,7 +23,8 @@ package org.jboss.test.messaging.core.message;
 
 import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
-import org.jboss.jms.server.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

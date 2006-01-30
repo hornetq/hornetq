@@ -30,7 +30,8 @@ import java.util.Set;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null

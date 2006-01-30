@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.server.plugin.contract;
+package org.jboss.messaging.core.plugin.contract;
 
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Message;

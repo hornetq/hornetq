@@ -25,7 +25,8 @@ import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.DurableSubscription;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.jms.server.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

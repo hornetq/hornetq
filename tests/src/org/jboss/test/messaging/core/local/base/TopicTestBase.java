@@ -28,13 +28,15 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.PersistentMessageStore;
-import org.jboss.jms.server.plugin.JDBCMessageStore;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 import java.util.Iterator;
 

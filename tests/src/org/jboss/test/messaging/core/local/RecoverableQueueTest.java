@@ -22,8 +22,9 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.jms.server.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
 /**

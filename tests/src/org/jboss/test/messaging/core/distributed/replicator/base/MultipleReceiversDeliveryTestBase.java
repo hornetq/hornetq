@@ -13,9 +13,11 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.messaging.core.distributed.replicator.MultipleReceiversDelivery;
 import org.jboss.messaging.core.distributed.replicator.Acknowledgment;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.jms.server.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.jms.server.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 
 import java.io.Serializable;
 
