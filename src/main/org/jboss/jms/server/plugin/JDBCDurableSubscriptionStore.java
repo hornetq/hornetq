@@ -244,8 +244,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                                                         boolean noLocal,
                                                         DestinationManager dm,
                                                         MessageStore ms,
-                                                        TransactionLog tl)
-         throws JMSException
+                                                        TransactionLog tl) throws JMSException
    {
       try
       {

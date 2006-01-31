@@ -235,6 +235,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
       // TODO: when subscriptions/durable subscription will be registered as MBean, use the JMX
       //       interface to make sure the 'another red square message' is maintained by the
       //       durable subascription
+      //       http://jira.jboss.org/jira/browse/JBMESSAGING-217
 
       conn.close();
 

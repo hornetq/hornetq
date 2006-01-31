@@ -105,7 +105,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    // access to server's extensions
    protected DestinationManager dm;
    protected SecurityManager sm;
-   protected ConnectionManager connm;
+   protected ConnectionManager cm;
    protected TransactionRepository tr;
 
    // Constructors --------------------------------------------------
@@ -118,7 +118,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       dm = serverPeer.getDestinationManager();
       sm = serverPeer.getSecurityManager();
       tr = serverPeer.getTxRepository();
-      connm = serverPeer.getConnectionManager();
+      cm = serverPeer.getConnectionManager();
 
       started = false;
 
@@ -345,7 +345,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          temporaryDestinations.clear();
          consumers.clear();
-         connm.unregisterConnection(clientConnectionID);
+         cm.unregisterConnection(clientConnectionID);
 
          Dispatcher.singleton.unregisterTarget(this.connectionID);
          closed = true;

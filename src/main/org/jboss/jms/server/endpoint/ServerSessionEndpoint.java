@@ -50,7 +50,6 @@ import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Distributor;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.local.DurableSubscription;
@@ -378,7 +377,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      Distributor coreDestination = dm.getCoreDestination(false, name);
+      CoreDestination coreDestination = dm.getCoreDestination(false, name);
 
       if (coreDestination == null)
       {

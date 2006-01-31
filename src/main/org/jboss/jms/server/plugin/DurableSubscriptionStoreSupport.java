@@ -17,7 +17,6 @@ import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
