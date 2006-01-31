@@ -195,6 +195,7 @@ class DestinationJNDIMapper implements DestinationManager
       }
 
       serverPeer.getSecurityManager().clearSecurityConfig(isQueue, name);
+      //serverPeer.getDurableSubscriptionStoreDelegate().clearTopic();
 
       log.debug("unregistered " + (isQueue ? "queue " : "topic ") + name);
    }

@@ -48,7 +48,6 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.w3c.dom.Element;
 
 /**
@@ -441,6 +440,11 @@ public class TestServer extends UnicastRemoteObject implements Server
    public ObjectName getServerPeerObjectName()
    {
       return serverPeerObjectName;
+   }
+
+   public ObjectName getDurableSubscriptionStoreObjectName()
+   {
+      return durableSubscriptionStoreObjectName;
    }
 
    /**

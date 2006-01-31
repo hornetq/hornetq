@@ -281,6 +281,12 @@ public class ServerManagement
       return server.getServerPeerObjectName();
    }
 
+   public static ObjectName getDurableSubscriptionStoreObjectName() throws Exception
+   {
+      insureStarted();
+      return server.getDurableSubscriptionStoreObjectName();
+   }
+
    public static Connector getConnector() throws Exception
    {
       if (isRemote())

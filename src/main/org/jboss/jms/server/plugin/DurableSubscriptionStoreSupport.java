@@ -7,6 +7,8 @@
 package org.jboss.jms.server.plugin;
 
 import java.util.Map;
+import java.util.Collections;
+import java.util.Set;
 
 import javax.jms.JMSException;
 
@@ -42,7 +44,8 @@ public abstract class DurableSubscriptionStoreSupport
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
+   // Map<clientID - Map<subscriptionName - DurableSubscription>>
    protected Map subscriptions;
 
    // Constructors --------------------------------------------------
@@ -123,6 +126,21 @@ public abstract class DurableSubscriptionStoreSupport
       }
 
       return removed != null;
+   }
+
+   // JMX Managed Operations ----------------------------------------
+
+   /**
+    * @return a Set<String>. It may return an empty Set, but never null.
+    */
+   public Set listSubscriptions(String clientID)
+   {
+      Map m = (Map)subscriptions.get(clientID);
+      if (m == null)
+      {
+         return Collections.EMPTY_SET;
+      }
+      return m.keySet();
    }
 
    // Public --------------------------------------------------------

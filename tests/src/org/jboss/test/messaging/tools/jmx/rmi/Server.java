@@ -25,7 +25,6 @@ import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.remoting.transport.Connector;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 import javax.management.ObjectName;
 import java.rmi.Remote;
@@ -79,6 +78,7 @@ public interface Server extends Remote
    boolean isServerPeerStarted() throws Exception;
 
    public ObjectName getServerPeerObjectName() throws Exception;
+   public ObjectName getDurableSubscriptionStoreObjectName() throws Exception;
 
    boolean isStarted() throws Exception;
 

@@ -36,6 +36,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
 import javax.jms.Message;
 import javax.jms.InvalidDestinationException;
+import javax.management.ObjectName;
+import java.util.Set;
 
 
 /**
@@ -355,11 +357,30 @@ public class DurableSubscriptionTest extends MessagingTestCase
       conn.setClientID("blahblah");
 
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer ds = s.createDurableSubscriber(topic, "ak47");
+      s.createDurableSubscriber(topic, "ak47");
 
       conn.close();
 
+      ObjectName dsson = ServerManagement.getDurableSubscriptionStoreObjectName();
+
+      Set dsnames = (Set)ServerManagement.invoke(dsson, "listSubscriptions",
+                                                 new Object[] { "blahblah" },
+                                                 new String[] { "java.lang.String}"});
+
+      assertEquals(1, dsnames.size());
+      assertEquals("ak47", dsnames.iterator().next());
+
       ServerManagement.undeployTopic("AnotherCompletelyNewTopic");
+
+      // the durable subscription should be cleared from memory
+
+      dsson = ServerManagement.getDurableSubscriptionStoreObjectName();
+
+      dsnames = (Set)ServerManagement.invoke(dsson, "listSubscriptions",
+                                             new Object[] { "blahblah" },
+                                             new String[] { "java.lang.String}"});
+
+      assertTrue(dsnames.isEmpty());
    }
 
 }

@@ -771,5 +771,5 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          tm.setRollbackOnly();
       }
    }
-   
+
 }
