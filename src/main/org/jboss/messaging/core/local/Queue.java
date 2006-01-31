@@ -75,7 +75,7 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    
    public int getCurrentMessageCount()
    {
-	   return (state.undelivered(null)).size();
+	   return state.messageAmount();
    }
 
    // Package protected ---------------------------------------------

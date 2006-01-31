@@ -137,6 +137,16 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       initDeques();
    }
    
+   public int size()
+   {
+      int amount = 0;
+      for (int i = 0; i < priorities; i++)
+      {
+         amount += deques[i].size();
+      }
+      return amount;
+   }
+   
    protected void initDeques()
    {      
       deques = new SingleLinkedDeque[priorities];

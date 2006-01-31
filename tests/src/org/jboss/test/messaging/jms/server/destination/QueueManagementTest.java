@@ -75,48 +75,49 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testCurrentMessageCount() throws Exception
    {
-	   InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-	   ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-	   
-	   ServerManagement.deployQueue("QueueMessageCount");
-	   Queue queue = (Queue)ic.lookup("/queue/QueueMessageCount");
-
-	   // Test currentMessageCount, should be 0 msg
-	   ObjectName destObjectName = 
-		   new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount");
-	   Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
-	   assertEquals(0, count.intValue());
-
-	   // Send 1 message to queue
-	   Connection conn = cf.createConnection();
-	   Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	   MessageProducer prod = session.createProducer(queue);
-	   prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	   
-	   TextMessage m = session.createTextMessage("message one");
-	   prod.send(m);
-	   conn.close();
-	   
-	   // Test currentMessageCount again, should be 1 msg
-	   count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
-	   assertEquals(1, count.intValue());
-	   
-	   
-	   // Consume the message
-	   conn = cf.createConnection();
-	   session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	   MessageConsumer cons = session.createConsumer(queue);
-	   conn.start();
-	   
-	   cons.receive();
-	   conn.close();
-	   
-	   // Test currentMessageCount again, should be 0 msg
-	   count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
-	   assertEquals(0, count.intValue());
-
-	   ServerManagement.undeployQueue("QueueMessageCount");
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      ServerManagement.deployQueue("QueueMessageCount");
+      Queue queue = (Queue)ic.lookup("/queue/QueueMessageCount");
+      
+      // Test currentMessageCount, should be 0 msg
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount");
+      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      assertEquals(0, count.intValue());
+      
+      // Send 1 message to queue
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      conn.close();
+      
+      // Test currentMessageCount again, should be 1 msg
+      count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      assertEquals(1, count.intValue());
+      
+      
+      // Consume the message
+      conn = cf.createConnection();
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons = session.createConsumer(queue);
+      conn.start();
+      
+      cons.receive();
+      conn.close();
+      
+      // Test currentMessageCount again, should be 0 msg
+      count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      assertEquals(0, count.intValue());
+      
+      ServerManagement.undeployQueue("QueueMessageCount");
    }
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

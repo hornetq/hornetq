@@ -24,16 +24,16 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.ManageableCoreDestination;
 
 /**
-* Manageable interface for a queue.
-*
-* @author Alex Fu
-* @version <tt>$Revision$</tt>
-* 
-* $Id$
-*/
+ * Manageable interface for a queue.
+ *
+ * @author <a href="mailto:alex.fu@novell.com">Alex Fu</a>
+ * @version <tt>$Revision$</tt>
+ * 
+ * $Id$
+ */
 public interface ManageableQueue extends ManageableCoreDestination
 {
-	int getCurrentMessageCount();
+   int getCurrentMessageCount();
 
-	// TODO adding more manageable operations
+   // TODO adding more manageable operations
 }

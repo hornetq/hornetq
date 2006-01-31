@@ -263,6 +263,11 @@ public class NonRecoverableState implements State
    {
       //do nothing
    }
+   
+   public int messageAmount()
+   {
+      return messageRefs.size();
+   }
 
    // Public --------------------------------------------------------
 

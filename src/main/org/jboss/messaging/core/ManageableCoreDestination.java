@@ -24,12 +24,12 @@ package org.jboss.messaging.core;
 /**
  * Common manageable interface for a core destination (queue, topic, etc.)
  *
- * @author Alex Fu
+ * @author <a href="mailto:alex.fu@novell.com">Alex Fu</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
  */
 public interface ManageableCoreDestination
 {
-	// TODO adding more common manageable operations
+   // TODO adding more common manageable operations
 }

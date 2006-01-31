@@ -47,4 +47,6 @@ public interface PrioritizedDeque
    List getAll();
    
    void clear();   
+   
+   int size();
 }
