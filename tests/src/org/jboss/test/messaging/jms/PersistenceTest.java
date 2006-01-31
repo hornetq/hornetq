@@ -363,7 +363,7 @@ public class PersistenceTest extends MessagingTestCase
    }
 
    /*
-    * Test durable subscription state survives a restart
+    * Test durable subscription state survives a server crash
     */
    public void testDurableSubscriptionPersistence_1() throws Exception
    {

@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.message;
+package org.jboss.test.messaging.core.plugin;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
@@ -27,9 +27,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
+import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

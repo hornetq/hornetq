@@ -2332,18 +2332,23 @@ public class MessageConsumerTest extends MessagingTestCase
       Connection conn5 = null;
       Connection conn6 = null;
 
+      Session sess1 = null;
+      Session sess3 = null;
+      Session sess4 = null;
+      Session sess6 = null;
+
       try
       {
 
-         //Create a durable subscriber on one connection and close it
+         // Create a durable subscriber on one connection and close it
          conn1 = cf.createConnection();
          conn1.setClientID(CLIENT_ID1);
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
          conn1.close();
 
 
-         //Send some messages on another connection and close it
+         // Send some messages on another connection and close it
          conn2 = cf.createConnection();
          conn2.setClientID(CLIENT_ID1);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -2357,11 +2362,11 @@ public class MessageConsumerTest extends MessagingTestCase
          }
          conn2.close();
 
-         //Receive the messages on another connection
+         // Receive the messages on another connection
          conn3 = cf.createConnection();
          conn3.setClientID(CLIENT_ID1);
          conn3.start();
-         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          durable = sess3.createDurableSubscriber(topic, "mySubscription");
          int count = 0;
          while (true)
@@ -2377,37 +2382,42 @@ public class MessageConsumerTest extends MessagingTestCase
          assertEquals(NUM_MESSAGES, count);
          conn3.close();
 
-         //Try and receive them again
+         // Try and receive them again
          conn4 = cf.createConnection();
          conn4.setClientID(CLIENT_ID1);
          conn4.start();
-         Session sess4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         sess4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
          durable = sess4.createDurableSubscriber(topic, "mySubscription");
 
          TextMessage tm = (TextMessage)durable.receive(1000);
          assertNull(tm);
          conn4.close();
 
-         //Send some more messages and unsubscribe
+         // Send some more messages and unsubscribe
          conn5 = cf.createConnection();
          conn5.setClientID(CLIENT_ID1);
          conn5.start();
          Session sess5 = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod5 = sess5.createProducer(topic);
          prod5.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         log.debug("sending.1 " + NUM_MESSAGES + " messages");
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm2 = sess5.createTextMessage("hello");
             prod5.send(topic, tm2);
          }
+
+         log.debug("unsubscribing mySubscription");
          sess5.unsubscribe("mySubscription");
+         log.debug("unsubscribing done");
          conn5.close();
 
-         //Resubscribe with the same name
+         // Resubscribe with the same name
          conn6 = cf.createConnection();
          conn6.setClientID(CLIENT_ID1);
          conn6.start();
-         Session sess6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         sess6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
          durable = sess6.createDurableSubscriber(topic, "mySubscription");
 
          TextMessage tm3 = (TextMessage)durable.receive(1000);
@@ -2434,6 +2444,10 @@ public class MessageConsumerTest extends MessagingTestCase
          if (conn5 != null)
          {
             conn5.close();
+         }
+         if (sess6 != null)
+         {
+            sess6.unsubscribe("mySubscription");
          }
          if (conn6 != null)
          {
@@ -2463,12 +2477,16 @@ public class MessageConsumerTest extends MessagingTestCase
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
 
+         log.debug("creating durable subscription");
          MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+         log.debug("durable subscription created");
 
          conn1.start();
 
          final int NUM_MESSAGES = 2;
 
+
+         log.debug("sending messages ...");
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -2477,6 +2495,8 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          final int NUM_TO_RECEIVE = NUM_MESSAGES - 1;
+
+         log.debug("receiving messages ...");
 
          for (int i = 0; i < NUM_TO_RECEIVE; i++)
          {
@@ -2496,7 +2516,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          // Re-subscribe to the subscription
 
-         log.trace("Resubscribing");
+         log.trace("resubscribing");
 
          MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
 

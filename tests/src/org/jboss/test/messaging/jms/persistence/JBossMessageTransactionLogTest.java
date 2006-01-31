@@ -25,7 +25,8 @@ import java.util.Map;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
-import org.jboss.test.messaging.core.persistence.CoreMessageJDBCPersistenceManagerTest;
+import org.jboss.test.messaging.core.plugin.JDBCTransactionLogTest;
+import org.jboss.test.messaging.core.plugin.JDBCTransactionLogTest;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
 
@@ -36,13 +37,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JBossMessagePersistenceManagerTest extends CoreMessageJDBCPersistenceManagerTest
+public class JBossMessageTransactionLogTest extends JDBCTransactionLogTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossMessagePersistenceManagerTest(String name)
+   public JBossMessageTransactionLogTest(String name)
    {
       super(name);
    }

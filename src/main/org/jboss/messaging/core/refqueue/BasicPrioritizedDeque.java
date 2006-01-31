@@ -24,8 +24,6 @@ package org.jboss.messaging.core.refqueue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.logging.Logger;
-
 /**
  * A basic non synchronized PrioritizedDeque implementation. It implements this by maintaining an
  * individual SingleLinkedDeque for each priority level. This should give significantly better
@@ -40,7 +38,7 @@ import org.jboss.logging.Logger;
  */
 public class BasicPrioritizedDeque implements PrioritizedDeque
 {
-   private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
+//   private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
       
    protected SingleLinkedDeque[] deques;
    

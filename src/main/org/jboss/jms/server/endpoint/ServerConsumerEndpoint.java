@@ -49,7 +49,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.SingleReceiverDelivery;
-import org.jboss.messaging.core.local.Subscription;
+import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
@@ -390,9 +390,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       this.sessionEndpoint.connectionEndpoint.consumers.remove(id);
       
-      if (this.channel instanceof Subscription)
+      if (this.channel instanceof CoreSubscription)
       {
-         ((Subscription)channel).closeConsumer();
+         ((CoreSubscription)channel).closeConsumer();
       }
       
       this.sessionEndpoint.consumers.remove(this.id);

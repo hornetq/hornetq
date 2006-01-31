@@ -21,105 +21,71 @@
   */
 package org.jboss.messaging.core.local;
 
-
 import javax.jms.JMSException;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.util.Util;
-import org.jboss.util.id.GUID;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
- * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold
- * messages in transit to consumers.
+ * 
+ * Represents a durable topic subscription
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *
  * $Id$
  */
-public class Subscription extends Pipe
+public class CoreDurableSubscription extends CoreSubscription
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(Subscription.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
-   protected Topic topic;
-   protected String selector;
-   protected boolean noLocal;
-   
+   protected String name;
+   protected String clientID;
+
+
    // Constructors --------------------------------------------------
 
-   public Subscription(Topic topic, String selector, boolean noLocal, MessageStore ms)
+   public CoreDurableSubscription(String clientID, String name, Topic topic, String selector,
+                              boolean noLocal, MessageStore ms, TransactionLog tl)
    {
-      this("sub" + new GUID().toString(), topic, selector, noLocal, ms, null);
+      super(clientID + "." + name, topic, selector, noLocal, ms, tl);
+      this.name = name;
+      this.clientID = clientID;
    }
    
-   protected Subscription(String name, Topic topic, String selector, boolean noLocal,
-                          MessageStore ms, TransactionLog tl)
-   {
-      // A Subscription must accept reliable messages, even if itself is non-recoverable
-      super(name, ms, tl, true);
-      this.topic = topic;
-      this.selector = selector;
-      this.noLocal = noLocal;
-   }
-   
+
    // Channel implementation ----------------------------------------
 
    // Public --------------------------------------------------------
    
-   public void subscribe()
-   {
-      topic.add(this);
-   }
-   
-   public void unsubscribe() throws JMSException
-   {
-      topic.remove(this);
-   }
-   
    public void closeConsumer() throws JMSException
    {
-      unsubscribe();
-      try
-      {
-         if (tl != null)
-         {
-            tl.removeAllMessageData(this.channelID);
-         }
-      }
-      catch (Exception e)
-      {
-         final String msg = "Failed to remove message data for subscription";
-         log.error(msg, e);
-         throw new IllegalStateException(msg);
-      }
+      // do nothing - this is durable
    }
    
-   public Topic getTopic()
+   public String getName()
    {
-      return topic;
+      return name;
    }
-   
-   public String getSelector()
+
+   public String getClientID()
    {
-      return selector;
+      return clientID;
    }
-   
-   public boolean isNoLocal()
+
+   public void load() throws Exception
    {
-      return noLocal;
+      this.state.load();
    }
 
    public String toString()
    {
-      return "CoreSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+      return "CoreDurableSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -130,3 +96,4 @@ public class Subscription extends Pipe
    
    // Inner classes -------------------------------------------------   
 }
+

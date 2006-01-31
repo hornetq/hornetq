@@ -58,7 +58,7 @@
    -->
    <operation>
       <description>Returns the set of durable subscription names corresponding to the given clientID</description>
-      <name>listSubscriptions</name>
+      <name>getSubscriptions</name>
       <parameter>
          <name>clientID</name>
          <type>java.lang.String</type>

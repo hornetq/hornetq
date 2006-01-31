@@ -19,68 +19,60 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.local;
+package org.jboss.test.messaging.core.plugin;
 
-import org.jboss.test.messaging.core.local.base.QueueTestBase;
-import org.jboss.messaging.core.local.CoreSubscription;
+import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
-public class SubscriptionTest extends QueueTestBase
+public class InMemoryMessageStoreTest extends MessageStoreTestBase
 {
    // Constants -----------------------------------------------------
 
+   protected Logger log = Logger.getLogger(InMemoryMessageStoreTest.class);
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SubscriptionTest(String name)
+   public InMemoryMessageStoreTest(String name)
    {
       super(name);
    }
 
-   // ChannelTestBase overrides  ------------------------------------
+   // Public --------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
 
-      channel = new CoreSubscription(null, null, false, ms);
-      
+      ms = new InMemoryMessageStore("test-memory-store");
+
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      channel.close();
-      channel = null;
+      ms = null;
 
       super.tearDown();
    }
 
-   public void crashChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   public void recoverChannel() throws Exception
-   {
-      // doesn't matter
-   }
-
-   // Public --------------------------------------------------------
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
+
+
 }

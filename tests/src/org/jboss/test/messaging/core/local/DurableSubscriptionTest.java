@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.JDBCMessageStore;
@@ -65,7 +65,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
       tr.start(tl);
 
-      channel = new DurableSubscription("clientid123", "testDurableSubscription",
+      channel = new CoreDurableSubscription("clientid123", "testDurableSubscription",
                                         null, null, false, ms, tl);
 
       log.debug("setup done");

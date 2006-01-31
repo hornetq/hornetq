@@ -9,11 +9,12 @@ package org.jboss.jms.server.plugin;
 import java.util.Map;
 import java.util.Collections;
 import java.util.Set;
+import java.util.HashSet;
 
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -45,7 +46,7 @@ public abstract class DurableSubscriptionStoreSupport
 
    // Attributes ----------------------------------------------------
 
-   // Map<clientID - Map<subscriptionName - DurableSubscription>>
+   // Map<clientID - Map<subscriptionName - CoreDurableSubscription>>
    protected Map subscriptions;
 
    // Constructors --------------------------------------------------
@@ -69,7 +70,7 @@ public abstract class DurableSubscriptionStoreSupport
 
    // DurableSubscriptionStore implementation ---------------
 
-   public DurableSubscription createDurableSubscription(String topicName,
+   public CoreDurableSubscription createDurableSubscription(String topicName,
                                                         String clientID,
                                                         String subscriptionName,
                                                         String selector,
@@ -86,7 +87,7 @@ public abstract class DurableSubscriptionStoreSupport
          subscriptions.put(clientID, subs);
       }
 
-      DurableSubscription subscription =
+      CoreDurableSubscription subscription =
          internalCreateDurableSubscription(clientID,
                                            subscriptionName,
                                            topicName,
@@ -118,7 +119,7 @@ public abstract class DurableSubscriptionStoreSupport
 
       if (log.isTraceEnabled()) { log.trace("removing durable subscription " + subscriptionName); }
 
-      DurableSubscription removed = (DurableSubscription)subs.remove(subscriptionName);
+      CoreDurableSubscription removed = (CoreDurableSubscription)subs.remove(subscriptionName);
 
       if (subs.size() == 0)
       {
@@ -128,19 +129,55 @@ public abstract class DurableSubscriptionStoreSupport
       return removed != null;
    }
 
+//   public void clearSubscriptionsForTopic(String topicName) throws JMSException
+//   {
+//      List toRemove = new ArrayList();
+//      for(Iterator i = subscriptions.keySet().iterator(); i.hasNext(); )
+//      {
+//         String clientID = (String)i.next();
+//         Map subs = (Map)subscriptions.get(clientID);
+//         for(Iterator j = subs.keySet().iterator(); j.hasNext(); )
+//         {
+//            String name = (String)j.next();
+//            CoreDurableSubscription ds = (CoreDurableSubscription)subs.get(name);
+//            if (ds.getTopic().getName().equals(topicName))
+//            {
+//               toRemove.add(ds);
+//            }
+//         }
+//
+//         if (subs.keySet().size() == 0)
+//         {
+//            i.remove();
+//         }
+//      }
+//
+//      for(Iterator i = toRemove.iterator(); i.hasNext(); )
+//      {
+//         CoreDurableSubscription ds = (CoreDurableSubscription)i.next();
+//         removeDurableSubscription(ds.getClientID(), ds.getName());
+//      }
+//
+//      if (log.isTraceEnabled()) { log.trace(toRemove.size() + " durable subscription(s) removed for topic " + topicName); }
+//   }
+
+
    // JMX Managed Operations ----------------------------------------
 
    /**
     * @return a Set<String>. It may return an empty Set, but never null.
     */
-   public Set listSubscriptions(String clientID)
+   public Set getSubscriptions(String clientID)
    {
       Map m = (Map)subscriptions.get(clientID);
       if (m == null)
       {
          return Collections.EMPTY_SET;
       }
-      return m.keySet();
+      // concurrent keyset is not serializable
+      Set result = new HashSet();
+      result.addAll(m.keySet());
+      return result;
    }
 
    // Public --------------------------------------------------------
@@ -149,16 +186,16 @@ public abstract class DurableSubscriptionStoreSupport
    
    // Protected -----------------------------------------------------
 
-   protected DurableSubscription getDurableSubscription(String clientID,
+   protected CoreDurableSubscription getDurableSubscription(String clientID,
                                                         String subscriptionName) throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
-      return subs == null ? null : (DurableSubscription)subs.get(subscriptionName);
+      return subs == null ? null : (CoreDurableSubscription)subs.get(subscriptionName);
    }
 
    // Private -------------------------------------------------------
 
-   private DurableSubscription internalCreateDurableSubscription(String clientID,
+   private CoreDurableSubscription internalCreateDurableSubscription(String clientID,
                                                                  String subName,
                                                                  String topicName,
                                                                  String selector,
@@ -174,7 +211,7 @@ public abstract class DurableSubscriptionStoreSupport
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
 
-      return new DurableSubscription(clientID, subName, topic, selector, noLocal, ms, tl);
+      return new CoreDurableSubscription(clientID, subName, topic, selector, noLocal, ms, tl);
    }
 
    // Inner classes -------------------------------------------------

@@ -34,13 +34,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JBossTextMessagePersistenceManagerTest extends JBossMessagePersistenceManagerTest
+public class JBossTextMessageTransactionLogTest extends JBossMessageTransactionLogTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossTextMessagePersistenceManagerTest(String name)
+   public JBossTextMessageTransactionLogTest(String name)
    {
       super(name);
    }

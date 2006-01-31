@@ -21,9 +21,10 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
+import java.util.ArrayList;
 import java.util.Map;
 
-import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
 
@@ -34,13 +35,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JBossBytesMessagePersistenceManagerTest extends JBossMessagePersistenceManagerTest
+public class JBossStreamMessageTransactionLogTest extends JBossMessageTransactionLogTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossBytesMessagePersistenceManagerTest(String name)
+   public JBossStreamMessageTransactionLogTest(String name)
    {
       super(name);
    }
@@ -62,15 +63,15 @@ public class JBossBytesMessagePersistenceManagerTest extends JBossMessagePersist
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossBytesMessage m = 
-         new JBossBytesMessage(new GUID().toString(),
+      JBossStreamMessage m = 
+         new JBossStreamMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,
             i + 2,
             coreHeaders,
-            null,
+            new ArrayList(),
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
             i % 2 == 0,
@@ -78,8 +79,7 @@ public class JBossBytesMessagePersistenceManagerTest extends JBossMessagePersist
             i % 2 == 1,
             new GUID().toString(),
             new GUID().toString(),
-            jmsProperties);  
-      
+            jmsProperties);        
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());
       m.writeBytes(randByteArray());
@@ -87,10 +87,9 @@ public class JBossBytesMessagePersistenceManagerTest extends JBossMessagePersist
       m.writeDouble(randDouble().doubleValue());
       m.writeFloat(randFloat().floatValue());
       m.writeInt(randInt().intValue());
-      m.writeLong(randLong().longValue());      
+      m.writeLong(randLong().longValue());
       m.writeShort(randShort().shortValue());
-      m.writeUTF(randString(1000));
-
+      m.writeString(randString(1000));
       return m;      
    }
    

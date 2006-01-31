@@ -544,6 +544,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
+      boolean success = false;
 
       try
       {
@@ -554,6 +555,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          ps.setString(1, (String)channelID);
          
          ps.executeUpdate();
+         success = true;
       }
       catch (Exception e)
       {
@@ -561,7 +563,12 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          throw e;
       }
       finally
-      {         
+      {
+         if (log.isTraceEnabled())
+         {
+            String s = JDBCUtil.statementToString(deleteChannelMessageRefs, channelID);
+            log.trace(s + (success ? " successful" : "failed"));
+         }
          if (ps != null)
          {
             try

@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.persistence;
+package org.jboss.test.messaging.core.plugin;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -35,11 +35,11 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
 import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleChannel;
+import org.jboss.test.messaging.core.CoreMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.util.id.GUID;
@@ -51,7 +51,7 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
+public class JDBCTransactionLogTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
 
@@ -59,7 +59,7 @@ public class CoreMessageJDBCPersistenceManagerTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public CoreMessageJDBCPersistenceManagerTest(String name)
+   public JDBCTransactionLogTest(String name)
    {
       super(name);
    }

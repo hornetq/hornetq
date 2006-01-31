@@ -229,9 +229,9 @@ public class ReceiverJob extends BaseThroughputJob
    }
 
    /**
-    * Set the subName.
+    * Set the name.
     * 
-    * @param subName The subName to set.
+    * @param subName The name to set.
     */
    public void setSubName(String subName)
    {

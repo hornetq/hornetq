@@ -28,7 +28,7 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.tm.TransactionManagerServiceMBean;
@@ -140,7 +140,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       return this;
    }
 
-   public DurableSubscription getDurableSubscription(String clientID, 
+   public CoreDurableSubscription getDurableSubscription(String clientID,
                                                      String subscriptionName,
                                                      DestinationManager dm,
                                                      MessageStore ms,
@@ -148,7 +148,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       throws JMSException
    {
       // Look in memory first
-      DurableSubscription sub = super.getDurableSubscription(clientID, subscriptionName);
+      CoreDurableSubscription sub = super.getDurableSubscription(clientID, subscriptionName);
 
       if (sub != null)
       {
@@ -237,7 +237,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
 
    }
 
-   public DurableSubscription createDurableSubscription(String topicName, 
+   public CoreDurableSubscription createDurableSubscription(String topicName,
                                                         String clientID,
                                                         String subscriptionName, 
                                                         String selector, 
@@ -269,7 +269,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
             ps.executeUpdate();
 
             // create it in memory too
-            DurableSubscription sub = super.createDurableSubscription(topicName,
+            CoreDurableSubscription sub = super.createDurableSubscription(topicName,
                                                                       clientID,
                                                                       subscriptionName,
                                                                       selector,
@@ -318,12 +318,15 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
    public boolean removeDurableSubscription(String clientID, String subscriptionName)
       throws JMSException
    {
+      if (log.isTraceEnabled()) { log.trace("removing durable subscription " + subscriptionName); }
+
       try
       {
 
          Connection conn = null;
          PreparedStatement ps  = null;
          TransactionWrapper wrap = new TransactionWrapper();
+         int rows = -1;
 
          try
          {
@@ -335,7 +338,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
 
             ps.setString(2, subscriptionName);
 
-            int rows = ps.executeUpdate();
+            rows = ps.executeUpdate();
 
             if (rows == 1)
             {
@@ -354,6 +357,12 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          }
          finally
          {
+            if (log.isTraceEnabled())
+            {
+               String s = JDBCUtil.statementToString(deleteSubscription, clientID, subscriptionName);
+               log.trace(s + (rows == -1 ? " failed!" : " deleted " + rows + " rows"));
+            }
+
             if (ps != null)
             {
                ps.close();
@@ -524,7 +533,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          String selector = (String)subData[2];
          boolean noLocal = ((Boolean)subData[3]).booleanValue();
 
-         DurableSubscription sub = super.getDurableSubscription(clientID, subName);
+         CoreDurableSubscription sub = super.getDurableSubscription(clientID, subName);
 
          if (sub == null)
          {
@@ -622,6 +631,11 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
    public ObjectName getTransactionManager()
    {
       return tmObjectName;
+   }
+
+   public String toString()
+   {
+      return "JDBCDurableSubscriptionStore[" + Integer.toHexString(hashCode()) + "]";
    }
 
    // Package protected ---------------------------------------------

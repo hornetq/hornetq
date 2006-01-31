@@ -36,7 +36,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
 import javax.jms.Message;
 import javax.jms.InvalidDestinationException;
-import javax.management.ObjectName;
+import javax.jms.JMSException;
 import java.util.Set;
 
 
@@ -106,9 +106,28 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
       s.createDurableSubscriber(topic, "monicabelucci");
 
+
+      Set subs = (Set)ServerManagement.
+         invoke(ServerManagement.getDurableSubscriptionStoreObjectName(),
+                "getSubscriptions",
+                new Object[] { "brookeburke" },
+                new String[] { "java.lang.String" });
+
+      assertEquals(1, subs.size());
+      assertEquals("monicabelucci", subs.iterator().next());
+
       prod.send(s.createTextMessage("k"));
 
       conn.close();
+
+      subs = (Set)ServerManagement.
+         invoke(ServerManagement.getDurableSubscriptionStoreObjectName(),
+                "getSubscriptions",
+                new Object[] { "brookeburke" },
+                new String[] { "java.lang.String" });
+
+      assertEquals(1, subs.size());
+      assertEquals("monicabelucci", subs.iterator().next());
 
       conn = cf.createConnection();
       conn.setClientID("brookeburke");
@@ -122,7 +141,6 @@ public class DurableSubscriptionTest extends MessagingTestCase
       TextMessage tm = (TextMessage)durable.receive();
       assertEquals("k", tm.getText());
 
-
       Message m = durable.receive(1000);
       assertNull(m);
    }
@@ -134,18 +152,8 @@ public class DurableSubscriptionTest extends MessagingTestCase
     *
     * Test with a different topic (a redeployed topic is a different topic).
     */
-   public void testDurableSubscriptionOnTopicRedeployment() throws Exception
+   public void testDurableSubscriptionOnNewTopic() throws Exception
    {
-      try
-      {
-         ic.lookup("/topic/CompletelyNewTopic");
-         fail("should throw exception, topic shouldn't be deployed on the server");
-      }
-      catch(NamingException e)
-      {
-         // OK
-      }
-
       ServerManagement.deployTopic("CompletelyNewTopic");
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
@@ -164,27 +172,15 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
       conn.close();
 
-      ServerManagement.undeployTopic("CompletelyNewTopic");
+      ServerManagement.deployTopic("CompletelyNewTopic2");
 
-      try
-      {
-         topic = (Topic)ic.lookup("/topic/CompletelyNewTopic");
-         fail("should throw exception");
-      }
-      catch(NamingException e)
-      {
-         // OK
-      }
-
-      ServerManagement.deployTopic("CompletelyNewTopic");
-
-      topic = (Topic)ic.lookup("/topic/CompletelyNewTopic");
+      Topic topic2 = (Topic)ic.lookup("/topic/CompletelyNewTopic2");
       conn = cf.createConnection();
 
       conn.setClientID("brookeburke");
 
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer durable = s.createDurableSubscriber(topic, "monicabelucci");
+      MessageConsumer durable = s.createDurableSubscriber(topic2, "monicabelucci");
 
       conn.start();
 
@@ -192,6 +188,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
       assertNull(m);
 
       ServerManagement.undeployTopic("CompletelyNewTopic");
+      ServerManagement.undeployTopic("CompletelyNewTopic2");
    }
 
    /**
@@ -336,11 +333,17 @@ public class DurableSubscriptionTest extends MessagingTestCase
       }
    }
 
-   public void testDurableSubscriptionCleanup() throws Exception
+   /**
+    * Topic undeployment/redeployment has an activation/deactivation semantic, so undeploying a
+    * topic for which there are durable subscriptions preserves the content of those durable
+    * subscriptions, which can be then access upon topic redeployment.
+    * @throws Exception
+    */
+   public void testDurableSubscriptionOnTopicRedeployment() throws Exception
    {
       try
       {
-         ic.lookup("/topic/AnotherCompletelyNewTopic");
+         ic.lookup("/topic/TopicToBeRedeployed");
          fail("should throw exception, topic shouldn't be deployed on the server");
       }
       catch(NamingException e)
@@ -348,39 +351,98 @@ public class DurableSubscriptionTest extends MessagingTestCase
          // OK
       }
 
-      ServerManagement.deployTopic("AnotherCompletelyNewTopic");
+      ServerManagement.deployTopic("TopicToBeRedeployed");
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/AnotherCompletelyNewTopic");
-      Connection conn = cf.createConnection();
+      Topic topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
 
-      conn.setClientID("blahblah");
+      Connection conn = cf.createConnection();
+      conn.setClientID("brookeburke");
 
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createDurableSubscriber(topic, "ak47");
+      MessageProducer prod = s.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageConsumer ds = s.createDurableSubscriber(topic, "monicabelucci");
+      conn.start();
 
+      prod.send(s.createTextMessage("one"));
+      prod.send(s.createTextMessage("two"));
+
+      ServerManagement.undeployTopic("TopicToBeRedeployed");
+      log.debug("topic undeployed");
+
+      try
+      {
+         topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
+         fail("should throw exception");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
+
+      TextMessage tm = (TextMessage)ds.receive();
+      assertEquals("one", tm.getText());
       conn.close();
 
-      ObjectName dsson = ServerManagement.getDurableSubscriptionStoreObjectName();
+      conn = cf.createConnection();
+      conn.setClientID("brookeburke");
 
-      Set dsnames = (Set)ServerManagement.invoke(dsson, "listSubscriptions",
-                                                 new Object[] { "blahblah" },
-                                                 new String[] { "java.lang.String}"});
+      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      assertEquals(1, dsnames.size());
-      assertEquals("ak47", dsnames.iterator().next());
+      try
+      {
+         s.createDurableSubscriber(topic, "monicabelucci");
+         fail("should throw exception");
+      }
+      catch(JMSException e)
+      {
+         // OK
+      }
 
-      ServerManagement.undeployTopic("AnotherCompletelyNewTopic");
+      ServerManagement.deployTopic("TopicToBeRedeployed");
+      log.debug("topic redeployed");
 
-      // the durable subscription should be cleared from memory
+      // since redeployment has an activation semantic, I expect to find the messages there
 
-      dsson = ServerManagement.getDurableSubscriptionStoreObjectName();
+      topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
+      ds =  s.createDurableSubscriber(topic, "monicabelucci");
+      conn.start();
 
-      dsnames = (Set)ServerManagement.invoke(dsson, "listSubscriptions",
-                                             new Object[] { "blahblah" },
-                                             new String[] { "java.lang.String}"});
+      tm = (TextMessage)ds.receive();
+      assertEquals("two", tm.getText());
 
-      assertTrue(dsnames.isEmpty());
+      conn.close();
+      ServerManagement.undeployTopic("TopicToBeRedeployed");
+   }
+
+   public void testUnsubscribeDurableSubscription() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("ak47");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      s.createDurableSubscriber(topic, "uzzi");
+      MessageProducer prod = s.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+      prod.send(s.createTextMessage("one"));
+
+      log.debug("unsubscribing ...");
+
+      s.unsubscribe("uzzi");
+
+      log.debug("resubscribing ...");
+
+      MessageConsumer ds = s.createDurableSubscriber(topic, "uzzi");
+      conn.start();
+
+      assertNull(ds.receive(1000));
+
+      conn.close();
    }
 
 }

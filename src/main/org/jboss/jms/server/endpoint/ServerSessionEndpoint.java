@@ -52,9 +52,9 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.local.Subscription;
+import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
@@ -197,7 +197,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new JMSException("null callback handler");
       }
       
-      Subscription subscription = null;
+      CoreSubscription subscription = null;
 
       if (d.isTopic())
       {
@@ -207,7 +207,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             // non-durable subscription
             if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
-            subscription = new Subscription(topic, selector, noLocal, ms);
+            subscription = new CoreSubscription(topic, selector, noLocal, ms);
          }
          else
          {
@@ -252,7 +252,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   !subscription.getSelector().equals(selector));
                if (log.isTraceEnabled()) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
 
-               boolean topicChanged = subscription.getTopic() != coreDestination;
+               // TODO - if we use hard equality here, redeploying (re-activating) a topic will
+               //        cause loosing all messages waiting on durable subscriptions on that topic
+               //boolean topicChanged = subscription.getTopic() != coreDestination;
+
+               boolean topicChanged =
+                  !subscription.getTopic().getName().equals(coreDestination.getName());
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
 
                boolean noLocalChanged = noLocal != subscription.isNoLocal();
@@ -509,7 +514,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          Iterator iter = destination.iterator();
          while (iter.hasNext())
          {
-            Subscription sub = (Subscription)iter.next();
+            CoreSubscription sub = (CoreSubscription)iter.next();
             if (sub.iterator().hasNext())
             {
                throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
@@ -532,7 +537,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("Destination is null");
       }
 
-      DurableSubscription subscription =
+      CoreDurableSubscription subscription =
          dsm.getDurableSubscription(connectionEndpoint.clientID, subscriptionName, dm, ms, tl);
 
       if (subscription == null)

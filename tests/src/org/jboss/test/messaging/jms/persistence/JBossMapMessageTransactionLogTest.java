@@ -19,61 +19,73 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.message;
+package org.jboss.test.messaging.jms.persistence;
 
-import org.jboss.test.messaging.core.message.base.MessageStoreTestBase;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import java.io.Serializable;
+import java.util.Map;
+
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.messaging.core.Message;
+import org.jboss.util.id.GUID;
+
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class InMemoryMessageStoreTest extends MessageStoreTestBase
+public class JBossMapMessageTransactionLogTest extends JBossMessageTransactionLogTest
 {
-   // Constants -----------------------------------------------------
-
-   protected Logger log = Logger.getLogger(InMemoryMessageStoreTest.class);
-
-   // Static --------------------------------------------------------
-
    // Attributes ----------------------------------------------------
-
+   
    // Constructors --------------------------------------------------
 
-   public InMemoryMessageStoreTest(String name)
+   public JBossMapMessageTransactionLogTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
-
    public void setUp() throws Exception
    {
       super.setUp();
-
-      ms = new InMemoryMessageStore("test-memory-store");
-
-      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      ms = null;
-
       super.tearDown();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-
+   protected Message createMessage(int i) throws Exception
+   {
+      Map coreHeaders = generateFilledMap(true);         
+      
+      Map jmsProperties = generateFilledMap(false);
+               
+      JBossMapMessage m = 
+         new JBossMapMessage(new GUID().toString(),
+            true,
+            System.currentTimeMillis() + 1000 * 60 * 60,
+            System.currentTimeMillis(),
+            i,
+            i + 2,
+            coreHeaders,
+            null,
+            i % 2 == 0 ? new GUID().toString() : null,
+            genCorrelationID(i),
+            i % 2 == 0,
+            new GUID().toString(),
+            i % 2 == 1,
+            new GUID().toString(),
+            new GUID().toString(),
+            jmsProperties);     
+      
+      Map map = generateFilledMap(true);
+      m.setPayload((Serializable)map);
+      return m;      
+   }
+   
 }
+
+
+

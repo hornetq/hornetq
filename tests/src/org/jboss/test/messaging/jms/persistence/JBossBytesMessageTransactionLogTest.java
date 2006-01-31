@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.persistence;
 
 import java.util.Map;
 
-import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
 
@@ -34,13 +34,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JBossObjectMessagePersistenceManagerTest extends JBossMessagePersistenceManagerTest
+public class JBossBytesMessageTransactionLogTest extends JBossMessageTransactionLogTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossObjectMessagePersistenceManagerTest(String name)
+   public JBossBytesMessageTransactionLogTest(String name)
    {
       super(name);
    }
@@ -62,8 +62,8 @@ public class JBossObjectMessagePersistenceManagerTest extends JBossMessagePersis
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossObjectMessage m = 
-         new JBossObjectMessage(new GUID().toString(),
+      JBossBytesMessage m = 
+         new JBossBytesMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
@@ -78,8 +78,19 @@ public class JBossObjectMessagePersistenceManagerTest extends JBossMessagePersis
             i % 2 == 1,
             new GUID().toString(),
             new GUID().toString(),
-            jmsProperties);     
-      m.setPayload(new WibblishObject());
+            jmsProperties);  
+      
+      m.writeBoolean(randBool().booleanValue());
+      m.writeByte(randByte().byteValue());
+      m.writeBytes(randByteArray());
+      m.writeChar(randChar().charValue());
+      m.writeDouble(randDouble().doubleValue());
+      m.writeFloat(randFloat().floatValue());
+      m.writeInt(randInt().intValue());
+      m.writeLong(randLong().longValue());      
+      m.writeShort(randShort().shortValue());
+      m.writeUTF(randString(1000));
+
       return m;      
    }
    

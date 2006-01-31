@@ -21,63 +21,104 @@
   */
 package org.jboss.messaging.core.local;
 
+
 import javax.jms.JMSException;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.util.Util;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.util.Util;
+import org.jboss.util.id.GUID;
 
 /**
- * 
- * Represents a durable topic subscription
+ * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold
+ * messages in transit to consumers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id$
  */
-public class DurableSubscription extends Subscription
+public class CoreSubscription extends Pipe
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(CoreSubscription.class);
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
-   protected String subName;
-   
+   protected Topic topic;
+   protected String selector;
+   protected boolean noLocal;
    
    // Constructors --------------------------------------------------
 
-   public DurableSubscription(String clientID, String subName, Topic topic, String selector,
-                              boolean noLocal, MessageStore ms, TransactionLog tl)
+   public CoreSubscription(Topic topic, String selector, boolean noLocal, MessageStore ms)
    {
-      super(clientID + "." + subName, topic, selector, noLocal, ms, tl);
-      this.subName = subName;
+      this("sub" + new GUID().toString(), topic, selector, noLocal, ms, null);
    }
    
-
+   protected CoreSubscription(String name, Topic topic, String selector, boolean noLocal,
+                          MessageStore ms, TransactionLog tl)
+   {
+      // A CoreSubscription must accept reliable messages, even if itself is non-recoverable
+      super(name, ms, tl, true);
+      this.topic = topic;
+      this.selector = selector;
+      this.noLocal = noLocal;
+   }
+   
    // Channel implementation ----------------------------------------
 
    // Public --------------------------------------------------------
    
+   public void subscribe()
+   {
+      topic.add(this);
+   }
+   
+   public void unsubscribe() throws JMSException
+   {
+      topic.remove(this);
+   }
+   
    public void closeConsumer() throws JMSException
    {
-      // do nothing - this is durable
+      unsubscribe();
+      try
+      {
+         if (tl != null)
+         {
+            tl.removeAllMessageData(this.channelID);
+         }
+      }
+      catch (Exception e)
+      {
+         final String msg = "Failed to remove message data for subscription";
+         log.error(msg, e);
+         throw new IllegalStateException(msg);
+      }
    }
    
-   public String getSubName()
+   public Topic getTopic()
    {
-      return subName;
+      return topic;
    }
    
-   public void load() throws Exception
+   public String getSelector()
    {
-      this.state.load();
+      return selector;
+   }
+   
+   public boolean isNoLocal()
+   {
+      return noLocal;
    }
 
    public String toString()
    {
-      return "CoreDurableSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+      return "CoreSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -88,4 +129,3 @@ public class DurableSubscription extends Subscription
    
    // Inner classes -------------------------------------------------   
 }
-

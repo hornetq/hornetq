@@ -33,7 +33,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.core.local.DurableSubscription;
+import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 
@@ -162,7 +162,7 @@ class CoreDestinationStore
          Iterator iter = durableSubs.iterator();
          while (iter.hasNext())
          {
-            DurableSubscription sub = (DurableSubscription)iter.next();
+            CoreDurableSubscription sub = (CoreDurableSubscription)iter.next();
             //load the state of the dub
             try
             {

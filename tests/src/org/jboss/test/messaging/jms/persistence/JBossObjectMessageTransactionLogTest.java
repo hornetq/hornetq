@@ -21,10 +21,9 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
-import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
 
@@ -35,13 +34,13 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class JBossMapMessagePersistenceManagerTest extends JBossMessagePersistenceManagerTest
+public class JBossObjectMessageTransactionLogTest extends JBossMessageTransactionLogTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossMapMessagePersistenceManagerTest(String name)
+   public JBossObjectMessageTransactionLogTest(String name)
    {
       super(name);
    }
@@ -55,15 +54,16 @@ public class JBossMapMessagePersistenceManagerTest extends JBossMessagePersisten
    {
       super.tearDown();
    }
-
+  
+   
    protected Message createMessage(int i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossMapMessage m = 
-         new JBossMapMessage(new GUID().toString(),
+      JBossObjectMessage m = 
+         new JBossObjectMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
@@ -79,9 +79,7 @@ public class JBossMapMessagePersistenceManagerTest extends JBossMessagePersisten
             new GUID().toString(),
             new GUID().toString(),
             jmsProperties);     
-      
-      Map map = generateFilledMap(true);
-      m.setPayload((Serializable)map);
+      m.setPayload(new WibblishObject());
       return m;      
    }
    

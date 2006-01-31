@@ -24,7 +24,6 @@ package org.jboss.messaging.core.local;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
 
