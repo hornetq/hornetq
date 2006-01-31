@@ -77,7 +77,7 @@ public class DurableSubscription extends Subscription
 
    public String toString()
    {
-      return "DurableSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+      return "CoreDurableSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------

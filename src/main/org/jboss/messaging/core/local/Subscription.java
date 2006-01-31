@@ -119,7 +119,7 @@ public class Subscription extends Pipe
 
    public String toString()
    {
-      return "Subscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+      return "CoreSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------

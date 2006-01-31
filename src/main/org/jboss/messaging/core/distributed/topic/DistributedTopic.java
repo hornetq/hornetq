@@ -33,7 +33,6 @@ import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 import java.io.Serializable;
@@ -128,7 +127,8 @@ public class DistributedTopic extends Topic implements Distributed
 
    public String toString()
    {
-      return "DistributedTopic[" + getName() + ":" + Util.guidToString(peer.getID()) + "]";
+      return "DistributedTopic[" + getName() + ":" +
+         (peer == null ? "null" : Util.guidToString(peer.getID())) + "]";
    }
 
    // Package protected ---------------------------------------------

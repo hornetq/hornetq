@@ -70,14 +70,11 @@ class CoreDestinationStore
 
    // Constructors --------------------------------------------------
 
-   CoreDestinationStore(DestinationJNDIMapper dm, MessageStore ms, TransactionLog tl)
-      throws Exception
+   CoreDestinationStore(DestinationJNDIMapper dm)
    {
       queueMap = new ConcurrentReaderHashMap();
       topicMap = new ConcurrentReaderHashMap();
       this.dm = dm;
-      this.ms = ms;
-      this.tl = tl;
 
       log.debug("CoreDestinationStore created");
    }
@@ -95,8 +92,6 @@ class CoreDestinationStore
     */
    CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("getting core " + (isQueue ? "queue" : "topic") + " for " + name); }
-
       if (isQueue)
       {
          return (CoreDestination)queueMap.get(name);
@@ -116,6 +111,8 @@ class CoreDestinationStore
     */
    void createCoreDestination(Destination jmsDestination) throws JMSException
    {
+      if (log.isTraceEnabled()) { log.trace("creating core destination for " + jmsDestination); }
+
       JBossDestination d = (JBossDestination)jmsDestination;
       String name = d.getName();
       boolean isQueue = d.isQueue();
@@ -155,11 +152,10 @@ class CoreDestinationStore
          
          topicMap.put(name, cd);
          
-         //TODO
-         //The following piece of code may be better placed either in the Topic itself
-         //or in the StateManager - I'm not sure it really belongs here
+         // TODO: The following piece of code may be better placed either in the Topic itself or in
+         //       the DurableSubscriptionStore - I'm not sure it really belongs here
          
-         //Load any durable subscriptions for the Topic
+         // Load any durable subscriptions for the Topic
          Set durableSubs = sp.getDurableSubscriptionStoreDelegate().
             loadDurableSubscriptionsForTopic(name, dm, ms, tl);
 
@@ -203,6 +199,28 @@ class CoreDestinationStore
    }
 
    // Package protected ---------------------------------------------
+
+   void start() throws Exception
+   {
+      ServerPeer serverPeer = dm.getServerPeer();
+      ms = serverPeer.getMessageStoreDelegate();
+      tl = serverPeer.getTransactionLogDelegate();
+
+      log.debug("CoreDestinationStore started");
+   }
+
+   void stop() throws Exception
+   {
+      ms = null;
+      tl = null;
+      dm = null;
+      queueMap.clear();
+      queueMap = null;
+      topicMap.clear();
+      topicMap = null;
+
+      log.debug("CoreDestinationStore stopped");
+   }
 
    // Protected -----------------------------------------------------
 

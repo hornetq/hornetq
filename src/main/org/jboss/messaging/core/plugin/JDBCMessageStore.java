@@ -698,7 +698,7 @@ public class JDBCMessageStore extends PersistentMessageStore
 
    public String toString()
    {
-      return "JDBCTransactionLog[" + Util.guidToString(getStoreID()) + "]";
+      return "JDBCMessageStore[" + Util.guidToString(getStoreID()) + "]";
    }
 
    // Package protected ---------------------------------------------

@@ -35,7 +35,6 @@ import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -64,6 +63,8 @@ public class Topic implements CoreDestination
       this.name = name;
       this.ms = ms;
       router = new PointToMultipointRouter();
+
+      if (log.isTraceEnabled()) { log.trace(this + " created"); }
    }
 
    // CoreDestination implementation --------------------------------
@@ -128,7 +129,7 @@ public class Topic implements CoreDestination
 
    public String toString()
    {
-      return "Topic[" + getName() + "]";
+      return "CoreTopic[" + getName() + "]";
    }
 
    // Package protected ---------------------------------------------

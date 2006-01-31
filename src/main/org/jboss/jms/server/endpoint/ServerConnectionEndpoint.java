@@ -512,7 +512,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       //This allows the no-local consumers to filter out the messages that come from the
       //same connection
-      //TODO Do we want to set this for ALL messages. Possibly an optimisation is possible here
+      //TODO Do we want to set this for ALL messages. Optimisation is possible here
       ((JBossMessage)m).setConnectionID(connectionID);
       
       Routable r = (Routable)m;

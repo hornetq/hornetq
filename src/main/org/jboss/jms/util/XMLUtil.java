@@ -177,7 +177,6 @@ public class XMLUtil
       int i2 = s.indexOf("</");
       if (i == -1 || i2 == -1)
       {
-         log.error("Invalid string expression: " + s);
          return null;
       }
       return s.substring(i + 1, i2);

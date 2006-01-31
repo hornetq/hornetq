@@ -93,6 +93,8 @@ public abstract class DurableSubscriptionStoreSupport
 
       subs.put(subscriptionName, subscription);
 
+      if (log.isTraceEnabled()) { log.trace(this + " created " + subscription); }
+
       return subscription;
    }
 

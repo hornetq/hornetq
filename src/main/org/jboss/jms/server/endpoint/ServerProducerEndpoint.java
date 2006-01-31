@@ -103,7 +103,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
          throw new IllegalStateException("Producer is closed");
       }
       
-      if (log.isTraceEnabled()) { log.trace("Sending message: " + m); }
+      if (log.isTraceEnabled()) { log.trace("sending message: " + m); }
       
       sessionEndpoint.connectionEndpoint.sendMessage(m, null);
    }

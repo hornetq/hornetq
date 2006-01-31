@@ -31,6 +31,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -360,11 +361,72 @@ public class PersistenceTest extends MessagingTestCase
       
       conn.close();
    }
-   
+
    /*
     * Test durable subscription state survives a restart
     */
-   public void testDurableSubscriptionPersistence() throws Exception
+   public void testDurableSubscriptionPersistence_1() throws Exception
+   {
+      ServerManagement.deployTopic("YetAnotherTopic");
+      Topic thisTopic = (Topic)initialContext.lookup("/topic/YetAnotherTopic");
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("five");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer ds = s.createDurableSubscriber(thisTopic, "sub", null, false);
+
+      MessageProducer p = s.createProducer(thisTopic);
+      p.setDeliveryMode(DeliveryMode.PERSISTENT);
+      TextMessage tm = s.createTextMessage("thebody");
+      p.send(tm);
+      log.debug("message sent");
+
+      conn.close();
+
+      log.debug("stopping the server");
+      ServerManagement.stopServerPeer();
+
+      try
+      {
+         initialContext.lookup("/topic/YetAnotherTopic");
+         fail("this should throw exception");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+
+      log.debug("starting the server");
+      ServerManagement.startServerPeer();
+      log.debug("server started");
+
+      ServerManagement.deployTopic("YetAnotherTopic");
+      log.debug("topic deployed");
+
+      thisTopic = (Topic)initialContext.lookup("/topic/YetAnotherTopic");
+
+      conn = cf.createConnection();
+      conn.setClientID("five");
+
+      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.start();
+
+      ds = s.createDurableSubscriber(thisTopic, "sub", null, false);
+
+      TextMessage rm = (TextMessage)ds.receive(3000);
+      assertEquals("thebody", rm.getText());
+
+
+      conn.close();
+      ServerManagement.undeployTopic("YetAnotherTopic");
+   }
+
+   /*
+    * Test durable subscription state survives a restart
+    */
+   public void testDurableSubscriptionPersistence_2() throws Exception
    {
       Connection conn = cf.createConnection();
       conn.setClientID("Sausages");

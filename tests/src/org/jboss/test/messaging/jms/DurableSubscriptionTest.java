@@ -334,4 +334,32 @@ public class DurableSubscriptionTest extends MessagingTestCase
       }
    }
 
+   public void testDurableSubscriptionCleanup() throws Exception
+   {
+      try
+      {
+         ic.lookup("/topic/AnotherCompletelyNewTopic");
+         fail("should throw exception, topic shouldn't be deployed on the server");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
+
+      ServerManagement.deployTopic("AnotherCompletelyNewTopic");
+
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/AnotherCompletelyNewTopic");
+      Connection conn = cf.createConnection();
+
+      conn.setClientID("blahblah");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer ds = s.createDurableSubscriber(topic, "ak47");
+
+      conn.close();
+
+      ServerManagement.undeployTopic("AnotherCompletelyNewTopic");
+   }
+
 }

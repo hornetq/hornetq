@@ -77,9 +77,8 @@ class DestinationJNDIMapper implements DestinationManager
    public DestinationJNDIMapper(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
-      coreDestinationStore = new CoreDestinationStore(this,
-                                                      serverPeer.getMessageStoreDelegate(),
-                                                      serverPeer.getTransactionLogDelegate());
+      coreDestinationStore = new CoreDestinationStore(this);
+
       queueNameToJNDI = new ConcurrentReaderHashMap();
       topicNameToJNDI = new ConcurrentReaderHashMap();
    }
@@ -230,39 +229,6 @@ class DestinationJNDIMapper implements DestinationManager
 
    // Public --------------------------------------------------------
 
-   void start() throws Exception
-   {
-      initialContext = new InitialContext();
-
-      // see if the default queue/topic contexts are there, and if they're not, create them
-      createContext(serverPeer.getDefaultQueueJNDIContext());
-      createContext(serverPeer.getDefaultTopicJNDIContext());
-   }
-
-   void stop() throws Exception
-   {
-      // destroy all destinations
-      for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
-      {
-         unregisterDestination(true, (String)i.next());
-      }
-
-      for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
-      {
-         unregisterDestination(false, (String)i.next());
-      }
-
-      initialContext.destroySubcontext(serverPeer.getDefaultQueueJNDIContext());
-      initialContext.destroySubcontext(serverPeer.getDefaultTopicJNDIContext());
-
-      initialContext.close();
-   }
-
-   ServerPeer getServerPeer()
-   {
-      return serverPeer;
-   }
-
    public boolean isDeployed(boolean isQueue, String name)
    {
       return isQueue ? queueNameToJNDI.containsKey(name) : topicNameToJNDI.containsKey(name);
@@ -292,6 +258,43 @@ class DestinationJNDIMapper implements DestinationManager
    }
 
    // Package protected ---------------------------------------------
+
+   void start() throws Exception
+   {
+      coreDestinationStore.start();
+
+      initialContext = new InitialContext();
+
+      // see if the default queue/topic contexts are there, and if they're not, create them
+      createContext(serverPeer.getDefaultQueueJNDIContext());
+      createContext(serverPeer.getDefaultTopicJNDIContext());
+   }
+
+   void stop() throws Exception
+   {
+      // destroy all destinations
+      for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         unregisterDestination(true, (String)i.next());
+      }
+
+      for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
+      {
+         unregisterDestination(false, (String)i.next());
+      }
+
+      initialContext.destroySubcontext(serverPeer.getDefaultQueueJNDIContext());
+      initialContext.destroySubcontext(serverPeer.getDefaultTopicJNDIContext());
+
+      initialContext.close();
+
+      coreDestinationStore.stop();
+   }
+
+   ServerPeer getServerPeer()
+   {
+      return serverPeer;
+   }
 
    // Protected -----------------------------------------------------
 

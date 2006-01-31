@@ -29,7 +29,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -87,7 +86,7 @@ public class RecoverableState extends NonRecoverableState
 
       if (ref.isReliable())
       {
-         //Reliable message in a recoverable state - also add to db
+         // Reliable message in a recoverable state - also add to db
          if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
          tl.addReference(channelID, ref, tx);
       }
@@ -102,7 +101,7 @@ public class RecoverableState extends NonRecoverableState
 
       if (ref.isReliable())
       {
-         //Reliable message in a recoverable state - also add to db
+         // Reliable message in a recoverable state - also add to db
          if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database non-transactionally"); }
          tl.addReference(channelID, ref, null);
       }      

@@ -440,12 +440,16 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                                                MessageStore ms,
                                                TransactionLog tl) throws JMSException
    {
+
+      Set subscriptionData = new HashSet();
+
       try
       {
          Connection conn = null;
          PreparedStatement ps  = null;
          ResultSet rs = null;
          TransactionWrapper wrap = new TransactionWrapper();
+         int rowCount = -1;
 
          try
          {
@@ -457,28 +461,17 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
 
             rs = ps.executeQuery();
 
-            Set subs = new HashSet();
+            rowCount = 0;
 
             while (rs.next())
             {
-               String clientID = rs.getString(1);
-               String subName = rs.getString(2);
-               String selector = rs.getString(3);
-               boolean noLocal = rs.getString(4).equals("Y");
-
-               DurableSubscription sub = super.getDurableSubscription(clientID, subName);
-               if (sub == null)
-               {
-                  sub = super.createDurableSubscription(topicName,
-                                                        clientID,
-                                                        subName,
-                                                        selector,
-                                                        noLocal,
-                                                        dm, ms, tl);
-               }
-               subs.add(sub);
+               rowCount ++;
+               Object[] subData = new Object[] {rs.getString(1),
+                                                rs.getString(2),
+                                                rs.getString(3),
+                                                new Boolean(rs.getString(4).equals("Y"))};
+               subscriptionData.add(subData);
             }
-            return subs;
          }
          catch (SQLException e)
          {
@@ -487,6 +480,13 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
          }
          finally
          {
+            if (log.isTraceEnabled())
+            {
+               String s = JDBCUtil.statementToString(selectSubscriptionsForTopic, topicName);
+               log.trace(s + (rowCount == -1 ? " failed!" : " returned " + rowCount + " rows"));
+            }
+
+
             if (rs != null)
             {
                rs.close();
@@ -504,12 +504,41 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
       }
       catch (Exception e)
       {
-         final String msg = "Failed to get client id";
+         final String msg = "Failed to get durable subscription";
          log.error(msg, e);
          JMSException e2 = new JMSException(msg);
          e2.setLinkedException(e);
          throw e2;
       }
+
+      // create the durable subscriptions in memory
+
+      Set result = new HashSet();
+
+      for(Iterator i = subscriptionData.iterator(); i.hasNext(); )
+      {
+         Object[] subData = (Object[])i.next();
+
+         String clientID = (String)subData[0];
+         String subName = (String)subData[1];
+         String selector = (String)subData[2];
+         boolean noLocal = ((Boolean)subData[3]).booleanValue();
+
+         DurableSubscription sub = super.getDurableSubscription(clientID, subName);
+
+         if (sub == null)
+         {
+            sub = super.createDurableSubscription(topicName,
+                                                  clientID,
+                                                  subName,
+                                                  selector,
+                                                  noLocal,
+                                                  dm, ms, tl);
+         }
+
+         result.add(sub);
+      }
+      return result;
    }
 
    // MBean operations ----------------------------------------------
