@@ -275,7 +275,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          return null;
       }
       byte[] payload = new byte[length];
-      in.readFully((byte[])payload);
+      in.readFully(payload);
       return payload;
    }
 

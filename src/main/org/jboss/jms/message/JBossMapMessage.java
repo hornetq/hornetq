@@ -208,10 +208,14 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       checkName(name);
       if (offset + length > value.length)
+      {
          throw new JMSException("Array is too small");
+      }
       byte[] temp = new byte[length];
       for (int i = 0; i < length; i++)
+      {
          temp[i] = value[i + offset];
+      }
       ((Map)payload).put(name, temp);
    }
 
@@ -401,25 +405,45 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          return null;
 
       if (value instanceof Boolean)
-         return ((Boolean) value).toString();
+      {
+         return  value.toString();
+      }
       else if (value instanceof Byte)
-         return ((Byte) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Short)
-         return ((Short) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Character)
-         return ((Character) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Integer)
-         return ((Integer) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Long)
-         return ((Long) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Float)
-         return ((Float) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Double)
-         return ((Double) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof String)
+      {
          return (String) value;
+      }
       else
+      {
          throw new MessageFormatException("Invalid conversion");
+      }
    }
 
    public byte[] getBytes(String name) throws JMSException

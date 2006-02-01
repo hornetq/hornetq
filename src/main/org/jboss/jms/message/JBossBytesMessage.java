@@ -669,7 +669,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    protected void writePayloadExternal(ObjectOutput out) throws IOException
    {
-      byte[] arrayToSend = null;
+      byte[] arrayToSend;
 
       if (ostream != null)
       {

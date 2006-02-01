@@ -154,7 +154,7 @@ public class ProducerAspect
 
       m.setJMSDestination(destination);
       
-      JBossMessage toSend = null;
+      JBossMessage toSend;
       if (!(m instanceof MessageDelegate))
       {
          //It's a foreign message

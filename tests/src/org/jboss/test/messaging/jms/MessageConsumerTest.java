@@ -46,9 +46,6 @@ import javax.naming.InitialContext;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.remoting.transport.Connector;
-import org.jboss.remoting.ServerInvoker;
 
 import java.util.List;
 import java.util.Collections;
@@ -57,7 +54,6 @@ import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Collection;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -2335,9 +2331,9 @@ public class MessageConsumerTest extends MessagingTestCase
       Connection conn5 = null;
       Connection conn6 = null;
 
-      Session sess1 = null;
-      Session sess3 = null;
-      Session sess4 = null;
+      Session sess1;
+      Session sess3;
+      Session sess4;
       Session sess6 = null;
 
       try

@@ -98,7 +98,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public static MessageDelegate createThinDelegate(JBossMessage m, int deliveryCount)
    {
-      MessageDelegate del = null;
+      MessageDelegate del;
       
       if (m instanceof BytesMessage)
       {
@@ -120,11 +120,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       {
          del = new TextMessageDelegate((JBossTextMessage)m, deliveryCount);
       }      
-      else if (m instanceof JBossMessage)
+      else
       {
          del = new MessageDelegate(m, deliveryCount);
       }
-     
+
       return del;
    }
 
@@ -597,23 +597,41 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          return null;
 
       if (value instanceof Boolean)
-         return ((Boolean) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Byte)
-         return ((Byte) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Short)
-         return ((Short) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Integer)
-         return ((Integer) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Long)
-         return ((Long) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Float)
-         return ((Float) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof Double)
-         return ((Double) value).toString();
+      {
+         return value.toString();
+      }
       else if (value instanceof String)
+      {
          return (String) value;
+      }
       else
+      {
          throw new MessageFormatException("Invalid conversion");
+      }
    }
 
    public Object getObjectProperty(String name) throws JMSException

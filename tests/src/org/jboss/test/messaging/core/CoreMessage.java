@@ -50,6 +50,5 @@ public class CoreMessage extends MessageSupport
 
    public CoreMessage()
    {
-
    }
 }

@@ -61,10 +61,10 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       super.setUp();
 
       ms = new JDBCMessageStore("s9", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms.start();
 
       ms2 = new JDBCMessageStore("s10", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms2).start();
+      ms2.start();
 
       log.debug("setup done");
    }
@@ -81,7 +81,8 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
     */
    public void testTwoStoresSameDatabase() throws Exception
    {
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+      Message m =
+         MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       assertEquals(0, ((JDBCMessageStore)ms).getMessageReferenceCount(m.getMessageID()));
 

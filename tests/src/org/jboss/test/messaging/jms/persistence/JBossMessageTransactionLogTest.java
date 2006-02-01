@@ -105,7 +105,7 @@ public class JBossMessageTransactionLogTest extends JDBCTransactionLogTest
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossMessage m = 
+      return
          new JBossMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
@@ -122,8 +122,6 @@ public class JBossMessageTransactionLogTest extends JDBCTransactionLogTest
             new GUID().toString(),
             randInt().intValue(),
             jmsProperties);            
-
-      return m;
    }
    
    protected Object genCorrelationID(int i)

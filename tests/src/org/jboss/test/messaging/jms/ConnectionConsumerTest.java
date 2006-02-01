@@ -243,6 +243,8 @@ public class ConnectionConsumerTest extends MessagingTestCase
       }
    }
 
+   // TODO Why is this commented out?
+
 //   public void testCloseWhileProcessing() throws Exception
 //   {
 //      if (ServerManagement.isRemote()) return;
@@ -256,7 +258,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
 //      try
 //      {
 //         connConsumer = cf.createConnection();
-//         
+//
 //         connConsumer.start();
 //
 //         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
