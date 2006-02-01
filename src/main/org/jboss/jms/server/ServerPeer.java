@@ -151,25 +151,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       
    }
 
-   // ConnectionManager implementation ------------------------------
-
-   public void registerConnection(String clientConnectionID, ServerConnectionEndpoint endpoint)
-   {
-      connections.put(clientConnectionID, endpoint);
-   }
-
-   public ServerConnectionEndpoint unregisterConnection(String clientConnectionID)
-   {
-      return (ServerConnectionEndpoint)connections.remove(clientConnectionID);
-   }
-
-   // Public --------------------------------------------------------
-
-   public Object getInstance()
-   {
-      return this;
-   }
-
    // ServiceMBeanSupport overrides ---------------------------------
 
    public synchronized void startService() throws Exception
@@ -256,87 +237,19 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       log.info("JMS " + this + " stopped");
    }
 
-   //
-   // JMX operations
-   //
+   // ConnectionManager implementation ------------------------------
 
-   public String createQueue(String name, String jndiName) throws Exception
+   public void registerConnection(String clientConnectionID, ServerConnectionEndpoint endpoint)
    {
-      return createDestination(true, name, jndiName);
+      connections.put(clientConnectionID, endpoint);
    }
 
-   public boolean destroyQueue(String name) throws Exception
+   public ServerConnectionEndpoint unregisterConnection(String clientConnectionID)
    {
-      return destroyDestination(true, name);
+      return (ServerConnectionEndpoint)connections.remove(clientConnectionID);
    }
 
-   public String createTopic(String name, String jndiName) throws Exception
-   {
-      return createDestination(false, name, jndiName);
-   }
-
-   public boolean destroyTopic(String name) throws Exception
-   {
-      return destroyDestination(false, name);
-   }
-
-   public Set getDestinations() throws Exception
-   {
-      return destinationJNDIMapper.getDestinations();
-   }
-
-   //
-   // end of JMX operations
-   //
-
-   //
-   // JMX attributes
-   //
-
-   public String getJMSVersion()
-   {
-      return version.getJMSVersion();
-   }
-
-   public int getJMSMajorVersion()
-   {
-      return version.getJMSMajorVersion();
-   }
-
-   public int getJMSMinorVersion()
-   {
-      return version.getJMSMinorVersion();
-   }
-
-   public String getJMSProviderName()
-   {
-      return version.getJMSProviderName();
-   }
-
-   public String getProviderVersion()
-   {
-      return version.getProviderVersion();
-   }
-
-   public int getProviderMajorVersion()
-   {
-      return version.getProviderMajorVersion();
-   }
-
-   public int getProviderMinorVersion()
-   {
-      return version.getProviderMinorVersion();
-   }
-
-   public String getDefaultQueueJNDIContext()
-   {
-      return defaultQueueJNDIContext;
-   }
-
-   public String getDefaultTopicJNDIContext()
-   {
-      return defaultTopicJNDIContext;
-   }
+   // JMX Attributes ------------------------------------------------
 
    public ObjectName getThreadPool()
    {
@@ -378,7 +291,45 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       durableSubscriptionStoreObjectName = on;
    }
 
-   // TODO review these below
+   public Object getInstance()
+   {
+      return this;
+   }
+
+   public String getJMSVersion()
+   {
+      return version.getJMSVersion();
+   }
+
+   public int getJMSMajorVersion()
+   {
+      return version.getJMSMajorVersion();
+   }
+
+   public int getJMSMinorVersion()
+   {
+      return version.getJMSMinorVersion();
+   }
+
+   public String getJMSProviderName()
+   {
+      return version.getJMSProviderName();
+   }
+
+   public String getProviderVersion()
+   {
+      return version.getProviderVersion();
+   }
+
+   public int getProviderMajorVersion()
+   {
+      return version.getProviderMajorVersion();
+   }
+
+   public int getProviderMinorVersion()
+   {
+      return version.getProviderMinorVersion();
+   }
 
    public String getServerPeerID()
    {
@@ -394,6 +345,16 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       return locator.getLocatorURI();
    }
 
+   public String getDefaultQueueJNDIContext()
+   {
+      return defaultQueueJNDIContext;
+   }
+
+   public String getDefaultTopicJNDIContext()
+   {
+      return defaultTopicJNDIContext;
+   }
+
    public ObjectName getConnector()
    {
       return connectorName;
@@ -403,12 +364,12 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    {
       connectorName = on;
    }
-      
+
    public void setSecurityDomain(String securityDomain)
    {
       securityStore.setSecurityDomain(securityDomain);
    }
-   
+
    public String getSecurityDomain()
    {
       return securityStore.getSecurityDomain();
@@ -418,15 +379,40 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    {
       securityStore.setDefaultSecurityConfig(conf);
    }
-   
+
    public Element getDefaultSecurityConfig()
    {
       return securityStore.getDefaultSecurityConfig();
    }
-   
-   //
-   // end of JMX attributes
-   //
+
+   // JMX Operations ------------------------------------------------
+
+   public String createQueue(String name, String jndiName) throws Exception
+   {
+      return createDestination(true, name, jndiName);
+   }
+
+   public boolean destroyQueue(String name) throws Exception
+   {
+      return destroyDestination(true, name);
+   }
+
+   public String createTopic(String name, String jndiName) throws Exception
+   {
+      return createDestination(false, name, jndiName);
+   }
+
+   public boolean destroyTopic(String name) throws Exception
+   {
+      return destroyDestination(false, name);
+   }
+
+   public Set getDestinations() throws Exception
+   {
+      return destinationJNDIMapper.getDestinations();
+   }
+
+   // Public --------------------------------------------------------
 
    public boolean isDeployed(boolean isQueue, String name)
    {

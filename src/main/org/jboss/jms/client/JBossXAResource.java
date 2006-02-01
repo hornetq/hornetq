@@ -25,7 +25,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
@@ -79,7 +78,7 @@ public class JBossXAResource implements XAResource
       
       this.sessionState = sessionState;   
       
-      this.connection = (ConnectionDelegate)((ConnectionState)sessionState.getParent()).getDelegate();
+      this.connection = (ConnectionDelegate)(sessionState.getParent()).getDelegate();
    }
    
    // XAResource implementation -------------------------------------

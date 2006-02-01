@@ -54,12 +54,12 @@ public class CallbackManager implements ServerInvocationHandler
    
    public void registerHandler(int consumerID, MessageCallbackHandler handler)
    {
-      callbackHandlers.put(Integer.valueOf(consumerID), handler);
+      callbackHandlers.put(new Integer(consumerID), handler);
    }
    
    public void unregisterHandler(int consumerID)
    {
-      callbackHandlers.remove(Integer.valueOf(consumerID));
+      callbackHandlers.remove(new Integer(consumerID));
    }
    
    public void addListener(InvokerCallbackHandler arg0)
@@ -74,7 +74,8 @@ public class CallbackManager implements ServerInvocationHandler
       
       MessageDelegate del = dr.getMessageDelegate();
       
-      MessageCallbackHandler handler = (MessageCallbackHandler)callbackHandlers.get(Integer.valueOf(consumerID));
+      MessageCallbackHandler handler =
+         (MessageCallbackHandler)callbackHandlers.get(new Integer(consumerID));
       
       if (handler == null)
       {

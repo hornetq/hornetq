@@ -102,7 +102,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       int connectionID = endpoint.getConnectionID();
 
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
-      JMSDispatcher.instance.registerTarget(Integer.valueOf(connectionID), connAdvised);
+      JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
       
       serverPeer.registerConnection(clientConnectionId, endpoint);
 

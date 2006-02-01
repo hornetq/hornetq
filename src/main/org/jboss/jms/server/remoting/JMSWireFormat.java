@@ -132,7 +132,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       
       MethodInvocation mi = new MethodInvocation(null, methodHash, null, null, null);                 
       
-      mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, Integer.valueOf(objectId));
+      mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));
       
       return mi;
    }

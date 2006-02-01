@@ -201,13 +201,13 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       try
       {
          LinkedList queue = new LinkedList();
-         outer: while (true)
+         while (true)
          {
             
             if (closed)
             {
                if (trace) { log.trace("Connection consumer is closed, breaking"); }
-               break outer;
+               break;
             }
             
             if (queue.isEmpty())
@@ -252,7 +252,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   {
                      //The consumer must have closed
                      if (trace) { log.trace("Blocking receive returned null, consumer must have closed"); }
-                     break outer;
+                     break;
                   }
                }
             }

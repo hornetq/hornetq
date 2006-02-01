@@ -267,7 +267,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       // the consumer has closed. This is perfectly valid.
       disconnect();
       
-      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(id));
+      JMSDispatcher.instance.unregisterTarget(new Integer(id));
    }
    
    // ConsumerEndpoint implementation -------------------------------
@@ -389,14 +389,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          close();
       }
       
-      this.sessionEndpoint.connectionEndpoint.consumers.remove(Integer.valueOf(id));
+      this.sessionEndpoint.connectionEndpoint.consumers.remove(new Integer(id));
       
       if (this.channel instanceof CoreSubscription)
       {
          ((CoreSubscription)channel).closeConsumer();
       }
       
-      this.sessionEndpoint.consumers.remove(Integer.valueOf(id));
+      this.sessionEndpoint.consumers.remove(new Integer(id));
    }  
    
    void acknowledgeAll() throws JMSException

@@ -145,8 +145,8 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          throw new IllegalStateException("Browser is already closed");
       }
       iterator = null;
-      session.producers.remove(Integer.valueOf(this.id));
-      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(id));
+      session.producers.remove(new Integer(this.id));
+      JMSDispatcher.instance.unregisterTarget(new Integer(id));
       closed = true;
    }
    

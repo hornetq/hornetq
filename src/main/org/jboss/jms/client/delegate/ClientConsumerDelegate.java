@@ -181,7 +181,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       super.init();
       getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID,
-                                Integer.valueOf(id), PayloadKey.TRANSIENT);
+                                new Integer(id), PayloadKey.TRANSIENT);
    }
 
    public String toString()

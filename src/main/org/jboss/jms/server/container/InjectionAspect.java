@@ -68,7 +68,7 @@ public class InjectionAspect
        ClientConnectionDelegate del = (ClientConnectionDelegate)invocation.invokeNext();
        
        ConnectionAdvised advised = 
-          (ConnectionAdvised)JMSDispatcher.instance.getRegistered(Integer.valueOf(del.getID()));
+          (ConnectionAdvised)JMSDispatcher.instance.getRegistered(new Integer(del.getID()));
        
        ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)advised.getEndpoint();
        

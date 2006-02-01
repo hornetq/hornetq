@@ -92,9 +92,9 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
 
       ConnectionFactoryAdvised connFactoryAdvised = new ConnectionFactoryAdvised(endpoint);
       
-      JMSDispatcher.instance.registerTarget(Integer.valueOf(id), connFactoryAdvised);
+      JMSDispatcher.instance.registerTarget(new Integer(id), connFactoryAdvised);
 
-      endpoints.put(Integer.valueOf(id), endpoint);
+      endpoints.put(new Integer(id), endpoint);
 
       JBossConnectionFactory cf = new JBossConnectionFactory(delegate);
 
@@ -108,7 +108,7 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
          }
       }
 
-      factories.put(Integer.valueOf(id), cf);
+      factories.put(new Integer(id), cf);
 
       return id;
    }
@@ -116,7 +116,7 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
    public synchronized void unregisterConnectionFactory(int connFactoryID) throws Exception
    {
       ServerConnectionFactoryEndpoint endpoint =
-         (ServerConnectionFactoryEndpoint)endpoints.get(Integer.valueOf(connFactoryID));
+         (ServerConnectionFactoryEndpoint)endpoints.get(new Integer(connFactoryID));
 
       JNDIBindings jndiBindings = endpoint.getJNDIBindings();
       if (jndiBindings != null)
@@ -129,12 +129,12 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
             log.debug(jndiName + " unregistered");
          }
       }
-      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(connFactoryID));
+      JMSDispatcher.instance.unregisterTarget(new Integer(connFactoryID));
    }
 
    public synchronized javax.jms.ConnectionFactory getConnectionFactory(int connectionFactoryID)
    {
-      return (javax.jms.ConnectionFactory)factories.get(Integer.valueOf(connectionFactoryID));
+      return (javax.jms.ConnectionFactory)factories.get(new Integer(connectionFactoryID));
    }
 
    // Public --------------------------------------------------------

@@ -140,7 +140,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       putProducerDelegate(producerID, ep);
       ProducerAdvised producerAdvised = new ProducerAdvised(ep);
-      JMSDispatcher.instance.registerTarget(Integer.valueOf(producerID), producerAdvised);
+      JMSDispatcher.instance.registerTarget(new Integer(producerID), producerAdvised);
          
       ClientProducerDelegate d = new ClientProducerDelegate(producerID);
       
@@ -286,7 +286,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                     subscription == null ? (Channel)coreDestination : subscription,
                                     this, selector, noLocal);
        
-      JMSDispatcher.instance.registerTarget(Integer.valueOf(consumerID), new ConsumerAdvised(ep));
+      JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
          
       ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID);
       
@@ -297,7 +297,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
       putConsumerDelegate(consumerID, ep);
       
-      connectionEndpoint.consumers.put(Integer.valueOf(consumerID), ep);
+      connectionEndpoint.consumers.put(new Integer(consumerID), ep);
 
       log.debug("created and registered " + ep);
 
@@ -336,7 +336,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   
 	   putBrowserDelegate(browserID, ep);
 	   
-      JMSDispatcher.instance.registerTarget(Integer.valueOf(browserID), new BrowserAdvised(ep));
+      JMSDispatcher.instance.registerTarget(new Integer(browserID), new BrowserAdvised(ep));
 	   
 	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 	   
@@ -413,9 +413,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          ((ServerProducerEndpoint)i.next()).close();
       }
       
-      connectionEndpoint.sessions.remove(Integer.valueOf(sessionID));
+      connectionEndpoint.sessions.remove(new Integer(sessionID));
       
-      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(sessionID));
+      JMSDispatcher.instance.unregisterTarget(new Integer(sessionID));
       
       closed = true;
    }
@@ -564,32 +564,32 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    protected ServerProducerEndpoint putProducerDelegate(int producerID, ServerProducerEndpoint d)
    {
-      return (ServerProducerEndpoint)producers.put(Integer.valueOf(producerID), d);
+      return (ServerProducerEndpoint)producers.put(new Integer(producerID), d);
    }
 
    public ServerProducerEndpoint getProducerDelegate(int producerID)
    {
-      return (ServerProducerEndpoint)producers.get(Integer.valueOf(producerID));
+      return (ServerProducerEndpoint)producers.get(new Integer(producerID));
    }
 
    protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint d)
    {
-      return (ServerConsumerEndpoint)consumers.put(Integer.valueOf(consumerID), d);
+      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), d);
    }
 
    public ServerConsumerEndpoint getConsumerDelegate(int consumerID)
    {
-      return (ServerConsumerEndpoint)consumers.get(Integer.valueOf(consumerID));
+      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
    }
 	
 	protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
    {
-      return (ServerBrowserEndpoint)browsers.put(Integer.valueOf(browserID), sbd);
+      return (ServerBrowserEndpoint)browsers.put(new Integer(browserID), sbd);
    }
 	
 	public ServerBrowserEndpoint getBrowserDelegate(int browserID)
    {
-      return (ServerBrowserEndpoint)browsers.get(Integer.valueOf(browserID));
+      return (ServerBrowserEndpoint)browsers.get(new Integer(browserID));
    }
 
    public ServerConnectionEndpoint getConnectionEndpoint()

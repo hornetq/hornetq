@@ -172,7 +172,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this, acknowledgmentMode);
          putSessionDelegate(sessionID, ep);
          SessionAdvised sessionAdvised = new SessionAdvised(ep);
-         JMSDispatcher.instance.registerTarget(Integer.valueOf(sessionID), sessionAdvised);
+         JMSDispatcher.instance.registerTarget(new Integer(sessionID), sessionAdvised);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
                  
@@ -352,7 +352,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          consumers.clear();
          cm.unregisterConnection(clientConnectionID);
 
-         JMSDispatcher.instance.unregisterTarget(Integer.valueOf(connectionID));
+         JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
          closed = true;
       }
       finally
@@ -467,12 +467,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    public ServerSessionEndpoint putSessionDelegate(int sessionID, ServerSessionEndpoint d)
    {
-      return (ServerSessionEndpoint)sessions.put(Integer.valueOf(sessionID), d);  
+      return (ServerSessionEndpoint)sessions.put(new Integer(sessionID), d);
    }
    
    public ServerSessionEndpoint getSessionDelegate(int sessionID)
    {
-      return (ServerSessionEndpoint)sessions.get(Integer.valueOf(sessionID));
+      return (ServerSessionEndpoint)sessions.get(new Integer(sessionID));
    }
    
    public int getConnectionID()
@@ -555,7 +555,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       if (trace) { log.trace("acknowledging " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
 
-      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(Integer.valueOf(consumerID));
+      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
       if (consumer == null)
       {
          throw new IllegalStateException("Cannot find consumer:" + consumerID);
@@ -565,7 +565,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    void cancel(String messageID, int consumerID) throws JMSException
    {
-      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(Integer.valueOf(consumerID));
+      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
       if (consumer == null)
       {
          throw new IllegalStateException("Cannot find consumer:" + consumerID);

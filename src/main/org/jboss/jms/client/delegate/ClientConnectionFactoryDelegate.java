@@ -99,7 +99,7 @@ public class ClientConnectionFactoryDelegate
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           Integer.valueOf(id), PayloadKey.AS_IS);
+                                           new Integer(id), PayloadKey.AS_IS);
       
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
       

@@ -102,7 +102,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           Integer.valueOf(id), PayloadKey.AS_IS);
+                                           new Integer(id), PayloadKey.AS_IS);
 
       Object ret = getClient().invoke(invocation, null);
       //invocation.setResponseContextInfo(response.getContextInfo());

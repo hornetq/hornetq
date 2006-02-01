@@ -238,8 +238,8 @@ public class ClosedInterceptor  implements Interceptor
       //We use a clone to avoid a deadlock where requests
       //are made to close parent and child concurrently
       
-      Set clone = null;
-     
+      Set clone;
+
       Set children = state.getChildren();
       
       if (children == null)
@@ -272,7 +272,7 @@ public class ClosedInterceptor  implements Interceptor
       }
       
       // Remove from the parent
-      HierarchicalState parent = (HierarchicalState)state.getParent();
+      HierarchicalState parent = state.getParent();
       if (parent != null)
       {         
          parent.getChildren().remove(state);

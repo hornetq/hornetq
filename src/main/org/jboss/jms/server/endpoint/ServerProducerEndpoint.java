@@ -90,9 +90,9 @@ public class ServerProducerEndpoint implements ProducerEndpoint
       
       //Currently this does nothing
       if (trace) { log.trace("close (noop)"); }
-      this.sessionEndpoint.producers.remove(Integer.valueOf(this.id));
+      this.sessionEndpoint.producers.remove(new Integer(this.id));
       
-      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(id));
+      JMSDispatcher.instance.unregisterTarget(new Integer(id));
       
       closed = true;
    }
