@@ -163,9 +163,9 @@ public interface State
    void load() throws Exception;
    
    /**
-    * How many messages currently undelivered. 
+    * Message amount. 
     * @return message amount.
     */
-   int messageAmount();
+   int messageCount();
    
 }

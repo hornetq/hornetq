@@ -73,7 +73,7 @@
    </attribute>
 
    <attribute access="read-only" getMethod="getCurrentMessageCount">
-      <description>The number of undelivered messages in the queue</description>
+      <description>The number of messages in the queue</description>
       <name>CurrentMessageCount</name>
       <type>int</type>
    </attribute>

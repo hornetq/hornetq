@@ -264,9 +264,9 @@ public class NonRecoverableState implements State
       //do nothing
    }
    
-   public int messageAmount()
+   public int messageCount()
    {
-      return messageRefs.size();
+      return messageRefs.size() + deliveries.size();
    }
 
    // Public --------------------------------------------------------
