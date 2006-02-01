@@ -12,7 +12,13 @@ import javax.jms.Session;
 import javax.jms.StreamMessage;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A StreamMessageMessageFactory.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class StreamMessageMessageFactory extends AbstractMessageFactory
 {

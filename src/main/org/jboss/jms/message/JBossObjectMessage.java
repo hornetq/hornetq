@@ -59,7 +59,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    private static final Logger log = Logger.getLogger(JBossObjectMessage.class);
 
-   public static final int TYPE = 3;
+   public static final byte TYPE = 3;
 
    // Attributes ----------------------------------------------------
 
@@ -91,7 +91,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
                               boolean reliable,
                               long expiration,
                               long timestamp,
-                              int priority,
+                              byte priority,
                               int deliveryCount,
                               Map coreHeaders,
                               Serializable payload,
@@ -101,7 +101,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
                               String destination,
                               boolean replyToIsQueue,
                               String replyTo,
-                              String connectionID,
+                              int connectionID,
                               Map jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
@@ -144,7 +144,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    // Public --------------------------------------------------------
 
-   public int getType()
+   public byte getType()
    {
       return JBossObjectMessage.TYPE;
    }

@@ -78,6 +78,7 @@ public class MessageDelegate implements Message, Serializable
    protected int deliveryCount;
    
    protected transient boolean jmsRedelivered;
+      
    
    public void setSessionDelegate(SessionDelegate sd)
    {
@@ -191,6 +192,11 @@ public class MessageDelegate implements Message, Serializable
       this.message = message;
       this.state = STATE_NEW;
       this.deliveryCount = deliveryCount;
+   }
+   
+   public MessageDelegate()
+   {
+      
    }
    
    public JBossMessage getMessage()
@@ -478,5 +484,10 @@ public class MessageDelegate implements Message, Serializable
    {
       return "delegator->" + message;
    }
-
+   
+   public int getDeliveryCount()
+   {
+      return deliveryCount;
+   }
+  
 }

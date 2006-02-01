@@ -12,7 +12,13 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A MapMessageMessageFactory.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class MapMessageMessageFactory extends AbstractMessageFactory
 {

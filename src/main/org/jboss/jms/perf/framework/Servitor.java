@@ -7,7 +7,13 @@
 package org.jboss.jms.perf.framework;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A Servitor.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public interface Servitor extends Runnable
 { 

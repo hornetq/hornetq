@@ -32,7 +32,6 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 
 /**
@@ -57,9 +56,13 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    // Constructors --------------------------------------------------
 
-   public ClientConsumerDelegate(String objectID)
+   public ClientConsumerDelegate(int objectID)
    {
       super(objectID);
+   }
+   
+   public ClientConsumerDelegate()
+   {      
    }
 
    // ConsumerDelegate implementation -------------------------------
@@ -122,7 +125,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Message getMessageNow() throws JMSException
+   public Message getMessageNow(boolean wait) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -178,12 +181,12 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       super.init();
       getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID,
-                                id, PayloadKey.TRANSIENT);
+                                Integer.valueOf(id), PayloadKey.TRANSIENT);
    }
 
    public String toString()
    {
-      return "ConsumerDelegate[" + Util.guidToString(id) + "]";
+      return "ConsumerDelegate[" + id + "]";
    }
 
    // Protected -----------------------------------------------------

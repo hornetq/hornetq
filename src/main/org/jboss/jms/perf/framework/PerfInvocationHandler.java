@@ -16,18 +16,30 @@ import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A PerfInvocationHandler.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class PerfInvocationHandler implements ServerInvocationHandler
 {
    private static final Logger log = Logger.getLogger(PerfInvocationHandler.class);
    
+   protected JobStore store;
+   
+   public PerfInvocationHandler()
+   {
+      store = new SimpleJobStore();
+   }
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {
       log.trace("Received request");
       ServerRequest request = (ServerRequest)invocation.getParameter();
-      return request.execute();         
+      return request.execute(store);         
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)

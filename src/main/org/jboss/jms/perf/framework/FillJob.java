@@ -17,12 +17,18 @@ import org.jboss.jms.perf.framework.factories.MessageFactory;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A FillJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class FillJob extends BaseJob
 {
    private static final long serialVersionUID = 339586193389055268L;
-
+   
    private static final Logger log = Logger.getLogger(FillJob.class);
    
    protected int numMessages;
@@ -33,24 +39,6 @@ public class FillJob extends BaseJob
    
    protected MessageFactory mf;
    
-   protected Throwable throwable;
-   
-   public JobResult getResult()
-   {
-      JobResult res = new JobResult();
-      res.failed = failed;
-      if (failed)
-      {
-         res.throwables = new Throwable[] { throwable };
-      }
-      return res;
-   }
-   
-   public Throwable[] getThrowables()
-   {
-      return new Throwable[] { throwable };
-   }
-   
    public void logInfo()
    {
       super.logInfo();
@@ -59,17 +47,14 @@ public class FillJob extends BaseJob
       log.info("Message size: " + this.msgSize);
       log.info("Message type: " + this.mf.getClass().getName());
    }
-
-   public void run()
-   {
-            
+   
+   public JobResult execute() throws PerfException
+   {           
       Connection conn = null;
       
       try
       {
          log.info("==============Running fill job");
-         
-         super.setup();
          
          conn = cf.createConnection();
          
@@ -86,32 +71,32 @@ public class FillJob extends BaseJob
             prod.send(m);
             count++;
          }
-           
+         
          log.info("==========================Finished running job");
-           
+         
+         return null;
       }
-      catch (Throwable e)
+      catch (Exception e)
       {
-         log.error("Failed to fill destination", e);
-         throwable = e;
-         failed = true;
+         log.error("Failed to fill", e);
+         throw new PerfException("Failed to fill", e);
       }
       finally
       {
-         if (conn != null)
+         try
          {
-            try
+            if (conn != null)
             {
-               conn.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-               failed = true;
+               conn.close();          
             }
          }
+         catch (Exception e)
+         {
+            log.error("Failed to close", e);
+            throw new PerfException("Failed to close", e);
+         }
       }
-
+      
    } 
    
    public FillJob(String slaveURL, Properties jndiProperties, String destName, String connectionFactoryJndiName,
@@ -124,8 +109,8 @@ public class FillJob extends BaseJob
       this.deliveryMode = deliveryMode;
       
    }
-      
-
+   
+   
    /**
     * Set the deliveryMode.
     * 
@@ -135,9 +120,9 @@ public class FillJob extends BaseJob
    {
       this.deliveryMode = deliveryMode;
    }
-
-
-
+   
+   
+   
    /**
     * Set the mf.
     * 
@@ -147,9 +132,9 @@ public class FillJob extends BaseJob
    {
       this.mf = mf;
    }
-
-
-
+   
+   
+   
    /**
     * Set the msgSize.
     * 
@@ -159,9 +144,9 @@ public class FillJob extends BaseJob
    {
       this.msgSize = msgSize;
    }
-
-
-
+   
+   
+   
    /**
     * Set the numMessages.
     * 
@@ -171,5 +156,5 @@ public class FillJob extends BaseJob
    {
       this.numMessages = numMessages;
    }
-
+   
 }

@@ -19,7 +19,13 @@ import javax.jms.Session;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A BrowserJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class BrowserJob extends BaseThroughputJob
 {
@@ -35,14 +41,13 @@ public class BrowserJob extends BaseThroughputJob
       return new Browser(numMessages);
    }
    
-
    public BrowserJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
-         int numSessions, int numMessages, long timeToStart, String selector)
+         int numSessions, int numMessages, String selector)
    {
       super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
             numSessions, false, 0,
-            numMessages, timeToStart);
+            numMessages);
       this.selector = selector;
    }
 

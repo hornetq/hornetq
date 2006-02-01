@@ -98,7 +98,7 @@ public class MessageSupport extends RoutableSupport implements Message
                          boolean reliable,
                          long expiration,
                          long timestamp,
-                         int priority,
+                         byte priority,
                          int deliveryCount,
                          long ordering,
                          Map headers,
@@ -204,7 +204,15 @@ public class MessageSupport extends RoutableSupport implements Message
     */
    protected void writePayloadExternal(ObjectOutput out) throws IOException
    {
-      out.writeObject(payload);
+      if (payload == null)
+      {
+         out.writeByte(NULL);
+      }
+      else
+      {
+         out.writeByte(OBJECT);
+         out.writeObject(payload);
+      }
    }
 
    /**
@@ -213,7 +221,16 @@ public class MessageSupport extends RoutableSupport implements Message
    protected Serializable readPayloadExternal(ObjectInput in)
       throws IOException, ClassNotFoundException
    {
-      return (Serializable)in.readObject();
+      byte b = in.readByte();
+      
+      if (b == NULL)
+      {
+         return null;
+      }
+      else
+      {
+         return (Serializable)in.readObject();
+      }
    }
 
 

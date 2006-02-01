@@ -34,10 +34,15 @@ import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * 
+ * A PerfRunner.
+ * 
  * Runs all the tests in the performance test suite.
  * Can run the tests remote or invm
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class PerfRunner extends ServiceMBeanSupport
 {
@@ -85,12 +90,21 @@ public class PerfRunner extends ServiceMBeanSupport
    
    public static void main(String[] args)
    {
-      new PerfRunner().run();
+      try
+      {
+         new PerfRunner().run();
+      }
+      catch (PerfException e)
+      {
+         log.error("Failed to run perf tests", e.getCause());
+      }
    }
    
-   public void run()
+   public void run() throws PerfException
    {
       setUp(); //Only need to do once - junit does for every test
+      
+      testWarmup();
       
       testQueue1();
       testQueue2();
@@ -108,10 +122,14 @@ public class PerfRunner extends ServiceMBeanSupport
       testQueue14();
       testQueue15();
       testQueue16();
-//      testQueue17();
-//      testQueue18();
-//      testQueue19();
-//      testQueue20();
+      
+////    Browse tests - commented out for now
+////    testQueue17();
+////    testQueue18();
+////    testQueue19();
+////    testQueue20();
+//  
+      
       
       testTopic1();
       testTopic2();
@@ -121,10 +139,12 @@ public class PerfRunner extends ServiceMBeanSupport
       testTopic6();
       testTopic7();
       testTopic8();
-      testTopic9();
-      testTopic10();
+                       
+  //    testTopic9();
+   //   testTopic10();
       
-   //   testMessageSizeThroughput();
+  //    testMessageSizeThroughput1();
+      testMessageSizeThroughput2();
       
 //      testQueueScale1();
 //      testQueueScale2();
@@ -133,7 +153,7 @@ public class PerfRunner extends ServiceMBeanSupport
 //      testTopicScale1();
 //      testTopicScale2();
 //      testTopicScale3();
-//      
+      
       tearDown();
    }
    
@@ -268,34 +288,28 @@ public class PerfRunner extends ServiceMBeanSupport
       return exec;
    }
    
-   protected boolean checkResult(JobResult res, String test)
+   public void testWarmup() throws PerfException
    {
-      if (res.failed)
+      try
       {
-         log.error("Test " + test + " failed");
-         if (res.throwables != null)
-         {
-            for (int i = 0; i < res.throwables.length; i++)
-            {
-               log.error(res.throwables[i]);
-            }
-         }
-         return false;
+         log.info("Running warmup");
+         
+         SenderJob sender = createDefaultSenderJob(queueName);
+         sender.setNumMessages(1000);
+         sender.setMsgSize(standardMessageSize);
+         sender.setMf(new TextMessageMessageFactory());
+         sender.setTransacted(false);
+         sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+                 
+         runJob(sender);
+         
+         log.info("Warmup finished");
       }
-      return true;
-   }
-   
-   protected boolean checkResults(JobResult[] res, String test)
-   {
-      boolean ok = true;
-      for (int i = 0; i < res.length; i++)
+      finally
       {
-         if (!checkResult(res[i], test))
-         {
-            ok = false;
-         }
+         //drain the queue
+         drainQueue(queueName);
       }
-      return ok;
    }
    
    /*
@@ -303,7 +317,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * The queue has no consumers.
     * Measure time taken
     */
-   public void testQueue1()
+   public void testQueue1() throws PerfException
    {
       try
       {
@@ -315,14 +329,10 @@ public class PerfRunner extends ServiceMBeanSupport
          sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
+                 
          JobResult res = runJob(sender);
-         if (!checkResult(res, "Queue1"))
-         {
-            return;
-         }
          
-         long result = res.endTime - res.startTime;
+         long result = res.getEndTime() - res.getStartTime();
          
          Execution execution = createExecution("Queue1");
          
@@ -343,7 +353,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * The queue has no consumers.
     * Measure time taken
     */
-   public void testQueue2()
+   public void testQueue2() throws PerfException
    {
       log.info("Running test Queue2");
       
@@ -358,12 +368,7 @@ public class PerfRunner extends ServiceMBeanSupport
          
          JobResult res = runJob(sender);
          
-         if (!checkResult(res, "Queue2"))
-         {
-            return;
-         }
-         
-         long result = res.endTime - res.startTime;
+         long result = res.getEndTime() - res.getStartTime();
          
          Execution execution = createExecution("Queue2");
          
@@ -385,7 +390,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * The queue has no consumers.
     * Measure time taken
     */
-   public void testQueue3()
+   public void testQueue3() throws PerfException
    {
       log.info("Running test Queue3");
       
@@ -400,13 +405,8 @@ public class PerfRunner extends ServiceMBeanSupport
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
          JobResult res = runJob(sender);
-         
-         if (!checkResult(res, "Queue3"))
-         {
-            return;
-         }
-         
-         long result = res.endTime - res.startTime;
+    
+         long result = res.getEndTime() - res.getStartTime();
          
          Execution execution = createExecution("Queue3");
          
@@ -429,7 +429,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * The queue has no consumers.
     * Measure time taken
     */
-   public void testQueue4()
+   public void testQueue4() throws PerfException
    {
       log.info("Running test Queue4");
       
@@ -445,12 +445,7 @@ public class PerfRunner extends ServiceMBeanSupport
          
          JobResult res = runJob(sender);
          
-         if (!checkResult(res, "Queue4"))
-         {
-            return;
-         }
-         
-         long result = res.endTime - res.startTime;
+         long result = res.getEndTime() - res.getStartTime();
          
          Execution execution = createExecution("Queue4");
          
@@ -470,7 +465,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrently receive them non-transactionally with ackmode=AUTO_ACKNOWLEDGE.
     * Measure total time taken from first send to last receive
     */
-   public void testQueue5()
+   public void testQueue5() throws PerfException
    {
       log.info("Running test Queue5");
             
@@ -489,13 +484,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
-      
-      if (!checkResults(results, "Queue5"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+          
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Execution execution = createExecution("Queue5");
       
@@ -511,7 +501,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrently receive them non-transactionally with ackmode=AUTO_ACKNOWLEDGE.
     * Measure total time taken from first send to last receive
     */
-   public void testQueue6()
+   public void testQueue6() throws PerfException
    {
       log.info("Running test Queue6");
       
@@ -531,12 +521,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
       
-      if (!checkResults(results, "Queue6"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Execution execution = createExecution("Queue6");
       
@@ -551,7 +536,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrently receive them transactionally with transaction size = 100
     * Measure total time taken from first send to last receive
     */
-   public void testQueue7()
+   public void testQueue7() throws PerfException
    {
       log.info("Running test Queue7");
       
@@ -574,12 +559,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
       
-      if (!checkResults(results, "Queue7"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Execution execution = createExecution("Queue7");
       
@@ -594,7 +574,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrently receive them transactionally with transaction size = 100
     * Measure total time taken from first send to last receive
     */
-   public void testQueue8()
+   public void testQueue8() throws PerfException
    {
       log.info("Running test Queue8");
       
@@ -616,13 +596,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
-      
-      if (!checkResults(results, "Queue8"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+          
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Execution execution = createExecution("Queue8");
       
@@ -637,7 +612,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrently receive them non-transactionally with ack mode of DUPS_OK_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testQueue9()
+   public void testQueue9() throws PerfException
    {
       log.info("Running test Queue9");
       
@@ -657,13 +632,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
-      
-      if (!checkResults(results, "Queue9"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+     
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Execution execution = createExecution("Queue9");
       
@@ -678,7 +648,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrently receive them non-transactionally with ack mode of DUPS_OK_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testQueue10()
+   public void testQueue10() throws PerfException
    {
       log.info("Running test Queue10");
       
@@ -699,12 +669,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
       
-      if (!checkResults(results, "Queue10"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Execution execution = createExecution("Queue10");
       
@@ -719,7 +684,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive only numMessages pre-existing persistent messages of size standardMessageSize bytes from queue.
     * Receive non-transactionally, using ack mode of AUTO_ACKNOWLEDGE
     */
-   public void testQueue11()
+   public void testQueue11() throws PerfException
    {
       log.info("Running test Queue11");
       
@@ -737,15 +702,10 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setNumMessages(numMessages);
       
       JobResult result = runJob(receiver);
-      
-      if (!checkResult(result, "Queue11"))
-      {
-         return;
-      }
-      
+          
       Execution execution = createExecution("Queue11");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.getEndTime() - result.getStartTime())));
       pm.saveExecution(execution);
       
       log.info("Test Queue11 finished");
@@ -755,7 +715,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive only numMessages pre-existing non-persistent messages of size standardMessageSize bytes from queue.
     * Receive non-transactionally, using ack mode of AUTO_ACKNOWLEDGE
     */
-   public void testQueue12()
+   public void testQueue12() throws PerfException
    {
       log.info("Running test Queue12");
       
@@ -773,15 +733,10 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setNumMessages(numMessages);
       
       JobResult result = runJob(receiver);
-      
-      if (!checkResult(result, "Queue12"))
-      {
-         return;
-      }
-      
+
       Execution execution = createExecution("Queue12");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.getEndTime() - result.getStartTime())));
       pm.saveExecution(execution);
       
       log.info("Test Queue12 finished");
@@ -791,7 +746,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive only numMessages pre-existing persistent messages of size standardMessageSize bytes from queue.
     * Receive transactionally with transaction size of 100
     */
-   public void testQueue13()
+   public void testQueue13() throws PerfException
    {
       log.info("Running test Queue13");
 
@@ -809,15 +764,10 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setNumMessages(numMessages);
       
       JobResult result = runJob(receiver);
-      
-      if (!checkResult(result, "Queue13"))
-      {
-         return;
-      }
-      
+       
       Execution execution = createExecution("Queue13");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.getEndTime() - result.getStartTime())));
       pm.saveExecution(execution);
       
       log.info("Test Queue13 finished");
@@ -827,7 +777,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive only numMessages pre-existing non-persistent messages of size standardMessageSize bytes from queue.
     * Receive transactionally with transaction size of 100
     */
-   public void testQueue14()
+   public void testQueue14() throws PerfException
    {
       log.info("Running test Queue14");
       
@@ -846,14 +796,9 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult result = runJob(receiver);
       
-      if (!checkResult(result, "Queue14"))
-      {
-         return;
-      }
-      
       Execution execution = createExecution("Queue14");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.getEndTime() - result.getStartTime())));
       pm.saveExecution(execution);
       
       log.info("Test Queue14 finished");
@@ -864,7 +809,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive only numMessages pre-existing persistent messages of size standardMessageSize bytes from queue.
     * Receive non-transactionally with ack mode of AUTO_ACKNOWLEDGE and selector
     */
-   public void testQueue15()
+   public void testQueue15() throws PerfException
    {
       log.info("Running test Queue15");
       
@@ -887,14 +832,9 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult result = runJob(receiver);
       
-      if (!checkResult(result, "Queue15"))
-      {
-         return;
-      }
-      
       Execution execution = createExecution("Queue15");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.getEndTime() - result.getStartTime())));
       pm.saveExecution(execution);
       
       log.info("Test Queue15 finished");
@@ -904,7 +844,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive only numMessages pre-existing non-persistent messages of size standardMessageSize bytes from queue.
     * Receive non-transactionally with ack mode of AUTO_ACKNOWLEDGE and selector
     */
-   public void testQueue16()
+   public void testQueue16() throws PerfException
    {
       log.info("Running test Queue16");
       
@@ -927,15 +867,10 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setNumMessages(numMessages);
       
       JobResult result = runJob(receiver);
-      
-      if (!checkResult(result, "Queue16"))
-      {
-         return;
-      }
-      
+        
       Execution execution = createExecution("Queue16");
       
-      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.endTime - result.startTime)));
+      execution.addMeasurement(new Measurement("msgsReceivedPerSec", (double)(numMessages * 1000) / (result.getEndTime() - result.getStartTime())));
       pm.saveExecution(execution);
       
       log.info("Test Queue16 finished");
@@ -944,7 +879,7 @@ public class PerfRunner extends ServiceMBeanSupport
    /*
     * Browse numMessages persistent messages of size standardMessageSize bytes in queue.
     */
-   public void testQueue17()
+   public void testQueue17() throws PerfException
    {
       log.info("Running test Queue17");
       
@@ -960,15 +895,10 @@ public class PerfRunner extends ServiceMBeanSupport
          
          BrowserJob job  = createDefaultBrowserJob(queueName);
          JobResult result = runJob(job);
-         
-         if (!checkResult(result, "Queue17"))
-         {
-            return;
-         }
-         
+                
          Execution execution = createExecution("Queue17");
          
-         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / (result.endTime - result.startTime)));
+         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / (result.getEndTime() - result.getStartTime())));
          pm.saveExecution(execution);
          
          log.info("Test Queue17 finished");
@@ -982,7 +912,7 @@ public class PerfRunner extends ServiceMBeanSupport
    /*
     * Browse numMessages non-persistent messages of size standardMessageSize bytes in queue.
     */
-   public void testQueue18()
+   public void testQueue18() throws PerfException
    {
       log.info("Running test Queue18");
       
@@ -997,15 +927,10 @@ public class PerfRunner extends ServiceMBeanSupport
          
          BrowserJob job  = createDefaultBrowserJob(queueName);
          JobResult result = runJob(job);
-         
-         if (!checkResult(result, "Queue18"))
-         {
-            return;
-         }
-         
+              
          Execution execution = createExecution("Queue18");
          
-         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / (result.endTime - result.startTime)));
+         execution.addMeasurement(new Measurement("messagesPerSec", 1000 * (double)numMessages / (result.getEndTime() - result.getStartTime())));
          
          pm.saveExecution(execution);
          
@@ -1020,7 +945,7 @@ public class PerfRunner extends ServiceMBeanSupport
    /*
     * Browse numMessages non-persistent messages of size standardMessageSize bytes in queue with selector
     */
-   public void testQueue19()
+   public void testQueue19() throws PerfException
    {
       log.info("Running test Queue19");
       try
@@ -1038,15 +963,10 @@ public class PerfRunner extends ServiceMBeanSupport
          BrowserJob job  = createDefaultBrowserJob(queueName);
          job.setSelector(selector);
          JobResult result = runJob(job);
-         
-         if (!checkResult(result, "Queue19"))
-         {
-            return;
-         }
-         
+          
          Execution execution = createExecution("Queue19");
          
-         execution.addMeasurement(new Measurement("timeTaken", (result.endTime - result.startTime)));
+         execution.addMeasurement(new Measurement("timeTaken", (result.getEndTime() - result.getStartTime())));
          pm.saveExecution(execution);
          
          log.info("Test Queue19 finished");
@@ -1067,7 +987,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them non-transactionally with single non durable subscriber and ack mode of AUTO_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testTopic1()
+   public void testTopic1() throws PerfException
    {
       log.info("Running test Topic1");
       
@@ -1077,7 +997,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1088,13 +1007,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic1"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+    
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic1");
       
@@ -1109,7 +1023,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them non-transactionally with single non durable subscriber and with ack mode of AUTO_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testTopic2()
+   public void testTopic2() throws PerfException
    {
       log.info("Running test Topic2");
       
@@ -1119,7 +1033,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1130,13 +1043,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic2"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+       
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic2");
       
@@ -1152,7 +1060,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them transactionally with single non durable subscriber and with tx size of 100
     * Measure total time taken from first send to last receive
     */
-   public void testTopic3()
+   public void testTopic3() throws PerfException
    {
       log.info("Running test Topic3");
       
@@ -1163,7 +1071,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1174,13 +1081,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic3"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+        
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic3");
       
@@ -1195,7 +1097,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them transactionally with single non durable subscriber and with tx size of 100
     * Measure total time taken from first send to last receive
     */
-   public void testTopic4()
+   public void testTopic4() throws PerfException
    {
       log.info("Running test Topic4");
       
@@ -1206,7 +1108,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setTransacted(true);
       sender.setTransactionSize(100);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1218,12 +1119,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
       
-      if (!checkResults(results, "Topic4"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic4");
       
@@ -1238,7 +1134,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them non-transactionally with single non durable subscriber and ack mode of DUPS_OK_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testTopic5()
+   public void testTopic5() throws PerfException
    {
       log.info("Running test Topic5");
       
@@ -1248,7 +1144,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1259,13 +1154,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic5"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+           
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic5");
       
@@ -1280,7 +1170,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them non-transactionally with single non durable subscriber and with ack mode of DUPS_OK_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testTopic6()
+   public void testTopic6() throws PerfException
    {
       log.info("Running test Topic6");
       
@@ -1290,7 +1180,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1301,13 +1190,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic6"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic6");
       
@@ -1324,7 +1208,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * and using a selector
     * Measure total time taken from first send to last receive
     */
-   public void testTopic7()
+   public void testTopic7() throws PerfException
    {
       log.info("Running test Topic7");
       
@@ -1334,7 +1218,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1351,12 +1234,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
       
-      if (!checkResults(results, "Topic7"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic7");
       
@@ -1372,7 +1250,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * and using selector
     * Measure total time taken from first send to last receive
     */
-   public void testTopic8()
+   public void testTopic8() throws PerfException
    {
       log.info("Running test Topic8");
       
@@ -1382,7 +1260,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1400,13 +1277,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSelector(selector);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic8"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+          
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic8");
       
@@ -1421,7 +1293,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them non-transactionally with single durable subscriber and with ack mode of AUTO_ACKNOWLEDGE
     * Measure total time taken from first send to last receive
     */
-   public void testTopic9()
+   public void testTopic9() throws PerfException
    {
       log.info("Running test Topic9");
       
@@ -1437,7 +1309,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(false);
       sender.setDeliveryMode(DeliveryMode.PERSISTENT);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1450,13 +1321,8 @@ public class PerfRunner extends ServiceMBeanSupport
       receiver.setSlaveURL(slaveURLs[1]);
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
-      
-      if (!checkResults(results, "Topic9"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+         
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic9");
       
@@ -1471,7 +1337,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Receive them transactionally with single durable subscriber, tx size of 100
     * Measure total time taken from first send to last receive
     */
-   public void testTopic10()
+   public void testTopic10() throws PerfException
    {
       log.info("Running test Topic10");
       
@@ -1487,7 +1353,6 @@ public class PerfRunner extends ServiceMBeanSupport
       sender.setMf(new TextMessageMessageFactory());
       sender.setTransacted(true);
       sender.setTransactionSize(100);
-      sender.setInitialPause(initialPause); //enough time for receiver to get ready
       sender.setSlaveURL(slaveURLs[0]);
       
       ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1502,12 +1367,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {receiver, sender});
       
-      if (!checkResults(results, "Topic10"))
-      {
-         return;
-      }
-      
-      long totalTimeTaken = results[0].endTime - results[1].startTime;
+      long totalTimeTaken = results[0].getEndTime() - results[1].getStartTime();
       
       Execution execution = createExecution("Topic10");
       
@@ -1521,23 +1381,68 @@ public class PerfRunner extends ServiceMBeanSupport
    /* Send numMessages persistent messages non-transactionally to topic with one non durable subscriber.
     * Concurrently receive them non-transactionally with ack mode of AUTO_ACKNOWLEDGE
     * Measure total time taken from first send to last receive.
-    * Vary the message size and repeat with the following values:
-    * 0 bytes
-    * standardMessageSize bytes
-    * 16384 bytes
-    * 65536 bytes
-    * 262144 bytes
-    * 1048576 bytes
-    * 8388608 bytes
-    * 
+    * Vary the message size
     */
-   public void testMessageSizeThroughput()
+//   public void testMessageSizeThroughput1() throws PerfException
+//   {
+//      log.info("Running test testMessageSizeThroughput1");
+//          
+//      Execution execution = createExecution("MessageSizeThroughput1");
+//      
+//      int[] msgsSize = new int[] {0, 512, 1024, 2048, 4096, 8192};
+//      
+//      for (int i = 0; i < msgsSize.length; i++)
+//      {
+//        
+//         int msgSize = msgsSize[i];
+//         
+//         log.info("Doing message size " + msgSize);
+//         
+//      
+//         SenderJob sender = createDefaultSenderJob(topicName);
+//         sender.setNumMessages(numMessages);
+//         sender.setMsgSize(msgSize);
+//         sender.setMf(new TextMessageMessageFactory());
+//         sender.setTransacted(false);
+//         sender.setDeliveryMode(DeliveryMode.PERSISTENT);
+//         sender.setSlaveURL(slaveURLs[0]);
+//         
+//         ReceiverJob receiver = createDefaultReceiverJob(topicName);
+//         
+//         receiver.setAckMode(Session.AUTO_ACKNOWLEDGE);
+//         receiver.setTransacted(false);
+//         receiver.setNumMessages(1000);
+//         receiver.setSlaveURL(slaveURLs[1]);
+//         
+//         JobResult[] results = runJobs(new Job[] {sender, receiver});
+//
+//         long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
+//         
+//         Measurement measure = new Measurement("throughput", 1000 * (double)numMessages / totalTimeTaken);
+//         measure.setVariableValue("messageSize", msgSize);
+//         execution.addMeasurement(measure);
+//         
+//         
+//      }
+//      
+//      pm.saveExecution(execution);
+//      
+//      
+//      log.info("Test testMessageSizeThroughput1 finished");
+//   }
+   
+   /* Send numMessages non-persistent messages non-transactionally to topic with one non durable subscriber.
+    * Concurrently receive them non-transactionally with ack mode of AUTO_ACKNOWLEDGE
+    * Measure total time taken from first send to last receive.
+    * Vary the message size
+    */
+   public void testMessageSizeThroughput2() throws PerfException
    {
-      log.info("Running test testMessageSizeThroughput");
+      log.info("Running test testMessageSizeThroughput2");
           
-      Execution execution = createExecution("MessageSizeThroughput");
+      Execution execution = createExecution("MessageSizeThroughput2");
       
-      int[] msgsSize = new int[] {0, 8192, 16384, 32768, 65536};
+      int[] msgsSize = new int[] {0, 512, 1024, 2048, 4096, 8192};
       
       for (int i = 0; i < msgsSize.length; i++)
       {
@@ -1553,24 +1458,18 @@ public class PerfRunner extends ServiceMBeanSupport
          sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         sender.setInitialPause(initialPause); //enough time for receiver to get ready
          sender.setSlaveURL(slaveURLs[0]);
          
          ReceiverJob receiver = createDefaultReceiverJob(topicName);
          
          receiver.setAckMode(Session.AUTO_ACKNOWLEDGE);
          receiver.setTransacted(false);
-         receiver.setNumMessages(1000);
+         receiver.setNumMessages(numMessages);
          receiver.setSlaveURL(slaveURLs[1]);
          
          JobResult[] results = runJobs(new Job[] {sender, receiver});
-         
-         if (!checkResults(results, "testMessageSizeThroughput"))
-         {
-            return;
-         }
-         
-         long totalTimeTaken = results[1].endTime - results[0].startTime;
+
+         long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
          
          Measurement measure = new Measurement("throughput", 1000 * (double)numMessages / totalTimeTaken);
          measure.setVariableValue("messageSize", msgSize);
@@ -1582,14 +1481,14 @@ public class PerfRunner extends ServiceMBeanSupport
       pm.saveExecution(execution);
       
       
-      log.info("Test testMessageSizeThroughput finished");
+      log.info("Test testMessageSizeThroughput2 finished");
    }
    
    /* Send numMessages non-persistent messages of size standardMessageSize bytes, non transactionally to queue
     * Concurrent receive messages from queue non-transactionally with ack mode AUTO_ACKNOWLEDGE.
     * Measure the throughput as the number of distinct queues is increased
     */
-   public void testQueueScale1()
+   public void testQueueScale1() throws PerfException
    {
       log.info("Running test testQueueScale1");
       
@@ -1625,21 +1524,16 @@ public class PerfRunner extends ServiceMBeanSupport
          }
          
          JobResult[] results = runJobs(jobs);
-         
-         if (!checkResults(results, "QueueScale1"))
-         {
-            return;
-         }
-         
+
          long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
             JobResult senderResult = results[j * 2];
             JobResult receiverResult = results[j * 2 + 1];
-            long timeOfFirstSend = senderResult.startTime;
+            long timeOfFirstSend = senderResult.getStartTime();
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.endTime;
+            long timeOfLastReceive = receiverResult.getEndTime();
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1664,7 +1558,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Measure the throughput as the number of distinct connections is increased.
     * Each connection is made from separate job
     */
-   public void testQueueScale2()
+   public void testQueueScale2() throws PerfException
    {
       log.info("Running test testQueueScale2");
              
@@ -1701,20 +1595,15 @@ public class PerfRunner extends ServiceMBeanSupport
          
          JobResult[] results = runJobs(jobs);
          
-         if (!checkResults(results, "QueueScale2"))
-         {
-            return;
-         }
-         
          long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
             JobResult senderResult = results[j * 2];
             JobResult receiverResult = results[j * 2 + 1];
-            long timeOfFirstSend = senderResult.startTime;
+            long timeOfFirstSend = senderResult.getStartTime();
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.endTime;
+            long timeOfLastReceive = receiverResult.getEndTime();
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1740,7 +1629,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Measure the throughput as the number of sending sessions is increased.
     * Each sending session shares the same connection
     */
-   public void testQueueScale3()
+   public void testQueueScale3() throws PerfException
    {
       log.info("Running test testQueueScale3");
       
@@ -1767,13 +1656,8 @@ public class PerfRunner extends ServiceMBeanSupport
          
          
          JobResult[] results = runJobs(new Job[] {sender, receiver});
-         
-         if (!checkResults(results, "QueueScale3"))
-         {
-            return;
-         }
-         
-         long totalTimeTaken = results[1].endTime - results[0].startTime;
+              
+         long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
          
          int totalMessages = i * numMessages;
          
@@ -1792,7 +1676,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Concurrent receive messages from topic non-transactionally with ack mode AUTO_ACKNOWLEDGE.
     * Measure the throughput as the number of distinct topics is increased
     */
-   public void testTopicScale1()
+   public void testTopicScale1() throws PerfException
    {
       log.info("Running test testTopicScale1");
               
@@ -1824,27 +1708,21 @@ public class PerfRunner extends ServiceMBeanSupport
             sender.setMf(new TextMessageMessageFactory());
             sender.setTransacted(false);
             sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            sender.setInitialPause(initialPause); //enough time for receiver to get ready
             sender.setSlaveURL(slaveURLs[j % this.numSlaves]);
-         
-            
+                  
          }
          
          JobResult[] results = runJobs(jobs);
          
-         if (!checkResults(results, "TopicScale1"))
-         {
-            return;
-         }
          long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
             JobResult senderResult = results[j * 2];
             JobResult receiverResult = results[j * 2 + 1];
-            long timeOfFirstSend = senderResult.startTime;
+            long timeOfFirstSend = senderResult.getStartTime();
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.endTime;
+            long timeOfLastReceive = receiverResult.getEndTime();
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1869,7 +1747,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Measure the throughput as the number of receiving topic subscribers is increased.
     * Each topic subscriber uses it's own session and connection and is in a separate job
     */
-   public void testTopicScale2()
+   public void testTopicScale2() throws PerfException
    {
       log.info("Running test testTopicScale2");
             
@@ -1904,23 +1782,18 @@ public class PerfRunner extends ServiceMBeanSupport
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          sender.setSlaveURL(slaveURLs[i % this.numSlaves]);
-         sender.setInitialPause(initialPause);
          
          JobResult[] results = runJobs(jobs);
          
-         if (!checkResults(results, "TopicScale2"))
-         {
-            return;
-         }
          long minTimeOfFirstSend = Long.MAX_VALUE;
          long maxTimeOfLastReceive = Long.MIN_VALUE;
          for (int j = 0; j < i; j++)
          {
             JobResult senderResult = results[j * 2];
             JobResult receiverResult = results[j * 2 + 1];
-            long timeOfFirstSend = senderResult.startTime;
+            long timeOfFirstSend = senderResult.getStartTime();
             minTimeOfFirstSend = Math.min(minTimeOfFirstSend, timeOfFirstSend);
-            long timeOfLastReceive = receiverResult.endTime;
+            long timeOfLastReceive = receiverResult.getEndTime();
             maxTimeOfLastReceive = Math.max(maxTimeOfLastReceive, timeOfLastReceive);
          }
          
@@ -1946,7 +1819,7 @@ public class PerfRunner extends ServiceMBeanSupport
     * Measure the throughput as the number of receiving topic subscribers is increased.
     * Each topic subscriber uses it's own session but shares a connection
     */
-   public void testTopicScale3()
+   public void testTopicScale3() throws PerfException
    {
       log.info("Running test testTopicScale3");
       
@@ -1962,7 +1835,6 @@ public class PerfRunner extends ServiceMBeanSupport
          sender.setMf(new TextMessageMessageFactory());
          sender.setTransacted(false);
          sender.setDeliveryMode(DeliveryMode.NON_PERSISTENT);             
-         sender.setInitialPause(initialPause); //enough time for receiver to get ready
          sender.setNumMessages(numMessages);
       
          ReceiverJob receiver = createDefaultReceiverJob(topicName);
@@ -1974,13 +1846,8 @@ public class PerfRunner extends ServiceMBeanSupport
          receiver.setNumMessages(numMessages);
                           
          JobResult[] results = runJobs(new Job[] {receiver, sender});
-         
-         if (!checkResults(results, "TopicScale3"))
-         {
-            return;
-         }
-         
-         long totalTimeTaken = results[1].endTime - results[0].endTime;
+              
+         long totalTimeTaken = results[1].getEndTime() - results[0].getEndTime();
          
          int totalMessages = numMessages;
          
@@ -2003,7 +1870,7 @@ public class PerfRunner extends ServiceMBeanSupport
    //TODO as above but with durable subscriptions and persistent messages
    
    
-   public void testMessageTypes()
+   public void testMessageTypes() throws PerfException
    {
       log.info("Running test MessageTypes");
       
@@ -2022,7 +1889,7 @@ public class PerfRunner extends ServiceMBeanSupport
       log.info("Test MessageTypes finished");
    }
    
-   protected void runMessageTypeJob(Execution execution, MessageFactory mf, String messageType, int type)
+   protected void runMessageTypeJob(Execution execution, MessageFactory mf, String messageType, int type) throws PerfException
    {      
       SenderJob sender = createDefaultSenderJob(queueName);
       sender.setNumMessages(numMessages);
@@ -2040,7 +1907,7 @@ public class PerfRunner extends ServiceMBeanSupport
       
       JobResult[] results = runJobs(new Job[] {sender, receiver});
 
-      long totalTimeTaken = results[1].endTime - results[0].startTime;
+      long totalTimeTaken = results[1].getEndTime() - results[0].getStartTime();
       
       Measurement measure = new Measurement("msgsSentPerSec", 1000 * (double)numMessages / totalTimeTaken);
       
@@ -2048,29 +1915,59 @@ public class PerfRunner extends ServiceMBeanSupport
       execution.addMeasurement(measure);
    }
 
-
-   protected JobResult runJob(Job job)
+     
+   protected JobResult runJob(Job job) throws PerfException
    {
       if (local)
       {
-         job.run();
-         return job.getResult();
+         job.initialize();
+         return job.execute();
       }
       else
       {
-         return sendRequestToSlave(job.getSlaveURL(), new RunRequest(job));
+         sendRequestToSlave(job.getSlaveURL(), new SubmitJobRequest(job));
+         
+         return sendRequestToSlave(job.getSlaveURL(), new ExecuteJobRequest(job.getId()));
       }
    }
    
    /*
     * Run the jobs concurrently
     */
-   protected JobResult[] runJobs(Job[] jobs)
+   protected JobResult[] runJobs(Job[] jobs) throws PerfException
    {      
-      JobRunner[] runners = new JobRunner[jobs.length];
+      //First initialize them
+      
+      JobInitializer[] initializers = new JobInitializer[jobs.length];
       for (int i = 0; i < jobs.length; i++)
       {
-         runners[i] = new JobRunner(jobs[i]);
+         initializers[i] = new JobInitializer(jobs[i]);
+         Thread t = new Thread(initializers[i]);
+         initializers[i].thread = t;
+         t.start();
+      }
+      
+      for (int i = 0; i < jobs.length; i++)
+      {
+         try
+         {
+            initializers[i].thread.join();            
+         }
+         catch (InterruptedException e)
+         {}
+         
+         if (initializers[i].exception != null)
+         {
+            throw initializers[i].exception;
+         }                     
+      } 
+            
+      //Now execute them
+      
+      JobExecutor[] runners = new JobExecutor[jobs.length];
+      for (int i = 0; i < jobs.length; i++)
+      {
+         runners[i] = new JobExecutor(jobs[i]);
          Thread t = new Thread(runners[i]);
          runners[i].thread = t;
          t.start();
@@ -2084,82 +1981,124 @@ public class PerfRunner extends ServiceMBeanSupport
          }
          catch (InterruptedException e)
          {}
+         if (runners[i].exception != null)
+         {
+            throw runners[i].exception;
+         }
       } 
       JobResult[] results = new JobResult[jobs.length];
       for (int i = 0; i < jobs.length; i++)
       {
          results[i] = runners[i].result;
       }
-      return results;
-      
+      return results;      
    }
    
-   class JobRunner implements Runnable
+   class JobExecutor implements Runnable
    {
       Job job;
       
       JobResult result;
       
       Thread thread;
+      
+      PerfException exception;
 
-      JobRunner(Job job)
+      JobExecutor(Job job)
       {
          this.job = job;
       }
       
       public void run()
       {
-         result = runJob(job);
+         try
+         {
+            if (local)
+            {
+               result = job.execute();
+            }
+            else
+            {
+               result = sendRequestToSlave(job.getSlaveURL(), new ExecuteJobRequest(job.getId()));
+            }
+         }
+         catch (PerfException e)
+         {
+            log.error("Failed to execute job", e);
+            exception = e;
+         }
       }
    }
    
-   
-   protected boolean drainQueue(String queueName)
+   class JobInitializer implements Runnable
+   {
+      Job job;
+       
+      Thread thread;
+      
+      PerfException exception;
+
+      JobInitializer(Job job)
+      {
+         this.job = job;
+      }
+      
+      public void run()
+      {
+         try
+         {
+            if (local)
+            {
+               job.initialize();
+            }
+            else
+            {
+               sendRequestToSlave(job.getSlaveURL(), new SubmitJobRequest(job));
+            }
+         }
+         catch (PerfException e)
+         {
+            log.error("Failed to intialize job", e);
+            exception = e;
+         }
+      }
+   }
+      
+   protected void drainQueue(String queueName) throws PerfException
    {
       Job drainJob = createDefaultDrainJob(queueName);
-      JobResult res = runJob(drainJob);
-      if (res.failed)
-      {
-         log.error("Failed to drain queue", res.throwables[0]);
-         return false;
-      }
-      return true;
+      
+      runJob(drainJob);      
    }
    
-   protected boolean drainSubscription(String topicName, String subName, String clientID)
+   protected void drainSubscription(String topicName, String subName, String clientID) throws PerfException
    {
       DrainJob drainJob = createDefaultDrainJob(topicName);
       drainJob.setClientID(clientID);
       drainJob.setSubName(subName);
       
-      JobResult res = runJob(drainJob);
-      if (res.failed)
-      {
-         log.error("Failed to drain subscription", res.throwables[0]);
-         return false;
-      }
-      return true;
+      runJob(drainJob);
    }
    
    protected SenderJob createDefaultSenderJob(String destName)
    {
       return new SenderJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName,  1,
-            1, false, 0, numMessages, System.currentTimeMillis() + 20000,
+            1, false, 0, numMessages,
             false, standardMessageSize,
-            new TextMessageMessageFactory(), DeliveryMode.NON_PERSISTENT, 0);           
+            new TextMessageMessageFactory(), DeliveryMode.NON_PERSISTENT);           
    }
    
    protected ReceiverJob createDefaultReceiverJob(String destName)
    {
       return new ReceiverJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, 1,
-            1, false, 0, numMessages, System.currentTimeMillis() + 10000,
+            1, false, 0, numMessages,
             Session.AUTO_ACKNOWLEDGE, null, null, false, false, null);
    }
    
    protected BrowserJob createDefaultBrowserJob(String destName)
    {
       return new BrowserJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, 1,
-            1, numMessages, System.currentTimeMillis() + 10000, null);
+            1, numMessages, null);
    }
    
    protected DrainJob createDefaultDrainJob(String destName)
@@ -2172,22 +2111,26 @@ public class PerfRunner extends ServiceMBeanSupport
       return new FillJob(slaveURLs[0], jndiProperties, destName, connectionFactoryJndiName, numMessages, standardMessageSize, new TextMessageMessageFactory(),
             DeliveryMode.NON_PERSISTENT);      
    }
-   
-   
-   protected JobResult sendRequestToSlave(String slaveURL, ServerRequest request)
+      
+   protected JobResult sendRequestToSlave(String slaveURL, ServerRequest request) throws PerfException
    {
       try
       {
          InvokerLocator locator = new InvokerLocator(slaveURL);
+         
          Client client = new Client(locator, "perftest");
+               
          Object res = client.invoke(request);
                            
-         return (JobResult)res;
+         return (JobResult)res; 
+      }
+      catch (PerfException e)
+      {
+         throw e;
       }
       catch (Throwable t)
       {
-         log.error("Failed to run job", t);
-         return null;
+         throw new PerfException("Failed to invoke", t);
       }
    }
 }

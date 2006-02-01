@@ -27,7 +27,6 @@ import javax.jms.Message;
 
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 
 /**
@@ -52,9 +51,13 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    // Constructors --------------------------------------------------
 
-   public ClientProducerDelegate(String objectID)
+   public ClientProducerDelegate(int objectID)
    {
       super(objectID);
+   }
+   
+   public ClientProducerDelegate()
+   {      
    }
 
    // ProducerDelegate implementation -------------------------------
@@ -208,7 +211,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    public String toString()
    {
-      return "ProducerDelegate[" + Util.guidToString(id) + "]";
+      return "ProducerDelegate[" + id + "]";
    }
 
    // Protected -----------------------------------------------------

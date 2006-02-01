@@ -74,9 +74,9 @@ public interface Routable extends Serializable
     */
    long getTimestamp();
    
-   int getPriority();
+   byte getPriority();
    
-   void setPriority(int priority);
+   void setPriority(byte priority);
 
    /**
     * @return true if the delivery of this message had to be repeated at least once.

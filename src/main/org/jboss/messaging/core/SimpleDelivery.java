@@ -52,6 +52,8 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
    protected boolean cancelled;
    protected DeliveryObserver observer;
    protected MessageReference reference;
+   
+   private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -111,14 +113,14 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    public synchronized void acknowledge(Transaction tx) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " acknowledging delivery in tx:" + tx); }
+      if (trace) { log.trace(this + " acknowledging delivery in tx:" + tx); }
       
       // deals with the race condition when acknowledgment arrives before the delivery
       // is returned back to the sending delivery observer      
       observer.acknowledge(this, tx);
       if (tx == null)
       {
-         if (log.isTraceEnabled()) { log.trace(this + " setting done to true"); }
+         if (trace) { log.trace(this + " setting done to true"); }
          //TODO Why don't we set done to true if the ack is transactional???
          //     http://jira.jboss.org/jira/browse/JBMESSAGING-173
          done = true;
@@ -127,7 +129,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    public synchronized void cancel() throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " cancelling delivery"); }
+      if (trace) { log.trace(this + " cancelling delivery"); }
       
       // deals with the race condition when cancellation arrives before the delivery
       // is returned back to the sending delivery observer      

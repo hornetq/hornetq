@@ -146,7 +146,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -175,7 +175,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -203,7 +203,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
          m[i] = MessageFactory.
-            createMessage("message" + i, false, 700 + i, 800 + i, i % 10, headers, "payload" + i);
+            createMessage("message" + i, false, 700 + i, 800 + i, (byte)(i % 10), headers, "payload" + i);
 
          // non-recoverable store, non-reliable message, one message
          refs[i] = ms.reference(m[i]);
@@ -253,7 +253,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, reliable message, one message
       try
@@ -289,7 +289,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -325,7 +325,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
          m[i] = MessageFactory.
-            createMessage("message" + i, false, 700 + i, 800 + i, i % 10, headers, "payload" + i);
+            createMessage("message" + i, false, 700 + i, 800 + i, (byte)(i % 10), headers, "payload" + i);
 
          // non-recoverable store, non-reliable message, one message
          refs[i] = ms.reference(m[i]);
@@ -363,7 +363,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -402,7 +402,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -472,7 +472,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -495,7 +495,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -523,7 +523,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
          m[i] = MessageFactory.
-            createMessage("message" + i, false, 700 + i, 800 + i, i % 10, headers, "payload" + i);
+            createMessage("message" + i, false, 700 + i, 800 + i, (byte)(i % 10), headers, "payload" + i);
 
          // recoverable store, non-reliable message, one message
          refs[i] = ms.reference(m[i]);
@@ -564,7 +564,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -591,7 +591,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -619,7 +619,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
          m[i] = MessageFactory.
-            createMessage("message" + i, true, 700 + i, 800 + i, i % 10, headers, "payload" + i);
+            createMessage("message" + i, true, 700 + i, 800 + i, (byte)(i % 10), headers, "payload" + i);
 
          // recoverable store, non-reliable message, one message
          refs[i] = ms.reference(m[i]);
@@ -650,7 +650,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -684,7 +684,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
          return;
       }
 
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);

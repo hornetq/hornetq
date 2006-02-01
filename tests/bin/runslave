@@ -34,17 +34,19 @@ while [ "$1" != "" ]; do
     shift
 done
 
-JAVA_OPTS="-Xmx1024M $JAVA_OPTS"
+JAVA_OPTS="-XX:+UseTLAB -XX:+UseParNewGC -Xms128m -Xmx512m -XX:NewSize=64m -XX:MaxTenuringThreshold=0 -XX:SurvivorRatio=128 $JAVA_OPTS"
+
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
+#SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
+SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
 
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
 $reldir/../../src/etc${SEP}\
 $reldir/../output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
-$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
@@ -56,6 +58,7 @@ $reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../src/resources/hsqldb.jar${SEP}\
 ${REMOTING_LIB}${SEP}\
+${SERIALIZATION_LIB}${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\

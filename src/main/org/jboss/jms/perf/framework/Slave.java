@@ -11,7 +11,13 @@ import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.Connector;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A Slave.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class Slave
 {
@@ -54,11 +60,11 @@ public class Slave
          InvokerLocator locator;
          if (ip == null)
          {
-            locator =  new InvokerLocator("socket://0.0.0.0:" + port);
+            locator =  new InvokerLocator("socket://0.0.0.0:" + port + "/?socketTimeout=0");
          }
          else
          {
-            locator =  new InvokerLocator("socket://" + ip + ":" + port);
+            locator =  new InvokerLocator("socket://" + ip + ":" + port + "/?socketTimeout=0");
          }
          connector.setInvokerLocator(locator.getLocatorURI());
          log.info("Invoker locator: " + locator.getLocatorURI());

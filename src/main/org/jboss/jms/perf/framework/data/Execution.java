@@ -11,16 +11,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.jboss.logging.Logger;
-
-
+/**
+ * 
+ * A Execution.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
+ */
 public class Execution implements Serializable
 {
    private static final long serialVersionUID = 8086268408804672852L;
    
-   private static final Logger log = Logger.getLogger(Execution.class);   
-   
-
    public Execution(Benchmark bm, Date date, String provider)
    {
       this.benchmark = bm;

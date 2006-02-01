@@ -49,6 +49,8 @@ public class PointToPointRouter implements Router
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    List receivers;
 
@@ -75,7 +77,7 @@ public class PointToPointRouter implements Router
             {
                Delivery d = receiver.handle(observer, routable, tx);
 
-               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
+               if (trace) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
 
                if (d != null && !d.isCancelled())
                {

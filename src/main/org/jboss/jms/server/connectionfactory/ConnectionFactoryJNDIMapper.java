@@ -21,22 +21,23 @@
   */
 package org.jboss.jms.server.connectionfactory;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
+import org.jboss.jms.server.remoting.JMSDispatcher;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.aop.Dispatcher;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -70,10 +71,11 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
 
    // ConnectionFactoryManager implementation -----------------------
 
-   public synchronized String registerConnectionFactory(String clientID,
-                                                        JNDIBindings jndiBindings) throws Exception
+   public synchronized int registerConnectionFactory(String clientID,
+                                                     JNDIBindings jndiBindings) throws Exception
    {
-      String id = generateConnectionFactoryID();
+      //String id = generateConnectionFactoryID();
+      int id = serverPeer.getNextObjectID();
 
       ServerConnectionFactoryEndpoint endpoint =
          new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings);
@@ -88,9 +90,11 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
          throw new JBossJMSException("Failed to create connection factory delegate", e);
       }
 
-      Dispatcher.singleton.registerTarget(id, endpoint);
+      ConnectionFactoryAdvised connFactoryAdvised = new ConnectionFactoryAdvised(endpoint);
+      
+      JMSDispatcher.instance.registerTarget(Integer.valueOf(id), connFactoryAdvised);
 
-      endpoints.put(id, endpoint);
+      endpoints.put(Integer.valueOf(id), endpoint);
 
       JBossConnectionFactory cf = new JBossConnectionFactory(delegate);
 
@@ -104,15 +108,15 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
          }
       }
 
-      factories.put(id, cf);
+      factories.put(Integer.valueOf(id), cf);
 
       return id;
    }
 
-   public synchronized void unregisterConnectionFactory(String connFactoryID) throws Exception
+   public synchronized void unregisterConnectionFactory(int connFactoryID) throws Exception
    {
       ServerConnectionFactoryEndpoint endpoint =
-         (ServerConnectionFactoryEndpoint)endpoints.get(connFactoryID);
+         (ServerConnectionFactoryEndpoint)endpoints.get(Integer.valueOf(connFactoryID));
 
       JNDIBindings jndiBindings = endpoint.getJNDIBindings();
       if (jndiBindings != null)
@@ -125,11 +129,12 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
             log.debug(jndiName + " unregistered");
          }
       }
+      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(connFactoryID));
    }
 
-   public synchronized javax.jms.ConnectionFactory getConnectionFactory(String connectionFactoryID)
+   public synchronized javax.jms.ConnectionFactory getConnectionFactory(int connectionFactoryID)
    {
-      return (javax.jms.ConnectionFactory)factories.get(connectionFactoryID);
+      return (javax.jms.ConnectionFactory)factories.get(Integer.valueOf(connectionFactoryID));
    }
 
    // Public --------------------------------------------------------
@@ -152,12 +157,12 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
 
    // Private -------------------------------------------------------
 
-   private long connFactoryIDSequence = 0;
+ //  private long connFactoryIDSequence = 0;
 
-   private synchronized String generateConnectionFactoryID()
-   {
-      return "CONNFACTORY_" + connFactoryIDSequence++;
-   }
+//   private synchronized String generateConnectionFactoryID()
+//   {
+//      return "CONNFACTORY_" + connFactoryIDSequence++;
+//   }
 
    // Inner classes -------------------------------------------------
 }

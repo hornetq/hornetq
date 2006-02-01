@@ -23,17 +23,39 @@ package org.jboss.jms.perf.framework;
 
 import java.io.Serializable;
 
+/**
+ * 
+ * A JobResult.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
+ */
 public class JobResult implements Serializable
 {
    /** The serialVersionUID */
    private static final long serialVersionUID = -6238059261642836113L;
-
-   public long startTime;
    
-   public long endTime;
+   private long startTime;
+   
+   private long endTime;
+   
+   public JobResult(long startTime, long endTime)
+   {
+      this.startTime = startTime;
       
-   public boolean failed;
-   
-   public Throwable[] throwables;
+      this.endTime = endTime;
+   }
 
+   public long getStartTime()
+   {
+      return startTime;
+   }
+   
+   public long getEndTime()
+   {
+      return endTime;
+   }
+      
 }

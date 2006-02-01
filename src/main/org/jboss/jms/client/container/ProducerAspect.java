@@ -26,8 +26,8 @@ import javax.jms.Message;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
@@ -54,10 +54,12 @@ public class ProducerAspect
    
    // Attributes ----------------------------------------------------     
    
-   // Static --------------------------------------------------------
+   private boolean trace = log.isTraceEnabled();
+   
+   // Static --------------------------------------------------------      
    
    // Constructors --------------------------------------------------
-
+   
    // Public --------------------------------------------------------
 
    public Object handleSend(Invocation invocation) throws Throwable
@@ -84,7 +86,7 @@ public class ProducerAspect
          //Use the delivery mode of the producer
          deliveryMode = theState.getDeliveryMode();
 
-         if (log.isTraceEnabled()) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
+         if (trace) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
       }
       m.setJMSDeliveryMode(deliveryMode);
 
@@ -93,7 +95,7 @@ public class ProducerAspect
          //Use the priority of the producer
          priority = theState.getPriority();
 
-         if (log.isTraceEnabled()) { log.trace("Using producer's default priority: " + priority); }
+         if (trace) { log.trace("Using producer's default priority: " + priority); }
       }
       m.setJMSPriority(priority);
 
@@ -111,7 +113,7 @@ public class ProducerAspect
          //Use time to live value from producer
          timeToLive = theState.getTimeToLive();
 
-         if (log.isTraceEnabled()) { log.trace("Using producer's default timeToLive: " + timeToLive); }
+         if (trace) { log.trace("Using producer's default timeToLive: " + timeToLive); }
       }
 
       if (timeToLive == 0)
@@ -134,7 +136,7 @@ public class ProducerAspect
             throw new UnsupportedOperationException("Destination not specified");
          }
 
-         if (log.isTraceEnabled()) { log.trace("Using producer's default destination: " + destination); }
+         if (trace) { log.trace("Using producer's default destination: " + destination); }
       }
       else
       {
@@ -270,7 +272,6 @@ public class ProducerAspect
 
    // Private -------------------------------------------------------
    
-
    private String generateMessageID()
    {
       StringBuffer sb = new StringBuffer("ID:");

@@ -30,7 +30,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    // Attributes ----------------------------------------------------
 
    protected String clientID;
-   protected String connectionFactoryID;
+   protected int connectionFactoryID;
    protected JNDIBindings jndiBindings;
 
    protected ObjectName serverPeerObjectName;

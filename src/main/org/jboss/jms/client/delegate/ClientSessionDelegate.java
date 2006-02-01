@@ -41,7 +41,6 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 
 /**
@@ -66,9 +65,13 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    // Constructors --------------------------------------------------
 
-   public ClientSessionDelegate(String objectID)
+   public ClientSessionDelegate(int objectID)
    {
       super(objectID);
+   }
+   
+   public ClientSessionDelegate()
+   {      
    }
 
    // SessionDelegate implementation --------------------------------
@@ -278,7 +281,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void postDeliver(String messageID, String receiverID) throws JMSException
+   public void postDeliver(String messageID, int receiverID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -287,7 +290,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void preDeliver(String messageID, String receiverID) throws JMSException
+   public void preDeliver(String messageID, int receiverID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -368,7 +371,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(Message m, String consumerID, ConsumerDelegate cons)
+   public void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -377,7 +380,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public String toString()
    {
-      return "SessionDelegate[" + Util.guidToString(id) + "]";
+      return "SessionDelegate[" + id + "]";
    }
 
    // Protected -----------------------------------------------------

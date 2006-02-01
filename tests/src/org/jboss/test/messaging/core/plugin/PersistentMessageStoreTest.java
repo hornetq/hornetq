@@ -81,7 +81,7 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
     */
    public void testTwoStoresSameDatabase() throws Exception
    {
-      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, 9, headers, "payload");
+      Message m = MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
 
       assertEquals(0, ((JDBCMessageStore)ms).getMessageReferenceCount(m.getMessageID()));
 

@@ -91,7 +91,7 @@ class JBossSession implements
    private static final Logger log = Logger.getLogger(JBossSession.class);
    
    // Attributes ----------------------------------------------------
-
+   
    protected SessionDelegate delegate;
 
    protected int sessionType;
@@ -459,9 +459,9 @@ class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(Message m, String receiverID, ConsumerDelegate cons)
+   void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons)
    {
-      delegate.addAsfMessage(m, receiverID, cons);
+      delegate.addAsfMessage(m, consumerID, cons);
    }
       
    // Protected -----------------------------------------------------

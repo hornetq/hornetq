@@ -40,15 +40,15 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -56,6 +56,8 @@ import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.marshal.MarshalFactory;
+import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -78,11 +80,13 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
    public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
+   
+   
 
    // Static --------------------------------------------------------
-
+   
    // Attributes ----------------------------------------------------
-
+   
    protected String serverPeerID;
    protected ObjectName connectorName;
    protected InvokerLocator locator;
@@ -95,6 +99,8 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    protected boolean started;
 
    protected Map connections;
+   
+   protected int objectIDSequence = Integer.MIN_VALUE + 1;
 
    // wired components
 
@@ -132,14 +138,17 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       // the default value to use, unless the JMX attribute is modified
       connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
       
-      destinationJNDIMapper = new DestinationJNDIMapper(this);
       securityStore = new SecurityMetadataStore();
-      connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       txRepository = new TransactionRepository();
+      
+      destinationJNDIMapper = new DestinationJNDIMapper(this);
+      connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
+
 
       version = new Version("VERSION");
 
       started = false;
+      
    }
 
    // ConnectionManager implementation ------------------------------
@@ -196,7 +205,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
          getAttribute(durableSubscriptionStoreObjectName, "Instance");
 
       // start the rest of the internal components
-
+      
       destinationJNDIMapper.start();
       securityStore.start();
       connFactoryJNDIMapper.start();
@@ -487,6 +496,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    {
       return messageStoreDelegate;
    }
+   
+   public synchronized int getNextObjectID()
+   {
+      return objectIDSequence++;
+   }
 
    public String toString()
    {
@@ -507,7 +521,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    {
       InitialContext ic = new InitialContext();
 
-      String connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
+      int connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
 
       XAConnectionFactory xaConnFactory =
          (XAConnectionFactory)connFactoryJNDIMapper.getConnectionFactory(connFactoryID);
@@ -550,10 +564,18 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
+      //We explicitly associate the datatype "jms" with our customer SerializationManager
+      //This is vital for performance reasons.
+      SerializationStreamFactory.setManagerClassName("jms", "org.jboss.jms.server.remoting.JMSSerializationManager");
+      
+      JMSWireFormat wf = new JMSWireFormat();
+      
+      MarshalFactory.addMarshaller("jms", wf, wf);
+            
       log.info("Getting invokerlocator for " + connectorName);
       
       String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
-
+      
       locator = new InvokerLocator(s);
       
       //Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
@@ -561,6 +583,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       //even when in the same JVM
 
       log.debug("LocatorURI: " + getLocatorURI());
+      
+      //First remove the invocation handler specified in the config
+      mbeanServer.invoke(connectorName, "removeInvocationHandler",
+            new Object[] {"JMS"},
+            new String[] {"java.lang.String"});
 
       // add the JMS subsystem invocation handler
       

@@ -69,8 +69,12 @@ public class MessageTestBase extends JMSTestBase
 
       queueProd.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueProd.send(message);
+      
+      log.info("Message sent");
 
       Message r = queueCons.receive();
+      
+      log.info("Message received");
 
       assertEquals(DeliveryMode.NON_PERSISTENT, r.getJMSDeliveryMode());
 

@@ -9,10 +9,15 @@ package org.jboss.jms.perf.framework;
 import java.io.Serializable;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A ServerRequest.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public interface ServerRequest extends Serializable
 {
-   JobResult execute();
-    
+   Object execute(JobStore store) throws Exception;
 }

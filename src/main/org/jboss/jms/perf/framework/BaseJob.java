@@ -14,9 +14,16 @@ import javax.jms.Destination;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A BaseJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public abstract class BaseJob implements Job, Serializable
 {
@@ -32,11 +39,11 @@ public abstract class BaseJob implements Job, Serializable
    
    protected ConnectionFactory cf;
    
-   protected boolean failed;
-   
    protected String slaveURL;
    
    protected String connectionFactoryJndiName;
+   
+   protected String id;
    
    public BaseJob(String slaveURL, Properties jndiProperties, String destinationName, String connectionFactoryJndiName)
    {
@@ -44,18 +51,29 @@ public abstract class BaseJob implements Job, Serializable
       this.jndiProperties = jndiProperties;
       this.destName = destinationName;
       this.connectionFactoryJndiName = connectionFactoryJndiName;
+      this.id = new GUID().toString();
    }
  
    
-   protected void setup() throws Exception
+   public void initialize() throws PerfException
    { 
-      ic = new InitialContext(jndiProperties);
-      
-      log.trace("Looking up:" + destName);
-      
-      dest = (Destination)ic.lookup(destName);
-      
-      cf = (ConnectionFactory)ic.lookup(connectionFactoryJndiName);
+      try
+      {
+         
+         ic = new InitialContext(jndiProperties);
+         
+         log.trace("Looking up:" + destName);
+         
+         dest = (Destination)ic.lookup(destName);
+         
+         cf = (ConnectionFactory)ic.lookup(connectionFactoryJndiName);
+         
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to initialize", e);
+         throw new PerfException("Failed to initialize", e);
+      }
       
    }
    
@@ -100,6 +118,11 @@ public abstract class BaseJob implements Job, Serializable
    public String getSlaveURL()
    {
       return slaveURL;
+   }
+   
+   public String getId()
+   {
+      return id;
    }
    
 }

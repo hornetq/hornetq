@@ -1120,33 +1120,36 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
-   public void testRemotingInternals() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         return;
-      }
-
-      Connector serverConnector = ServerManagement.getConnector();
-      ServerInvoker serverInvoker = serverConnector.getServerInvoker();
-
-      JMSServerInvocationHandler invocationHandler =
-            (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
-
-      Collection listeners = invocationHandler.getListeners();
-
-      assertEquals(3, listeners.size());  // topicConsumer's and queueConsumer's
-
-      MessageConsumer c = consumerSession.createConsumer(queue);
-
-      listeners = invocationHandler.getListeners();
-      assertEquals(4, listeners.size());
-
-      c.close();
-
-      listeners = invocationHandler.getListeners();
-      assertEquals(3, listeners.size());
-   }
+   
+   //This test is no longer valid since we only use one listener per connection now
+   
+//   public void testRemotingInternals() throws Exception
+//   {
+//      if (ServerManagement.isRemote())
+//      {
+//         return;
+//      }
+//
+//      Connector serverConnector = ServerManagement.getConnector();
+//      ServerInvoker serverInvoker = serverConnector.getServerInvoker();
+//
+//      JMSServerInvocationHandler invocationHandler =
+//            (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
+//
+//      Collection listeners = invocationHandler.getListeners();
+//
+//      assertEquals(3, listeners.size());  // topicConsumer's and queueConsumer's
+//
+//      MessageConsumer c = consumerSession.createConsumer(queue);
+//
+//      listeners = invocationHandler.getListeners();
+//      assertEquals(4, listeners.size());
+//
+//      c.close();
+//
+//      listeners = invocationHandler.getListeners();
+//      assertEquals(3, listeners.size());
+//   }
 
    public void testMultipleConcurrentConsumers() throws Exception
    {

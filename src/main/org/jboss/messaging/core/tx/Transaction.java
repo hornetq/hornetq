@@ -51,6 +51,8 @@ public class Transaction
 
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    protected long longTxID;
    
    protected String guidTxID;
@@ -140,7 +142,7 @@ public class Transaction
          throw new TransactionException("Transaction marked rollback only, cannot commit");
       }
 
-      if (log.isTraceEnabled()) { log.trace("committing " + this); }
+      if (trace) { log.trace("committing " + this); }
 
       //TODO - commit the tx in the database
       
@@ -182,7 +184,7 @@ public class Transaction
    {
       //TODO - rollback the tx in the database
 
-      if (log.isTraceEnabled()) { log.trace("rolling back " + this); }
+      if (trace) { log.trace("rolling back " + this); }
 
       state = STATE_ROLLEDBACK;
       
@@ -201,7 +203,7 @@ public class Transaction
 
    public void setRollbackOnly() throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("setting rollback_only on " + this); }
+      if (trace) { log.trace("setting rollback_only on " + this); }
 
       state = STATE_ROLLBACK_ONLY;
    }

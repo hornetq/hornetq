@@ -23,12 +23,12 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 
@@ -53,16 +53,16 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    protected ServerPeer serverPeer;
    protected String clientID;
-   protected String id;
+   protected int id;
    protected JNDIBindings jndiBindings;
-
+ 
    // Constructors --------------------------------------------------
 
    /**
     * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
     *        JNDI.
     */
-   public ServerConnectionFactoryEndpoint(String id, ServerPeer serverPeer,
+   public ServerConnectionFactoryEndpoint(int id, ServerPeer serverPeer,
                                           String defaultClientID, JNDIBindings jndiBindings)
    {
       this.serverPeer = serverPeer;
@@ -72,7 +72,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    }
 
    // ConnectionFactoryDelegate implementation ----------------------
-
+   
    public ConnectionDelegate createConnectionDelegate(String username, String password,
                                                       String clientConnectionId) throws JMSException
    {
@@ -80,7 +80,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       
       // authenticate the user
       serverPeer.getSecurityManager().authenticate(username, password);
-    
+      
       // see if there is a preconfigured client id for the user
       if (username != null)
       {
@@ -99,10 +99,10 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          new ServerConnectionEndpoint(serverPeer, clientID, username, password, clientConnectionId);
 
 
-      String connectionID = endpoint.getConnectionID();
+      int connectionID = endpoint.getConnectionID();
 
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
-      Dispatcher.singleton.registerTarget(connectionID, connAdvised);
+      JMSDispatcher.instance.registerTarget(Integer.valueOf(connectionID), connAdvised);
       
       serverPeer.registerConnection(clientConnectionId, endpoint);
 
@@ -130,7 +130,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // Public --------------------------------------------------------
    
-   public String getID()
+   public int getID()
    {
       return id;
    }

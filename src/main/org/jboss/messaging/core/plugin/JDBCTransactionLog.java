@@ -165,6 +165,8 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    protected String dataSourceJNDIName;
    protected DataSource ds;
@@ -324,7 +326,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          return;
       }
       
-      if (log.isTraceEnabled()) { log.trace("writing prepared flag for " + tx); }
+      if (trace) { log.trace("writing prepared flag for " + tx); }
       
       Connection conn = null;
       PreparedStatement ps = null;
@@ -347,7 +349,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
                   
          int rows = ps.executeUpdate();
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(prepareTransaction, getTxId(tx)) + " updated " + rows + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(prepareTransaction, getTxId(tx)) + " updated " + rows + " row(s)"); }
                     
       }
       catch (Exception e)
@@ -386,7 +388,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
     */
    public void commitTx(Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("updating database for committing transaction " + tx); }
+      if (trace) { log.trace("updating database for committing transaction " + tx); }
       
       Connection conn = null;
       PreparedStatement ps = null;
@@ -408,7 +410,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          
          int rows = ps.executeUpdate();
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(commitMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(commitMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
                   
          ps.close();
          ps = conn.prepareStatement(commitMessageRef2);
@@ -424,7 +426,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          
          rows = ps.executeUpdate();
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(commitMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(commitMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
 
          removeTXRecord(conn, tx);
       }
@@ -464,7 +466,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
     */
    public void rollbackTx(Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("rolling back " + tx); }
+      if (trace) { log.trace("rolling back " + tx); }
       
       Connection conn = null;
       PreparedStatement ps = null;
@@ -487,7 +489,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          
          int rows = ps.executeUpdate();
          
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(rollbackMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(rollbackMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
          
          ps.close();
          
@@ -503,7 +505,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          
          rows = ps.executeUpdate();
          
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(rollbackMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(rollbackMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
                   
          removeTXRecord(conn, tx);
       }
@@ -539,7 +541,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
 
    public void removeAllMessageData(Serializable channelID) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("removing all message data for channel " + channelID); }
+      if (trace) { log.trace("removing all message data for channel " + channelID); }
 
       Connection conn = null;
       PreparedStatement ps = null;
@@ -593,7 +595,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
 
    public List messageRefs(Serializable storeID, Serializable channelID) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("getting message references for channel " + channelID + " and store " + storeID); }
+      if (trace) { log.trace("getting message references for channel " + channelID + " and store " + storeID); }
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
@@ -616,7 +618,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
             result.add(id);
          }
          
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectChannelMessageRefs, channelID) + " selected " + result.size() + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(selectChannelMessageRefs, channelID) + " selected " + result.size() + " row(s)"); }
 
          return result;
       }
@@ -844,7 +846,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          try
          {
             conn.createStatement().executeUpdate(createTransaction);
-            if (log.isTraceEnabled()) { log.trace(createTransaction + " succeeded"); }
+            if (trace) { log.trace(createTransaction + " succeeded"); }
          }
          catch (SQLException e)
          {
@@ -854,7 +856,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          try
          {
             conn.createStatement().executeUpdate(createMessageReference);
-            if (log.isTraceEnabled()) { log.trace(createMessageReference + " succeeded"); }
+            if (trace) { log.trace(createMessageReference + " succeeded"); }
          }
          catch (SQLException e)
          {
@@ -864,7 +866,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          try
          {
             conn.createStatement().executeUpdate(createIdxMessageRefTx);
-            if (log.isTraceEnabled()) { log.trace(createIdxMessageRefTx + " succeeded"); }
+            if (trace) { log.trace(createIdxMessageRefTx + " succeeded"); }
          }
          catch (SQLException e)
          {
@@ -928,7 +930,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
    
    protected void addTXRecord(Connection conn, Transaction tx) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("logging " + tx);}
+      if (trace) { log.trace("logging " + tx);}
 
       PreparedStatement ps = null;
       String statement = "UNDEFINED";
@@ -981,13 +983,13 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
             }
             finally
             {
-               if (log.isTraceEnabled()) { log.trace(selectTransactionId + (ltxID == Long.MIN_VALUE ? " failed!" : " returned " + txID)); }
+               if (trace) { log.trace(selectTransactionId + (ltxID == Long.MIN_VALUE ? " failed!" : " returned " + txID)); }
             }
          }
       }
       finally
       {
-         if (log.isTraceEnabled())
+         if (trace)
          {
             String s = insertTransaction.equals(statement) ?
                JDBCUtil.statementToString(insertTransaction, txID) :
@@ -1031,7 +1033,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
          int rows = ps.executeUpdate();
 
          
-         if (log.isTraceEnabled())
+         if (trace)
          {
             log.trace(JDBCUtil.statementToString(deleteTransaction, getTxId(tx)) + " removed " + rows + " row(s)"); 
            
@@ -1129,7 +1131,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
                                Connection conn)
       throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("adding " + ref + " to channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
+      if (trace) { log.trace("adding " + ref + " to channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
             
       PreparedStatement ps = null;
 
@@ -1187,7 +1189,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
       }
       finally
       {
-         if (log.isTraceEnabled() && attempted)
+         if (trace && attempted)
          {
             String s = JDBCUtil.statementToString(insertMessageRef, channelID, messageID,
                                                   storeID, getTxId(tx), state, new Long(ordering));
@@ -1209,7 +1211,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
    protected void removeReference(Serializable channelID, MessageReference ref, Transaction tx, Connection conn)
       throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("removing " + ref + " from channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
+      if (trace) { log.trace("removing " + ref + " from channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
             
       PreparedStatement ps = null;
       try
@@ -1229,7 +1231,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
             
             updated = ps.executeUpdate();
    
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(deleteMessageRef, channelID, messageID) + " removed/updated " + updated + " row(s)"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(deleteMessageRef, channelID, messageID) + " removed/updated " + updated + " row(s)"); }
          }
          else
          {
@@ -1248,7 +1250,7 @@ public class JDBCTransactionLog extends ServiceMBeanSupport implements Transacti
    
             updated = ps.executeUpdate();
    
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(updateMessageRef, getTxId(tx), channelID, messageID) + " updated " + updated + " row(s)"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(updateMessageRef, getTxId(tx), channelID, messageID) + " updated " + updated + " row(s)"); }
          }   
       }
       finally

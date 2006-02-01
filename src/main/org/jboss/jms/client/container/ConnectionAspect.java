@@ -57,6 +57,8 @@ public class ConnectionAspect implements ConnectionListener
 
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    protected String clientID;
    
    protected ExceptionListener exceptionListener;
@@ -177,7 +179,7 @@ public class ConnectionAspect implements ConnectionListener
    
    public void handleConnectionException(Throwable t, Client c)
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Caught exception from connection", t);
       }

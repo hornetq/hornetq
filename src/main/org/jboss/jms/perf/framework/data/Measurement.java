@@ -12,6 +12,15 @@ import java.util.Map;
 
 import org.jboss.logging.Logger;
 
+/**
+ * 
+ * A Measurement.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
+ */
 public class Measurement implements Serializable
 {      
    private static final long serialVersionUID = 7208068351755451288L;

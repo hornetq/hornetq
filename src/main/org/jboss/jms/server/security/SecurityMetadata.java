@@ -69,7 +69,6 @@ public class SecurityMetadata  {
 
    }
 
-
    HashMap roles = new HashMap();
    HashSet read = new HashSet();
    HashSet write = new HashSet();

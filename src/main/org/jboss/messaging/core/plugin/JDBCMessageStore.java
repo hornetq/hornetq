@@ -52,7 +52,7 @@ import org.jboss.messaging.util.Util;
 import org.jboss.tm.TransactionManagerServiceMBean;
 
 /**
- * Important! The default DML and DDL will work with HSQLDB.
+ * Important! The default DML and DDL is only designed to work with HSQLDB.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -124,14 +124,14 @@ public class JDBCMessageStore extends PersistentMessageStore
       "DELIVERYCOUNT INTEGER, " +
       "COREHEADERS OBJECT, " +
       "PAYLOAD OBJECT, " +
-      "TYPE INTEGER, " +
+      "TYPE TINYINT, " +
       "JMSTYPE VARCHAR(255), " +
       "CORRELATIONID OBJECT, " +
       "DESTINATIONISQUEUE CHAR(1), " +
       "DESTINATION VARCHAR(255), " +
       "REPLYTOISQUEUE CHAR(1), " +
       "REPLYTO VARCHAR(255), " +
-      "CONNECTIONID VARCHAR(255), " +
+      "CONNECTIONID INTEGER, " +
       "JMSPROPERTIES OBJECT, " +
       "REFERENCECOUNT TINYINT, " +
       "PRIMARY KEY (MESSAGEID))";
@@ -153,6 +153,8 @@ public class JDBCMessageStore extends PersistentMessageStore
 
    protected Properties sqlProperties;
    protected boolean createTablesOnStartup;
+   
+   private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -239,7 +241,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             referenceCount = rs.getInt(1);
          }
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectReferenceCount, id) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
+         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, id) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
 
          if (referenceCount == 0)
          {
@@ -251,7 +253,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             ps.setString(2, m.isReliable() ? "Y" : "N");
             ps.setLong(3, m.getExpiration());
             ps.setLong(4, m.getTimestamp());
-            ps.setInt(5, m.getPriority());
+            ps.setByte(5, m.getPriority());
             ps.setInt(6, m.getDeliveryCount());
 
             ps.setObject(7, ((MessageSupport)m).getHeaders());
@@ -268,7 +270,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             boolean replyToIsQueue = false;
             String replyTo = null;
             Map jmsProperties = null;
-            String connectionID = null;
+            int connectionID = -1;
 
             if (m instanceof JBossMessage)
             {
@@ -323,12 +325,12 @@ public class JDBCMessageStore extends PersistentMessageStore
             ps.setString(13, dest);
             ps.setString(14, replyToIsQueue ? "Y" : "N");
             ps.setString(15, replyTo);
-            ps.setString(16, connectionID);
+            ps.setInt(16, connectionID);
             ps.setObject(17, jmsProperties);
             ps.setInt(18, 1);
 
             int result = ps.executeUpdate();
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
          }
          else
          {
@@ -338,12 +340,12 @@ public class JDBCMessageStore extends PersistentMessageStore
             ps.setString(2, id);
 
             ps.executeUpdate();
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), id) + " executed successfully"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), id) + " executed successfully"); }
          }
       }
       catch (Exception e)
       {
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " failed"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " failed"); }
          wrap.exceptionOccurred();
          throw e;
       }
@@ -396,11 +398,11 @@ public class JDBCMessageStore extends PersistentMessageStore
             referenceCount = rs.getInt(1);
          }
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectReferenceCount, messageID) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
+         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, messageID) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
 
          if (referenceCount == 0)
          {
-            if (log.isTraceEnabled()) { log.trace("no message " + messageID + " to delete in the database"); }
+            if (trace) { log.trace("no message " + messageID + " to delete in the database"); }
             return false;
          }
          else if (referenceCount == 1)
@@ -410,7 +412,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             ps.setString(1, messageID);
 
             int rows = ps.executeUpdate();
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(deleteMessage, messageID) + " deleted " + rows + " row(s)"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(deleteMessage, messageID) + " deleted " + rows + " row(s)"); }
 
             return rows == 1;
          }
@@ -422,7 +424,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             ps.setString(2, messageID);
 
             ps.executeUpdate();
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), messageID) + " executed successfully"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), messageID) + " executed successfully"); }
             return true;
          }
       }
@@ -479,30 +481,30 @@ public class JDBCMessageStore extends PersistentMessageStore
 
          int count = 0;
          if (rs.next())
-         {
+         {           
             m = MessageFactory.createMessage(rs.getString(1), //message id
                                       rs.getString(2).equals("Y"), //reliable
                                       rs.getLong(3), //expiration
                                       rs.getLong(4), //timestamp
-                                      rs.getInt(5), //priority
+                                      rs.getByte(5), //priority
                                       rs.getInt(6), //delivery count
                                       (Map)rs.getObject(7), //core headers
                                       (Serializable)rs.getObject(8), //payload
-                                      rs.getInt(9), //type
+                                      rs.getByte(9), //type
                                       rs.getString(10), //jms type
                                       rs.getObject(11), //correlation id
                                       rs.getString(12).equals("Y"), //destination is queue
                                       rs.getString(13), //destination
                                       rs.getString(14).equals("Y"), //reply to is queue
                                       rs.getString(15), //reply to
-                                      rs.getString(16), // connection id
+                                      rs.getInt(16), // connection id
                                       (Map)rs.getObject(17)); // jms properties
 
             referenceCount = rs.getInt(18);
             count ++;
          }
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectMessage, messageID) + " selected " + count + " row(s)"); }
+         if (trace) { log.trace(JDBCUtil.statementToString(selectMessage, messageID) + " selected " + count + " row(s)"); }
 
          if (m != null)
          {
@@ -512,7 +514,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             ps.setString(2, (String)m.getMessageID());
 
             ps.executeUpdate();
-            if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), m.getMessageID()) + " executed successfully"); }
+            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), m.getMessageID()) + " executed successfully"); }
          }
 
          return m;
@@ -577,7 +579,7 @@ public class JDBCMessageStore extends PersistentMessageStore
             count = rs.getInt(1);
          }
 
-         if (log.isTraceEnabled()) { log.trace(JDBCUtil.statementToString(selectReferenceCount, messageID) + " returned " + (count == 0 ? "no rows" : Integer.toString(count))); }
+         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, messageID) + " returned " + (count == 0 ? "no rows" : Integer.toString(count))); }
 
          return count;
       }
@@ -718,7 +720,7 @@ public class JDBCMessageStore extends PersistentMessageStore
          try
          {
             conn.createStatement().executeUpdate(createMessage);
-            if (log.isTraceEnabled()) { log.trace(createMessage + " succeeded"); }
+            if (trace) { log.trace(createMessage + " succeeded"); }
          }
          catch (SQLException e)
          {

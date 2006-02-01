@@ -63,9 +63,9 @@ public interface SessionDelegate extends SessionEndpoint
    
    TextMessage createTextMessage(String text) throws JMSException;
    
-   void preDeliver(String messageID, String receiverID) throws JMSException;
+   void preDeliver(String messageID, int receiverID) throws JMSException;
    
-   void postDeliver(String messageID, String receiverID) throws JMSException;
+   void postDeliver(String messageID, int receiverID) throws JMSException;
    
    MessageListener getMessageListener() throws JMSException;
    
@@ -76,7 +76,7 @@ public interface SessionDelegate extends SessionEndpoint
    XAResource getXAResource();
    
    //TODO - remove this - doesn't really belong here
-   void addAsfMessage(Message m, String consumerID, ConsumerDelegate cons);
+   void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons);
    
    public boolean getTransacted();
    

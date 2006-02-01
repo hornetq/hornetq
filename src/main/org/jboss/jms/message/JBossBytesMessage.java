@@ -63,10 +63,12 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
 
-   public static final int TYPE = 1;
+   public static final byte TYPE = 1;
 
    // Attributes ----------------------------------------------------
 
+   private boolean trace = log.isTraceEnabled();
+   
    private transient ByteArrayOutputStream ostream;
 
    private transient DataOutputStream p;
@@ -102,7 +104,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          boolean reliable,
          long expiration,
          long timestamp,
-         int priority,
+         byte priority,
          int deliveryCount,
          Map coreHeaders,
          Serializable payload,
@@ -112,7 +114,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          String destination,
          boolean replyToIsQueue,
          String replyTo,
-         String connectionID,
+         int connectionID,
          Map jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
@@ -133,7 +135,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    {
       super(other);
       
-      if (log.isTraceEnabled()) { log.trace("Creating new JBossBytesMessage from other JBossBytesMessage"); }
+      if (trace) { log.trace("Creating new JBossBytesMessage from other JBossBytesMessage"); }
       
    }
 
@@ -158,7 +160,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    // Public --------------------------------------------------------
 
-   public int getType()
+   public byte getType()
    {
       return JBossBytesMessage.TYPE;
    }
@@ -591,17 +593,17 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    public void reset() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("reset()");
+      if (trace) log.trace("reset()");
       try
       {
          if (ostream != null)
          {
-            if (log.isTraceEnabled())  { log.trace("Flushing ostream to array"); }
+            if (trace)  { log.trace("Flushing ostream to array"); }
 
             p.flush();
             payload = ostream.toByteArray();
 
-            if (log.isTraceEnabled()) { log.trace("Array is now: " + payload); }
+            if (trace) { log.trace("Array is now: " + payload); }
 
             ostream.close();
          }
@@ -716,7 +718,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       // read it
       if (istream == null || m == null)
       {
-         if (log.isTraceEnabled()) {  log.trace("internalArray:" + payload); }
+         if (trace) {  log.trace("internalArray:" + payload); }
          istream = new ByteArrayInputStream((byte[])payload);
          m = new DataInputStream(istream);
       }

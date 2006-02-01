@@ -18,7 +18,13 @@ import org.jboss.jms.perf.framework.factories.MessageFactory;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A SenderJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class SenderJob extends BaseThroughputJob
 {
@@ -34,8 +40,6 @@ public class SenderJob extends BaseThroughputJob
    
    protected MessageFactory mf;
    
-   protected long initialPause;
-   
    public Servitor createServitor(int numMessages)
    {
       return new Sender(numMessages);
@@ -48,22 +52,20 @@ public class SenderJob extends BaseThroughputJob
       log.trace("Message size: " + msgSize);
       log.trace("Message type: " + mf.getClass().getName());
       log.trace("Delivery Mode:" + (deliveryMode == DeliveryMode.PERSISTENT ? "Persistent" : "Non-persistent"));
-      log.trace("Initial pause:" + initialPause);
    }
    
    public SenderJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
          int numSessions, boolean transacted, int transactionSize, 
-         int numMessages, long timeToStart, boolean anon, int messageSize,
-         MessageFactory messageFactory, int deliveryMode, long initialPause)
+         int numMessages, boolean anon, int messageSize,
+         MessageFactory messageFactory, int deliveryMode)
    {
       super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
-            numSessions, transacted, transactionSize, numMessages, timeToStart);
+            numSessions, transacted, transactionSize, numMessages);
       this.anon = anon;
       this.msgSize = messageSize;
       this.mf = messageFactory;
       this.deliveryMode = deliveryMode;
-      this.initialPause = initialPause;
    }
    
 
@@ -114,9 +116,7 @@ public class SenderJob extends BaseThroughputJob
                prod = sess.createProducer(dest);
             }
             
-            prod.setDeliveryMode(deliveryMode); 
-            
-            Thread.sleep(initialPause);
+            prod.setDeliveryMode(deliveryMode);             
          }
          catch (Throwable e)
          {
@@ -209,8 +209,4 @@ public class SenderJob extends BaseThroughputJob
       this.msgSize = msgSize;
    }
    
-   public void setInitialPause(long initialPause)
-   {
-      this.initialPause = initialPause;
-   }
 }

@@ -56,6 +56,8 @@ public class ResourceManager
    
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    protected ConcurrentHashMap transactions = new ConcurrentHashMap();
    
    // Static --------------------------------------------------------
@@ -90,7 +92,7 @@ public class ResourceManager
     */
    public void addMessage(Object xid, Message m)
    {
-      if (log.isTraceEnabled()) { log.trace("Addding message for xid:" + xid); }
+      if (trace) { log.trace("Addding message for xid:" + xid); }
       TxState tx = getTx(xid);
       tx.getMessages().add(m);
    }
@@ -103,7 +105,7 @@ public class ResourceManager
     */
    public void addAck(Object xid, AckInfo ackInfo) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("Addding ack for xid:" + xid); }
+      if (trace) { log.trace("Addding ack for xid:" + xid); }
       TxState tx = getTx(xid);
       if (tx == null)
       {
@@ -114,7 +116,7 @@ public class ResourceManager
          
    public void commitLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("Commiting local xid=" + xid); }
+      if (trace) { log.trace("Commiting local xid=" + xid); }
       
       TxState tx = removeTx(xid);
       
@@ -133,7 +135,7 @@ public class ResourceManager
    
    public void rollbackLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("Rolling back local xid: " + xid); }
+      if (trace) { log.trace("Rolling back local xid: " + xid); }
       TxState tx = removeTx(xid);
       if (tx == null)
       {
@@ -171,7 +173,7 @@ public class ResourceManager
    
    public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Commiting xid=" + xid + ", onePhase=" + onePhase); }
+      if (trace) { log.trace("Commiting xid=" + xid + ", onePhase=" + onePhase); }
       
       TxState tx = removeTx(xid);
           
@@ -219,7 +221,7 @@ public class ResourceManager
    
    public void rollback(Xid xid, ConnectionDelegate connection) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Rolling back xid: " + xid); }
+      if (trace) { log.trace("Rolling back xid: " + xid); }
       TxState tx = removeTx(xid);
                   
       TransactionRequest request = null;
@@ -249,7 +251,7 @@ public class ResourceManager
    
    public void endTx(Xid xid, boolean success) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Ending xid=" + xid + ", success=" + success); }
+      if (trace) { log.trace("Ending xid=" + xid + ", success=" + success); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -262,7 +264,7 @@ public class ResourceManager
    
    public Xid joinTx(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Joining tx xid=" + xid); }
+      if (trace) { log.trace("Joining tx xid=" + xid); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -275,7 +277,7 @@ public class ResourceManager
    
    public int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Preparing xid=" + xid); }
+      if (trace) { log.trace("Preparing xid=" + xid); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -292,7 +294,7 @@ public class ResourceManager
    
    public Xid resumeTx(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Resuming tx xid=" + xid); }
+      if (trace) { log.trace("Resuming tx xid=" + xid); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -306,7 +308,7 @@ public class ResourceManager
 
    public Xid suspendTx(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Suppending tx xid=" + xid); }
+      if (trace) { log.trace("Suppending tx xid=" + xid); }
 
       TxState state = getTx(xid);
       if (state == null)
@@ -319,7 +321,7 @@ public class ResourceManager
 
    public Xid convertTx(LocalTxXid anonXid, Xid xid) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Converting tx anonXid=" + anonXid + ", xid=" + xid); }
+      if (trace) { log.trace("Converting tx anonXid=" + anonXid + ", xid=" + xid); }
 
       TxState state = getTx(anonXid);
       if (state == null)
@@ -341,7 +343,7 @@ public class ResourceManager
    
    public Xid startTx(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Starting tx xid=" + xid); }
+      if (trace) { log.trace("Starting tx xid=" + xid); }
 
       TxState state = getTx(xid);
       if (state != null)
@@ -355,7 +357,7 @@ public class ResourceManager
    
    public Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
    {
-      if (log.isTraceEnabled()) { log.trace("Calling recover " + flags); }
+      if (trace) { log.trace("Calling recover " + flags); }
       
       if (flags == XAResource.TMSTARTRSCAN)
       {
@@ -380,7 +382,7 @@ public class ResourceManager
    
    public TxState getTx(Object xid)
    {
-      if (log.isTraceEnabled()) { log.trace("Getting tx for tx id:" + xid); }
+      if (trace) { log.trace("Getting tx for tx id:" + xid); }
       TxState tx = (TxState) transactions.get(xid);      
       return tx;
    }

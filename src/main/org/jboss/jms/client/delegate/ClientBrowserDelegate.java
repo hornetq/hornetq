@@ -26,7 +26,6 @@ import javax.jms.Message;
 
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 
 /**
@@ -51,9 +50,13 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    // Constructors --------------------------------------------------
 
-   public ClientBrowserDelegate(String objectID)
+   public ClientBrowserDelegate(int objectID)
    {
       super(objectID);
+   }
+   
+   public ClientBrowserDelegate()
+   {      
    }
 
 
@@ -97,7 +100,7 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    public String toString()
    {
-      return "BrowserDelegate[" + Util.guidToString(id) + "]";
+      return "BrowserDelegate[" + id + "]";
    }
 
    // Protected -----------------------------------------------------

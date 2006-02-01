@@ -61,6 +61,8 @@ public class AsfAspect
    private static final Logger log = Logger.getLogger(AsfAspect.class);
 
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    //The list of messages that get processed on a call to run()
    protected LinkedList msgs = new LinkedList();
@@ -78,7 +80,7 @@ public class AsfAspect
 
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("setMessageListener"); }
+      if (trace) { log.trace("setMessageListener"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -96,14 +98,14 @@ public class AsfAspect
    
    public Object handleGetMessageListener(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("getMessageListener"); }
+      if (trace) { log.trace("getMessageListener"); }
       
       return sessionListener;
    }
    
    public Object handleCreateConnectionConsumer(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("createConnectionConsumer"); }
+      if (trace) { log.trace("createConnectionConsumer"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -121,25 +123,21 @@ public class AsfAspect
    
    public Object handleAddAsfMessage(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("addAsfMessage"); }
+      if (trace) { log.trace("addAsfMessage"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
       //Load the session with a message to be processed during a subsequent call to run()
 
       Message m = (Message)mi.getArguments()[0];
-      String theConsumerID = (String)mi.getArguments()[1];
+      int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
       ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
       
       if (m == null)
       {
          throw new IllegalStateException("Cannot add a null message to the session");
       }
-      if (theConsumerID == null)
-      {
-         throw new IllegalStateException("Cannot add a message without specifying receiverID");
-      }
-      
+
       AsfMessageHolder holder = new AsfMessageHolder();
       holder.msg = m;
       holder.consumerID = theConsumerID;
@@ -152,7 +150,7 @@ public class AsfAspect
 
    public Object handleRun(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("run"); }
+      if (trace) { log.trace("run"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
             
@@ -187,7 +185,7 @@ public class AsfAspect
    protected static class AsfMessageHolder
    {
       Message msg;
-      String consumerID;
+      int consumerID;
       ConsumerDelegate consumerDelegate;
    }
 }

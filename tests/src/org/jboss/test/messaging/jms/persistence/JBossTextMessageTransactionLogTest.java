@@ -56,7 +56,7 @@ public class JBossTextMessageTransactionLogTest extends JBossMessageTransactionL
    }
   
    
-   protected Message createMessage(int i) throws Exception
+   protected Message createMessage(byte i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         
       
@@ -77,7 +77,7 @@ public class JBossTextMessageTransactionLogTest extends JBossMessageTransactionL
             new GUID().toString(),
             i % 2 == 1,
             new GUID().toString(),
-            new GUID().toString(),
+            randInt().intValue(),
             jmsProperties);        
       m.setText(randString(10000));
       return m;      

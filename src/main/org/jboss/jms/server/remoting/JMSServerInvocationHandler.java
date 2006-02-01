@@ -28,18 +28,19 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.aop.Dispatcher;
+import org.jboss.aop.joinpoint.InvocationResponse;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-import org.jboss.messaging.util.Util;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -59,11 +60,15 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    protected Map callbackHandlers;
    
+   private boolean trace;
+   
    // Constructors --------------------------------------------------
 
    public JMSServerInvocationHandler()
    {
       callbackHandlers = new HashMap();
+      
+      trace = log.isTraceEnabled();
    }
 
    // ServerInvocationHandler ---------------------------------------
@@ -71,23 +76,23 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public void setMBeanServer(MBeanServer server)
    {
       this.server = server;
-      if (log.isTraceEnabled()) { log.trace("set MBeanServer to " + this.server); }
+      if (trace) { log.trace("set MBeanServer to " + this.server); }
    }
 
    public void setInvoker(ServerInvoker invoker)
    {
       this.invoker = invoker;
-      if (log.isTraceEnabled()) {log.trace("set ServerInvoker to " + this.invoker); }
+      if (trace) {log.trace("set ServerInvoker to " + this.invoker); }
    }
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
-      if (log.isTraceEnabled()) { log.trace("Invoking:" + invocation); }
+      if (trace) { log.trace("Invoking:" + invocation); }
       
       MethodInvocation i = (MethodInvocation)invocation.getParameter();
-
+      
       String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
-
+      
       if (s != null)
       {
          Object callbackHandler = null;
@@ -97,7 +102,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
          if (callbackHandler != null)
          {
-            if (log.isTraceEnabled()) { log.trace("found calllback handler for session " + Util.guidToString(s)); }
+            if (trace) { log.trace("found calllback handler for session " + Util.guidToString(s)); }
             i.getMetaData().addMetaData(MetaDataConstants.JMS,
                                         MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
          }
@@ -108,19 +113,20 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
       }
 
-      return Dispatcher.singleton.invoke(i);
+      InvocationResponse resp = JMSDispatcher.instance.invoke(i);
+      
+      return resp.getResponse();
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)
-   {      
-      
-      if (log.isTraceEnabled()) { log.trace("adding callback handler " + callbackHandler); }
+   {                 
+      if (trace) { log.trace("adding callback handler " + callbackHandler); }
       
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
          ServerInvokerCallbackHandler h = (ServerInvokerCallbackHandler)callbackHandler;
          String id = h.getClientSessionId(); 
-
+         
          synchronized(callbackHandlers)
          {
             if (callbackHandlers.containsKey(id))
@@ -140,7 +146,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      if (log.isTraceEnabled()) { log.trace("removing callback handler: " + callbackHandler); }
+      if (trace) { log.trace("removing callback handler: " + callbackHandler); }
       synchronized(callbackHandlers)
       {
          for(Iterator i = callbackHandlers.keySet().iterator(); i.hasNext();)

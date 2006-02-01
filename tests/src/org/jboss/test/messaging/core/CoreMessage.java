@@ -41,7 +41,7 @@ public class CoreMessage extends MessageSupport
                       boolean reliable,
                       long expiration,
                       long timestamp,
-                      int priority,
+                      byte priority,
                       Map headers,
                       Serializable payload)
    {

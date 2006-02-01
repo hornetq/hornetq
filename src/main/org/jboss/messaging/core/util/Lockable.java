@@ -39,7 +39,7 @@ public class Lockable
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
+   
    private ReentrantLock lock = new ReentrantLock();
 
    // Constructors --------------------------------------------------

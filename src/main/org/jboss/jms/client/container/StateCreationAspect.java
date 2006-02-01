@@ -119,9 +119,9 @@ public class StateCreationAspect
       boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();    
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
-      String consumerID =
-         (String)((Advised)cons)._getInstanceAdvisor().getMetaData().
-         getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID);
+      int consumerID =
+         ((Integer)((Advised)cons)._getInstanceAdvisor().getMetaData().
+         getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID)).intValue();
       
       ConsumerState state = new ConsumerState(sessState, cons, dest, selector, noLocal,
                                               consumerID, connectionConsumer);

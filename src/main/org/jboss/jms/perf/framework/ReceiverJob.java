@@ -18,7 +18,13 @@ import javax.jms.Topic;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A ReceiverJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class ReceiverJob extends BaseThroughputJob
 {
@@ -26,7 +32,7 @@ public class ReceiverJob extends BaseThroughputJob
    
    private static final long RECEIVE_TIMEOUT = 10 * 60 * 1000;
 
-   private static final Logger log = Logger.getLogger(SenderJob.class);
+   private static final Logger log = Logger.getLogger(ReceiverJob.class);
 
    protected int ackMode;
    
@@ -50,12 +56,12 @@ public class ReceiverJob extends BaseThroughputJob
    public ReceiverJob(String slaveURL, Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
          int numSessions, boolean transacted, int transactionSize,
-         int numMessages, long timeToStart, int ackMode, String subName,
+         int numMessages, int ackMode, String subName,
          String selector, boolean noLocal, boolean asynch, String clientID)
    {
       super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
             numSessions, transacted, transactionSize,
-            numMessages, timeToStart);
+            numMessages);
       this.ackMode = ackMode;
       this.subName = subName;
       this.selector = selector;
@@ -166,7 +172,7 @@ public class ReceiverJob extends BaseThroughputJob
                      {
                         sess.commit();
                      }
-                  } 
+                  }                   
                }    
                else
                {

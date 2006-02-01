@@ -42,6 +42,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JBossJMSException;
@@ -68,10 +69,14 @@ import org.jboss.util.Strings;
 public class JBossMessage extends MessageSupport implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
-
+   
    private static final long serialVersionUID = 8341387096828690976L;
    
-   public static final int TYPE = 0;
+   public static final byte TYPE = 0;
+   
+   private static final int QUEUE = 1;
+   
+   private static final int TOPIC = 2;
 
    // Static --------------------------------------------------------
 
@@ -137,7 +142,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    
    protected byte[] correlationIDBytes;
    
-   protected String connectionID;
+   protected int connectionID;
    
    // Constructors --------------------------------------------------
  
@@ -153,8 +158,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
     */
    public JBossMessage(String messageID)
    {
-      this(messageID, true, 0, System.currentTimeMillis(), 4, 0,
-           null, null, null, null, true, null, true, null, null, null);
+      this(messageID, true, 0, System.currentTimeMillis(), (byte)4, 0,
+           null, null, null, null, true, null, true, null, Integer.MIN_VALUE, null);
    }
 
    /*
@@ -164,7 +169,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        boolean reliable,
                        long expiration,
                        long timestamp,
-                       int priority,
+                       byte priority,
                        int deliveryCount,
                        Map coreHeaders,
                        Serializable payload,
@@ -174,7 +179,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        String destination,
                        boolean replyToIsQueue,
                        String replyTo,
-                       String connectionID,
+                       int connectionID,
                        Map jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, 0, coreHeaders, payload);
@@ -450,7 +455,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setJMSPriority(int priority) throws JMSException
    {
-      this.priority = priority;
+      this.priority = (byte)priority;
    }
 
    public void clearProperties() throws JMSException
@@ -733,7 +738,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {      
    }
 
-   public int getType()
+   public byte getType()
    {
       return JBossMessage.TYPE;
    }   
@@ -751,22 +756,16 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       this.properties = props;
    }
    
-//   public void copyProperties(JBossMessage other)
-//   {
-//      this.properties = new HashMap(other.properties);
-//   }
-   
    public void copyPayload(Object payload) throws JMSException
-   {
-      
+   {      
    }
    
-   public String getConnectionID()
+   public int getConnectionID()
    {
       return connectionID;
    }
    
-   public void setConnectionID(String connectionID)
+   public void setConnectionID(int connectionID)
    {
       this.connectionID = connectionID;
    }
@@ -804,56 +803,86 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    }
 
    // Externalizable implementation ---------------------------------
-
+   
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
+      
+      writeDestination(out, destination);
 
-      out.writeObject(destination);
-      out.writeObject(replyToDestination);
+      writeDestination(out, replyToDestination);
+      
       writeString(out, jmsType);
+      
       writeMap(out, properties);
-            
-      if (correlationIDBytes == null)
+      
+      if (correlationID == null && correlationIDBytes == null)
       {
-         out.writeInt(-1);
+         out.writeByte(NULL);
+      }
+      else if (correlationIDBytes == null)
+      {
+         //String correlation id
+         out.writeByte(STRING);
+         
+         out.writeUTF(correlationID);
       }
       else
       {
-         out.writeInt(correlationIDBytes.length);
+         //Bytes correlation id
+         out.writeByte(BYTES);
+         
+         out.writeInt(correlationIDBytes.length);  
+         
          out.write(correlationIDBytes);
       }
-   
-      writeString(out, correlationID);
       
-      writeString(out, connectionID);
+      out.writeInt(connectionID);            
    }
-
-
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
 
-      destination = (Destination) in.readObject();
-      replyToDestination = (Destination) in.readObject();
+      destination = readDestination(in);
+
+      replyToDestination = readDestination(in);
+ 
       jmsType = readString(in);     
+      
       properties = readMap(in);
       
-      int length = in.readInt();
-      if (length == -1)
+      //correlation id
+      
+      byte b = in.readByte();
+      
+      if (b == NULL)
       {
+         //No correlation id
+         correlationID = null;
+         
+         correlationIDBytes = null;
+      }
+      else if (b == STRING)
+      {
+         //String correlation id
+         correlationID = in.readUTF();
+         
          correlationIDBytes = null;
       }
       else
       {
-         correlationIDBytes = new byte[length];
+         //Bytes correlation id
+         correlationID = null;
+         
+         int len = in.readInt();
+         
+         correlationIDBytes = new byte[len];
+         
          in.readFully(correlationIDBytes);
       }
-      
-      correlationID = readString(in);
-         
-      connectionID = readString(in);
+  
+      connectionID = in.readInt();
    }
 
    // Package protected ---------------------------------------------
@@ -889,6 +918,59 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
 
    // Protected -----------------------------------------------------
+   
+   protected void writeDestination(ObjectOutput out, Destination dest) throws IOException
+   {
+      JBossDestination jb = (JBossDestination)dest;
+            
+      if (dest == null)
+      {
+         out.writeByte(NULL);
+      }
+      else
+      {
+         if (jb.isQueue())
+         {
+            out.writeByte(QUEUE);
+         }
+         else
+         {
+            out.writeByte(TOPIC);
+         }
+         out.writeUTF(jb.getName());
+      }
+   }
+   
+   protected Destination readDestination(ObjectInput in) throws IOException
+   {
+      byte b = in.readByte();
+      
+      if (b == NULL)
+      {
+         return null;
+      }
+      else
+      {
+         String name = in.readUTF();
+         
+         JBossDestination dest;
+         
+         if (b == QUEUE)
+         {
+            dest=  new JBossQueue(name);
+         }
+         else if (b == TOPIC)
+         {
+            dest = new JBossTopic(name);
+         }
+         else
+         {
+            throw new IllegalStateException("Invalid value:" + b);
+         }
+         
+         return dest;
+      }
+   }
 
    // Inner classes -------------------------------------------------
 }

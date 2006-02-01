@@ -22,7 +22,13 @@ import org.jboss.jms.perf.framework.data.Measurement;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A JDBCPersistenceManager.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class JDBCPersistenceManager implements PersistenceManager
 {

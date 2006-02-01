@@ -49,10 +49,12 @@ public class SessionAspect
    
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-
+   
    // Public --------------------------------------------------------
 
    
@@ -68,7 +70,7 @@ public class SessionAspect
          
          //We acknowledge immediately
          del.acknowledge();
-         if (log.isTraceEnabled()) { log.trace("ack mode is " + Util.acknowledgmentModeToString(ackMode)+ ", acknowledged on " + del); }
+         if (trace) { log.trace("ack mode is " + Util.acknowledgmentModeToString(ackMode)+ ", acknowledged on " + del); }
       }
 
       return null;
@@ -77,7 +79,7 @@ public class SessionAspect
    
    public Object handleRecover(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("recover called"); }
+      if (trace) { log.trace("recover called"); }
       
       int ackMode = getState(invocation).getAcknowledgeMode();
       
@@ -87,15 +89,13 @@ public class SessionAspect
       }
       
       //Tell the server to redeliver any un-acked messages
-      if (log.isTraceEnabled()) { log.trace("redelivering messages"); }
+      if (trace) { log.trace("redelivering messages"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      //String asfConsumerID = getState(invocation).getAsfConsumerID();
-      
-      if (log.isTraceEnabled()) { log.trace("Calling sessiondelegate.redeliver()"); }
+      if (trace) { log.trace("Calling sessiondelegate.redeliver()"); }
       
       del.cancelDeliveries();
       

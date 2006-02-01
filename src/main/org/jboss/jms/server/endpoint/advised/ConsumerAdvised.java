@@ -82,9 +82,9 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.deactivate();
    }
 
-   public Message getMessageNow() throws JMSException
+   public Message getMessageNow(boolean wait) throws JMSException
    {
-      return endpoint.getMessageNow();
+      return endpoint.getMessageNow(wait);
    }
 
    // AdvisedSupport overrides --------------------------------------

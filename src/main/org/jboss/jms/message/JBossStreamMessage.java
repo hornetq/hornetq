@@ -57,7 +57,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    private static final Logger log = Logger.getLogger(JBossStreamMessage.class);
 
-   public static final int TYPE = 4;
+   public static final byte TYPE = 4;
 
    // Attributes ----------------------------------------------------
 
@@ -97,7 +97,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          boolean reliable,
          long expiration,
          long timestamp,
-         int priority,
+         byte priority,
          int deliveryCount,
          Map coreHeaders,
          Serializable payload,
@@ -107,7 +107,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          String destination,
          boolean replyToIsQueue,
          String replyTo,
-         String connectionID,
+         int connectionID,
          Map jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
@@ -153,7 +153,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Public --------------------------------------------------------
 
-   public int getType()
+   public byte getType()
    {
       return JBossStreamMessage.TYPE;
    }

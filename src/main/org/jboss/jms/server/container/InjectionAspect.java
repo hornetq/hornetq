@@ -23,10 +23,13 @@ package org.jboss.jms.server.container;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -36,7 +39,9 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 public class InjectionAspect
 {
     // Constants -----------------------------------------------------
-
+   
+    private static final Logger log = Logger.getLogger(InjectionAspect.class);
+   
     // Static --------------------------------------------------------
 
     // Attributes ----------------------------------------------------
@@ -47,21 +52,29 @@ public class InjectionAspect
 
     // Interceptor implementation ------------------------------------
 
-    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
+    public Object handleCreateConnectionDelegate(Invocation invocation) throws Throwable
     {
        MethodInvocation mi = (MethodInvocation)invocation;
        
-       InvokerCallbackHandler handler =
-          (InvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS,
+       ServerInvokerCallbackHandler handler =
+          (ServerInvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS,
                                                  MetaDataConstants.CALLBACK_HANDLER);
-       if (handler != null)
+       
+       if (handler == null)
        {
-          SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
-          ServerSessionEndpoint endpoint = (ServerSessionEndpoint)del.getEndpoint();
-          endpoint.setCallbackHandler(handler);
+          throw new IllegalStateException("Can't find handler");
        }
        
-       return invocation.invokeNext();
+       ClientConnectionDelegate del = (ClientConnectionDelegate)invocation.invokeNext();
+       
+       ConnectionAdvised advised = 
+          (ConnectionAdvised)JMSDispatcher.instance.getRegistered(Integer.valueOf(del.getID()));
+       
+       ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)advised.getEndpoint();
+       
+       endpoint.setCallbackClient(handler.getCallbackClient());
+       
+       return del;
     }
     
     // Package protected ---------------------------------------------

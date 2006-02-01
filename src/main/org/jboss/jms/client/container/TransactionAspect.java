@@ -165,7 +165,7 @@ public class TransactionAspect
          
          String messageID = (String)mi.getArguments()[0];
          
-         String consumerID = (String)mi.getArguments()[1];
+         int consumerID = ((Integer)mi.getArguments()[1]).intValue();
          
          Object txID = state.getCurrentTxId();
          

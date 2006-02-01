@@ -33,11 +33,11 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
-import org.jboss.aop.Dispatcher;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -54,7 +54,6 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Util;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
@@ -80,13 +79,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // Attributes ----------------------------------------------------
    
-   protected String id;
+   private boolean trace = log.isTraceEnabled();
+   
+   protected int id;
    
    protected Channel channel;
    
    protected ServerSessionEndpoint sessionEndpoint;
-   
-   protected InvokerCallbackHandler callbackHandler;
    
    protected boolean noLocal;
    
@@ -114,27 +113,25 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // Constructors --------------------------------------------------
    
-   ServerConsumerEndpoint(String id, Channel channel,
-         InvokerCallbackHandler callbackHandler,
+   ServerConsumerEndpoint(int id, Channel channel,
          ServerSessionEndpoint sessionEndpoint,
          String selector, boolean noLocal)
          throws InvalidSelectorException
    {
-      log.debug("creating ConsumerEndpoint[" + Util.guidToString(id) + "]");
+      log.debug("creating ConsumerEndpoint[" + id + "]");
       
       this.id = id;
       this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
-      this.callbackHandler = callbackHandler;
       this.threadPoolDelegate =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPoolDelegate();
       this.noLocal = noLocal;
       
       if (selector != null)
       {
-         if (log.isTraceEnabled()) log.trace("creating selector:" + selector);
+         if (trace) log.trace("creating selector:" + selector);
          this.messageSelector = new Selector(selector);
-         if (log.isTraceEnabled()) log.trace("created selector");
+         if (trace) log.trace("created selector");
       }
       
       this.deliveries = new LinkedHashMap();
@@ -148,11 +145,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    //There is no need to synchronize this method. The channel synchronizes delivery to it's consumers
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      if (log.isTraceEnabled()) { log.trace(this + " receives reference " + Util.guidToString(reference.getMessageID()) + " for delivery"); }
+      if (trace) { log.trace(this + " receives reference " + Util.guidToString(reference.getMessageID()) + " for delivery"); }
 
       if (!isReady())
       {
-         if (log.isTraceEnabled()) { log.trace(this + " rejects " + Util.guidToString(reference.getMessageID())); }
+         if (trace) { log.trace(this + " rejects " + Util.guidToString(reference.getMessageID())); }
          return null;
       }
       
@@ -165,7 +162,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          boolean accept = this.accept(message);
          if (!accept)
          {
-            if (log.isTraceEnabled()) { log.trace(this + " DOES NOT accept the message"); }
+            if (trace) { log.trace(this + " DOES NOT accept the message"); }
             return null;
          }
          
@@ -195,8 +192,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             
             try
             {
-               if (log.isTraceEnabled()) { log.trace("queueing message " + message + " for delivery to client"); }               
-               threadPoolDelegate.execute(new DeliveryRunnable(callbackHandler, md));
+               if (trace) { log.trace("queueing message " + message + " for delivery to client"); }               
+               threadPoolDelegate.execute(new DeliveryRunnable(md, sessionEndpoint.connectionEndpoint.getCallbackClient(), id, trace));
             }
             catch (InterruptedException e)
             {
@@ -227,21 +224,20 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       {
          accept = messageSelector.accept(r);
          
-         if (log.isTraceEnabled()) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
+         if (trace) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
       }
       
       if (accept)
       {
          if (noLocal)
          {
-            String conId = ((JBossMessage)r).getConnectionID();
-            if (log.isTraceEnabled()) { log.trace("message connection id: " + conId); }
-            if (conId != null)
-            {
-               if (log.isTraceEnabled()) { log.trace("current connection connection id: " + sessionEndpoint.connectionEndpoint.connectionID); }
-               accept = !conId.equals(sessionEndpoint.connectionEndpoint.connectionID);
-               if (log.isTraceEnabled()) { log.trace("accepting? " + accept); }
-            }
+            int conId = ((JBossMessage)r).getConnectionID();
+            if (trace) { log.trace("message connection id: " + conId); }
+
+            if (trace) { log.trace("current connection connection id: " + sessionEndpoint.connectionEndpoint.connectionID); }
+            accept = conId != sessionEndpoint.connectionEndpoint.connectionID;
+            if (trace) { log.trace("accepting? " + accept); }
+
          }
       }
       return accept;
@@ -252,7 +248,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    public void closing() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace(this + " closing"); }
+      if (trace) { log.trace(this + " closing"); }
    }
    
    public void close() throws JMSException
@@ -262,7 +258,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          throw new IllegalStateException("Consumer is already closed");
       }
       
-      if (log.isTraceEnabled()) { log.trace(this + " close"); }
+      if (trace) { log.trace(this + " close"); }
       
       closed = true;
       
@@ -271,7 +267,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       // the consumer has closed. This is perfectly valid.
       disconnect();
       
-      Dispatcher.singleton.unregisterTarget(this.id);
+      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(id));
    }
    
    // ConsumerEndpoint implementation -------------------------------
@@ -299,10 +295,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    /**
     * We attempt to get the message directly fron the channel first. If we find one, we return that.
-    * Otherwise, we register as being interested in receiving a message asynchronously, then return
+    * Otherwise, if wait = true, we register as being interested in receiving a message asynchronously, then return
     * and wait for it on the client side.
     */
-   public javax.jms.Message getMessageNow() throws JMSException
+   public javax.jms.Message getMessageNow(boolean wait) throws JMSException
    {  
       synchronized (channel)
       { 
@@ -314,6 +310,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             promptDelivery();
             
             javax.jms.Message ret = (javax.jms.Message)toGrab;
+            
+            if (wait && ret == null)
+            {
+               active = true;
+            }
             
             return ret;
             
@@ -331,7 +332,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       synchronized (channel)
       {
          active = false;
-         if (log.isTraceEnabled()) { log.trace(this + " deactivated"); }
+         if (trace) { log.trace(this + " deactivated"); }
       }
    }
    
@@ -347,7 +348,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
          
          active = true;
-         if (log.isTraceEnabled()) { log.trace(this + " just activated"); }
+         if (trace) { log.trace(this + " just activated"); }
          
          promptDelivery();
       }
@@ -357,7 +358,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    public String toString()
    {
-      return "ConsumerEndpoint[" + Util.guidToString(id) + "]" + (active ? "(active)" : "");
+      return "ConsumerEndpoint[" + id + "]" + (active ? "(active)" : "");
    }
    
    // Package protected ---------------------------------------------
@@ -367,7 +368,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     * */
    void remove() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("attempting to remove receiver " + this + " from destination " + channel);
+      if (trace) log.trace("attempting to remove receiver " + this + " from destination " + channel);
       
       for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
       {
@@ -388,14 +389,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          close();
       }
       
-      this.sessionEndpoint.connectionEndpoint.consumers.remove(id);
+      this.sessionEndpoint.connectionEndpoint.consumers.remove(Integer.valueOf(id));
       
       if (this.channel instanceof CoreSubscription)
       {
          ((CoreSubscription)channel).closeConsumer();
       }
       
-      this.sessionEndpoint.consumers.remove(this.id);
+      this.sessionEndpoint.consumers.remove(Integer.valueOf(id));
    }  
    
    void acknowledgeAll() throws JMSException
@@ -418,7 +419,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    void acknowledge(String messageID, Transaction tx) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("acknowledging " + messageID); }
+      if (trace) { log.trace("acknowledging " + messageID); }
       
       SingleReceiverDelivery d = null;
       
@@ -466,7 +467,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    void cancelAllDeliveries() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace(this + " cancels deliveries"); }
+      if (trace) { log.trace(this + " cancels deliveries"); }
             
       //Need to cancel starting at the end of the list and working to the front
       //in order that the messages end up back in the correct order in the channel
@@ -486,7 +487,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          try
          {
             d.cancel();      
-            if (log.isTraceEnabled()) { log.trace(d +  " canceled"); }
+            if (trace) { log.trace(d +  " canceled"); }
          }
          catch(Throwable t)
          {
@@ -500,7 +501,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    void setStarted(boolean started)
    {
-      if (log.isTraceEnabled()) { log.trace(this + (started ? " started" : " stopped")); }
+      if (trace) { log.trace(this + (started ? " started" : " stopped")); }
       
       this.started = started;   
       
@@ -517,7 +518,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       if (active || grabbing)
       {
-         if (log.isTraceEnabled()) { log.trace(this + " prompts delivery"); }
+         if (trace) { log.trace(this + " prompts delivery"); }
          channel.deliver(this);
       }      
    }
@@ -533,7 +534,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       if (removed)
       {
          disconnected = true;
-         if (log.isTraceEnabled()) { log.trace(this + " disconnected from the channel"); }
+         if (trace) { log.trace(this + " disconnected from the channel"); }
       }
    }
    
@@ -546,13 +547,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       // or we're not grabbing a message for receiveNoWait we return null to refuse the message
       if (!active && !grabbing)
       {
-         if (log.isTraceEnabled()) { log.trace(this + " not ready"); }
+         if (trace) { log.trace(this + " not ready"); }
          return false;
       }
       
       if (closed)
       {
-         if (log.isTraceEnabled()) { log.trace(this + " closed"); }
+         if (trace) { log.trace(this + " closed"); }
          return false;
       }
       

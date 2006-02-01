@@ -58,6 +58,8 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    private Serializable storeID;
    
@@ -134,7 +136,7 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
          throw new IllegalStateException(this + " does not accept reliable messages (" + m + ")");
       }
       
-      if (log.isTraceEnabled()) { log.trace(this + " referencing " + m); }
+      if (trace) { log.trace(this + " referencing " + m); }
       
       MessageHolder holder = (MessageHolder)messages.get(m.getMessageID());
       

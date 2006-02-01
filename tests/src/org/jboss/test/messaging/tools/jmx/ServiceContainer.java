@@ -62,11 +62,10 @@ import org.jboss.resource.connectionmanager.TxConnectionManager;
 import org.jboss.system.Registry;
 import org.jboss.system.ServiceController;
 import org.jboss.system.ServiceCreator;
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
-import org.jboss.jms.util.XMLUtil;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TxManager;
 
 
@@ -714,11 +713,12 @@ public class ServiceContainer
    {
       RemotingJMXWrapper mbean;
       
-      String params = "/?datatype=invocation&" +
-                      "marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&" +
-                      "unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller&" +
-                      "serializationtype=jboss&" +
-                      "socketTimeout=600000";
+      String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+                      "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+                      "serializationtype=jms&" +
+                      "dataType=jms&" +
+                      "socketTimeout=0";
+      
       String locatorURI;
       if (multiplex)
       {

@@ -61,6 +61,8 @@ public class SecurityMetadataStore implements SecurityManager
    
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    private Map queueSecurityConf;
    private Map topicSecurityConf;
 
@@ -119,7 +121,7 @@ public class SecurityMetadataStore implements SecurityManager
 
    public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
+      if (trace) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
 
       SecurityMetadata m = null;
 
@@ -144,7 +146,7 @@ public class SecurityMetadataStore implements SecurityManager
 
    public void clearSecurityConfig(boolean isQueue, String name) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("clearing security configuration for " + (isQueue ? "queue " : "topic ") + name); }
+      if (trace) { log.trace("clearing security configuration for " + (isQueue ? "queue " : "topic ") + name); }
 
       if (isQueue)
       {
@@ -158,8 +160,6 @@ public class SecurityMetadataStore implements SecurityManager
 
    public Subject authenticate(String user, String password) throws JMSSecurityException
    {
-      boolean trace = log.isTraceEnabled();
-
       if (trace) { log.trace("authenticating user " + user); }
 
       SimplePrincipal principal = new SimplePrincipal(user);
@@ -184,7 +184,6 @@ public class SecurityMetadataStore implements SecurityManager
 
    public boolean authorize(String user, Set rolePrincipals)
    {
-      boolean trace = log.isTraceEnabled();
       if (trace) { log.trace("authorizing user " + user + " for role(s) " + rolePrincipals.toString()); }
 
       Principal principal = user == null ? null : new SimplePrincipal(user);
@@ -200,7 +199,7 @@ public class SecurityMetadataStore implements SecurityManager
    
    public void start() throws NamingException
    {
-      if (log.isTraceEnabled()) { log.trace("initializing SecurityMetadataStore"); }
+      if (trace) { log.trace("initializing SecurityMetadataStore"); }
 
       // Get the JBoss security manager from JNDI
       InitialContext ic = new InitialContext();
@@ -209,7 +208,7 @@ public class SecurityMetadataStore implements SecurityManager
       {
          Object mgr = ic.lookup(securityDomain);
 
-         if (log.isTraceEnabled()) { log.trace("JaasSecurityManager is " + mgr); }
+         if (trace) { log.trace("JaasSecurityManager is " + mgr); }
 
          authenticationManager = (AuthenticationManager)mgr;
          realmMapping = (RealmMapping)mgr;

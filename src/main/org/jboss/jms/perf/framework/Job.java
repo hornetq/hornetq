@@ -7,12 +7,21 @@
 package org.jboss.jms.perf.framework;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A Job.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
-public interface Job extends Runnable
+public interface Job
 {
-   JobResult getResult();
-   
    String getSlaveURL();
    
+   String getId();
+   
+   void initialize() throws PerfException;
+   
+   JobResult execute() throws PerfException;
 }

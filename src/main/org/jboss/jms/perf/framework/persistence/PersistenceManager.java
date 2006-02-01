@@ -10,7 +10,13 @@ import org.jboss.jms.perf.framework.data.Benchmark;
 import org.jboss.jms.perf.framework.data.Execution;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A PersistenceManager.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public interface PersistenceManager
 {

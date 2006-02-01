@@ -46,6 +46,8 @@ public class RecoverableState extends NonRecoverableState
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    private TransactionLog tl;
    private Serializable channelID;
@@ -86,13 +88,13 @@ public class RecoverableState extends NonRecoverableState
 
       if (ref.isReliable())
       {
-         // Reliable message in a recoverable state - also add to db
-         if (log.isTraceEnabled()) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+         //Reliable message in a recoverable state - also add to db
+         if (trace) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
          tl.addReference(channelID, ref, tx);
       }
 
       addAddReferenceCallback(tx); //FIXME What is the point of this??
-      if (log.isTraceEnabled()) { log.trace("added an Add callback to transaction " + tx); }            
+      if (trace) { log.trace("added an Add callback to transaction " + tx); }            
    }
 
    public boolean addReference(MessageReference ref) throws Throwable
@@ -101,8 +103,8 @@ public class RecoverableState extends NonRecoverableState
 
       if (ref.isReliable())
       {
-         // Reliable message in a recoverable state - also add to db
-         if (log.isTraceEnabled()) { log.trace("adding " + ref + " to database non-transactionally"); }
+         //Reliable message in a recoverable state - also add to db
+         if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
          tl.addReference(channelID, ref, null);
       }      
       

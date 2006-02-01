@@ -25,7 +25,9 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
@@ -51,7 +53,7 @@ import org.jboss.util.id.GUID;
 public class JMSRemotingConnection
 {
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
-      
+    
    protected Client client;
    
    protected Connector callbackServer;
@@ -66,8 +68,16 @@ public class JMSRemotingConnection
    
    protected boolean isMultiplex;
    
-   public JMSRemotingConnection(String serverLocatorURI) throws Exception
+   protected CallbackManager callbackManager;
+   
+   protected InvokerCallbackHandler dummy;
+   
+   
+   
+   public JMSRemotingConnection(String serverLocatorURI) throws Throwable
    {
+      callbackManager = new CallbackManager();
+      
       id = new GUID().toString();
       
       thisAddress = InetAddress.getLocalHost().getHostAddress();
@@ -78,54 +88,63 @@ public class JMSRemotingConnection
       
       isMultiplex = serverLocator.getProtocol().equals("multiplex");
             
-      if (log.isTraceEnabled()) { log.trace("Connecting with server URI:" + serverLocatorURI); }
-            
-      String callbackServerURI;
+      final int MAX_RETRIES = 50;
       
-      if (isMultiplex)
+      boolean completed = false;
+      
+      int count = 0;
+      
+      while (!completed && count < MAX_RETRIES)
       {
-         callbackServerURI = "multiplex://" + thisAddress +
-                              ":" + bindPort + "/?serverMultiplexId=" +
-                              id;        
-      }
-      else
-      {
-         callbackServerURI = serverLocator.getProtocol() + "://" + thisAddress +
-                             ":" + bindPort;
-      }
-      
-      client = new Client(serverLocator, getConfig());
+         try
+         {
+            setUpConnection();
             
-      if (log.isTraceEnabled()) { log.trace("Created client"); }
-      
-      InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
-        
-      if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:" 
-            + callbackServerLocator.getLocatorURI()); }
+            completed = true;         
+         }
+         catch (java.net.BindException e)
+         {
+            //Intermittently we can fail to open a socket on the address since it's already in use
+            //This is despite remoting having checked the port is free.
+            //This is either because the remoting implementation is buggy
+            //Or because of the small window between getting the port number and actually opening the connection
+            //during which some one else can use that port.
+            //Therefore we catch this and retry       
+            count++;
             
-      callbackServer = new Connector();
-      
-      callbackServer.setInvokerLocator(callbackServerLocator.getLocatorURI());
-      
-      callbackServer.create();
-      
-      callbackServer.start();
-      
-      if (log.isTraceEnabled()) { log.trace("Created callback server"); }
-      
-      client.connect();           
+            if (client != null)
+            {
+               client.disconnect();
+            }            
+            if (callbackServer != null)
+            {
+               //Probably not necessary and may fail since it didn't get properly started
+               try
+               {
+                  callbackServer.stop();
+                  
+                  callbackServer.destroy();
+               }
+               catch (Exception ignore)
+               {
+                  //Ignore - it may well fail - this is to be expected
+               }
+            }
+            if (count == MAX_RETRIES)
+            {
+               throw new JBossJMSException("Cannot start callbackserver after " + MAX_RETRIES + " retries", e);
+            }            
+         }
+      }            
    }
    
-   public void close()
-   {
+   public void close() throws Throwable
+   {     
       callbackServer.stop();
       
+      callbackServer.destroy();
+      
       client.disconnect();
-   }
-   
-   public Connector getCallbackServer()
-   {
-      return callbackServer;
    }
       
    public Client getInvokingClient()
@@ -133,26 +152,9 @@ public class JMSRemotingConnection
       return client;
    }
    
-   /*
-    * Register a callback handler to receive messages for a consumer
-    */
-   public Client registerCallbackHandler(InvokerCallbackHandler handler) throws Throwable
+   public CallbackManager getCallbackManager()
    {
-      // We need to create new Client instance per consumer to handle the callbacks.
-      // This is because we use the client session id on the server to associate the callback server
-      // to the consumer.
-      // Ideally remoting would allow us to pass arbitrary meta data to do this
-      // more cleanly.
-      
-      Client client;
-              
-      client = new Client(serverLocator, getConfig());
-
-      
-      client.addListener(handler, callbackServer.getLocator());
-
-      return client;
-      
+      return callbackManager;
    }
    
    public String getId()
@@ -174,6 +176,67 @@ public class JMSRemotingConnection
       }
       
       return configuration;      
+   }
+   
+   protected void setUpConnection() throws Throwable
+   {
+      if (log.isTraceEnabled()) { log.trace("Connecting with server URI:" + serverLocator); }
+      
+      String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+                      "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+                      "serializationtype=jms&" +
+                      "dataType=jms&" +
+                      "socketTimeout=0";
+                  
+      client = new Client(serverLocator, getConfig());
+      
+      //We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller every time
+      //which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
+      //This can make a massive difference on performance
+      //We also do this in ServerConnectionEndpoint.setCallbackClient.
+      client.setMarshaller(new JMSWireFormat());
+      client.setUnMarshaller(new JMSWireFormat());
+            
+      if (log.isTraceEnabled()) { log.trace("Created client"); }
+      
+      //Create callback server
+      
+      String callbackServerURI;
+            
+      if (isMultiplex)
+      {
+         callbackServerURI = "multiplex://" + thisAddress +
+                              ":" + bindPort + params + "&serverMultiplexId=" +
+                              id;        
+      }
+      else
+      {
+         callbackServerURI = serverLocator.getProtocol() + "://" + thisAddress +
+                             ":" + bindPort + params;
+      }
+      
+      InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
+        
+      if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:" 
+            + callbackServerLocator.getLocatorURI()); }
+            
+      callbackServer = new Connector();
+      
+      callbackServer.setInvokerLocator(callbackServerLocator.getLocatorURI());
+      
+      callbackServer.create();
+      
+      callbackServer.addInvocationHandler("Callback", callbackManager);
+      
+      callbackServer.start();
+      
+      if (log.isTraceEnabled()) { log.trace("Created callback server"); }
+      
+      client.connect();         
+      
+      dummy = new DummyCallbackHandler();
+      
+      client.addListener(dummy, callbackServerLocator); 
    }
   
 

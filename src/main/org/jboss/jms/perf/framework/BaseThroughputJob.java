@@ -17,7 +17,13 @@ import javax.jms.Connection;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A BaseThroughputJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public abstract class BaseThroughputJob extends BaseJob
 {
@@ -41,118 +47,138 @@ public abstract class BaseThroughputJob extends BaseJob
    
    protected abstract Servitor createServitor(int numMessages);
     
-   protected boolean failed;
-   
    protected int numMessages;
    
-   protected long startTime;
+   Thread[] servitorThreads;
    
-   protected long endTime;
+   Servitor[] servitors;
    
-   protected long timeToStart;
-   
-   protected Throwable[] throwables;
-         
-   public JobResult getResult()
+   public BaseThroughputJob(String slaveURL, Properties jndiProperties, String destinationName,
+         String connectionFactoryJndiName, int numConnections,
+         int numSessions, boolean transacted, int transactionSize, int numMessages)
    {
-      log.info("Getting result");
-      JobResult res = new JobResult();
-      res.failed = failed;
-      if (res.failed)
-      {
-         log.info("Failed");
-         res.throwables = throwables;
-      }
-      else
-      {
-         log.info("Didn't fail");
-         res.startTime = startTime;
-         res.endTime = endTime;
-      }
+      super(slaveURL, jndiProperties, destinationName, connectionFactoryJndiName);
       
-      return res;
+      this.numConnections = numConnections;
+      
+      this.numSessions = numSessions;
+      
+      this.transacted = transacted;
+      
+      this.transactionSize = transactionSize;
+      
+      this.numMessages = numMessages;
+      
+      servitorThreads = new Thread[numSessions];      
+      
+      servitors = new Servitor[numSessions];      
    }
-   
-   
-   public void run()
+    
+   public void initialize() throws PerfException
    {
       try
       {
-         log.info("==============Running job:" + this);
-         setup();
-         logInfo();
-         runTest();         
-         tearDown();
-         log.info("================Finished running job");
+         
+         super.initialize();
+         
+         conns = new Connection[numConnections];
+         
+         for (int i = 0; i < numConnections; i++)
+         {
+            conns[i] = cf.createConnection();
+            
+            conns[i].start();
+         }
+               
+         for (int i = 0; i < numSessions; i++)
+         {
+            Servitor servitor = createServitor(numMessages);
+            
+            servitor.init();
+            
+            servitors[i] = servitor;
+            
+            servitorThreads[i] = new Thread(servitors[i]);
+         }      
+                           
+         log.info("Initialized job: " + this);
       }
-      catch (Throwable t)
+      catch (Exception e)
       {
-         log.error("Failed to run test", t);
+         log.error("Failed to initialize", e);
+         throw new PerfException("Failed to initialize", e);
+      }
+   }
+      
+   public JobResult execute() throws PerfException
+   {
+      try
+      {
+         
+         log.info("==============Executing job:" + this);
+         
+         logInfo();
+         
+         JobResult res = runTest();         
+         
+         tearDown();
+         
+         log.info("================Executed and toreDown");     
+         
+         return res;
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to execute", e);
+         throw new PerfException("Failed to execute", e);
       }
    }
    
      
-   protected void runTest() throws Exception
+   protected JobResult runTest() throws PerfException
    {
-      failed = false;
-      
-      Thread[] servitorThreads = new Thread[numSessions];      
-      Servitor[] servitors = new Servitor[numSessions];
-      
-      for (int i = 0; i < numSessions; i++)
-      {
-         Servitor servitor = createServitor(numMessages);
-         servitor.init();
-         servitors[i] = servitor;
-      }      
+      boolean failed = false;
             
-      long now = System.currentTimeMillis();
-      
-      //Wait until timeToStart
-      if (now >= timeToStart)
-      {
-         log.error("Already passed timeToStart");
-         failed = true;
-         return;
-      }
-      
-      long toSleep = timeToStart - now;
-      log.info("Sleeping for " + toSleep + " ms");
-      Thread.sleep(toSleep);
-      log.info("Done sleeping");
-      
-      startTime = System.currentTimeMillis();
+      long startTime = System.currentTimeMillis();
             
       for (int i = 0; i < numSessions; i++)
       {         
-         servitorThreads[i] = new Thread(servitors[i]);
          servitorThreads[i].start();
       }      
       
       for (int i = 0; i < numSessions; i++)
       {
-         servitorThreads[i].join();
+         try
+         {
+            servitorThreads[i].join();
+         }
+         catch (InterruptedException e)
+         {
+            throw new PerfException("Thread interrupted");
+         }
       }
       
-      endTime = System.currentTimeMillis();
+      long endTime = System.currentTimeMillis();
 
       List throwablesList = new ArrayList();
       
       for (int i = 0; i < numSessions; i++)
       {
          Servitor servitor = servitors[i];
+         
+         
          servitor.deInit();
-         if (servitor.isFailed())
+         if (servitor.isFailed())           
          {
-            log.info("Servitor failed");
             failed = true;
             if (servitor.getThrowable() != null)
             {
-               log.info("Got a throwable: " + servitor.getThrowable());
                throwablesList.add(servitor.getThrowable());
             }
          }
       } 
+      
+      Throwable[] throwables = null;
       
       if (!throwablesList.isEmpty())
       {
@@ -166,9 +192,12 @@ public abstract class BaseThroughputJob extends BaseJob
          }         
       }
       
-      log.info("Throwables array is: " + throwables);
+      if (failed)
+      {
+         throw new PerfException("Test failed");
+      }
       
-            
+      return new JobResult(startTime, endTime);
    }
    
    abstract class AbstractServitor implements Servitor
@@ -200,18 +229,7 @@ public abstract class BaseThroughputJob extends BaseJob
       return conns[connIndex++ % conns.length];
    }
      
-   protected void setup() throws Exception
-   {
-      super.setup();
-      
-      conns = new Connection[numConnections];
-      
-      for (int i = 0; i < numConnections; i++)
-      {
-         conns[i] = cf.createConnection();
-         conns[i].start();
-      }
-   }
+
    
    protected void tearDown() throws Exception
    {
@@ -234,23 +252,7 @@ public abstract class BaseThroughputJob extends BaseJob
       log.trace("Num messages:" + numMessages);
    }
    
-   
-   public BaseThroughputJob(String slaveURL, Properties jndiProperties, String destinationName,
-         String connectionFactoryJndiName, int numConnections,
-         int numSessions, boolean transacted, int transactionSize, int numMessages, long timeToStart)
-   {
-      super(slaveURL, jndiProperties, destinationName, connectionFactoryJndiName);
-      this.numConnections = numConnections;
-      this.numSessions = numSessions;
-      this.transacted = transacted;
-      this.transactionSize = transactionSize;
-      this.numMessages = numMessages;
-      this.timeToStart = timeToStart;
-   }
-   
-
-   
-
+ 
    /**
     * Set the numConnections.
     * 

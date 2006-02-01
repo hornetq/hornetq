@@ -31,7 +31,6 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 
-import org.jboss.aop.Dispatcher;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
@@ -41,24 +40,22 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
-import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.CoreSubscription;
+import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
-import org.jboss.messaging.util.Util;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.TransactionLog;
 
 /**
  * Concrete implementation of SessionEndpoint.
@@ -78,16 +75,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
-   protected String sessionID;
+   protected int sessionID;
    protected int acknowledgmentMode;
    private boolean closed;
 
    protected Map producers;
    protected Map consumers;
 	protected Map browsers;
-
-   private InvokerCallbackHandler callbackHandler;
 
    protected ServerConnectionEndpoint connectionEndpoint;
 
@@ -99,7 +96,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    // Constructors --------------------------------------------------
 
-   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
+   ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint,
 								 int acknowledgmentMode)
    {
       this.sessionID = sessionID;
@@ -135,7 +132,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
      
-      String producerID = new GUID().toString();
+      int producerID = connectionEndpoint.serverPeer.getNextObjectID();
       
       // create the corresponding server-side producer endpoint and register it with this
       // session endpoint instance
@@ -143,7 +140,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       putProducerDelegate(producerID, ep);
       ProducerAdvised producerAdvised = new ProducerAdvised(ep);
-      Dispatcher.singleton.registerTarget(producerID, producerAdvised);
+      JMSDispatcher.instance.registerTarget(Integer.valueOf(producerID), producerAdvised);
          
       ClientProducerDelegate d = new ClientProducerDelegate(producerID);
       
@@ -170,7 +167,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       JBossDestination d = (JBossDestination)jmsDestination;
       
-      if (log.isTraceEnabled()) { log.trace("creating consumer endpoint for " + d + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName); }
+      if (trace) { log.trace("creating consumer endpoint for " + d + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName); }
             
       if (d.isTemporary())
       {
@@ -190,13 +187,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
       }
           
-      String consumerID = new GUID().toString();
+      int consumerID = connectionEndpoint.serverPeer.getNextObjectID();
      
-      if (callbackHandler == null)
-      {
-         throw new JMSException("null callback handler");
-      }
-      
       CoreSubscription subscription = null;
 
       if (d.isTopic())
@@ -227,7 +219,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
             if (subscription == null)
             {
-               if (log.isTraceEnabled()) { log.trace("creating new durable subscription on " + coreDestination); }
+               if (trace) { log.trace("creating new durable subscription on " + coreDestination); }
                subscription = dsm.createDurableSubscription(d.getName(),
                                                             clientID,
                                                             subscriptionName,
@@ -237,7 +229,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
             else
             {
-               if (log.isTraceEnabled()) { log.trace("subscription " + subscriptionName + " already exists"); }
+               if (trace) { log.trace("subscription " + subscriptionName + " already exists"); }
 
                // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                // A client can change an existing durable subscription by creating a durable
@@ -250,7 +242,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   (subscription.getSelector() == null && selector != null) ||
                   (subscription.getSelector() != null && selector != null &&
                   !subscription.getSelector().equals(selector));
-               if (log.isTraceEnabled()) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
+               if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
 
                // TODO - if we use hard equality here, redeploying (re-activating) a topic will
                //        cause loosing all messages waiting on durable subscriptions on that topic
@@ -259,12 +251,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
                boolean topicChanged =
                   !subscription.getTopic().getName().equals(coreDestination.getName());
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
-
+               
                boolean noLocalChanged = noLocal != subscription.isNoLocal();
 
                if (selectorChanged || topicChanged || noLocalChanged)
                {
-                  if (log.isTraceEnabled()) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
+                  if (trace) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
 
                   boolean removed =
                      dsm.removeDurableSubscription(connectionEndpoint.clientID, subscriptionName);
@@ -292,9 +284,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID,
                                     subscription == null ? (Channel)coreDestination : subscription,
-                                    callbackHandler, this, selector, noLocal);
+                                    this, selector, noLocal);
        
-      Dispatcher.singleton.registerTarget(consumerID, new ConsumerAdvised(ep));
+      JMSDispatcher.instance.registerTarget(Integer.valueOf(consumerID), new ConsumerAdvised(ep));
          
       ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID);
       
@@ -305,7 +297,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
       putConsumerDelegate(consumerID, ep);
       
-      connectionEndpoint.consumers.put(consumerID, ep);
+      connectionEndpoint.consumers.put(Integer.valueOf(consumerID), ep);
 
       log.debug("created and registered " + ep);
 
@@ -337,14 +329,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	      throw new IllegalStateException("Cannot browse a topic");
 	   }
 	   
-	   String browserID = new GUID().toString();
+	   int browserID = connectionEndpoint.serverPeer.getNextObjectID();
 	   
 	   ServerBrowserEndpoint ep =
 	      new ServerBrowserEndpoint(this, browserID, (Channel)destination, messageSelector);
 	   
 	   putBrowserDelegate(browserID, ep);
 	   
-	   Dispatcher.singleton.registerTarget(browserID, new BrowserAdvised(ep));
+      JMSDispatcher.instance.registerTarget(Integer.valueOf(browserID), new BrowserAdvised(ep));
 	   
 	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 	   
@@ -404,7 +396,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is already closed");
       }
       
-      if (log.isTraceEnabled()) log.trace("close()");
+      if (trace) log.trace("close()");
             
       // clone to avoid ConcurrentModificationException
       HashSet consumerSet = new HashSet(consumers.values());
@@ -421,16 +413,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
          ((ServerProducerEndpoint)i.next()).close();
       }
       
-      connectionEndpoint.sessions.remove(this.sessionID);
+      connectionEndpoint.sessions.remove(Integer.valueOf(sessionID));
       
-      Dispatcher.singleton.unregisterTarget(this.sessionID);
+      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(sessionID));
       
       closed = true;
    }
    
    public void closing() throws JMSException
    {
-      if (log.isTraceEnabled()) log.trace("closing (noop)");
+      if (trace) log.trace("closing (noop)");
 
       //Currently does nothing
    }
@@ -445,7 +437,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      if (log.isTraceEnabled()) { log.trace("Cancelling messages"); }
+      if (trace) { log.trace("Cancelling messages"); }
             
 		for(Iterator i = this.consumers.values().iterator(); i.hasNext(); )
 		{
@@ -570,34 +562,34 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    // Public --------------------------------------------------------
 
-   protected ServerProducerEndpoint putProducerDelegate(String producerID, ServerProducerEndpoint d)
+   protected ServerProducerEndpoint putProducerDelegate(int producerID, ServerProducerEndpoint d)
    {
-      return (ServerProducerEndpoint)producers.put(producerID, d);
+      return (ServerProducerEndpoint)producers.put(Integer.valueOf(producerID), d);
    }
 
-   public ServerProducerEndpoint getProducerDelegate(String producerID)
+   public ServerProducerEndpoint getProducerDelegate(int producerID)
    {
-      return (ServerProducerEndpoint)producers.get(producerID);
+      return (ServerProducerEndpoint)producers.get(Integer.valueOf(producerID));
    }
 
-   protected ServerConsumerEndpoint putConsumerDelegate(String consumerID, ServerConsumerEndpoint d)
+   protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint d)
    {
-      return (ServerConsumerEndpoint)consumers.put(consumerID, d);
+      return (ServerConsumerEndpoint)consumers.put(Integer.valueOf(consumerID), d);
    }
 
-   public ServerConsumerEndpoint getConsumerDelegate(String consumerID)
+   public ServerConsumerEndpoint getConsumerDelegate(int consumerID)
    {
-      return (ServerConsumerEndpoint)consumers.get(consumerID);
+      return (ServerConsumerEndpoint)consumers.get(Integer.valueOf(consumerID));
    }
 	
-	protected ServerBrowserEndpoint putBrowserDelegate(String browserID, ServerBrowserEndpoint sbd)
+	protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
    {
-      return (ServerBrowserEndpoint)browsers.put(browserID, sbd);
+      return (ServerBrowserEndpoint)browsers.put(Integer.valueOf(browserID), sbd);
    }
 	
-	public ServerBrowserEndpoint getBrowserDelegate(String browserID)
+	public ServerBrowserEndpoint getBrowserDelegate(int browserID)
    {
-      return (ServerBrowserEndpoint)browsers.get(browserID);
+      return (ServerBrowserEndpoint)browsers.get(Integer.valueOf(browserID));
    }
 
    public ServerConnectionEndpoint getConnectionEndpoint()
@@ -605,17 +597,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return connectionEndpoint;
    }
 
-   /**
-    * IoC
-    */
-   public void setCallbackHandler(InvokerCallbackHandler callbackHandler)
-   {
-      this.callbackHandler = callbackHandler;
-   }
-
    public String toString()
    {
-      return "SessionEndpoint[" + Util.guidToString(sessionID) + "]";
+      return "SessionEndpoint[" + sessionID + "]";
    }
 
    // Package protected ---------------------------------------------

@@ -21,6 +21,15 @@
   */
 package org.jboss.jms.perf.framework;
 
+/**
+ * 
+ * A JobException.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
+ */
 public class JobException extends Exception
 {
    /** The serialVersionUID */

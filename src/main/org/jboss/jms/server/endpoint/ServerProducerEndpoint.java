@@ -26,10 +26,9 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.aop.Dispatcher;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.util.Util;
 
 /**
  * Concrete implementation of ProducerEndpoint.
@@ -49,8 +48,10 @@ public class ServerProducerEndpoint implements ProducerEndpoint
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
-   protected String id;
+   protected int id;
 
    /** I need this to set up the JMSDestination header on outgoing messages */
    protected Destination jmsDestination;
@@ -61,7 +62,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
 
    // Constructors --------------------------------------------------
 
-   ServerProducerEndpoint(String id,
+   ServerProducerEndpoint(int id,
                           Destination jmsDestination,
                           ServerSessionEndpoint parent)
    {
@@ -77,7 +78,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
    public void closing() throws JMSException
    {
       //Currently this does nothing
-      if (log.isTraceEnabled()) { log.trace("closing (noop)"); }
+      if (trace) { log.trace("closing (noop)"); }
    }
 
    public void close() throws JMSException
@@ -88,10 +89,10 @@ public class ServerProducerEndpoint implements ProducerEndpoint
       }
       
       //Currently this does nothing
-      if (log.isTraceEnabled()) { log.trace("close (noop)"); }
-      this.sessionEndpoint.producers.remove(this.id);
+      if (trace) { log.trace("close (noop)"); }
+      this.sessionEndpoint.producers.remove(Integer.valueOf(this.id));
       
-      Dispatcher.singleton.unregisterTarget(this.id);
+      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(id));
       
       closed = true;
    }
@@ -103,8 +104,8 @@ public class ServerProducerEndpoint implements ProducerEndpoint
          throw new IllegalStateException("Producer is closed");
       }
       
-      if (log.isTraceEnabled()) { log.trace("sending message: " + m); }
-      
+      if (trace) { log.trace("Sending message: " + m); }
+
       sessionEndpoint.connectionEndpoint.sendMessage(m, null);
    }
 
@@ -122,7 +123,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
 
    public String toString()
    {
-      return "ProducerEndpoint[" + Util.guidToString(id) + ", " + jmsDestination + "]";
+      return "ProducerEndpoint[" + id + ", " + jmsDestination + "]";
    }
 
    // Package protected ---------------------------------------------

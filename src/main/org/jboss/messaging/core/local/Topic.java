@@ -52,6 +52,8 @@ public class Topic implements CoreDestination
    
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    protected Router router;
    protected String name;
    protected MessageStore ms;
@@ -78,7 +80,7 @@ public class Topic implements CoreDestination
 
    public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
    {
-      if (log.isTraceEnabled()){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
+      if (trace){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
 
       Set deliveries = router.handle(sender, r, tx);
 
@@ -121,7 +123,7 @@ public class Topic implements CoreDestination
    public boolean remove(Receiver receiver)
    {
       boolean removed = router.remove(receiver);
-      if (log.isTraceEnabled()) { log.trace(this + (removed ? " removed " : " did NOT remove ") + receiver); }
+      if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + receiver); }
       return removed;
    }
 

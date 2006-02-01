@@ -26,10 +26,10 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
 
+
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 
 /**
@@ -49,6 +49,8 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    // Attributes ----------------------------------------------------
 
+   private boolean trace = log.isTraceEnabled();
+   
    protected transient InMemoryMessageStore ms;
    
    private WeakReference ref;
@@ -60,7 +62,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
     */
    public WeakMessageReference()
    {
-      if (log.isTraceEnabled()) { log.trace("Creating using default constructor"); }
+      if (trace) { log.trace("Creating using default constructor"); }
    }
 
 
@@ -99,7 +101,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    protected WeakMessageReference(Serializable messageID, boolean reliable, long expiration,
                                   long timestamp, Map headers, boolean redelivered,
-                                  int priority, long ordering, InMemoryMessageStore ms)
+                                  byte priority, long ordering, InMemoryMessageStore ms)
    {
       super(messageID, reliable, expiration, timestamp, priority, 0, ordering, headers);
       this.redelivered = redelivered;
@@ -122,7 +124,7 @@ public class WeakMessageReference extends RoutableSupport implements MessageRefe
    
    public Message getMessage()
    {
-      if (log.isTraceEnabled()) { log.trace(this + ": getting message from reference " + ref); }
+      if (trace) { log.trace(this + ": getting message from reference " + ref); }
       
       try
       {

@@ -28,13 +28,12 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.aop.Dispatcher;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.util.Util;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -53,18 +52,20 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    protected Iterator iterator;
    
    protected ServerSessionEndpoint session;
    
-   protected String id;
+   protected int id;
    
    protected boolean closed;
 
    // Constructors --------------------------------------------------
 
-   ServerBrowserEndpoint(ServerSessionEndpoint session, String id,
+   ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
                          Channel destination, String messageSelector)
       throws JMSException
    {     
@@ -101,7 +102,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }
       Routable r = (Routable)iterator.next();
 
-      if (log.isTraceEnabled()) { log.trace("returning the message corresponding to " + r); }
+      if (trace) { log.trace("returning the message corresponding to " + r); }
       
       return (Message)r.getMessage();
    }
@@ -144,8 +145,8 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          throw new IllegalStateException("Browser is already closed");
       }
       iterator = null;
-      session.producers.remove(this.id);
-      Dispatcher.singleton.unregisterTarget(this.id);
+      session.producers.remove(Integer.valueOf(this.id));
+      JMSDispatcher.instance.unregisterTarget(Integer.valueOf(id));
       closed = true;
    }
    
@@ -158,7 +159,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    public String toString()
    {
-      return "BrowserEndpoint[" + Util.guidToString(id) + "]";
+      return "BrowserEndpoint[" + id + "]";
    }
 
    // Package protected ---------------------------------------------

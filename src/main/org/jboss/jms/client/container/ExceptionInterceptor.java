@@ -48,6 +48,8 @@ public class ExceptionInterceptor implements Interceptor
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -68,7 +70,7 @@ public class ExceptionInterceptor implements Interceptor
       }       
       catch(JMSException e)
       {
-         if (log.isTraceEnabled())  { log.trace("Caught JMSException:" + e); }
+         if (trace)  { log.trace("Caught JMSException:" + e); }
          Exception linked = e.getLinkedException();
          if (linked != null)
          {
@@ -92,14 +94,14 @@ public class ExceptionInterceptor implements Interceptor
       }
       catch (Exception e)
       {
-         if (log.isTraceEnabled()) { log.trace("Caught Exception:" + e); }
+         if (trace) { log.trace("Caught Exception:" + e); }
          log.error("Caught Exception: ", e);
          logCause(e);         
          throw new JBossJMSException("Caught exception", e);
       }
       catch (Error e)
       {
-         if (log.isTraceEnabled()) { log.trace("Caught Error:" + e); }
+         if (trace) { log.trace("Caught Error:" + e); }
          log.error("Caught Error: ", e);
          logCause(e);
          throw e;

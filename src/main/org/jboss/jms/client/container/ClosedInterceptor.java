@@ -70,6 +70,8 @@ public class ClosedInterceptor  implements Interceptor
    private static final int CLOSED = -1;
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    /** The state of the object */
    private int state = NOT_CLOSED;
@@ -196,7 +198,7 @@ public class ClosedInterceptor  implements Interceptor
       throws Throwable
    {
       state = CLOSED;
-      if (log.isTraceEnabled()) { log.trace("closed"); }
+      if (trace) { log.trace("closed"); }
    }
    
    /**
@@ -242,7 +244,7 @@ public class ClosedInterceptor  implements Interceptor
       
       if (children == null)
       {
-         if (log.isTraceEnabled()) { log.trace("No children"); }
+         if (trace) { log.trace("No children"); }
          return;
       }
       

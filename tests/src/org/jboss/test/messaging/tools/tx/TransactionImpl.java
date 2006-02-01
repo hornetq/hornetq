@@ -730,11 +730,11 @@ class TransactionImpl implements Transaction
          case XAException.XA_HEURHAZ:
          case XAException.XA_HEURMIX:
             heuristicCode = HEUR_NONE;
-            if (trace) { log.trace("Throwing HeuristicMixedException, tx=" + this + "status=" + getStringStatus(status)); }
+            if (log.isTraceEnabled()) { log.trace("Throwing HeuristicMixedException, tx=" + this + "status=" + getStringStatus(status)); }
             throw new HeuristicMixedException();
          case XAException.XA_HEURRB:
             heuristicCode = HEUR_NONE;
-            if (trace) { log.trace("Throwing HeuristicRollbackException, tx=" + this + "status=" + getStringStatus(status)); }
+            if (log.isTraceEnabled()) { log.trace("Throwing HeuristicRollbackException, tx=" + this + "status=" + getStringStatus(status)); }
             throw new HeuristicRollbackException();
          case XAException.XA_HEURCOM:
             heuristicCode = HEUR_NONE;
@@ -742,7 +742,7 @@ class TransactionImpl implements Transaction
             // And why define something that is not used ?
             // For now we just have to ignore this failure, even if it happened
             // on rollback.
-            if (trace) {log.trace("NOT Throwing HeuristicCommitException, tx=" + this + "status=" + getStringStatus(status)); }
+            if (log.isTraceEnabled()) {log.trace("NOT Throwing HeuristicCommitException, tx=" + this + "status=" + getStringStatus(status)); }
             return;
       }
    }

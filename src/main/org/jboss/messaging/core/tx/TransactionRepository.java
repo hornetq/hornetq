@@ -50,6 +50,8 @@ public class TransactionRepository
 
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    protected Map globalToLocalMap;     
    
    protected TransactionLog transactionLog;
@@ -143,7 +145,7 @@ public class TransactionRepository
       }
       Transaction tx = new Transaction(xid, transactionLog);
       
-      if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
+      if (trace) { log.trace("created transaction " + tx); }
       
       globalToLocalMap.put(xid, tx);
       return tx;
@@ -153,7 +155,7 @@ public class TransactionRepository
    {
       Transaction tx = new Transaction(null, transactionLog);
 
-      if (log.isTraceEnabled()) { log.trace("created transaction " + tx); }
+      if (trace) { log.trace("created transaction " + tx); }
 
       return tx;
    }

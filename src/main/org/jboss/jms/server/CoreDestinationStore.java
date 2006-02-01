@@ -57,7 +57,7 @@ class CoreDestinationStore
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
+   
    // <name - CoreDestination>
    protected Map queueMap;
 

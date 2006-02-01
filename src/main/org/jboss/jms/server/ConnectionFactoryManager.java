@@ -37,9 +37,9 @@ public interface ConnectionFactoryManager
     *
     * @return an identifier that uniques identifies the registered ConnectionFactory.
     */
-   String registerConnectionFactory(String clientID, JNDIBindings jndiBindings) throws Exception;
+   int registerConnectionFactory(String clientID, JNDIBindings jndiBindings) throws Exception;
 
-   void unregisterConnectionFactory(String connectionFactoryID) throws Exception;
+   void unregisterConnectionFactory(int connectionFactoryID) throws Exception;
 
-   javax.jms.ConnectionFactory getConnectionFactory(String connectionFactoryID);
+   javax.jms.ConnectionFactory getConnectionFactory(int connectionFactoryID);
 }

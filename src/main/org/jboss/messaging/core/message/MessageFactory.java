@@ -45,22 +45,54 @@ public class MessageFactory
 
    // Static --------------------------------------------------------
 
+   public static Message createMessage(byte type)
+   {
+      Message m = null;
+      
+      if (type == JBossMessage.TYPE)
+      {
+         m = new JBossMessage();
+      }
+      else if (type == JBossObjectMessage.TYPE)
+      {
+         m = new JBossObjectMessage();
+      }
+      else if (type == JBossTextMessage.TYPE)
+      {
+         m = new JBossTextMessage();
+      }
+      else if (type == JBossBytesMessage.TYPE)
+      {
+         m = new JBossBytesMessage();
+      }
+      else if (type == JBossMapMessage.TYPE)
+      {
+         m = new JBossMapMessage();
+      }
+      else if (type == JBossStreamMessage.TYPE)
+      {
+         m = new JBossStreamMessage();
+      }
+     
+      return m;
+   }
+   
    public static Message createMessage(Serializable messageID,
                                        boolean reliable, 
                                        long expiration, 
                                        long timestamp,
-                                       int priority,
+                                       byte priority,
                                        int deliveryCount,
                                        Map coreHeaders,
                                        Serializable payload,
-                                       int type,
+                                       byte type,
                                        String jmsType,                                       
                                        Object correlationID,
                                        boolean destinationIsQueue,
                                        String destination,
                                        boolean replyToIsQueue,
                                        String replyTo,
-                                       String connectionID,
+                                       int connectionID,
                                        Map jmsProperties)
 
    {
@@ -119,27 +151,27 @@ public class MessageFactory
                                        boolean reliable,
                                        long expiration,
                                        long timestamp,
-                                       int priority,
+                                       byte priority,
                                        Map coreHeaders,
                                        Serializable payload)
    {
       return createMessage(messageID, reliable, expiration, timestamp, priority, 0, coreHeaders, payload,
-                           JBossMessage.TYPE, null, null, true, null, false, null, null, null);
+                           JBossMessage.TYPE, null, null, true, null, false, null, Integer.MIN_VALUE, null);
 
    }
 
    public static Message createMessage(Serializable messageID)
    {
-      return createMessage(messageID, false, 0, 0, 4, 0, null, null,
-            JBossMessage.TYPE, null, null, true, null, false, null, null, null);
+      return createMessage(messageID, false, 0, 0, (byte)4, 0, null, null,
+            JBossMessage.TYPE, null, null, true, null, false, null, Integer.MIN_VALUE, null);
    }
    
    public static Message createMessage(Serializable messageID,
                                        boolean reliable, 
                                        Serializable payload)
    {
-      return createMessage(messageID, reliable, 0, 0, 4, 0, null, payload,
-            JBossMessage.TYPE, null, null, true, null, false, null, null, null);
+      return createMessage(messageID, reliable, 0, 0, (byte)4, 0, null, payload,
+            JBossMessage.TYPE, null, null, true, null, false, null, Integer.MIN_VALUE, null);
    }
 
 

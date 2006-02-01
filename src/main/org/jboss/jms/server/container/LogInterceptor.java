@@ -41,9 +41,11 @@ public class LogInterceptor implements Interceptor
     // Static --------------------------------------------------------
 
     // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
     // Constructors --------------------------------------------------
-
+   
     // Public --------------------------------------------------------
 
     // Interceptor implementation ------------------------------------
@@ -59,7 +61,7 @@ public class LogInterceptor implements Interceptor
        String methodName = null;
        Object target = null;
 
-       if (log.isTraceEnabled())
+       if (trace)
        {
           target = invocation.getTargetObject();
 
@@ -102,7 +104,7 @@ public class LogInterceptor implements Interceptor
 
        Object result = invocation.invokeNext();
 
-       if (log.isTraceEnabled())
+       if (trace)
        {
           if (method == null)
           {

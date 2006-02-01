@@ -27,18 +27,13 @@ import org.jboss.aop.Advised;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.InvocationResponse;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
-import org.jboss.invocation.unified.marshall.InvocationMarshaller;
-import org.jboss.invocation.unified.marshall.InvocationUnMarshaller;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.marshal.Marshaller;
-import org.jboss.remoting.marshal.UnMarshaller;
+import org.jboss.remoting.serialization.SerializationStreamFactory;
 
 /**
  * Base class for all client-side delegate classes.
@@ -69,17 +64,25 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    // Attributes ----------------------------------------------------
 
-   protected String id;
+   protected int id;
    
    protected HierarchicalState state;
+   
+   private boolean trace;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DelegateSupport(String objectID)
+   public DelegateSupport(int objectID)
    {
       this.id = objectID;    
+      
+      trace = log.isTraceEnabled();
+   }
+   
+   public DelegateSupport()
+   {      
    }
 
    // Interceptor implementation ------------------------------------
@@ -95,18 +98,18 @@ public abstract class DelegateSupport implements Interceptor, Serializable
     */
    public Object invoke(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
+      if (trace) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           id, PayloadKey.AS_IS);
+                                           Integer.valueOf(id), PayloadKey.AS_IS);
 
-      InvocationResponse response = (InvocationResponse)getClient().invoke(invocation, null);
-      invocation.setResponseContextInfo(response.getContextInfo());
+      Object ret = getClient().invoke(invocation, null);
+      //invocation.setResponseContextInfo(response.getContextInfo());
 
-      if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
+      if (trace) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 
-      return response.getResponse();
+      return ret;
    }
 
    // Public --------------------------------------------------------
@@ -133,7 +136,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
         
    }
 
-   public String getID()
+   public int getID()
    {
       return id;
    }
@@ -165,11 +168,17 @@ public abstract class DelegateSupport implements Interceptor, Serializable
          return;
       }
       
-      // We shouldn't have to do this programmatically - it should pick it up from the params
-      // on the locator uri, but that doesn't seem to work.
-      Marshaller marshaller = new InvocationMarshaller();
-      UnMarshaller unmarshaller = new InvocationUnMarshaller();
-      MarshalFactory.addMarshaller(InvocationMarshaller.DATATYPE, marshaller, unmarshaller);
+      //We explicitly associate the datatype "jms" with our customer SerializationManager
+      //This is vital for performance reasons.
+      try
+      {
+         SerializationStreamFactory.setManagerClassName("jms", "org.jboss.jms.server.remoting.JMSSerializationManager");
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to set SerializationManager, e");
+      }
+      
       checked = true;
    }
 

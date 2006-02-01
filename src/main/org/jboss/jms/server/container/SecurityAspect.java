@@ -57,6 +57,8 @@ public class SecurityAspect
    
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
@@ -153,7 +155,7 @@ public class SecurityAspect
       throws JMSSecurityException
    {
 
-      if (log.isTraceEnabled()) { log.trace("checking access permissions to " + dest); }
+      if (trace) { log.trace("checking access permissions to " + dest); }
 
       JBossDestination jbd = (JBossDestination)dest;
       boolean isQueue = jbd.isQueue();

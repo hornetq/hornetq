@@ -31,7 +31,6 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManager.LocalTxXid;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.util.Util;
 
 /**
  * An XAResource implementation.
@@ -61,6 +60,8 @@ public class JBossXAResource implements XAResource
    private static final Logger log = Logger.getLogger(JBossXAResource.class);
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    private ResourceManager rm;
    
@@ -105,7 +106,7 @@ public class JBossXAResource implements XAResource
    
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Commit xid=" + xid + ", onePhase=" + onePhase + " " + this);
       }
@@ -115,7 +116,7 @@ public class JBossXAResource implements XAResource
 
    public void end(Xid xid, int flags) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("End xid=" + xid + ", flags=" + flags + " " +this);
       }
@@ -142,7 +143,7 @@ public class JBossXAResource implements XAResource
    
    public void forget(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Forget xid=" + xid + " " + this);
       }
@@ -150,7 +151,7 @@ public class JBossXAResource implements XAResource
 
    public int prepare(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Prepare xid=" + xid + " " + this);
       }
@@ -160,7 +161,7 @@ public class JBossXAResource implements XAResource
 
    public Xid[] recover(int flags) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Recover flags=" + flags + " " + this);
       }
@@ -170,7 +171,7 @@ public class JBossXAResource implements XAResource
 
    public void rollback(Xid xid) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Rollback xid=" + xid + " " + this);
       }
@@ -180,7 +181,7 @@ public class JBossXAResource implements XAResource
 
    public void start(Xid xid, int flags) throws XAException
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Start xid=" + xid + ", flags=" + flags + " " + this);
       }
@@ -231,7 +232,7 @@ public class JBossXAResource implements XAResource
 
    public String toString()
    {
-      return "JBossXAResource[" + Util.guidToString(sessionState.getDelegate().getID())+ "]";      
+      return "JBossXAResource[" + sessionState.getDelegate().getID()+ "]";      
    }
 
    // Package protected ---------------------------------------------
@@ -245,7 +246,7 @@ public class JBossXAResource implements XAResource
       if (xid == null)
          throw new org.jboss.util.NullArgumentException("xid");
 
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Setting current tx xid=" + xid + " previous: " + sessionState.getCurrentTxId() + " " + this);
       }
@@ -257,7 +258,7 @@ public class JBossXAResource implements XAResource
       if (xid == null)
          throw new org.jboss.util.NullArgumentException("xid");
 
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace("Unsetting current tx  xid=" + xid + " previous: " + sessionState.getCurrentTxId() + " " + this);
       }

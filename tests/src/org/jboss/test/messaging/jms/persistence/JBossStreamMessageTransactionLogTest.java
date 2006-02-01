@@ -57,7 +57,7 @@ public class JBossStreamMessageTransactionLogTest extends JBossMessageTransactio
    }
   
    
-   protected Message createMessage(int i) throws Exception
+   protected Message createMessage(byte i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         
       
@@ -78,7 +78,7 @@ public class JBossStreamMessageTransactionLogTest extends JBossMessageTransactio
             new GUID().toString(),
             i % 2 == 1,
             new GUID().toString(),
-            new GUID().toString(),
+            randInt().intValue(),
             jmsProperties);        
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());

@@ -35,11 +35,16 @@ import org.jfree.data.xy.XYSeriesCollection;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
-/*
+/**
+ * 
+ * A PerfCharter.
+ * 
  * Charts the performance test results.
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class PerfCharter
 {
@@ -136,15 +141,15 @@ public class PerfCharter
       chartSimpleBenchmark("Queue16", "Date", "Receive rate (messages/sec)",
             "Non-transactional, non-persistent receive only from queue with selector, AUTO_ACKNOWLEDGE", "Queue16.jpg");
    
-      chartSimpleBenchmark("Queue17", "Date", "Browse rate (messages/sec)",
-            "Browse persistent messages", "Queue17.jpg");
-      
-      chartSimpleBenchmark("Queue18", "Date", "Browse rate (messages/sec)",
-            "Browse non-persistent messages", "Queue18.jpg");
-      
-      chartSimpleBenchmark("Queue19", "Date", "Browse rate (messages/sec)",
-            "Browse non-persistent messages with selector", "Queue19.jpg");
-      
+//      chartSimpleBenchmark("Queue17", "Date", "Browse rate (messages/sec)",
+//            "Browse persistent messages", "Queue17.jpg");
+//      
+//      chartSimpleBenchmark("Queue18", "Date", "Browse rate (messages/sec)",
+//            "Browse non-persistent messages", "Queue18.jpg");
+//      
+//      chartSimpleBenchmark("Queue19", "Date", "Browse rate (messages/sec)",
+//            "Browse non-persistent messages with selector", "Queue19.jpg");
+//      
       chartSimpleBenchmark("Topic1", "Date", "Throughput (messages/sec)",
             "Non-transactional, non-persistent send and receive with topic, one non-durable subscriber, AUTO_ACKNOWLEDGE", "Topic1.jpg");      
       
@@ -169,43 +174,43 @@ public class PerfCharter
       chartSimpleBenchmark("Topic8", "Date", "Throughput (messages/sec)",
             "Non-transactional, persistent send and receive with topic, one non-durable subscriber with selector, AUTO_ACKNOWLEDGE", "Topic8.jpg");      
       
-      chartSimpleBenchmark("Topic9", "Date", "Throughput (messages/sec)",
-            "Non-transactional, persistent send and receive with topic, one durable subscriber, AUTO_ACKNOWLEDGE", "Topic9.jpg");
-     
-      chartSimpleBenchmark("Topic10", "Date", "Throughput (messages/sec)",
-            "Transactional, persistent send and receive with topic, one durable subscriber", "Topic10.jpg");
-      
-      chartVariableBenchmark("MessageSizeThroughput", "messageSize", "Message size (bytes)", "Throughput (messages/sec)",
+//      chartSimpleBenchmark("Topic9", "Date", "Throughput (messages/sec)",
+//            "Non-transactional, persistent send and receive with topic, one durable subscriber, AUTO_ACKNOWLEDGE", "Topic9.jpg");
+//     
+//      chartSimpleBenchmark("Topic10", "Date", "Throughput (messages/sec)",
+//            "Transactional, persistent send and receive with topic, one durable subscriber", "Topic10.jpg");
+//      
+      chartVariableBenchmark("MessageSizeThroughput2", "messageSize", "Message size (bytes)", "Throughput (messages/sec)",
             "Non-transactional, non-persistent send and receive with topic, one non-durable subscriber with varying message size, AUTO_ACKNOWLEDGE",
             "MessageSizeThroughput.jpg");
       
-      chartVariableBenchmark("QueueScale1", "numberOfQueues", "Number of Queues", "Throughput (messages/sec)",
-            "Non-transactional, non-persistent send and receive with queue, varying number of queues, AUTO_ACKNOWLEDGE",
-            "QueueScale1.jpg");
-      
-      chartVariableBenchmark("QueueScale2", "numberOfConnections", "Number of sending Connections", "Throughput (messages/sec)",
-            "Non-transactional, non-persistent send and receive with queue, varying number of sending connections, AUTO_ACKNOWLEDGE",
-            "QueueScale2.jpg");
-      
-      chartVariableBenchmark("QueueScale3", "numberOfSessions", "Number of sending sessions", "Throughput (messages/sec)",
-            "Non-transactional, non-persistent send and receive with queue, varying number of sending sessions sharing same connection, AUTO_ACKNOWLEDGE",
-            "QueueScale3.jpg");
-      
-      chartVariableBenchmark("TopicScale1", "numberOfTopics", "Number of Topics", "Throughput (messages/sec)",
-            "Non-transactional, non-persistent send and receive with topic, varying number of topics, AUTO_ACKNOWLEDGE",
-            "TopicScale1.jpg");
-      
-      chartVariableBenchmark("TopicScale2", "numberOfConnections", "Number of non-durable subscribers", "Throughput (messages/sec)",
-            "Non-transactional, non-persistent send and receive with topic, varying number of subscribers each on own connection, AUTO_ACKNOWLEDGE",
-            "TopicScale2.jpg");
-      
-      chartVariableBenchmark("TopicScale3", "numberOfSubscribers", "Number of non-durable subscribers", "Throughput (messages/sec)",
-            "Non-transactional, non-persistent send and receive with topic, varying number of subscribers sharing same connection, AUTO_ACKNOWLEDGE",
-            "TopicScale3.jpg");
-      
-      chartVariableBenchmark("MessageTypes", "messageType", "Message type (1=Message, 2=Bytes, 3=Map, 4=Object, 5=Stream, 6=Text, 7=Foreign", "Throughput (messages/sec)",
-            "Send/receive messages to queue, vary by message type",
-            "MessageTypes.jpg");
+//      chartVariableBenchmark("QueueScale1", "numberOfQueues", "Number of Queues", "Throughput (messages/sec)",
+//            "Non-transactional, non-persistent send and receive with queue, varying number of queues, AUTO_ACKNOWLEDGE",
+//            "QueueScale1.jpg");
+//      
+//      chartVariableBenchmark("QueueScale2", "numberOfConnections", "Number of sending Connections", "Throughput (messages/sec)",
+//            "Non-transactional, non-persistent send and receive with queue, varying number of sending connections, AUTO_ACKNOWLEDGE",
+//            "QueueScale2.jpg");
+//      
+//      chartVariableBenchmark("QueueScale3", "numberOfSessions", "Number of sending sessions", "Throughput (messages/sec)",
+//            "Non-transactional, non-persistent send and receive with queue, varying number of sending sessions sharing same connection, AUTO_ACKNOWLEDGE",
+//            "QueueScale3.jpg");
+//      
+//      chartVariableBenchmark("TopicScale1", "numberOfTopics", "Number of Topics", "Throughput (messages/sec)",
+//            "Non-transactional, non-persistent send and receive with topic, varying number of topics, AUTO_ACKNOWLEDGE",
+//            "TopicScale1.jpg");
+//      
+//      chartVariableBenchmark("TopicScale2", "numberOfConnections", "Number of non-durable subscribers", "Throughput (messages/sec)",
+//            "Non-transactional, non-persistent send and receive with topic, varying number of subscribers each on own connection, AUTO_ACKNOWLEDGE",
+//            "TopicScale2.jpg");
+//      
+//      chartVariableBenchmark("TopicScale3", "numberOfSubscribers", "Number of non-durable subscribers", "Throughput (messages/sec)",
+//            "Non-transactional, non-persistent send and receive with topic, varying number of subscribers sharing same connection, AUTO_ACKNOWLEDGE",
+//            "TopicScale3.jpg");
+//      
+//      chartVariableBenchmark("MessageTypes", "messageType", "Message type (1=Message, 2=Bytes, 3=Map, 4=Object, 5=Stream, 6=Text, 7=Foreign", "Throughput (messages/sec)",
+//            "Send/receive messages to queue, vary by message type",
+//            "MessageTypes.jpg");
       
    }
    
@@ -224,7 +229,6 @@ public class PerfCharter
       
       //We chart each execution on a different graph - we could instead overlay them on the same graph
       Iterator executions = bm.getExecutions().iterator();
-      int count = 0;
       while (executions.hasNext())
       {
          Execution exec = (Execution)executions.next();

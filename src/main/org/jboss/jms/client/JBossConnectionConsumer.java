@@ -70,7 +70,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    protected SessionDelegate sess;
    
-   protected String consumerID;
+   protected int consumerID;
    
    /** The destination this consumer will receive messages from */
    protected Destination destination;

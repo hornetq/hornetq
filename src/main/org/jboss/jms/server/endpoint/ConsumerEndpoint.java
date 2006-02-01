@@ -41,7 +41,7 @@ public interface ConsumerEndpoint extends Closeable
 {
    void cancelMessage(Serializable messageID) throws JMSException;
    
-   Message getMessageNow() throws JMSException;
+   Message getMessageNow(boolean wait) throws JMSException;
    
    void activate() throws JMSException;
    

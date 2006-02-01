@@ -17,7 +17,13 @@ import javax.jms.Topic;
 import org.jboss.logging.Logger;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A DrainJob.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public class DrainJob extends BaseJob
 {
@@ -31,9 +37,6 @@ public class DrainJob extends BaseJob
    
    protected String clientID;
    
-   protected Throwable throwable;
-   
-   
    public DrainJob(String slaveURL, Properties jndiProperties, String destinationName, String connectionFactoryJndiName,
          String subName, String clientID)
    {
@@ -42,24 +45,7 @@ public class DrainJob extends BaseJob
       this.clientID = clientID;
    }
    
-
-   public JobResult getResult()
-   {
-      JobResult res = new JobResult();
-      res.failed = failed;
-      if (failed)
-      {
-         res.throwables = new Throwable[] { throwable };
-      }
-      return res;
-   }
-   
-   public Throwable[] getThrowables()
-   {
-      return new Throwable[] { throwable };
-   }
-   
-   public void run()
+   public JobResult execute() throws PerfException
    { 
       Connection conn = null;
       
@@ -67,9 +53,6 @@ public class DrainJob extends BaseJob
       
       try
       {
- 
-         super.setup();
-         
          log.info("Running drain job ===============");
          
          conn = cf.createConnection();
@@ -103,41 +86,42 @@ public class DrainJob extends BaseJob
                     
          while (true)
          {
-            Message m = consumer.receive(RECEIVE_TIMEOUT);
-            //log.info("received message");
+            Message m = consumer.receiveNoWait();
             if (m == null)
             {
                break;
             }
             count++;
+            if (count % 100 == 0)
+            {
+               log.info("Received msg:" + count);
+            }
          }
          
-         log.info("Finished running job===================");         
+         log.info("Finished running job===================");  
+         
+         return null;
       }
-      catch (Throwable e)
+      catch (Exception e)
       {
-         log.error("Failed to drain destination", e);
-         throwable = e;
-         failed = true;
+         log.error("Failed to drain", e);
+         throw new PerfException("Failed to drain", e);
       }
       finally
       {
-         if (conn != null)
+         try
          {
-            try
+            if (conn != null)
             {
-               conn.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-               throwable = e;
-               failed = true;
+               conn.close();          
             }
          }
+         catch (Exception e)
+         {
+            log.error("Failed to close", e);
+            throw new PerfException("Failed to close", e);
+         }
       }
-      
-
    } 
    
       

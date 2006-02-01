@@ -25,14 +25,13 @@ import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.InvocationResponse;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 
@@ -57,14 +56,14 @@ public class ClientConnectionFactoryDelegate
 
    
    // Attributes ----------------------------------------------------
-   
+    
    protected String serverLocatorURI;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(String objectID, String serverLocatorURI)
+   public ClientConnectionFactoryDelegate(int objectID, String serverLocatorURI)
    {
       super(objectID);
       
@@ -100,11 +99,11 @@ public class ClientConnectionFactoryDelegate
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           id, PayloadKey.AS_IS);
+                                           Integer.valueOf(id), PayloadKey.AS_IS);
       
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
       
-      InvocationResponse response = null;
+      Object ret = null;
       
       if ("getClientAOPConfig".equals(methodName))
       {
@@ -115,9 +114,9 @@ public class ClientConnectionFactoryDelegate
          
          try
          {            
-            response = (InvocationResponse)client.invoke(invocation, null);
+            ret = client.invoke(invocation, null);
             
-            invocation.setResponseContextInfo(response.getContextInfo());
+            //invocation.setResponseContextInfo(response.getContextInfo());
          }
          finally
          {
@@ -136,13 +135,18 @@ public class ClientConnectionFactoryDelegate
          //and the server side connectiondelegate object so we can clean them up
          Object[] args = mi.getArguments();
          args[2] = connection.getId();
+         
+         Client client = connection.getInvokingClient();
+         
+         //I will need this on the server-side to create the ConsumerDelegate instance
+         mi.getMetaData().addMetaData(MetaDataConstants.JMS,
+                                      MetaDataConstants.REMOTING_SESSION_ID,
+                                      client.getSessionId(), PayloadKey.AS_IS);
              
          try
          {            
-            response = (InvocationResponse)connection.getInvokingClient().invoke(invocation, null);
-            
-            invocation.setResponseContextInfo(response.getContextInfo());
-            
+            ret = client.invoke(invocation, null);
+             
             //TODO - We should simplify this by considering combining the "state" and the "client delegate"
             //objects - right now this is somewhat over complex
             //with some state being stored in the client delegate objects and other state
@@ -150,7 +154,7 @@ public class ClientConnectionFactoryDelegate
             //We could probably get rid of the client state objects and just use the client delegate objects
             //for storing state.
             
-            ClientConnectionDelegate delegate = (ClientConnectionDelegate)response.getResponse();
+            ClientConnectionDelegate delegate = (ClientConnectionDelegate)ret;
             
             delegate.setConnnectionState(connection);
          }
@@ -168,13 +172,13 @@ public class ClientConnectionFactoryDelegate
 
       if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 
-      return response.getResponse();
+      return ret;
    }
    
    
    public String toString()
    {
-      return "ConnectionFactoryDelegate[" + Util.guidToString(id) + "]";
+      return "ConnectionFactoryDelegate[" + id + "]";
    }
    
    // Protected -----------------------------------------------------

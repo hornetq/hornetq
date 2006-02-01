@@ -57,6 +57,8 @@ public abstract class ChannelSupport implements Channel
    protected State state;
    protected TransactionLog tl;
    protected MessageStore ms;
+   
+   private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -69,7 +71,7 @@ public abstract class ChannelSupport implements Channel
                             TransactionLog tl,
                             boolean acceptReliableMessages)
    {
-      if (log.isTraceEnabled()) { log.trace("creating " + (tl != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
+      if (trace) { log.trace("creating " + (tl != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
 
       this.channelID = channelID;
       this.ms = ms;
@@ -82,6 +84,10 @@ public abstract class ChannelSupport implements Channel
       {
          state = new RecoverableState(this, tl);
          // acceptReliableMessage ignored, the channel alwyas accepts reliable messages
+      }
+      if (ms == null)
+      {
+         throw new IllegalArgumentException("MessageStore is null");
       }
    }
 
@@ -97,7 +103,7 @@ public abstract class ChannelSupport implements Channel
          return null;
       }
 
-      if (log.isTraceEnabled()){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
+      if (trace){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
 
       // don't even attempt synchronous delivery for a reliable message when we have an
       // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
@@ -140,7 +146,7 @@ public abstract class ChannelSupport implements Channel
          }
          else
          {   
-            if (log.isTraceEnabled()){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
+            if (trace){ log.trace("adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx) ); }
             
             state.addReference(ref, tx);         
          }
@@ -170,7 +176,7 @@ public abstract class ChannelSupport implements Channel
          return;
       }
 
-      if (log.isTraceEnabled()){ log.trace("acknowledge " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
+      if (trace){ log.trace("acknowledge " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
 
       try
       {
@@ -184,22 +190,22 @@ public abstract class ChannelSupport implements Channel
 
    public void cancel(Delivery d) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("cancel " + d); }
+      if (trace) { log.trace("cancel " + d); }
       
       state.cancelDelivery(d);
       
-      if (log.isTraceEnabled()) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
+      if (trace) { log.trace(this + " marked message " + d.getReference() + " as undelivered"); }
    }
 
    // Distributor implementation ------------------------------------
 
    public boolean add(Receiver r)
    {
-      if (log.isTraceEnabled()) { log.trace(this + ": attempting to add receiver " + r); }
+      if (trace) { log.trace(this + ": attempting to add receiver " + r); }
       
       boolean added = router.add(r);
 
-      if (log.isTraceEnabled()) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
+      if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
       
       return added;
    }
@@ -208,7 +214,7 @@ public abstract class ChannelSupport implements Channel
    {
       boolean removed = router.remove(r);
 
-      if (log.isTraceEnabled()) { log.trace(this + (removed ? " removed ":" did NOT remove ") + r); }
+      if (trace) { log.trace(this + (removed ? " removed ":" did NOT remove ") + r); }
       return removed;
    }
 
@@ -251,7 +257,7 @@ public abstract class ChannelSupport implements Channel
 
    public List browse(Filter f)
    {
-      if (log.isTraceEnabled()) { log.trace(this + " browse" + (f == null ? "" : ", filter = " + f)); }
+      if (trace) { log.trace(this + " browse" + (f == null ? "" : ", filter = " + f)); }
 
       List references = state.browse(f);
 
@@ -273,7 +279,7 @@ public abstract class ChannelSupport implements Channel
 
    public boolean deliver(Receiver r)
    {
-      if (log.isTraceEnabled()){ log.trace(r != null ? r + " requested delivery on " + this : "generic delivery requested on " + this); }
+      if (trace){ log.trace(r != null ? r + " requested delivery on " + this : "generic delivery requested on " + this); }
       
       checkClosed();
       
@@ -362,7 +368,7 @@ public abstract class ChannelSupport implements Channel
          return false;
       }
       
-      if (log.isTraceEnabled()){ log.trace(this + " delivering " + ref); }
+      if (trace){ log.trace(this + " delivering " + ref); }
 
       Delivery del = getDelivery(receiver, ref);
 
@@ -370,13 +376,13 @@ public abstract class ChannelSupport implements Channel
       {
          // no receiver, receiver that doesn't accept the message or broken receiver
 
-         if (log.isTraceEnabled()){ log.trace(this + ": no delivery returned for message" + ref); }
+         if (trace){ log.trace(this + ": no delivery returned for message" + ref); }
 
          return false;
       }
       else
       {
-         if (log.isTraceEnabled()){ log.trace(this + ": delivery returned for message:" + ref); }
+         if (trace){ log.trace(this + ": delivery returned for message:" + ref); }
          
          //We must synchronize here to cope with another race condition where message is cancelled/acked
          //in flight while the following few actions are being performed.
@@ -384,7 +390,7 @@ public abstract class ChannelSupport implements Channel
          //(observed)
          synchronized (del)
          {
-            if (log.isTraceEnabled()) { log.trace(this + " incrementing delivery count for " + del); }    
+            if (trace) { log.trace(this + " incrementing delivery count for " + del); }    
             
             //FIXME - It's actually possible the delivery could be cancelled before it reaches
             //here, in which case we wouldn't get a delivery but we still need to increment the
@@ -468,14 +474,14 @@ public abstract class ChannelSupport implements Channel
    {
       checkClosed();
 
-      if (log.isTraceEnabled()){ log.trace(this + " acknowledging non transactionally " + d); }
+      if (trace){ log.trace(this + " acknowledging non transactionally " + d); }
 
       try
       {
          //We remove the delivery from the state
          state.acknowledge(d);
          
-         if (log.isTraceEnabled()) { log.trace(this + " delivery " + d + " completed and forgotten"); }
+         if (trace) { log.trace(this + " delivery " + d + " completed and forgotten"); }
          
       }
       catch(Throwable t)

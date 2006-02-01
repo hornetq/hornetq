@@ -10,7 +10,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * 
+ * A Benchmark.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
+ */
 public class Benchmark implements Serializable
 {
    private static final long serialVersionUID = 4821514879181362348L;

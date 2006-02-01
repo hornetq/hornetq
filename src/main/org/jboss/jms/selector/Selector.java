@@ -57,7 +57,7 @@ public class Selector implements Filter
    private static Class parserClass = SelectorParser.class;
    
    private static final Logger log = Logger.getLogger(Selector.class);
-
+   
    public String selector;
 
    public HashMap identifiers;

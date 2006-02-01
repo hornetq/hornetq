@@ -47,6 +47,8 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -66,7 +68,7 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
    {
       MessageReference ref = super.reference(m);
       
-      if (log.isTraceEnabled()) { log.trace(this + " referencing " + m); }
+      if (trace) { log.trace(this + " referencing " + m); }
 
       if (m.isReliable())
       {         
@@ -79,7 +81,7 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
             log.error("Failed to store message", e);
          }
          
-         if (log.isTraceEnabled()) { log.trace("stored " + m + " on disk"); }         
+         if (trace) { log.trace("stored " + m + " on disk"); }         
       }
 
       return ref;
@@ -87,14 +89,14 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
 
    public MessageReference reference(String messageID) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("getting reference for message ID: " + messageID);}
+      if (trace) { log.trace("getting reference for message ID: " + messageID);}
       
       //Try and get the reference from the in memory cache first
       MessageReference ref = super.reference(messageID);
       
       if (ref != null)
       {        
-         if (log.isTraceEnabled()) { log.trace("Retrieved it from memory cache"); }
+         if (trace) { log.trace("Retrieved it from memory cache"); }
          return ref;
       }
 
@@ -129,7 +131,7 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
          {
             super.addMessage(m);
             
-            if (log.isTraceEnabled()) { log.trace("Retreived it from persistent storage:" + m); }    
+            if (trace) { log.trace("Retreived it from persistent storage:" + m); }    
          }
       }
       
@@ -153,9 +155,9 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
 
       if (reliable)
       {
-         if (log.isTraceEnabled()) { log.trace("removing (or decrementing reference count) " + messageId + " on disk"); }
+         if (trace) { log.trace("removing (or decrementing reference count) " + messageId + " on disk"); }
          removeMessage(messageId);
-         if (log.isTraceEnabled()) { log.trace(messageId + " removed (or reference count decremented) on disk"); }
+         if (trace) { log.trace(messageId + " removed (or reference count decremented) on disk"); }
       }
    }
 

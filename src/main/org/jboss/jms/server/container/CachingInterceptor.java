@@ -56,6 +56,8 @@ public class CachingInterceptor implements Interceptor
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -84,7 +86,7 @@ public class CachingInterceptor implements Interceptor
                   Message m = (Message)args[i];
 
                   Serializable id = m.getJMSMessageID();
-                  if (log.isTraceEnabled()) log.trace("caching message " + id);
+                  if (trace) log.trace("caching message " + id);
 
                   ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();
                   MessageStore ms = spd.getServerPeer().getMessageStoreDelegate();

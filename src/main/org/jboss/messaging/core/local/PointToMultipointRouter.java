@@ -50,6 +50,8 @@ public class PointToMultipointRouter implements Router
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean trace = log.isTraceEnabled();
 
    List receivers;
 
@@ -77,7 +79,7 @@ public class PointToMultipointRouter implements Router
             {
                Delivery d = receiver.handle(observer, routable, tx);
 
-               if (log.isTraceEnabled()) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
+               if (trace) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
 
                if (d != null && !d.isCancelled())
                {

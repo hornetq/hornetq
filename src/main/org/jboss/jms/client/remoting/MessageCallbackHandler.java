@@ -34,9 +34,7 @@ import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
-import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -49,18 +47,26 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronousChannel;
  *
  * $Id$
  */
-public class MessageCallbackHandler implements InvokerCallbackHandler
+public class MessageCallbackHandler
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(MessageCallbackHandler.class);
+   private static final Logger log;
    
    // Static --------------------------------------------------------
+   
+   private static boolean trace;
+   
+   static
+   {
+      log = Logger.getLogger(MessageCallbackHandler.class);
+      trace = log.isTraceEnabled();
+   }
    
    public static void callOnMessage(ConsumerDelegate cons,
                                     SessionDelegate sess,
                                     MessageListener listener,
-                                    String consumerID,
+                                    int consumerID,
                                     boolean isConnectionConsumer,
                                     Message m,
                                     int ackMode)
@@ -84,14 +90,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          {
             //Cancel the message - this means it will be immediately redelivered
 
-            if (log.isTraceEnabled()) { log.trace("cancelling " + Util.guidToString(id)); }
+            if (trace) { log.trace("cancelling " + Util.guidToString(id)); }
             cons.cancelMessage(id);
          }
          else
          {
             //Session is either transacted or CLIENT_ACKNOWLEDGE
             //We just deliver next message
-            if (log.isTraceEnabled()) { log.trace("ignoring exception on " + Util.guidToString(id)); }
+            if (trace) { log.trace("ignoring exception on " + Util.guidToString(id)); }
          }
       }
             
@@ -100,7 +106,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    }
    
    protected static void preDeliver(SessionDelegate sess,
-                                    String consumerID,
+                                    int consumerID,
                                     Message m,
                                     boolean isConnectionConsumer)
       throws JMSException
@@ -114,7 +120,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    }
    
    protected static void postDeliver(SessionDelegate sess,
-                                     String consumerID,
+                                     int consumerID,
                                      Message m,
                                      boolean isConnectionConsumer)
       throws JMSException
@@ -128,14 +134,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    }
    
    // Attributes ----------------------------------------------------
-
+     
    protected SynchronousChannel buffer;
    
    protected SessionDelegate sessionDelegate;
    
    protected ConsumerDelegate consumerDelegate;
    
-   protected String consumerID;
+   protected int consumerID;
    
    protected boolean isConnectionConsumer;
    
@@ -169,7 +175,8 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
 
    // Constructors --------------------------------------------------
 
-   public MessageCallbackHandler(boolean isCC, int ackMode, Executor executor, Executor pooledExecutor)
+   public MessageCallbackHandler(boolean isCC, int ackMode, Executor executor, Executor pooledExecutor,
+                                 SessionDelegate sess, ConsumerDelegate cons, int consumerID)
    {
       buffer = new SynchronousChannel();
       
@@ -186,13 +193,17 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       this.pooledExecutor = pooledExecutor;
       
       activationCount = new SynchronizedInt(0);
+      
+      this.sessionDelegate = sess;
+      
+      this.consumerDelegate = cons;
+      
+      this.consumerID = consumerID;
    }
 
-   // InvokerCallbackHandler implementation -------------------------
-   
-   public synchronized void handleCallback(Callback callback) throws HandleCallbackException
+   public synchronized void handleMessage(MessageDelegate md) throws HandleCallbackException
    {
-      if (log.isTraceEnabled()) { log.trace("receiving message " + callback.getParameter() + " from the remoting layer"); }
+      if (trace) { log.trace("receiving message " + md + " from the remoting layer"); }
 
       if (closed)
       {
@@ -203,8 +214,6 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          // close, in which case its deliveries will be cancelled anyway.
          return;
       }
-      
-      MessageDelegate md = (MessageDelegate)callback.getParameter();
       
       if (listener != null)
       {
@@ -274,7 +283,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       
       this.listener = listener;
 
-      if (log.isTraceEnabled()) { log.trace("installed listener " + listener); }
+      if (trace) { log.trace("installed listener " + listener); }
 
       activateConsumer();
    }
@@ -333,7 +342,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
             {
                if (timeout == 0)
                {
-                  if (log.isTraceEnabled()) log.trace("receive with no timeout");
+                  if (trace) log.trace("receive with no timeout");
                   
                   if (!stopping)
                   {
@@ -345,12 +354,12 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                      return null;
                   }
                   
-                  if (log.isTraceEnabled()) { log.trace("got " + m); }
+                  if (trace) { log.trace("got " + m); }
                }
                else if (timeout == -1)
                {
                   //ReceiveNoWait
-                  if (log.isTraceEnabled()) { log.trace("receive noWait"); }                  
+                  if (trace) { log.trace("receive noWait"); }                  
                   
                   if (!stopping)
                   {
@@ -359,13 +368,13 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                   
                   if (m == null)
                   {
-                     if (log.isTraceEnabled()) { log.trace("no message available"); }
+                     if (trace) { log.trace("no message available"); }
                      return null;
                   }
                }
                else
                {
-                  if (log.isTraceEnabled()) { log.trace("receive timeout " + timeout + " ms, blocking poll on queue"); }
+                  if (trace) { log.trace("receive timeout " + timeout + " ms, blocking poll on queue"); }
                   
                   if (!stopping)
                   {
@@ -375,7 +384,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                   if (m == null)
                   {
                      // timeout expired
-                     if (log.isTraceEnabled()) { log.trace(timeout + " ms timeout expired"); }
+                     if (trace) { log.trace(timeout + " ms timeout expired"); }
                      
                      return null;
                   }
@@ -383,7 +392,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
             }
             catch(InterruptedException e)
             {
-               if (log.isTraceEnabled()) { log.trace("Thread was interrupted"); }
+               if (trace) { log.trace("Thread was interrupted"); }
                
                if (closed)
                {
@@ -395,11 +404,11 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
                }
             }
             
-            if (log.isTraceEnabled()) { log.trace("got " + m); }
+            if (trace) { log.trace("got " + m); }
                                
             if (!((MessageDelegate)m).getMessage().isExpired())
             {
-               if (log.isTraceEnabled()) { log.trace("message " + m + " is not expired, returning it to the caller"); }
+               if (trace) { log.trace("message " + m + " is not expired, returning it to the caller"); }
                
                preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
                
@@ -422,22 +431,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
          receiverThread = null;         
       }
  
-   }
-   
-   public void setSessionDelegate(SessionDelegate delegate)
-   {
-      this.sessionDelegate = delegate;
-   }
-   
-   public void setConsumerDelegate(ConsumerDelegate delegate)
-   {
-      this.consumerDelegate = delegate;
-   }
-   
-   public void setConsumerID(String receiverID)
-   {
-      this.consumerID = receiverID;
-   }
+   }    
    
    public synchronized MessageListener getMessageListener()
    {
@@ -499,7 +493,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       
       try
       {
-         if (log.isTraceEnabled()) { log.trace("initiating activation"); }
+         if (trace) { log.trace("initiating activation"); }
          pooledExecutor.execute(new ConsumerActivationRunnable());
          activationCount.increment();
       }
@@ -516,7 +510,7 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
    
    protected Message getMessageNow() throws JMSException
    {
-      MessageDelegate del = (MessageDelegate)consumerDelegate.getMessageNow();
+      MessageDelegate del = (MessageDelegate)consumerDelegate.getMessageNow(false);
       if (del != null)
       {
          return processMessage(del);
@@ -636,8 +630,14 @@ public class MessageCallbackHandler implements InvokerCallbackHandler
       {
          try
          {
-            if (log.isTraceEnabled()) { log.trace("activating consumer endpoint"); }
-            consumerDelegate.activate();
+            if (trace) { log.trace("activating consumer endpoint"); }
+            //consumerDelegate.activate();
+            MessageDelegate m = (MessageDelegate)consumerDelegate.getMessageNow(true);
+            
+            if (m != null)
+            {
+               handleMessage(m);
+            }
          }
          catch(Throwable t)
          {

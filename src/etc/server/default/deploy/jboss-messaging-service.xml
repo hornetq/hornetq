@@ -22,16 +22,17 @@
           display-name="Socket transport Connector">
       <attribute name="Configuration">
          <config>
-            <invoker transport="socket">
-               <attribute name="dataType" isParam="true">invocation</attribute>
-               <attribute name="marshaller" isParam="true">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>
-               <attribute name="unmarshaller" isParam="true">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>
-               <attribute name="serializationtype" isParam="true">jboss</attribute>
+            <invoker transport="socket">               
+               <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="serializationtype" isParam="true">jms</attribute>
+               <attribute name="dataType" isParam="true">jms</attribute>
+               <attribute name="socketTimeout">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
-               <attribute name="serverBindPort">4457</attribute>               
+               <attribute name="serverBindPort">4457</attribute>                              
             </invoker>
             <handlers>
-               <handler subsystem="why_do_I_need_this">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
+               <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
             </handlers>
          </config>
       </attribute>

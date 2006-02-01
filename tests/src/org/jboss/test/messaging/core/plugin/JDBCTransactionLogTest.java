@@ -468,11 +468,11 @@ public class JDBCTransactionLogTest extends MessagingTestCase
       assertEquals(0, refs.size());
       
       //First insert some references outside a transaction
-      Message m1 = createMessage(4);
-      Message m2 = createMessage(4);
-      Message m3 = createMessage(4);
-      Message m4 = createMessage(4);
-      Message m5 = createMessage(4);
+      Message m1 = createMessage((byte)4);
+      Message m2 = createMessage((byte)4);
+      Message m3 = createMessage((byte)4);
+      Message m4 = createMessage((byte)4);
+      Message m5 = createMessage((byte)4);
       MessageReference ref1 = ms.reference(m1);
       MessageReference ref2 = ms.reference(m2);
       MessageReference ref3 = ms.reference(m3);
@@ -495,9 +495,9 @@ public class JDBCTransactionLogTest extends MessagingTestCase
       
       
       //Now, in a non-xa transaction, add some more refs
-      Message m6 = createMessage(4);
-      Message m7 = createMessage(4);
-      Message m8 = createMessage(4);
+      Message m6 = createMessage((byte)4);
+      Message m7 = createMessage((byte)4);
+      Message m8 = createMessage((byte)4);
       MessageReference ref6 = ms.reference(m6);
       MessageReference ref7 = ms.reference(m7);
       MessageReference ref8 = ms.reference(m8);
@@ -559,7 +559,7 @@ public class JDBCTransactionLogTest extends MessagingTestCase
             
    }
    
-   protected Message createMessage(int i) throws Exception
+   protected Message createMessage(byte i) throws Exception
    {
       Map headers = generateFilledMap(true);
       
@@ -581,7 +581,7 @@ public class JDBCTransactionLogTest extends MessagingTestCase
       Message[] messages = new Message[10];
       for (int i = 0; i < 10; i++)
       {            
-         messages[i] = createMessage(i);
+         messages[i] = createMessage((byte)i);
       }
       return messages;
    }

@@ -23,7 +23,6 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.ConnectionState;
@@ -31,9 +30,6 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
 
 /**
  * 
@@ -50,8 +46,6 @@ import org.jboss.remoting.Client;
 public class ConsumerAspect
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ConsumerAspect.class);
 
    // Static --------------------------------------------------------
 
@@ -72,33 +66,22 @@ public class ConsumerAspect
          (SessionState)((DelegateSupport)invocation.getTargetObject()).getState();
       
       ConnectionState connState = (ConnectionState)sessState.getParent();
-      
-      MessageCallbackHandler messageHandler =
-         new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
-                                    sessState.getExecutor(), connState.getPooledExecutor());
-
-      Client client = connState.getRemotingConnection().registerCallbackHandler(messageHandler);
-
-      log.debug("listener added");
-
-      // I will need this on the server-side to create the ConsumerDelegate instance
-      invocation.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                           MetaDataConstants.REMOTING_SESSION_ID,
-                                           client.getSessionId(), PayloadKey.AS_IS);
-
+                  
       ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
       
       SessionDelegate del = (SessionDelegate)invocation.getTargetObject();
 
       ConsumerState theState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
-         
-      messageHandler.setSessionDelegate(del);
-      messageHandler.setConsumerDelegate(consumerDelegate);
-      messageHandler.setConsumerID(theState.getConsumerID());
-  
-      theState.setMessageCallbackHandler(messageHandler);
-      theState.setCallbackClient(client);
       
+      MessageCallbackHandler messageHandler =
+         new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
+                                    sessState.getExecutor(), connState.getPooledExecutor(),
+                                    del, consumerDelegate, theState.getConsumerID());
+      
+      connState.getRemotingConnection().getCallbackManager().registerHandler(theState.getConsumerID(), messageHandler);
+         
+      theState.setMessageCallbackHandler(messageHandler);
+
       return consumerDelegate;
    }
    
@@ -106,9 +89,10 @@ public class ConsumerAspect
    {
       
       ConsumerState state = getState(invocation);
-      Client client = state.getCallbackClient();
-      client.removeListener(state.getMessageCallbackHandler());
-      client.disconnect();
+      
+      ConnectionState cState = (ConnectionState)state.getParent().getParent();
+      
+      cState.getRemotingConnection().getCallbackManager().unregisterHandler(state.getConsumerID());
       
       state.getMessageCallbackHandler().close();  
       

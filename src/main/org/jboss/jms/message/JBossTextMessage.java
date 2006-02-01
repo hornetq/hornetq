@@ -49,7 +49,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    private static final long serialVersionUID = 7965361851565655163L;
    
-   public static final int TYPE = 5;
+   public static final byte TYPE = 5;
 
    // Attributes ----------------------------------------------------
 
@@ -79,7 +79,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          boolean reliable,
          long expiration,
          long timestamp,
-         int priority,
+         byte priority,
          int deliveryCount,
          Map coreHeaders,
          Serializable payload,
@@ -89,7 +89,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          String destination,
          boolean replyToIsQueue,
          String replyTo,
-         String connectionID,
+         int connectionID,
          Map jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
@@ -124,7 +124,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Public --------------------------------------------------------
 
-   public int getType()
+   public byte getType()
    {
       return JBossTextMessage.TYPE;
    }

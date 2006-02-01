@@ -21,22 +21,23 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import javax.jms.Message;
+import java.io.Serializable;
 
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.Client;
 
 /**
  * A PooledExecutor job that contains the message to be delivered asynchronously to the client. The
  * delivery is always carried on a thread pool thread.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-class DeliveryRunnable extends Callback implements Runnable
+public class DeliveryRunnable implements Runnable, Serializable
 {
    // Constants -----------------------------------------------------
    
@@ -48,15 +49,25 @@ class DeliveryRunnable extends Callback implements Runnable
    
    // Attributes ----------------------------------------------------
    
-   protected transient InvokerCallbackHandler callbackHandler;
-
+   private boolean trace;
+   
+   private MessageDelegate msg;
+   
+   private transient Client callbackClient;
+   
+   private int consumerID;
+   
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(InvokerCallbackHandler callbackHandler,
-                           Message m)
+   public DeliveryRunnable(MessageDelegate msg, Client callbackClient, int consumerID, boolean trace)
    {
-      super(m);
-      this.callbackHandler = callbackHandler;
+      this.msg = msg;
+      
+      this.callbackClient = callbackClient;
+      
+      this.consumerID = consumerID;
+      
+      this.trace = trace;
    }
 
    // Runnable implementation ---------------------------------------
@@ -65,8 +76,9 @@ class DeliveryRunnable extends Callback implements Runnable
    {
       try
       {
-         if (log.isTraceEnabled()) { log.trace("handing " + this.getCallbackObject() + " over to the remoting layer"); }
-         callbackHandler.handleCallback(this);
+         if (trace) { log.trace("handing " + this.msg + " over to the remoting layer"); }
+         
+         callbackClient.invoke(this);         
       }
       catch(Throwable t)
       {
@@ -75,6 +87,16 @@ class DeliveryRunnable extends Callback implements Runnable
    }
 
    // Public --------------------------------------------------------
+   
+   public MessageDelegate getMessageDelegate()
+   {
+      return msg;
+   }
+   
+   public int getConsumerID()
+   {
+      return consumerID;
+   }
 
    // Package protected ---------------------------------------------
    

@@ -9,7 +9,13 @@ package org.jboss.jms.perf.framework.factories;
 import java.util.Arrays;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A AbstractMessageFactory.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
+ *
+ * $Id$
  */
 public abstract class AbstractMessageFactory implements MessageFactory
 {

@@ -26,7 +26,6 @@ import java.util.Map;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.test.messaging.core.plugin.JDBCTransactionLogTest;
-import org.jboss.test.messaging.core.plugin.JDBCTransactionLogTest;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
 
@@ -100,7 +99,7 @@ public class JBossMessageTransactionLogTest extends JDBCTransactionLogTest
 
    }
    
-   protected Message createMessage(int i) throws Exception
+   protected Message createMessage(byte i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         
       
@@ -121,7 +120,7 @@ public class JBossMessageTransactionLogTest extends JDBCTransactionLogTest
             new GUID().toString(),
             i % 2 == 1,
             new GUID().toString(),
-            new GUID().toString(),
+            randInt().intValue(),
             jmsProperties);            
 
       return m;

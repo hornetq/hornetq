@@ -128,6 +128,7 @@
         <path refid="jboss.common.classpath"/>
         <path refid="jboss.j2ee.classpath"/>
         <path refid="jboss.remoting.classpath"/>
+        <path refid="jboss.serialization.classpath"/>
         <path refid="jboss.aop.classpath"/>
         <path refid="jboss.aspects.classpath"/>
         <path refid="jboss.j2se.classpath"/>
@@ -233,6 +234,11 @@
      <property name="current.jboss.remoting.lib" value="${module.root}/src/resources"/>
      <path id="jboss.remoting.classpath">
         <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
+     </path>
+
+     <property name="current.jboss.serialization.lib" value="${module.root}/src/resources"/>
+     <path id="jboss.serialization.classpath">
+         <pathelement path="${module.root}/src/resources/jboss-serialization.jar"/>
      </path>
 
 
@@ -542,7 +548,7 @@
       <copy file="${jboss.aop.lib}/jboss-aop.jar" todir="${build.classes}"/>
       <copy file="${jboss.aspects.lib}/jboss-aspect-library.jar" todir="${build.classes}"/>
       <copy file="${current.jboss.remoting.lib}/jboss-remoting.jar" todir="${build.classes}"/>
-      <copy file="${jboss.serialization.lib}/jboss-serialization.jar" todir="${build.classes}"/>
+      <copy file="${current.jboss.serialization.lib}/jboss-serialization.jar" todir="${build.classes}"/>
       <copy file="${javassist.javassist.lib}/javassist.jar" todir="${build.classes}"/>
       <copy file="${trove.trove.lib}/trove.jar" todir="${build.classes}"/>
 

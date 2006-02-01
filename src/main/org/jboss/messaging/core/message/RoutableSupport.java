@@ -50,25 +50,29 @@ abstract class RoutableSupport implements Routable, Externalizable
    private static final Logger log = Logger.getLogger(RoutableSupport.class);
    
    /** A byte property */
-   protected static final int BYTE = 0;
+   protected static final byte BYTE = 0;
    /** A short property */
-   protected static final int SHORT = 1;
+   protected static final byte SHORT = 1;
    /** An integer property */
-   protected static final int INT = 2;
+   protected static final byte INT = 2;
    /** A long property */
-   protected static final int LONG = 3;
+   protected static final byte LONG = 3;
    /** A float property */
-   protected static final int FLOAT = 4;
+   protected static final byte FLOAT = 4;
    /** A double property */
-   protected static final int DOUBLE = 5;
+   protected static final byte DOUBLE = 5;
    /** A boolean property */
-   protected static final int BOOLEAN = 6;
+   protected static final byte BOOLEAN = 6;
    /** A string property */
-   protected static final int STRING = 7;
+   protected static final byte STRING = 7;
    /** An object property */
-   protected static final int OBJECT = 8;
+   protected static final byte OBJECT = 8;
    /** A null property */
-   protected static final int NULL = 9;
+   protected static final byte NULL = 9;
+   
+   protected static final byte BYTES = 10;
+   
+   protected static final byte MAP = 11;
 
    // Attributes ----------------------------------------------------
 
@@ -79,7 +83,7 @@ abstract class RoutableSupport implements Routable, Externalizable
    protected long timestamp;
    protected Map headers;
    protected boolean redelivered;
-   protected int priority;
+   protected byte priority;
    protected int deliveryCount;
    protected long ordering;
 
@@ -114,7 +118,7 @@ abstract class RoutableSupport implements Routable, Externalizable
            reliable,
            timeToLive == Long.MAX_VALUE ? 0 : System.currentTimeMillis() + timeToLive,
            System.currentTimeMillis(),
-           4,
+           (byte)4,
            0,
            0,
            null);
@@ -124,7 +128,7 @@ abstract class RoutableSupport implements Routable, Externalizable
                           boolean reliable, 
                           long expiration, 
                           long timestamp,
-                          int priority,
+                          byte priority,
                           int deliveryCount,
                           long ordering,
                           Map headers)
@@ -241,12 +245,12 @@ abstract class RoutableSupport implements Routable, Externalizable
       return headers;
    }
    
-   public int getPriority()
+   public byte getPriority()
    {
       return priority;
    }
    
-   public void setPriority(int priority)
+   public void setPriority(byte priority)
    {
       this.priority = priority;
    }
@@ -265,26 +269,26 @@ abstract class RoutableSupport implements Routable, Externalizable
    
    public void writeExternal(ObjectOutput out) throws IOException
    {      
-      out.writeObject(messageID);
+      out.writeUTF((String)messageID);
       out.writeBoolean(reliable);
       out.writeLong(expiration);
       out.writeLong(timestamp);
       writeMap(out, headers);
       out.writeBoolean(redelivered);
-      out.writeInt(priority);
+      out.writeByte(priority);
       out.writeInt(deliveryCount);
       out.writeLong(ordering);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {     
-      messageID = (Serializable)in.readObject();
+      messageID = (Serializable)in.readUTF();
       reliable = in.readBoolean();
       expiration = in.readLong();
       timestamp = in.readLong();
       headers = readMap(in);
       redelivered = in.readBoolean();
-      priority = in.readInt();
+      priority = in.readByte();
       deliveryCount = in.readInt();
       ordering = in.readLong();
    }
@@ -338,108 +342,125 @@ abstract class RoutableSupport implements Routable, Externalizable
    }
    
    protected void writeMap(ObjectOutput out, Map map) throws IOException
-   {
-      Set entrySet = map.entrySet();
-      out.writeInt(entrySet.size());
-      for (Iterator it = entrySet.iterator(); it.hasNext(); )
+   {      
+      if (map.isEmpty())
       {
-         Map.Entry me = (Map.Entry)it.next();
-         out.writeUTF((String)me.getKey());
-         Object value = me.getValue();
-         if (value == null)
+         out.writeByte(NULL);
+      }
+      else
+      {      
+         out.writeByte(MAP);
+         Set entrySet = map.entrySet();
+         out.writeInt(entrySet.size());
+         for (Iterator it = entrySet.iterator(); it.hasNext(); )
          {
-            out.writeByte(OBJECT);
-            out.writeObject(value);
-         }
-         else if (value instanceof String)
-         {
-            out.writeByte(STRING);
-            out.writeUTF((String) value);
-         }
-         else if (value instanceof Integer)
-         {
-            out.writeByte(INT);
-            out.writeInt(((Integer) value).intValue());
-         }
-         else if (value instanceof Boolean)
-         {
-            out.writeByte(BOOLEAN);
-            out.writeBoolean(((Boolean) value).booleanValue());
-         }
-         else if (value instanceof Byte)
-         {
-            out.writeByte(BYTE);
-            out.writeByte(((Byte) value).byteValue());
-         }
-         else if (value instanceof Short)
-         {
-            out.writeByte(SHORT);
-            out.writeShort(((Short) value).shortValue());
-         }
-         else if (value instanceof Long)
-         {
-            out.writeByte(LONG);
-            out.writeLong(((Long) value).longValue());
-         }
-         else if (value instanceof Float)
-         {
-            out.writeByte(FLOAT);
-            out.writeFloat(((Float) value).floatValue());
-         }
-         else if (value instanceof Double)
-         {
-            out.writeByte(DOUBLE);
-            out.writeDouble(((Double) value).doubleValue());
-         }
-         else
-         {
-            out.writeByte(OBJECT);
-            out.writeObject(value);
+            Map.Entry me = (Map.Entry)it.next();
+            out.writeUTF((String)me.getKey());
+            Object value = me.getValue();
+            if (value == null)
+            {
+               out.writeByte(NULL);
+            }
+            else if (value instanceof String)
+            {
+               out.writeByte(STRING);
+               out.writeUTF((String) value);
+            }
+            else if (value instanceof Integer)
+            {
+               out.writeByte(INT);
+               out.writeInt(((Integer) value).intValue());
+            }
+            else if (value instanceof Boolean)
+            {
+               out.writeByte(BOOLEAN);
+               out.writeBoolean(((Boolean) value).booleanValue());
+            }
+            else if (value instanceof Byte)
+            {
+               out.writeByte(BYTE);
+               out.writeByte(((Byte) value).byteValue());
+            }
+            else if (value instanceof Short)
+            {
+               out.writeByte(SHORT);
+               out.writeShort(((Short) value).shortValue());
+            }
+            else if (value instanceof Long)
+            {
+               out.writeByte(LONG);
+               out.writeLong(((Long) value).longValue());
+            }
+            else if (value instanceof Float)
+            {
+               out.writeByte(FLOAT);
+               out.writeFloat(((Float) value).floatValue());
+            }
+            else if (value instanceof Double)
+            {
+               out.writeByte(DOUBLE);
+               out.writeDouble(((Double) value).doubleValue());
+            }
+            else
+            {
+               out.writeByte(OBJECT);
+               out.writeObject(value);
+            }
          }
       }
    }
    
    protected Map readMap(ObjectInput in) throws IOException, ClassNotFoundException
    {
-      int size = in.readInt();
-      Map m = new HashMap(size);
-      for (int i = 0; i < size; i++)
+      byte b = in.readByte();
+      if (b == NULL)
       {
-         String key = in.readUTF();
-         byte type = in.readByte();
-         Object value = null;
-         switch (type)
-         {
-            case BYTE :
-               value = new Byte(in.readByte());
-               break;
-            case SHORT :
-               value = new Short(in.readShort());
-               break;
-            case INT :
-               value = new Integer(in.readInt());
-               break;
-            case LONG :
-               value = new Long(in.readLong());
-               break;
-            case FLOAT :
-               value = new Float(in.readFloat());
-               break;
-            case DOUBLE :
-               value = new Double(in.readDouble());
-               break;
-            case BOOLEAN :
-               value = Primitives.valueOf(in.readBoolean());
-               break;
-            case STRING :
-               value = in.readUTF();
-               break;
-            default :
-               value = in.readObject();
-         }
-         m.put(key, value);
+         return new HashMap();
       }
-      return m;
-   }
-   
+      else
+      {      
+         int size = in.readInt();
+         Map m = new HashMap(size);
+         for (int i = 0; i < size; i++)
+         {
+            String key = in.readUTF();
+            byte type = in.readByte();
+            Object value = null;
+            switch (type)
+            {
+               case BYTE :
+                  value = new Byte(in.readByte());
+                  break;
+               case SHORT :
+                  value = new Short(in.readShort());
+                  break;
+               case INT :
+                  value = new Integer(in.readInt());
+                  break;
+               case LONG :
+                  value = new Long(in.readLong());
+                  break;
+               case FLOAT :
+                  value = new Float(in.readFloat());
+                  break;
+               case DOUBLE :
+                  value = new Double(in.readDouble());
+                  break;
+               case BOOLEAN :
+                  value = Primitives.valueOf(in.readBoolean());
+                  break;
+               case STRING :
+                  value = in.readUTF();
+                  break;
+               case NULL:
+                  value = null;
+                  break;
+               default :
+                  value = in.readObject();
+            }
+            m.put(key, value);
+         }
+         return m;
+      }
+   }   
 }
