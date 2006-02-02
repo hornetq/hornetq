@@ -550,9 +550,9 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
-      //We explicitly associate the datatype "jms" with our customer SerializationManager
+      //We explicitly associate the datatype "jms" with the java SerializationManager
       //This is vital for performance reasons.
-      SerializationStreamFactory.setManagerClassName("jms", "org.jboss.jms.server.remoting.JMSSerializationManager");
+      SerializationStreamFactory.setManagerClassName("jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
       
       JMSWireFormat wf = new JMSWireFormat();
       

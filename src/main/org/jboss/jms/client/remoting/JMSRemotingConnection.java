@@ -102,8 +102,10 @@ public class JMSRemotingConnection
             
             completed = true;         
          }
-         catch (java.net.BindException e)
+         catch (Exception e)
          {
+            log.warn("Failed to start connection", e);
+            
             //Intermittently we can fail to open a socket on the address since it's already in use
             //This is despite remoting having checked the port is free.
             //This is either because the remoting implementation is buggy
@@ -184,7 +186,7 @@ public class JMSRemotingConnection
       
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-                      "serializationtype=jms&" +
+                      "serializationtype=jboss&" +
                       "dataType=jms&" +
                       "socketTimeout=0";
                   
@@ -219,6 +221,8 @@ public class JMSRemotingConnection
         
       if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:" 
             + callbackServerLocator.getLocatorURI()); }
+      
+      log.info("Starting callback server with uri:" + callbackServerLocator.getLocatorURI());
             
       callbackServer = new Connector();
       

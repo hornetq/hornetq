@@ -32,13 +32,16 @@ import javax.jms.JMSException;
 public class JBossJMSException extends JMSException
 {
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = -2234413113067993755L;
 
    // Static --------------------------------------------------------
+   
    
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-
+  
    public JBossJMSException(String reason) {
      this(reason, null, null);
    }

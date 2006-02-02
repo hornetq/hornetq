@@ -877,7 +877,7 @@ public class MessageTest extends MessagingTestCase
    /**
     * Loads the message header fields with significant values.
     */
-   private void configureMessage(Message m) throws JMSException
+   public static void configureMessage(Message m) throws JMSException
    {
       m.setJMSMessageID("messageID777");
       m.setJMSTimestamp(123456789l);
@@ -902,7 +902,7 @@ public class MessageTest extends MessagingTestCase
     * Makes sure two physically different message are equivalent: they have identical JMS fields and
     * body.
     */
-   private void ensureEquivalent(Message m1, Message m2) throws JMSException
+   public static void ensureEquivalent(Message m1, Message m2) throws JMSException
    {
       assertTrue(m1 != m2);
 
@@ -1116,7 +1116,7 @@ public class MessageTest extends MessagingTestCase
       }
    }
 
-   private void ensureEquivalent(BytesMessage m1, BytesMessage m2) throws JMSException
+   public static void ensureEquivalent(BytesMessage m1, BytesMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
 
@@ -1147,7 +1147,7 @@ public class MessageTest extends MessagingTestCase
       }
    }
 
-   private void ensureEquivalent(MapMessage m1, MapMessage m2) throws JMSException
+   public static void ensureEquivalent(MapMessage m1, MapMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
 
@@ -1164,13 +1164,13 @@ public class MessageTest extends MessagingTestCase
       }
    }
 
-   private void ensureEquivalent(ObjectMessage m1, ObjectMessage m2) throws JMSException
+   public static void ensureEquivalent(ObjectMessage m1, ObjectMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
       assertEquals(m1.getObject(), m2.getObject());
    }
 
-   private void ensureEquivalent(StreamMessage m1, StreamMessage m2) throws JMSException
+   public static void ensureEquivalent(StreamMessage m1, StreamMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, (Message)m2);
 

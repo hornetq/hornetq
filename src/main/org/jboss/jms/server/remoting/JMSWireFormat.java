@@ -21,10 +21,10 @@
   */
 package org.jboss.jms.server.remoting;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -41,6 +41,8 @@ import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.remoting.marshal.serializable.SerializableMarshaller;
 import org.jboss.remoting.marshal.serializable.SerializableUnMarshaller;
+import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
 
 /**
  * 
@@ -115,7 +117,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    {      
    }
    
-   private void writeHeader(MethodInvocation mi, DataOutputStream dos) throws IOException
+   private void writeHeader(MethodInvocation mi, ObjectOutputStream dos) throws IOException
    {
       int objectId = ((Integer)mi.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue();
       
@@ -124,11 +126,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       dos.writeLong(mi.getMethodHash());
    }
    
-   private MethodInvocation readHeader(DataInputStream dis) throws IOException
+   private MethodInvocation readHeader(ObjectInputStream ois) throws IOException
    {
-      int objectId = dis.readInt();
+      int objectId = ois.readInt();
       
-      long methodHash = dis.readLong();                  
+      long methodHash = ois.readLong();                  
       
       MethodInvocation mi = new MethodInvocation(null, methodHash, null, null, null);                 
       
@@ -140,14 +142,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    public void write(Object obj, OutputStream out) throws IOException
    {
       //Sanity check
-      if (!(out instanceof JMSObjectOutputStream))
+      if (!(out instanceof JBossObjectOutputStream))
       {
-         throw new IllegalStateException("OutputStream must be an JMSObjectOutputStream");
+         throw new IllegalStateException("OutputStream must be an JBossObjectOutputStream");
       }
            
-      JMSObjectOutputStream oos = (JMSObjectOutputStream)out;
-      DataOutputStream dos = oos.getDataOutputStream();
-      
+      JBossObjectOutputStream oos = (JBossObjectOutputStream)out;
+
       if (obj instanceof InvocationRequest)
       {         
          if (trace) { log.trace("Writing InvocationRequest"); }
@@ -168,68 +169,67 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             if (methodName.equals("send"))
             {               
-               dos.writeByte(SEND);
+               oos.writeByte(SEND);
                
-               writeHeader(mi, dos);
+               writeHeader(mi, oos);
                
                JBossMessage m = (JBossMessage)mi.getArguments()[0];                              
                
-               dos.writeByte(m.getType());
+               oos.writeByte(m.getType());
                
                m.writeExternal(oos);
                
                oos.flush();  
                
-               if (trace) { log.trace("Wrote send"); }
-               
+               if (trace) { log.trace("Wrote send"); }               
             }
             else if ("activate".equals(methodName))
             {
-               dos.writeByte(ACTIVATE);
+               oos.writeByte(ACTIVATE);
                
-               writeHeader(mi, dos);                            
+               writeHeader(mi, oos);                            
                
-               dos.flush();
+               oos.flush();
                
                if (trace) { log.trace("Wrote activate"); }
             }
             else if ("deactivate".equals(methodName))
             {
-               dos.writeByte(DEACTIVATE);
+               oos.writeByte(DEACTIVATE);
                
-               writeHeader(mi, dos);                             
+               writeHeader(mi, oos);                             
                
-               dos.flush();
+               oos.flush();
                
                if (trace) { log.trace("Wrote deactivate"); }
             }
             else if ("getMessageNow".equals(methodName))
             {
-               dos.writeByte(GETMESSAGENOW);
+               oos.writeByte(GETMESSAGENOW);
                
-               writeHeader(mi, dos);    
+               writeHeader(mi, oos);    
                
                boolean wait = ((Boolean)mi.getArguments()[0]).booleanValue();
                
-               dos.writeBoolean(wait);
+               oos.writeBoolean(wait);
                
-               dos.flush();
+               oos.flush();
                
                if (trace) { log.trace("Wrote getMessageNow"); }
             }
             else if ("acknowledge".equals(methodName))
             {
-               dos.writeByte(ACKNOWLEDGE);
+               oos.writeByte(ACKNOWLEDGE);
                
-               writeHeader(mi, dos);                              
+               writeHeader(mi, oos);                              
                
-               dos.flush();
+               oos.flush();
                
                if (trace) { log.trace("Wrote acknowledge"); }
             }
             else
             {
-               dos.write(SERIALIZED);
+               oos.write(SERIALIZED);
                
                //Delegate to serialization to handle the wire format
                serializableMarshaller.write(obj, oos);
@@ -245,17 +245,17 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
             DeliveryRunnable dr = (DeliveryRunnable)param;
             
-            dos.writeByte(CALLBACK);
+            oos.writeByte(CALLBACK);
                     
             int consumerID = dr.getConsumerID();
             
             MessageDelegate del = dr.getMessageDelegate();
             
-            dos.writeInt(consumerID);
+            oos.writeInt(consumerID);
             
-            dos.writeByte(del.getMessage().getType());
+            oos.writeByte(del.getMessage().getType());
             
-            dos.writeInt(del.getDeliveryCount());
+            oos.writeInt(del.getDeliveryCount());
             
             del.getMessage().writeExternal(oos);
             
@@ -265,7 +265,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }            
          else
          {           
-            dos.write(SERIALIZED);
+            oos.write(SERIALIZED);
             
             //Delegate to serialization to handle the wire format
             serializableMarshaller.write(obj, oos);
@@ -285,22 +285,22 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          
          if (res == null && !resp.isException())
          {
-            dos.write(NULL_RESPONSE);
+            oos.write(NULL_RESPONSE);
             
-            dos.flush();            
+            oos.flush();            
             
             if (trace) { log.trace("Wrote null response"); }
          }
          else if (res instanceof MessageDelegate)
          {
             //Return value from getMessageNow
-            dos.write(MESSAGE_RESPONSE);
+            oos.write(MESSAGE_RESPONSE);
             
             MessageDelegate del = (MessageDelegate)res;
             
-            dos.writeByte(del.getMessage().getType());
+            oos.writeByte(del.getMessage().getType());
             
-            dos.writeInt(del.getDeliveryCount());
+            oos.writeInt(del.getDeliveryCount());
             
             del.getMessage().writeExternal(oos);
             
@@ -310,7 +310,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }
          else
          {      
-            dos.write(SERIALIZED);
+            oos.write(SERIALIZED);
               
             //Delegate to serialization to handle the wire format
             serializableMarshaller.write(obj, out);
@@ -327,15 +327,14 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
    {
       //Sanity check
-      if (!(in instanceof JMSObjectInputStream))
+      if (!(in instanceof JBossObjectInputStream))
       {
-         throw new IllegalStateException("InputStream must be an JMSObjectInputStream");
+         throw new IllegalStateException("InputStream must be an JBossObjectInputStream");
       }
       
-      JMSObjectInputStream ois = (JMSObjectInputStream)in;
-      DataInputStream dis = ois.getDataInputStream();
-      
-      byte formatType = (byte)dis.read();
+      JBossObjectInputStream ois = (JBossObjectInputStream)in;
+
+      byte formatType = (byte)ois.read();
       
       if (trace) { log.trace("Reading, format type=" + formatType); }
        
@@ -352,9 +351,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }            
          case SEND:
          {            
-            MethodInvocation mi = readHeader(dis);
+            MethodInvocation mi = readHeader(ois);
             
-            byte messageType = dis.readByte();
+            byte messageType = ois.readByte();
             
             JBossMessage m = (JBossMessage)MessageFactory.createMessage(messageType);
             
@@ -372,7 +371,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }            
          case ACTIVATE:            
          {
-            MethodInvocation mi = readHeader(dis);                
+            MethodInvocation mi = readHeader(ois);                
             
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
@@ -382,7 +381,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }
          case DEACTIVATE:            
          {
-            MethodInvocation mi = readHeader(dis);
+            MethodInvocation mi = readHeader(ois);
             
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
@@ -392,9 +391,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }
          case GETMESSAGENOW:            
          { 
-            MethodInvocation mi = readHeader(dis);
+            MethodInvocation mi = readHeader(ois);
             
-            boolean wait = dis.readBoolean();
+            boolean wait = ois.readBoolean();
                                                 
             Object[] args = new Object[] {Boolean.valueOf(wait)};
             
@@ -408,7 +407,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }
          case ACKNOWLEDGE:
          {
-            MethodInvocation mi = readHeader(dis);                
+            MethodInvocation mi = readHeader(ois);                
  
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
@@ -418,11 +417,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }         
          case CALLBACK:
          {
-            int consumerID = dis.readInt();
+            int consumerID = ois.readInt();
             
-            byte type = dis.readByte();
+            byte type = ois.readByte();
             
-            int deliveryCount = dis.readInt();
+            int deliveryCount = ois.readInt();
 
             JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
             
@@ -440,9 +439,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }
          case MESSAGE_RESPONSE:
          {
-            byte type = dis.readByte();
+            byte type = ois.readByte();
             
-            int deliveryCount = dis.readInt();
+            int deliveryCount = ois.readInt();
 
             JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
             

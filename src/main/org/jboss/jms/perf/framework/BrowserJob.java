@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import javax.jms.Connection;
-import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
@@ -87,8 +86,7 @@ public class BrowserJob extends BaseThroughputJob
             Connection conn = getNextConnection();
             
             sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            
-            
+                        
          }
          catch (Exception e)
          {
@@ -110,7 +108,7 @@ public class BrowserJob extends BaseThroughputJob
             
             while (count < numMessages && iter.hasNext())
             {
-               Message m = (Message)iter.next();
+               iter.next();
                count++;               
             }
             

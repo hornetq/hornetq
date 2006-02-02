@@ -715,7 +715,7 @@ public class ServiceContainer
       
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-                      "serializationtype=jms&" +
+                      "serializationtype=jboss&" +
                       "dataType=jms&" +
                       "socketTimeout=0";
       
