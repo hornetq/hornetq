@@ -32,11 +32,11 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class LogInterceptor implements Interceptor
+public class ServerLogInterceptor implements Interceptor
 {
     // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(LogInterceptor.class);
+   private static final Logger log = Logger.getLogger(ServerLogInterceptor.class);
 
     // Static --------------------------------------------------------
 
@@ -52,7 +52,7 @@ public class LogInterceptor implements Interceptor
 
     public String getName()
     {
-        return "LogInterceptor";
+        return "ServerLogInterceptor";
     }
     
     public Object invoke(Invocation invocation) throws Throwable

@@ -5,7 +5,7 @@
 
 <aop>
    <interceptor class="org.jboss.jms.client.container.ExceptionInterceptor" scope="PER_VM"/>
-   <interceptor class="org.jboss.jms.client.container.LogInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.jms.client.container.ClientLogInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ClosedInterceptor" scope="PER_INSTANCE"/>                  	
    <interceptor class="org.jboss.jms.client.container.ConcurrencyInterceptor" scope="PER_INSTANCE"/>
 
@@ -22,7 +22,7 @@
 
    <!-- ConnectionFactory Stack-->        
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))">
-      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->createConnectionDelegate(..))">
@@ -31,7 +31,7 @@
                
    <!-- Connection Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))">
-      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>               
    </bind>  
@@ -68,7 +68,7 @@
    
    <!-- Session Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))">
-      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>       
    </bind>
@@ -141,7 +141,7 @@
    
    <!-- Consumer Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->$implementing{org.jboss.jms.delegate.ConsumerDelegate}(..))">
-      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>          
    </bind>       
@@ -173,7 +173,7 @@
    
    <!-- Producer Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->$implementing{org.jboss.jms.delegate.ProducerDelegate}(..))">
-      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>  
    </bind>        
@@ -222,7 +222,7 @@
    
    <!-- Browser Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))">
-      <interceptor-ref name="org.jboss.jms.client.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
    </bind>      

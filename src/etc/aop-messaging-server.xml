@@ -4,7 +4,7 @@
    "http://www.jboss.org/aop/dtd/jboss-aop_1_0.dtd">
 <aop>
 
-   <interceptor class="org.jboss.jms.server.container.LogInterceptor" scope="PER_VM"/>   
+   <interceptor class="org.jboss.jms.server.container.ServerLogInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.server.container.CachingInterceptor" scope="PER_VM"/>      
    <aspect class="org.jboss.jms.server.container.SecurityAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.server.container.InjectionAspect" scope="PER_VM"/>
@@ -16,12 +16,12 @@
    
    <!-- Connection -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))">
-      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
 
    <!-- Session -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))">
-      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>
+      <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->createProducerDelegate(..))">
       <advice name="handleCreateProducerDelegate" aspect="org.jboss.jms.server.container.SecurityAspect"/>
@@ -35,7 +35,7 @@
    
    <!-- Producer -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ProducerAdvised->$implementing{org.jboss.jms.server.endpoint.ProducerEndpoint}(..))">
-      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>    
+      <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ProducerAdvised->send(..))">
       <advice name="handleSend" aspect="org.jboss.jms.server.container.SecurityAspect"/>
@@ -43,12 +43,12 @@
 
    <!-- Consumer -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))">
-      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>    
+      <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
 
    <!-- Browser -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))">
-      <interceptor-ref name="org.jboss.jms.server.container.LogInterceptor"/>    
+      <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
    
 </aop>

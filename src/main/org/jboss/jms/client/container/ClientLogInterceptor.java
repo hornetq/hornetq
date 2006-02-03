@@ -35,11 +35,11 @@ import java.lang.reflect.Method;
  *
  * $Id$
  */
-public class LogInterceptor implements Interceptor
+public class ClientLogInterceptor implements Interceptor
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(LogInterceptor.class);
+   private static final Logger log = Logger.getLogger(ClientLogInterceptor.class);
 
    // Static --------------------------------------------------------
 
@@ -55,7 +55,7 @@ public class LogInterceptor implements Interceptor
 
    public String getName()
    {
-      return "LogInterceptor";
+      return "ClientLogInterceptor";
    }
 
    public Object invoke(Invocation invocation) throws Throwable
