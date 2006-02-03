@@ -283,8 +283,10 @@ class DestinationJNDIMapper implements DestinationManager
          unregisterDestination(false, (String)i.next());
       }
 
-      initialContext.destroySubcontext(serverPeer.getDefaultQueueJNDIContext());
-      initialContext.destroySubcontext(serverPeer.getDefaultTopicJNDIContext());
+//      initialContext.destroySubcontext(serverPeer.getDefaultQueueJNDIContext());
+//      initialContext.destroySubcontext(serverPeer.getDefaultTopicJNDIContext());
+      initialContext.unbind(serverPeer.getDefaultQueueJNDIContext());
+      initialContext.unbind(serverPeer.getDefaultTopicJNDIContext());
 
       initialContext.close();
 
