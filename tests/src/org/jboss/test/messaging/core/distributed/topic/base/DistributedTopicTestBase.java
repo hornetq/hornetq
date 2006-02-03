@@ -29,14 +29,12 @@ import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.test.messaging.core.local.base.TopicTestBase;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 

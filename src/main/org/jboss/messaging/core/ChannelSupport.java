@@ -440,12 +440,11 @@ public abstract class ChannelSupport implements Channel
          {
             return null;
          }
-         
-         //Sanity check - we shouldn't get more then one delivery - 
-         //the Channel can only cope with one delivery per message reference
-         //at any one time.
-         //Eventually this will be enforced in the design of the core classes
-         //but for now we just throw an Exception
+
+         // TODO
+         // Sanity check - we shouldn't get more then one delivery - the Channel can only cope with
+         // one delivery per message reference at any one time. Eventually this will be enforced in
+         // the design of the core classes but for now we just throw an Exception
          if (deliveries.size() > 1)
          {
             throw new IllegalStateException("More than one delivery returned from router!");
