@@ -154,7 +154,7 @@
       </javac>
 
       <!-- Call rmi compiler to create stub for server -->
-      <rmic base="${build.tests.classes}" includes="**/TestServer.class,**/RMINamingDelegate.class">
+      <rmic base="${build.tests.classes}" includes="**/RMITestServer.class,**/RMINamingDelegate.class">
          <classpath refid="test.classpath"/>
       </rmic>
    </target>
@@ -211,7 +211,7 @@
 
    <target name="start-rmi-server"
            description="Starts the RMI server used by remote tests">
-      <java classname="org.jboss.test.messaging.tools.jmx.rmi.TestServer" fork="true" spawn="true">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="remote.test.suffix" value="-remote"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
@@ -243,8 +243,12 @@
       </java>
    </target>
 
-   <target name="tests" depends="tests-jar, prepare-testdirs, invm-tests, remote-tests"
-      description="Runs all available tests, in in-VM and remote configurations"/>
+   <target name="tests" depends="tests-jar, prepare-testdirs">
+      <antcall target="crash-tests"/>
+      <antcall target="invm-tests"/>
+      <antcall target="remote-tests"/>
+   </target>
+
 
    <target name="invm-tests" description="Runs all available tests an in-VM configuration">
 
@@ -278,7 +282,10 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
+               <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/ClientCrashTest.class"/>
+               <exclude name="**/jms/CallbackFailureTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -330,7 +337,6 @@
          <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
             usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
 
-
          <batchtest fork="${junit.batchtest.fork}"
             todir="${junit.batchtest.todir}"
             haltonfailure="${junit.batchtest.haltonfailure}"
@@ -343,6 +349,8 @@
                <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
                <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
+               <exclude name="**/jms/ClientCrashTest.class"/>
+               <exclude name="**/jms/CallbackFailureTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -350,6 +358,92 @@
       <antcall target="stop-rmi-server"/>
 
    </target>
+
+   <target name="crash-tests" depends="tests-jar, prepare-testdirs"
+      description="Runs crash tests">
+
+      <antcall target="crash-test1"/>
+
+      <antcall target="crash-test2"/>
+
+   </target>
+
+
+   <target name="crash-test1">
+
+      <mkdir dir="${build.tests.reports}"/>
+      <antcall target="print-testclasspath"/>
+
+      <antcall target="stop-rmi-server"/>
+
+      <antcall target="start-rmi-server"/>
+      <property name="crash.test.name" value="org.jboss.test.messaging.jms.ClientCrashTest"/>
+      <antcall target="crash-test"/>
+   </target>
+
+   <target name="crash-test2">
+
+      <mkdir dir="${build.tests.reports}"/>
+      <antcall target="print-testclasspath"/>
+
+      <antcall target="stop-rmi-server"/>
+
+      <antcall target="start-rmi-server"/>
+      <property name="crash.test.name" value="org.jboss.test.messaging.jms.CallbackFailureTest"/>
+      <antcall target="crash-test"/>
+   </target>
+
+   <target name="crash-test" description="Runs crash test">
+
+      <junit printsummary="${junit.printsummary}"
+         fork="${junit.fork}"
+         includeantruntime="yes"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${junit.timeout2}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+            <pathelement location="${module.root}/output/classes"/>
+
+            <!-- Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+            <!--
+            <path refid="jboss.test.classpath"/>
+            -->
+         </classpath>
+
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="Remote"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Crash.xml"/>
+
+         <test name="${crash.test.name}"
+             fork="true"
+             todir="${junit.batchtest.todir}"
+             haltonfailure="${junit.test.haltonfailure}"
+             haltonerror="${junit.test.haltonerror}">
+         </test>
+
+      </junit>
+
+   </target>
+
 
    <target name="jmstests"
            depends="tests-jar, prepare-testdirs"
@@ -502,7 +596,6 @@
             <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
-            <pathelement location="C:\tools\Optimizeit\OptimizeitEntSuite60\lib\optit.jar"/>
          </classpath>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <test name="${test.classname}"

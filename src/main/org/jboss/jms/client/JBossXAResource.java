@@ -38,9 +38,6 @@ import org.jboss.logging.Logger;
  * 
  * It basically just delegates to the resource manager.
  * 
- * TODO This functionality in this class should be put in the resource manager class
- * and the resource manager should implement XAResource
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * Parts based on JBoss MQ XAResource implementation by:

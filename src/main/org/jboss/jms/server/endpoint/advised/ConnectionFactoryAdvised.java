@@ -45,9 +45,9 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
       return endpoint;
    }
 
-   public ConnectionDelegate createConnectionDelegate(String username, String password, String clientConnectionID) throws JMSException
+   public ConnectionDelegate createConnectionDelegate(String username, String password) throws JMSException
    {
-      return endpoint.createConnectionDelegate(username, password, clientConnectionID);
+      return endpoint.createConnectionDelegate(username, password);
    }
 
    public byte[] getClientAOPConfig()

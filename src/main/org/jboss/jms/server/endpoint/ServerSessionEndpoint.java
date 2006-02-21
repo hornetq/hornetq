@@ -78,29 +78,33 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private boolean trace = log.isTraceEnabled();
 
-   protected int sessionID;
-   protected int acknowledgmentMode;
+   private int sessionID;
+   
    private boolean closed;
 
-   protected Map producers;
-   protected Map consumers;
-	protected Map browsers;
+   private Map producers;
+   
+   private Map consumers;
+   
+   private Map browsers;
 
-   protected ServerConnectionEndpoint connectionEndpoint;
+   private ServerConnectionEndpoint connectionEndpoint;
 
-   protected DestinationManager dm;
-   protected DurableSubscriptionStore dsm;
-   protected TransactionLog tl;
-   protected MessageStore ms;
+   private DestinationManager dm;
+   
+   private DurableSubscriptionStore dsm;
+   
+   private TransactionLog tl;
+   
+   private MessageStore ms;
 
 
    // Constructors --------------------------------------------------
 
-   ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint,
-								 int acknowledgmentMode)
+   protected ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
    {
       this.sessionID = sessionID;
-		this.acknowledgmentMode = acknowledgmentMode;
+      
       this.connectionEndpoint = connectionEndpoint;
 
       ServerPeer sp = connectionEndpoint.getServerPeer();
@@ -132,7 +136,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
      
-      int producerID = connectionEndpoint.serverPeer.getNextObjectID();
+      int producerID = connectionEndpoint.getServerPeer().getNextObjectID();
       
       // create the corresponding server-side producer endpoint and register it with this
       // session endpoint instance
@@ -173,7 +177,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          // Can only create a consumer for a temporary destination on the same connection
          // that created it
-         if (!connectionEndpoint.temporaryDestinations.contains(d))
+         if (!connectionEndpoint.hasTemporaryDestination(d))
          {
             String msg = "Cannot create a message consumer on a different connection " +
                          "to that which created the temporary destination";
@@ -187,7 +191,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
       }
           
-      int consumerID = connectionEndpoint.serverPeer.getNextObjectID();
+      int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
      
       CoreSubscription subscription = null;
 
@@ -244,10 +248,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   !subscription.getSelector().equals(selector));
                if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
 
-               // TODO - if we use hard equality here, redeploying (re-activating) a topic will
-               //        cause loosing all messages waiting on durable subscriptions on that topic
-               //boolean topicChanged = subscription.getTopic() != coreDestination;
-
                boolean topicChanged =
                   !subscription.getTopic().getName().equals(coreDestination.getName());
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
@@ -259,7 +259,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   if (trace) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
 
                   boolean removed =
-                     dsm.removeDurableSubscription(connectionEndpoint.clientID, subscriptionName);
+                     dsm.removeDurableSubscription(connectionEndpoint.getClientID(), subscriptionName);
 
                   if (!removed)
                   {
@@ -297,8 +297,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
       putConsumerDelegate(consumerID, ep);
       
-      connectionEndpoint.consumers.put(new Integer(consumerID), ep);
-
+      connectionEndpoint.putConsumerDelegate(consumerID, ep);
+      
       log.debug("created and registered " + ep);
 
       return stub;
@@ -329,7 +329,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	      throw new IllegalStateException("Cannot browse a topic");
 	   }
 	   
-	   int browserID = connectionEndpoint.serverPeer.getNextObjectID();
+	   int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
 	   
 	   ServerBrowserEndpoint ep =
 	      new ServerBrowserEndpoint(this, browserID, (Channel)destination, messageSelector);
@@ -413,7 +413,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          ((ServerProducerEndpoint)i.next()).close();
       }
       
-      connectionEndpoint.sessions.remove(new Integer(sessionID));
+      connectionEndpoint.removeSessionDelegate(sessionID);
       
       JMSDispatcher.instance.unregisterTarget(new Integer(sessionID));
       
@@ -468,7 +468,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
-      connectionEndpoint.temporaryDestinations.add(dest);
+      connectionEndpoint.addTemporaryDestination(dest);
       dm.createTemporaryDestination(dest);
    }
    
@@ -515,7 +515,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       dm.destroyTemporaryDestination(dest);
-      connectionEndpoint.temporaryDestinations.remove(dest);
+      connectionEndpoint.removeTemporaryDestination(dest);
    }
    
    public void unsubscribe(String subscriptionName) throws JMSException
@@ -530,7 +530,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
 
       CoreDurableSubscription subscription =
-         dsm.getDurableSubscription(connectionEndpoint.clientID, subscriptionName, dm, ms, tl);
+         dsm.getDurableSubscription(connectionEndpoint.getClientID(), subscriptionName, dm, ms, tl);
 
       if (subscription == null)
       {
@@ -539,7 +539,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       boolean removed =
-         dsm.removeDurableSubscription(connectionEndpoint.clientID, subscriptionName);
+         dsm.removeDurableSubscription(connectionEndpoint.getClientID(), subscriptionName);
       
       if (!removed)
       {
@@ -561,37 +561,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
    
    // Public --------------------------------------------------------
-
-   protected ServerProducerEndpoint putProducerDelegate(int producerID, ServerProducerEndpoint d)
-   {
-      return (ServerProducerEndpoint)producers.put(new Integer(producerID), d);
-   }
-
-   public ServerProducerEndpoint getProducerDelegate(int producerID)
-   {
-      return (ServerProducerEndpoint)producers.get(new Integer(producerID));
-   }
-
-   protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint d)
-   {
-      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), d);
-   }
-
-   public ServerConsumerEndpoint getConsumerDelegate(int consumerID)
-   {
-      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
-   }
-	
-	protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
-   {
-      return (ServerBrowserEndpoint)browsers.put(new Integer(browserID), sbd);
-   }
-	
-	public ServerBrowserEndpoint getBrowserDelegate(int browserID)
-   {
-      return (ServerBrowserEndpoint)browsers.get(new Integer(browserID));
-   }
-
+   
    public ServerConnectionEndpoint getConnectionEndpoint()
    {
       return connectionEndpoint;
@@ -604,23 +574,66 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    // Package protected ---------------------------------------------
    
+   // Protected -----------------------------------------------------
+   
+   protected ServerProducerEndpoint putProducerDelegate(int producerID, ServerProducerEndpoint d)
+   {
+      return (ServerProducerEndpoint)producers.put(new Integer(producerID), d);
+   }
+
+   protected ServerProducerEndpoint getProducerDelegate(int producerID)
+   {
+      return (ServerProducerEndpoint)producers.get(new Integer(producerID));
+   }
+   
+   protected ServerProducerEndpoint removeProducerDelegate(int producerID)
+   {
+      return (ServerProducerEndpoint)producers.remove(new Integer(producerID));
+   }
+   
+   protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint d)
+   {
+      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), d);
+   }
+
+   protected ServerConsumerEndpoint getConsumerDelegate(int consumerID)
+   {
+      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+   }
+   
+   protected ServerConsumerEndpoint removeConsumerDelegate(int consumerID)
+   {
+      return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
+   }
+   
+   protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
+   {
+      return (ServerBrowserEndpoint)browsers.put(new Integer(browserID), sbd);
+   }
+   
+   protected ServerBrowserEndpoint getBrowserDelegate(int browserID)
+   {
+      return (ServerBrowserEndpoint)browsers.get(new Integer(browserID));
+   }
+   
+   protected ServerBrowserEndpoint removeBrowserDelegate(int browserID)
+   {
+      return (ServerBrowserEndpoint)browsers.remove(new Integer(browserID));
+   }
+
    /**
     * Starts this session's Consumers
     */
-   void setStarted(boolean s)
+   protected void setStarted(boolean s)
    {
       synchronized(consumers)
       {
          for(Iterator i = consumers.values().iterator(); i.hasNext(); )
          {
             ((ServerConsumerEndpoint)i.next()).setStarted(s);
-
          }
       }
    }   
-
-   // Protected -----------------------------------------------------
-
 
    // Private -------------------------------------------------------
 

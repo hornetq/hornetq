@@ -731,7 +731,7 @@ public class WireFormatTest extends TestCase
          
          MessageTest.configureMessage(m);
          
-         DeliveryRunnable dr = new DeliveryRunnable(del, null, consumerID, false);
+         DeliveryRunnable dr = new DeliveryRunnable(del, consumerID, null, false);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          

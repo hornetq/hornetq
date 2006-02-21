@@ -52,8 +52,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    // Attributes ----------------------------------------------------
 
    protected ServerPeer serverPeer;
+   
    protected String clientID;
+   
    protected int id;
+   
    protected JNDIBindings jndiBindings;
  
    // Constructors --------------------------------------------------
@@ -73,8 +76,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation ----------------------
    
-   public ConnectionDelegate createConnectionDelegate(String username, String password,
-                                                      String clientConnectionId) throws JMSException
+   public ConnectionDelegate createConnectionDelegate(String username, String password) throws JMSException
    {
       log.debug("creating a new connection for user " + username);
       
@@ -96,16 +98,13 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(serverPeer, clientID, username, password, clientConnectionId);
-
+         new ServerConnectionEndpoint(serverPeer, clientID, username, password);
 
       int connectionID = endpoint.getConnectionID();
 
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
       JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
       
-      serverPeer.registerConnection(clientConnectionId, endpoint);
-
       log.debug("created and registered " + endpoint);
 
       ClientConnectionDelegate delegate;

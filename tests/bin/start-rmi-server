@@ -35,18 +35,25 @@ mkdir -p $reldir/../output/logs
 
 JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote"
 
+#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
+REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
+
+#SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
+SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
+
+
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
 $reldir/../../src/etc${SEP}\
 $reldir/../output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
-$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
-$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar${SEP}\
+${REMOTING_LIB}${SEP}\
+${SERIALIZATION_LIB}${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
@@ -66,6 +73,7 @@ $reldir/../../../connector/output/lib/jboss-local-jdbc.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../thirdparty/jgroups/lib/jgroups.jar${SEP}\
-$reldir/../../../server/output/lib/jboss.jar${SEP} \
+$reldir/../../../server/output/lib/jboss.jar${SEP}\
+$reldir/../../../naming/output/lib/jnpserver.jar${SEP} \
 -Dtest.bind.address=localhost \
-org.jboss.test.messaging.tools.jmx.rmi.TestServer &
+org.jboss.test.messaging.tools.jmx.rmi.RMITestServer &

@@ -52,7 +52,7 @@ public class StopRMIServer
       }
 
       String name =
-         "//" + host + ":" + TestServer.RMI_REGISTRY_PORT + "/" + TestServer.RMI_SERVER_NAME;
+         "//" + host + ":" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.RMI_SERVER_NAME;
 
       log.info("Stopping " + name);
 

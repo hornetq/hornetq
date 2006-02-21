@@ -21,6 +21,7 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
+import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.transport.Connector;
@@ -108,6 +109,21 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
    public void removeInvocationHandler(String s) throws Exception
    {
       connector.removeInvocationHandler(s);
+   }
+   
+   public void addConnectionListener(ConnectionListener listener)
+   {
+      connector.addConnectionListener(listener);
+   }
+
+   public void removeConnectionListener(ConnectionListener listener)
+   {
+      connector.removeConnectionListener(listener);
+   }
+   
+   public void setLeasePeriod(long leasePeriod)
+   {
+      connector.setLeasePeriod(leasePeriod);
    }
 
    // Public --------------------------------------------------------

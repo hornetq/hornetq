@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -84,39 +85,48 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    private boolean trace = log.isTraceEnabled();
    
-   protected boolean closed;
-   protected volatile boolean started;
+   private boolean closed;
+   
+   private volatile boolean started;
 
-   protected int connectionID;
-   protected String clientConnectionID;
-   protected String clientID;
+   private int connectionID;
+   
+   private String remotingClientSessionId;
+   
+   private String clientID;
 
    // We keep a map of consumers to prevent us to recurse through the attached session in order to
    // find the ServerConsumerDelegate so we can ack the message
-   protected Map consumers;
-   protected Map sessions;
-   protected Set temporaryDestinations;
+   private Map consumers;
+   
+   private Map sessions;
+   
+   private Set temporaryDestinations;
 
-   protected String username;
-   protected String password;
+   private String username;
+   
+   private String password;
 
-   protected ReadWriteLock closeLock;
+   private ReadWriteLock closeLock;
 
    // the server itself
-   protected ServerPeer serverPeer;
+   private ServerPeer serverPeer;
 
    // access to server's extensions
-   protected DestinationManager dm;
-   protected SecurityManager sm;
-   protected ConnectionManager cm;
-   protected TransactionRepository tr;
+   private DestinationManager dm;
    
-   protected Client callbackClient;
+   private SecurityManager sm;
+   
+   private ConnectionManager cm;
+   
+   private TransactionRepository tr;
+   
+   private Client callbackClient;
 
    // Constructors --------------------------------------------------
    
    ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username,
-                            String password, String clientConnectionId)
+                            String password)
    {
       this.serverPeer = serverPeer;
 
@@ -128,7 +138,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       started = false;
 
       this.connectionID = serverPeer.getNextObjectID();
-      this.clientConnectionID = clientConnectionId;
       this.clientID = clientID;
 
       consumers = new ConcurrentReaderHashMap();
@@ -169,7 +178,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          // create the corresponding server-side session endpoint and register it with this
          // connection endpoint instance
-         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this, acknowledgmentMode);
+         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this);
          putSessionDelegate(sessionID, ep);
          SessionAdvised sessionAdvised = new SessionAdvised(ep);
          JMSDispatcher.instance.registerTarget(new Integer(sessionID), sessionAdvised);
@@ -263,31 +272,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       {
          closeLock.readLock().release();
       }
-   }
-   
-   public boolean isStarted() throws JMSException
-   {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
-      try
-      {
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-         return started;
-      }
-      finally
-      {
-         closeLock.readLock().release();
-      }
-   }
+   }   
    
    public synchronized void stop() throws JMSException
    {
@@ -350,7 +335,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          temporaryDestinations.clear();
          consumers.clear();
-         cm.unregisterConnection(clientConnectionID);
+         cm.unregisterConnection(remotingClientSessionId);
 
          JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
          closed = true;
@@ -464,32 +449,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return password;
    }
-   
-   public ServerSessionEndpoint putSessionDelegate(int sessionID, ServerSessionEndpoint d)
-   {
-      return (ServerSessionEndpoint)sessions.put(new Integer(sessionID), d);
-   }
-   
-   public ServerSessionEndpoint getSessionDelegate(int sessionID)
-   {
-      return (ServerSessionEndpoint)sessions.get(new Integer(sessionID));
-   }
-   
-   public int getConnectionID()
-   {
-      return connectionID;
-   }
 
    public SecurityManager getSecurityManager()
    {
       return sm;
    }
    
-   public Client getCallbackClient()
-   {
-      return callbackClient;
-   }
-   
+   //IOC
    public void setCallbackClient(Client client)
    {
       callbackClient = client;
@@ -500,7 +466,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       callbackClient.setMarshaller(new JMSWireFormat());
       callbackClient.setUnMarshaller(new JMSWireFormat());
    }
-
+   
+   //IOC
+   public void setRemotingClientSessionId(String remotingClientSessionId)
+   {
+      this.remotingClientSessionId = remotingClientSessionId;
+      
+      this.serverPeer.getConnectionManager().registerConnection(remotingClientSessionId, this);
+   }
+   
+   
    public String toString()
    {
       return "ConnectionEndpoint[" + connectionID + "]";
@@ -508,12 +483,104 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // Package protected ---------------------------------------------
 
-   ServerPeer getServerPeer()
+   
+   // Protected -----------------------------------------------------
+   
+   protected Client getCallbackClient()
+   {
+      return callbackClient;
+   }   
+   
+   protected int getConnectionID()
+   {
+      return connectionID;
+   }
+   
+   protected boolean isStarted()
+   {
+      try
+      {
+         closeLock.readLock().acquire();
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
+      try
+      {
+         return started;
+      }
+      finally
+      {
+         closeLock.readLock().release();
+      }
+   }
+   
+   /**
+    * Generates a sessionID that is unique per this ConnectionDelegate instance
+    */
+   protected String generateSessionID()
+   {
+      return new GUID().toString();
+   }
+   
+   
+   protected ServerSessionEndpoint putSessionDelegate(int sessionID, ServerSessionEndpoint d)
+   {
+      return (ServerSessionEndpoint)sessions.put(new Integer(sessionID), d);
+   }
+   
+   protected ServerSessionEndpoint getSessionDelegate(int sessionID)
+   {
+      return (ServerSessionEndpoint)sessions.get(new Integer(sessionID));
+   }
+   
+   protected ServerSessionEndpoint removeSessionDelegate(int sessionID)
+   {
+      return (ServerSessionEndpoint)sessions.remove(new Integer(sessionID));
+   }
+   
+   protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint c)
+   {
+      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), c);
+   }
+   
+   protected ServerConsumerEndpoint getConsumerDelegate(int consumerID)
+   {
+      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+   }
+   
+   protected ServerConsumerEndpoint removeConsumerDelegate(int consumerID)
+   {
+      return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
+   }
+   
+   protected void addTemporaryDestination(Destination dest)
+   {
+      temporaryDestinations.add(dest);
+   }
+   
+   protected void removeTemporaryDestination(Destination dest)
+   {
+      temporaryDestinations.remove(dest);
+   }
+   
+   protected boolean hasTemporaryDestination(Destination dest)
+   {
+      return temporaryDestinations.contains(dest);
+   }
+   
+   protected ServerPeer getServerPeer()
    {
       return serverPeer;
    }
+   
+   protected String getRemotingClientSessionId()
+   {
+      return remotingClientSessionId;
+   }
 
-   void sendMessage(Message m, Transaction tx) throws JMSException
+   protected void sendMessage(Message m, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
 
@@ -551,7 +618,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }
    
-   void acknowledge(String messageID, int consumerID, Transaction tx) throws JMSException
+   protected void acknowledge(String messageID, int consumerID, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("acknowledging " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
 
@@ -563,7 +630,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       consumer.acknowledge(messageID, tx);
    }
    
-   void cancel(String messageID, int consumerID) throws JMSException
+   protected void cancel(String messageID, int consumerID) throws JMSException
    {
       ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
       if (consumer == null)
@@ -571,16 +638,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          throw new IllegalStateException("Cannot find consumer:" + consumerID);
       }
       consumer.cancelMessage(messageID);
-   }
-   
-   // Protected -----------------------------------------------------
-   
-   /**
-    * Generates a sessionID that is unique per this ConnectionDelegate instance
-    */
-   protected String generateSessionID()
-   {
-      return new GUID().toString();
    }
    
    

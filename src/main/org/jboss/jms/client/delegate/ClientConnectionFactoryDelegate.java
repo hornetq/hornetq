@@ -76,7 +76,7 @@ public class ClientConnectionFactoryDelegate
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ConnectionDelegate createConnectionDelegate(String username, String password, String clientConnectionID)
+   public ConnectionDelegate createConnectionDelegate(String username, String password)
       throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
@@ -130,12 +130,6 @@ public class ClientConnectionFactoryDelegate
          
          MethodInvocation mi = (MethodInvocation)invocation;
          
-         //Fill in the client connection id - this is needed on the server side
-         //so if the connection fails we can tie together the failed remoting connection
-         //and the server side connectiondelegate object so we can clean them up
-         Object[] args = mi.getArguments();
-         args[2] = connection.getId();
-         
          Client client = connection.getInvokingClient();
          
          //I will need this on the server-side to create the ConsumerDelegate instance
@@ -147,13 +141,6 @@ public class ClientConnectionFactoryDelegate
          {            
             ret = client.invoke(invocation, null);
              
-            //TODO - We should simplify this by considering combining the "state" and the "client delegate"
-            //objects - right now this is somewhat over complex
-            //with some state being stored in the client delegate objects and other state
-            //stored in the client state objects.
-            //We could probably get rid of the client state objects and just use the client delegate objects
-            //for storing state.
-            
             ClientConnectionDelegate delegate = (ClientConnectionDelegate)ret;
             
             delegate.setConnnectionState(connection);

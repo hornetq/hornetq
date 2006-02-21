@@ -55,18 +55,18 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    
    private boolean trace = log.isTraceEnabled();
 
-   protected Iterator iterator;
+   private Iterator iterator;
    
-   protected ServerSessionEndpoint session;
+   private ServerSessionEndpoint session;
    
-   protected int id;
+   private int id;
    
-   protected boolean closed;
+   private boolean closed;
 
    // Constructors --------------------------------------------------
 
-   ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
-                         Channel destination, String messageSelector)
+   protected ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
+                                   Channel destination, String messageSelector)
       throws JMSException
    {     
       this.session = session;
@@ -145,7 +145,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          throw new IllegalStateException("Browser is already closed");
       }
       iterator = null;
-      session.producers.remove(new Integer(this.id));
+      session.removeBrowserDelegate(id);
       JMSDispatcher.instance.unregisterTarget(new Integer(id));
       closed = true;
    }

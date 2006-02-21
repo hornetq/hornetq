@@ -717,7 +717,8 @@ public class ServiceContainer
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=jboss&" +
                       "dataType=jms&" +
-                      "socketTimeout=0";
+                      "socketTimeout=0&" +
+                      "socket.check_connection=false";
       
       String locatorURI;
       if (multiplex)

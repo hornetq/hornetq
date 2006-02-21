@@ -21,14 +21,16 @@
 */
 package org.jboss.test.messaging.tools.jmx.rmi;
 
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.remoting.transport.Connector;
-
-import javax.management.ObjectName;
 import java.rmi.Remote;
 import java.util.Set;
+
+import javax.management.ObjectName;
+
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.remoting.transport.Connector;
 
 /**
  * The remote interface exposed by TestServer.
@@ -101,6 +103,11 @@ public interface Server extends Remote
     * Only for in-VM use!
     */
    DurableSubscriptionStore getDurableSubscriptionStore() throws Exception;
+   
+   /**
+    * Only for in-VM use
+    */
+   ServerPeer getServerPeer() throws Exception;
 
    void deployTopic(String name, String jndiName) throws Exception;
    void deployQueue(String name, String jndiName) throws Exception;
@@ -125,5 +132,14 @@ public interface Server extends Remote
    String getDefaultSecurityConfig() throws Exception;
 
    void exit() throws Exception;
+   
+   /**
+    * Executes a command on the server
+    * 
+    * @param command
+    * @return the return value
+    * @throws Exception
+    */
+   Object executeCommand(Command command) throws Exception;
 
 }

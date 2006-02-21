@@ -29,14 +29,13 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
 /**
- * TODO Not used yoet.
+ * TODO Not used yet.
  *  
  * The interceptor caches messages and replace them with a message reference. PERSISTENT messages
  * are also reliably persisted. Must be installed after InstanceInterceptor, since it relies on

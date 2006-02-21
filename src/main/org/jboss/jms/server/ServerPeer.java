@@ -24,10 +24,8 @@ package org.jboss.jms.server;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
 import java.util.Set;
 
-import javax.jms.JMSException;
 import javax.jms.XAConnectionFactory;
 import javax.management.Attribute;
 import javax.management.MBeanServer;
@@ -38,12 +36,11 @@ import javax.naming.NamingException;
 
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.connectionmanager.ConnectionManagerImpl;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
@@ -52,17 +49,12 @@ import org.jboss.messaging.core.plugin.contract.TransactionLog;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ClientDisconnectedException;
-import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * A JMS server peer.
@@ -73,7 +65,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  *
  * $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
+public class ServerPeer extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
 
@@ -81,8 +73,9 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
 
    public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
    
-   
-
+   //TODO - Make this configurable
+   private static final long CONNECTION_LEASE_PERIOD = 5000;
+      
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -98,8 +91,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
 
    protected boolean started;
 
-   protected Map connections;
-   
    protected int objectIDSequence = Integer.MIN_VALUE + 1;
 
    // wired components
@@ -108,6 +99,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    protected SecurityMetadataStore securityStore;
    protected ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
    protected TransactionRepository txRepository;
+   protected ConnectionManager connectionManager;
 
    // plugins
 
@@ -121,7 +113,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    protected DurableSubscriptionStore durableSubscriptionStoreDelegate;
 
    protected JMSServerInvocationHandler handler;
-   protected ConnectionListener connectionListener;
 
    // Constructors --------------------------------------------------
 
@@ -133,8 +124,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;
 
-      this.connections = new ConcurrentHashMap();
-
       // the default value to use, unless the JMX attribute is modified
       connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
       
@@ -143,7 +132,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       
       destinationJNDIMapper = new DestinationJNDIMapper(this);
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
-
+      connectionManager = new ConnectionManagerImpl();
 
       version = new Version("VERSION");
 
@@ -235,18 +224,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       // TODO unloadClientAOPConfig();
 
       log.info("JMS " + this + " stopped");
-   }
-
-   // ConnectionManager implementation ------------------------------
-
-   public void registerConnection(String clientConnectionID, ServerConnectionEndpoint endpoint)
-   {
-      connections.put(clientConnectionID, endpoint);
-   }
-
-   public ServerConnectionEndpoint unregisterConnection(String clientConnectionID)
-   {
-      return (ServerConnectionEndpoint)connections.remove(clientConnectionID);
    }
 
    // JMX Attributes ------------------------------------------------
@@ -456,14 +433,14 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       return destinationJNDIMapper;
    }
 
-   public ConnectionManager getConnectionManager()
-   {
-      return this;
-   }
-
    public ConnectionFactoryManager getConnectionFactoryManager()
    {
       return connFactoryJNDIMapper;
+   }
+   
+   public ConnectionManager getConnectionManager()
+   {
+      return connectionManager;
    }
 
    // access to plugin references
@@ -559,13 +536,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
       
       MarshalFactory.addMarshaller("jms", wf, wf);
             
-      log.info("Getting invokerlocator for " + connectorName);
-      
       String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
       
       locator = new InvokerLocator(s);
       
-      //Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
+      //FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
       //a socket timeout on the invoker locator URI then it always makes a remote call
       //even when in the same JVM
 
@@ -585,13 +560,15 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
                          new String[] {"java.lang.String",
                                        "org.jboss.remoting.ServerInvocationHandler"});  
       
-//      //install the connection listener that listens for failed connections
-//      connectionListener = new ServerConnectionListener();
-//      
-//      mbeanServer.invoke(connectorName, "addConnectionListener",
-//            new Object[] {connectionListener},
-//            new String[] {"org.jboss.remoting.ConnectionListener"}); 
+      //install the connection listener that listens for failed connections
       
+      mbeanServer.invoke(connectorName, "setLeasePeriod",
+            new Object[] {new Long(CONNECTION_LEASE_PERIOD)},
+            new String[] {"long"});
+
+      mbeanServer.invoke(connectorName, "addConnectionListener",
+            new Object[] {connectionManager},
+            new String[] {"org.jboss.remoting.ConnectionListener"});        
    }
 
    private void loadServerAOPConfig() throws Exception
@@ -711,51 +688,5 @@ public class ServerPeer extends ServiceMBeanSupport implements ConnectionManager
    }
 
    // Inner classes -------------------------------------------------
-   
-   class ServerConnectionListener implements ConnectionListener
-   {
-
-      public void handleConnectionException(Throwable t, Client client)
-      {
-         String clientConnectionID =
-            (String)client.getConfiguration().get(MetaDataConstants.CLIENT_CONNECTION_ID);
-         if (clientConnectionID == null)
-         {
-            log.error("Can't find client connection id in meta-data for " + client);
-         }
-         else
-         {            
-            if (t instanceof ClientDisconnectedException)
-            {
-               //This is ok
-               if (log.isTraceEnabled()) { log.trace("Client " + client + " has disconnected"); } 
-            }
-            else
-            {
-               log.error("Broken client connection " + clientConnectionID, t);
-               
-               if (log.isTraceEnabled()) { log.trace("Clearing up server resources for this connection"); }
-               
-               ServerConnectionEndpoint endpoint = 
-                  (ServerConnectionEndpoint)connections.get(clientConnectionID);
-               
-               if (endpoint == null)
-               {
-                  log.error("Cannot find ServerConnectionEndpoint for client connection id " + clientConnectionID);
-               }
-               else
-               {       
-                  try
-                  {
-                     endpoint.close();
-                  }
-                  catch (JMSException e)
-                  {
-                     log.error("Failed to close connection", e);
-                  }
-               }
-            }
-         }  
-      } 
-   }   
+     
 }

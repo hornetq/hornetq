@@ -429,7 +429,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             MessageDelegate md = JBossMessage.createThinDelegate(m, deliveryCount);
             
-            DeliveryRunnable dr = new DeliveryRunnable(md, null, consumerID, trace);
+            DeliveryRunnable dr = new DeliveryRunnable(md, consumerID, null, trace);
             
             InvocationRequest request = new InvocationRequest(null, null, dr, null, null, null);
             

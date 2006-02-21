@@ -31,10 +31,12 @@ import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
  */
 public interface ConnectionManager
 {
-   void registerConnection(String clientConnectionID, ServerConnectionEndpoint endpoint);
+   void registerConnection(String clientSessionId, ServerConnectionEndpoint endpoint);
 
    /**
     * @return null if there is no such connection.
     */
-   ServerConnectionEndpoint unregisterConnection(String clientConnectionID);
+   ServerConnectionEndpoint unregisterConnection(String clientSessionId);
+   
+   ServerConnectionEndpoint getConnection(String clientSessionId);
 }

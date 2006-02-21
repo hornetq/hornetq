@@ -33,11 +33,8 @@ import org.jboss.jms.client.state.ConsumerState;
  * 
  * This aspect handles receive functionality for a message consumer
  * 
- * This aspect is PER_IVM.
+ * This aspect is PER_VM.
  * 
- * (TODO consider merging this with ConsumerInterceptor
- * I don't see the advantage of splitting this functionality out into a
- * different aspect from ConsumerAspect)
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -71,9 +71,7 @@ public class JMSRemotingConnection
    protected CallbackManager callbackManager;
    
    protected InvokerCallbackHandler dummy;
-   
-   
-   
+         
    public JMSRemotingConnection(String serverLocatorURI) throws Throwable
    {
       callbackManager = new CallbackManager();
@@ -82,7 +80,7 @@ public class JMSRemotingConnection
       
       thisAddress = InetAddress.getLocalHost().getHostAddress();
       
-      bindPort = PortUtil.findFreePort("localhost");
+      //bindPort = PortUtil.findFreePort("localhost");
       
       serverLocator = new InvokerLocator(serverLocatorURI);
       
@@ -117,24 +115,39 @@ public class JMSRemotingConnection
             if (client != null)
             {
                client.disconnect();
+               
+               log.trace("Disconnected client");               
             }            
             if (callbackServer != null)
             {
                //Probably not necessary and may fail since it didn't get properly started
                try
                {
+                  //callbackServer.removeInvocationHandler("Callback");
+                  
+                  //log.trace("Removed invocation handler");
+                  
                   callbackServer.stop();
                   
+                  log.trace("Stopped callback server");
+                  
                   callbackServer.destroy();
+                  
+                  log.trace("Destroyed callback server");
+                  
+                  callbackServer = null;
                }
                catch (Exception ignore)
                {
                   //Ignore - it may well fail - this is to be expected
+                  log.warn("Failed to shutdown callback server", ignore);
                }
             }
             if (count == MAX_RETRIES)
             {
-               throw new JBossJMSException("Cannot start callbackserver after " + MAX_RETRIES + " retries", e);
+               final String msg = "Cannot start callbackserver after " + MAX_RETRIES + " retries";
+               log.error(msg, e);
+               throw new JBossJMSException(msg, e);
             }            
          }
       }            
@@ -145,7 +158,7 @@ public class JMSRemotingConnection
       callbackServer.stop();
       
       callbackServer.destroy();
-      
+   
       client.disconnect();
    }
       
@@ -188,7 +201,8 @@ public class JMSRemotingConnection
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=jboss&" +
                       "dataType=jms&" +
-                      "socketTimeout=0";
+                      "socketTimeout=0&" +
+                      "socket.check_connection=false";
                   
       client = new Client(serverLocator, getConfig());
       
@@ -200,6 +214,8 @@ public class JMSRemotingConnection
       client.setUnMarshaller(new JMSWireFormat());
             
       if (log.isTraceEnabled()) { log.trace("Created client"); }
+      
+      bindPort = PortUtil.findFreePort("localhost");
       
       //Create callback server
       
@@ -221,9 +237,7 @@ public class JMSRemotingConnection
         
       if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:" 
             + callbackServerLocator.getLocatorURI()); }
-      
-      log.info("Starting callback server with uri:" + callbackServerLocator.getLocatorURI());
-            
+           
       callbackServer = new Connector();
       
       callbackServer.setInvokerLocator(callbackServerLocator.getLocatorURI());
@@ -242,6 +256,5 @@ public class JMSRemotingConnection
       
       client.addListener(dummy, callbackServerLocator); 
    }
-  
-
+      
 }

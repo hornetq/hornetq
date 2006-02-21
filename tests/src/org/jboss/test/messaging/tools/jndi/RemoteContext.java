@@ -21,18 +21,19 @@
 */
 package org.jboss.test.messaging.tools.jndi;
 
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.test.messaging.tools.jmx.rmi.NamingDelegate;
-import org.jboss.test.messaging.tools.jmx.rmi.TestServer;
-import org.jboss.logging.Logger;
+import java.rmi.Naming;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
-import javax.naming.NamingException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
-import java.util.Hashtable;
-import java.rmi.Naming;
+import javax.naming.NamingException;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.test.messaging.tools.jmx.rmi.NamingDelegate;
+import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 
 
 /**
@@ -57,7 +58,7 @@ public class RemoteContext implements Context
 
    public RemoteContext() throws Exception
    {
-      String n = "//localhost:" + TestServer.RMI_REGISTRY_PORT + "/" + TestServer.NAMING_SERVER_NAME;
+      String n = "//localhost:" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.NAMING_SERVER_NAME;
       namingDelegate = (NamingDelegate)Naming.lookup(n);
    }
 

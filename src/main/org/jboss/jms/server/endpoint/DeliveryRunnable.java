@@ -24,8 +24,8 @@ package org.jboss.jms.server.endpoint;
 import java.io.Serializable;
 
 import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
 
 /**
  * A PooledExecutor job that contains the message to be delivered asynchronously to the client. The
@@ -52,18 +52,18 @@ public class DeliveryRunnable implements Runnable, Serializable
    private boolean trace;
    
    private MessageDelegate msg;
-   
-   private transient Client callbackClient;
-   
+         
    private int consumerID;
+   
+   private ServerConnectionEndpoint connection;
    
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(MessageDelegate msg, Client callbackClient, int consumerID, boolean trace)
+   public DeliveryRunnable(MessageDelegate msg, int consumerID, ServerConnectionEndpoint connection, boolean trace)
    {
       this.msg = msg;
       
-      this.callbackClient = callbackClient;
+      this.connection = connection;
       
       this.consumerID = consumerID;
       
@@ -78,11 +78,15 @@ public class DeliveryRunnable implements Runnable, Serializable
       {
          if (trace) { log.trace("handing " + this.msg + " over to the remoting layer"); }
          
-         callbackClient.invoke(this);         
+         connection.getCallbackClient().invoke(this);         
       }
       catch(Throwable t)
       {
-         log.warn("Failed to deliver the message to the client, perhaps the client consumer has closed", t);         
+         log.warn("Failed to deliver the message to the client, clearing up connection resources", t);   
+         
+         ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
+         
+         mgr.unregisterConnection(connection.getRemotingClientSessionId());
       }
    }
 

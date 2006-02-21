@@ -21,25 +21,26 @@
 */
 package org.jboss.test.messaging.tools;
 
-import java.util.Hashtable;
-import java.util.Set;
-import java.io.File;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.rmi.Naming;
-
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.rmi.TestServer;
-import org.jboss.test.messaging.tools.jmx.rmi.Server;
-import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.remoting.transport.Connector;
+import java.util.Hashtable;
+import java.util.Set;
 
 import javax.management.ObjectName;
+
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.remoting.transport.Connector;
+import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
+import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
+import org.jboss.test.messaging.tools.jmx.rmi.Server;
+import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
@@ -84,6 +85,11 @@ public class ServerManagement
    {
       return !isLocal();
    }
+   
+   public static Server getServer()
+   {
+      return server;
+   }
 
    public static synchronized void create() throws Exception
    {
@@ -94,7 +100,7 @@ public class ServerManagement
 
       if (isLocal())
       {
-         server = new TestServer(false);
+         server = new LocalTestServer();
          return;
       }
 
@@ -413,7 +419,7 @@ public class ServerManagement
 
    private static Server acquireRemote(int initialRetries)
    {
-      String name = "//localhost:" + TestServer.RMI_REGISTRY_PORT + "/" + TestServer.RMI_SERVER_NAME;
+      String name = "//localhost:" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.RMI_SERVER_NAME;
       Server s = null;
       int retries = initialRetries;
       while(s == null && retries > 0)

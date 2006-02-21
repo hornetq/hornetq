@@ -27,6 +27,7 @@
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="serializationtype" isParam="true">jboss</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
+               <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="socketTimeout">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">4457</attribute>                              

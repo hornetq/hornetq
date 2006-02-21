@@ -116,7 +116,7 @@ public class JDBCMessageStore extends PersistentMessageStore
 
    protected String createMessage =
       "CREATE TABLE MESSAGE (" +
-      "MESSAGEID VARCHAR(256), " +
+      "MESSAGEID VARCHAR(255), " +
       "RELIABLE CHAR(1), " +
       "EXPIRATION BIGINT, " +
       "TIMESTAMP BIGINT, " +

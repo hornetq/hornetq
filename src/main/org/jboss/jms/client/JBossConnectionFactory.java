@@ -178,7 +178,7 @@ public class JBossConnectionFactory implements
          ensureAOPConfigLoaded((ClientConnectionFactoryDelegate)delegate);
          initDelegate();
 
-         ConnectionDelegate cd = delegate.createConnectionDelegate(username, password, null);
+         ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
          return new JBossConnection(cd, type);
       }
       finally

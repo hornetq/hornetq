@@ -75,7 +75,6 @@ public interface SessionDelegate extends SessionEndpoint
    
    XAResource getXAResource();
    
-   //TODO - remove this - doesn't really belong here
    void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons);
    
    public boolean getTransacted();

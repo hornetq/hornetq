@@ -44,6 +44,8 @@ import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
@@ -221,6 +223,13 @@ public class JBossConnection implements
    {
       return "JBossConnection->" + delegate;
    }
+   
+   public String getRemotingClientSessionId()
+   {
+      ConnectionState state = (ConnectionState)((ClientConnectionDelegate)delegate).getState();
+      
+      return state.getRemotingConnection().getInvokingClient().getSessionId();
+   }
 
    // Package protected ---------------------------------------------
 
@@ -249,7 +258,7 @@ public class JBossConnection implements
          tccc.restore();
       }
    }
-
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

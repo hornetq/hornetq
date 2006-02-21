@@ -54,17 +54,17 @@ public class ServerProducerEndpoint implements ProducerEndpoint
    protected int id;
 
    /** I need this to set up the JMSDestination header on outgoing messages */
-   protected Destination jmsDestination;
+   private Destination jmsDestination;
    
-   protected ServerSessionEndpoint sessionEndpoint;
+   private ServerSessionEndpoint sessionEndpoint;
    
-   protected boolean closed;
+   private boolean closed;
 
    // Constructors --------------------------------------------------
 
-   ServerProducerEndpoint(int id,
-                          Destination jmsDestination,
-                          ServerSessionEndpoint parent)
+   protected ServerProducerEndpoint(int id,
+                                    Destination jmsDestination,
+                                    ServerSessionEndpoint parent)
    {
       this.id = id;
       
@@ -90,7 +90,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
       
       //Currently this does nothing
       if (trace) { log.trace("close (noop)"); }
-      this.sessionEndpoint.producers.remove(new Integer(this.id));
+      this.sessionEndpoint.removeProducerDelegate(this.id);
       
       JMSDispatcher.instance.unregisterTarget(new Integer(id));
       
@@ -106,7 +106,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
       
       if (trace) { log.trace("Sending message: " + m); }
 
-      sessionEndpoint.connectionEndpoint.sendMessage(m, null);
+      sessionEndpoint.getConnectionEndpoint().sendMessage(m, null);
    }
 
    // Public --------------------------------------------------------

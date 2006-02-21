@@ -144,8 +144,6 @@ public class Transaction
 
       if (trace) { log.trace("committing " + this); }
 
-      //TODO - commit the tx in the database
-      
       state = STATE_COMMITTED;
       
       if (insertedTXRecord)
@@ -182,8 +180,6 @@ public class Transaction
    
    public void rollback() throws Exception
    {
-      //TODO - rollback the tx in the database
-
       if (trace) { log.trace("rolling back " + this); }
 
       state = STATE_ROLLEDBACK;

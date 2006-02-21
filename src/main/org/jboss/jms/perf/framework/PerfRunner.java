@@ -977,11 +977,7 @@ public class PerfRunner extends ServiceMBeanSupport
       }
    }
    
-   public void testQueue20()
-   {      
-      //TODO No-local perf test
-   }
-   
+ 
    /*
     * Send numMessages non-persistent messages of standardMessageSize bytes each to single topic non-transactionally
     * Receive them non-transactionally with single non durable subscriber and ack mode of AUTO_ACKNOWLEDGE

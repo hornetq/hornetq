@@ -23,6 +23,7 @@
    <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+
       <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.trace.log"/>
 
       <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
@@ -32,16 +33,16 @@
       <param name="Append" value="true"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-      <!--
-      <param name="Threshold" value="INFO"/>
-      -->
+      <!-- <param name="Threshold" value="INFO"/> -->
+
       <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
-         <param name="ConversionPattern" value="%d %-5p @%t [%c] %m%n"/>
-         <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
+         <!-- <param name="ConversionPattern" value="%d %-5p @%t [%c] %m%n"/> -->
+         <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n -->
          <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
-          -->
+
       </layout>
    </appender>
 
@@ -54,7 +55,10 @@
       <param name="Target" value="System.out"/>
 
       <param name="Threshold" value="INFO"/>
-      <!-- <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/> -->
+
+      <!--
+      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+        -->
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -87,9 +91,6 @@
    </category>
 
    <category name="org.jboss.jms">
-      <!--
-      <priority value="INFO"/>
-      -->
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
@@ -107,8 +108,7 @@
    -->
 
    <category name="org.jboss.remoting">
-      <priority value="WARN"/>
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
    <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">

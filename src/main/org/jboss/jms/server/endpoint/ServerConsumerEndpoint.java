@@ -81,42 +81,42 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    private boolean trace = log.isTraceEnabled();
    
-   protected int id;
+   private int id;
    
-   protected Channel channel;
+   private Channel channel;
    
-   protected ServerSessionEndpoint sessionEndpoint;
+   private ServerSessionEndpoint sessionEndpoint;
    
-   protected boolean noLocal;
+   private boolean noLocal;
    
-   protected Selector messageSelector;
+   private Selector messageSelector;
    
-   protected ThreadPool threadPoolDelegate;
+   private ThreadPool threadPoolDelegate;
    
-   protected volatile boolean started;
+   private volatile boolean started;
    
-   protected boolean disconnected = false;
+   private boolean disconnected = false;
    
    // deliveries must be maintained in order they were received
-   protected Map deliveries;
+   private Map deliveries;
    
-   protected boolean closed;
+   private boolean closed;
    
-   protected boolean active;
+   private boolean active;
    
-   protected boolean grabbing;
+   private boolean grabbing;
    
-   protected MessageDelegate toGrab;
+   private MessageDelegate toGrab;
    
-   protected DeliveryCallback deliveryCallback;
+   private DeliveryCallback deliveryCallback;
       
    
    // Constructors --------------------------------------------------
    
-   ServerConsumerEndpoint(int id, Channel channel,
-         ServerSessionEndpoint sessionEndpoint,
-         String selector, boolean noLocal)
-         throws InvalidSelectorException
+   protected ServerConsumerEndpoint(int id, Channel channel,
+                                    ServerSessionEndpoint sessionEndpoint,
+                                    String selector, boolean noLocal)
+                                    throws InvalidSelectorException
    {
       log.debug("creating ConsumerEndpoint[" + id + "]");
       
@@ -135,9 +135,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       
       this.deliveries = new LinkedHashMap();
-      this.started = sessionEndpoint.connectionEndpoint.started;
-      this.channel.add(this);
-      
+      this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
+      this.channel.add(this);      
    }
    
    // Receiver implementation --------------------------------------- 
@@ -193,7 +192,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             try
             {
                if (trace) { log.trace("queueing message " + message + " for delivery to client"); }               
-               threadPoolDelegate.execute(new DeliveryRunnable(md, sessionEndpoint.connectionEndpoint.getCallbackClient(), id, trace));
+               threadPoolDelegate.execute(new DeliveryRunnable(md, id, sessionEndpoint.getConnectionEndpoint(), trace));
             }
             catch (InterruptedException e)
             {
@@ -234,8 +233,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             int conId = ((JBossMessage)r).getConnectionID();
             if (trace) { log.trace("message connection id: " + conId); }
 
-            if (trace) { log.trace("current connection connection id: " + sessionEndpoint.connectionEndpoint.connectionID); }
-            accept = conId != sessionEndpoint.connectionEndpoint.connectionID;
+            if (trace) { log.trace("current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
+            accept = conId != sessionEndpoint.getConnectionEndpoint().getConnectionID();
             if (trace) { log.trace("accepting? " + accept); }
 
          }
@@ -389,14 +388,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          close();
       }
       
-      this.sessionEndpoint.connectionEndpoint.consumers.remove(new Integer(id));
+      this.sessionEndpoint.getConnectionEndpoint().removeConsumerDelegate(id);
       
       if (this.channel instanceof CoreSubscription)
       {
          ((CoreSubscription)channel).closeConsumer();
       }
       
-      this.sessionEndpoint.consumers.remove(new Integer(id));
+      this.sessionEndpoint.removeConsumerDelegate(id);
    }  
    
    void acknowledgeAll() throws JMSException
