@@ -28,7 +28,7 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 
 /**
@@ -63,7 +63,7 @@ public class Transaction
    
    protected List callbacks;;
    
-   protected TransactionLog transactionLog;
+   protected PersistenceManager persistenceManager;
    
    //True if the transaction has resulted in a tx record being inserted in the db
    protected boolean insertedTXRecord;
@@ -110,11 +110,11 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction(Xid xid, TransactionLog transactionLog)
+   Transaction(Xid xid, PersistenceManager persistenceManager)
    {
       state = STATE_ACTIVE;
       this.xid = xid;
-      this.transactionLog = transactionLog;
+      this.persistenceManager = persistenceManager;
       callbacks = new ArrayList();
    }
    
@@ -148,12 +148,12 @@ public class Transaction
       
       if (insertedTXRecord)
       {
-         if (transactionLog == null)
+         if (persistenceManager == null)
          {
             throw new IllegalStateException("Reliable messages were handled in the transaction, " +
                                             "but there is no transaction log delegate!");
          }
-         transactionLog.commitTx(this);
+         persistenceManager.commitTx(this);
       }
       
       Iterator iter = callbacks.iterator();
@@ -171,7 +171,7 @@ public class Transaction
          //Write record in db saying we have prepared the tx
         if (insertedTXRecord)
         {
-           transactionLog.prepareTx(this);
+           persistenceManager.prepareTx(this);
         }
       }
       
@@ -186,7 +186,7 @@ public class Transaction
       
       if (insertedTXRecord)
       {
-         transactionLog.rollbackTx(this);
+         persistenceManager.rollbackTx(this);
       }
       
       Iterator iter = callbacks.iterator();

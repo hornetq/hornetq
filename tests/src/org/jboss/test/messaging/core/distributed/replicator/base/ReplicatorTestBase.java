@@ -32,15 +32,14 @@ import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * The test strategy is to try as many combination as it makes sense of the following
@@ -85,7 +84,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
    protected ServiceContainer sc;
 
-   protected TransactionLog tl, tl2;
+   protected PersistenceManager tl, tl2;
    protected MessageStore ms2;
 
    protected Replicator replicator, replicator2, replicator3;
@@ -107,19 +106,21 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       sc.start();
 
       super.setUp();
+      
+      //FIXME - Why are we starting more than one persistence manager using the same datasource??
+      //They will pointing at the same set of db tables thus giving indeterministic results
+      
 
-      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCTransactionLog)tl).start();
+      tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      tl.start();
 
-      tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCTransactionLog)tl2).start();
+      tl2 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      tl2.start();
 
-      ms = new JDBCMessageStore("s40", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms = new PersistentMessageStore("s40", tl);
 
-      ms2 = new JDBCMessageStore("s41", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms2).start();
-
+      ms2 = new PersistentMessageStore("s41", tl);
+ 
       // override previous definitions of distributed and distributed2
       distributed = createDistributed("test", ms, dispatcher);
       distributed2 = createDistributed("test", ms2, dispatcher2);
@@ -131,14 +132,10 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       replicator2 = (Replicator)distributed2;
       replicator3 = (Replicator)distributed3;
 
-      outputms = new JDBCMessageStore("s42", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)outputms).start();
+      outputms = new PersistentMessageStore("s42", tl);
+      outputms2 = new PersistentMessageStore("s43", tl);
+      outputms3 = new PersistentMessageStore("s44", tl);
 
-      outputms2 = new JDBCMessageStore("s43", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)outputms2).start();
-
-      outputms3 = new JDBCMessageStore("s44", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)outputms3).start();
    }
 
    public void tearDown() throws Exception
@@ -150,9 +147,9 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       outputms = null;
       outputms2 = null;
       outputms3 = null;
-      ((JDBCTransactionLog)tl).stop();
+      tl.stop();
       tl = null;
-      ((JDBCTransactionLog)tl2).stop();
+      tl2.stop();
       tl2 = null;
       sc.stop();
       sc = null;

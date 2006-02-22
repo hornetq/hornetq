@@ -13,8 +13,8 @@ import java.util.List;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.State;
 import org.jboss.messaging.core.message.MessageFactory;
@@ -29,7 +29,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
  * The State test strategy is to try as many combination as it makes sense of the following
  * variables:
  *
- * 1. State can be non-recoverable (does not have access to a TransactionLog) or
+ * 1. State can be non-recoverable (does not have access to a PersistenceManager) or
  *    recoverable. A non-recoverable state can accept reliable messages or not.
  * 2. Messages can be added non-transactionally or transactionally (and then can commit or rollback
  *    transaction).
@@ -58,7 +58,7 @@ public abstract class StateTestBase extends MessagingTestCase
 
    protected ServiceContainer sc;
    protected TransactionRepository tr;
-   protected TransactionLog transactionLogDelegate;
+   protected PersistenceManager persistenceManagerDelegate;
    protected MessageStore ms;
    protected State state;
    protected Channel channel;
@@ -79,13 +79,13 @@ public abstract class StateTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
-      transactionLogDelegate =
-         new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      persistenceManagerDelegate =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
 
-      ((JDBCTransactionLog)transactionLogDelegate).start();
+      ((JDBCPersistenceManager)persistenceManagerDelegate).start();
 
       tr = new TransactionRepository();
-      tr.start(transactionLogDelegate);
+      tr.start(persistenceManagerDelegate);
 
       // message store and state to be initialized by subclasses
    }
@@ -93,8 +93,8 @@ public abstract class StateTestBase extends MessagingTestCase
    public void tearDown() throws Exception
    {
       tr = null;
-      ((JDBCTransactionLog)transactionLogDelegate).stop();
-      transactionLogDelegate = null;
+      ((JDBCPersistenceManager)persistenceManagerDelegate).stop();
+      persistenceManagerDelegate = null;
       sc.stop();
       sc = null;
       ms = null;

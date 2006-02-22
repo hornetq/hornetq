@@ -55,7 +55,7 @@ import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
  * Concrete implementation of SessionEndpoint.
@@ -94,7 +94,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private DurableSubscriptionStore dsm;
    
-   private TransactionLog tl;
+   private PersistenceManager tl;
    
    private MessageStore ms;
 
@@ -111,7 +111,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       dm = sp.getDestinationManager();
       dsm = sp.getDurableSubscriptionStoreDelegate();
-      tl = sp.getTransactionLogDelegate();
+      tl = sp.getPersistenceManagerDelegate();
       ms = sp.getMessageStoreDelegate();
 
       producers = new HashMap();

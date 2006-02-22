@@ -23,7 +23,7 @@ package org.jboss.messaging.core.local;
 
 import javax.jms.JMSException;
 
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
@@ -51,7 +51,7 @@ public class CoreDurableSubscription extends CoreSubscription
    // Constructors --------------------------------------------------
 
    public CoreDurableSubscription(String clientID, String name, Topic topic, String selector,
-                              boolean noLocal, MessageStore ms, TransactionLog tl)
+                              boolean noLocal, MessageStore ms, PersistenceManager tl)
    {
       super(clientID + "." + name, topic, selector, noLocal, ms, tl);
       this.name = name;

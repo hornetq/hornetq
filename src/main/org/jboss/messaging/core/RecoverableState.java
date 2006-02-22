@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -49,14 +49,14 @@ public class RecoverableState extends NonRecoverableState
    
    private boolean trace = log.isTraceEnabled();
 
-   private TransactionLog tl;
+   private PersistenceManager tl;
    private Serializable channelID;
    private Serializable storeID;
    private MessageStore messageStore;
 
    // Constructors --------------------------------------------------
 
-   public RecoverableState(Channel channel, TransactionLog tl)
+   public RecoverableState(Channel channel, PersistenceManager tl)
    {
       super(channel, true);
       if (tl == null)

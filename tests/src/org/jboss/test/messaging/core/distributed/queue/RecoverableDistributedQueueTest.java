@@ -21,11 +21,11 @@
 */
 package org.jboss.test.messaging.core.distributed.queue;
 
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 
 /**
@@ -42,9 +42,9 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private JDBCTransactionLog tl;
-   private JDBCTransactionLog tl2;
-   private JDBCTransactionLog tl3;
+   private PersistenceManager tl;
+   private PersistenceManager tl2;
+   private PersistenceManager tl3;
 
    // Constructors --------------------------------------------------
 
@@ -59,21 +59,22 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
    {
       super.setUp();
 
-      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      //    FIXME - Why are we starting more than one persistence manager using the same datasource??
+      //They will pointing at the same set of db tables thus giving indeterministic results
+      
+      
+      tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
-      tl2 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl2 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl2.start();
-      tl3 = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl3 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl3.start();
 
-      ms = new JDBCMessageStore("s50", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms = new PersistentMessageStore("s50", tl);
 
-      ms2 = new JDBCMessageStore("s51", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms2).start();
+      ms2 = new PersistentMessageStore("s51", tl);
 
-      ms3 = new JDBCMessageStore("s52", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms3).start();
+      ms3 = new PersistentMessageStore("s52", tl);
 
       channel = new DistributedQueue("test", ms, tl, dispatcher);
       channel2 = new DistributedQueue("test", ms2, tl2, dispatcher2);

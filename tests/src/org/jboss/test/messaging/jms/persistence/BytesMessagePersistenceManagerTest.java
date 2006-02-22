@@ -21,27 +21,26 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
-import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
 
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * BytesMessagePersistenceManagerTest.java,v 1.1 2006/02/22 17:33:44 timfox Exp
  */
-public class JBossMapMessageTransactionLogTest extends JBossMessageTransactionLogTest
+public class BytesMessagePersistenceManagerTest extends MessagePersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossMapMessageTransactionLogTest(String name)
+   public BytesMessagePersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -55,15 +54,16 @@ public class JBossMapMessageTransactionLogTest extends JBossMessageTransactionLo
    {
       super.tearDown();
    }
-
+  
+   
    protected Message createMessage(byte i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossMapMessage m = 
-         new JBossMapMessage(new GUID().toString(),
+      JBossBytesMessage m = 
+         new JBossBytesMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
@@ -78,10 +78,19 @@ public class JBossMapMessageTransactionLogTest extends JBossMessageTransactionLo
             i % 2 == 1,
             new GUID().toString(),
             randInt().intValue(),
-            jmsProperties);     
+            jmsProperties);  
       
-      Map map = generateFilledMap(true);
-      m.setPayload((Serializable)map);
+      m.writeBoolean(randBool().booleanValue());
+      m.writeByte(randByte().byteValue());
+      m.writeBytes(randByteArray());
+      m.writeChar(randChar().charValue());
+      m.writeDouble(randDouble().doubleValue());
+      m.writeFloat(randFloat().floatValue());
+      m.writeInt(randInt().intValue());
+      m.writeLong(randLong().longValue());      
+      m.writeShort(randShort().shortValue());
+      m.writeUTF(randString(1000));
+
       return m;      
    }
    

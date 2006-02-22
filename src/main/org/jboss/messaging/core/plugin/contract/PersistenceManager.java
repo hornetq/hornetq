@@ -25,18 +25,19 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 
 /**
- * The main interface to the transactional log.
+ * The interface to the persistence manager
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * PersistenceManager.java,v 1.1 2006/02/22 17:33:42 timfox Exp
  */
-public interface TransactionLog extends ServerPlugin
+public interface PersistenceManager extends ServerPlugin
 {
    //
    // Used by the TransactionRepository
@@ -71,5 +72,13 @@ public interface TransactionLog extends ServerPlugin
     * TODO Do we really need this method?
     */
    void removeAllMessageData(Serializable channelID) throws Exception;
+   
+   void storeMessage(Message m) throws Exception;
+   
+   boolean removeMessage(String messageID) throws Exception;
+   
+   Message getMessage(Serializable messageID) throws Exception;
+   
+   int getMessageReferenceCount(Serializable messageID) throws Exception;
 
 }

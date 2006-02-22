@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.distributed.topic;
 
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
@@ -57,7 +57,7 @@ class RemoteTopic extends ChannelSupport
 
    protected RemoteTopic(String topicName,
                          MessageStore ms,
-                         TransactionLog tl,
+                         PersistenceManager tl,
                          Replicator replicator)
    {
       super(topicName + ".RemoteTopic", ms, tl, true);

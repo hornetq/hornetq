@@ -16,7 +16,7 @@ import javax.jms.JMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.Topic;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
@@ -77,7 +77,7 @@ public abstract class DurableSubscriptionStoreSupport
                                                         boolean noLocal,
                                                         DestinationManager dm,
                                                         MessageStore ms,
-                                                        TransactionLog tl)
+                                                        PersistenceManager tl)
       throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
@@ -202,7 +202,7 @@ public abstract class DurableSubscriptionStoreSupport
                                                                  boolean noLocal,
                                                                  DestinationManager dm,
                                                                  MessageStore ms,
-                                                                 TransactionLog tl)
+                                                                 PersistenceManager tl)
          throws JMSException
    {
       Topic topic = (Topic)dm.getCoreDestination(false, topicName);

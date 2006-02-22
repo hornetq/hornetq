@@ -38,7 +38,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
  * variables:
  *
  * 1. The message store can be can be non-recoverable (does not have access to a
- *    TransactionLog) or recoverable. A non-recoverable message store can accept reliable
+ *    PersistenceManager) or recoverable. A non-recoverable message store can accept reliable
  *    messages or not.
  * 2. The message can be non-reliable or reliable.
  * 3. One or multiple messages can be stored.

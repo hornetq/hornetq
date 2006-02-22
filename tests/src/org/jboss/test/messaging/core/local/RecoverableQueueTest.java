@@ -22,9 +22,8 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
 /**
@@ -41,7 +40,7 @@ public class RecoverableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private JDBCTransactionLog tl;
+   private JDBCPersistenceManager tl;
 
    // Constructors --------------------------------------------------
 
@@ -56,11 +55,10 @@ public class RecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      ms = new JDBCMessageStore("s14",sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms = new PersistentMessageStore("s14", tl);
 
       channel = new Queue("test", ms, tl);
       

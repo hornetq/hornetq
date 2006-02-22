@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -54,7 +54,7 @@ public class TransactionRepository
    
    protected Map globalToLocalMap;     
    
-   protected TransactionLog transactionLog;
+   protected PersistenceManager persistenceManager;
 
    // Static --------------------------------------------------------
    
@@ -67,9 +67,9 @@ public class TransactionRepository
    
    // Public --------------------------------------------------------
 
-   public void start(TransactionLog transactionLog) throws Exception
+   public void start(PersistenceManager persistenceManager) throws Exception
    {
-      this.transactionLog = transactionLog;
+      this.persistenceManager = persistenceManager;
    }
 
    public void stop() throws Exception
@@ -100,7 +100,7 @@ public class TransactionRepository
       
       try
       {
-         prepared = transactionLog.retrievePreparedTransactions();
+         prepared = persistenceManager.retrievePreparedTransactions();
       }
       catch (Exception e)
       {
@@ -143,7 +143,7 @@ public class TransactionRepository
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(xid, transactionLog);
+      Transaction tx = new Transaction(xid, persistenceManager);
       
       if (trace) { log.trace("created transaction " + tx); }
       
@@ -153,7 +153,7 @@ public class TransactionRepository
    
    public Transaction createTransaction() throws TransactionException
    {
-      Transaction tx = new Transaction(null, transactionLog);
+      Transaction tx = new Transaction(null, persistenceManager);
 
       if (trace) { log.trace("created transaction " + tx); }
 

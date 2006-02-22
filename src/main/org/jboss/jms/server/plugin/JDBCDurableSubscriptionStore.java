@@ -30,7 +30,7 @@ import javax.transaction.TransactionManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.tm.TransactionManagerServiceMBean;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -144,7 +144,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                                                      String subscriptionName,
                                                      DestinationManager dm,
                                                      MessageStore ms,
-                                                     TransactionLog tl)
+                                                     PersistenceManager tl)
       throws JMSException
    {
       // Look in memory first
@@ -244,7 +244,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
                                                         boolean noLocal,
                                                         DestinationManager dm,
                                                         MessageStore ms,
-                                                        TransactionLog tl) throws JMSException
+                                                        PersistenceManager tl) throws JMSException
    {
       try
       {
@@ -447,7 +447,7 @@ public class JDBCDurableSubscriptionStore extends DurableSubscriptionStoreSuppor
    public Set loadDurableSubscriptionsForTopic(String topicName,
                                                DestinationManager dm,
                                                MessageStore ms,
-                                               TransactionLog tl) throws JMSException
+                                               PersistenceManager tl) throws JMSException
    {
 
       Set subscriptionData = new HashSet();

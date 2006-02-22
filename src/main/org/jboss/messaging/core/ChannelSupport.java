@@ -29,12 +29,12 @@ import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null
- * TransactionLog is available, it supports recoverability of reliable messages.
+ * PersistenceManager is available, it supports recoverability of reliable messages.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
@@ -55,7 +55,7 @@ public abstract class ChannelSupport implements Channel
    protected Serializable channelID;
    protected Router router;
    protected State state;
-   protected TransactionLog tl;
+   protected PersistenceManager tl;
    protected MessageStore ms;
    
    private boolean trace = log.isTraceEnabled();
@@ -68,7 +68,7 @@ public abstract class ChannelSupport implements Channel
     */
    protected ChannelSupport(Serializable channelID,
                             MessageStore ms,
-                            TransactionLog tl,
+                            PersistenceManager tl,
                             boolean acceptReliableMessages)
    {
       if (trace) { log.trace("creating " + (tl != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }

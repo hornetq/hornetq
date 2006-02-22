@@ -32,7 +32,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
@@ -66,7 +66,7 @@ class CoreDestinationStore
 
    protected DestinationJNDIMapper dm;
    protected MessageStore ms;
-   protected TransactionLog tl;
+   protected PersistenceManager tl;
 
    // Constructors --------------------------------------------------
 
@@ -128,7 +128,7 @@ class CoreDestinationStore
       // TODO I am using LocalQueues for the time being, switch to distributed Queues
       if (isQueue)
       {
-         cd = new Queue(name, sp.getMessageStoreDelegate(), sp.getTransactionLogDelegate());
+         cd = new Queue(name, sp.getMessageStoreDelegate(), sp.getPersistenceManagerDelegate());
          
          try
          {
@@ -204,7 +204,7 @@ class CoreDestinationStore
    {
       ServerPeer serverPeer = dm.getServerPeer();
       ms = serverPeer.getMessageStoreDelegate();
-      tl = serverPeer.getTransactionLogDelegate();
+      tl = serverPeer.getPersistenceManagerDelegate();
 
       log.debug("CoreDestinationStore started");
    }

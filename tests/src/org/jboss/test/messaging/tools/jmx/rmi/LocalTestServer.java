@@ -70,7 +70,7 @@ public class LocalTestServer implements Server
 
    // service dependencies
    private ObjectName threadPoolObjectName;
-   private ObjectName transactionLogObjectName;
+   private ObjectName persistenceManagerObjectName;
    private ObjectName messageStoreObjectName;
    private ObjectName durableSubscriptionStoreObjectName;
 
@@ -229,11 +229,11 @@ public class LocalTestServer implements Server
       sc.invoke(threadPoolObjectName, "create", new Object[0], new String[0]);
       sc.invoke(threadPoolObjectName, "start", new Object[0], new String[0]);
 
-      MBeanConfigurationElement transactionLogConfig =
-         (MBeanConfigurationElement)sdd.query("service", "TransactionLog").iterator().next();
-      transactionLogObjectName = sc.registerAndConfigureService(transactionLogConfig);
-      sc.invoke(transactionLogObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(transactionLogObjectName, "start", new Object[0], new String[0]);
+      MBeanConfigurationElement persistenceManagerConfig =
+         (MBeanConfigurationElement)sdd.query("service", "PersistenceManager").iterator().next();
+      persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
+      sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);
 
       MBeanConfigurationElement messageStoreConfig =
          (MBeanConfigurationElement)sdd.query("service", "MessageStore").iterator().next();
@@ -355,9 +355,9 @@ public class LocalTestServer implements Server
       sc.invoke(messageStoreObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(messageStoreObjectName);
 
-      sc.invoke(transactionLogObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(transactionLogObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(transactionLogObjectName);
+      sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(persistenceManagerObjectName);
 
       sc.invoke(threadPoolObjectName, "stop", new Object[0], new String[0]);
       sc.invoke(threadPoolObjectName, "destroy", new Object[0], new String[0]);

@@ -33,13 +33,13 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.core.SimpleChannel;
 import org.jboss.test.messaging.core.CoreMessage;
+import org.jboss.test.messaging.core.SimpleChannel;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.util.id.GUID;
@@ -47,11 +47,11 @@ import org.jboss.util.id.GUID;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * JDBCPersistenceManagerTest.java,v 1.1 2006/02/22 17:33:44 timfox Exp
  */
-public class JDBCTransactionLogTest extends MessagingTestCase
+public class JDBCPersistenceManagerTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
 
@@ -59,7 +59,7 @@ public class JDBCTransactionLogTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public JDBCTransactionLogTest(String name)
+   public JDBCPersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -90,12 +90,11 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    public void testAddReference() throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      JDBCMessageStore ms = new JDBCMessageStore("s0", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
-
+      PersistentMessageStore ms = new PersistentMessageStore("s0", tl);
+      
       Channel channel = new SimpleChannel("channel0", ms);
 
       Message[] messages = createMessages();     
@@ -126,11 +125,10 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    public void testRemoveReference() throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      JDBCMessageStore ms = new JDBCMessageStore("s1", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s1", tl);
 
       Channel channel = new SimpleChannel("channel0", ms);
 
@@ -164,8 +162,11 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    public void testAddRetrieveRemoveMessage() throws Exception
    {
-      JDBCMessageStore ms = new JDBCMessageStore("s2", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      tl.start();
+      
+      PersistentMessageStore ms = new PersistentMessageStore("s2", tl);
+      //ms.start();
 
       Message[] messages = createMessages();
 
@@ -174,36 +175,36 @@ public class JDBCTransactionLogTest extends MessagingTestCase
          Message m = messages[i];
          String id = (String)m.getMessageID();
 
-         ms.storeMessage(m);
-         assertEquals(1, ms.getMessageReferenceCount(id));
+         tl.storeMessage(m);
+         assertEquals(1, tl.getMessageReferenceCount(id));
 
          Message m2 = ms.retrieveMessage(id);
          assertNotNull(m2);
          checkEquivalent(m, m2);
-         assertEquals(2, ms.getMessageReferenceCount(id));
+         assertEquals(2, tl.getMessageReferenceCount(id));
 
-         boolean removed = ms.removeMessage(id);
+         boolean removed = tl.removeMessage(id);
          assertTrue(removed);
-         assertEquals(1, ms.getMessageReferenceCount(id));
+         assertEquals(1, tl.getMessageReferenceCount(id));
 
-         removed = ms.removeMessage(id);
+         removed = tl.removeMessage(id);
          assertTrue(removed);
-         assertEquals(0, ms.getMessageReferenceCount(id));
+         assertEquals(0, tl.getMessageReferenceCount(id));
 
-         Message m3 = ms.getMessage(id);
+         Message m3 = tl.getMessage(id);
          assertNull(m3);
 
-         assertFalse(ms.removeMessage(id));
+         assertFalse(tl.removeMessage(id));
       }
    }
 
    public void testGetMessageReferences() throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      JDBCMessageStore ms = new JDBCMessageStore("s3", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s3", tl);
+      //ms.start();
 
       Channel channel = new SimpleChannel("channel0", ms);
       
@@ -238,11 +239,11 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    public void testRemoveAllMessageData() throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      JDBCMessageStore ms = new JDBCMessageStore("s4", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s4", tl);
+      //ms.start();
 
       Channel channel = new SimpleChannel("channel0", ms);
       
@@ -368,7 +369,7 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    protected void retrievePreparedTransactions(boolean guid) throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.setTxIdGuid(guid);
       
       if (guid)
@@ -378,8 +379,8 @@ public class JDBCTransactionLogTest extends MessagingTestCase
       }    
       
       tl.start();
-      JDBCMessageStore ms = new JDBCMessageStore("s5", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s5");
+      //ms.start();
 
       Channel channel = new SimpleChannel("channel0", ms);
       
@@ -443,7 +444,7 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    protected void nonXARecovery(boolean guid, boolean storeXid) throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.setTxIdGuid(guid);
       
       Properties props;
@@ -458,8 +459,8 @@ public class JDBCTransactionLogTest extends MessagingTestCase
       }
       
       tl.start();
-      JDBCMessageStore ms = new JDBCMessageStore("s6", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s6", tl);
+      //ms.start();
 
       Channel channel = new SimpleChannel("channel0", ms);
       
@@ -878,7 +879,7 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    protected void doTransactionCommit(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
 
       if (idIsGuid)
       {
@@ -888,8 +889,8 @@ public class JDBCTransactionLogTest extends MessagingTestCase
       tl.setTxIdGuid(idIsGuid);
       tl.setStoringXid(storeXid);
 
-      JDBCMessageStore ms = new JDBCMessageStore("s7", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s7", tl);
+      //ms.start();
 
       Channel channel = new SimpleChannel("channel0", ms);
       TransactionRepository txRep = new TransactionRepository();
@@ -974,15 +975,15 @@ public class JDBCTransactionLogTest extends MessagingTestCase
    
    protected void doTransactionRollback(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
    {
-      JDBCTransactionLog tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       if (idIsGuid)
       {
          tl.setSqlProperties(this.getConfigTablesForGUID());
       }
       tl.setTxIdGuid(idIsGuid);
       tl.setStoringXid(storeXid);
-      JDBCMessageStore ms = new JDBCMessageStore("s8", sc.getDataSource(), sc.getTransactionManager());
-      ms.start();
+      PersistentMessageStore ms = new PersistentMessageStore("s8", tl);
+      //ms.start();
 
       Channel channel = new SimpleChannel("channel0", ms);
       TransactionRepository txRep = new TransactionRepository();

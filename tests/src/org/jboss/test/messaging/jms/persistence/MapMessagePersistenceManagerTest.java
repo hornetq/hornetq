@@ -21,26 +21,27 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
+import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
 
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * MapMessagePersistenceManagerTest.java,v 1.1 2006/02/22 17:33:44 timfox Exp
  */
-public class JBossTextMessageTransactionLogTest extends JBossMessageTransactionLogTest
+public class MapMessagePersistenceManagerTest extends MessagePersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossTextMessageTransactionLogTest(String name)
+   public MapMessagePersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -54,16 +55,15 @@ public class JBossTextMessageTransactionLogTest extends JBossMessageTransactionL
    {
       super.tearDown();
    }
-  
-   
+
    protected Message createMessage(byte i) throws Exception
    {
       Map coreHeaders = generateFilledMap(true);         
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossTextMessage m = 
-         new JBossTextMessage(new GUID().toString(),
+      JBossMapMessage m = 
+         new JBossMapMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
@@ -78,8 +78,10 @@ public class JBossTextMessageTransactionLogTest extends JBossMessageTransactionL
             i % 2 == 1,
             new GUID().toString(),
             randInt().intValue(),
-            jmsProperties);        
-      m.setText(randString(10000));
+            jmsProperties);     
+      
+      Map map = generateFilledMap(true);
+      m.setPayload((Serializable)map);
       return m;      
    }
    

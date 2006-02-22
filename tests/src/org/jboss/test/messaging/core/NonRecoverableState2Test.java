@@ -6,10 +6,11 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.test.messaging.core.base.StateTestBase;
 import org.jboss.messaging.core.NonRecoverableState;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.test.messaging.core.base.StateTestBase;
 
 
 /**
@@ -35,8 +36,7 @@ public class NonRecoverableState2Test extends StateTestBase
    {
       super.setUp();
 
-      ms = new JDBCMessageStore("s61", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms = new PersistentMessageStore("s61", persistenceManagerDelegate);      
 
       channel = new SimpleChannel("test-channel", ms);
 

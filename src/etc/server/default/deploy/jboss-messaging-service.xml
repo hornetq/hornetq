@@ -60,7 +60,7 @@
 
       <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
       <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
-      <depends optional-attribute-name="TransactionLog">jboss.messaging:service=TransactionLog</depends>
+      <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
       <depends optional-attribute-name="DurableSubscriptionStore">jboss.messaging:service=DurableSubscriptionStore</depends>
 
@@ -83,9 +83,9 @@
       </constructor>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.JDBCTransactionLog"
-      name="jboss.messaging:service=TransactionLog"
-      xmbean-dd="xmdesc/JDBCTransactionLog-xmbean.xml">
+   <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
+      name="jboss.messaging:service=PersistenceManager"
+      xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
 
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
            the DataSource JNDI name in order to actually get a reference to it. Fix this.
@@ -95,19 +95,14 @@
       <attribute name="DataSource">java:/DefaultDS</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.JDBCMessageStore"
+   <mbean code="org.jboss.messaging.core.plugin.PersistentMessageStore"
       name="jboss.messaging:service=MessageStore"
-      xmbean-dd="xmdesc/JDBCMessageStore-xmbean.xml">
+      xmbean-dd="xmdesc/PersistentMessageStore-xmbean.xml">
       <constructor>
          <!-- StoreID -->
          <arg type="java.lang.String" value="store.0" />
       </constructor>
-      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
-           the DataSource JNDI name in order to actually get a reference to it. Fix this.
-      -->
-      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
    </mbean>
 
    <mbean code="org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore"

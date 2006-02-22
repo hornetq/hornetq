@@ -25,24 +25,24 @@ import java.util.Map;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
-import org.jboss.test.messaging.core.plugin.JDBCTransactionLogTest;
+import org.jboss.test.messaging.core.plugin.JDBCPersistenceManagerTest;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
 
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * MessagePersistenceManagerTest.java,v 1.1 2006/02/22 17:33:44 timfox Exp
  */
-public class JBossMessageTransactionLogTest extends JDBCTransactionLogTest
+public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossMessageTransactionLogTest(String name)
+   public MessagePersistenceManagerTest(String name)
    {
       super(name);
    }

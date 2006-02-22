@@ -23,10 +23,14 @@ package org.jboss.messaging.core.plugin;
 
 import java.io.Serializable;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.WeakMessageReference;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.util.Util;
 
 /**
@@ -38,7 +42,7 @@ import org.jboss.messaging.util.Util;
  *
  * $Id$
  */
-public abstract class PersistentMessageStore extends InMemoryMessageStore
+public class PersistentMessageStore extends InMemoryMessageStore
 {
    // Constants -----------------------------------------------------
 
@@ -49,14 +53,52 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
    // Attributes ----------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
+   
+   protected PersistenceManager pm;
+   
+   protected ObjectName pmObjectName;
 
    // Constructors --------------------------------------------------
 
-   protected PersistentMessageStore(Serializable storeID)
+   public PersistentMessageStore(String storeID)
    {
       super(storeID, true);
    }
+   
+   public PersistentMessageStore(Serializable storeID, PersistenceManager pm)
+   {
+      super(storeID, true);
+      
+      this.pm = pm;
+   }
+   
+   // JMX operations / attributes ------------------------------------
+   
+   /**
+    * Managed attribute.
+    */
+   public void setPersistenceManager(ObjectName pmObjectName) throws Exception
+   {
+      this.pmObjectName = pmObjectName;
+   }
 
+   /**
+    * Managed attribute.
+    */
+   public ObjectName getPersistenceManager()
+   {
+      return pmObjectName;
+   }
+   
+   public synchronized void startService() throws Exception
+   {
+      super.startService();
+      
+      MBeanServer server = getServer();
+   
+      pm = (PersistenceManager)server.getAttribute(pmObjectName, "Instance");   
+   }
+   
    // MessageStore overrides ----------------------------------------
 
    public boolean isRecoverable()
@@ -165,18 +207,27 @@ public abstract class PersistentMessageStore extends InMemoryMessageStore
     * Store the message reliably. If the message doesn't exist in the reliable store, it physically
     * adds it. Otherwise, it increments the message's reference count.
     */
-   protected abstract void storeMessage(Message m) throws Exception;
+   protected void storeMessage(Message m) throws Exception
+   {
+      pm.storeMessage(m);
+   }
 
    /**
     * Removes the message from the reliable store. If the message's reference count is bigger than
     * one, it just decrements it. If it is 1, it physically removes the message from the store.
     */
-   protected abstract boolean removeMessage(String messageID) throws Exception;
+   protected boolean removeMessage(String messageID) throws Exception
+   {
+      return pm.removeMessage(messageID);
+   }
 
    /**
     * Returns the full message corresponding to the given message ID.
     */
-   protected abstract Message getMessage(Serializable messageID) throws Exception;
+   protected Message getMessage(Serializable messageID) throws Exception
+   {
+      return pm.getMessage(messageID);
+   }
 
    // Private -------------------------------------------------------
    

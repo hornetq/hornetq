@@ -36,7 +36,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.persistence.JDBCUtil;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.tm.TransactionManagerService;
@@ -55,7 +55,7 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
 
-   protected TransactionLog tl;
+   protected PersistenceManager tl;
    protected DestinationManager dm;
    protected MessageStore ms;
    protected DurableSubscriptionStore dssd;

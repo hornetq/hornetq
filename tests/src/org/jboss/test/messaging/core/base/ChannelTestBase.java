@@ -21,33 +21,32 @@
 */
 package org.jboss.test.messaging.core.base;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.test.messaging.core.SimpleReceiver;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.naming.InitialContext;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
+
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.test.messaging.core.SimpleDeliveryObserver;
+import org.jboss.test.messaging.core.SimpleReceiver;
 
 /**
  * The Channel test strategy is to try as many combination as it makes sense of the following
  * variables:
  *
- * 1. The channel can be non-recoverable (does not have access to a TransactionLog) or
+ * 1. The channel can be non-recoverable (does not have access to a PersistenceManager) or
  *    recoverable. A non-recoverable channel can accept reliable messages or not.
  * 2. The channel may have zero or one receivers (the behavior for more than one receiver depends
  *    on the particular router implementation).
@@ -78,8 +77,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
    
    // Attributes ----------------------------------------------------
 
-   // the MessageStore requires a TransactionLog, othewise it will reject reliable messages
-   protected TransactionLog msTransactionLogDelegate;
+   // the MessageStore requires a PersistenceManager, othewise it will reject reliable messages
+   protected PersistenceManager msPersistenceManagerDelegate;
    protected TransactionRepository tr;
    protected MessageStore ms;
 
@@ -100,13 +99,13 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       tr = new TransactionRepository();
       ic.close();
 
-      msTransactionLogDelegate =
-         new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
+      msPersistenceManagerDelegate =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
 
-      ((JDBCTransactionLog)msTransactionLogDelegate).start();
+      ((JDBCPersistenceManager)msPersistenceManagerDelegate).start();
 
-      ms = new JDBCMessageStore("s47", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms = new PersistentMessageStore("s47", msPersistenceManagerDelegate);
+
    }
 
    public void tearDown() throws Exception

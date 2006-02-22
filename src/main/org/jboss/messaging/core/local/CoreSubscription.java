@@ -25,7 +25,7 @@ package org.jboss.messaging.core.local;
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.util.Util;
 import org.jboss.util.id.GUID;
@@ -60,7 +60,7 @@ public class CoreSubscription extends Pipe
    }
    
    protected CoreSubscription(String name, Topic topic, String selector, boolean noLocal,
-                          MessageStore ms, TransactionLog tl)
+                          MessageStore ms, PersistenceManager tl)
    {
       // A CoreSubscription must accept reliable messages, even if itself is non-recoverable
       super(name, ms, tl, true);

@@ -6,18 +6,10 @@
 
 
 <mbean>
-   <description>A JDBC message store log</description>
-   <class>org.jboss.messaging.core.plugin.JDBCTransactionLog</class>
+   <description>A JDBC persistence manager</description>
+   <class>org.jboss.messaging.core.plugin.JDBCPersistenceManager</class>
 
    <!-- Managed constructors -->
-
-   <constructor>
-      <name>PersistentMessageStore</name>
-      <parameter>
-         <name>StoreID</name>
-         <type>java.io.Serializable</type>
-      </parameter>
-   </constructor>
 
    <!-- Managed attributes -->
 
@@ -28,13 +20,13 @@
    </attribute>
 
    <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">
-      <description>The JNDI name of the DataSource used by this message store</description>
+      <description>The JNDI name of the DataSource used by this persistence manager</description>
       <name>DataSource</name>
       <type>java.lang.String</type>
    </attribute>
 
    <attribute access="read-write" getMethod="getTransactionManager" setMethod="setTransactionManager">
-      <description>The ObjectName of the TransactionManager used by this message store</description>
+      <description>The ObjectName of the TransactionManager used by this persistence manager</description>
       <name>TransactionManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>

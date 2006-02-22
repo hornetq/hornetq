@@ -37,9 +37,9 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getTransactionLog" setMethod="setTransactionLog">
-      <description>The ObjectName of the transaction log</description>
-      <name>TransactionLog</name>
+   <attribute access="read-write" getMethod="getPersistenceManager" setMethod="setPersistenceManager">
+      <description>The ObjectName of the persistence manager</description>
+      <name>PersistenceManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 

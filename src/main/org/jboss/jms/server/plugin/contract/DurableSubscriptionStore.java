@@ -8,7 +8,7 @@ package org.jboss.jms.server.plugin.contract;
 
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.jms.server.DestinationManager;
 
@@ -33,13 +33,13 @@ public interface DurableSubscriptionStore extends ServerPlugin
                                                  boolean noLocal,
                                                  DestinationManager dm,
                                                  MessageStore ms,
-                                                 TransactionLog tl) throws JMSException;
+                                                 PersistenceManager tl) throws JMSException;
 
    CoreDurableSubscription getDurableSubscription(String clientID,
                                               String subscriptionName,
                                               DestinationManager dm,
                                               MessageStore ms,
-                                              TransactionLog tl) throws JMSException;
+                                              PersistenceManager tl) throws JMSException;
 
    boolean removeDurableSubscription(String clientID, String subscriptionName) throws JMSException;
 
@@ -54,5 +54,5 @@ public interface DurableSubscriptionStore extends ServerPlugin
    Set loadDurableSubscriptionsForTopic(String topicName, 
                                         DestinationManager dm,
                                         MessageStore ms,
-                                        TransactionLog tl) throws JMSException;
+                                        PersistenceManager tl) throws JMSException;
 }

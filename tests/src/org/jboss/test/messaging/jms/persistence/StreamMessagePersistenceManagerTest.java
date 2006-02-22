@@ -21,26 +21,27 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
+import java.util.ArrayList;
 import java.util.Map;
 
-import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
 
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * StreamMessagePersistenceManagerTest.java,v 1.1 2006/02/22 17:33:44 timfox Exp
  */
-public class JBossBytesMessageTransactionLogTest extends JBossMessageTransactionLogTest
+public class StreamMessagePersistenceManagerTest extends MessagePersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public JBossBytesMessageTransactionLogTest(String name)
+   public StreamMessagePersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -62,15 +63,15 @@ public class JBossBytesMessageTransactionLogTest extends JBossMessageTransaction
       
       Map jmsProperties = generateFilledMap(false);
                
-      JBossBytesMessage m = 
-         new JBossBytesMessage(new GUID().toString(),
+      JBossStreamMessage m = 
+         new JBossStreamMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,
             i + 2,
             coreHeaders,
-            null,
+            new ArrayList(),
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
             i % 2 == 0,
@@ -78,8 +79,7 @@ public class JBossBytesMessageTransactionLogTest extends JBossMessageTransaction
             i % 2 == 1,
             new GUID().toString(),
             randInt().intValue(),
-            jmsProperties);  
-      
+            jmsProperties);        
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());
       m.writeBytes(randByteArray());
@@ -87,10 +87,9 @@ public class JBossBytesMessageTransactionLogTest extends JBossMessageTransaction
       m.writeDouble(randDouble().doubleValue());
       m.writeFloat(randFloat().floatValue());
       m.writeInt(randInt().intValue());
-      m.writeLong(randLong().longValue());      
+      m.writeLong(randLong().longValue());
       m.writeShort(randShort().shortValue());
-      m.writeUTF(randString(1000));
-
+      m.writeString(randString(1000));
       return m;      
    }
    

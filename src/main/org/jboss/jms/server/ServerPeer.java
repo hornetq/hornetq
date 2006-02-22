@@ -45,7 +45,7 @@ import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -105,8 +105,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
    protected ObjectName threadPoolObjectName;
    protected ThreadPool threadPoolDelegate;
-   protected ObjectName transactionLogObjectName;
-   protected TransactionLog transactionLogDelegate;
+   protected ObjectName persistenceManagerObjectName;
+   protected PersistenceManager persistenceManagerDelegate;
    protected ObjectName messageStoreObjectName;
    protected MessageStore messageStoreDelegate;
    protected ObjectName durableSubscriptionStoreObjectName;
@@ -164,8 +164,8 @@ public class ServerPeer extends ServiceMBeanSupport
       threadPoolDelegate =
          (ThreadPool)mbeanServer.getAttribute(threadPoolObjectName, "Instance");
 
-      transactionLogDelegate =
-         (TransactionLog)mbeanServer.getAttribute(transactionLogObjectName, "Instance");
+      persistenceManagerDelegate =
+         (PersistenceManager)mbeanServer.getAttribute(persistenceManagerObjectName, "Instance");
 
       // TODO: is should be possible to share this with other peers
       messageStoreDelegate =
@@ -179,7 +179,7 @@ public class ServerPeer extends ServiceMBeanSupport
       destinationJNDIMapper.start();
       securityStore.start();
       connFactoryJNDIMapper.start();
-      txRepository.start(transactionLogDelegate);
+      txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
 
       initializeRemoting(mbeanServer);
@@ -238,14 +238,14 @@ public class ServerPeer extends ServiceMBeanSupport
       threadPoolObjectName = on;
    }
 
-   public ObjectName getTransactionLog()
+   public ObjectName getPersistenceManager()
    {
-      return transactionLogObjectName;
+      return persistenceManagerObjectName;
    }
 
-   public void setTransactionLog(ObjectName on)
+   public void setPersistenceManager(ObjectName on)
    {
-      transactionLogObjectName = on;
+      persistenceManagerObjectName = on;
    }
 
    public ObjectName getMessageStore()
@@ -450,9 +450,9 @@ public class ServerPeer extends ServiceMBeanSupport
       return threadPoolDelegate;
    }
 
-   public TransactionLog getTransactionLogDelegate()
+   public PersistenceManager getPersistenceManagerDelegate()
    {
-      return transactionLogDelegate;
+      return persistenceManagerDelegate;
    }
 
    public MessageStore getMessageStoreDelegate()

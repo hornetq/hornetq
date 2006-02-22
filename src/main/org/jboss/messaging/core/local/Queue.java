@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.CoreDestination;
@@ -47,7 +47,7 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
       this(name, ms, null);
    }
 
-   public Queue(String name, MessageStore ms, TransactionLog tl)
+   public Queue(String name, MessageStore ms, PersistenceManager tl)
    {
       super(name, ms, tl, false);
       router = new PointToPointRouter();

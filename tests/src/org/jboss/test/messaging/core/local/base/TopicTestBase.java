@@ -21,24 +21,21 @@
 */
 package org.jboss.test.messaging.core.local.base;
 
-import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import java.util.Iterator;
+
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.plugin.contract.TransactionLog;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.JDBCTransactionLog;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PersistentMessageStore;
-import org.jboss.messaging.core.plugin.JDBCMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-
-import java.util.Iterator;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.SimpleDeliveryObserver;
+import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -58,7 +55,7 @@ public abstract class TopicTestBase extends MessagingTestCase
 
    protected CoreDestination topic;
 
-   protected TransactionLog tl;
+   protected PersistenceManager tl;
    protected MessageStore ms;
 
    // Constructors --------------------------------------------------
@@ -77,11 +74,11 @@ public abstract class TopicTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
-      tl = new JDBCTransactionLog(sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCTransactionLog)tl).start();
+      tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      ((JDBCPersistenceManager)tl).start();
       
-      ms = new JDBCMessageStore("s33", sc.getDataSource(), sc.getTransactionManager());
-      ((JDBCMessageStore)ms).start();
+      ms = new PersistentMessageStore("s33", tl);
+
 
    }
 
