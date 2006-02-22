@@ -86,12 +86,24 @@
    </category>
 
    <category name="org.jboss.test">
-      <!-- <priority value="INFO"/> -->
+      <priority value="INFO"/>
+      <!--
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      -->
    </category>
 
    <category name="org.jboss.jms">
+   <!--
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      -->
+      <priority value="INFO"/>
+   </category>
+
+  <category name="org.jboss.jms.perf">
+
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+
+      <!-- <priority value="INFO"/> -->
    </category>
 
    <category name="org.jboss.messaging">
@@ -108,7 +120,10 @@
    -->
 
    <category name="org.jboss.remoting">
+   <!--
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      -->
+      <priority value="INFO"/>
    </category>
 
    <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">

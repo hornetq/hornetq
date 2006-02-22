@@ -15,6 +15,9 @@ import java.util.List;
  * 
  * A Execution.
  * 
+ * Represents the record of an execution of a PerformanceTest on a particular Date,
+ * against a particular provider e.g. JBossMQ, JBossMessaging etc.
+ * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
@@ -24,84 +27,60 @@ public class Execution implements Serializable
 {
    private static final long serialVersionUID = 8086268408804672852L;
    
-   public Execution(Benchmark bm, Date date, String provider)
-   {
-      this.benchmark = bm;
-      this.date = date;
-      this.provider = provider;
-      this.measurements = new ArrayList();
-      bm.addExecution(this);
-   }
-   
-   public Benchmark getBenchmark()
-   {
-      return benchmark;
-   }
-   
-   
    protected Date date;
    
-   protected String provider;
+   protected String providerName;
    
-   protected List measurements;
+   protected List datapoints;
    
-   protected Benchmark benchmark;      
-
-   public void addMeasurement(Measurement measure)
+   protected PerformanceTest performanceTest;      
+   
+   public Execution(PerformanceTest pt, Date date, String providerName)
    {
-     // log.info("QAdding measurement:" + measure);
-      measurements.add(measure);
+      this.performanceTest = pt;
+      
+      this.date = date;
+      
+      this.providerName = providerName;
+      
+      this.datapoints = new ArrayList();     
+      
+      pt.addExecution(this);
    }
    
-   /**
-    * Get the date.
-    * 
-    * @return the date.
-    */
+   public PerformanceTest getPerformanceTest()
+   {
+      return performanceTest;
+   }
+   
+   public void addDatapoint(Datapoint datapoint)
+   {
+      datapoints.add(datapoint);
+   }
+   
    public Date getDate()
    {
       return date;
    }
 
-   /**
-    * Set the date.
-    * 
-    * @param date The date to set.
-    */
    public void setDate(Date date)
    {
       this.date = date;
    }
 
-   /**
-    * Get the provider.
-    * 
-    * @return the provider.
-    */
-   public String getProvider()
+   public String getProviderName()
    {
-      return provider;
+      return providerName;
    }
 
-   /**
-    * Set the provider.
-    * 
-    * @param provider The provider to set.
-    */
-   public void setProvider(String provider)
+   public void setProviderName(String providerName)
    {
-      this.provider = provider;
+      this.providerName = providerName;
    }
 
-   /**
-    * Get the measurements.
-    * 
-    * @return the measurements.
-    */
-   public List getMeasurements()
+   public List getDatapoints()
    {
-    //  log.info("Getting measurements:" + measurements.size());
-      return measurements;
+      return datapoints;
    }
    
    

@@ -21,41 +21,42 @@
   */
 package org.jboss.jms.perf.framework;
 
-import java.io.Serializable;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.InvokerLocator;
 
-/**
- * 
- * A JobResult.
- * 
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision$
- *
- * $Id$
- */
-public class JobResult implements Serializable
+public class SlaveKiller
 {
-   /** The serialVersionUID */
-   private static final long serialVersionUID = -6238059261642836113L;
+   //private static final Logger log = Logger.getLogger(SlaveKiller.class);   
    
-   private long startTime;
    
-   private long endTime;
-   
-   public JobResult(long startTime, long endTime)
+   public static void main(String[] args)
    {
-      this.startTime = startTime;
-      
-      this.endTime = endTime;
+      new SlaveKiller().run(Integer.valueOf(args[0]).intValue(), args[1]);
+   }
+   
+   private void run(int port, String host)
+   {
+      try
+      {
+         sendRequestToSlave("socket://" + host + ":" + port, new KillRequest());
+      }
+      catch (Throwable e)
+      {
+         //Ignore - we will get exceptions anyway if the slave is not running
+      }
    }
 
-   public long getStartTime()
+   protected ThroughputResult sendRequestToSlave(String slaveURL, ServerRequest request) throws Throwable
    {
-      return startTime;
+      InvokerLocator locator = new InvokerLocator(slaveURL);
+      
+      Client client = new Client(locator, "perftest");
+            
+      Object res = client.invoke(request);
+                        
+      return (ThroughputResult)res; 
    }
    
-   public long getEndTime()
-   {
-      return endTime;
-   }
-      
+   
 }

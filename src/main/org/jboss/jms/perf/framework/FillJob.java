@@ -39,16 +39,7 @@ public class FillJob extends BaseJob
    
    protected MessageFactory mf;
    
-   public void logInfo()
-   {
-      super.logInfo();
-      log.info("numMessages: " + this.numMessages);
-      log.info("Delivery mode: " + this.deliveryMode);
-      log.info("Message size: " + this.msgSize);
-      log.info("Message type: " + this.mf.getClass().getName());
-   }
-   
-   public JobResult execute() throws PerfException
+   public ThroughputResult execute() throws PerfException
    {           
       Connection conn = null;
       
@@ -99,11 +90,11 @@ public class FillJob extends BaseJob
       
    } 
    
-   public FillJob(String slaveURL, Properties jndiProperties, String destName, String connectionFactoryJndiName,
+   public FillJob(Properties jndiProperties, String destName, String connectionFactoryJndiName,
          int numMessages, int messageSize, MessageFactory mf,
          int deliveryMode)
    {
-      super(slaveURL, jndiProperties, destName, connectionFactoryJndiName);
+      super(jndiProperties, destName, connectionFactoryJndiName);
       this.numMessages = numMessages;
       this.mf = mf;
       this.deliveryMode = deliveryMode;

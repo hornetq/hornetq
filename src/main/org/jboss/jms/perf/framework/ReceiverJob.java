@@ -30,8 +30,6 @@ public class ReceiverJob extends BaseThroughputJob
 {
    private static final long serialVersionUID = 3633353742146810600L;
    
-   private static final long RECEIVE_TIMEOUT = 10 * 60 * 1000;
-
    private static final Logger log = Logger.getLogger(ReceiverJob.class);
 
    protected int ackMode;
@@ -47,21 +45,21 @@ public class ReceiverJob extends BaseThroughputJob
    protected String clientID;
    
 
-   public Servitor createServitor(int numMessages)
+   public Servitor createServitor(long testTime)
    {
-      return new Receiver(numMessages);
+      return new Receiver(testTime);
    }
    
 
-   public ReceiverJob(String slaveURL, Properties jndiProperties, String destinationName,
+   public ReceiverJob(Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
          int numSessions, boolean transacted, int transactionSize,
-         int numMessages, int ackMode, String subName,
+         long testTime, int ackMode, String subName,
          String selector, boolean noLocal, boolean asynch, String clientID)
    {
-      super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
+      super (jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
             numSessions, transacted, transactionSize,
-            numMessages);
+            testTime);
       this.ackMode = ackMode;
       this.subName = subName;
       this.selector = selector;
@@ -70,23 +68,11 @@ public class ReceiverJob extends BaseThroughputJob
       this.clientID = clientID;
    }
 
-   protected void logInfo()
-   {
-      super.logInfo();
-      log.trace("Acknowledgement Mode? " + ackMode);
-      log.trace("Durable subscription name: " + subName);
-      log.trace("Message selector: " + selector);
-      log.trace("No local?: " + noLocal);
-      log.trace("Use message listener? " + asynch);
-      log.trace("Client id: " + clientID);
-   }
-   
    protected class Receiver extends AbstractServitor
-   {
-      
-      Receiver(int numMessages)
+   {      
+      Receiver(long testTime)
       {
-         super(numMessages);
+         super(testTime);
       }
       
       Session sess;
@@ -108,7 +94,6 @@ public class ReceiverJob extends BaseThroughputJob
          catch (Throwable e)
          {
             log.error("deInit failed", e);
-            throwable = e;
             failed = true;
          }
       }
@@ -146,7 +131,6 @@ public class ReceiverJob extends BaseThroughputJob
          catch (Throwable e)
          {
             log.error("Init failed", e);
-            throwable = e;
             failed = true;
          }
      
@@ -156,41 +140,62 @@ public class ReceiverJob extends BaseThroughputJob
       {
          try
          {
-            int count = 0;
+            long start = System.currentTimeMillis();
             
-            while (count < (numMessages))
-            {                           
+            long now = 0;
+            
+            while (true)
+            {                         
+               now = System.currentTimeMillis();
                
-               Message m = cons.receive(RECEIVE_TIMEOUT);  
+               if (now > start + testTime)
+               {
+                  break;
+               }
+                             
+               Message m;
+               
+               if (messageCount == 0)
+               {
+                  //Give it more time for the first message
+                  m = cons.receive(60 * 1000);  
+               }
+               else
+               {
+                  m = cons.receive(10000);
+               }
                       
                if (m != null)
                {
-                  count++;
+                  //log.info("Received");
+                  
                   if (transacted)
                   {
-                     if (count % transactionSize == 0)
+                     if (messageCount % transactionSize == 0)
                      {
                         sess.commit();
                      }
-                  }                   
+                  }                
+                  
+                  messageCount++;
+                  
                }    
                else
                {
-                  log.error("Failed to receive messages");
-                  failed = true;
+                  log.info("No more messages");
+                  
                   break;
-               }
-                                                         
+               }                               
             }  
+            
+            actualTime = now - start;                           
          }
          catch (Throwable e)
          {
             log.error("Receiver failed", e);
-            throwable = e;
             failed = true;
          }
-      }
-      
+      }      
    }
    
    

@@ -19,9 +19,11 @@ public interface Servitor extends Runnable
 { 
    boolean isFailed();
    
-   Throwable getThrowable();
-   
    void init();
    
-   void deInit(); 
+   void deInit();
+   
+   long getTime();
+   
+   int getMessages();
 }

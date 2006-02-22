@@ -39,15 +39,12 @@ public abstract class BaseJob implements Job, Serializable
    
    protected ConnectionFactory cf;
    
-   protected String slaveURL;
-   
    protected String connectionFactoryJndiName;
    
    protected String id;
    
-   public BaseJob(String slaveURL, Properties jndiProperties, String destinationName, String connectionFactoryJndiName)
+   public BaseJob(Properties jndiProperties, String destinationName, String connectionFactoryJndiName)
    {
-      this.slaveURL = slaveURL;
       this.jndiProperties = jndiProperties;
       this.destName = destinationName;
       this.connectionFactoryJndiName = connectionFactoryJndiName;
@@ -58,8 +55,7 @@ public abstract class BaseJob implements Job, Serializable
    public void initialize() throws PerfException
    { 
       try
-      {
-         
+      {         
          ic = new InitialContext(jndiProperties);
          
          log.trace("Looking up:" + destName);
@@ -75,12 +71,6 @@ public abstract class BaseJob implements Job, Serializable
          throw new PerfException("Failed to initialize", e);
       }
       
-   }
-   
-   protected void logInfo()
-   {
-      //log.debug("Server-url: " + this.serverURL);
-      log.debug("Destination name: " + this.destName);
    }
    
    protected void tearDown() throws Exception
@@ -108,16 +98,6 @@ public abstract class BaseJob implements Job, Serializable
    public void setConnectionFactoryJndiName(String connectionFactoryJndiName)
    {
       this.connectionFactoryJndiName = connectionFactoryJndiName;
-   }
-   
-   public void setSlaveURL(String slaveURL)
-   {
-      this.slaveURL = slaveURL;
-   }
-   
-   public String getSlaveURL()
-   {
-      return slaveURL;
    }
    
    public String getId()

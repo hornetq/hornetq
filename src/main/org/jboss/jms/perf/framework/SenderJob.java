@@ -9,7 +9,6 @@ package org.jboss.jms.perf.framework;
 import java.util.Properties;
 
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -40,45 +39,47 @@ public class SenderJob extends BaseThroughputJob
    
    protected MessageFactory mf;
    
-   public Servitor createServitor(int numMessages)
-   {
-      return new Sender(numMessages);
-   }
+   protected double targetRate;
    
-   protected void logInfo()
-   {
-      super.logInfo();
-      log.trace("Use anonymous producer? " + anon);
-      log.trace("Message size: " + msgSize);
-      log.trace("Message type: " + mf.getClass().getName());
-      log.trace("Delivery Mode:" + (deliveryMode == DeliveryMode.PERSISTENT ? "Persistent" : "Non-persistent"));
-   }
+   double targetMsgsPerSamplePeriod;
    
-   public SenderJob(String slaveURL, Properties jndiProperties, String destinationName,
+   private static final long SAMPLE_PERIOD = 50;
+      
+   public Servitor createServitor(long testTime)
+   {
+      return new Sender(testTime);
+   }
+  
+   public SenderJob(Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
          int numSessions, boolean transacted, int transactionSize, 
-         int numMessages, boolean anon, int messageSize,
-         MessageFactory messageFactory, int deliveryMode)
+         long testTime, boolean anon, int messageSize,
+         MessageFactory messageFactory, int deliveryMode, double targetRate)
    {
-      super (slaveURL, jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
-            numSessions, transacted, transactionSize, numMessages);
+      super (jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
+            numSessions, transacted, transactionSize, testTime);
       this.anon = anon;
       this.msgSize = messageSize;
       this.mf = messageFactory;
       this.deliveryMode = deliveryMode;
+      this.targetRate = targetRate;
+      
+      targetMsgsPerSamplePeriod = (targetRate * SAMPLE_PERIOD) / 1000;
+      
+      //log.info("target msgs per sample period:" + targetMsgsPerSamplePeriod);
    }
    
-
-
    protected class Sender extends AbstractServitor
-   {
-      
-      Sender(int numMessages)
+   {     
+      Sender(long testTime)
       {
-         super(numMessages);
+         super(testTime);
+         
+         //log.info("testTime:" + testTime);
       }
       
       MessageProducer prod;
+      
       Session sess;
       
       public void deInit()
@@ -91,7 +92,6 @@ public class SenderJob extends BaseThroughputJob
          catch (Throwable e)
          {
             log.error("Failed to deInit()", e);
-            throwable = e;
             failed = true;
          }
       }
@@ -121,7 +121,6 @@ public class SenderJob extends BaseThroughputJob
          catch (Throwable e)
          {
             log.error("Failed to init", e);
-            throwable = e;
             failed = true;
          }
       }
@@ -130,12 +129,22 @@ public class SenderJob extends BaseThroughputJob
       {
          try
          {
-            int count = 0;
+            long start = System.currentTimeMillis();
             
-            while (count < numMessages)
-            {               
+            long now = 0;
             
-               Message m = mf.getMessage(sess, msgSize);
+            while (true)
+            {
+               now = System.currentTimeMillis();
+               
+               if (now > start + testTime)
+               {                                    
+                  //Done
+                  
+                  break;
+               }
+               
+               Message m = mf.getMessage(sess, msgSize);                            
                
                if (anon)
                {
@@ -146,23 +155,79 @@ public class SenderJob extends BaseThroughputJob
                   prod.send(m);
                }
                
-               count++;
-           
                if (transacted)
                {                  
-                  if (count % transactionSize == 0)
+                  if (messageCount % transactionSize == 0)
                   {
                      sess.commit();
                   }
-               }                   
+               }  
+               
+               messageCount++;
+               
+               doThrottle(now);
+                             
             }
-
+                                     
+            actualTime = now - start;
+            
+            log.info("Actual time is: " + actualTime);
+            
          }
          catch (Throwable e)
          {
             log.error("Sender failed", e);
-            throwable = e;
             failed = true;
+         }
+      }
+      
+      private long lastTime = 0;
+      
+      private int lastCount = 0;
+                  
+      protected void doThrottle(long now)
+      {
+         if (lastTime != 0)
+         {
+            long elapsedTime = now - lastTime;
+            
+            if (elapsedTime >= SAMPLE_PERIOD)
+            {
+               long msgs = messageCount - lastCount;
+               
+               //log.info("elapsedTime is " + elapsedTime);
+               //log.info("msgs:" + msgs);
+               
+               double targetMsgs = targetRate * (double)elapsedTime / 1000;       
+               
+               //log.info("Target msgs:" + targetMsgs);
+               
+               if (msgs > targetMsgs)
+               {
+                  //Need to throttle
+                  //log.info("throttling");
+                  
+                  long throttleTime = (long)((1000 * (double)msgs / targetRate) - elapsedTime);
+                                    
+                  //log.info("Throttle time is:" + throttleTime);
+                  try
+                  {
+                     Thread.sleep(throttleTime);
+                  }
+                  catch (InterruptedException e)
+                  {
+                     //Ignore
+                  }
+               }
+               
+               lastTime = now;
+               
+               lastCount = messageCount;
+            }
+         }
+         else
+         {
+            lastTime = now;
          }
       }
 

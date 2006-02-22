@@ -7,93 +7,46 @@
 package org.jboss.jms.perf.framework.data;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jboss.logging.Logger;
 
-/**
- * 
- * A Measurement.
- * 
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision$
- *
- * $Id$
- */
 public class Measurement implements Serializable
 {      
    private static final long serialVersionUID = 7208068351755451288L;
 
    private static final Logger log = Logger.getLogger(Measurement.class);
    
-   protected String name;
+   protected String dimensionName;
    
-   protected Double value;
+   protected Object value;
    
-   protected Map variables;
-   
-   public Measurement(String name, double value)
+   public Measurement(String dimensionName, Object value)
    {
-      this.name = name;
-      this.value = new Double(value);
-      log.info("Measurement, name=" + name + ", value=" + value);
-      variables = new HashMap();
-   }
-   
-   public void setVariableValue(String variableName, double value)
-   {
-      variables.put(variableName, new Double(value));
-   }
-   
-   public double getVariableValue(String variableName)
-   {
-      return ((Double)variables.get(variableName)).doubleValue();
-   }
-   
-   public Map getVariables()
-   {
-      return variables;
+      this.dimensionName = dimensionName;
+      
+      this.value = value;
    }
 
-   /**
-    * Get the name.
-    * 
-    * @return the name.
-    */
-   public String getName()
+   public String getDimensionName()
    {
-      return name;
+      return dimensionName;
    }
 
-   /**
-    * Set the name.
-    * 
-    * @param name The name to set.
-    */
-   public void setName(String name)
+   public void setDimensionName(String dimensionName)
    {
-      this.name = name;
+      this.dimensionName = dimensionName;
    }
 
-   /**
-    * Get the value.
-    * 
-    * @return the value.
-    */
-   public Double getValue()
+   public Object getValue()
    {
       return value;
    }
 
-   /**
-    * Set the value.
-    * 
-    * @param value The value to set.
-    */
-   public void setValue(Double value)
+   public void setValue(Object value)
    {
       this.value = value;
    }
-             
+   
+   
 }
+

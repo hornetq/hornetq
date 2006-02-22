@@ -12,14 +12,14 @@ import java.util.List;
 
 /**
  * 
- * A Benchmark.
+ * A PerformanceTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class Benchmark implements Serializable
+public class PerformanceTest implements Serializable
 {
    private static final long serialVersionUID = 4821514879181362348L;
 
@@ -29,9 +29,10 @@ public class Benchmark implements Serializable
    
    protected List executions;
    
-   public Benchmark(String name)
+   public PerformanceTest(String name)
    {
       this.name = name;
+      
       executions = new ArrayList();
    }
    
@@ -49,8 +50,6 @@ public class Benchmark implements Serializable
    {
       return executions;
    }
-
-
 
    /**
     * Get the name.

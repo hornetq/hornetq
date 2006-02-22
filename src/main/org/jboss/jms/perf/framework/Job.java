@@ -17,11 +17,9 @@ package org.jboss.jms.perf.framework;
  */
 public interface Job
 {
-   String getSlaveURL();
-   
    String getId();
    
    void initialize() throws PerfException;
    
-   JobResult execute() throws PerfException;
+   ThroughputResult execute() throws PerfException;
 }

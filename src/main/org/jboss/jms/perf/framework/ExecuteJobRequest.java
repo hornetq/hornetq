@@ -35,7 +35,7 @@ public class ExecuteJobRequest implements ServerRequest
          throw new IllegalStateException("Cannot find job with id:" + jobId);
       }
       
-      JobResult res = job.execute();
+      ThroughputResult res = job.execute();
       
       return res;
    }

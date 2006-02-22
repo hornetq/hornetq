@@ -362,36 +362,21 @@
    <target name="crash-tests" depends="tests-jar, prepare-testdirs"
       description="Runs crash tests">
 
-      <antcall target="crash-test1"/>
-
-      <antcall target="crash-test2"/>
-
-   </target>
-
-
-   <target name="crash-test1">
-
-      <mkdir dir="${build.tests.reports}"/>
-      <antcall target="print-testclasspath"/>
-
       <antcall target="stop-rmi-server"/>
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+         <param name="crash.test.name" value="org.jboss.test.messaging.jms.ClientCrashTest"/>
+      </antcall>
 
       <antcall target="start-rmi-server"/>
-      <property name="crash.test.name" value="org.jboss.test.messaging.jms.ClientCrashTest"/>
-      <antcall target="crash-test"/>
+
+      <antcall target="crash-test">
+         <param name="crash.test.name" value="org.jboss.test.messaging.jms.CallbackFailureTest"/>
+      </antcall>
+
    </target>
 
-   <target name="crash-test2">
-
-      <mkdir dir="${build.tests.reports}"/>
-      <antcall target="print-testclasspath"/>
-
-      <antcall target="stop-rmi-server"/>
-
-      <antcall target="start-rmi-server"/>
-      <property name="crash.test.name" value="org.jboss.test.messaging.jms.CallbackFailureTest"/>
-      <antcall target="crash-test"/>
-   </target>
 
    <target name="crash-test" description="Runs crash test">
 
@@ -680,7 +665,7 @@
    </target>
 
 
-     <target name="deployejb" depends="tests-ejb-jar">
+  <target name="deployejb" depends="tests-ejb-jar">
          <copy file="${build.tests.lib}/${build.tests.ejbarchive}"
             todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
       </target>
@@ -692,6 +677,103 @@
    <target name="print-testclasspath">
       <pathconvert targetos="unix" property="test.classpath.property" refid="test.classpath"/>
       <echo message="${test.classpath.property}"/>
+   </target>
+
+
+
+   <!-- TODO move this out into it's own build.xml -->
+
+   <target name="perf" depends="prepare-testdirs">
+
+      <antcall target="start-slave">
+         <param name="slave.host" value="1234"/>
+         <param name="slave.port" value="localhost"/>
+      </antcall>
+
+      <antcall target="start-slave">
+         <param name="slave.host" value="1235"/>
+         <param name="slave.port" value="localhost"/>
+      </antcall>
+
+      <sleep seconds="5"/>
+
+      <echo>Running perf</echo>
+
+      <java classname="org.jboss.jms.perf.framework.Runner" fork="true">
+         <arg value="${slave.host}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="remote.test.suffix" value="-perf"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+            <path refid="test.classpath"/>
+         </classpath>
+      </java>
+
+      <antcall target="kill-slaves"/>
+
+      <sleep seconds="5"/>
+
+      <antcall target="perf-chart"/>
+
+   </target>
+
+   <target name="start-slave"
+           description="Starts a perf slave">
+      <java classname="org.jboss.jms.perf.framework.Slave" fork="true" spawn="true">
+         <arg value="${slave.host}"/>
+         <arg value="${slave.port}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="remote.test.suffix" value="-start-slave-${slave.host}"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+            <path refid="test.classpath"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="kill-slaves">
+      <antcall target="kill-slave">
+         <param name="slave.host" value="1234"/>
+         <param name="slave.port" value="localhost"/>
+      </antcall>
+
+      <antcall target="kill-slave">
+         <param name="slave.host" value="1235"/>
+         <param name="slave.port" value="localhost"/>
+      </antcall>
+   </target>
+
+   <target name="kill-slave"
+           description="Kills a perf slave">
+      <java classname="org.jboss.jms.perf.framework.SlaveKiller" fork="true">
+         <arg value="${slave.host}"/>
+         <arg value="${slave.port}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="remote.test.suffix" value="-kill-slave-${slave.host}"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+            <path refid="test.classpath"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="perf-chart">
+      <java classname="org.jboss.jms.perf.framework.Charter" fork="true">
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="remote.test.suffix" value="-perf-chart"/>
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+            <path refid="test.classpath"/>
+         </classpath>
+      </java>
    </target>
 
 </project>

@@ -7,9 +7,6 @@
  */
 package org.jboss.jms.perf.framework;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 import javax.jms.Connection;
@@ -45,19 +42,19 @@ public abstract class BaseThroughputJob extends BaseJob
    
    protected int transactionSize;
    
-   protected abstract Servitor createServitor(int numMessages);
+   protected abstract Servitor createServitor(long testTime);
     
-   protected int numMessages;
+   protected long testTime;
    
    Thread[] servitorThreads;
    
    Servitor[] servitors;
    
-   public BaseThroughputJob(String slaveURL, Properties jndiProperties, String destinationName,
+   public BaseThroughputJob(Properties jndiProperties, String destinationName,
          String connectionFactoryJndiName, int numConnections,
-         int numSessions, boolean transacted, int transactionSize, int numMessages)
+         int numSessions, boolean transacted, int transactionSize, long testTime)
    {
-      super(slaveURL, jndiProperties, destinationName, connectionFactoryJndiName);
+      super(jndiProperties, destinationName, connectionFactoryJndiName);
       
       this.numConnections = numConnections;
       
@@ -67,7 +64,7 @@ public abstract class BaseThroughputJob extends BaseJob
       
       this.transactionSize = transactionSize;
       
-      this.numMessages = numMessages;
+      this.testTime = testTime;      
       
       servitorThreads = new Thread[numSessions];      
       
@@ -77,8 +74,7 @@ public abstract class BaseThroughputJob extends BaseJob
    public void initialize() throws PerfException
    {
       try
-      {
-         
+      {         
          super.initialize();
          
          conns = new Connection[numConnections];
@@ -92,7 +88,7 @@ public abstract class BaseThroughputJob extends BaseJob
                
          for (int i = 0; i < numSessions; i++)
          {
-            Servitor servitor = createServitor(numMessages);
+            Servitor servitor = createServitor(testTime);
             
             servitor.init();
             
@@ -106,20 +102,18 @@ public abstract class BaseThroughputJob extends BaseJob
       catch (Exception e)
       {
          log.error("Failed to initialize", e);
+         
          throw new PerfException("Failed to initialize", e);
       }
    }
       
-   public JobResult execute() throws PerfException
+   public ThroughputResult execute() throws PerfException
    {
       try
-      {
-         
+      {         
          log.info("==============Executing job:" + this);
          
-         logInfo();
-         
-         JobResult res = runTest();         
+         ThroughputResult res = runTest();         
          
          tearDown();
          
@@ -133,14 +127,11 @@ public abstract class BaseThroughputJob extends BaseJob
          throw new PerfException("Failed to execute", e);
       }
    }
-   
-     
-   protected JobResult runTest() throws PerfException
+        
+   protected ThroughputResult runTest() throws PerfException
    {
       boolean failed = false;
-            
-      long startTime = System.currentTimeMillis();
-            
+                    
       for (int i = 0; i < numSessions; i++)
       {         
          servitorThreads[i].start();
@@ -158,79 +149,43 @@ public abstract class BaseThroughputJob extends BaseJob
          }
       }
       
-      long endTime = System.currentTimeMillis();
-
-      List throwablesList = new ArrayList();
+      long totalTime = 0;
+      
+      long totalMessages = 0;
       
       for (int i = 0; i < numSessions; i++)
       {
          Servitor servitor = servitors[i];
-         
-         
+                  
          servitor.deInit();
+         
          if (servitor.isFailed())           
          {
-            failed = true;
-            if (servitor.getThrowable() != null)
-            {
-               throwablesList.add(servitor.getThrowable());
-            }
+            failed = true;       
+            
+            break;
          }
-      } 
-      
-      Throwable[] throwables = null;
-      
-      if (!throwablesList.isEmpty())
-      {
-         throwables = new Throwable[throwablesList.size()];
-         
-         Iterator iter = throwablesList.iterator();
-         int i = 0;
-         while (iter.hasNext())
+         else
          {
-            throwables[i++] = (Throwable)iter.next();
-         }         
-      }
+            totalTime += servitor.getTime();
+            
+            totalMessages += servitor.getMessages();
+         }
+      }       
       
       if (failed)
       {
          throw new PerfException("Test failed");
       }
       
-      return new JobResult(startTime, endTime);
+      return new ThroughputResult(totalTime, totalMessages);
    }
-   
-   abstract class AbstractServitor implements Servitor
-   {
-      protected boolean failed; 
-      
-      protected int numMessages;
-      
-      protected Throwable throwable;
-      
-      AbstractServitor(int numMessages)
-      {         
-         this.numMessages = numMessages;
-      }              
-      
-      public boolean isFailed()
-      {
-         return failed;
-      }
-      
-      public Throwable getThrowable()
-      {
-         return throwable;
-      }
-   }
-   
+        
    protected synchronized Connection getNextConnection()
    {
       return conns[connIndex++ % conns.length];
    }
-     
-
-   
+      
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -241,18 +196,6 @@ public abstract class BaseThroughputJob extends BaseJob
       }
    }
    
-
-   protected void logInfo()
-   {
-      super.logInfo();      
-      log.trace("Number of connections: " + numConnections);
-      log.trace("Numbe of concurrent sessions: " + numSessions);
-      log.trace("Transacted?: " + transacted);
-      log.trace("Transaction size: " + transactionSize);
-      log.trace("Num messages:" + numMessages);
-   }
-   
- 
    /**
     * Set the numConnections.
     * 
@@ -274,16 +217,6 @@ public abstract class BaseThroughputJob extends BaseJob
       this.numSessions = numSessions;
    }
 
-
-   /**
-    * Set the numMessages.
-    * 
-    * @param numMessages The numMessages to set.
-    */
-   public void setNumMessages(int numMessages)
-   {
-      this.numMessages = numMessages;
-   }
 
    /**
     * Set the transacted.

@@ -6,7 +6,7 @@
  */
 package org.jboss.jms.perf.framework.persistence;
 
-import org.jboss.jms.perf.framework.data.Benchmark;
+import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.data.Execution;
 
 /**
@@ -20,7 +20,7 @@ import org.jboss.jms.perf.framework.data.Execution;
  */
 public interface PersistenceManager
 {
-   Benchmark getBenchmark(String name);
+   PerformanceTest getPerformanceTest(String name);
    
    void saveExecution(Execution exec);
    

@@ -37,15 +37,15 @@ public class DrainJob extends BaseJob
    
    protected String clientID;
    
-   public DrainJob(String slaveURL, Properties jndiProperties, String destinationName, String connectionFactoryJndiName,
+   public DrainJob(Properties jndiProperties, String destinationName, String connectionFactoryJndiName,
          String subName, String clientID)
    {
-      super(slaveURL, jndiProperties, destinationName, connectionFactoryJndiName);
+      super(jndiProperties, destinationName, connectionFactoryJndiName);
       this.subName = subName;
       this.clientID = clientID;
    }
    
-   public JobResult execute() throws PerfException
+   public ThroughputResult execute() throws PerfException
    { 
       Connection conn = null;
       
