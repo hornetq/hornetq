@@ -401,7 +401,7 @@ public class SimpleReceiver implements Receiver
          this.touple = touple;
       }
 
-      public void afterRollback()
+      public void afterRollback(boolean onePhase)
       {
          
       }
@@ -410,6 +410,31 @@ public class SimpleReceiver implements Receiver
       {
 //       clear the delivery
          touple[1] = null;
+      }
+
+      public void afterCommit(boolean onePhase) throws Exception
+      {
+         
+      }
+
+      public void afterPrepare() throws Exception
+      {
+         
+      }
+
+      public void beforeCommit(boolean onePhase) throws Exception
+      {
+ 
+      }
+
+      public void beforePrepare() throws Exception
+      {
+   
+      }
+
+      public void beforeRollback(boolean onePhase) throws Exception
+      {
+
       }
    }
 }

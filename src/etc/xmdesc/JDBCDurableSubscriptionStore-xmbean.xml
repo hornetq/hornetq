@@ -20,13 +20,13 @@
    </attribute>
 
    <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">
-      <description>The JNDI name of the DataSource used by this transaction log</description>
+      <description>The JNDI name of the DataSource used by this</description>
       <name>DataSource</name>
       <type>java.lang.String</type>
    </attribute>
 
    <attribute access="read-write" getMethod="getTransactionManager" setMethod="setTransactionManager">
-      <description>The ObjectName of the TransactionManager used by this transaction log</description>
+      <description>The ObjectName of the TransactionManager used by this</description>
       <name>TransactionManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>

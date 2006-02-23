@@ -93,20 +93,26 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
       assertEquals(0, pm.getMessageReferenceCount(m.getMessageID()));
 
-      MessageReference ref = ms.reference(m);      
+      MessageReference ref = ms.reference(m);
+      ref.incChannelCount();
+      pm.addReference("channel1", ref, null);
       log.debug("referenced " + m + " using " + ms);
       assertCorrectReference(ref, ms.getStoreID(), m);
       assertEquals(1, pm.getMessageReferenceCount(m.getMessageID()));
 
       // add the same message to the second store
       MessageReference ref2 = ms2.reference(m);
+      ref2.incChannelCount();
+      pm.addReference("channel1", ref2, null);
       log.debug("referenced " + m + " using " + ms2);
       assertCorrectReference(ref2, ms2.getStoreID(), m);
       assertEquals(2, pm.getMessageReferenceCount(m.getMessageID()));
 
-      assertFalse(ref == ref2);
-
-      ref.release();
+      assertFalse(ref == ref2);      
+                  
+      pm.removeReference("channel1", ref, null);
+      
+      ref.decChannelCount();
 
       assertEquals(1, pm.getMessageReferenceCount(m.getMessageID()));
 
@@ -114,12 +120,19 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       // is successful.
 
       ref = ms.reference((String)m.getMessageID());
+      ref.incChannelCount();
       assertCorrectReference(ref, ms.getStoreID(), m);
       
       assertEquals(2, pm.getMessageReferenceCount(m.getMessageID()));
 
-      ref.release();
-      ref2.release();      
+      
+      log.info("ref cc:" + ref.getChannelCount());
+      pm.removeReference("channel1", ref, null);
+      ref.decChannelCount();
+      
+      
+      pm.removeReference("channel1", ref2, null);
+      ref2.decChannelCount();      
 
       assertNull(ms.reference((String)m.getMessageID()));
       assertNull(ms2.reference((String)m.getMessageID()));

@@ -36,7 +36,15 @@ public interface MessageReference extends Routable
 {
    Serializable getStoreID();
    
-   void acquire();
+   void incChannelCount();
    
-   void release();
+   void decChannelCount();   
+   
+   int getChannelCount();
+   
+   void setInStorage(boolean inStorage);
+   
+   boolean isInStorage();
+   
+   MessageReference copy();
 }

@@ -29,7 +29,7 @@ import javax.management.ObjectName;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.message.WeakMessageReference;
+import org.jboss.messaging.core.message.SimpleMessageReference;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.util.Util;
 
@@ -65,6 +65,10 @@ public class PersistentMessageStore extends InMemoryMessageStore
       super(storeID, true);
    }
    
+   /**
+    * Only used for testing. In a real deployment, the persistence manager is
+    * injected as a dependency.
+    */
    public PersistentMessageStore(Serializable storeID, PersistenceManager pm)
    {
       super(storeID, true);
@@ -105,30 +109,8 @@ public class PersistentMessageStore extends InMemoryMessageStore
    {
       return true;
    }
-   
-   public MessageReference reference(Message m)
-   {
-      MessageReference ref = super.reference(m);
-      
-      if (trace) { log.trace(this + " referencing " + m); }
-
-      if (m.isReliable())
-      {         
-         try
-         {
-            storeMessage(m);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to store message", e);
-         }
-         
-         if (trace) { log.trace("stored " + m + " on disk"); }         
-      }
-
-      return ref;
-   }
-
+     
+   //Will disappear once lazy loading is implemented
    public MessageReference reference(String messageID) throws Exception
    {
       if (trace) { log.trace("getting reference for message ID: " + messageID);}
@@ -153,32 +135,17 @@ public class PersistentMessageStore extends InMemoryMessageStore
       if (m != null)
       {
          //Put it in the memory cache
-         super.addMessage(m);
+         MessageHolder holder = super.addMessage(m);
          
-         ref = new WeakMessageReference(m, this);
+         holder.setInStorage(true);
+         
+         ref = new SimpleMessageReference(holder, this);
       }
       
       return ref;      
    }
    
-   public Message retrieveMessage(String messageId) throws Exception
-   {
-      Message m = super.retrieveMessage(messageId);
-      
-      if (m == null)
-      {
-         m = getMessage(messageId);
-         
-         if (m != null)
-         {
-            super.addMessage(m);
-            
-            if (trace) { log.trace("Retreived it from persistent storage:" + m); }    
-         }
-      }
-      
-      return m;      
-   }
+
 
    // Public --------------------------------------------------------
 
@@ -190,45 +157,26 @@ public class PersistentMessageStore extends InMemoryMessageStore
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-    
-   protected void remove(String messageId, boolean reliable) throws Exception
+   
+   protected Message retrieveMessage(String messageId) throws Exception
    {
-      super.remove(messageId, reliable);
-
-      if (reliable)
+      Message m = super.retrieveMessage(messageId);
+      
+      if (m == null)
       {
-         if (trace) { log.trace("removing (or decrementing reference count) " + messageId + " on disk"); }
-         removeMessage(messageId);
-         if (trace) { log.trace(messageId + " removed (or reference count decremented) on disk"); }
+         m = pm.getMessage((Serializable)messageId);
+         
+         if (m != null)
+         {
+            super.addMessage(m);
+            
+            if (trace) { log.trace("Retreived it from persistent storage:" + m); }    
+         }
       }
+      
+      return m;      
    }
-
-   /**
-    * Store the message reliably. If the message doesn't exist in the reliable store, it physically
-    * adds it. Otherwise, it increments the message's reference count.
-    */
-   protected void storeMessage(Message m) throws Exception
-   {
-      pm.storeMessage(m);
-   }
-
-   /**
-    * Removes the message from the reliable store. If the message's reference count is bigger than
-    * one, it just decrements it. If it is 1, it physically removes the message from the store.
-    */
-   protected boolean removeMessage(String messageID) throws Exception
-   {
-      return pm.removeMessage(messageID);
-   }
-
-   /**
-    * Returns the full message corresponding to the given message ID.
-    */
-   protected Message getMessage(Serializable messageID) throws Exception
-   {
-      return pm.getMessage(messageID);
-   }
-
+    
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

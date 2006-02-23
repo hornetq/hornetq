@@ -41,60 +41,15 @@ public interface MessageStore extends ServerPlugin
    public boolean acceptReliableMessages();
 
    /**
-    * Creates a new MessageReference that reference Message m
-    * If the Message m is already stored in the message store then a new
-    * MessageReference instance is created pointing at the existing Message.
-    * If the Message m is not already stored in the message store then it is stored
-    * before a new MessageReference instance is created pointing at the existing Message.
-    * The reference count for the Message m is increased by one.
+    * Creates a MessageReference that reference Message m
+    * if it doesn't already have one
     *
     * @param m The Message for which to create the MessageReference
     * @return The new MessageReference
     */
    MessageReference reference(Message m);
 
-   /**
-    * Create a new MessageReference that references the Message identified
-    * by messageID.
-    * The Message identified by messageID must already exist in the message store,
-    * if not null is returned
-    *
-    * @param messageID The id of the message
-    * @return The new MessageReference instance or null if the message is not already in the store
-    * @throws Exception
-    */
+   //This will disappear once lazy loading is done
    MessageReference reference(String messageID) throws Exception;
-
-   /**
-    * Create a new MessageReference instance as a shallow copy of MessageReference other.
-    * Each channel should store it's own MessageReference instances, therefore references
-    * are copied using this method when handled by a channel.
-    * @param other The other MessageReference
-    * @return The new MessageReference
-    */
-   MessageReference reference(MessageReference other);
-
-   /**
-    * Retreive a message from the store
-    * @param messageId Id of the message to retrieve
-    * @return The Message
-    * @throws Exception
-    */
-   Message retrieveMessage(String messageId) throws Exception;
-
-   /**
-    * Acquire a reference
-    *
-    * @param ref
-    * @throws Exception
-    */
-   void acquireReference(MessageReference ref) throws Exception;
-
-   /**
-    * Release a reference
-    * @param ref
-    * @throws Exception
-    */
-   void releaseReference(MessageReference ref) throws Exception;
 
 }

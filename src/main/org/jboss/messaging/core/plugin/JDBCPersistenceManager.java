@@ -1,30 +1,29 @@
 /*
-  * JBoss, Home of Professional Open Source
-  * Copyright 2005, JBoss Inc., and individual contributors as indicated
-  * by the @authors tag. See the copyright.txt in the distribution for a
-  * full listing of individual contributors.
-  *
-  * This is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU Lesser General Public License as
-  * published by the Free Software Foundation; either version 2.1 of
-  * the License, or (at your option) any later version.
-  *
-  * This software is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this software; if not, write to the Free
-  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  */
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.messaging.core.plugin;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,7 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -50,7 +49,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
@@ -59,8 +57,8 @@ import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.tx.XidImpl;
-import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.tm.TransactionManagerServiceMBean;
 import org.jboss.util.id.GUID;
@@ -78,18 +76,10 @@ import org.jboss.util.id.GUID;
 public class JDBCPersistenceManager extends ServiceMBeanSupport implements PersistenceManager
 {
    // Constants -----------------------------------------------------
-
-   /* The default DML and DDL will work with HSQLDB */
+   
+   /* The default DML and DDL works with HSQLDB */
    
    private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class);
-   
-   protected static final int BYTES_AS_OBJECT = 0;
-
-   protected static final int BYTES_AS_BYTES = 1;
-
-   protected static final int BYTES_AS_BINARY_STREAM = 2;
-
-   protected static final int BYTES_AS_BLOB = 3; 
    
    protected String insertMessageRef =
       "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE, ORD) " +
@@ -101,7 +91,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String updateMessageRef =
       "UPDATE MESSAGE_REFERENCE SET TRANSACTIONID=?, STATE='-' " +
       "WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
-
+   
    protected String commitMessageRef1 =
       "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='+' AND TRANSACTIONID=?";
    
@@ -113,15 +103,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected String rollbackMessageRef2 =
       "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='-' AND TRANSACTIONID=?";
-      
-   protected String rollbackNonPreparedTx1 =
-      "DELETE FROM MESSAGE_REFERENCE WHERE STATE='+' AND TRANSACTIONID IN (SELECT TRANSACTIONID FROM TRANSACTION WHERE STATE IS NULL)";
-   
-   protected String rollbackNonPreparedTx2 =
-      "UPDATE MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='-' AND TRANSACTIONID IN (SELECT TRANSACTIONID FROM TRANSACTION WHERE STATE IS NULL)";
-         
-   protected String deleteNonPreparedTx = 
-      "DELETE FROM TRANSACTION WHERE STATE IS NULL";
    
    protected String deleteChannelMessageRefs =
       "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=?";
@@ -132,10 +113,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String createTransaction =
       "CREATE TABLE TRANSACTION (" +
       "TRANSACTIONID BIGINT GENERATED BY DEFAULT AS IDENTITY, " +
-      "BRANCH_QUAL OBJECT, " +
+      "BRANCH_QUAL VARBINARY(254), " +
       "FORMAT_ID INTEGER, " +
-      "GLOBAL_TXID OBJECT, " +
-      "STATE CHAR(1), " +
+      "GLOBAL_TXID VARBINARY(254), " +      
       "PRIMARY KEY (TRANSACTIONID))";
    
    protected String createMessageReference =
@@ -147,26 +127,19 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "STATE CHAR(1), " +
       "ORD BIGINT, " +
       "PRIMARY KEY(STOREID, CHANNELID, MESSAGEID))";
-
-   protected String insertTransactionXA =
-      "INSERT INTO TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID, STATE) " +
-      "VALUES(?, ?, ?, ?, 'U')";
    
-   protected String prepareTransaction =
-      "UPDATE TRANSACTION SET STATE = 'P' WHERE TRANSACTIONID = ?";
-
    protected String insertTransaction =
-      "INSERT INTO TRANSACTION (TRANSACTIONID) VALUES (?)";
+      "INSERT INTO TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
+      "VALUES(?, ?, ?, ?)";
    
    protected String deleteTransaction =
       "DELETE FROM TRANSACTION WHERE TRANSACTIONID = ?";
    
    protected String selectPreparedTransactions =
-      "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM TRANSACTION " +
-      "WHERE STATE='P'";
+      "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM TRANSACTION";
    
    protected String createIdxMessageRefTx = "CREATE INDEX MESSAGE_REF_TX ON MESSAGE_REFERENCE (STATE, TRANSACTIONID)";
-
+   
    protected String selectTransactionId = "CALL IDENTITY()";
    
    protected String insertMessage =
@@ -190,10 +163,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "JMSPROPERTIES, " +
       "REFERENCECOUNT) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+   
    protected String deleteMessage =
       "DELETE FROM MESSAGE WHERE MESSAGEID=?";
-
+   
    protected String selectMessage =
       "SELECT " +
       "MESSAGEID, " +
@@ -215,7 +188,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "JMSPROPERTIES, " +
       "REFERENCECOUNT " +
       "FROM MESSAGE WHERE MESSAGEID = ?";
-
+   
    protected String createMessage =
       "CREATE TABLE MESSAGE (" +
       "MESSAGEID VARCHAR(255), " +
@@ -237,10 +210,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "JMSPROPERTIES OBJECT, " +
       "REFERENCECOUNT TINYINT, " +
       "PRIMARY KEY (MESSAGEID))";
-
+   
    protected String selectReferenceCount =
       "SELECT REFERENCECOUNT FROM MESSAGE WHERE MESSAGEID = ?";
-
+   
    protected String updateReferenceCount =
       "UPDATE MESSAGE SET REFERENCECOUNT=? WHERE MESSAGEID=?";
    
@@ -249,26 +222,26 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    // Attributes ----------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
-
+   
    protected String dataSourceJNDIName;
    protected DataSource ds;
    protected ObjectName tmObjectName;
    protected TransactionManager tm;
-
-   protected boolean storeXid;
+   
    protected int bytesStoredAs;
    protected Properties sqlProperties;
    protected boolean createTablesOnStartup;
    protected boolean txIdGUID;
-   protected boolean performRecovery;
+   protected boolean useBatchUpdates;
+   
    
    // Constructors --------------------------------------------------
-
+   
    public JDBCPersistenceManager() throws Exception
    {
       this(null, null);
    }
-
+   
    /**
     * Only used for testing. In a real deployment, the data source and the transaction manager are
     * injected as dependencies.
@@ -277,12 +250,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       this.ds = ds;
       this.tm = tm;
-      bytesStoredAs = BYTES_AS_BYTES;
       sqlProperties = new Properties();
    }
-
+   
    // ServiceMBeanSupport overrides ---------------------------------
-
+   
    protected void startService() throws Exception
    {
       if (ds == null)
@@ -291,349 +263,140 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          ds = (DataSource)ic.lookup(dataSourceJNDIName);
          ic.close();
       }
-
+      
       if (ds == null)
       {
          throw new Exception("No DataSource found. This service dependencies must " +
-                             "have not been enforced correctly!");
+         "have not been enforced correctly!");
       }
       if (tm == null)
       {
          throw new Exception("No TransactionManager found. This service dependencies must " +
-                             "have not been enforced correctly!");
+         "have not been enforced correctly!");
       }
-
+      
       initSqlProperties();
-
+      
       if (createTablesOnStartup)
       {
          createSchema();
       }
-
-      if (performRecovery)
-      {
-         resolveAllUncommitedTXs();
-      }
-
+      
       log.debug(this + " started");
    }
-
+   
    protected void stopService() throws Exception
    {
       log.debug(this + " stopped");
    }
-
+   
    // PesistenceManager implementation -------------------------
-
+   
    public Object getInstance()
    {
       return this;
    }
-
-   /**
-    * We add the message reference in a JDBC transaction (which may in turn be inside a JMS
-    * transaction).
-    */
+   
    public void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception
    {
-      TransactionWrapper wrap = new TransactionWrapper();
-      Connection conn = ds.getConnection();
-      try
-      {
-         //Add the reference
-         addReference(channelID, ref, tx, conn);
+      if (tx != null)
+      {         
+         //In a tx so we just add the ref in the tx in memory for now
+         
+         TransactionCallback callback = getCallback(tx);
+         
+         callback.addReferenceToAdd((String)channelID, ref);
       }
-      catch (Exception e)
+      else
       {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (conn != null)
+         //No tx so add the ref directly in the db in it's own jdbc tx
+         
+         TransactionWrapper wrap = new TransactionWrapper();
+         
+         Connection conn = ds.getConnection();
+         try
          {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {               
-            }
+            //Add the reference
+            addReference(channelID, ref, conn);                            
          }
-         wrap.end();
+         catch (Exception e)
+         {
+            wrap.exceptionOccurred();
+            throw e;
+         }
+         finally
+         {
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (Throwable t)
+               {               
+               }
+            }
+            wrap.end();
+         }
       }
    }
-    
-   /*
-    * A message is being acknowledged.
-    * We remove the message reference in a JDBC transaction (which may in turn be inside a JMS transaction)
-    */
+   
    public void removeReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception
    {
-      TransactionWrapper wrap = new TransactionWrapper();
-      Connection conn = ds.getConnection();
-      try
-      {
-         //Remove the message reference
-         removeReference(channelID, ref, tx, conn);
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {               
-            }
-         }
-         wrap.end();
-      }
-   }
-
-   /*
-    * We have prepared the transaction so we write a flag into the transaction record saying this is so
-    */
-   public void prepareTx(Transaction tx) throws Exception
-   {
-      if (!storeXid || tx.getXid() == null)
-      {
-         return;
-      }
-      
-      if (trace) { log.trace("writing prepared flag for " + tx); }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      try
-      {
-         conn = ds.getConnection();
-
-         ps = conn.prepareStatement(prepareTransaction);
-         
-         if (tx.getGuidTxId() != null)
-         {
-            ps.setString(1, tx.getGuidTxId());
-         }
-         else
-         {
-            ps.setLong(1, tx.getLongTxId());
-         }
-                  
-         int rows = ps.executeUpdate();
-
-         if (trace) { log.trace(JDBCUtil.statementToString(prepareTransaction, getTxId(tx)) + " updated " + rows + " row(s)"); }
-                    
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
+      if (tx != null)
       {         
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         wrap.end();
-      }
-      
-   }
-   
-   /*
-    * The jms transaction is committing.
-    * We needs to remove any message refs marked as "-" and update any message refs marked as "+" to "C"
-    */
-   public void commitTx(Transaction tx) throws Exception
-   {
-      if (trace) { log.trace("updating database for committing transaction " + tx); }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      try
-      {
-         conn = ds.getConnection();
-
-         ps = conn.prepareStatement(commitMessageRef1);
-         if (tx.getGuidTxId() != null)
-         {
-            ps.setString(1, tx.getGuidTxId());
-         }
-         else
-         {
-            ps.setLong(1, tx.getLongTxId());
-         }
+         //In a tx so we just add the ref in the tx in memory for now
          
-         int rows = ps.executeUpdate();
-
-         if (trace) { log.trace(JDBCUtil.statementToString(commitMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
-                  
-         ps.close();
-         ps = conn.prepareStatement(commitMessageRef2);
-
-         if (tx.getGuidTxId() != null)
-         {
-            ps.setString(1, tx.getGuidTxId());
-         }
-         else
-         {
-            ps.setLong(1, tx.getLongTxId());
-         }
+         TransactionCallback callback = getCallback(tx);
          
-         rows = ps.executeUpdate();
-
-         if (trace) { log.trace(JDBCUtil.statementToString(commitMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
-
-         removeTXRecord(conn, tx);
+         callback.addReferenceToRemove((String)channelID, ref);
       }
-      catch (Exception e)
+      else
       {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {         
-         if (ps != null)
+         //No tx so we remove the reference directly from the db
+         
+         TransactionWrapper wrap = new TransactionWrapper();
+         Connection conn = ds.getConnection();
+         try
          {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {}
+            //Remove the message reference
+            removeReference(channelID, ref, conn);            
          }
-         if (conn != null)
+         catch (Exception e)
          {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {}
+            wrap.exceptionOccurred();
+            throw e;
          }
-         wrap.end();
+         finally
+         {
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (Throwable t)
+               {               
+               }
+            }
+            wrap.end();
+         }
       }
    }
    
-   /*
-    * The jms transaction is rolling back.
-    * We needs to remove any message refs marked as '+'
-    * and update any message refs marked as "-" to "C"
-    */
-   public void rollbackTx(Transaction tx) throws Exception
-   {
-      if (trace) { log.trace("rolling back " + tx); }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      try
-      {
-         conn = ds.getConnection();
-
-         ps = conn.prepareStatement(rollbackMessageRef1);
-         
-         if (tx.getGuidTxId() != null)
-         {
-            ps.setString(1, tx.getGuidTxId());
-         }
-         else
-         {
-            ps.setLong(1, tx.getLongTxId());
-         }
-         
-         int rows = ps.executeUpdate();
-         
-         if (trace) { log.trace(JDBCUtil.statementToString(rollbackMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
-         
-         ps.close();
-         
-         ps = conn.prepareStatement(rollbackMessageRef2);
-         if (tx.getGuidTxId() != null)
-         {
-            ps.setString(1, tx.getGuidTxId());
-         }
-         else
-         {
-            ps.setLong(1, tx.getLongTxId());
-         }
-         
-         rows = ps.executeUpdate();
-         
-         if (trace) { log.trace(JDBCUtil.statementToString(rollbackMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
-                  
-         removeTXRecord(conn, tx);
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {         
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         wrap.end();
-      }
-   }
-   
-
    public void removeAllMessageData(Serializable channelID) throws Exception
    {
       if (trace) { log.trace("removing all message data for channel " + channelID); }
-
+      
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
       boolean success = false;
-
+      
       try
       {
          conn = ds.getConnection();         
-   
+         
          ps = conn.prepareStatement(deleteChannelMessageRefs);
          
          ps.setString(1, (String)channelID);
@@ -674,7 +437,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }
    }
-
+   
    public List messageRefs(Serializable storeID, Serializable channelID) throws Exception
    {
       if (trace) { log.trace("getting message references for channel " + channelID + " and store " + storeID); }
@@ -682,18 +445,18 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       PreparedStatement ps = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-
+      
       try
       {
          List result = new ArrayList();
          conn = ds.getConnection();         
-   
+         
          ps = conn.prepareStatement(selectChannelMessageRefs);
          ps.setString(1, (String)channelID);
          ps.setString(2, (String)storeID);
          
          rs = ps.executeQuery();
-
+         
          while (rs.next())
          {
             String id = rs.getString(1);            
@@ -701,7 +464,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
          
          if (trace) { log.trace(JDBCUtil.statementToString(selectChannelMessageRefs, channelID) + " selected " + result.size() + " row(s)"); }
-
+         
          return result;
       }
       catch (Exception e)
@@ -741,19 +504,14 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }
    }
-
+   
    public List retrievePreparedTransactions() throws Exception
    {
-      if (!storeXid)
-      {
-         return Collections.EMPTY_LIST;
-      }
-      
       Connection conn = null;
       Statement st = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-
+      
       try
       {
          List transactions = new ArrayList();
@@ -764,16 +522,16 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          while (rs.next())
          {            
-            byte[] branchQual = this.getBytes(rs, 2, 0);
+            byte[] branchQual = rs.getBytes(2);
             int formatId = rs.getInt(3);
-            byte[] globalTxId = this.getBytes(rs, 4, 0);
+            byte[] globalTxId = rs.getBytes(4);
             Xid xid = new XidImpl(branchQual, formatId, globalTxId);
             
             transactions.add(xid);
          }
          
          return transactions;
-      
+         
       }
       catch (Exception e)
       {
@@ -812,8 +570,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }   
    }
-   
-   
+      
    public boolean isTxIdGUID() throws Exception
    {
       return txIdGUID;
@@ -824,258 +581,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       txIdGUID = isGUID;
    }
    
-   public boolean isStoringXid() throws Exception
-   {
-      return storeXid;
-   }
-   
-   public void setStoringXid(boolean storingXid) throws Exception
-   {
-      storeXid = storingXid;
-   }
-   
-   /**
-    * Stores the message in the MESSAGE table.
-    */
-   public void storeMessage(Message m) throws Exception
-   {
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-      String id = (String)m.getMessageID();
-
-      try
-      {
-         conn = ds.getConnection();
-
-         // get the reference count from the database
-         // TODO Probably this can be done smarter than that incrementing directly in the database
-         ps = conn.prepareStatement(selectReferenceCount);
-         ps.setString(1, id);
-
-         int referenceCount = 0;
-         ResultSet rs = ps.executeQuery();
-         if (rs.next())
-         {
-            referenceCount = rs.getInt(1);
-         }
-
-         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, id) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
-
-         if (referenceCount == 0)
-         {
-            // physically insert the row in the database
-
-            //First set the fields from org.jboss.messaging.core.Routable
-            ps = conn.prepareStatement(insertMessage);
-            ps.setString(1, id);
-            ps.setString(2, m.isReliable() ? "Y" : "N");
-            ps.setLong(3, m.getExpiration());
-            ps.setLong(4, m.getTimestamp());
-            ps.setByte(5, m.getPriority());
-            ps.setInt(6, m.getDeliveryCount());
-
-            ps.setObject(7, ((MessageSupport)m).getHeaders());
-
-            //Now set the fields from org.jboss.messaging.core.Message
-            ps.setObject(8, m.getPayload());
-
-            //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
-            int type = -1;
-            String jmsType = null;
-            Object correlationID = null;
-            boolean destIsQueue = false;
-            String dest = null;
-            boolean replyToIsQueue = false;
-            String replyTo = null;
-            Map jmsProperties = null;
-            int connectionID = -1;
-
-            if (m instanceof JBossMessage)
-            {
-               JBossMessage jbm = (JBossMessage)m;
-               type = jbm.getType();
-               jmsType = jbm.getJMSType();
-               connectionID = jbm.getConnectionID();
-
-               if (jbm.isCorrelationIDBytes())
-               {
-                  correlationID = jbm.getJMSCorrelationIDAsBytes();
-               }
-               else
-               {
-                  correlationID = jbm.getJMSCorrelationID();
-               }
-
-               Destination d = jbm.getJMSDestination();
-               if (d != null)
-               {
-                  destIsQueue = d instanceof Queue;
-                  if (destIsQueue)
-                  {
-                     dest = ((Queue)d).getQueueName();
-                  }
-                  else
-                  {
-                     dest = ((Topic)d).getTopicName();
-                  }
-               }
-
-               Destination r = jbm.getJMSReplyTo();
-               if (r != null)
-               {
-                  replyToIsQueue = r instanceof Queue;
-                  if (replyToIsQueue)
-                  {
-                     replyTo = ((Queue)r).getQueueName();
-                  }
-                  else
-                  {
-                     replyTo = ((Topic)r).getTopicName();
-                  }
-               }
-               jmsProperties = jbm.getJMSProperties();
-            }
-
-            ps.setInt(9, type);
-            ps.setString(10, jmsType);
-            ps.setObject(11, correlationID);
-            ps.setString(12, destIsQueue ? "Y" : "N");
-            ps.setString(13, dest);
-            ps.setString(14, replyToIsQueue ? "Y" : "N");
-            ps.setString(15, replyTo);
-            ps.setInt(16, connectionID);
-            ps.setObject(17, jmsProperties);
-            ps.setInt(18, 1);
-
-            int result = ps.executeUpdate();
-            if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
-         }
-         else
-         {
-            // increment the reference count
-            ps = conn.prepareStatement(updateReferenceCount);
-            ps.setInt(1, ++referenceCount);
-            ps.setString(2, id);
-
-            ps.executeUpdate();
-            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), id) + " executed successfully"); }
-         }
-      }
-      catch (Exception e)
-      {
-         if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " failed"); }
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-        wrap.end();
-      }
-   }
-
-   /**
-    * Removes the message from the MESSAGE table.
-    */
-   public boolean removeMessage(String messageID) throws Exception
-   {
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      try
-      {
-         conn = ds.getConnection();
-
-         // get the reference count from the database
-         ps = conn.prepareStatement(selectReferenceCount);
-         ps.setString(1, messageID);
-
-         //TODO this can be combined into one query
-         int referenceCount = 0;
-         ResultSet rs = ps.executeQuery();
-         if (rs.next())
-         {
-            referenceCount = rs.getInt(1);
-         }
-
-         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, messageID) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
-
-         if (referenceCount == 0)
-         {
-            if (trace) { log.trace("no message " + messageID + " to delete in the database"); }
-            return false;
-         }
-         else if (referenceCount == 1)
-         {
-            // physically delete the row in the database
-            ps = conn.prepareStatement(deleteMessage);
-            ps.setString(1, messageID);
-
-            int rows = ps.executeUpdate();
-            if (trace) { log.trace(JDBCUtil.statementToString(deleteMessage, messageID) + " deleted " + rows + " row(s)"); }
-
-            return rows == 1;
-         }
-         else
-         {
-            // decrement the reference count
-            ps = conn.prepareStatement(updateReferenceCount);
-            ps.setInt(1, --referenceCount);
-            ps.setString(2, messageID);
-
-            ps.executeUpdate();
-            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), messageID) + " executed successfully"); }
-            return true;
-         }
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {}
-         }
-         wrap.end();
-     }
-   }
-
    /**
     * Retrieves the message from the MESSAGE table and <i>increments the reference count</i> if
     * required.
@@ -1086,56 +591,56 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       PreparedStatement ps = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-
+      
       try
       {
          Message m = null;
          int referenceCount = 0;
          conn = ds.getConnection();
-
+         
          ps = conn.prepareStatement(selectMessage);
          ps.setString(1, (String)messageID);
-
+         
          rs = ps.executeQuery();
-
+         
          int count = 0;
          if (rs.next())
          {           
             m = MessageFactory.createMessage(rs.getString(1), //message id
-                                      rs.getString(2).equals("Y"), //reliable
-                                      rs.getLong(3), //expiration
-                                      rs.getLong(4), //timestamp
-                                      rs.getByte(5), //priority
-                                      rs.getInt(6), //delivery count
-                                      (Map)rs.getObject(7), //core headers
-                                      (Serializable)rs.getObject(8), //payload
-                                      rs.getByte(9), //type
-                                      rs.getString(10), //jms type
-                                      rs.getObject(11), //correlation id
-                                      rs.getString(12).equals("Y"), //destination is queue
-                                      rs.getString(13), //destination
-                                      rs.getString(14).equals("Y"), //reply to is queue
-                                      rs.getString(15), //reply to
-                                      rs.getInt(16), // connection id
-                                      (Map)rs.getObject(17)); // jms properties
-
+                  rs.getString(2).equals("Y"), //reliable
+                  rs.getLong(3), //expiration
+                  rs.getLong(4), //timestamp
+                  rs.getByte(5), //priority
+                  rs.getInt(6), //delivery count
+                  (Map)rs.getObject(7), //core headers
+                  (Serializable)rs.getObject(8), //payload
+                  rs.getByte(9), //type
+                  rs.getString(10), //jms type
+                  rs.getObject(11), //correlation id
+                  rs.getString(12).equals("Y"), //destination is queue
+                  rs.getString(13), //destination
+                  rs.getString(14).equals("Y"), //reply to is queue
+                  rs.getString(15), //reply to
+                  rs.getInt(16), // connection id
+                  (Map)rs.getObject(17)); // jms properties
+            
             referenceCount = rs.getInt(18);
             count ++;
          }
-
+         
          if (trace) { log.trace(JDBCUtil.statementToString(selectMessage, messageID) + " selected " + count + " row(s)"); }
-
+         
          if (m != null)
          {
             // increment the reference count
             ps = conn.prepareStatement(updateReferenceCount);
             ps.setInt(1, ++referenceCount);
             ps.setString(2, (String)m.getMessageID());
-
+            
             ps.executeUpdate();
             if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), m.getMessageID()) + " executed successfully"); }
          }
-
+         
          return m;
       }
       catch (Exception e)
@@ -1175,31 +680,31 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }
    }
-
+   
    public int getMessageReferenceCount(Serializable messageID) throws Exception
    {
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-
+      
       try
       {
          conn = ds.getConnection();
-
+         
          ps = conn.prepareStatement(selectReferenceCount);
          ps.setString(1, (String)messageID);
-
+         
          rs = ps.executeQuery();
-
+         
          int count = 0;
          if (rs.next())
          {
             count = rs.getInt(1);
          }
-
+         
          if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, messageID) + " returned " + (count == 0 ? "no rows" : Integer.toString(count))); }
-
+         
          return count;
       }
       catch (Exception e)
@@ -1240,9 +745,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
-
+   
    // Public --------------------------------------------------------
-
+   
    /**
     * Managed attribute.
     */
@@ -1250,7 +755,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       this.dataSourceJNDIName = dataSourceJNDIName;
    }
-
+   
    /**
     * Managed attribute.
     */
@@ -1258,21 +763,21 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       return dataSourceJNDIName;
    }
-
+   
    /**
     * Managed attribute.
     */
    public void setTransactionManager(ObjectName tmObjectName) throws Exception
    {
       this.tmObjectName = tmObjectName;
-
+      
       TransactionManagerServiceMBean tms =
          (TransactionManagerServiceMBean)MBeanServerInvocationHandler.
          newProxyInstance(getServer(), tmObjectName, TransactionManagerServiceMBean.class, false);
-
+      
       tm = tms.getTransactionManager();
    }
-
+   
    /**
     * Managed attribute.
     */
@@ -1280,7 +785,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       return tmObjectName;
    }
-
+   
    public String getSqlProperties()
    {
       try
@@ -1294,7 +799,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          return "";
       }
    }
-
+   
    public void setSqlProperties(String value)
    {
       try
@@ -1312,21 +817,35 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       sqlProperties = new Properties(props);
    }
-
+   
    public String toString()
    {
       return "JDBCPersistenceManager[" + Integer.toHexString(hashCode()) + "]";
    }
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+   
+   protected TransactionCallback getCallback(Transaction tx)
+   {
+      TransactionCallback callback = (TransactionCallback)tx.getKeyedCallback(this);
+      
+      if (callback == null)
+      {
+         callback = new TransactionCallback(tx);
+         
+         tx.addKeyedCallback(callback, this);
+      }
+      
+      return callback;
+   }
    
    protected void createSchema() throws Exception
    {
       Connection conn = null;
       TransactionWrapper tx = new TransactionWrapper();
-
+      
       try
       {
          conn = ds.getConnection();
@@ -1340,7 +859,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          {
             log.debug(createTransaction + " failed!", e);
          }
-                   
+         
          try
          {
             conn.createStatement().executeUpdate(createMessageReference);
@@ -1350,7 +869,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          {
             log.debug(createMessageReference + " failed!", e);
          }
-
+         
          try
          {
             conn.createStatement().executeUpdate(createIdxMessageRefTx);
@@ -1395,59 +914,43 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       selectChannelMessageRefs = sqlProperties.getProperty("SELECT_CHANNEL_MESSAGE_REFS", selectChannelMessageRefs);
       createTransaction = sqlProperties.getProperty("CREATE_TRANSACTION", createTransaction);
       createMessageReference = sqlProperties.getProperty("CREATE_MESSAGE_REF", createMessageReference);      
-      insertTransactionXA = sqlProperties.getProperty("INSERT_TRANSACTION_XA", insertTransactionXA);
       insertTransaction = sqlProperties.getProperty("INSERT_TRANSACTION", insertTransaction);
       deleteTransaction = sqlProperties.getProperty("DELETE_TRANSACTION", deleteTransaction); 
       selectPreparedTransactions = sqlProperties.getProperty("SELECT_XA_TRANSACTIONS", selectPreparedTransactions);
       createIdxMessageRefTx = sqlProperties.getProperty("CREATE_IDX_MESSAGE_REF_TX", createIdxMessageRefTx);      
-      selectTransactionId = sqlProperties.getProperty("SELECT_TX_ID", selectTransactionId);   
-      prepareTransaction = sqlProperties.getProperty("PREPARE_TX", prepareTransaction);    
+      selectTransactionId = sqlProperties.getProperty("SELECT_TX_ID", selectTransactionId);     
       commitMessageRef1 = sqlProperties.getProperty("COMMIT_MESSAGE_REF1", commitMessageRef1);
       commitMessageRef2 = sqlProperties.getProperty("COMMIT_MESSAGE_REF2", commitMessageRef2);
       rollbackMessageRef1 = sqlProperties.getProperty("ROLLBACK_MESSAGE_REF1", rollbackMessageRef1);
       rollbackMessageRef2 = sqlProperties.getProperty("ROLLBACK_MESSAGE_REF2", rollbackMessageRef2);      
-      rollbackNonPreparedTx1 = sqlProperties.getProperty("ROLLBACK_TX1", rollbackNonPreparedTx1);
-      rollbackNonPreparedTx2 = sqlProperties.getProperty("ROLLBACK_TX2", rollbackNonPreparedTx2);
-      deleteNonPreparedTx = sqlProperties.getProperty("DELETE_TX", deleteNonPreparedTx);
       deleteMessage = sqlProperties.getProperty("DELETE_MESSAGE", deleteMessage);
       insertMessage = sqlProperties.getProperty("INSERT_MESSAGE", insertMessage);
       selectMessage = sqlProperties.getProperty("SELECT_MESSAGE", selectMessage);            
       createMessage = sqlProperties.getProperty("CREATE_MESSAGE", createMessage);
       selectReferenceCount = sqlProperties.getProperty("SELECT_REF_COUNT", selectReferenceCount);
       updateReferenceCount = sqlProperties.getProperty("UPDATE_REF_COUNT", updateReferenceCount); 
-            
+      
+      //FIXME - Why isn't this configured as a boolean MBean attribute???
       createTablesOnStartup = sqlProperties.getProperty("CREATE_TABLES_ON_STARTUP", "true").equalsIgnoreCase("true");      
-      storeXid = sqlProperties.getProperty("STORE_XID", "true").equalsIgnoreCase("true");
-
+      
       //txIdGUID has its own variable and mutator so storing it here is confusing and error prone.
       //txIdGUID = sqlProperties.getProperty("TX_ID_IS_GUID", "false").equalsIgnoreCase("true");
-      performRecovery = sqlProperties.getProperty("PERFORM_NONXA_RECOVERY", "false").equalsIgnoreCase("true");
-   }
-   
-   protected void insertTx(Connection conn, Transaction tx) throws Exception
-   {
-      if (tx != null && !tx.insertedTXRecord())
-      {
-         addTXRecord(conn, tx);
-      }
    }
    
    protected void addTXRecord(Connection conn, Transaction tx) throws Exception
    {
-      if (trace) { log.trace("logging " + tx);}
-
+      if (trace) { log.trace("Inserting tx record for " + tx);}
+      
       PreparedStatement ps = null;
       String statement = "UNDEFINED";
       ResultSet rs = null;
-      boolean xa = false;
       int rows = -1;
       int formatID = -1;
       String txID = null;
       try
       {
-         xa = storeXid && tx.getXid() != null;
-         statement = xa ? insertTransactionXA : insertTransaction;
-
+         statement = insertTransaction;
+         
          ps = conn.prepareStatement(statement);
          
          if (txIdGUID)
@@ -1455,6 +958,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             txID = new GUID().toString();
             tx.setGuidTxID(txID);
             ps.setString(1, txID);
+            if (trace) { log.trace("Set GUID tx id for " + tx);}
          }
          else
          {
@@ -1462,45 +966,38 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             ps.setNull(1, Types.BIGINT);
          }
          
-         if (xa)
-         {
-            Xid xid = tx.getXid();
-            formatID = xid.getFormatId();
-            this.setBytes(ps, 2, xid.getBranchQualifier());
-            ps.setInt(3, formatID);
-            this.setBytes(ps, 4, xid.getGlobalTransactionId());
-         }
-
+         Xid xid = tx.getXid();
+         formatID = xid.getFormatId();
+         ps.setBytes(2, xid.getBranchQualifier());
+         ps.setInt(3, formatID);
+         ps.setBytes(4, xid.getGlobalTransactionId());
+         
          rows = ps.executeUpdate();
          
          if (!txIdGUID)
          {
             long ltxID = Long.MIN_VALUE;
-            try
-            {
-               ps.close();
-               ps = conn.prepareStatement(selectTransactionId);
-               rs = ps.executeQuery();
-               rs.next();
-               ltxID = rs.getLong(1);
-               tx.setLongTxId(ltxID);
-            }
-            finally
-            {
-               if (trace) { log.trace(selectTransactionId + (ltxID == Long.MIN_VALUE ? " failed!" : " returned " + txID)); }
-            }
-         }
+            
+            ps.close();
+            ps = conn.prepareStatement(selectTransactionId);
+            rs = ps.executeQuery();
+            rs.next();
+            ltxID = rs.getLong(1);
+            
+            if (trace) { log.trace("Selected tx id: " + ltxID);}
+            
+            tx.setLongTxId(ltxID);            
+         }                           
       }
       finally
       {
          if (trace)
          {
-            String s = insertTransaction.equals(statement) ?
-               JDBCUtil.statementToString(insertTransaction, txID) :
-               JDBCUtil.statementToString(insertTransactionXA, getTxId(tx), "<byte-array>", new Integer(formatID), "<byte-array>");
+            String s = 
+               JDBCUtil.statementToString(insertTransaction, getTxId(tx), "<byte-array>", new Integer(formatID), "<byte-array>");
             log.trace(s + (rows == -1 ? " failed!" : " inserted " + rows + " row(s)"));
          }
-
+         
          try
          {
             if (rs != null)
@@ -1518,7 +1015,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
       }
    }
-
+   
    protected void removeTXRecord(Connection conn, Transaction tx) throws SQLException
    {
       PreparedStatement ps = null;
@@ -1535,12 +1032,12 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
          
          int rows = ps.executeUpdate();
-
+         
          
          if (trace)
          {
             log.trace(JDBCUtil.statementToString(deleteTransaction, getTxId(tx)) + " removed " + rows + " row(s)"); 
-           
+            
          }
       }
       finally
@@ -1558,60 +1055,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
       }
    }
-   
-   protected void setBytes(PreparedStatement stmt, int column, byte[] bytes)
-      throws IOException, SQLException
-   {
-      if (bytesStoredAs == BYTES_AS_OBJECT)
-      {
-         stmt.setObject(column, bytes);
-      }
-      else if (bytesStoredAs == BYTES_AS_BLOB)
-      {
-         throw new NotYetImplementedException("BLOB_TYPE: BLOB_BLOB is not yet implemented.");
-      }
-      else if (bytesStoredAs == BYTES_AS_BYTES)
-      {
-         stmt.setBytes(column, bytes);
-      }
-      else if (bytesStoredAs == BYTES_AS_BINARY_STREAM)
-      {
-         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-         stmt.setBinaryStream(column, bais, bytes.length);
-      }
-   }
-   
-   protected byte[] getBytes(ResultSet res, int column, int initSize)
-      throws IOException, SQLException
-   {
-      byte[] bytes = null;
-      if (bytesStoredAs == BYTES_AS_OBJECT)
-      {
-         bytes = (byte[])res.getBytes(column);
-      }
-      else if (bytesStoredAs == BYTES_AS_BLOB)
-      {
-         throw new NotYetImplementedException("BLOB_TYPE: BLOB_BLOB is not yet implemented.");
-      }
-      else if (bytesStoredAs == BYTES_AS_BYTES)
-      {
-         bytes = res.getBytes(column);
-      }
-      else if (bytesStoredAs == BYTES_AS_BINARY_STREAM)
-      {
-         InputStream is = res.getBinaryStream(column);
-         ByteArrayOutputStream bos = new ByteArrayOutputStream(initSize);
-         int b;
-         while ((b = is.read()) != -1)
-         {
-            bos.write(b);
-         }
-         bos.flush();
-         bytes = bos.toByteArray();
-      }
-      return bytes;
-   }
-   
+     
    protected Object getTxId(Transaction tx)
    {
       if (tx == null)
@@ -1628,66 +1072,37 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
-
-   protected void addReference(Serializable channelID,
-                               MessageReference ref,
-                               Transaction tx,
-                               Connection conn)
-      throws Exception
+   protected void addReference(Serializable channelID, MessageReference ref, Connection conn) throws Exception
    {
-      if (trace) { log.trace("adding " + ref + " to channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
-            
+      if (trace) { log.trace("adding " + ref + " to channel "  + channelID); }
+      
       PreparedStatement ps = null;
-
+      
       int inserted = -1;
       boolean attempted = false;
       String messageID = (String)ref.getMessageID();
       String storeID = (String)ref.getStoreID();
       long ordering = ref.getOrdering();
-      String state = null;
-
+      
       try
       {      
-         insertTx(conn, tx);
-
-         if (tx == null)
-         {
-            state = "C";
-         }
-         else
-         {
-            state = "+";
-         }
-         
          ps = conn.prepareStatement(insertMessageRef);
          ps.setString(1, (String)channelID);
          ps.setString(2, messageID);
          ps.setString(3, storeID);
-         if (tx == null)
+         
+         if (this.txIdGUID)
          {
-            if (this.txIdGUID)
-            {
-               ps.setNull(4, java.sql.Types.VARCHAR);
-            }
-            else
-            {
-               ps.setNull(4, java.sql.Types.BIGINT);
-            }
+            ps.setNull(4, java.sql.Types.VARCHAR);
          }
          else
          {
-            if (this.txIdGUID)
-            {
-               ps.setString(4, tx.getGuidTxId());
-            }
-            else
-            {
-               ps.setLong(4, tx.getLongTxId());
-            }
+            ps.setNull(4, java.sql.Types.BIGINT);
          }
-         ps.setString(5, state);
+         
+         ps.setString(5, "C");
          ps.setLong(6, ordering);
-
+         
          attempted = true;
          inserted = ps.executeUpdate();
       }
@@ -1696,10 +1111,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          if (trace && attempted)
          {
             String s = JDBCUtil.statementToString(insertMessageRef, channelID, messageID,
-                                                  storeID, getTxId(tx), state, new Long(ordering));
+                  storeID, null, "C", new Long(ordering));
             log.trace(s + (inserted == -1 ? " failed" : " inserted " + inserted + " row(s)"));
          }
-
+         
          if (ps != null)
          {
             try
@@ -1710,52 +1125,137 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             {}
          }  
       }
-   }
+      
+      //Maybe we need to persist the message itself
+      checkStoreMessage(ref, conn);  
+   }   
    
-   protected void removeReference(Serializable channelID, MessageReference ref, Transaction tx, Connection conn)
-      throws Exception
+      
+   protected void removeReference(Serializable channelID, MessageReference ref, Connection conn) throws Exception
    {
-      if (trace) { log.trace("removing " + ref + " from channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
-            
+      if (trace) { log.trace("removing " + ref + " from channel "  + channelID); }
       PreparedStatement ps = null;
       try
       {
-         insertTx(conn, tx);
-   
-         int updated;
-   
+         int removed;
+         
          String messageID = (String)ref.getMessageID();
-   
-         if (tx == null)
+         
+         ps = conn.prepareStatement(deleteMessageRef);
+         ps.setString(1, (String)channelID);
+         ps.setString(2, messageID);
+         
+         removed = ps.executeUpdate();    
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(deleteMessageRef, channelID, messageID) + " removed " + removed + " row(s)"); }     
+      }
+      finally
+      {
+         if (ps != null)
          {
-            //Non transacted case
-            ps = conn.prepareStatement(deleteMessageRef);
-            ps.setString(1, (String)channelID);
-            ps.setString(2, messageID);
-            
-            updated = ps.executeUpdate();
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable t)
+            {}
+         }
+      }
+      
+      //We may need to remove the message itself
+      checkRemoveMessage(ref, conn);
+      
+   }      
    
-            if (trace) { log.trace(JDBCUtil.statementToString(deleteMessageRef, channelID, messageID) + " removed/updated " + updated + " row(s)"); }
+   protected void prepareToAddReference(Serializable channelID,
+                                        MessageReference ref,     
+                                        Transaction tx,
+                                        Connection conn) throws Exception
+   {
+      if (trace) { log.trace("adding " + ref + " to channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
+      
+      PreparedStatement ps = null;
+      
+      int inserted = -1;
+      boolean attempted = false;
+      String messageID = (String)ref.getMessageID();
+      String storeID = (String)ref.getStoreID();
+      long ordering = ref.getOrdering();
+      String state = null;
+      
+      try
+      {      
+         ps = conn.prepareStatement(insertMessageRef);
+         ps.setString(1, (String)channelID);
+         ps.setString(2, messageID);
+         ps.setString(3, storeID);
+         
+         if (this.txIdGUID)
+         {
+            ps.setString(4, tx.getGuidTxId());
          }
          else
          {
-            //Transacted case
-            ps = conn.prepareStatement(updateMessageRef);
-            if (tx.getGuidTxId() != null)
+            ps.setLong(4, tx.getLongTxId());
+         }
+         
+         ps.setString(5, "+");
+         ps.setLong(6, ordering);
+         
+         attempted = true;
+         inserted = ps.executeUpdate();
+      }
+      finally
+      {
+         if (trace && attempted)
+         {
+            String s = JDBCUtil.statementToString(insertMessageRef, channelID, messageID,
+                  storeID, getTxId(tx), state, new Long(ordering));
+            log.trace(s + (inserted == -1 ? " failed" : " inserted " + inserted + " row(s)"));
+         }
+         
+         if (ps != null)
+         {
+            try
             {
-               ps.setString(1, tx.getGuidTxId());
+               ps.close();
             }
-            else
-            {
-               ps.setLong(1, tx.getLongTxId());
-            }
-            ps.setString(2, (String)channelID);
-            ps.setString(3, messageID);            
+            catch (Throwable e)
+            {}
+         }  
+      }
+      
+      //Maybe we need to persist the message itself
+      checkStoreMessage(ref, conn); 
+   }
    
-            updated = ps.executeUpdate();
-   
-            if (trace) { log.trace(JDBCUtil.statementToString(updateMessageRef, getTxId(tx), channelID, messageID) + " updated " + updated + " row(s)"); }
-         }   
+   protected void prepareToRemoveReference(Serializable channelID, MessageReference ref, Transaction tx, Connection conn)
+      throws Exception
+   {
+      if (trace) { log.trace("removing " + ref + " from channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
+      
+      PreparedStatement ps = null;
+      try
+      {
+         int updated;
+         
+         String messageID = (String)ref.getMessageID();
+         
+         ps = conn.prepareStatement(updateMessageRef);
+         if (tx.getGuidTxId() != null)
+         {
+            ps.setString(1, tx.getGuidTxId());
+         }
+         else
+         {
+            ps.setLong(1, tx.getLongTxId());
+         }
+         ps.setString(2, (String)channelID);
+         ps.setString(3, messageID);            
+         
+         updated = ps.executeUpdate();
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(updateMessageRef, getTxId(tx), channelID, messageID) + " updated " + updated + " row(s)"); }      
       }
       finally
       {
@@ -1771,109 +1271,360 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
-   protected void resolveAllUncommitedTXs() throws Exception
+   protected void commitPreparedTransaction(Transaction tx, Connection conn) throws Exception
    {
-      Connection conn = null;
-      PreparedStatement stmt = null;
-      ResultSet rs = null;
-      TransactionWrapper tx = new TransactionWrapper();
-
-      log.info(this + " resolving any uncommitted transactions");
+      PreparedStatement ps = null;
       
       try
       {
-         conn = ds.getConnection();
+         ps = conn.prepareStatement(commitMessageRef1);
          
-         // Delete all the messages that were added but their tx's were not commited.
-         stmt = conn.prepareStatement(rollbackNonPreparedTx1);
-         int rows = stmt.executeUpdate();
-         stmt.close();
-         stmt = null;
-         if (rows != 0)
+         if (tx.getGuidTxId() != null)
          {
-            log.info("Rolled back " + rows + " message references added in uncommitted transactions");
+            ps.setString(1, tx.getGuidTxId());
          }
-
-         // Restore all the messages that were removed but their tx's were not commited.
-         stmt = conn.prepareStatement(rollbackNonPreparedTx2);
-         rows = stmt.executeUpdate();
-         stmt.close();
-         stmt = null;
-         if (rows != 0)
+         else
          {
-            log.info("Rolled back " + rows + " message references due to be removed in uncommitted transactions");
-         }
-
-         // Clear the transaction table (leave any prepared transactions)
-         stmt = conn.prepareStatement(deleteNonPreparedTx);
-         rows = stmt.executeUpdate();
-         stmt.close();
-         stmt = null;
-         if (rows != 0)
-         {
-            log.info("Deleted " + rows + " non-prepared transactions");
+            ps.setLong(1, tx.getLongTxId());
          }
          
+         int rows = ps.executeUpdate();
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(commitMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
+         
+         ps.close();
+         ps = conn.prepareStatement(commitMessageRef2);
+         
+         if (tx.getGuidTxId() != null)
+         {
+            ps.setString(1, tx.getGuidTxId());
+         }
+         else
+         {
+            ps.setLong(1, tx.getLongTxId());
+         }
+         
+         rows = ps.executeUpdate();
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(commitMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
+         
+         removeTXRecord(conn, tx);         
       }
-      catch (SQLException e)
+      finally
+      {         
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {}
+         }
+      }
+   }
+   
+   protected void rollbackPreparedTransaction(Transaction tx, Connection conn) throws Exception
+   {
+      PreparedStatement ps = null;
+      
+      try
       {
-         tx.exceptionOccurred();
-         throw new JBossJMSException(
-            "Could not resolve uncommited transactions.  Message recovery may not be accurate",
-            e);
+         ps = conn.prepareStatement(rollbackMessageRef1);
+         
+         if (tx.getGuidTxId() != null)
+         {
+            ps.setString(1, tx.getGuidTxId());
+         }
+         else
+         {
+            ps.setLong(1, tx.getLongTxId());
+         }
+         
+         int rows = ps.executeUpdate();
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(rollbackMessageRef1, getTxId(tx)) + " removed " + rows + " row(s)"); }
+         
+         ps.close();
+         
+         ps = conn.prepareStatement(rollbackMessageRef2);
+         if (tx.getGuidTxId() != null)
+         {
+            ps.setString(1, tx.getGuidTxId());
+         }
+         else
+         {
+            ps.setLong(1, tx.getLongTxId());
+         }
+         
+         rows = ps.executeUpdate();
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(rollbackMessageRef2, null, getTxId(tx)) + " updated " + rows + " row(s)"); }
+         
+         removeTXRecord(conn, tx);
+      }
+      finally
+      {         
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {}
+         }
+      }
+   }   
+   
+   /**
+    * Stores the message in the MESSAGE table.
+    */
+   protected void storeMessage(Message m, Connection conn) throws Exception
+   {
+      PreparedStatement ps = null;
+      
+      String id = (String)m.getMessageID();
+      
+      try
+      {       
+         // get the reference count from the database
+         // TODO Probably this can be done smarter than that incrementing directly in the database
+         ps = conn.prepareStatement(selectReferenceCount);
+         ps.setString(1, id);
+         
+         int referenceCount = 0;
+         ResultSet rs = ps.executeQuery();
+         if (rs.next())
+         {
+            referenceCount = rs.getInt(1);
+         }
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, id) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
+         
+         if (referenceCount == 0)
+         {
+            // physically insert the row in the database
+            
+            //First set the fields from org.jboss.messaging.core.Routable
+            ps = conn.prepareStatement(insertMessage);
+            ps.setString(1, id);
+            ps.setString(2, m.isReliable() ? "Y" : "N");
+            ps.setLong(3, m.getExpiration());
+            ps.setLong(4, m.getTimestamp());
+            ps.setByte(5, m.getPriority());
+            ps.setInt(6, m.getDeliveryCount());
+            
+            ps.setObject(7, ((MessageSupport)m).getHeaders());
+            
+            //Now set the fields from org.jboss.messaging.core.Message
+            ps.setObject(8, m.getPayload());
+            
+            //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
+            int type = -1;
+            String jmsType = null;
+            Object correlationID = null;
+            boolean destIsQueue = false;
+            String dest = null;
+            boolean replyToIsQueue = false;
+            String replyTo = null;
+            Map jmsProperties = null;
+            int connectionID = -1;
+            
+            if (m instanceof JBossMessage)
+            {
+               JBossMessage jbm = (JBossMessage)m;
+               type = jbm.getType();
+               jmsType = jbm.getJMSType();
+               connectionID = jbm.getConnectionID();
+               
+               if (jbm.isCorrelationIDBytes())
+               {
+                  correlationID = jbm.getJMSCorrelationIDAsBytes();
+               }
+               else
+               {
+                  correlationID = jbm.getJMSCorrelationID();
+               }
+               
+               Destination d = jbm.getJMSDestination();
+               if (d != null)
+               {
+                  destIsQueue = d instanceof Queue;
+                  if (destIsQueue)
+                  {
+                     dest = ((Queue)d).getQueueName();
+                  }
+                  else
+                  {
+                     dest = ((Topic)d).getTopicName();
+                  }
+               }
+               
+               Destination r = jbm.getJMSReplyTo();
+               if (r != null)
+               {
+                  replyToIsQueue = r instanceof Queue;
+                  if (replyToIsQueue)
+                  {
+                     replyTo = ((Queue)r).getQueueName();
+                  }
+                  else
+                  {
+                     replyTo = ((Topic)r).getTopicName();
+                  }
+               }
+               jmsProperties = jbm.getJMSProperties();
+            }
+            
+            ps.setInt(9, type);
+            ps.setString(10, jmsType);
+            ps.setObject(11, correlationID);
+            ps.setString(12, destIsQueue ? "Y" : "N");
+            ps.setString(13, dest);
+            ps.setString(14, replyToIsQueue ? "Y" : "N");
+            ps.setString(15, replyTo);
+            ps.setInt(16, connectionID);
+            ps.setObject(17, jmsProperties);
+            ps.setInt(18, 1);
+            
+            int result = ps.executeUpdate();
+            if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
+         }
+         else
+         {
+            // increment the reference count
+            ps = conn.prepareStatement(updateReferenceCount);
+            ps.setInt(1, ++referenceCount);
+            ps.setString(2, id);
+            
+            ps.executeUpdate();
+            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), id) + " executed successfully"); }
+         }
       }
       finally
       {
-         try
+         if (ps != null)
          {
-            if (rs != null)
+            try
             {
-               rs.close();
+               ps.close();
             }
+            catch (Throwable e)
+            {}
          }
-         catch (Throwable ignore)
-         {
-         }
-         try
-         {
-            if (stmt != null)
-            {
-               stmt.close();
-            }
-         }
-         catch (Throwable ignore)
-         {
-         }
-         try
-         {
-            if (conn != null)
-            {
-               conn.close();           
-            }
-         }
-         catch (Throwable ignore)
-         {
-         }
-         tx.end();
       }
-
+   }
+   
+   /**
+    * Removes the message from the MESSAGE table.
+    */
+   protected boolean removeMessage(Message message, Connection conn) throws Exception
+   {
+      PreparedStatement ps = null;
+      
+      try
+      {
+         // get the reference count from the database
+         ps = conn.prepareStatement(selectReferenceCount);
+         ps.setString(1, (String)message.getMessageID());
+         
+         //TODO this can be combined into one query
+         int referenceCount = 0;
+         ResultSet rs = ps.executeQuery();
+         if (rs.next())
+         {
+            referenceCount = rs.getInt(1);
+         }
+         
+         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, message.getMessageID()) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
+         
+         if (referenceCount == 0)
+         {
+            if (trace) { log.trace("no message " + message.getMessageID() + " to delete in the database"); }
+            return false;
+         }
+         else if (referenceCount == 1)
+         {
+            // physically delete the row in the database
+            ps = conn.prepareStatement(deleteMessage);
+            ps.setString(1, (String)message.getMessageID());
+            
+            int rows = ps.executeUpdate();
+            if (trace) { log.trace(JDBCUtil.statementToString(deleteMessage, message.getMessageID()) + " deleted " + rows + " row(s)"); }
+            
+            return rows == 1;
+         }
+         else
+         {
+            // decrement the reference count
+            ps = conn.prepareStatement(updateReferenceCount);
+            ps.setInt(1, --referenceCount);
+            ps.setString(2, (String)message.getMessageID());
+            
+            ps.executeUpdate();
+            if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), message.getMessageID()) + " executed successfully"); }
+            return true;
+         }
+      }
+      finally
+      {
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {}
+         }         
+      }
+   }
+   
+   protected void checkStoreMessage(MessageReference ref, Connection conn) throws Exception
+   {
+      synchronized (ref)
+      {               
+         if (!ref.isInStorage())
+         {
+            //Message hasn't been persisted yet - so we do this in the same tx as adding the reference
+            storeMessage(ref.getMessage(), conn);        
+            
+            ref.setInStorage(true);
+         }     
+      }
+   }
+   
+   protected void checkRemoveMessage(MessageReference ref, Connection conn) throws Exception
+   {
+      synchronized (ref)
+      { 
+         log.info("ref is instorage:" + ref.isInStorage() + ", channel count=" + ref.getChannelCount());
+         if (ref.getChannelCount() == 1 && ref.isInStorage())
+         {
+            //Only one ref left (actually the one we just removed) so we can remove the message
+            removeMessage(ref.getMessage(), conn);     
+            
+            ref.setInStorage(false);
+         } 
+      }
    }
    
    // Private -------------------------------------------------------
-
+   
    // Inner classes -------------------------------------------------
    
-   class TransactionWrapper
+   private class TransactionWrapper
    {
       private javax.transaction.Transaction oldTx;
-
+      
       private TransactionWrapper() throws Exception
       {
          oldTx = tm.suspend();
-
+         
          tm.begin();
       }
-
+      
       private void end() throws Exception
       {
          try
@@ -1895,11 +1646,254 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             }
          }
       }
-
+      
       private void exceptionOccurred() throws Exception
       {
          tm.setRollbackOnly();
       }
    }
-
+   
+   private class TransactionCallback implements TxCallback
+   {
+      private Transaction tx;
+      
+      private List refsToAdd;
+      
+      private List refsToRemove;
+      
+      private class ChannelRefPair
+      {
+         private String channelId;
+         
+         private MessageReference ref;
+         
+         private ChannelRefPair(String channelId, MessageReference ref)
+         {
+            this.channelId = channelId;
+            
+            this.ref = ref;
+         }                  
+      }
+      
+      private TransactionCallback(Transaction tx)
+      {
+         this.tx = tx;
+         
+         refsToAdd = new ArrayList();
+         
+         refsToRemove = new ArrayList();
+      }
+      
+      private void addReferenceToAdd(String channelId, MessageReference ref)
+      {
+         refsToAdd.add(new ChannelRefPair(channelId, ref));
+      }
+      
+      private void addReferenceToRemove(String channelId, MessageReference ref)
+      {
+         refsToRemove.add(new ChannelRefPair(channelId, ref));
+      }
+      
+      public void afterCommit(boolean onePhase)
+      {
+         //NOOP
+      }
+      
+      public void afterPrepare()
+      {
+         //NOOP
+      }
+      
+      public void afterRollback(boolean onePhase)
+      {
+         //NOOP
+      }
+      
+      public void beforeCommit(boolean onePhase) throws Exception
+      {
+         //If one phase we simply add rows corresponding to the refs
+         //and remove rows corresponding to the deliveries in one jdbc tx
+         //no tx record is necessary
+         
+         //If two phase then we update refs with + to C
+         //and remove rows marked with -
+         //and remove the tx record
+         
+         Connection conn = null;
+         
+         TransactionWrapper wrap = new TransactionWrapper();
+         
+         try
+         {
+            conn = ds.getConnection();
+            
+            if (onePhase)
+            {                                           
+               Iterator iter = refsToAdd.iterator();
+               while (iter.hasNext())
+               {
+                  ChannelRefPair pair = (ChannelRefPair)iter.next();
+                  
+                  //We may need to persist the message itself 
+                  MessageReference ref = pair.ref;
+                  
+                  //Now store the reference
+                  addReference(pair.channelId, ref, conn);                  
+               }
+               
+               iter = refsToRemove.iterator();
+               while (iter.hasNext())
+               {
+                  ChannelRefPair pair = (ChannelRefPair)iter.next();
+                  
+                  removeReference(pair.channelId, pair.ref, conn);                  
+               }
+            }
+            else
+            {
+               commitPreparedTransaction(tx, conn);
+               
+               Iterator iter = refsToRemove.iterator();
+               while (iter.hasNext())
+               {
+                  ChannelRefPair pair = (ChannelRefPair)iter.next();
+                  
+                  MessageReference ref = pair.ref;
+                  
+                  //We may need to remove the message itself
+                  checkRemoveMessage(ref, conn);                
+               }
+               
+            }            
+         }
+         catch (Exception e)
+         {
+            wrap.exceptionOccurred();
+            throw e;
+         }
+         finally
+         {            
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (Throwable e)
+               {}
+            }
+            wrap.end();
+         }         
+      }
+      
+      public void beforePrepare() throws Exception
+      {
+         //We insert a tx record and
+         //a row for each ref with +
+         //and update the row for each delivery with "-"
+         
+         Connection conn = null;
+         TransactionWrapper wrap = new TransactionWrapper();
+         
+         try
+         {
+            conn = ds.getConnection();
+            
+            //Insert the tx record
+            if (!refsToAdd.isEmpty() || !refsToRemove.isEmpty())
+            {
+               addTXRecord(conn, tx);
+            }
+            
+            Iterator iter = refsToAdd.iterator();
+            
+            while (iter.hasNext())
+            {
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               
+               prepareToAddReference(pair.channelId, pair.ref, tx, conn);  
+            }
+            
+            iter = refsToRemove.iterator();
+            
+            while (iter.hasNext())
+            {
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               
+               prepareToRemoveReference(pair.channelId, pair.ref, tx, conn);  
+            }                      
+         }
+         catch (Exception e)
+         {
+            wrap.exceptionOccurred();
+            throw e;
+         }
+         finally
+         {            
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (Throwable e)
+               {}
+            }
+            wrap.end();
+         }             
+      }
+      
+      public void beforeRollback(boolean onePhase) throws Exception
+      {
+         //if one phase then do nothing (there is nothing in the db)
+         //if two phase then remove refs marked with +
+         //and update rows marked with - to C
+         
+         if (onePhase)
+         {
+            //NOOP
+         }
+         else
+         {
+            Connection conn = null;
+            TransactionWrapper wrap = new TransactionWrapper();
+            
+            try
+            {
+               conn = ds.getConnection();
+               
+               rollbackPreparedTransaction(tx, conn);
+               
+               Iterator iter = refsToAdd.iterator();
+               
+               while (iter.hasNext())
+               {
+                  ChannelRefPair pair = (ChannelRefPair)iter.next();
+                  
+                  //We may need to remove the message for messages added during the prepare stage
+                  
+                  checkRemoveMessage(pair.ref, conn);    
+               }               
+            }
+            catch (Exception e)
+            {
+               wrap.exceptionOccurred();
+               throw e;
+            }
+            finally
+            {            
+               if (conn != null)
+               {
+                  try
+                  {
+                     conn.close();
+                  }
+                  catch (Throwable e)
+                  {}
+               }
+               wrap.end();
+            }   
+         }
+      }      
+   }
 }

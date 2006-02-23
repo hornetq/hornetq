@@ -580,7 +580,27 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       List delList = new ArrayList();
       
-      public void afterCommit() throws TransactionException
+      public void beforePrepare()
+      {         
+         //NOOP
+      }
+      
+      public void beforeCommit(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void beforeRollback(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void afterPrepare()
+      {         
+         //NOOP
+      }
+      
+      public void afterCommit(boolean onePhase) throws TransactionException
       {
          //We remove the deliveries from the delivery map
          Iterator iter = delList.iterator();
@@ -596,7 +616,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          deliveryCallback = null;
       }
       
-      public void afterRollback() throws TransactionException
+      public void afterRollback(boolean onePhase) throws TransactionException
       {
          //Cancel the deliveries         
          //Need to be cancelled in reverse order to maintain ordering

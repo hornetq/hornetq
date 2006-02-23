@@ -160,43 +160,42 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    }
    
    
-   public void testAddRetrieveRemoveMessage() throws Exception
-   {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
-      
-      PersistentMessageStore ms = new PersistentMessageStore("s2", tl);
-      //ms.start();
-
-      Message[] messages = createMessages();
-
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];
-         String id = (String)m.getMessageID();
-
-         tl.storeMessage(m);
-         assertEquals(1, tl.getMessageReferenceCount(id));
-
-         Message m2 = ms.retrieveMessage(id);
-         assertNotNull(m2);
-         checkEquivalent(m, m2);
-         assertEquals(2, tl.getMessageReferenceCount(id));
-
-         boolean removed = tl.removeMessage(id);
-         assertTrue(removed);
-         assertEquals(1, tl.getMessageReferenceCount(id));
-
-         removed = tl.removeMessage(id);
-         assertTrue(removed);
-         assertEquals(0, tl.getMessageReferenceCount(id));
-
-         Message m3 = tl.getMessage(id);
-         assertNull(m3);
-
-         assertFalse(tl.removeMessage(id));
-      }
-   }
+//   public void testAddRetrieveRemoveMessage() throws Exception
+//   {
+//      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+//      tl.start();
+//      
+//      PersistentMessageStore ms = new PersistentMessageStore("s2", tl);
+//
+//      Message[] messages = createMessages();
+//
+//      for (int i = 0; i < messages.length; i++)
+//      {
+//         Message m = messages[i];
+//         String id = (String)m.getMessageID();
+//
+//         tl.storeMessage(m);
+//         assertEquals(1, tl.getMessageReferenceCount(id));
+//
+//         Message m2 = ms.retrieveMessage(id);
+//         assertNotNull(m2);
+//         checkEquivalent(m, m2);
+//         assertEquals(2, tl.getMessageReferenceCount(id));
+//
+//         boolean removed = tl.removeMessage(id);
+//         assertTrue(removed);
+//         assertEquals(1, tl.getMessageReferenceCount(id));
+//
+//         removed = tl.removeMessage(id);
+//         assertTrue(removed);
+//         assertEquals(0, tl.getMessageReferenceCount(id));
+//
+//         Message m3 = tl.getMessage(id);
+//         assertNull(m3);
+//
+//         assertFalse(tl.removeMessage(id));
+//      }
+//   }
 
    public void testGetMessageReferences() throws Exception
    {
@@ -276,85 +275,44 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
  
    }
    
- 
-   public void testCommit_NotXA_Long_NotStoreXid() throws Exception
+   public void testCommit_NotXA_Long() throws Exception
    {
-      doTransactionCommit(false, false, false);
+      doTransactionCommit(false, false);
    }
    
-   public void testCommit_NotXA_Long_StoreXid() throws Exception
+   public void testCommit_NotXA_Guid() throws Exception
    {
-      doTransactionCommit(false, false, true);
+      doTransactionCommit(false, true);
+   }
+     
+   public void testCommit_XA_Long() throws Exception
+   {
+      doTransactionCommit(true, false);
+   }
+
+   public void testCommit_XA_Guid() throws Exception
+   {
+      doTransactionCommit(true, true);
    }
    
-   public void testCommit_NotXA_Guid_NotStoreXid() throws Exception
+   public void testRollback_NotXA_Long() throws Exception
    {
-      doTransactionCommit(false, true, false);
+      doTransactionRollback(false, false);
+   }
+    
+   public void testRollback_NotXA_Guid() throws Exception
+   {
+      doTransactionRollback(false, true);
+   }
+       
+   public void testRollback_XA_Long() throws Exception
+   {
+      doTransactionRollback(true, false);
    }
    
-   public void testCommit_NotXA_Guid_StoreXid() throws Exception
+   public void testRollback_XA_Guid() throws Exception
    {
-      doTransactionCommit(false, true, true);
-   }
-         
-   public void testCommit_XA_Long_NotStoreXid() throws Exception
-   {
-      doTransactionCommit(true, false, false);
-   }
-   
-   public void testCommit_XA_Long_StoreXid() throws Exception
-   {
-      doTransactionCommit(true, false, true);
-   }
-   
-   public void testCommit_XA_Guid_NotStoreXid() throws Exception
-   {
-      doTransactionCommit(true, true, false);
-   }
-   
-   public void testCommit_XA_Guid_StoreXid() throws Exception
-   {
-      doTransactionCommit(true, true, true);
-   }
-   
-   public void testRollback_NotXA_Long_NotStoreXid() throws Exception
-   {
-      doTransactionRollback(false, false, false);
-   }
-   
-   public void testRollback_NotXA_Long_StoreXid() throws Exception
-   {
-      doTransactionRollback(false, false, true);
-   }
-   
-   public void testRollback_NotXA_Guid_NotStoreXid() throws Exception
-   {
-      doTransactionRollback(false, true, false);
-   }
-   
-   public void testRollback_NotXA_Guid_StoreXid() throws Exception
-   {
-      doTransactionRollback(false, true, true);
-   }
-         
-   public void testRollback_XA_Long_NotStoreXid() throws Exception
-   {
-      doTransactionRollback(true, false, false);
-   }
-   
-   public void testRollback_XA_Long_StoreXid() throws Exception
-   {
-      doTransactionRollback(true, false, true);
-   }
-   
-   public void testRollback_XA_Guid_NotStoreXid() throws Exception
-   {
-      doTransactionRollback(true, true, false);
-   }
-   
-   public void testRollback_XA_Guid_StoreXid() throws Exception
-   {
-      doTransactionRollback(true, true, true);
+      doTransactionRollback(true, true);
    }
    
    public void testRetrievePreparedTransactions_Long() throws Exception
@@ -420,144 +378,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       tl.removeAllMessageData(channel.getChannelID());
       
-   }
-   
-   public void testNonXARecovery_Long_StoreXid() throws Exception
-   {
-      nonXARecovery(false, true);
-   }
-   
-   public void testNonXARecovery_Long_NotStoreXid() throws Exception
-   {
-      nonXARecovery(false, false);
-   }
-   
-   public void testNonXARecovery_Guid_StoreXid() throws Exception
-   {
-      nonXARecovery(true, true);
-   }
-   
-   public void testNonXARecovery_Guid_NotStoreXid() throws Exception
-   {
-      nonXARecovery(true, false);
-   }
-   
-   protected void nonXARecovery(boolean guid, boolean storeXid) throws Exception
-   {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.setTxIdGuid(guid);
-      
-      Properties props;
-      if (guid)
-      {
-         props = getConfigTablesForGUID();
-         tl.setSqlProperties(props);
-      }
-      else
-      {
-         props = new Properties();
-      }
-      
-      tl.start();
-      PersistentMessageStore ms = new PersistentMessageStore("s6", tl);
-      //ms.start();
-
-      Channel channel = new SimpleChannel("channel0", ms);
-      
-      List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(refs);
-      assertEquals(0, refs.size());
-      
-      //First insert some references outside a transaction
-      Message m1 = createMessage((byte)4);
-      Message m2 = createMessage((byte)4);
-      Message m3 = createMessage((byte)4);
-      Message m4 = createMessage((byte)4);
-      Message m5 = createMessage((byte)4);
-      MessageReference ref1 = ms.reference(m1);
-      MessageReference ref2 = ms.reference(m2);
-      MessageReference ref3 = ms.reference(m3);
-      MessageReference ref4 = ms.reference(m4);
-      MessageReference ref5 = ms.reference(m5);
-      tl.addReference(channel.getChannelID(), ref1, null);
-      tl.addReference(channel.getChannelID(), ref2, null);
-      tl.addReference(channel.getChannelID(), ref3, null);
-      tl.addReference(channel.getChannelID(), ref4, null);
-      tl.addReference(channel.getChannelID(), ref5, null);
-      
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(refs);
-      assertEquals(5, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));
-      assertTrue(refs.contains(ref3.getMessageID()));
-      assertTrue(refs.contains(ref4.getMessageID()));
-      assertTrue(refs.contains(ref5.getMessageID()));
-      
-      
-      //Now, in a non-xa transaction, add some more refs
-      Message m6 = createMessage((byte)4);
-      Message m7 = createMessage((byte)4);
-      Message m8 = createMessage((byte)4);
-      MessageReference ref6 = ms.reference(m6);
-      MessageReference ref7 = ms.reference(m7);
-      MessageReference ref8 = ms.reference(m8);
-      
-      TransactionRepository txRep = new TransactionRepository();
-      txRep.start(tl);
-      Transaction tx = txRep.createTransaction();
-      tl.addReference(channel.getChannelID(), ref6, tx);
-      tl.addReference(channel.getChannelID(), ref7, tx);
-      tl.addReference(channel.getChannelID(), ref8, tx);
-            
-      //And remove refs 4 and 5 of the pre-existing ones
-      tl.removeReference(channel.getChannelID(), ref4, tx);
-      tl.removeReference(channel.getChannelID(), ref5, tx);
-      
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(refs);
-      assertEquals(5, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));
-      assertTrue(refs.contains(ref3.getMessageID()));
-      assertTrue(refs.contains(ref4.getMessageID()));
-      assertTrue(refs.contains(ref5.getMessageID()));
-      
-      //Now stop the persistence manager and start it with recovery = true
-      tl.stop();
-      
-      props.put("PERFORM_NONXA_RECOVERY", "true");
-      
-      tl.setSqlProperties(props);
-      
-      log.info("**** restarting tl");
-      tl.start();
-      
-      //The above transaction should now be rolled back.
-      
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(refs);
-      assertEquals(5, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));
-      assertTrue(refs.contains(ref3.getMessageID()));
-      assertTrue(refs.contains(ref4.getMessageID()));
-      assertTrue(refs.contains(ref5.getMessageID()));
-      
-      //Commit should do nothing
-      tl.commitTx(tx);
-      
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
-      assertNotNull(refs);
-      assertEquals(5, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));
-      assertTrue(refs.contains(ref3.getMessageID()));
-      assertTrue(refs.contains(ref4.getMessageID()));
-      assertTrue(refs.contains(ref5.getMessageID()));
-      
-      tl.removeAllMessageData(channel.getChannelID());
-            
    }
    
    protected Message createMessage(byte i) throws Exception
@@ -877,7 +697,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doTransactionCommit(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
+   protected void doTransactionCommit(boolean xa, boolean idIsGuid) throws Exception
    {
       JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
 
@@ -887,7 +707,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       }
 
       tl.setTxIdGuid(idIsGuid);
-      tl.setStoringXid(storeXid);
 
       PersistentMessageStore ms = new PersistentMessageStore("s7", tl);
       //ms.start();
@@ -956,7 +775,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(ref2.getMessageID()));  
       
       //commit transaction
-      tl.commitTx(tx);
+      tx.commit();
       
       //check we can see only the last 3 refs
       refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
@@ -973,7 +792,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
    
    
-   protected void doTransactionRollback(boolean xa, boolean idIsGuid, boolean storeXid) throws Exception
+   protected void doTransactionRollback(boolean xa, boolean idIsGuid) throws Exception
    {
       JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       if (idIsGuid)
@@ -981,7 +800,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          tl.setSqlProperties(this.getConfigTablesForGUID());
       }
       tl.setTxIdGuid(idIsGuid);
-      tl.setStoringXid(storeXid);
       PersistentMessageStore ms = new PersistentMessageStore("s8", tl);
       //ms.start();
 
@@ -1043,7 +861,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(ref2.getMessageID()));  
       
       //rollback transaction
-      tl.rollbackTx(tx);
+      tx.rollback();
       
       refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
       assertNotNull(refs);

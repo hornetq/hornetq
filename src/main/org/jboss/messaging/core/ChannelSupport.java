@@ -126,6 +126,8 @@ public abstract class ChannelSupport implements Channel
             
             //This returns true if the ref was added to an empty ref queue
             boolean first = state.addReference(ref);
+            
+            ref.incChannelCount();
                         
             //Previously we would call push() at this point to push the reference to the consumer
             //One of the problems this had was it would end up leap-frogging messages that were
@@ -154,8 +156,6 @@ public abstract class ChannelSupport implements Channel
       catch (Throwable t)
       {
          log.error("Failed to handle message", t);
-         
-         ref.release();
          
          return null;
       }
@@ -326,7 +326,7 @@ public abstract class ChannelSupport implements Channel
             //Make a copy - each channel has it's own copy of the reference - 
             //this is becaause the headers for a particular message may vary depending
             //on what channel it is in - e.g. deliveryCount
-            ref = ms.reference((MessageReference)r);
+            ref = ((MessageReference)r).copy();
          }
          else
          {
@@ -479,6 +479,8 @@ public abstract class ChannelSupport implements Channel
       {
          //We remove the delivery from the state
          state.acknowledge(d);
+         
+         d.getReference().decChannelCount();
          
          if (trace) { log.trace(this + " delivery " + d + " completed and forgotten"); }
          

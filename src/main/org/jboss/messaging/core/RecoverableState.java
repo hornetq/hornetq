@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -49,22 +49,22 @@ public class RecoverableState extends NonRecoverableState
    
    private boolean trace = log.isTraceEnabled();
 
-   private PersistenceManager tl;
+   private PersistenceManager pm;
    private Serializable channelID;
    private Serializable storeID;
    private MessageStore messageStore;
-
+   
    // Constructors --------------------------------------------------
 
-   public RecoverableState(Channel channel, PersistenceManager tl)
+   public RecoverableState(Channel channel, PersistenceManager pm)
    {
       super(channel, true);
-      if (tl == null)
+      if (pm == null)
       {
           throw new IllegalArgumentException("RecoverableState requires a " +
                                              "non-null persistence manager");
       }
-      this.tl = tl;
+      this.pm = pm;
 
       // the channel isn't going to change, so cache its id
       this.channelID = channel.getChannelID();
@@ -72,7 +72,7 @@ public class RecoverableState extends NonRecoverableState
       this.storeID = channel.getMessageStore().getStoreID();
       
       this.messageStore = channel.getMessageStore();
-      
+        
    }
 
    // NonRecoverableState overrides -------------------------------------
@@ -90,11 +90,9 @@ public class RecoverableState extends NonRecoverableState
       {
          //Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-         tl.addReference(channelID, ref, tx);
+         pm.addReference(channelID, ref, tx);
       }
-
-      addAddReferenceCallback(tx); //FIXME What is the point of this??
-      if (trace) { log.trace("added an Add callback to transaction " + tx); }            
+           
    }
 
    public boolean addReference(MessageReference ref) throws Throwable
@@ -105,7 +103,7 @@ public class RecoverableState extends NonRecoverableState
       {
          //Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
-         tl.addReference(channelID, ref, null);
+         pm.addReference(channelID, ref, null);
       }      
       
       return first;
@@ -117,7 +115,7 @@ public class RecoverableState extends NonRecoverableState
 
       if (d.getReference().isReliable())
       {
-         tl.removeReference(channelID, d.getReference(), tx);
+         pm.removeReference(channelID, d.getReference(), tx);
       }     
    }
    
@@ -131,23 +129,25 @@ public class RecoverableState extends NonRecoverableState
       //We should add a flag to check this
       if (d.getReference().isReliable())
       {
-         tl.removeReference(channelID, d.getReference(), null);
+         pm.removeReference(channelID, d.getReference(), null);
       }     
    }
    
    public void clear()
    {
       super.clear();
-      tl = null;
+      pm = null;
       // the persisted state remains
    }
    
    /**
     * Load the state from persistent storage
+    * 
+    * This will all change when we implement lazy loading
     */
    public void load() throws Exception
    {
-      List refs = tl.messageRefs(storeID, channelID);
+      List refs = pm.messageRefs(storeID, channelID);
       
       Iterator iter = refs.iterator();
       while (iter.hasNext())
@@ -156,7 +156,9 @@ public class RecoverableState extends NonRecoverableState
          
          MessageReference ref = messageStore.reference(messageID);
          
-         messageRefs.addLast(ref, ref.getPriority());      
+         messageRefs.addLast(ref, ref.getPriority());     
+         
+         ref.incChannelCount();         
       }        
    }
 
@@ -168,5 +170,5 @@ public class RecoverableState extends NonRecoverableState
 
    // Private -------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes -------------------------------------------------   
 }

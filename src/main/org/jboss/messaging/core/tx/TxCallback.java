@@ -31,7 +31,15 @@ package org.jboss.messaging.core.tx;
  */
 public interface TxCallback
 {
-   void afterCommit() throws TransactionException;
+   void beforePrepare() throws Exception;
    
-   void afterRollback() throws TransactionException;
+   void beforeCommit(boolean onePhase) throws Exception;
+   
+   void beforeRollback(boolean onePhase) throws Exception;
+   
+   void afterPrepare() throws Exception;
+   
+   void afterCommit(boolean onePhase) throws Exception;
+   
+   void afterRollback(boolean onePhase) throws Exception;
 }

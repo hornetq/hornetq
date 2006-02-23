@@ -22,14 +22,14 @@
 package org.jboss.messaging.core.tx;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-
 
 /**
  * 
@@ -37,9 +37,6 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.com">Ovidiu Feodorov</a>
- * 
- * partially based on org.jboss.mq.tl.Tx by
- * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
  * @version $Revision 1.1$
  */
@@ -53,6 +50,8 @@ public class Transaction
    
    private boolean trace = log.isTraceEnabled();
    
+   protected boolean txIdSet;
+   
    protected long longTxID;
    
    protected String guidTxID;
@@ -63,11 +62,8 @@ public class Transaction
    
    protected List callbacks;;
    
-   protected PersistenceManager persistenceManager;
+   protected Map keyedCallbackMap;
    
-   //True if the transaction has resulted in a tx record being inserted in the db
-   protected boolean insertedTXRecord;
-
    // Static --------------------------------------------------------
    
    public static final int STATE_ACTIVE = 0;
@@ -110,12 +106,17 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction(Xid xid, PersistenceManager persistenceManager)
+   Transaction()
    {
       state = STATE_ACTIVE;
-      this.xid = xid;
-      this.persistenceManager = persistenceManager;
       callbacks = new ArrayList();
+      keyedCallbackMap = new HashMap();
+   }
+   
+   Transaction(Xid xid)
+   {
+      this();
+      this.xid = xid;
    }
    
    // Public --------------------------------------------------------
@@ -133,7 +134,19 @@ public class Transaction
    public void addCallback(TxCallback callback)
    {
       callbacks.add(callback);
-   }   
+   } 
+   
+   public void addKeyedCallback(TxCallback callback, Object key)
+   {
+      callbacks.add(callback);
+      
+      keyedCallbackMap.put(key, callback);
+   } 
+   
+   public TxCallback getKeyedCallback(Object key)
+   {
+      return (TxCallback)keyedCallbackMap.get(key);
+   }
       
    public void commit() throws Exception
    {
@@ -142,59 +155,107 @@ public class Transaction
          throw new TransactionException("Transaction marked rollback only, cannot commit");
       }
 
-      if (trace) { log.trace("committing " + this); }
-
-      state = STATE_COMMITTED;
-      
-      if (insertedTXRecord)
-      {
-         if (persistenceManager == null)
-         {
-            throw new IllegalStateException("Reliable messages were handled in the transaction, " +
-                                            "but there is no transaction log delegate!");
-         }
-         persistenceManager.commitTx(this);
-      }
+      if (trace) { log.trace("Executing before commit hooks " + this); }
+       
+      boolean onePhase = state != STATE_PREPARED;
       
       Iterator iter = callbacks.iterator();
+      
       while (iter.hasNext())
       {
          TxCallback callback = (TxCallback)iter.next();
-         callback.afterCommit();
+         
+         callback.beforeCommit(onePhase);
       }
+      
+      state = STATE_COMMITTED;
+      
+      if (trace) { log.trace("Committed " + this); }
+      
+      iter = callbacks.iterator();
+      
+      if (trace) { log.trace("Executing after commit hooks " + this); }
+      
+      while (iter.hasNext())
+      {
+         TxCallback callback = (TxCallback)iter.next();
+         
+         callback.afterCommit(onePhase);
+      }
+      
+      callbacks = null;
+      
+      keyedCallbackMap = null;      
+      
+      if (trace) { log.trace("Commit process complete " + this); }
    }
    
    public void prepare() throws Exception
    {
-      if (xid != null)
+      if (trace) { log.trace("Executing before prepare hooks " + this); }
+      
+      Iterator iter = callbacks.iterator();
+      
+      while (iter.hasNext())
       {
-         //Write record in db saying we have prepared the tx
-        if (insertedTXRecord)
-        {
-           persistenceManager.prepareTx(this);
-        }
+         TxCallback callback = (TxCallback)iter.next();
+         
+         callback.beforePrepare();
       }
       
       state = STATE_PREPARED;
+      
+      if (trace) { log.trace("Prepared " + this); }
+      
+      iter = callbacks.iterator();
+      
+      if (trace) { log.trace("Executing after prepare hooks " + this); }
+      
+      while (iter.hasNext())
+      {
+         TxCallback callback = (TxCallback)iter.next();
+         
+         callback.afterPrepare();
+      }            
+      
+      if (trace) { log.trace("Prepare process complete " + this); }
    }
    
    public void rollback() throws Exception
    {
-      if (trace) { log.trace("rolling back " + this); }
-
-      state = STATE_ROLLEDBACK;
+      if (trace) { log.trace("Executing before rollback hooks " + this); }
       
-      if (insertedTXRecord)
-      {
-         persistenceManager.rollbackTx(this);
-      }
+      boolean onePhase = state != STATE_PREPARED;
       
       Iterator iter = callbacks.iterator();
+      
       while (iter.hasNext())
       {
          TxCallback callback = (TxCallback)iter.next();
-         callback.afterRollback();
+         
+         callback.beforeRollback(onePhase);
       }
+      
+      state = STATE_ROLLEDBACK;
+      
+      if (trace) { log.trace("Rolled back " + this); }
+      
+      iter = callbacks.iterator();
+      
+      if (trace) { log.trace("Executing after prepare hooks " + this); }
+      
+      while (iter.hasNext())
+      {
+         TxCallback callback = (TxCallback)iter.next();
+         
+         callback.afterRollback(onePhase);
+      }            
+      
+      callbacks = null;
+      
+      keyedCallbackMap = null;
+      
+      if (trace) { log.trace("Rollback process complete " + this); }
    }
 
    public void setRollbackOnly() throws Exception
@@ -203,33 +264,37 @@ public class Transaction
 
       state = STATE_ROLLBACK_ONLY;
    }
-
-
-   public boolean insertedTXRecord()
-   { 
-      boolean inserted = insertedTXRecord;
-      insertedTXRecord = true;
-      return inserted;
-   }
-   
-   public void setGuidTxID(String guid)
-   {
-      this.guidTxID = guid;
-   }
    
    public String getGuidTxId()
    {
+      if (!txIdSet)
+      {
+         throw new IllegalStateException("Transaction id has not been set yet");
+      }
       return guidTxID;
    }
    
    public long getLongTxId()
    {
+      if (!txIdSet)
+      {
+         throw new IllegalStateException("Transaction id has not been set yet");
+      }
       return longTxID;
    }
    
    public void setLongTxId(long id)
    {
       this.longTxID = id;
+      
+      txIdSet = true;
+   }
+   
+   public void setGuidTxID(String guid)
+   {
+      this.guidTxID = guid;
+      
+      txIdSet = true;
    }
 
    public String toString()

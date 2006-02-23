@@ -23,13 +23,13 @@ package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.DeliveryMode;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;

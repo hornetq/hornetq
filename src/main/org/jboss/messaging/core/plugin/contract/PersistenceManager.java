@@ -39,22 +39,16 @@ import org.jboss.messaging.core.MessageReference;
  */
 public interface PersistenceManager extends ServerPlugin
 {
-   //
-   // Used by the TransactionRepository
-   //
-
-   void prepareTx(Transaction tx) throws Exception;
-
-   void commitTx(Transaction tx) throws Exception;
-
-   void rollbackTx(Transaction tx) throws Exception;
-
+   /*
+    * Currently unused but will be used for XA recovery
+    */
    List retrievePreparedTransactions() throws Exception;
-
-   //
-   // Used by Channel's RecoverableState
-   //
-
+   
+   /**
+    * TODO Do we really need this method?
+    */
+   void removeAllMessageData(Serializable channelID) throws Exception;
+   
    void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
@@ -64,21 +58,11 @@ public interface PersistenceManager extends ServerPlugin
     */
    List messageRefs(Serializable storeID, Serializable channelID) throws Exception;
 
-   //
-   // Used by ServerSessionEndpoint
-   //
-
-   /**
-    * TODO Do we really need this method?
-    */
-   void removeAllMessageData(Serializable channelID) throws Exception;
-   
-   void storeMessage(Message m) throws Exception;
-   
-   boolean removeMessage(String messageID) throws Exception;
-   
    Message getMessage(Serializable messageID) throws Exception;
    
+   /*
+    * FIXME
+    * Only used in testing - remove this
+    */
    int getMessageReferenceCount(Serializable messageID) throws Exception;
-
 }

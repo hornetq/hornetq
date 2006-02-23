@@ -114,8 +114,7 @@ public class TransactionRepository
          while (iter.hasNext())
          {
             Xid xid = (Xid)iter.next();
-            Transaction tx = createTransaction(xid);
-            tx.insertedTXRecord();
+            Transaction tx = createTransaction(xid);            
             tx.state = Transaction.STATE_PREPARED;
             
             //Load the references for this transaction
@@ -143,7 +142,7 @@ public class TransactionRepository
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(xid, persistenceManager);
+      Transaction tx = new Transaction(xid);
       
       if (trace) { log.trace("created transaction " + tx); }
       
@@ -153,7 +152,7 @@ public class TransactionRepository
    
    public Transaction createTransaction() throws TransactionException
    {
-      Transaction tx = new Transaction(null, persistenceManager);
+      Transaction tx = new Transaction(null);
 
       if (trace) { log.trace("created transaction " + tx); }
 

@@ -25,7 +25,6 @@ package org.jboss.messaging.core;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
@@ -34,8 +33,6 @@ import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.util.ConcurrentHashSet;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -63,10 +60,8 @@ public class NonRecoverableState implements State
    
    protected Set deliveries;
 
-   protected Map txToAddReferenceCallbacks;
-   protected Map txToRemoveDeliveryCallbacks;
-
    protected Channel channel;
+   
    protected boolean acceptReliableMessages;
 
    // Constructors --------------------------------------------------
@@ -77,8 +72,6 @@ public class NonRecoverableState implements State
       this.acceptReliableMessages = acceptReliableMessages;
       messageRefs = new BasicPrioritizedDeque(10);
       deliveries = new ConcurrentHashSet();
-      txToAddReferenceCallbacks = new ConcurrentHashMap();
-      txToRemoveDeliveryCallbacks = new ConcurrentHashMap();
    }
 
    // State implementation -----------------------------------
@@ -107,8 +100,8 @@ public class NonRecoverableState implements State
       else
       {
          //add to post commit callback
-         AddReferenceCallback callback = addAddReferenceCallback(tx);
-         callback.addReference(ref);
+         NonRecoverableAddReferenceCallback callback = new NonRecoverableAddReferenceCallback(ref);
+         tx.addCallback(callback);
          if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
       }  
    }
@@ -125,8 +118,9 @@ public class NonRecoverableState implements State
 
       if (trace) { log.trace(this + " added " + ref + " in memory"); } 
       
-      return messageRefs.addLast(ref, ref.getPriority());    
-             
+      boolean first = messageRefs.addLast(ref, ref.getPriority());    
+      
+      return first;             
    }
   
 
@@ -168,9 +162,9 @@ public class NonRecoverableState implements State
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
       // Transactional so add a post commit callback to remove after tx commit
-      RemoveDeliveryCallback callback = addRemoveDeliveryCallback(tx);
+      NonRecoverableRemoveDeliveryCallback callback = new NonRecoverableRemoveDeliveryCallback(d);
       
-      callback.addDelivery(d);
+      tx.addCallback(callback);
       
       if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
    }
@@ -179,9 +173,7 @@ public class NonRecoverableState implements State
    {
       boolean removed = deliveries.remove(d);
       
-      if (removed && trace) { log.trace(this + " removed " + d + " from memory"); }
-      
-      d.getReference().release();    
+      if (removed && trace) { log.trace(this + " removed " + d + " from memory"); }   
    }
    
    public MessageReference removeFirst()
@@ -189,6 +181,7 @@ public class NonRecoverableState implements State
       MessageReference result = (MessageReference)messageRefs.removeFirst();
 
       if (trace) { log.trace(this + " removing the oldest message in memory returns " + result); }
+      
       return result;
    }
    
@@ -278,127 +271,107 @@ public class NonRecoverableState implements State
       return "State[" + channel + "]";
    }
 
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
 
-   /**
-    * Add an AddReferenceCallback, if it doesn't exist already and return its handle.
-    */
-   protected AddReferenceCallback addAddReferenceCallback(Transaction tx)
-   {            
-      //TODO we could avoid this lookup by letting the tx object store the AddReferenceCallback
-      AddReferenceCallback calback = (AddReferenceCallback)txToAddReferenceCallbacks.get(tx);
-      if (calback == null)
-      {
-         calback = new AddReferenceCallback(tx);
-         txToAddReferenceCallbacks.put(tx, calback);
-         tx.addCallback(calback);
-      }
-      return calback;
-   }
-
-   /**
-    * Add a RemoveDeliveryCallback, if it doesn't exist already and return its handle.
-    */
-   protected RemoveDeliveryCallback addRemoveDeliveryCallback(Transaction tx)
-   {
-      //TODO we could avoid this lookup by letting the tx object store the RemoveDeliveryCallback
-      RemoveDeliveryCallback callback = (RemoveDeliveryCallback)txToRemoveDeliveryCallbacks.get(tx);
-      if (callback == null)
-      {
-         callback = new RemoveDeliveryCallback(tx);
-         txToRemoveDeliveryCallbacks.put(tx, callback);
-         tx.addCallback(callback);
-      }
-      return callback;
-   }
-   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------  
    
-   public class AddReferenceCallback implements TxCallback
+   private class NonRecoverableAddReferenceCallback implements TxCallback
    {
-      private List refs = new ArrayList();
+      private MessageReference ref;
       
-      private Transaction tx;
+      private NonRecoverableAddReferenceCallback(MessageReference ref)
+      {
+         this.ref = ref;
+      }
       
-      AddReferenceCallback(Transaction tx)
-      {
-         this.tx = tx;
+      public void beforePrepare()
+      {         
+         //NOOP
       }
-
-      void addReference(MessageReference ref)
-      {
-         refs.add(ref);
+      
+      public void beforeCommit(boolean onePhase)
+      {         
+         //NOOP
       }
-
-      public void afterCommit()
+      
+      public void beforeRollback(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void afterPrepare()
+      {         
+         //NOOP
+      }
+      
+      public void afterCommit(boolean onePhase)
       {
-         for(Iterator i = refs.iterator(); i.hasNext(); )
-         {
-            MessageReference ref = (MessageReference)i.next();
-            if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-            boolean first = messageRefs.addLast(ref, ref.getPriority());                       
-            
-            if (first)
-            {
-               //No need to call prompt delivery if there are already messages in the queue
-               channel.deliver(null);
-            }
-         }
+         //We add the reference to the state
          
-         txToAddReferenceCallbacks.remove(tx);
+         if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+         
+         boolean first = messageRefs.addLast(ref, ref.getPriority());      
+         
+         ref.incChannelCount();
+         
+         if (first)
+         {
+            //No need to call prompt delivery if there are already messages in the queue
+            channel.deliver(null);
+         }
       } 
       
-      public void afterRollback()
+      public void afterRollback(boolean onePhase)
       {
-         for(Iterator i = refs.iterator(); i.hasNext(); )
-         {
-            MessageReference ref = (MessageReference)i.next();
-            if (trace) { log.trace(this + " releasing reference for " + ref + " after rollback"); }
-            ref.release();
-         }
-         txToAddReferenceCallbacks.remove(tx);
-      }
-   }
-
-
-   public class RemoveDeliveryCallback implements TxCallback
-   {
-      private List dels = new ArrayList();
-      
-      private Transaction tx;
-      
-      RemoveDeliveryCallback(Transaction tx)
-      {
-         this.tx = tx;
-      }
-
-      void addDelivery(Delivery d)
-      {
-         dels.add(d);
-      }
-
-      public void afterCommit()
-      {
-         for(Iterator i = dels.iterator(); i.hasNext(); )
-         {
-            Delivery d = (Delivery)i.next();
-            if (trace) { log.trace(this + " removing " + d + " after commit"); }
-            deliveries.remove(d);
-            d.getReference().release();
-            if (trace) { log.trace(this + " releasing reference for " + d.getReference()); }
-         }
-         txToRemoveDeliveryCallbacks.remove(tx);
-      }   
-      
-      public void afterRollback()
-      {
-         txToRemoveDeliveryCallbacks.remove(tx);
-      }
+         //NOOP
+      }           
    }
    
+   private class NonRecoverableRemoveDeliveryCallback implements TxCallback
+   {
+      private Delivery del;
+      
+      private NonRecoverableRemoveDeliveryCallback(Delivery del)
+      {
+         this.del = del;
+      }
+      
+      public void beforePrepare()
+      {         
+         //NOOP
+      }
+      
+      public void beforeCommit(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void beforeRollback(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void afterPrepare()
+      {         
+         //NOOP
+      }
+      
+      public void afterCommit(boolean onePhase)
+      {
+         if (trace) { log.trace(this + " removing " + del + " after commit"); }
+         
+         deliveries.remove(del);         
+         
+         del.getReference().decChannelCount();
+      } 
+      
+      public void afterRollback(boolean onePhase)
+      {
+         //NOOP
+      }           
+   }   
 }
