@@ -57,6 +57,8 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    private MessageHolder holder;
    
+   private int deliveryCount;
+   
    // Constructors --------------------------------------------------
 
    /**
@@ -157,6 +159,26 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {
       return new SimpleMessageReference(this);
    }
+   
+   public int getDeliveryCount()
+   {
+      return deliveryCount;
+   }
+   
+   public void incrementDeliveryCount()
+   {
+      deliveryCount++;      
+   }
+   
+   public void setDeliveryCount(int deliveryCount)
+   {
+      this.deliveryCount = deliveryCount;
+      if (deliveryCount > 0)
+      {
+         this.redelivered = true;
+      }
+   }
+
    
    // Public --------------------------------------------------------
 

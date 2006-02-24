@@ -86,58 +86,65 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
    /**
     * In a distributed configuration, multiple persistent store may access the same database.
     */
-   public void testTwoStoresSameDatabase() throws Exception
-   {
-      Message m =
-         MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
-
-      assertEquals(0, pm.getMessageReferenceCount(m.getMessageID()));
-
-      MessageReference ref = ms.reference(m);
-      ref.incChannelCount();
-      pm.addReference("channel1", ref, null);
-      log.debug("referenced " + m + " using " + ms);
-      assertCorrectReference(ref, ms.getStoreID(), m);
-      assertEquals(1, pm.getMessageReferenceCount(m.getMessageID()));
-
-      // add the same message to the second store
-      MessageReference ref2 = ms2.reference(m);
-      ref2.incChannelCount();
-      pm.addReference("channel1", ref2, null);
-      log.debug("referenced " + m + " using " + ms2);
-      assertCorrectReference(ref2, ms2.getStoreID(), m);
-      assertEquals(2, pm.getMessageReferenceCount(m.getMessageID()));
-
-      assertFalse(ref == ref2);      
-                  
-      pm.removeReference("channel1", ref, null);
-      
-      ref.decChannelCount();
-
-      assertEquals(1, pm.getMessageReferenceCount(m.getMessageID()));
-
-      // ... but because the message is still in the database, trying to get a new reference
-      // is successful.
-
-      ref = ms.reference((String)m.getMessageID());
-      ref.incChannelCount();
-      assertCorrectReference(ref, ms.getStoreID(), m);
-      
-      assertEquals(2, pm.getMessageReferenceCount(m.getMessageID()));
-
-      
-      log.info("ref cc:" + ref.getChannelCount());
-      pm.removeReference("channel1", ref, null);
-      ref.decChannelCount();
-      
-      
-      pm.removeReference("channel1", ref2, null);
-      ref2.decChannelCount();      
-
-      assertNull(ms.reference((String)m.getMessageID()));
-      assertNull(ms2.reference((String)m.getMessageID()));
-      assertEquals(0, pm.getMessageReferenceCount(m.getMessageID()));
-   }
+   
+   //Note - this test is commented out since it no longer makes sense because we no longer record message store id
+   //in the message reference table
+   //It is testing behaviour that no longer exists
+   
+  
+   
+//   public void testTwoStoresSameDatabase() throws Exception
+//   {
+//      Message m =
+//         MessageFactory.createMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+//
+//      assertEquals(0, pm.getMessageReferenceCount(m.getMessageID()));
+//
+//      MessageReference ref = ms.reference(m);
+//      ref.incChannelCount();
+//      pm.addReference("channel1", ref, null);
+//      log.debug("referenced " + m + " using " + ms);
+//      assertCorrectReference(ref, ms.getStoreID(), m);
+//      assertEquals(1, pm.getMessageReferenceCount(m.getMessageID()));
+//
+//      // add the same message to the second store
+//      MessageReference ref2 = ms2.reference(m);
+//      ref2.incChannelCount();
+//      pm.addReference("channel1", ref2, null);
+//      log.debug("referenced " + m + " using " + ms2);
+//      assertCorrectReference(ref2, ms2.getStoreID(), m);
+//      assertEquals(2, pm.getMessageReferenceCount(m.getMessageID()));
+//
+//      assertFalse(ref == ref2);      
+//                  
+//      pm.removeReference("channel1", ref, null);
+//      
+//      ref.decChannelCount();
+//
+//      assertEquals(1, pm.getMessageReferenceCount(m.getMessageID()));
+//
+//      // ... but because the message is still in the database, trying to get a new reference
+//      // is successful.
+//
+//      ref = ms.reference((String)m.getMessageID());
+//      ref.incChannelCount();
+//      assertCorrectReference(ref, ms.getStoreID(), m);
+//      
+//      assertEquals(2, pm.getMessageReferenceCount(m.getMessageID()));
+//
+//      
+//      log.info("ref cc:" + ref.getChannelCount());
+//      pm.removeReference("channel1", ref, null);
+//      ref.decChannelCount();
+//      
+//      
+//      pm.removeReference("channel1", ref2, null);
+//      ref2.decChannelCount();      
+//
+//      assertNull(ms.reference((String)m.getMessageID()));
+//      assertNull(ms2.reference((String)m.getMessageID()));
+//      assertEquals(0, pm.getMessageReferenceCount(m.getMessageID()));
+//   }
 
 
    // Package protected ---------------------------------------------

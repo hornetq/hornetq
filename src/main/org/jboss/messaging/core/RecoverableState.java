@@ -147,7 +147,7 @@ public class RecoverableState extends NonRecoverableState
     */
    public void load() throws Exception
    {
-      List refs = pm.messageRefs(storeID, channelID);
+      List refs = pm.messageRefs(channelID);
       
       Iterator iter = refs.iterator();
       while (iter.hasNext())

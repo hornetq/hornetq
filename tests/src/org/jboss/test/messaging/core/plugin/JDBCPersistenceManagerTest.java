@@ -107,7 +107,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
          tl.addReference(channel.getChannelID(), ref, null);
       
-         List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+         List refs = tl.messageRefs(channel.getChannelID());
          
          assertNotNull(refs);
          assertEquals(1, refs.size());
@@ -117,7 +117,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
          tl.removeAllMessageData(channel.getChannelID());
 
-         refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+         refs = tl.messageRefs(channel.getChannelID());
          assertTrue(refs.isEmpty());
       }
    }
@@ -142,7 +142,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
          tl.addReference(channel.getChannelID(), ref, null);
       
-         List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+         List refs = tl.messageRefs(channel.getChannelID());
          
          assertNotNull(refs);
          assertEquals(1, refs.size());
@@ -152,50 +152,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
          tl.removeReference(channel.getChannelID(), ref, null);
          
-         refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+         refs = tl.messageRefs(channel.getChannelID());
          
          assertTrue(refs.isEmpty());
                  
       }
    }
-   
-   
-//   public void testAddRetrieveRemoveMessage() throws Exception
-//   {
-//      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-//      tl.start();
-//      
-//      PersistentMessageStore ms = new PersistentMessageStore("s2", tl);
-//
-//      Message[] messages = createMessages();
-//
-//      for (int i = 0; i < messages.length; i++)
-//      {
-//         Message m = messages[i];
-//         String id = (String)m.getMessageID();
-//
-//         tl.storeMessage(m);
-//         assertEquals(1, tl.getMessageReferenceCount(id));
-//
-//         Message m2 = ms.retrieveMessage(id);
-//         assertNotNull(m2);
-//         checkEquivalent(m, m2);
-//         assertEquals(2, tl.getMessageReferenceCount(id));
-//
-//         boolean removed = tl.removeMessage(id);
-//         assertTrue(removed);
-//         assertEquals(1, tl.getMessageReferenceCount(id));
-//
-//         removed = tl.removeMessage(id);
-//         assertTrue(removed);
-//         assertEquals(0, tl.getMessageReferenceCount(id));
-//
-//         Message m3 = tl.getMessage(id);
-//         assertNull(m3);
-//
-//         assertFalse(tl.removeMessage(id));
-//      }
-//   }
+      
 
    public void testGetMessageReferences() throws Exception
    {
@@ -218,7 +181,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          tl.addReference(channel.getChannelID(), ref, null);
       }
          
-      List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      List refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(messages.length, refs.size());
       
@@ -229,7 +192,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       }
       
       tl.removeAllMessageData(channel.getChannelID());
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertTrue(refs.isEmpty());
  
@@ -257,7 +220,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          tl.addReference(channel.getChannelID(), ref, null);
       }
          
-      List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      List refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(messages.length, refs.size());
       
@@ -269,7 +232,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       tl.removeAllMessageData(channel.getChannelID());
             
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertTrue(refs.isEmpty());      
  
@@ -510,9 +473,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       }
    }
    
-   protected Map generateFilledMap(boolean useObject)
+   protected HashMap generateFilledMap(boolean useObject)
    {
-      Map headers = new HashMap();
+      HashMap headers = new HashMap();
       for (int j = 0; j < 27; j++)
       {
          //put some crap in the map
@@ -547,7 +510,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
             case 8:
                headers.put(new GUID().toString(), randLong());
             case 9:
-               headers.put(new GUID().toString(), randByteArray());
+               headers.put(new GUID().toString(), randByteArray(500));
             case 10:
                headers.put(new GUID().toString(), new WibblishObject());               
          }
@@ -600,9 +563,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       return buf.toString();
    }
    
-   protected byte[] randByteArray()
+   protected byte[] randByteArray(int size)
    {
-      String s = randString(1000);
+      String s = randString(size / 2);
       return s.getBytes();
    }
    
@@ -750,7 +713,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tl.addReference(channel.getChannelID(), ref2, null);
       
       //check they're there
-      List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      List refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
@@ -768,7 +731,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tl.removeReference(channel.getChannelID(), ref2, tx);
       
       //Check the changes aren't visible
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
@@ -778,7 +741,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tx.commit();
       
       //check we can see only the last 3 refs
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(3, refs.size()); 
       assertTrue(refs.contains(ref3.getMessageID()));
@@ -838,7 +801,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tl.addReference(channel.getChannelID(), ref2, null);
       
       //check they're there
-      List refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      List refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
@@ -854,7 +817,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tl.removeReference(channel.getChannelID(), ref2, tx);
       
       //Check the changes aren't visible
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
@@ -863,7 +826,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       //rollback transaction
       tx.rollback();
       
-      refs = tl.messageRefs(ms.getStoreID(), channel.getChannelID());
+      refs = tl.messageRefs(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
       assertTrue(refs.contains(ref1.getMessageID()));
@@ -880,32 +843,22 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       Properties props = new Properties();
       
       props.put("CREATE_TRANSACTION",
-                "CREATE TABLE TRANSACTION (" +
-                "TRANSACTIONID VARCHAR(255), " +
-                "BRANCH_QUAL OBJECT, " +
-                "FORMAT_ID INTEGER, " +
-                "GLOBAL_TXID OBJECT, " +
-                "STATE CHAR(1), " +
-                "PRIMARY KEY (TRANSACTIONID))");
-      
-      props.put("CREATE_DELIVERY",
-                "CREATE TABLE DELIVERY (" +
-                "CHANNELID VARCHAR(256), " +
-                "MESSAGEID VARCHAR(256), " +
-                "STOREID VARCHAR(256), " +
-                "TRANSACTIONID VARCHAR(255), " +
-                "STATE CHAR(1), " +
-                "PRIMARY KEY(CHANNELID, MESSAGEID))");
+            "CREATE TABLE TRANSACTION (" +
+            "TRANSACTIONID VARCHAR(255), " +
+            "BRANCH_QUAL VARBINARY(254), " +
+            "FORMAT_ID INTEGER, " +
+            "GLOBAL_TXID VARBINARY(254), " +      
+            "PRIMARY KEY (TRANSACTIONID))");
       
       props.put("CREATE_MESSAGE_REF",
-                "CREATE TABLE MESSAGE_REFERENCE (" +
-                "CHANNELID VARCHAR(256), " +
-                "MESSAGEID VARCHAR(256), " +
-                "STOREID VARCHAR(256), " +
-                "TRANSACTIONID VARCHAR(255), " +
-                "STATE CHAR(1), " +
-                "ORD BIGINT, " +
-                "PRIMARY KEY(STOREID, CHANNELID, MESSAGEID))");
+            "CREATE TABLE MESSAGE_REFERENCE (" +
+            "CHANNELID VARCHAR(256), " +
+            "MESSAGEID VARCHAR(256), " +
+            "TRANSACTIONID VARCHAR(255), " +
+            "STATE CHAR(1), " +
+            "ORD BIGINT, " +
+            "DELIVERYCOUNT INTEGER, " +
+            "PRIMARY KEY(CHANNELID, MESSAGEID))");
 
       return props;
    }

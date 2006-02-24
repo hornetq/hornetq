@@ -158,8 +158,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
     */
    public JBossMessage(String messageID)
    {
-      this(messageID, true, 0, System.currentTimeMillis(), (byte)4, 0,
-           null, null, null, null, true, null, true, null, Integer.MIN_VALUE, null);
+      this(messageID, true, 0, System.currentTimeMillis(), (byte)4,
+           null, null, null, null, null, true, null, true, null, null);
    }
 
    /*
@@ -169,33 +169,27 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        boolean reliable,
                        long expiration,
                        long timestamp,
-                       byte priority,
-                       int deliveryCount,
+                       byte priority,    
                        Map coreHeaders,
                        Serializable payload,
                        String jmsType,
-                       Object correlationID,
+                       String correlationID,
+                       byte[] correlationIDBytes,
                        boolean destinationIsQueue,
                        String destination,
                        boolean replyToIsQueue,
-                       String replyTo,
-                       int connectionID,
-                       Map jmsProperties)
+                       String replyTo,                
+                       HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, 0, coreHeaders, payload);
+      super(messageID, reliable, expiration, timestamp, priority, 0, 0, coreHeaders, payload);
 
       this.jmsType = jmsType;      
 
-      if (correlationID instanceof byte[])
-      {         
-         correlationIDBytes = (byte[])correlationID;
-         this.correlationID = null;
-      }
-      else
-      {
-         this.correlationID = (String)correlationID;
-         this.correlationIDBytes = null;
-      }
+      this.correlationID = correlationID;
+      
+      this.correlationIDBytes = correlationIDBytes;
+      
+      this.connectionID = Integer.MIN_VALUE;
 
       if (destination != null)
       {
@@ -227,10 +221,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
       else
       {
-         properties = new HashMap(jmsProperties);
+         properties = jmsProperties;
       }
-
-      this.connectionID = connectionID;
    }
 
    /**
@@ -334,10 +326,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      if (this.correlationIDBytes == null)
-      {
-         throw new JMSException("CorrelationID is a String for this message");
-      }
       return correlationIDBytes;
    }
 
@@ -359,10 +347,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public String getJMSCorrelationID() throws JMSException
    {
-      if (this.correlationIDBytes != null)
-      {
-         throw new JMSException("CorrelationID is a byte[] for this message");
-      }
       return correlationID;
    }
 

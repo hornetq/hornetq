@@ -31,6 +31,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -88,24 +89,23 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
     * This constructor is used to construct messages when retrieved from persistence storage
     */
    public JBossObjectMessage(String messageID,
-                              boolean reliable,
-                              long expiration,
-                              long timestamp,
-                              byte priority,
-                              int deliveryCount,
-                              Map coreHeaders,
-                              Serializable payload,
-                              String jmsType,
-                              Object correlationID,
-                              boolean destinationIsQueue,
-                              String destination,
-                              boolean replyToIsQueue,
-                              String replyTo,
-                              int connectionID,
-                              Map jmsProperties)
+         boolean reliable,
+         long expiration,
+         long timestamp,
+         byte priority,
+         Map coreHeaders,
+         Serializable payload,
+         String jmsType,
+         String correlationID,
+         byte[] correlationIDBytes,
+         boolean destinationIsQueue,
+         String destination,
+         boolean replyToIsQueue,
+         String replyTo,
+         HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
-            jmsType, correlationID, destinationIsQueue, destination, replyToIsQueue, replyTo, connectionID,
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
+            jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
             jmsProperties);
    }
 

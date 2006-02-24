@@ -21,7 +21,7 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.messaging.core.Message;
@@ -58,31 +58,30 @@ public class BytesMessagePersistenceManagerTest extends MessagePersistenceManage
    
    protected Message createMessage(byte i) throws Exception
    {
-      Map coreHeaders = generateFilledMap(true);         
+      HashMap coreHeaders = generateFilledMap(true);         
       
-      Map jmsProperties = generateFilledMap(false);
+      HashMap jmsProperties = generateFilledMap(false);
                
       JBossBytesMessage m = 
          new JBossBytesMessage(new GUID().toString(),
-            true,
-            System.currentTimeMillis() + 1000 * 60 * 60,
-            System.currentTimeMillis(),
-            i,
-            i + 2,
-            coreHeaders,
-            null,
-            i % 2 == 0 ? new GUID().toString() : null,
-            genCorrelationID(i),
-            i % 2 == 0,
-            new GUID().toString(),
-            i % 2 == 1,
-            new GUID().toString(),
-            randInt().intValue(),
-            jmsProperties);  
+               true,
+               System.currentTimeMillis() + 1000 * 60 * 60,
+               System.currentTimeMillis(),
+               i,
+               coreHeaders,
+               null,
+               i % 2 == 0 ? new GUID().toString() : null,
+               genCorrelationID(i),
+               i % 3 == 2 ? randByteArray(50) : null,
+               i % 2 == 0,
+               new GUID().toString(),
+               i % 2 == 1,
+               new GUID().toString(),            
+               jmsProperties); 
       
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());
-      m.writeBytes(randByteArray());
+      m.writeBytes(randByteArray(500));
       m.writeChar(randChar().charValue());
       m.writeDouble(randDouble().doubleValue());
       m.writeFloat(randFloat().floatValue());

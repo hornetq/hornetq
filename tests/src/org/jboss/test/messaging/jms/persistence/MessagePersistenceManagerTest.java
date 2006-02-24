@@ -21,7 +21,7 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
@@ -101,30 +101,29 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    
    protected Message createMessage(byte i) throws Exception
    {
-      Map coreHeaders = generateFilledMap(true);         
+      HashMap coreHeaders = generateFilledMap(true);         
       
-      Map jmsProperties = generateFilledMap(false);
-               
+      HashMap jmsProperties = generateFilledMap(false);
+              
       return
          new JBossMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,
-            i + 2,
             coreHeaders,
             new WibblishObject(),
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
+            i % 3 == 2 ? randByteArray(50) : null,
             i % 2 == 0,
             new GUID().toString(),
             i % 2 == 1,
-            new GUID().toString(),
-            randInt().intValue(),
+            new GUID().toString(),            
             jmsProperties);            
    }
    
-   protected Object genCorrelationID(int i)
+   protected String genCorrelationID(int i)
    {
       if (i % 3 == 0)
       {
@@ -133,11 +132,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       else if (i % 3 == 1)
       {
          return new GUID().toString();
-      }
-      else if (i % 3 == 2)
-      {
-         return randByteArray();
-      }
+      }     
       return null;
    }
    

@@ -21,9 +21,11 @@
  */
 package org.jboss.messaging.core.plugin;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,6 +34,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +57,14 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.tm.TransactionManagerServiceMBean;
 import org.jboss.util.id.GUID;
@@ -82,7 +88,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class);
    
    protected String insertMessageRef =
-      "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, STOREID, TRANSACTIONID, STATE, ORD) " +
+      "INSERT INTO MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, DELIVERYCOUNT) " +
       "VALUES (?, ?, ?, ?, ?, ?)";
    
    protected String deleteMessageRef =
@@ -108,7 +114,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "DELETE FROM MESSAGE_REFERENCE WHERE CHANNELID=?";
    
    protected String selectChannelMessageRefs =
-      "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STOREID=? AND STATE <> '+' ORDER BY ORD";
+      "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? AND STATE <> '+' ORDER BY ORD";
    
    protected String createTransaction =
       "CREATE TABLE TRANSACTION (" +
@@ -122,11 +128,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "CREATE TABLE MESSAGE_REFERENCE (" +
       "CHANNELID VARCHAR(256), " +
       "MESSAGEID VARCHAR(256), " +
-      "STOREID VARCHAR(256), " +
       "TRANSACTIONID BIGINT, " +
       "STATE CHAR(1), " +
       "ORD BIGINT, " +
-      "PRIMARY KEY(STOREID, CHANNELID, MESSAGEID))";
+      "DELIVERYCOUNT INTEGER, " +
+      "PRIMARY KEY(CHANNELID, MESSAGEID))";
    
    protected String insertTransaction =
       "INSERT INTO TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
@@ -149,42 +155,39 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "EXPIRATION, " +
       "TIMESTAMP, " +
       "PRIORITY, " +
-      "DELIVERYCOUNT, " +
       "COREHEADERS, " +
       "PAYLOAD, " +
       "TYPE, " +
       "JMSTYPE, " +
       "CORRELATIONID, " +
+      "CORRELATIONID_BYTES, " +
       "DESTINATIONISQUEUE, " +
       "DESTINATION, " +
       "REPLYTOISQUEUE, " +
       "REPLYTO, " +
-      "CONNECTIONID, " +
       "JMSPROPERTIES, " +
       "REFERENCECOUNT) " +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
    
    protected String deleteMessage =
       "DELETE FROM MESSAGE WHERE MESSAGEID=?";
    
    protected String selectMessage =
-      "SELECT " +
-      "MESSAGEID, " +
+      "SELECT " +      
       "RELIABLE, " +
       "EXPIRATION, " +
       "TIMESTAMP, " +
       "PRIORITY, " +
-      "DELIVERYCOUNT, " +
       "COREHEADERS, " +
       "PAYLOAD, " +
       "TYPE, " +
       "JMSTYPE, " +
       "CORRELATIONID, " +
+      "CORRELATIONID_BYTES, " +
       "DESTINATIONISQUEUE, " +
       "DESTINATION, " +
       "REPLYTOISQUEUE, " +
       "REPLYTO, " +
-      "CONNECTIONID, " +
       "JMSPROPERTIES, " +
       "REFERENCECOUNT " +
       "FROM MESSAGE WHERE MESSAGEID = ?";
@@ -196,18 +199,17 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "EXPIRATION BIGINT, " +
       "TIMESTAMP BIGINT, " +
       "PRIORITY TINYINT, " + 
-      "DELIVERYCOUNT INTEGER, " +
-      "COREHEADERS OBJECT, " +
-      "PAYLOAD OBJECT, " +
+      "COREHEADERS LONGVARBINARY, " +
+      "PAYLOAD OBJECT, " +  //TODO change column type to LONGVARBINARY
       "TYPE TINYINT, " +
       "JMSTYPE VARCHAR(255), " +
-      "CORRELATIONID OBJECT, " +
+      "CORRELATIONID VARCHAR(255), " +
+      "CORRELATIONID_BYTES VARBINARY, " +
       "DESTINATIONISQUEUE CHAR(1), " +
       "DESTINATION VARCHAR(255), " +
       "REPLYTOISQUEUE CHAR(1), " +
       "REPLYTO VARCHAR(255), " +
-      "CONNECTIONID INTEGER, " +
-      "JMSPROPERTIES OBJECT, " +
+      "JMSPROPERTIES LONGVARBINARY, " +
       "REFERENCECOUNT TINYINT, " +
       "PRIMARY KEY (MESSAGEID))";
    
@@ -228,11 +230,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected ObjectName tmObjectName;
    protected TransactionManager tm;
    
-   protected int bytesStoredAs;
    protected Properties sqlProperties;
-   protected boolean createTablesOnStartup;
-   protected boolean txIdGUID;
-   protected boolean useBatchUpdates;
+   protected boolean createTablesOnStartup = true;
+   protected boolean txIdGUID = false;
+   protected boolean usingBatchUpdates = true;
+   protected boolean usingBinaryStream = true;
    
    
    // Constructors --------------------------------------------------
@@ -317,7 +319,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          try
          {
             //Add the reference
-            addReference(channelID, ref, conn);                            
+            addReference(channelID, ref, conn);     
+            
+            //Maybe we need to persist the message itself
+            checkStoreMessage(ref, conn);  
          }
          catch (Exception e)
          {
@@ -360,7 +365,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          try
          {
             //Remove the message reference
-            removeReference(channelID, ref, conn);            
+            removeReference(channelID, ref, conn);   
+            
+            //We may need to remove the message itself
+            checkRemoveMessage(ref, conn);
          }
          catch (Exception e)
          {
@@ -438,9 +446,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
-   public List messageRefs(Serializable storeID, Serializable channelID) throws Exception
+   public List messageRefs(Serializable channelID) throws Exception
    {
-      if (trace) { log.trace("getting message references for channel " + channelID + " and store " + storeID); }
+      if (trace) { log.trace("getting message references for channel " + channelID); }
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
@@ -453,8 +461,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          ps = conn.prepareStatement(selectChannelMessageRefs);
          ps.setString(1, (String)channelID);
-         ps.setString(2, (String)storeID);
-         
+
          rs = ps.executeQuery();
          
          while (rs.next())
@@ -569,17 +576,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
          wrap.end();
       }   
-   }
-      
-   public boolean isTxIdGUID() throws Exception
-   {
-      return txIdGUID;
-   }
-   
-   public void setTxIdGuid(boolean isGUID) throws Exception
-   {
-      txIdGUID = isGUID;
-   }
+   }         
    
    /**
     * Retrieves the message from the MESSAGE table and <i>increments the reference count</i> if
@@ -606,28 +603,41 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          int count = 0;
          if (rs.next())
          {           
-            m = MessageFactory.createMessage(rs.getString(1), //message id
-                  rs.getString(2).equals("Y"), //reliable
-                  rs.getLong(3), //expiration
-                  rs.getLong(4), //timestamp
-                  rs.getByte(5), //priority
-                  rs.getInt(6), //delivery count
-                  (Map)rs.getObject(7), //core headers
-                  (Serializable)rs.getObject(8), //payload
-                  rs.getByte(9), //type
-                  rs.getString(10), //jms type
-                  rs.getObject(11), //correlation id
-                  rs.getString(12).equals("Y"), //destination is queue
-                  rs.getString(13), //destination
-                  rs.getString(14).equals("Y"), //reply to is queue
-                  rs.getString(15), //reply to
-                  rs.getInt(16), // connection id
-                  (Map)rs.getObject(17)); // jms properties
+            boolean reliable = rs.getString(1).equals("Y");
+            long expiration = rs.getLong(2);
+            long timestamp = rs.getLong(3);
+            byte priority = rs.getByte(4);
             
-            referenceCount = rs.getInt(18);
+            byte[] bytes = getLongVarBinary(rs, 5);
+            HashMap coreHeaders = bytesToMap(bytes);
+            
+//            bytes = getLongVarBinary(rs, 7);
+//            Serializable payload = constructPayload(bytes);
+            
+            //TODO read as longvarbinary
+            Serializable payload = (Serializable)rs.getObject(6);
+            
+            byte type = rs.getByte(7);
+            String jmsType = rs.getString(8);
+            String correlationID = rs.getString(9);
+            byte[] correlationIDBytes = rs.getBytes(10);
+            boolean destinationIsQueue = rs.getString(11).equals("Y");
+            String destination = rs.getString(12);
+            boolean replytoIsQueue = rs.getString(13).equals("Y");
+            String replyto = rs.getString(14);
+            
+            bytes = getLongVarBinary(rs, 15);
+            HashMap jmsProperties = bytesToMap(bytes);
+            
+            referenceCount = rs.getInt(16);
+                        
+            m = MessageFactory.createMessage(messageID, reliable, expiration, timestamp, priority,
+                  coreHeaders, payload, type, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+                  destination, replytoIsQueue, replyto, jmsProperties);
+            
             count ++;
          }
-         
+                  
          if (trace) { log.trace(JDBCUtil.statementToString(selectMessage, messageID) + " selected " + count + " row(s)"); }
          
          if (m != null)
@@ -818,6 +828,54 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       sqlProperties = new Properties(props);
    }
    
+   /**
+    * Managed attribute.
+    */
+   public boolean isTxIdGUID() throws Exception
+   {
+      return txIdGUID;
+   }
+   
+   /**
+    * Managed attribute.
+    */
+   public void setTxIdGuid(boolean isGUID) throws Exception
+   {
+      txIdGUID = isGUID;
+   }
+   
+   /**
+    * Managed attribute.
+    */
+   public boolean isCreateTablesOnStartup() throws Exception
+   {
+      return createTablesOnStartup;
+   }
+   
+   /**
+    * Managed attribute.
+    */
+   public void setCreateTablesOnStartup(boolean b) throws Exception
+   {
+      createTablesOnStartup = b;
+   }
+   
+   /**
+    * Managed attribute.
+    */
+   public boolean isUsingBatchUpdates() throws Exception
+   {
+      return usingBatchUpdates;
+   }
+   
+   /**
+    * Managed attribute.
+    */
+   public void setUsingBatchUpdates(boolean b) throws Exception
+   {
+      usingBatchUpdates = b;
+   }
+   
    public String toString()
    {
       return "JDBCPersistenceManager[" + Integer.toHexString(hashCode()) + "]";
@@ -928,13 +986,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       selectMessage = sqlProperties.getProperty("SELECT_MESSAGE", selectMessage);            
       createMessage = sqlProperties.getProperty("CREATE_MESSAGE", createMessage);
       selectReferenceCount = sqlProperties.getProperty("SELECT_REF_COUNT", selectReferenceCount);
-      updateReferenceCount = sqlProperties.getProperty("UPDATE_REF_COUNT", updateReferenceCount); 
-      
-      //FIXME - Why isn't this configured as a boolean MBean attribute???
-      createTablesOnStartup = sqlProperties.getProperty("CREATE_TABLES_ON_STARTUP", "true").equalsIgnoreCase("true");      
-      
-      //txIdGUID has its own variable and mutator so storing it here is confusing and error prone.
-      //txIdGUID = sqlProperties.getProperty("TX_ID_IS_GUID", "false").equalsIgnoreCase("true");
+      updateReferenceCount = sqlProperties.getProperty("UPDATE_REF_COUNT", updateReferenceCount);       
    }
    
    protected void addTXRecord(Connection conn, Transaction tx) throws Exception
@@ -1080,28 +1132,25 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       int inserted = -1;
       boolean attempted = false;
-      String messageID = (String)ref.getMessageID();
-      String storeID = (String)ref.getStoreID();
-      long ordering = ref.getOrdering();
       
       try
       {      
          ps = conn.prepareStatement(insertMessageRef);
          ps.setString(1, (String)channelID);
-         ps.setString(2, messageID);
-         ps.setString(3, storeID);
+         ps.setString(2, (String)ref.getMessageID());
          
          if (this.txIdGUID)
          {
-            ps.setNull(4, java.sql.Types.VARCHAR);
+            ps.setNull(3, java.sql.Types.VARCHAR);
          }
          else
          {
-            ps.setNull(4, java.sql.Types.BIGINT);
+            ps.setNull(3, java.sql.Types.BIGINT);
          }
          
-         ps.setString(5, "C");
-         ps.setLong(6, ordering);
+         ps.setString(4, "C");
+         ps.setLong(5, ref.getOrdering());
+         ps.setInt(6, ref.getDeliveryCount());
          
          attempted = true;
          inserted = ps.executeUpdate();
@@ -1110,8 +1159,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       {
          if (trace && attempted)
          {
-            String s = JDBCUtil.statementToString(insertMessageRef, channelID, messageID,
-                  storeID, null, "C", new Long(ordering));
+            String s = JDBCUtil.statementToString(insertMessageRef, channelID, ref.getMessageID(),
+                  null, "C", new Long(ref.getOrdering()));
             log.trace(s + (inserted == -1 ? " failed" : " inserted " + inserted + " row(s)"));
          }
          
@@ -1125,9 +1174,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             {}
          }  
       }
-      
-      //Maybe we need to persist the message itself
-      checkStoreMessage(ref, conn);  
    }   
    
       
@@ -1160,11 +1206,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             catch (Throwable t)
             {}
          }
-      }
-      
-      //We may need to remove the message itself
-      checkRemoveMessage(ref, conn);
-      
+      }      
    }      
    
    protected void prepareToAddReference(Serializable channelID,
@@ -1179,7 +1221,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       int inserted = -1;
       boolean attempted = false;
       String messageID = (String)ref.getMessageID();
-      String storeID = (String)ref.getStoreID();
       long ordering = ref.getOrdering();
       String state = null;
       
@@ -1188,19 +1229,18 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          ps = conn.prepareStatement(insertMessageRef);
          ps.setString(1, (String)channelID);
          ps.setString(2, messageID);
-         ps.setString(3, storeID);
          
          if (this.txIdGUID)
          {
-            ps.setString(4, tx.getGuidTxId());
+            ps.setString(3, tx.getGuidTxId());
          }
          else
          {
-            ps.setLong(4, tx.getLongTxId());
+            ps.setLong(3, tx.getLongTxId());
          }
          
-         ps.setString(5, "+");
-         ps.setLong(6, ordering);
+         ps.setString(4, "+");
+         ps.setLong(5, ordering);
          
          attempted = true;
          inserted = ps.executeUpdate();
@@ -1210,7 +1250,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          if (trace && attempted)
          {
             String s = JDBCUtil.statementToString(insertMessageRef, channelID, messageID,
-                  storeID, getTxId(tx), state, new Long(ordering));
+                  getTxId(tx), state, new Long(ordering));
             log.trace(s + (inserted == -1 ? " failed" : " inserted " + inserted + " row(s)"));
          }
          
@@ -1223,10 +1263,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             catch (Throwable e)
             {}
          }  
-      }
-      
-      //Maybe we need to persist the message itself
-      checkStoreMessage(ref, conn); 
+      }     
    }
    
    protected void prepareToRemoveReference(Serializable channelID, MessageReference ref, Transaction tx, Connection conn)
@@ -1377,6 +1414,64 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }   
    
+   protected byte[] mapToBytes(Map map) throws Exception
+   {
+      if (map == null || map.isEmpty())
+      {
+         return null;
+      }
+      
+      final int BUFFER_SIZE = 1024;
+      
+      JBossObjectOutputStream oos = null;
+      
+      try
+      {      
+         ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
+         
+         oos = new JBossObjectOutputStream(bos);
+         
+         RoutableSupport.writeMap(oos, map);
+         
+         return bos.toByteArray();
+      }
+      finally
+      {
+         if (oos != null)
+         {
+            oos.close();
+         }
+      }
+   }
+   
+   protected HashMap bytesToMap(byte[] bytes) throws Exception
+   {
+      if (bytes == null)
+      {
+         return new HashMap();
+      }
+      
+      JBossObjectInputStream ois = null;
+      
+      try
+      {
+         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+         
+         ois = new JBossObjectInputStream(bis);
+         
+         HashMap map = RoutableSupport.readMap(ois);
+         
+         return map;
+      }
+      finally
+      {
+         if (ois != null)
+         {
+            ois.close();
+         }
+      }
+   }
+         
    /**
     * Stores the message in the MESSAGE table.
     */
@@ -1413,39 +1508,42 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             ps.setLong(3, m.getExpiration());
             ps.setLong(4, m.getTimestamp());
             ps.setByte(5, m.getPriority());
-            ps.setInt(6, m.getDeliveryCount());
             
-            ps.setObject(7, ((MessageSupport)m).getHeaders());
-            
+            byte[] bytes = mapToBytes(((MessageSupport)m).getHeaders());
+            if (bytes != null)
+            {
+               setLongVarBinary(ps, 6, bytes);
+            }
+            else
+            {
+               ps.setNull(6, Types.LONGVARBINARY);
+            }
+                        
             //Now set the fields from org.jboss.messaging.core.Message
-            ps.setObject(8, m.getPayload());
+            
+            //TODO store as longvarbinary
+            ps.setObject(7, m.getPayload());
             
             //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
-            int type = -1;
+            byte type = -1;
             String jmsType = null;
-            Object correlationID = null;
+            String correlationID = null;
+            byte[] correlationIDBytes = null;
             boolean destIsQueue = false;
             String dest = null;
             boolean replyToIsQueue = false;
             String replyTo = null;
             Map jmsProperties = null;
-            int connectionID = -1;
-            
+
             if (m instanceof JBossMessage)
             {
                JBossMessage jbm = (JBossMessage)m;
                type = jbm.getType();
                jmsType = jbm.getJMSType();
-               connectionID = jbm.getConnectionID();
                
-               if (jbm.isCorrelationIDBytes())
-               {
-                  correlationID = jbm.getJMSCorrelationIDAsBytes();
-               }
-               else
-               {
-                  correlationID = jbm.getJMSCorrelationID();
-               }
+               correlationID = jbm.getJMSCorrelationID();
+               
+               correlationIDBytes = jbm.getJMSCorrelationIDAsBytes();
                
                Destination d = jbm.getJMSDestination();
                if (d != null)
@@ -1477,16 +1575,26 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                jmsProperties = jbm.getJMSProperties();
             }
             
-            ps.setInt(9, type);
-            ps.setString(10, jmsType);
-            ps.setObject(11, correlationID);
+            ps.setByte(8, type);
+            ps.setString(9, jmsType);
+            ps.setString(10, correlationID);
+            ps.setBytes(11, correlationIDBytes);
             ps.setString(12, destIsQueue ? "Y" : "N");
             ps.setString(13, dest);
             ps.setString(14, replyToIsQueue ? "Y" : "N");
-            ps.setString(15, replyTo);
-            ps.setInt(16, connectionID);
-            ps.setObject(17, jmsProperties);
-            ps.setInt(18, 1);
+            ps.setString(15, replyTo);       
+            
+            bytes = mapToBytes(jmsProperties);
+            if (bytes != null)
+            {
+               setLongVarBinary(ps, 16, bytes);
+            }
+            else
+            {
+               ps.setNull(16, Types.LONGVARBINARY);
+            }
+            
+            ps.setInt(17, 1);
             
             int result = ps.executeUpdate();
             if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
@@ -1598,8 +1706,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected void checkRemoveMessage(MessageReference ref, Connection conn) throws Exception
    {
       synchronized (ref)
-      { 
-         log.info("ref is instorage:" + ref.isInStorage() + ", channel count=" + ref.getChannelCount());
+      {          
          if (ref.getChannelCount() == 1 && ref.isInStorage())
          {
             //Only one ref left (actually the one we just removed) so we can remove the message
@@ -1607,6 +1714,281 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             
             ref.setInStorage(false);
          } 
+      }
+   }
+   
+   protected void handleBeforeCommit(boolean onePhase, List refsToAdd, List refsToRemove, Transaction tx) throws Exception
+   {
+      //If one phase we simply add rows corresponding to the refs
+      //and remove rows corresponding to the deliveries in one jdbc tx
+      //no tx record is necessary
+      
+      //If two phase then we update refs with + to C
+      //and remove rows marked with -
+      //and remove the tx record
+      
+      Connection conn = null;
+      
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         if (onePhase)
+         {                                           
+            Iterator iter = refsToAdd.iterator();
+            while (iter.hasNext())
+            {
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               
+               //We may need to persist the message itself 
+               MessageReference ref = pair.ref;
+               
+               //Now store the reference
+               addReference(pair.channelId, ref, conn);      
+               
+               //Maybe we need to persist the message itself
+               checkStoreMessage(ref, conn);  
+            }
+            
+            iter = refsToRemove.iterator();
+            while (iter.hasNext())
+            {
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               
+               removeReference(pair.channelId, pair.ref, conn);  
+               
+               //We may need to remove the message itself
+               checkRemoveMessage(pair.ref, conn);
+            }
+         }
+         else
+         {
+            commitPreparedTransaction(tx, conn);
+            
+            Iterator iter = refsToRemove.iterator();
+            while (iter.hasNext())
+            {
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               
+               MessageReference ref = pair.ref;
+               
+               //We may need to remove the message itself
+               checkRemoveMessage(ref, conn);                
+            }            
+         }            
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {            
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {}
+         }
+         wrap.end();
+      }       
+   }
+   
+   protected void handleBeforePrepare(List refsToAdd, List refsToRemove, Transaction tx) throws Exception
+   {
+      //We insert a tx record and
+      //a row for each ref with +
+      //and update the row for each delivery with "-"
+      
+      Connection conn = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         //Insert the tx record
+         if (!refsToAdd.isEmpty() || !refsToRemove.isEmpty())
+         {
+            addTXRecord(conn, tx);
+         }
+         
+         Iterator iter = refsToAdd.iterator();
+         
+         while (iter.hasNext())
+         {
+            ChannelRefPair pair = (ChannelRefPair)iter.next();
+            
+            prepareToAddReference(pair.channelId, pair.ref, tx, conn);  
+            
+            //Maybe we need to persist the message itself
+            checkStoreMessage(pair.ref, conn); 
+         }
+         
+         iter = refsToRemove.iterator();
+         
+         while (iter.hasNext())
+         {
+            ChannelRefPair pair = (ChannelRefPair)iter.next();
+            
+            prepareToRemoveReference(pair.channelId, pair.ref, tx, conn);  
+         }                      
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {            
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {}
+         }
+         wrap.end();
+      }      
+   }
+   
+   protected void handleBeforeRollback(boolean onePhase, List refsToAdd, Transaction tx) throws Exception
+   {
+      //if one phase then do nothing (there is nothing in the db)
+      //if two phase then remove refs marked with +
+      //and update rows marked with - to C
+      
+      if (onePhase)
+      {
+         //NOOP
+      }
+      else
+      {
+         Connection conn = null;
+         TransactionWrapper wrap = new TransactionWrapper();
+         
+         try
+         {
+            conn = ds.getConnection();
+            
+            rollbackPreparedTransaction(tx, conn);
+            
+            Iterator iter = refsToAdd.iterator();
+            
+            while (iter.hasNext())
+            {
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               
+               //We may need to remove the message for messages added during the prepare stage
+               
+               checkRemoveMessage(pair.ref, conn);    
+            }               
+         }
+         catch (Exception e)
+         {
+            wrap.exceptionOccurred();
+            throw e;
+         }
+         finally
+         {            
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (Throwable e)
+               {}
+            }
+            wrap.end();
+         }   
+      }
+   }
+   
+   protected void setLongVarBinary(PreparedStatement ps, int columnIndex, byte[] bytes) throws Exception
+   {
+      if (usingBinaryStream)
+      {
+         //Set the bytes using a binary stream - likely to be better for large byte[]
+         
+         InputStream is = null;
+         
+         try
+         {
+            is = new ByteArrayInputStream(bytes);
+         
+            ps.setBinaryStream(columnIndex, is, bytes.length);
+         }
+         finally
+         {
+            if (is != null)
+            {
+               is.close();
+            }
+         }
+      }
+      else
+      {
+         //Set the bytes using setBytes() - likely to be better for smaller byte[]
+         ps.setBytes(columnIndex, bytes);
+      }
+   }
+   
+   protected byte[] getLongVarBinary(ResultSet rs, int columnIndex) throws Exception
+   {
+      if (usingBinaryStream)
+      {         
+         //Get the bytes using a binary stream - likely to be better for large byte[]
+         
+         InputStream is = null;
+         ByteArrayOutputStream os = null;
+         
+         final int BUFFER_SIZE = 4096;
+         
+         try
+         {
+            InputStream i = rs.getBinaryStream(columnIndex);
+            
+            if (i == null)
+            {
+               return null;
+            }
+            
+            is = new BufferedInputStream(rs.getBinaryStream(columnIndex), BUFFER_SIZE);
+            
+            os = new ByteArrayOutputStream(BUFFER_SIZE);
+            
+            int b;
+            while ((b = is.read()) != -1)
+            {
+               os.write(b);
+            }
+            
+            return os.toByteArray();
+         }
+         finally
+         {
+            if (is != null)
+            {
+               is.close();
+            }
+            if (os != null)
+            {
+               os.close();
+            }
+         }
+      }
+      else
+      {
+         //Get the bytes using setBytes() - better for smaller byte[]
+         return rs.getBytes(columnIndex);
       }
    }
    
@@ -1653,27 +2035,27 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
+   private class ChannelRefPair
+   {
+      private String channelId;
+      
+      private MessageReference ref;
+      
+      private ChannelRefPair(String channelId, MessageReference ref)
+      {
+         this.channelId = channelId;
+         
+         this.ref = ref;
+      }                  
+   }
+   
    private class TransactionCallback implements TxCallback
    {
       private Transaction tx;
       
       private List refsToAdd;
       
-      private List refsToRemove;
-      
-      private class ChannelRefPair
-      {
-         private String channelId;
-         
-         private MessageReference ref;
-         
-         private ChannelRefPair(String channelId, MessageReference ref)
-         {
-            this.channelId = channelId;
-            
-            this.ref = ref;
-         }                  
-      }
+      private List refsToRemove;            
       
       private TransactionCallback(Transaction tx)
       {
@@ -1711,189 +2093,17 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       public void beforeCommit(boolean onePhase) throws Exception
       {
-         //If one phase we simply add rows corresponding to the refs
-         //and remove rows corresponding to the deliveries in one jdbc tx
-         //no tx record is necessary
-         
-         //If two phase then we update refs with + to C
-         //and remove rows marked with -
-         //and remove the tx record
-         
-         Connection conn = null;
-         
-         TransactionWrapper wrap = new TransactionWrapper();
-         
-         try
-         {
-            conn = ds.getConnection();
-            
-            if (onePhase)
-            {                                           
-               Iterator iter = refsToAdd.iterator();
-               while (iter.hasNext())
-               {
-                  ChannelRefPair pair = (ChannelRefPair)iter.next();
-                  
-                  //We may need to persist the message itself 
-                  MessageReference ref = pair.ref;
-                  
-                  //Now store the reference
-                  addReference(pair.channelId, ref, conn);                  
-               }
-               
-               iter = refsToRemove.iterator();
-               while (iter.hasNext())
-               {
-                  ChannelRefPair pair = (ChannelRefPair)iter.next();
-                  
-                  removeReference(pair.channelId, pair.ref, conn);                  
-               }
-            }
-            else
-            {
-               commitPreparedTransaction(tx, conn);
-               
-               Iterator iter = refsToRemove.iterator();
-               while (iter.hasNext())
-               {
-                  ChannelRefPair pair = (ChannelRefPair)iter.next();
-                  
-                  MessageReference ref = pair.ref;
-                  
-                  //We may need to remove the message itself
-                  checkRemoveMessage(ref, conn);                
-               }
-               
-            }            
-         }
-         catch (Exception e)
-         {
-            wrap.exceptionOccurred();
-            throw e;
-         }
-         finally
-         {            
-            if (conn != null)
-            {
-               try
-               {
-                  conn.close();
-               }
-               catch (Throwable e)
-               {}
-            }
-            wrap.end();
-         }         
+         handleBeforeCommit(onePhase, refsToAdd, refsToRemove, tx);  
       }
       
       public void beforePrepare() throws Exception
       {
-         //We insert a tx record and
-         //a row for each ref with +
-         //and update the row for each delivery with "-"
-         
-         Connection conn = null;
-         TransactionWrapper wrap = new TransactionWrapper();
-         
-         try
-         {
-            conn = ds.getConnection();
-            
-            //Insert the tx record
-            if (!refsToAdd.isEmpty() || !refsToRemove.isEmpty())
-            {
-               addTXRecord(conn, tx);
-            }
-            
-            Iterator iter = refsToAdd.iterator();
-            
-            while (iter.hasNext())
-            {
-               ChannelRefPair pair = (ChannelRefPair)iter.next();
-               
-               prepareToAddReference(pair.channelId, pair.ref, tx, conn);  
-            }
-            
-            iter = refsToRemove.iterator();
-            
-            while (iter.hasNext())
-            {
-               ChannelRefPair pair = (ChannelRefPair)iter.next();
-               
-               prepareToRemoveReference(pair.channelId, pair.ref, tx, conn);  
-            }                      
-         }
-         catch (Exception e)
-         {
-            wrap.exceptionOccurred();
-            throw e;
-         }
-         finally
-         {            
-            if (conn != null)
-            {
-               try
-               {
-                  conn.close();
-               }
-               catch (Throwable e)
-               {}
-            }
-            wrap.end();
-         }             
+         handleBeforePrepare(refsToAdd, refsToRemove, tx);
       }
       
       public void beforeRollback(boolean onePhase) throws Exception
       {
-         //if one phase then do nothing (there is nothing in the db)
-         //if two phase then remove refs marked with +
-         //and update rows marked with - to C
-         
-         if (onePhase)
-         {
-            //NOOP
-         }
-         else
-         {
-            Connection conn = null;
-            TransactionWrapper wrap = new TransactionWrapper();
-            
-            try
-            {
-               conn = ds.getConnection();
-               
-               rollbackPreparedTransaction(tx, conn);
-               
-               Iterator iter = refsToAdd.iterator();
-               
-               while (iter.hasNext())
-               {
-                  ChannelRefPair pair = (ChannelRefPair)iter.next();
-                  
-                  //We may need to remove the message for messages added during the prepare stage
-                  
-                  checkRemoveMessage(pair.ref, conn);    
-               }               
-            }
-            catch (Exception e)
-            {
-               wrap.exceptionOccurred();
-               throw e;
-            }
-            finally
-            {            
-               if (conn != null)
-               {
-                  try
-                  {
-                     conn.close();
-                  }
-                  catch (Throwable e)
-                  {}
-               }
-               wrap.end();
-            }   
-         }
-      }      
+         handleBeforeRollback(onePhase, refsToAdd, tx);
+      } 
    }
 }

@@ -21,7 +21,7 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.messaging.core.Message;
@@ -58,27 +58,26 @@ public class ObjectMessagePersistenceManagerTest extends MessagePersistenceManag
    
    protected Message createMessage(byte i) throws Exception
    {
-      Map coreHeaders = generateFilledMap(true);         
+      HashMap coreHeaders = generateFilledMap(true);         
       
-      Map jmsProperties = generateFilledMap(false);
+      HashMap jmsProperties = generateFilledMap(false);
                
       JBossObjectMessage m = 
          new JBossObjectMessage(new GUID().toString(),
-            true,
-            System.currentTimeMillis() + 1000 * 60 * 60,
-            System.currentTimeMillis(),
-            i,
-            i + 2,
-            coreHeaders,
-            null,
-            i % 2 == 0 ? new GUID().toString() : null,
-            genCorrelationID(i),
-            i % 2 == 0,
-            new GUID().toString(),
-            i % 2 == 1,
-            new GUID().toString(),
-            randInt().intValue(),
-            jmsProperties);     
+               true,
+               System.currentTimeMillis() + 1000 * 60 * 60,
+               System.currentTimeMillis(),
+               i,
+               coreHeaders,
+               null,
+               i % 2 == 0 ? new GUID().toString() : null,
+               genCorrelationID(i),
+               i % 3 == 2 ? randByteArray(50) : null,
+               i % 2 == 0,
+               new GUID().toString(),
+               i % 2 == 1,
+               new GUID().toString(),            
+               jmsProperties);     
       m.setPayload(new WibblishObject());
       return m;      
    }

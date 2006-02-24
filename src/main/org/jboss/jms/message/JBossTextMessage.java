@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -71,7 +72,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       super(messageID);
    }
-
+   
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
@@ -80,20 +81,19 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          long expiration,
          long timestamp,
          byte priority,
-         int deliveryCount,
          Map coreHeaders,
          Serializable payload,
          String jmsType,
-         Object correlationID,
+         String correlationID,
+         byte[] correlationIDBytes,
          boolean destinationIsQueue,
          String destination,
          boolean replyToIsQueue,
          String replyTo,
-         int connectionID,
-         Map jmsProperties)
+         HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, coreHeaders, payload,
-            jmsType, correlationID, destinationIsQueue, destination, replyToIsQueue, replyTo, connectionID,
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
+            jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
             jmsProperties);
    }
 

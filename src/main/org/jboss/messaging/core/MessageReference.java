@@ -47,4 +47,5 @@ public interface MessageReference extends Routable
    boolean isInStorage();
    
    MessageReference copy();
+   
 }

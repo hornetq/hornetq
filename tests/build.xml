@@ -286,6 +286,8 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/ClientCrashTest.class"/>
                <exclude name="**/jms/CallbackFailureTest.class"/>
+               <!-- Exclude all distributed tests until after 1.0 release -->
+               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

@@ -70,13 +70,6 @@ public class JMSCorrelationIDHeaderTest extends MessageTest
       Message m2 = queueConsumer.receive();
       assertEquals(messageID, m2.getJMSCorrelationID());
       
-      try
-      {
-         m2.getJMSCorrelationIDAsBytes();
-         fail();
-      }
-      catch(JMSException e) {}
-      
       //Test with correlation id containing an application defined string
       Message m3 = queueProducerSession.createMessage();
       final String appDefinedID = "oiwedjiwjdoiwejdoiwjd"; 
@@ -86,14 +79,6 @@ public class JMSCorrelationIDHeaderTest extends MessageTest
       Message m4 = queueConsumer.receive();
       assertEquals(appDefinedID, m4.getJMSCorrelationID());
       
-      try
-      {
-         m4.getJMSCorrelationIDAsBytes();
-         fail();
-      }
-      catch(JMSException e) {}
-      
-      
       // Test with correlation id containing a byte[]
       Message m5 = queueProducerSession.createMessage();
       final byte[] bytes = new byte[] { -111, 45, 106, 3, -44 };
@@ -102,15 +87,7 @@ public class JMSCorrelationIDHeaderTest extends MessageTest
       queueProducer.send(m5);
       Message m6 = queueConsumer.receive();      
       assertByteArraysEqual(bytes, m6.getJMSCorrelationIDAsBytes());
-      
-      try
-      {
-         m6.getJMSCorrelationID();
-         fail();
-      }
-      catch(JMSException e) {}
-      
-      
+          
    }
 
 

@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms.persistence;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.jms.message.JBossMapMessage;
@@ -58,27 +59,26 @@ public class MapMessagePersistenceManagerTest extends MessagePersistenceManagerT
 
    protected Message createMessage(byte i) throws Exception
    {
-      Map coreHeaders = generateFilledMap(true);         
+      HashMap coreHeaders = generateFilledMap(true);         
       
-      Map jmsProperties = generateFilledMap(false);
+      HashMap jmsProperties = generateFilledMap(false);
                
       JBossMapMessage m = 
          new JBossMapMessage(new GUID().toString(),
-            true,
-            System.currentTimeMillis() + 1000 * 60 * 60,
-            System.currentTimeMillis(),
-            i,
-            i + 2,
-            coreHeaders,
-            null,
-            i % 2 == 0 ? new GUID().toString() : null,
-            genCorrelationID(i),
-            i % 2 == 0,
-            new GUID().toString(),
-            i % 2 == 1,
-            new GUID().toString(),
-            randInt().intValue(),
-            jmsProperties);     
+               true,
+               System.currentTimeMillis() + 1000 * 60 * 60,
+               System.currentTimeMillis(),
+               i,
+               coreHeaders,
+               null,
+               i % 2 == 0 ? new GUID().toString() : null,
+               genCorrelationID(i),
+               i % 3 == 2 ? randByteArray(50) : null,
+               i % 2 == 0,
+               new GUID().toString(),
+               i % 2 == 1,
+               new GUID().toString(),            
+               jmsProperties);      
       
       Map map = generateFilledMap(true);
       m.setPayload((Serializable)map);
