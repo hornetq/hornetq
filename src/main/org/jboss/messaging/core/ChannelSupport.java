@@ -42,7 +42,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
  *
  * $Id$
  */
-public abstract class ChannelSupport implements Channel
+public abstract class ChannelSupport implements Channel, ManageableCoreDestination
 {
    // Constants -----------------------------------------------------
 
@@ -308,6 +308,13 @@ public abstract class ChannelSupport implements Channel
       channelID = null;
    }
   
+   // ManageableCoreDestination implementation ----------------------
+   
+   public void removeAllMessages()
+   {
+      state.removeAll();
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

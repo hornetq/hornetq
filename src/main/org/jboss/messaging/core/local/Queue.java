@@ -78,11 +78,6 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    {
 	   return state.messageCount();
    }
-   
-   public void removeAllMessages()
-   {
-      state.removeAll();
-   }
 
    // Package protected ---------------------------------------------
    
