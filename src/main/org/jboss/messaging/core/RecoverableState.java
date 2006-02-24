@@ -165,6 +165,21 @@ public class RecoverableState extends NonRecoverableState
    // Public --------------------------------------------------------
    
    // Package protected ---------------------------------------------
+   protected void removeCompletely(MessageReference r)
+   {
+      if (r.isReliable())
+      {
+         try 
+         {
+            pm.removeReference(channelID, r, null);
+         }
+         catch (Exception e)
+         {
+            if (trace) { log.trace("removeAll() failed on removing " + r, e); }   
+         }
+      }
+      super.removeCompletely(r);
+   }
    
    // Protected -----------------------------------------------------
 

@@ -176,6 +176,33 @@ public class NonRecoverableState implements State
       if (removed && trace) { log.trace(this + " removed " + d + " from memory"); }   
    }
    
+   public void removeAll()
+   {
+      // Remove all deliveries
+      synchronized(deliveries)
+      {
+         Iterator iter = deliveries.iterator();
+         while (iter.hasNext())
+         {
+            Delivery d = (Delivery)iter.next();
+            MessageReference r = d.getReference();
+            removeCompletely(r);
+         }
+         deliveries.clear();
+      }
+      // Remove all holding messages
+      synchronized(messageRefs)
+      {
+         Iterator iter = messageRefs.getAll().iterator();
+         while (iter.hasNext())
+         {
+            MessageReference r = (MessageReference)iter.next();
+            removeCompletely(r);
+         }
+         messageRefs.clear();
+      }
+   }
+   
    public MessageReference removeFirst()
    {
       MessageReference result = (MessageReference)messageRefs.removeFirst();
@@ -275,6 +302,12 @@ public class NonRecoverableState implements State
    
    // Protected -----------------------------------------------------
 
+   protected void removeCompletely(MessageReference r)
+   {
+      // Not necessary?
+      // r.release();
+   }
+   
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------  

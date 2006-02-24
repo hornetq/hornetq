@@ -48,6 +48,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 public class QueueManagementTest extends DestinationManagementTestBase
 {
    // Constants -----------------------------------------------------
+   private static final String MESSAGE_TWO = "message two";
 
    // Static --------------------------------------------------------
    
@@ -116,6 +117,54 @@ public class QueueManagementTest extends DestinationManagementTestBase
       assertEquals(0, count.intValue());
       
       ServerManagement.undeployQueue("QueueMessageCount");
+   }
+   
+   // TODO this test should be done in DestinationManagementTestBase, once implemented in Topic
+   // TODO this only tests reliable non-tx messages
+   public void testRemoveAllMessages() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      ServerManagement.deployQueue("QueueRemoveMessages");
+      Queue queue = (Queue)ic.lookup("/queue/QueueRemoveMessages");
+      
+      // Send 1 message to queue
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      
+      // Remove all messages from the queue
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueRemoveMessages");
+      ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
+
+      // Test currentMessageCount again, should be 0 msg
+      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      assertEquals(0, count.intValue());
+
+      // Send another message
+      m = session.createTextMessage(MESSAGE_TWO);
+      prod.send(m);
+      conn.close();
+
+      // Consume the 2nd message
+      conn = cf.createConnection();
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons = session.createConsumer(queue);
+      conn.start();
+      
+      Object ms = cons.receive();
+      assertTrue(ms instanceof TextMessage);
+      assertEquals(((TextMessage)ms).getText(), MESSAGE_TWO);
+      assertNull(cons.receiveNoWait());
+      conn.close();
+      
+      ServerManagement.undeployQueue("QueueRemoveMessages");
    }
    
    // Package protected ---------------------------------------------

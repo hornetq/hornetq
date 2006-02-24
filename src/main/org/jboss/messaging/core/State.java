@@ -114,6 +114,12 @@ public interface State
     * @throws Throwable
     */
    void acknowledge(Delivery d) throws Throwable;
+   
+   /**
+    * Remove all messages.
+    *
+    */
+   void removeAll();
       
    /**
     * Remove the MessageReference at the head of the queue from the state. Note that this operation

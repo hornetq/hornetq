@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.server.destination;
 
+import javax.jms.JMSException;
+
 import org.jboss.messaging.core.local.ManageableQueue;
 
 /**
@@ -38,13 +40,19 @@ public class Queue extends DestinationServiceSupport
 
    // JMX managed attributes ----------------------------------------
    
-   public int getCurrentMessageCount() throws Exception
+   public int getCurrentMessageCount() throws JMSException
    {
 	   ManageableQueue q = (ManageableQueue)dm.getCoreDestination(true, name);
 	   return q.getCurrentMessageCount();
    }
 
    // JMX managed operations ----------------------------------------
+   
+   public void removeAllMessages() throws JMSException
+   {
+      ManageableQueue q = (ManageableQueue)dm.getCoreDestination(true, name);
+      q.removeAllMessages();
+   }
 
    // TODO implement these:
 

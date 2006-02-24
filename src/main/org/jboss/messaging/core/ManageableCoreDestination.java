@@ -31,5 +31,10 @@ package org.jboss.messaging.core;
  */
 public interface ManageableCoreDestination
 {
+   /**
+    * Remove all messages from the destination. 
+    *
+    */
+   void removeAllMessages();
    // TODO adding more common manageable operations
 }

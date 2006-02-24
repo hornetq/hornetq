@@ -99,5 +99,10 @@
       <description>JBoss Service lifecycle operation</description>
       <name>destroy</name>
    </operation>
+
+   <operation>
+      <description>Remove all messages in the queue</description>
+      <name>removeAllMessages</name>
+   </operation>
    
 </mbean>
