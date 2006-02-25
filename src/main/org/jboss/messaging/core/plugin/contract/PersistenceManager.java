@@ -63,6 +63,7 @@ public interface PersistenceManager extends ServerPlugin
    /*
     * FIXME
     * Only used in testing - remove this
+    * Commented out until 1.2
     */
-   int getMessageReferenceCount(Serializable messageID) throws Exception;
+   //int getMessageReferenceCount(Serializable messageID) throws Exception;
 }

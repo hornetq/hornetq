@@ -27,8 +27,6 @@ import java.util.List;
 /**
  * A deque that returns objects according to a priority.<br>
  * 
- * Also allows removes from the middle.
- *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

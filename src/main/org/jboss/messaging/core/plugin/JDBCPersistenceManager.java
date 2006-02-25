@@ -691,6 +691,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
+   /*
+   
+   Reference counting code commented out until 1.2
+   
    public int getMessageReferenceCount(Serializable messageID) throws Exception
    {
       Connection conn = null;
@@ -754,6 +758,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }
    }
+   
+   */
    
    
    // Public --------------------------------------------------------
@@ -1088,8 +1094,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          if (trace)
          {
-            log.trace(JDBCUtil.statementToString(deleteTransaction, getTxId(tx)) + " removed " + rows + " row(s)"); 
-            
+            log.trace(JDBCUtil.statementToString(deleteTransaction, getTxId(tx)) + " removed " + rows + " row(s)");             
          }
       }
       finally
@@ -1482,7 +1487,12 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       String id = (String)m.getMessageID();
       
       try
-      {       
+      {   
+         
+         /*
+         
+         Reference counting code commented out until 1.2
+         
          // get the reference count from the database
          // TODO Probably this can be done smarter than that incrementing directly in the database
          ps = conn.prepareStatement(selectReferenceCount);
@@ -1499,105 +1509,113 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          if (referenceCount == 0)
          {
-            // physically insert the row in the database
-            
-            //First set the fields from org.jboss.messaging.core.Routable
-            ps = conn.prepareStatement(insertMessage);
-            ps.setString(1, id);
-            ps.setString(2, m.isReliable() ? "Y" : "N");
-            ps.setLong(3, m.getExpiration());
-            ps.setLong(4, m.getTimestamp());
-            ps.setByte(5, m.getPriority());
-            
-            byte[] bytes = mapToBytes(((MessageSupport)m).getHeaders());
-            if (bytes != null)
-            {
-               setLongVarBinary(ps, 6, bytes);
-            }
-            else
-            {
-               ps.setNull(6, Types.LONGVARBINARY);
-            }
-                        
-            //Now set the fields from org.jboss.messaging.core.Message
-            
-            //TODO store as longvarbinary
-            ps.setObject(7, m.getPayload());
-            
-            //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
-            byte type = -1;
-            String jmsType = null;
-            String correlationID = null;
-            byte[] correlationIDBytes = null;
-            boolean destIsQueue = false;
-            String dest = null;
-            boolean replyToIsQueue = false;
-            String replyTo = null;
-            Map jmsProperties = null;
+         
+         */
+         
+         // physically insert the row in the database
+         
+         //First set the fields from org.jboss.messaging.core.Routable
+         ps = conn.prepareStatement(insertMessage);
+         ps.setString(1, id);
+         ps.setString(2, m.isReliable() ? "Y" : "N");
+         ps.setLong(3, m.getExpiration());
+         ps.setLong(4, m.getTimestamp());
+         ps.setByte(5, m.getPriority());
+         
+         byte[] bytes = mapToBytes(((MessageSupport)m).getHeaders());
+         if (bytes != null)
+         {
+            setLongVarBinary(ps, 6, bytes);
+         }
+         else
+         {
+            ps.setNull(6, Types.LONGVARBINARY);
+         }
+                     
+         //Now set the fields from org.jboss.messaging.core.Message
+         
+         //TODO store as longvarbinary
+         ps.setObject(7, m.getPayload());
+         
+         //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
+         byte type = -1;
+         String jmsType = null;
+         String correlationID = null;
+         byte[] correlationIDBytes = null;
+         boolean destIsQueue = false;
+         String dest = null;
+         boolean replyToIsQueue = false;
+         String replyTo = null;
+         Map jmsProperties = null;
 
-            if (m instanceof JBossMessage)
+         if (m instanceof JBossMessage)
+         {
+            JBossMessage jbm = (JBossMessage)m;
+            type = jbm.getType();
+            jmsType = jbm.getJMSType();
+            
+            correlationID = jbm.getJMSCorrelationID();
+            
+            correlationIDBytes = jbm.getJMSCorrelationIDAsBytes();
+            
+            Destination d = jbm.getJMSDestination();
+            if (d != null)
             {
-               JBossMessage jbm = (JBossMessage)m;
-               type = jbm.getType();
-               jmsType = jbm.getJMSType();
-               
-               correlationID = jbm.getJMSCorrelationID();
-               
-               correlationIDBytes = jbm.getJMSCorrelationIDAsBytes();
-               
-               Destination d = jbm.getJMSDestination();
-               if (d != null)
+               destIsQueue = d instanceof Queue;
+               if (destIsQueue)
                {
-                  destIsQueue = d instanceof Queue;
-                  if (destIsQueue)
-                  {
-                     dest = ((Queue)d).getQueueName();
-                  }
-                  else
-                  {
-                     dest = ((Topic)d).getTopicName();
-                  }
+                  dest = ((Queue)d).getQueueName();
                }
-               
-               Destination r = jbm.getJMSReplyTo();
-               if (r != null)
+               else
                {
-                  replyToIsQueue = r instanceof Queue;
-                  if (replyToIsQueue)
-                  {
-                     replyTo = ((Queue)r).getQueueName();
-                  }
-                  else
-                  {
-                     replyTo = ((Topic)r).getTopicName();
-                  }
+                  dest = ((Topic)d).getTopicName();
                }
-               jmsProperties = jbm.getJMSProperties();
             }
             
-            ps.setByte(8, type);
-            ps.setString(9, jmsType);
-            ps.setString(10, correlationID);
-            ps.setBytes(11, correlationIDBytes);
-            ps.setString(12, destIsQueue ? "Y" : "N");
-            ps.setString(13, dest);
-            ps.setString(14, replyToIsQueue ? "Y" : "N");
-            ps.setString(15, replyTo);       
-            
-            bytes = mapToBytes(jmsProperties);
-            if (bytes != null)
+            Destination r = jbm.getJMSReplyTo();
+            if (r != null)
             {
-               setLongVarBinary(ps, 16, bytes);
+               replyToIsQueue = r instanceof Queue;
+               if (replyToIsQueue)
+               {
+                  replyTo = ((Queue)r).getQueueName();
+               }
+               else
+               {
+                  replyTo = ((Topic)r).getTopicName();
+               }
             }
-            else
-            {
-               ps.setNull(16, Types.LONGVARBINARY);
-            }
+            jmsProperties = jbm.getJMSProperties();
+         }
+         
+         ps.setByte(8, type);
+         ps.setString(9, jmsType);
+         ps.setString(10, correlationID);
+         ps.setBytes(11, correlationIDBytes);
+         ps.setString(12, destIsQueue ? "Y" : "N");
+         ps.setString(13, dest);
+         ps.setString(14, replyToIsQueue ? "Y" : "N");
+         ps.setString(15, replyTo);       
+         
+         bytes = mapToBytes(jmsProperties);
+         if (bytes != null)
+         {
+            setLongVarBinary(ps, 16, bytes);
+         }
+         else
+         {
+            ps.setNull(16, Types.LONGVARBINARY);
+         }
+         
+         ps.setInt(17, 1);
+         
+         int result = ps.executeUpdate();
+         if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
+         
+         /*
+          
+         Reference counting code commented out until 1.2
             
-            ps.setInt(17, 1);
-            
-            int result = ps.executeUpdate();
-            if (trace) { log.trace(JDBCUtil.statementToString(insertMessage, id) + " inserted " + result + " row(s)"); }
          }
          else
          {
@@ -1609,6 +1627,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             ps.executeUpdate();
             if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), id) + " executed successfully"); }
          }
+         
+         */
       }
       finally
       {
@@ -1633,6 +1653,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
+         
+         /*
+         
+         Reference counting code commented out until 1.2
+         
          // get the reference count from the database
          ps = conn.prepareStatement(selectReferenceCount);
          ps.setString(1, (String)message.getMessageID());
@@ -1654,14 +1679,22 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
          else if (referenceCount == 1)
          {
-            // physically delete the row in the database
-            ps = conn.prepareStatement(deleteMessage);
-            ps.setString(1, (String)message.getMessageID());
+         
+         */
+         
+         // physically delete the row in the database
+         ps = conn.prepareStatement(deleteMessage);
+         ps.setString(1, (String)message.getMessageID());
+         
+         int rows = ps.executeUpdate();
+         if (trace) { log.trace(JDBCUtil.statementToString(deleteMessage, message.getMessageID()) + " deleted " + rows + " row(s)"); }
+         
+         return rows == 1;
+                        
+         /*   
+           
+         Reference counting code commented out until 1.2   
             
-            int rows = ps.executeUpdate();
-            if (trace) { log.trace(JDBCUtil.statementToString(deleteMessage, message.getMessageID()) + " deleted " + rows + " row(s)"); }
-            
-            return rows == 1;
          }
          else
          {
@@ -1674,6 +1707,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), message.getMessageID()) + " executed successfully"); }
             return true;
          }
+         
+         */
       }
       finally
       {
@@ -1987,7 +2022,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
       else
       {
-         //Get the bytes using setBytes() - better for smaller byte[]
+         //Get the bytes using getBytes() - better for smaller byte[]
          return rs.getBytes(columnIndex);
       }
    }
