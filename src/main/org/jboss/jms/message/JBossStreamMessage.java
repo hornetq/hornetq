@@ -62,9 +62,9 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Attributes ----------------------------------------------------
 
-   protected int position;
+   protected transient int position;
 
-   protected int offset;
+   protected transient int offset;
 
    protected int size;
    
@@ -85,7 +85,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public JBossStreamMessage(String messageID)
    {
       super(messageID);      
-      payload = new ArrayList();
+      setPayload(new ArrayList());
+      clearPayloadAsByteArray();
       position = 0;
       size = 0;
       offset = 0;
@@ -100,7 +101,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          long timestamp,
          byte priority,
          Map coreHeaders,
-         Serializable payload,
+         byte[] payloadAsByteArray,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -110,7 +111,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          String replyTo,
          HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
             jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
             jmsProperties);
    }
@@ -132,7 +133,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       
       foreign.reset();
       
-      payload = new ArrayList();
+      setPayload(new ArrayList());
+      clearPayloadAsByteArray();
       position = 0;
       size = 0;
       offset = 0;
@@ -165,7 +167,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public void copyPayload(Object other) throws JMSException
    {
       reset();
-      payload = new ArrayList((List)other);
+      setPayload(new ArrayList((List)other));
+      clearPayloadAsByteArray();
    }
 
    // StreamMessage implementation ----------------------------------
@@ -175,7 +178,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -205,7 +208,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
          if (value == null)
             throw new NullPointerException("Value is null");
@@ -233,7 +236,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -267,7 +270,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -290,7 +293,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -329,7 +332,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -373,7 +376,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -402,7 +405,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -436,7 +439,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          offset = 0;
 
          if (value == null)
@@ -502,7 +505,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object myObj = ((List)payload).get(position);
+         Object myObj = ((List)getPayload()).get(position);
          if (myObj == null)
             throw new NullPointerException("Value is null");
          else if (!(myObj instanceof byte[]))
@@ -553,7 +556,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       try
       {
-         Object value = ((List)payload).get(position);
+         Object value = ((List)getPayload()).get(position);
          position++;
          offset = 0;
 
@@ -568,55 +571,59 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public void writeBoolean(boolean value) throws JMSException
    {
 
-      ((List)payload).add(Primitives.valueOf(value));
+      ((List)getPayload()).add(Primitives.valueOf(value));
    }
 
    public void writeByte(byte value) throws JMSException
    {
-      ((List)payload).add(new Byte(value));
+      ((List)getPayload()).add(new Byte(value));
    }
 
    public void writeShort(short value) throws JMSException
    {      
-      ((List)payload).add(new Short(value));
+      ((List)getPayload()).add(new Short(value));
    }
 
    public void writeChar(char value) throws JMSException
    {
-      ((List)payload).add(new Character(value));
+      ((List)getPayload()).add(new Character(value));
    }
 
    public void writeInt(int value) throws JMSException
    {
-      ((List)payload).add(new Integer(value));
+      ((List)getPayload()).add(new Integer(value));
    }
 
    public void writeLong(long value) throws JMSException
    {
-      ((List)payload).add(new Long(value));
+      ((List)getPayload()).add(new Long(value));
    }
 
    public void writeFloat(float value) throws JMSException
    {
-      ((List)payload).add(new Float(value));
+      ((List)getPayload()).add(new Float(value));
    }
 
    public void writeDouble(double value) throws JMSException
    {
-      ((List)payload).add(new Double(value));
+      ((List)getPayload()).add(new Double(value));
    }
 
    public void writeString(String value) throws JMSException
    {
       if (value == null)
-         ((List)payload).add(null);
+      {
+         ((List)getPayload()).add(null);
+      }
       else
-         ((List)payload).add(value);
+      {
+         ((List)getPayload()).add(value);
+      }
    }
 
    public void writeBytes(byte[] value) throws JMSException
    {
-      ((List)payload).add(value.clone());
+      ((List)getPayload()).add(value.clone());
    }
 
    public void writeBytes(byte[] value, int offset, int length) throws JMSException
@@ -627,33 +634,33 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       for (int i = 0; i < length; i++)
          temp[i] = value[i + offset];
 
-      ((List)payload).add(temp);
+      ((List)getPayload()).add(temp);
    }
 
    public void writeObject(Object value) throws JMSException
    {
       if (value == null)
-         ((List)payload).add(null);
+         ((List)getPayload()).add(null);
       else if (value instanceof Boolean)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Byte)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Short)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Character)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Integer)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Long)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Float)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof Double)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof String)
-         ((List)payload).add(value);
+         ((List)getPayload()).add(value);
       else if (value instanceof byte[])
-         ((List)payload).add(((byte[]) value).clone());
+         ((List)getPayload()).add(((byte[]) value).clone());
       else
          throw new MessageFormatException("Invalid object type");
    }
@@ -661,7 +668,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public void reset() throws JMSException
    {      
       position = 0;
-      size = ((List)payload).size();
+      size = ((List)getPayload()).size();
       offset = 0;
    }
 
@@ -671,7 +678,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       super.clearBody();
       
-      payload = new ArrayList();
+      setPayload(new ArrayList());
+      clearPayloadAsByteArray();
       position = 0;
       offset = 0;
       size = 0;
@@ -687,32 +695,23 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      out.writeObject(((List)payload));
-      out.writeInt(position);
-      out.writeInt(offset);
-      out.writeInt(size);
+      writeList(out, (List)thePayload);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in)
+   protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      Serializable p = null;
-      try
+      List l = readList(in);
+      if (!(l instanceof ArrayList))
       {
-         p = (ArrayList) in.readObject();
-         position = in.readInt();
-         offset = in.readInt();
-         size = in.readInt();
+         return new ArrayList(l);
       }
-      catch (ClassNotFoundException e)
+      else
       {
-         log.error("Failed to find class", e);
-         throw new IOException(e.getMessage());
+         return (ArrayList)l;
       }
-
-      return p;
    }
 
    // Private -------------------------------------------------------

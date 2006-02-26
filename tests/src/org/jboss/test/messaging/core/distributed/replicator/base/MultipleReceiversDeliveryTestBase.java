@@ -8,18 +8,16 @@
 
 package org.jboss.test.messaging.core.distributed.replicator.base;
 
-import org.jboss.test.messaging.core.base.DeliveryTestBase;
-import org.jboss.test.messaging.core.SimpleDeliveryObserver;
-import org.jboss.messaging.core.distributed.replicator.MultipleReceiversDelivery;
-import org.jboss.messaging.core.distributed.replicator.Acknowledgment;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
-import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
-
 import java.io.Serializable;
+
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.distributed.replicator.Acknowledgment;
+import org.jboss.messaging.core.distributed.replicator.MultipleReceiversDelivery;
+import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.test.messaging.core.SimpleDeliveryObserver;
+import org.jboss.test.messaging.core.base.DeliveryTestBase;
+import org.jboss.test.messaging.util.MessageFactory;
 
 
 /**
@@ -56,7 +54,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
       super.setUp();
 
       ms = new InMemoryMessageStore("in-memory-store0");
-      ref = ms.reference(MessageFactory.createMessage("message0"));
+      ref = ms.reference(MessageFactory.createCoreMessage("message0"));
       observer = new SimpleDeliveryObserver();
    }
 

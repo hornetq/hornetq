@@ -26,7 +26,6 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.distributed.util.RpcServer;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -35,6 +34,7 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.JGroupsUtil;
 import org.jboss.test.messaging.core.local.base.TopicTestBase;
+import org.jboss.test.messaging.util.MessageFactory;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -173,7 +173,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload0");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload0");
 
       log.debug("sending message");
       MessageReference ref = ms.reference(m);
@@ -234,7 +234,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload0");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload0");
 
       log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);
@@ -299,7 +299,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload0");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload0");
 
       log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);
@@ -353,7 +353,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload0");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload0");
 
       log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);

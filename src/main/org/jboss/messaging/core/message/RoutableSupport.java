@@ -21,23 +21,25 @@
   */
 package org.jboss.messaging.core.message;
 
-import org.jboss.messaging.core.Routable;
-import org.jboss.util.Primitives;
-import org.jboss.logging.Logger;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Routable;
+import org.jboss.util.Primitives;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim fox/a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -73,10 +75,179 @@ public abstract class RoutableSupport implements Routable, Externalizable
    protected static final byte BYTES = 10;
    
    protected static final byte MAP = 11;
+   
+   protected static final byte LIST = 12;
 
    // Static --------------------------------------------------------
    
-   public static void writeMap(ObjectOutput out, Map map) throws IOException
+   public static void writeList(ObjectOutput out, List list) throws IOException
+   {
+      out.writeInt(list.size());
+      Iterator iter = list.iterator();
+      while (iter.hasNext())
+      {
+         Object value = iter.next();
+         if (!(value instanceof Serializable))
+         {
+            throw new IOException("Object in List must be serializable: " + value);
+         }
+         internalWriteObject(out, (Serializable)value, false);
+      }
+   }
+   
+   public static List readList(ObjectInput in) throws ClassNotFoundException, IOException
+   {
+      int size = in.readInt();
+      ArrayList list = new ArrayList(size);
+      for (int i = 0; i < size; i++)
+      {
+         Object obj = internalReadObject(in);
+         list.add(obj);
+      }
+      return list;
+   }
+   
+   protected static Serializable internalReadObject(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      byte type = in.readByte();
+      Serializable value = null;
+      switch (type)
+      {
+         case BYTE :
+            value = new Byte(in.readByte());
+            break;
+         case SHORT :
+            value = new Short(in.readShort());
+            break;
+         case INT :
+            value = new Integer(in.readInt());
+            break;
+         case LONG :
+            value = new Long(in.readLong());
+            break;
+         case FLOAT :
+            value = new Float(in.readFloat());
+            break;
+         case DOUBLE :
+            value = new Double(in.readDouble());
+            break;
+         case BOOLEAN :
+            value = Primitives.valueOf(in.readBoolean());
+            break;
+         case STRING :
+            value = in.readUTF();
+            break;
+         case BYTES :
+            int size = in.readInt();
+            byte[] bytes = new byte[size];
+            in.readFully(bytes);
+            return bytes;
+         case MAP:
+         {
+            Map m = readMap(in, false);
+            if (m instanceof HashMap)
+            {
+               return (HashMap)m;
+            }
+            else
+            {
+               return new HashMap(m);
+            }
+         }            
+         case LIST:
+         {
+            List l = readList(in);
+            if (l instanceof ArrayList)
+            {
+               return (ArrayList)l;
+            }
+            else
+            {
+               return new ArrayList(l);
+            }
+         }
+         case NULL:
+            value = null;
+            break;
+         default :
+            value = (Serializable)in.readObject();
+      }
+      return value;
+   }
+   
+   protected static void internalWriteObject(ObjectOutput out, Serializable value, boolean containerTypes) throws IOException
+   {
+      //We cheat with some often used types - more efficient than using object serialization
+      if (value == null)
+      {
+         out.writeByte(NULL);
+      }
+      else if (value instanceof String)
+      {
+         out.writeByte(STRING);
+         out.writeUTF((String) value);
+      }
+      else if (value instanceof Integer)
+      {
+         out.writeByte(INT);
+         out.writeInt(((Integer) value).intValue());
+      }
+      else if (value instanceof Boolean)
+      {
+         out.writeByte(BOOLEAN);
+         out.writeBoolean(((Boolean) value).booleanValue());
+      }
+      else if (value instanceof Byte)
+      {
+         out.writeByte(BYTE);
+         out.writeByte(((Byte) value).byteValue());
+      }
+      else if (value instanceof Short)
+      {
+         out.writeByte(SHORT);
+         out.writeShort(((Short) value).shortValue());
+      }
+      else if (value instanceof Long)
+      {
+         out.writeByte(LONG);
+         out.writeLong(((Long) value).longValue());
+      }
+      else if (value instanceof Float)
+      {
+         out.writeByte(FLOAT);
+         out.writeFloat(((Float) value).floatValue());
+      }
+      else if (value instanceof Double)
+      {
+         out.writeByte(DOUBLE);
+         out.writeDouble(((Double) value).doubleValue());
+      }
+      else if (value instanceof byte[])
+      {
+         out.writeByte(BYTES);
+         byte[] bytes = (byte[])value;
+         out.writeInt(bytes.length);
+         out.write(bytes);
+      }      
+      else if (containerTypes && value instanceof ArrayList)
+      {
+         out.write(LIST);
+         writeList(out, (List)value);
+      }
+      else if (containerTypes && value instanceof HashMap)
+      {
+         out.write(MAP);
+         writeMap(out, (Map)value, false);
+      }
+      else
+      {
+         //Default to standard serialization
+         out.writeByte(OBJECT);
+         out.writeObject(value);
+      }
+   }
+   
+   public static void writeMap(ObjectOutput out, Map map, boolean stringKeys) throws IOException
    {      
       if (map.isEmpty())
       {
@@ -90,62 +261,32 @@ public abstract class RoutableSupport implements Routable, Externalizable
          for (Iterator it = entrySet.iterator(); it.hasNext(); )
          {
             Map.Entry me = (Map.Entry)it.next();
-            out.writeUTF((String)me.getKey());
-            Object value = me.getValue();
-            if (value == null)
+            
+            //Write the key
+            if (stringKeys)
             {
-               out.writeByte(NULL);
-            }
-            else if (value instanceof String)
-            {
-               out.writeByte(STRING);
-               out.writeUTF((String) value);
-            }
-            else if (value instanceof Integer)
-            {
-               out.writeByte(INT);
-               out.writeInt(((Integer) value).intValue());
-            }
-            else if (value instanceof Boolean)
-            {
-               out.writeByte(BOOLEAN);
-               out.writeBoolean(((Boolean) value).booleanValue());
-            }
-            else if (value instanceof Byte)
-            {
-               out.writeByte(BYTE);
-               out.writeByte(((Byte) value).byteValue());
-            }
-            else if (value instanceof Short)
-            {
-               out.writeByte(SHORT);
-               out.writeShort(((Short) value).shortValue());
-            }
-            else if (value instanceof Long)
-            {
-               out.writeByte(LONG);
-               out.writeLong(((Long) value).longValue());
-            }
-            else if (value instanceof Float)
-            {
-               out.writeByte(FLOAT);
-               out.writeFloat(((Float) value).floatValue());
-            }
-            else if (value instanceof Double)
-            {
-               out.writeByte(DOUBLE);
-               out.writeDouble(((Double) value).doubleValue());
+               out.writeUTF((String)me.getKey());
             }
             else
             {
-               out.writeByte(OBJECT);
-               out.writeObject(value);
+               if (!(me.getKey() instanceof Serializable))
+               {
+                  throw new IOException("Key in Map must be Serializable: " + me.getKey());
+               }
+               internalWriteObject(out, (Serializable)me.getKey(), false);
             }
+            
+            //Write the value
+            if (!(me.getValue() instanceof Serializable))
+            {
+               throw new IOException("Value in Map must be Serializable: " + me.getValue());
+            }
+            internalWriteObject(out, (Serializable)me.getValue(), false);            
          }
       }
    }
    
-   public static HashMap readMap(ObjectInput in) throws IOException, ClassNotFoundException
+   public static Map readMap(ObjectInput in, boolean stringKeys) throws IOException, ClassNotFoundException
    {
       byte b = in.readByte();
       if (b == NULL)
@@ -158,41 +299,18 @@ public abstract class RoutableSupport implements Routable, Externalizable
          HashMap m = new HashMap(size);
          for (int i = 0; i < size; i++)
          {
-            String key = in.readUTF();
-            byte type = in.readByte();
-            Object value = null;
-            switch (type)
+            Object key;
+            if (stringKeys)
             {
-               case BYTE :
-                  value = new Byte(in.readByte());
-                  break;
-               case SHORT :
-                  value = new Short(in.readShort());
-                  break;
-               case INT :
-                  value = new Integer(in.readInt());
-                  break;
-               case LONG :
-                  value = new Long(in.readLong());
-                  break;
-               case FLOAT :
-                  value = new Float(in.readFloat());
-                  break;
-               case DOUBLE :
-                  value = new Double(in.readDouble());
-                  break;
-               case BOOLEAN :
-                  value = Primitives.valueOf(in.readBoolean());
-                  break;
-               case STRING :
-                  value = in.readUTF();
-                  break;
-               case NULL:
-                  value = null;
-                  break;
-               default :
-                  value = in.readObject();
+               key = in.readUTF();
             }
+            else
+            {
+               key = internalReadObject(in);
+            }
+            
+            Object value = internalReadObject(in);
+            
             m.put(key, value);
          }
          return m;
@@ -398,7 +516,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
       out.writeBoolean(reliable);
       out.writeLong(expiration);
       out.writeLong(timestamp);
-      writeMap(out, headers);
+      writeMap(out, headers, true);
       out.writeBoolean(redelivered);
       out.writeByte(priority);
       out.writeInt(deliveryCount);
@@ -411,7 +529,15 @@ public abstract class RoutableSupport implements Routable, Externalizable
       reliable = in.readBoolean();
       expiration = in.readLong();
       timestamp = in.readLong();
-      headers = readMap(in);
+      Map m = readMap(in, true);
+      if (!(m instanceof HashMap))
+      {
+         headers =  new HashMap(m);
+      }
+      else
+      {
+         headers = (HashMap)m;
+      }
       redelivered = in.readBoolean();
       priority = in.readByte();
       deliveryCount = in.readInt();

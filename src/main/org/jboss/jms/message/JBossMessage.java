@@ -171,7 +171,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        long timestamp,
                        byte priority,    
                        Map coreHeaders,
-                       Serializable payload,
+                       byte[] payloadAsByteArray,
                        String jmsType,
                        String correlationID,
                        byte[] correlationIDBytes,
@@ -181,7 +181,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        String replyTo,                
                        HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, 0, coreHeaders, payload);
+      super(messageID, reliable, expiration, timestamp, priority, 0, 0, coreHeaders, payloadAsByteArray);
 
       this.jmsType = jmsType;      
 
@@ -449,7 +449,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void clearBody() throws JMSException
    {
-      this.payload = null;
+      this.setPayload(null);
+      clearPayloadAsByteArray();
    }
 
    public boolean propertyExists(String name) throws JMSException
@@ -797,13 +798,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       //do nothing - handled in thin delegate
    }
 
-   // org.jboss.messaging.core.Message implementation ---------------
-
-   public Serializable getPayload()
-   {
-      return payload;
-   }
-
    // Externalizable implementation ---------------------------------
    
    public void writeExternal(ObjectOutput out) throws IOException
@@ -816,7 +810,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       
       writeString(out, jmsType);
       
-      writeMap(out, properties);
+      writeMap(out, properties, true);
       
       if (correlationID == null && correlationIDBytes == null)
       {
@@ -852,8 +846,16 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
  
       jmsType = readString(in);     
       
-      properties = readMap(in);
-      
+      Map m = readMap(in, true);
+      if (!(m instanceof HashMap))
+      {
+         properties =  new HashMap(m);
+      }
+      else
+      {
+         properties = (HashMap)m;
+      }
+
       //correlation id
       
       byte b = in.readByte();

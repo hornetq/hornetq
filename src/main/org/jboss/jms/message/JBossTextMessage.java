@@ -82,7 +82,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          long timestamp,
          byte priority,
          Map coreHeaders,
-         Serializable payload,
+         byte[] payloadAsByteArray,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -92,7 +92,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          String replyTo,
          HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
             jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
             jmsProperties);
    }
@@ -133,12 +133,13 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    public void setText(String string) throws JMSException
    {
-      payload = string;
+      setPayload(string);
+      clearPayloadAsByteArray();
    }
 
    public String getText() throws JMSException
    {
-      return (String)payload;
+      return (String)getPayload();
    }
 
    // JBossMessage override -----------------------------------------
@@ -152,27 +153,14 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      if (payload == null)
-      {
-         out.writeByte(NULL);
-      }
-      else
-      {
-         out.write(STRING);
-         out.writeUTF((String)payload);
-      }
+      out.writeUTF((String)thePayload);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in)
+   protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      byte type = in.readByte();
-      if (type == NULL)
-      {
-         return null;
-      }
       return in.readUTF();
    }
 

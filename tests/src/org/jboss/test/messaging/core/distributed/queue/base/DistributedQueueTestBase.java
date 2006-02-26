@@ -25,9 +25,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.DistributedChannelTestBase;
+import org.jboss.test.messaging.util.MessageFactory;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -99,7 +99,7 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
       peer3.join();
 
       // send a non-reliable message
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       assertTrue(peer.handle(null, m, null).isDone());
 
       assertTrue(peer.browse().isEmpty());

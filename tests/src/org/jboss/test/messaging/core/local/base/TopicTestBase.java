@@ -27,7 +27,6 @@ import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -36,6 +35,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.util.MessageFactory;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -99,7 +99,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       SimpleReceiver rec = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
       topic.add(rec);
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       MessageReference ref = ms.reference(m);
 
       Delivery d = topic.handle(null, ref, null);
@@ -114,7 +114,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       SimpleReceiver rec = new SimpleReceiver("BROKEN", SimpleReceiver.BROKEN);
       topic.add(rec);
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       MessageReference ref = ms.reference(m);
 
       Delivery d = topic.handle(null, ref, null);
@@ -130,7 +130,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       SimpleReceiver rec = new SimpleReceiver("NACKING", SimpleReceiver.NACKING);
       topic.add(rec);
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       MessageReference ref = ms.reference(m);
 
       try
@@ -159,7 +159,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       assertFalse(topic.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       Delivery d = topic.handle(observer, ms.reference(m), null);
 
       assertTrue(d.isDone());
@@ -190,7 +190,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       assertEquals(r, i.next());
       assertFalse(i.hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload0");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload0");
       Delivery d = topic.handle(observer, ms.reference(m), null);
 
       assertTrue(d.isDone());
@@ -220,7 +220,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       assertTrue(topic.add(r));
       assertTrue(topic.add(r2));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload0");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload0");
       Delivery d = topic.handle(observer, ms.reference(m), null);
 
       assertTrue(d.isDone());

@@ -84,7 +84,7 @@ public class MessageFactory
                                        long timestamp,
                                        byte priority,
                                        Map coreHeaders,
-                                       Serializable payload,
+                                       byte[] payloadAsByteArray,
                                        byte type,
                                        String jmsType,                                       
                                        String correlationID,
@@ -102,37 +102,37 @@ public class MessageFactory
       if (type == JBossMessage.TYPE)
       {
          m = new JBossMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                              payload, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+                              payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
                               destination, replyToIsQueue, replyTo, jmsProperties);
       }
       else if (type == JBossObjectMessage.TYPE)
       {
          m = new JBossObjectMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payload, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
                destination, replyToIsQueue, replyTo, jmsProperties);
       }
       else if (type == JBossTextMessage.TYPE)
       {
          m = new JBossTextMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payload, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
                destination, replyToIsQueue, replyTo, jmsProperties);
       }
       else if (type == JBossBytesMessage.TYPE)
       {
          m = new JBossBytesMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payload, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
                destination, replyToIsQueue, replyTo, jmsProperties);
       }
       else if (type == JBossMapMessage.TYPE)
       {
          m = new JBossMapMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payload, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
                destination, replyToIsQueue, replyTo, jmsProperties);
       }
       else if (type == JBossStreamMessage.TYPE)
       {
          m = new JBossStreamMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payload, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
                destination, replyToIsQueue, replyTo, jmsProperties);
       }
       else
@@ -140,41 +140,13 @@ public class MessageFactory
          //Core message
          m = new MessageSupport(messageID, reliable, expiration, timestamp,
                priority, 0, 0, coreHeaders,
-               payload);                           
+               payloadAsByteArray);                           
       }
 
       return m;
 
    }
-   
-   public static Message createMessage(Serializable messageID,
-                                       boolean reliable,
-                                       long expiration,
-                                       long timestamp,
-                                       byte priority,
-                                       Map coreHeaders,
-                                       Serializable payload)
-   {
-      return createMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
-                           JBossMessage.TYPE, null, null, null, true, null, false, null, null);
-
-   }
-
-   public static Message createMessage(Serializable messageID)
-   {
-      return createMessage(messageID, false, 0, 0, (byte)4, null, null,
-            JBossMessage.TYPE, null, null, null, true, null, false, null, null);
-   }
-   
-   public static Message createMessage(Serializable messageID,
-                                       boolean reliable, 
-                                       Serializable payload)
-   {
-      return createMessage(messageID, reliable, 0, 0, (byte)4, null, payload,
-            JBossMessage.TYPE, null, null, null, true, null, false, null, null);
-   }
-
-
+      
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------

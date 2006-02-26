@@ -76,7 +76,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public JBossMapMessage(String messageID)
    {
       super(messageID);
-      payload = new HashMap();
+      this.setPayload(new HashMap());
+      clearPayloadAsByteArray();
    }
 
    /*
@@ -88,7 +89,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          long timestamp,
          byte priority,
          Map coreHeaders,
-         Serializable payload,
+         byte[] payloadAsByteArray,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -98,7 +99,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          String replyTo,
          HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
             jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
             jmsProperties);
    }
@@ -117,7 +118,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public JBossMapMessage(MapMessage foreign) throws JMSException
    {
       super(foreign);     
-      payload = new HashMap();
+      this.setPayload(new HashMap());
+      clearPayloadAsByteArray();
       Enumeration names = foreign.getMapNames();
       while (names.hasMoreElements())
       {
@@ -137,7 +139,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    
    public void copyPayload(Object payload) throws JMSException
    {      
-      this.payload = new HashMap((Map)payload);
+      this.setPayload(new HashMap((Map)payload));
+      clearPayloadAsByteArray();
    }
 
 
@@ -146,61 +149,61 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void setBoolean(String name, boolean value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, Primitives.valueOf(value));
+      ((Map)getPayload()).put(name, Primitives.valueOf(value));
    }
 
    public void setByte(String name, byte value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Byte(value));
+      ((Map)getPayload()).put(name, new Byte(value));
    }
 
    public void setShort(String name, short value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Short(value));
+      ((Map)getPayload()).put(name, new Short(value));
    }
 
    public void setChar(String name, char value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Character(value));
+      ((Map)getPayload()).put(name, new Character(value));
    }
 
    public void setInt(String name, int value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Integer(value));
+      ((Map)getPayload()).put(name, new Integer(value));
    }
 
    public void setLong(String name, long value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Long(value));
+      ((Map)getPayload()).put(name, new Long(value));
    }
 
    public void setFloat(String name, float value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Float(value));
+      ((Map)getPayload()).put(name, new Float(value));
    }
 
    public void setDouble(String name, double value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, new Double(value));
+      ((Map)getPayload()).put(name, new Double(value));
    }
 
    public void setString(String name, String value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, value);
+      ((Map)getPayload()).put(name, value);
    }
 
    public void setBytes(String name, byte[] value) throws JMSException
    {
       checkName(name);
-      ((Map)payload).put(name, value.clone());
+      ((Map)getPayload()).put(name, value.clone());
    }
 
    public void setBytes(String name, byte[] value, int offset, int length) throws JMSException
@@ -215,32 +218,32 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       {
          temp[i] = value[i + offset];
       }
-      ((Map)payload).put(name, temp);
+      ((Map)getPayload()).put(name, temp);
    }
 
    public void setObject(String name, Object value) throws JMSException
    {
       checkName(name);
       if (value instanceof Boolean)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Byte)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Short)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Character)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Integer)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Long)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Float)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof Double)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof String)
-         ((Map)payload).put(name, value);
+         ((Map)getPayload()).put(name, value);
       else if (value instanceof byte[])
-         ((Map)payload).put(name, ((byte[]) value).clone());
+         ((Map)getPayload()).put(name, ((byte[]) value).clone());
       else
          throw new MessageFormatException("Invalid object type.");
 
@@ -250,7 +253,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Boolean.valueOf(null).booleanValue();
@@ -267,7 +270,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Byte.parseByte(null);
@@ -284,7 +287,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Short.parseShort(null);
@@ -303,7 +306,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          throw new NullPointerException("Invalid conversion");
@@ -318,7 +321,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Integer.parseInt(null);
@@ -339,7 +342,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Long.parseLong(null);
@@ -362,7 +365,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Float.parseFloat(null);
@@ -379,7 +382,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return Double.parseDouble(null);
@@ -398,7 +401,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return null;
@@ -449,7 +452,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       Object value;
 
-      value = ((Map)payload).get(name);
+      value = ((Map)getPayload()).get(name);
 
       if (value == null)
          return null;
@@ -462,21 +465,21 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public Object getObject(String name) throws JMSException
    {
 
-      return ((Map)payload).get(name);
+      return ((Map)getPayload()).get(name);
 
    }
 
    public Enumeration getMapNames() throws JMSException
    {
 
-      return Collections.enumeration(new HashMap(((Map)payload)).keySet());
+      return Collections.enumeration(new HashMap(((Map)getPayload())).keySet());
 
    }
 
    public boolean itemExists(String name) throws JMSException
    {
 
-      return ((Map)payload).containsKey(name);
+      return ((Map)getPayload()).containsKey(name);
 
    }
 
@@ -485,7 +488,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      payload = new HashMap();
+      setPayload(new HashMap());
+      clearPayloadAsByteArray();
    }
    
    public JBossMessage doShallowCopy()
@@ -497,15 +501,23 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      writeMap(out, ((Map)payload));
+      writeMap(out, ((Map)getPayload()), true);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in)
+   protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      return (Serializable)readMap(in);
+      Map m = readMap(in, true);
+      if (!(m instanceof HashMap))
+      {
+         return new HashMap(m);
+      }
+      else
+      {
+         return (HashMap)m;
+      }
    }
 
    // Private -------------------------------------------------------

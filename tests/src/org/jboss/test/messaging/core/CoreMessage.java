@@ -43,7 +43,7 @@ public class CoreMessage extends MessageSupport
                       long timestamp,
                       byte priority,
                       Map headers,
-                      Serializable payload)
+                      byte[] payload)
    {
       super(messageID, reliable, expiration, timestamp, priority, 0, 0, headers, payload);
    }

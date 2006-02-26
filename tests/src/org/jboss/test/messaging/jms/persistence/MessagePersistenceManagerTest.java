@@ -105,14 +105,14 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       
       HashMap jmsProperties = generateFilledMap(false);
               
-      return
+      JBossMessage jbm = 
          new JBossMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,
             coreHeaders,
-            new WibblishObject(),
+            null,
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
             i % 3 == 2 ? randByteArray(50) : null,
@@ -120,7 +120,11 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
             new GUID().toString(),
             i % 2 == 1,
             new GUID().toString(),            
-            jmsProperties);            
+            jmsProperties);    
+      
+      jbm.setPayload(new WibblishObject());
+      
+      return jbm;
    }
    
    protected String genCorrelationID(int i)

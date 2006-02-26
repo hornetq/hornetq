@@ -70,7 +70,7 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
                System.currentTimeMillis(),
                i,
                coreHeaders,
-               new ArrayList(),
+               null,
                i % 2 == 0 ? new GUID().toString() : null,
                genCorrelationID(i),
                i % 3 == 2 ? randByteArray(50) : null,
@@ -78,7 +78,8 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
                new GUID().toString(),
                i % 2 == 1,
                new GUID().toString(),            
-               jmsProperties);         
+               jmsProperties); 
+      m.setPayload(new ArrayList());
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());
       m.writeBytes(randByteArray(500));

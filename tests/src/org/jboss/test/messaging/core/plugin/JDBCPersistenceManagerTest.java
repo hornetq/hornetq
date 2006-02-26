@@ -42,6 +42,7 @@ import org.jboss.test.messaging.core.CoreMessage;
 import org.jboss.test.messaging.core.SimpleChannel;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.util.MessageFactory;
 import org.jboss.util.id.GUID;
 
 
@@ -347,8 +348,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    {
       Map headers = generateFilledMap(true);
       
-      Message m =
-         new CoreMessage(new GUID().toString(),
+      Message m = MessageFactory.createCoreMessage(new GUID().toString(),
             true,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),

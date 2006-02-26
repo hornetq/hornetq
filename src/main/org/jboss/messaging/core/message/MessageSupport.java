@@ -22,7 +22,11 @@
 package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -34,6 +38,7 @@ import java.util.Map;
  * A message base.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -44,9 +49,12 @@ public class MessageSupport extends RoutableSupport implements Message
    private static final long serialVersionUID = -4474943687659785336L;
    
    // Attributes ----------------------------------------------------
-
    
-   protected Serializable payload;
+   //Must be hidden from subclasses
+   private transient Serializable payload;
+   
+   //Must be hidden from subclasses
+   private byte[] payloadAsByteArray;
 
    // Constructors --------------------------------------------------
 
@@ -70,6 +78,7 @@ public class MessageSupport extends RoutableSupport implements Message
       super(messageID);
       this.payload = payload;
    }
+   
    public MessageSupport(Serializable messageID, boolean reliable, Serializable payload)
    {
       this(messageID, reliable, Long.MAX_VALUE, payload);
@@ -94,6 +103,9 @@ public class MessageSupport extends RoutableSupport implements Message
       this.payload = payload;
    }
 
+   /*
+    * This constructor is used to create a message from persistent storage
+    */
    public MessageSupport(Serializable messageID,
                          boolean reliable,
                          long expiration,
@@ -102,10 +114,10 @@ public class MessageSupport extends RoutableSupport implements Message
                          int deliveryCount,
                          long ordering,
                          Map headers,
-                         Serializable payload)
+                         byte[] payloadAsByteArray)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, ordering, headers);
-      this.payload = payload;
+      this.payloadAsByteArray = payloadAsByteArray;
    }
 
    protected MessageSupport(MessageSupport other)
@@ -128,14 +140,90 @@ public class MessageSupport extends RoutableSupport implements Message
       return false;
    }
 
+   public byte[] getPayloadAsByteArray()
+   {            
+      if (payloadAsByteArray == null && payload != null)
+      {
+         try
+         {
+            //Convert the payload into a byte array and store internally
+            final int BUFFER_SIZE = 4096;
+            JBossObjectOutputStream oos = null;
+            try
+            {
+               ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
+               oos = new JBossObjectOutputStream(bos);
+               writePayloadExternal(oos, payload);
+               payloadAsByteArray = bos.toByteArray();
+            }
+            finally
+            {
+               if (oos != null)
+               {
+                  oos.close();
+               }
+            }       
+         }
+         catch (IOException e)
+         {
+            //Should never happen
+            throw new RuntimeException("Failed to convert payload to byte[]", e);
+         }
+      }
+      return payloadAsByteArray;
+   }
+   
+   /**
+    * Warning! Calling getPayload will cause the payload to be deserialized so should not be called on the server
+    */
    public Serializable getPayload()
    {
-      return payload;
+      if (payload != null)
+      {
+         return payload;
+      }
+      else if (payloadAsByteArray != null)
+      {
+         //deserialize the payload from byte[]
+         JBossObjectInputStream ois = null;
+         try
+         {
+            try
+            {
+               ByteArrayInputStream bis = new ByteArrayInputStream(payloadAsByteArray);
+               ois = new JBossObjectInputStream(bis);
+               payload = readPayloadExternal(ois, payloadAsByteArray.length);               
+            }            
+            finally
+            {
+               if (ois != null)
+               {
+                  ois.close();
+               }
+            }
+            payloadAsByteArray = null;
+            return payload;
+         }
+         catch (Exception e)
+         {
+            //This should never really happen in normal use so throw a unchecked exception
+            throw new RuntimeException("Failed to read payload", e);
+         }         
+      }
+      else
+      {
+         return null;
+      }
    }
    
    public void setPayload(Serializable payload)
    {
-      this.payload = payload;
+      this.payload = payload;     
+   }
+   
+   protected void clearPayloadAsByteArray()
+   {
+      this.payloadAsByteArray = null;
    }
 
    // Public --------------------------------------------------------
@@ -186,13 +274,36 @@ public class MessageSupport extends RoutableSupport implements Message
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      writePayloadExternal(out); // making sure the payload is written by this class OR a subclass
+      
+      byte[] bytes = getPayloadAsByteArray();
+           
+      if (bytes != null)
+      {
+         out.writeInt(bytes.length);
+         out.write(bytes);
+      }
+      else
+      {
+         out.writeInt(0);
+      }
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      payload = readPayloadExternal(in); // making sure the payload is read by this class OR a subclass
+      
+      int length = in.readInt();
+      
+      if (length == 0)
+      {
+         //No payload
+         payloadAsByteArray = null;
+      }
+      else
+      {
+         payloadAsByteArray = new byte[length];
+         in.readFully(payloadAsByteArray);
+      }     
    }
 
    // Package protected ---------------------------------------------
@@ -202,35 +313,18 @@ public class MessageSupport extends RoutableSupport implements Message
    /**
     * Override this if you want more sophisticated payload externalization.
     */
-   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      if (payload == null)
-      {
-         out.writeByte(NULL);
-      }
-      else
-      {
-         out.writeByte(OBJECT);
-         out.writeObject(payload);
-      }
+      internalWriteObject(out, thePayload, true);
    }
 
    /**
     * Override this if you want more sophisticated payload externalization.
     */
-   protected Serializable readPayloadExternal(ObjectInput in)
+   protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      byte b = in.readByte();
-      
-      if (b == NULL)
-      {
-         return null;
-      }
-      else
-      {
-         return (Serializable)in.readObject();
-      }
+      return internalReadObject(in);
    }
 
 

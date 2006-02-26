@@ -32,7 +32,6 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PersistentMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -41,6 +40,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.util.MessageFactory;
 
 /**
  * The Channel test strategy is to try as many combination as it makes sense of the following
@@ -185,7 +185,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       channel.close();
       try
       {
-         channel.handle(null, MessageFactory.createMessage("message0"), null);
+         channel.handle(null, MessageFactory.createCoreMessage("message0"), null);
          fail("should throw exception");
       }
       catch(IllegalStateException e)
@@ -235,7 +235,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -282,7 +282,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -338,7 +338,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -376,7 +376,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -433,7 +433,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -476,7 +476,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -525,7 +525,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -571,7 +571,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -616,7 +616,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -663,7 +663,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -717,7 +717,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -770,7 +770,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -820,7 +820,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -829,7 +829,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i + NUMBER_OF_MESSAGES] = MessageFactory.createMessage("message" + (i + NUMBER_OF_MESSAGES) , true, "payload" + i);
+         messages[i + NUMBER_OF_MESSAGES] = MessageFactory.createCoreMessage("message" + (i + NUMBER_OF_MESSAGES) , true, "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -880,7 +880,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -889,7 +889,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i + NUMBER_OF_MESSAGES] = MessageFactory.createMessage("message" + (i + NUMBER_OF_MESSAGES) , true, "payload" + i);
+         messages[i + NUMBER_OF_MESSAGES] = MessageFactory.createCoreMessage("message" + (i + NUMBER_OF_MESSAGES) , true, "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -942,7 +942,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -985,7 +985,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1024,7 +1024,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -1064,7 +1064,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1099,7 +1099,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -1139,7 +1139,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1177,7 +1177,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1225,7 +1225,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -1262,7 +1262,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -1306,7 +1306,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -1340,7 +1340,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -1388,7 +1388,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -1427,7 +1427,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -1463,7 +1463,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -1512,7 +1512,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1562,7 +1562,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -1617,7 +1617,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -1677,7 +1677,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1737,7 +1737,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1796,7 +1796,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1847,7 +1847,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1893,7 +1893,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -1942,7 +1942,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -1985,7 +1985,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -2033,7 +2033,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -2079,7 +2079,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -2133,7 +2133,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -2176,7 +2176,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       r.setImmediateAsynchronousAcknowledgment(true);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -2215,7 +2215,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -2263,7 +2263,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -2327,7 +2327,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -2370,7 +2370,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -2419,7 +2419,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -2490,7 +2490,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -2525,7 +2525,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -2585,7 +2585,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -2655,7 +2655,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -2695,7 +2695,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -2754,7 +2754,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -2804,7 +2804,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -2859,7 +2859,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -2918,7 +2918,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -2973,7 +2973,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3037,7 +3037,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3097,7 +3097,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3156,7 +3156,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3205,7 +3205,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3251,7 +3251,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3300,7 +3300,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3343,7 +3343,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3391,7 +3391,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3438,7 +3438,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3502,7 +3502,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -3538,7 +3538,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -3568,7 +3568,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -3604,7 +3604,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -3640,7 +3640,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3684,7 +3684,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3718,7 +3718,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3763,7 +3763,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3801,7 +3801,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3840,7 +3840,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3880,7 +3880,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3915,7 +3915,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -3955,7 +3955,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -3994,7 +3994,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4042,7 +4042,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -4079,7 +4079,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -4114,7 +4114,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -4152,7 +4152,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -4188,7 +4188,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("AckingReceiver", SimpleReceiver.ACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -4237,7 +4237,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4277,7 +4277,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -4328,7 +4328,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4374,7 +4374,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4421,7 +4421,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -4471,7 +4471,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4515,7 +4515,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -4563,7 +4563,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4610,7 +4610,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -4664,7 +4664,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -4707,7 +4707,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       r.setImmediateAsynchronousAcknowledgment(true);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -4746,7 +4746,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -4794,7 +4794,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, non-reliable message, one message
@@ -4858,7 +4858,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -4901,7 +4901,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -4950,7 +4950,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // non-transacted send, non-reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -5012,7 +5012,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -5055,7 +5055,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       r.setImmediateAsynchronousAcknowledgment(true);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -5095,7 +5095,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -5144,7 +5144,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-transacted send, reliable message, one message
@@ -5209,7 +5209,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -5252,7 +5252,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -5301,7 +5301,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // non-transacted send, reliable message, multiple messages
          Delivery delivery = channel.handle(observer, messages[i], null);
@@ -5364,7 +5364,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
       assertTrue(channel.add(r));
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -5420,7 +5420,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -5470,7 +5470,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -5525,7 +5525,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -5578,7 +5578,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -5632,7 +5632,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -5681,7 +5681,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, false, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
 
          // transacted send, non-reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -5724,7 +5724,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(channel.add(r));
 
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       Transaction tx = tr.createTransaction();
@@ -5772,7 +5772,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       Message[] messages = new Message[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         messages[i] = MessageFactory.createMessage("message" + i, true, "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
 
          // transacted send, reliable message, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -5818,7 +5818,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          // send a mixture of reliable and non-reliable messages
-         messages[i] = MessageFactory.createMessage("message" + i, (i % 2 == 1), "payload" + i);
+         messages[i] = MessageFactory.createCoreMessage("message" + i, (i % 2 == 1), "payload" + i);
 
          // transacted send, reliable/non-reliable messages, multiple messages
          // for a transactional send, handle() return value is unspecified
@@ -5869,7 +5869,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-recoverable channel, non-reliable message
@@ -5907,7 +5907,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-recoverable channel, non-reliable message
@@ -5950,7 +5950,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-recoverable channel, non-reliable message
@@ -6007,7 +6007,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-recoverable channel, non-reliable message
@@ -6045,7 +6045,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-recoverable channel, non-reliable message
@@ -6086,7 +6086,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       // the channel has no receivers
       assertFalse(channel.iterator().hasNext());
 
-      Message m = MessageFactory.createMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
       // non-recoverable channel, non-reliable message

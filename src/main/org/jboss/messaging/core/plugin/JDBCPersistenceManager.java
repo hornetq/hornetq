@@ -200,7 +200,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       "TIMESTAMP BIGINT, " +
       "PRIORITY TINYINT, " + 
       "COREHEADERS LONGVARBINARY, " +
-      "PAYLOAD OBJECT, " +  //TODO change column type to LONGVARBINARY
+      "PAYLOAD LONGVARBINARY, " +
       "TYPE TINYINT, " +
       "JMSTYPE VARCHAR(255), " +
       "CORRELATIONID VARCHAR(255), " +
@@ -684,11 +684,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             byte[] bytes = getLongVarBinary(rs, 5);
             HashMap coreHeaders = bytesToMap(bytes);
             
-//            bytes = getLongVarBinary(rs, 7);
-//            Serializable payload = constructPayload(bytes);
-            
-            //TODO read as longvarbinary
-            Serializable payload = (Serializable)rs.getObject(6);
+            byte[] payload = getLongVarBinary(rs, 6);
             
             byte type = rs.getByte(7);
             String jmsType = rs.getString(8);
@@ -1396,7 +1392,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          oos = new JBossObjectOutputStream(bos);
          
-         RoutableSupport.writeMap(oos, map);
+         RoutableSupport.writeMap(oos, map, true);
          
          return bos.toByteArray();
       }
@@ -1424,8 +1420,17 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          ois = new JBossObjectInputStream(bis);
          
-         HashMap map = RoutableSupport.readMap(ois);
-         
+         Map m = RoutableSupport.readMap(ois, true);
+         HashMap map;
+         if (!(m instanceof HashMap))
+         {
+            map = new HashMap(m);
+         }
+         else
+         {
+            map = (HashMap)m;
+         }
+                     
          return map;
       }
       finally
@@ -1486,9 +1491,16 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                   
       //Now set the fields from org.jboss.messaging.core.Message
       
-      //TODO store as longvarbinary
-      ps.setObject(7, m.getPayload());
-      
+      byte[] payload = m.getPayloadAsByteArray();
+      if (payload != null)
+      {
+         setLongVarBinary(ps, 7, payload);
+      }
+      else
+      {
+         ps.setNull(7, Types.LONGVARBINARY);
+      }
+            
       //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
       byte type = -1;
       String jmsType = null;

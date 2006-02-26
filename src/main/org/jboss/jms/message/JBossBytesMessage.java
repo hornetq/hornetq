@@ -42,8 +42,6 @@ import javax.jms.MessageFormatException;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 
-
-
 /**
  * This class implements javax.jms.BytesMessage.
  * 
@@ -107,7 +105,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          long timestamp,
          byte priority,
          Map coreHeaders,
-         Serializable payload,
+         byte[] payloadAsByteArray,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -117,7 +115,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          String replyTo,
          HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
             jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
             jmsProperties);
       
@@ -178,11 +176,13 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       if (otherBytes == null)
       {
          this.setPayload(null);
+         this.clearPayloadAsByteArray();
       }
       else
       {
-         this.payload = new byte[otherBytes.length];
-         System.arraycopy(otherBytes, 0, this.payload, 0, otherBytes.length);
+         this.setPayload(new byte[otherBytes.length]);
+         this.clearPayloadAsByteArray();
+         System.arraycopy(otherBytes, 0, this.getPayload(), 0, otherBytes.length);
       }     
    }
    
@@ -601,9 +601,10 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
             if (trace)  { log.trace("Flushing ostream to array"); }
 
             p.flush();
-            payload = ostream.toByteArray();
+            this.setPayload(ostream.toByteArray());
+            this.clearPayloadAsByteArray();
 
-            if (trace) { log.trace("Array is now: " + payload); }
+            if (trace) { log.trace("Array is now: " + this.getPayload()); }
 
             ostream.close();
          }
@@ -640,7 +641,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
             // a message without reading it? Guard against
             // an NPE in this case.
             if (istream != null)
+            {
                istream.close();
+            }
          }
       }
       catch (IOException e)
@@ -650,7 +653,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
-      payload = null;
+      this.setPayload(null);
+      this.clearPayloadAsByteArray();
       istream = null;
       m = null;
       
@@ -660,48 +664,23 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    public long getBodyLength() throws JMSException
    {
       checkRead();
-      return ((byte[])payload).length;
+      return ((byte[])this.getPayload()).length;
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out) throws IOException
+   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      byte[] arrayToSend;
-
-      if (ostream != null)
-      {
-         p.flush();
-         arrayToSend = ostream.toByteArray();
-      }
-      else
-      {
-         arrayToSend = (byte[])payload;
-      }
-
-      if (arrayToSend == null)
-      {
-         out.writeInt(0); //pretend to be empty array
-      }
-      else
-      {
-         out.writeInt(arrayToSend.length);
-         out.write(arrayToSend);
-      }
+      out.write((byte[])thePayload);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in)
+   protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      int length = in.readInt();
-      if (length == 0)
-      {
-         return null;
-      }
       byte[] payload = new byte[length];
-      in.readFully(payload);
+      in.readFully(payload);      
       return payload;
    }
 
@@ -718,8 +697,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       // read it
       if (istream == null || m == null)
       {
-         if (trace) {  log.trace("internalArray:" + payload); }
-         istream = new ByteArrayInputStream((byte[])payload);
+         if (trace) {  log.trace("internalArray:" + this.getPayload()); }
+         istream = new ByteArrayInputStream((byte[])this.getPayload());
          m = new DataInputStream(istream);
       }
    }

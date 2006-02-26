@@ -21,31 +21,19 @@
   */
 package org.jboss.jms.message;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.util.Classes;
 
 /**
  * This class implements javax.jms.ObjectMessage
  * 
- * @author Norbert Lataille (Norbert.Lataille@m4x.org)
- * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * @version $Revision$
@@ -63,8 +51,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public static final byte TYPE = 3;
 
    // Attributes ----------------------------------------------------
-
-   protected boolean isByteArray = false;
 
    // Static --------------------------------------------------------
 
@@ -94,7 +80,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          long timestamp,
          byte priority,
          Map coreHeaders,
-         Serializable payload,
+         byte[] payload,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -118,13 +104,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public JBossObjectMessage(JBossObjectMessage other)
    {
       super(other);
-      this.isByteArray = other.isByteArray;
-//      if (other.payload != null)
-//      {
-//         this.payload = new byte[((byte[])other.payload).length];
-//         System.arraycopy((byte[])other.payload, 0, (byte[])this.payload, 0,
-//                          ((byte[])other.payload).length);
-//      }
    }
 
    /**
@@ -134,12 +113,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    {
       super(foreign);
 
-      Serializable object = foreign.getObject();
-      if (object != null)
-      {
-         setObject(object);
-      }
-      
+      setObject(foreign.getObject()); 
    }
 
    // Public --------------------------------------------------------
@@ -153,91 +127,16 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    // ObjectMessage implementation ----------------------------------
 
    public void setObject(Serializable object) throws JMSException
-   {
-      if (object == null)
-      {
-         payload = null;
-         return;
-      }
-      try
-      {
-         if (object instanceof byte[])
-         {
-            //cheat for byte arrays
-            isByteArray = true;
-            payload = new byte[((byte[]) object).length];
-            System.arraycopy(object, 0, payload, 0, ((byte[])payload).length);
-         }
-         else
-         {
-            isByteArray = false;
-            ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-            ObjectOutputStream objectOut = new ObjectOutputStream(byteArray);
-            objectOut.writeObject(object);
-            payload = byteArray.toByteArray();
-            objectOut.close();
-         }
-      }
-      catch (IOException e)
-      {
-         log.error(e);
-         throw new MessageFormatException("Object cannot be serialized:" + e.getMessage());
-      }
+   {  
+      //Store it in it's serialized form
+      setPayload(object);
+      getPayloadAsByteArray();
+      setPayload(null);
    }
 
    public Serializable getObject() throws JMSException
    {
-
-      Serializable retVal = null;
-      try
-      {
-         if (null != payload)
-         {
-            if (isByteArray)
-            {
-               retVal = new byte[((byte[])payload).length];
-               System.arraycopy(payload, 0, retVal, 0, ((byte[])payload).length);
-            }
-            else
-            {
-
-               /**
-                * Default implementation ObjectInputStream does not work well
-                * when running an a micro kernal style app-server like JBoss.
-                * We need to look for the Class in the context class loader and
-                * not in the System classloader.
-                * 
-                * Would this be done better by using a MarshaedObject??
-                */
-               class ObjectInputStreamExt extends ObjectInputStream
-               {
-                  ObjectInputStreamExt(InputStream is) throws IOException
-                  {
-                     super(is);
-                  }
-
-                  protected Class resolveClass(ObjectStreamClass v)
-                        throws IOException, ClassNotFoundException
-                  {
-                     return Classes.loadClass(v.getName());
-                  }
-               }
-               ObjectInputStream input =
-                     new ObjectInputStreamExt(new ByteArrayInputStream((byte[])payload));
-               retVal = (Serializable) input.readObject();
-               input.close();
-            }
-         }
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new MessageFormatException("ClassNotFoundException: " + e.getMessage());
-      }
-      catch (IOException e)
-      {
-         throw new MessageFormatException("IOException: " + e.getMessage());
-      }
-      return retVal;
+      return getPayload();
    }
 
    // JBossMessage overrides ----------------------------------------
@@ -250,34 +149,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void writePayloadExternal(ObjectOutput out) throws IOException
-   {
-      out.writeBoolean(isByteArray);
-      if (payload == null)
-      {
-         out.writeInt(-1);
-      }
-      else
-      {
-         out.writeInt(((byte[])payload).length);
-         out.write((byte[])payload);
-      }
-   }
-
-   protected Serializable readPayloadExternal(ObjectInput in)
-      throws IOException, ClassNotFoundException
-   {
-      isByteArray = in.readBoolean();
-      int length = in.readInt();
-      if (length < 0)
-      {
-         return null;
-      }
-      byte[] payload = new byte[length];
-      in.readFully(payload);
-      return payload;
-   }
 
    // Private -------------------------------------------------------
 
