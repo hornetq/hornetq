@@ -30,6 +30,5 @@
 	<classpathentry kind="lib" path="src/resources/jboss-remoting.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/security"/>
 	<classpathentry kind="lib" path="src/resources/jboss-serialization.jar"/>
-	<classpathentry kind="var" path="JRE_LIB_1.4"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
