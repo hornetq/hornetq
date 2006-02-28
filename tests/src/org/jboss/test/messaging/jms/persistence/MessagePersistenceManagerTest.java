@@ -23,8 +23,12 @@ package org.jboss.test.messaging.jms.persistence;
 
 import java.util.HashMap;
 
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.plugin.JDBCChannelMapper;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.test.messaging.core.plugin.JDBCPersistenceManagerTest;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
@@ -40,6 +44,8 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
    
+   protected ChannelMapper cm;
+      
    // Constructors --------------------------------------------------
 
    public MessagePersistenceManagerTest(String name)
@@ -53,13 +59,35 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       {
          fail("This test must not be ran in remote mode!");
       }
-
-      super.setUp();
+      
+      super.setUp();              
+   }
+   
+   protected void doSetup(boolean guid, boolean batch) throws Exception
+   {
+      super.doSetup(guid, batch);
+      
+      cm.deployCoreDestination(true, "testDestination", ms, tl);
+      cm.deployCoreDestination(true, "testReplyTo", ms, tl);
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
+      
+      cm.undeployCoreDestination(true, "testDestination");
+      cm.undeployCoreDestination(true, "testReplyTo");
+      
+      cm.stop();
+   }
+   
+   protected JDBCPersistenceManager createPM() throws Exception
+   {
+      cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
+      cm.start();
+            
+      log.info(this + " creatpm");      
+      return new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
    }
   
    protected void checkEquivalent(Message m1, Message m2) throws Exception
@@ -116,10 +144,8 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
             i % 3 == 2 ? randByteArray(50) : null,
-            i % 2 == 0,
-            new GUID().toString(),
-            i % 2 == 1,
-            new GUID().toString(),            
+            new JBossQueue("testDestination"),
+            new JBossQueue("testReplyTo"),            
             jmsProperties);    
       
       jbm.setPayload(new WibblishObject());

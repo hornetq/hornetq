@@ -2,9 +2,6 @@
    <!DOCTYPE mbean PUBLIC
       "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
       "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
-
-
-
 <mbean>
    <description>JBoss Messaging Server Peer</description>
    <class>org.jboss.jms.server.ServerPeer</class>
@@ -49,9 +46,9 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getDurableSubscriptionStore" setMethod="setDurableSubscriptionStore">
-      <description>The ObjectName of the durable subscription store</description>
-      <name>DurableSubscriptionStore</name>
+   <attribute access="read-write" getMethod="getChannelMapper" setMethod="setChannelMapper">
+      <description>The ObjectName of the channel mapper</description>
+      <name>ChannelMapper</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 
@@ -224,8 +221,6 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
-
-
 
 
 </mbean>

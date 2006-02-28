@@ -62,7 +62,7 @@
       <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
-      <depends optional-attribute-name="DurableSubscriptionStore">jboss.messaging:service=DurableSubscriptionStore</depends>
+      <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
 
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
@@ -92,6 +92,7 @@
       -->
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="TxIdGuid">false</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
@@ -108,9 +109,9 @@
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.plugin.JDBCDurableSubscriptionStore"
-      name="jboss.messaging:service=DurableSubscriptionStore"
-      xmbean-dd="xmdesc/JDBCDurableSubscriptionStore-xmbean.xml">
+   <mbean code="org.jboss.jms.server.plugin.JDBCChannelMapper"
+      name="jboss.messaging:service=ChannelMapper"
+      xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml">
 
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
            the DataSource JNDI name in order to actually get a reference to it. Fix this.

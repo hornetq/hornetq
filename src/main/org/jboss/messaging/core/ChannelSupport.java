@@ -52,7 +52,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
 
     // Attributes ----------------------------------------------------
 
-   protected Serializable channelID;
+   protected long channelID;
    protected Router router;
    protected State state;
    protected PersistenceManager tl;
@@ -66,7 +66,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
     * @param acceptReliableMessages - it only makes sense if tl is null. Otherwise ignored (a
     *        recoverable channel always accepts reliable messages)
     */
-   protected ChannelSupport(Serializable channelID,
+   protected ChannelSupport(long channelID,
                             MessageStore ms,
                             PersistenceManager tl,
                             boolean acceptReliableMessages)
@@ -235,7 +235,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
 
    // Channel implementation ----------------------------------------
 
-   public Serializable getChannelID()
+   public long getChannelID()
    {
       return channelID;
    }
@@ -305,7 +305,6 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       router = null;
       state.clear();
       state = null;
-      channelID = null;
    }
   
    // ManageableCoreDestination implementation ----------------------

@@ -35,10 +35,10 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.core.CoreMessage;
 import org.jboss.test.messaging.core.SimpleChannel;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
@@ -57,7 +57,12 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected ServiceContainer sc;
-
+   
+   protected JDBCPersistenceManager tl;
+   
+   protected MessageStore ms;
+   
+   
    // Constructors --------------------------------------------------
 
    public JDBCPersistenceManagerTest(String name)
@@ -75,8 +80,30 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       super.setUp();
 
       sc = new ServiceContainer("all");
-      sc.start();
-
+      sc.start();                
+      
+   }
+   
+   protected void doSetup(boolean guid, boolean batch) throws Exception
+   {
+      tl = createPM();
+      
+      if (guid)
+      {
+         tl.setSqlProperties(this.getConfigTablesForGUID());
+      }
+      tl.setTxIdGuid(guid);
+      tl.setUsingBatchUpdates(batch);
+      
+      ms = new PersistentMessageStore("s0", tl);
+      
+      tl.start();
+   }
+   
+   protected JDBCPersistenceManager createPM() throws Exception
+   {
+      log.info(this + " creatpm");
+      return new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
    }
 
    public void tearDown() throws Exception
@@ -86,17 +113,15 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          sc.stop();
          sc = null;
       }
+      tl.stop();
       super.tearDown();
    }
    
    public void testAddReference() throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
-
-      PersistentMessageStore ms = new PersistentMessageStore("s0", tl);
+      doSetup(false, false);
       
-      Channel channel = new SimpleChannel("channel0", ms);
+      Channel channel = new SimpleChannel(0, ms);
 
       Message[] messages = createMessages();     
       
@@ -126,12 +151,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRemoveReference() throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
-
-      PersistentMessageStore ms = new PersistentMessageStore("s1", tl);
-
-      Channel channel = new SimpleChannel("channel0", ms);
+      doSetup(false, false);
+      
+      Channel channel = new SimpleChannel(0, ms);
 
       Message[] messages = createMessages();     
       
@@ -163,13 +185,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
    public void testGetMessageReferences() throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
-
-      PersistentMessageStore ms = new PersistentMessageStore("s3", tl);
-      //ms.start();
-
-      Channel channel = new SimpleChannel("channel0", ms);
+      doSetup(false, false);
+      
+      Channel channel = new SimpleChannel(0, ms);
       
       Message[] messages = createMessages();     
       
@@ -202,13 +220,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRemoveAllMessageData() throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
-
-      PersistentMessageStore ms = new PersistentMessageStore("s4", tl);
-      //ms.start();
-
-      Channel channel = new SimpleChannel("channel0", ms);
+      doSetup(false, false);
+      
+      Channel channel = new SimpleChannel(0, ms);
       
       Message[] messages = createMessages();     
       
@@ -239,45 +253,93 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
  
    }
    
-   public void testCommit_NotXA_Long() throws Exception
+   //non batch
+   
+   public void testCommit_NotXA_Long_NB() throws Exception
    {
-      doTransactionCommit(false, false);
+      doTransactionCommit(false, false, false);
    }
    
-   public void testCommit_NotXA_Guid() throws Exception
+   public void testCommit_NotXA_Guid_NB() throws Exception
    {
-      doTransactionCommit(false, true);
+      doTransactionCommit(false, true, false);
    }
      
-   public void testCommit_XA_Long() throws Exception
+   public void testCommit_XA_Long_NB() throws Exception
    {
-      doTransactionCommit(true, false);
+      doTransactionCommit(true, false, false);
    }
 
-   public void testCommit_XA_Guid() throws Exception
+   public void testCommit_XA_Guid_NB() throws Exception
    {
-      doTransactionCommit(true, true);
+      doTransactionCommit(true, true, false);
    }
    
-   public void testRollback_NotXA_Long() throws Exception
+   public void testRollback_NotXA_Long_NB() throws Exception
    {
-      doTransactionRollback(false, false);
+      doTransactionRollback(false, false, false);
    }
     
-   public void testRollback_NotXA_Guid() throws Exception
+   public void testRollback_NotXA_Guid_NB() throws Exception
    {
-      doTransactionRollback(false, true);
+      doTransactionRollback(false, true, false);
    }
        
-   public void testRollback_XA_Long() throws Exception
+   public void testRollback_XA_Long_NB() throws Exception
    {
-      doTransactionRollback(true, false);
+      doTransactionRollback(true, false, false);
    }
    
-   public void testRollback_XA_Guid() throws Exception
+   public void testRollback_XA_Guid_NB() throws Exception
    {
-      doTransactionRollback(true, true);
+      doTransactionRollback(true, true, false);
    }
+   
+
+   //batch
+   
+   public void testCommit_NotXA_Long_B() throws Exception
+   {
+      doTransactionCommit(false, false, true);
+   }
+   
+   public void testCommit_NotXA_Guid_B() throws Exception
+   {
+      doTransactionCommit(false, true, true);
+   }
+     
+   public void testCommit_XA_Long_B() throws Exception
+   {
+      doTransactionCommit(true, false, true);
+   }
+
+   public void testCommit_XA_Guid_B() throws Exception
+   {
+      doTransactionCommit(true, true, true);
+   }
+   
+   public void testRollback_NotXA_Long_B() throws Exception
+   {
+      doTransactionRollback(false, false, true);
+   }
+    
+   public void testRollback_NotXA_Guid_B() throws Exception
+   {
+      doTransactionRollback(false, true, true);
+   }
+       
+   public void testRollback_XA_Long_B() throws Exception
+   {
+      doTransactionRollback(true, false, true);
+   }
+   
+   public void testRollback_XA_Guid_B() throws Exception
+   {
+      doTransactionRollback(true, true, true);
+   }
+ 
+   
+   //
    
    public void testRetrievePreparedTransactions_Long() throws Exception
    {
@@ -289,22 +351,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       retrievePreparedTransactions(true);
    }
    
+   
+   
    protected void retrievePreparedTransactions(boolean guid) throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.setTxIdGuid(guid);
+      doSetup(guid, false);
       
-      if (guid)
-      {
-         Properties props = getConfigTablesForGUID();
-         tl.setSqlProperties(props);
-      }    
-      
-      tl.start();
-      PersistentMessageStore ms = new PersistentMessageStore("s5");
-      //ms.start();
-
-      Channel channel = new SimpleChannel("channel0", ms);
+      Channel channel = new SimpleChannel(0, ms);
       
       TransactionRepository txRep = new TransactionRepository();
       txRep.start(tl);
@@ -660,25 +713,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doTransactionCommit(boolean xa, boolean idIsGuid) throws Exception
+   protected void doTransactionCommit(boolean xa, boolean idIsGuid, boolean batch) throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      doSetup(idIsGuid, batch);
 
-      if (idIsGuid)
-      {
-         tl.setSqlProperties(this.getConfigTablesForGUID());
-      }
-
-      tl.setTxIdGuid(idIsGuid);
-
-      PersistentMessageStore ms = new PersistentMessageStore("s7", tl);
-      //ms.start();
-
-      Channel channel = new SimpleChannel("channel0", ms);
+      Channel channel = new SimpleChannel(0, ms);
       TransactionRepository txRep = new TransactionRepository();
       txRep.start(tl);
-
-      tl.start();
 
       log.debug("transaction log started");
 
@@ -751,26 +792,15 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tl.removeAllMessageData(channel.getChannelID());
       
    }
-   
-
-   
-   
-   protected void doTransactionRollback(boolean xa, boolean idIsGuid) throws Exception
+         
+   protected void doTransactionRollback(boolean xa, boolean idIsGuid, boolean batch) throws Exception
    {
-      JDBCPersistenceManager tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      if (idIsGuid)
-      {
-         tl.setSqlProperties(this.getConfigTablesForGUID());
-      }
-      tl.setTxIdGuid(idIsGuid);
-      PersistentMessageStore ms = new PersistentMessageStore("s8", tl);
-      //ms.start();
+      doSetup(idIsGuid, batch);
 
-      Channel channel = new SimpleChannel("channel0", ms);
+      Channel channel = new SimpleChannel(0, ms);
       TransactionRepository txRep = new TransactionRepository();
       txRep.start(tl);
-      tl.start();
-      
+ 
       Message[] messages = createMessages();     
       
       Message m1 = messages[0];

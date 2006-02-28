@@ -63,8 +63,8 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
       tr.start(tl);
 
-      channel = new CoreDurableSubscription("clientid123", "testDurableSubscription",
-                                        null, null, false, ms, tl);
+      channel = new CoreDurableSubscription(123, "clientid123", "testDurableSubscription",
+                                            null, null, false, ms, tl);
 
       log.debug("setup done");
    }
@@ -91,7 +91,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, tl);
+      channel = new Queue(1, ms, tl);
    }
 
    // Public --------------------------------------------------------

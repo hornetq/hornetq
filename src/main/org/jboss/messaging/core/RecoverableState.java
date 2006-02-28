@@ -50,7 +50,7 @@ public class RecoverableState extends NonRecoverableState
    private boolean trace = log.isTraceEnabled();
 
    private PersistenceManager pm;
-   private Serializable channelID;
+   private long channelID;
    private Serializable storeID;
    private MessageStore messageStore;
    

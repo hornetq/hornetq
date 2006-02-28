@@ -61,13 +61,15 @@ public class DistributedTopic extends Topic implements Distributed
    protected TopicPeer peer;
    protected ViewKeeper viewKeeper;
    protected PersistenceManager pm;
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
    public DistributedTopic(String name, MessageStore ms,
                            PersistenceManager pm, RpcDispatcher dispatcher)
    {
-      super(name, ms);
+      super(-1);
+      this.ms = ms;
       this.pm = pm;
       viewKeeper = new TopicViewKeeper(name);
       peer = new TopicPeer(new GUID().toString(), this, dispatcher);
@@ -127,7 +129,7 @@ public class DistributedTopic extends Topic implements Distributed
 
    public String toString()
    {
-      return "DistributedTopic[" + getName() + ":" +
+      return "DistributedTopic[" + this + ":" +
          (peer == null ? "null" : Util.guidToString(peer.getID())) + "]";
    }
 
@@ -149,7 +151,7 @@ public class DistributedTopic extends Topic implements Distributed
          return;
       }
 
-      RemoteTopic remoteTopic = new RemoteTopic(getName(), ms, pm, peer.getReplicator());
+      RemoteTopic remoteTopic = new RemoteTopic("FIXME", ms, pm, peer.getReplicator());
       router.add(remoteTopic);
       if (log.isTraceEnabled()) { log.trace(this + " added access to the distributed topic"); }
    }
@@ -215,7 +217,7 @@ public class DistributedTopic extends Topic implements Distributed
 
       public String toString()
       {
-         return "DistributedTopic[" + getName() + ":" +
+         return "DistributedTopic[" + this + ":" +
                 Util.guidToString(peer.getID()) + "].ViewKeeper";
       }
 

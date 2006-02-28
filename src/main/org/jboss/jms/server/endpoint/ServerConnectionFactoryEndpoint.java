@@ -87,7 +87,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       if (username != null)
       {
          String preconfClientID =
-            serverPeer.getDurableSubscriptionStoreDelegate().getPreConfiguredClientID(username);
+            serverPeer.getChannelMapperDelegate().getPreConfiguredClientID(username);
          
          if (preconfClientID != null)
          {

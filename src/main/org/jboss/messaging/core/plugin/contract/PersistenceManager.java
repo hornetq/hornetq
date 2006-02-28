@@ -24,9 +24,9 @@ package org.jboss.messaging.core.plugin.contract;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * The interface to the persistence manager
@@ -47,16 +47,16 @@ public interface PersistenceManager extends ServerPlugin
    /**
     * TODO Do we really need this method?
     */
-   void removeAllMessageData(Serializable channelID) throws Exception;
+   void removeAllMessageData(long channelID) throws Exception;
    
-   void addReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
+   void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
-   void removeReference(Serializable channelID, MessageReference ref, Transaction tx) throws Exception;
+   void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    /**
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
     */
-   List messageRefs(Serializable channelID) throws Exception;
+   List messageRefs(long channelID) throws Exception;
 
    Message getMessage(Serializable messageID) throws Exception;
    

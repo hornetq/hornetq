@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
@@ -74,10 +75,8 @@ public class MapMessagePersistenceManagerTest extends MessagePersistenceManagerT
                i % 2 == 0 ? new GUID().toString() : null,
                genCorrelationID(i),
                i % 3 == 2 ? randByteArray(50) : null,
-               i % 2 == 0,
-               new GUID().toString(),
-               i % 2 == 1,
-               new GUID().toString(),            
+                     new JBossQueue("testDestination"),
+                     new JBossQueue("testReplyTo"),         
                jmsProperties);      
       
       Map map = generateFilledMap(true);

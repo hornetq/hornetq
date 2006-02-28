@@ -8,6 +8,7 @@ package org.jboss.jms.server.destination;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.messaging.core.local.ManageableQueue;
 
 /**
@@ -42,7 +43,8 @@ public class Queue extends DestinationServiceSupport
    
    public int getCurrentMessageCount() throws JMSException
    {
-	   ManageableQueue q = (ManageableQueue)dm.getCoreDestination(true, name);
+      JBossQueue jbq = new JBossQueue(name);
+	   ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
 	   return q.getCurrentMessageCount();
    }
 
@@ -50,7 +52,8 @@ public class Queue extends DestinationServiceSupport
    
    public void removeAllMessages() throws JMSException
    {
-      ManageableQueue q = (ManageableQueue)dm.getCoreDestination(true, name);
+      JBossQueue jbq = new JBossQueue(name);
+      ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
       q.removeAllMessages();
    }
 

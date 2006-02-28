@@ -97,6 +97,8 @@ public class BrowserTest extends MessagingTestCase
 	
 	public void tearDown() throws Exception
 	{
+      ServerManagement.undeployQueue("Queue");
+      
       connection.stop();
       connection = null;
 		

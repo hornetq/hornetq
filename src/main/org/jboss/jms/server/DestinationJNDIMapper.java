@@ -21,11 +21,11 @@
   */
 package org.jboss.jms.server;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
-import java.util.HashSet;
 
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
@@ -34,19 +34,17 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.CoreDestination;
 import org.w3c.dom.Element;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * Manages JNDI mapping and delegates core destination state management to a CoreDestinationStore.
+ * Manages JNDI mapping for JMS destinations
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -65,9 +63,7 @@ class DestinationJNDIMapper implements DestinationManager
 
    protected ServerPeer serverPeer;
    protected Context initialContext;
-   protected CoreDestinationStore coreDestinationStore;
 
-   // TODO synchronize access to these
    // <name - JNDI name>
    protected Map queueNameToJNDI;
    protected Map topicNameToJNDI;
@@ -77,8 +73,6 @@ class DestinationJNDIMapper implements DestinationManager
    public DestinationJNDIMapper(ServerPeer serverPeer) throws Exception
    {
       this.serverPeer = serverPeer;
-      coreDestinationStore = new CoreDestinationStore(this);
-
       queueNameToJNDI = new ConcurrentReaderHashMap();
       topicNameToJNDI = new ConcurrentReaderHashMap();
    }
@@ -87,7 +81,7 @@ class DestinationJNDIMapper implements DestinationManager
    
    public String registerDestination(boolean isQueue, String name, String jndiName,
                                      Element securityConfiguration) throws JMSException
-   {
+   {            
       String parentContext;
       String jndiNameInContext;
 
@@ -125,13 +119,12 @@ class DestinationJNDIMapper implements DestinationManager
       }
       catch(Exception e)
       {
+         e.printStackTrace();
          throw new JBossJMSException("JNDI failure", e);
       }
 
       Destination jmsDestination =
          isQueue ? (Destination) new JBossQueue(name) : (Destination) new JBossTopic(name);
-
-      coreDestinationStore.createCoreDestination(jmsDestination);
 
       try
       {
@@ -148,7 +141,6 @@ class DestinationJNDIMapper implements DestinationManager
       }
       catch(Exception e)
       {
-         coreDestinationStore.destroyCoreDestination(isQueue, name);
          throw new JBossJMSException("JNDI failure", e);
       }
 
@@ -158,7 +150,6 @@ class DestinationJNDIMapper implements DestinationManager
       if (securityConfiguration != null)
       {
          serverPeer.getSecurityManager().setSecurityConfig(isQueue, name, securityConfiguration);
-
       }
 
       log.debug((isQueue ? "queue" : "topic") + " " + name +
@@ -169,8 +160,6 @@ class DestinationJNDIMapper implements DestinationManager
 
    public void unregisterDestination(boolean isQueue, String name) throws JMSException
    {
-      coreDestinationStore.destroyCoreDestination(isQueue, name);
-
       String jndiName = null;
       if (isQueue)
       {
@@ -197,34 +186,6 @@ class DestinationJNDIMapper implements DestinationManager
       serverPeer.getSecurityManager().clearSecurityConfig(isQueue, name);
 
       log.debug("unregistered " + (isQueue ? "queue " : "topic ") + name);
-   }
-
-   public synchronized void createTemporaryDestination(javax.jms.Destination jmsDestination)
-      throws JMSException
-   {
-      coreDestinationStore.createCoreDestination(jmsDestination);
-   }
-
-   public void destroyTemporaryDestination(javax.jms.Destination jmsDestination)
-   {
-      JBossDestination d = (JBossDestination)jmsDestination;
-      boolean isQueue = d.isQueue();
-      String name = d.getName();
-      coreDestinationStore.destroyCoreDestination(isQueue, name);
-   }
-
-   public CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException
-   {
-      return coreDestinationStore.getCoreDestination(isQueue, name);
-   }
-
-   public CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException
-   {
-      boolean isQueue = d instanceof javax.jms.Queue;
-      String name =
-         isQueue ? ((javax.jms.Queue)d).getQueueName() : ((javax.jms.Topic)d).getTopicName();
-
-      return getCoreDestination(isQueue, name);
    }
 
    // Public --------------------------------------------------------
@@ -261,8 +222,6 @@ class DestinationJNDIMapper implements DestinationManager
 
    void start() throws Exception
    {
-      coreDestinationStore.start();
-
       initialContext = new InitialContext();
 
       // see if the default queue/topic contexts are there, and if they're not, create them
@@ -272,10 +231,10 @@ class DestinationJNDIMapper implements DestinationManager
 
    void stop() throws Exception
    {
-      // destroy all destinations
+      // remove all destinations from JNDI
       for(Iterator i = queueNameToJNDI.keySet().iterator(); i.hasNext(); )
       {
-         unregisterDestination(true, (String)i.next());
+         unregisterDestination(true, (String)i.next());         
       }
 
       for(Iterator i = topicNameToJNDI.keySet().iterator(); i.hasNext(); )
@@ -283,20 +242,12 @@ class DestinationJNDIMapper implements DestinationManager
          unregisterDestination(false, (String)i.next());
       }
 
-//      initialContext.destroySubcontext(serverPeer.getDefaultQueueJNDIContext());
-//      initialContext.destroySubcontext(serverPeer.getDefaultTopicJNDIContext());
       initialContext.unbind(serverPeer.getDefaultQueueJNDIContext());
       initialContext.unbind(serverPeer.getDefaultTopicJNDIContext());
 
       initialContext.close();
-
-      coreDestinationStore.stop();
    }
 
-   ServerPeer getServerPeer()
-   {
-      return serverPeer;
-   }
 
    // Protected -----------------------------------------------------
 

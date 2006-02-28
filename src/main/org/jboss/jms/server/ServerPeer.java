@@ -37,7 +37,7 @@ import javax.naming.NamingException;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.ConnectionManagerImpl;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
@@ -109,8 +109,8 @@ public class ServerPeer extends ServiceMBeanSupport
    protected PersistenceManager persistenceManagerDelegate;
    protected ObjectName messageStoreObjectName;
    protected MessageStore messageStoreDelegate;
-   protected ObjectName durableSubscriptionStoreObjectName;
-   protected DurableSubscriptionStore durableSubscriptionStoreDelegate;
+   protected ObjectName channelMapperObjectName;
+   protected ChannelMapper channelMapper;
 
    protected JMSServerInvocationHandler handler;
 
@@ -130,7 +130,7 @@ public class ServerPeer extends ServiceMBeanSupport
       securityStore = new SecurityMetadataStore();
       txRepository = new TransactionRepository();
       
-      destinationJNDIMapper = new DestinationJNDIMapper(this);
+      destinationJNDIMapper = new DestinationJNDIMapper(this);      
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       connectionManager = new ConnectionManagerImpl();
 
@@ -171,8 +171,8 @@ public class ServerPeer extends ServiceMBeanSupport
       messageStoreDelegate =
          (MessageStore)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
 
-      durableSubscriptionStoreDelegate = (DurableSubscriptionStore)mbeanServer.
-         getAttribute(durableSubscriptionStoreObjectName, "Instance");
+      channelMapper = (ChannelMapper)mbeanServer.
+         getAttribute(channelMapperObjectName, "Instance");
 
       // start the rest of the internal components
       
@@ -258,14 +258,14 @@ public class ServerPeer extends ServiceMBeanSupport
       messageStoreObjectName = on;
    }
 
-   public ObjectName getDurableSubscriptionStore()
+   public ObjectName getChannelMapper()
    {
-      return durableSubscriptionStoreObjectName;
+      return channelMapperObjectName;
    }
 
-   public void setDurableSubscriptionStore(ObjectName on)
+   public void setChannelMapper(ObjectName on)
    {
-      durableSubscriptionStoreObjectName = on;
+      channelMapperObjectName = on;
    }
 
    public Object getInstance()
@@ -396,9 +396,9 @@ public class ServerPeer extends ServiceMBeanSupport
       return destinationJNDIMapper.isDeployed(isQueue, name);
    }
 
-   public DurableSubscriptionStore getDurableSubscriptionStoreDelegate()
+   public ChannelMapper getChannelMapperDelegate()
    {
-      return durableSubscriptionStoreDelegate;
+      return channelMapper;
    }
 
    public TransactionRepository getTxRepository()

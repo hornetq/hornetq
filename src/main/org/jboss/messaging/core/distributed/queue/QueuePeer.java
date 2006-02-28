@@ -120,7 +120,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (log.isTraceEnabled()) { log.trace(this + " remote browse" + (filter == null ? "" : ", filter = " + filter)); }
 
       RpcServerCall rpcServerCall =
-            new RpcServerCall(queue.getName(), "remoteBrowse",
+            new RpcServerCall("FIXME", "remoteBrowse",
                               new Object[] {getPeerIdentity(), filter},
                               new String[] {"org.jboss.messaging.core.distributed.PeerIdentity",
                                             "org.jboss.messaging.core.Filter"});
@@ -178,7 +178,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (log.isTraceEnabled()) { log.trace(this + " initiating a forward request"); }
 
       RpcServerCall rpcServerCall =
-            new RpcServerCall(queue.getName(), "forward",
+            new RpcServerCall("FIXME", "forward",
                               new Object[] {getPeerIdentity()},
                               new String[] {"org.jboss.messaging.core.distributed.PeerIdentity"});
 
@@ -233,7 +233,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
                                          "to registers using id=" + pipeID);
       }
 
-      rpcServer.register(queue.getName(), this);
+      rpcServer.register("FIXME", this);
 
       // also, register the peer individually to allow point-to-point calls
       rpcServer.register(peerID, this);
@@ -243,7 +243,7 @@ public class QueuePeer extends PeerSupport implements QueueFacade
    {
       // unregister my pipe output
       rpcServer.unregister(pipeID);
-      rpcServer.unregister(queue.getName(), this);
+      rpcServer.unregister("FIXME", this);
    }
 
    protected RemotePeer createRemotePeer(RemotePeerInfo thatPeerInfo)

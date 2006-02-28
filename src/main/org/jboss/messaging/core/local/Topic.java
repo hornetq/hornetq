@@ -24,20 +24,19 @@ package org.jboss.messaging.core.local;
 import java.util.Iterator;
 import java.util.Set;
 
-
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
@@ -55,25 +54,18 @@ public class Topic implements CoreDestination
    private boolean trace = log.isTraceEnabled();
    
    protected Router router;
-   protected String name;
-   protected MessageStore ms;
-
+   
+   protected long destinationId;
+   
    // Constructors --------------------------------------------------
 
-   public Topic(String name, MessageStore ms)
+   public Topic(long id)
    {
-      this.name = name;
-      this.ms = ms;
       router = new PointToMultipointRouter();
 
       if (log.isTraceEnabled()) { log.trace(this + " created"); }
-   }
-
-   // CoreDestination implementation --------------------------------
-
-   public String getName()
-   {
-      return name;
+      
+      this.destinationId = id;
    }
 
    // Receiver implementation ---------------------------------------
@@ -126,12 +118,19 @@ public class Topic implements CoreDestination
       if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + receiver); }
       return removed;
    }
+   
+   // CoreDestination implementation -------------------------------
+   
+   public long getId()
+   {
+      return destinationId;
+   }
 
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "CoreTopic[" + getName() + "]";
+      return "CoreTopic[" + destinationId + "]";
    }
 
    // Package protected ---------------------------------------------

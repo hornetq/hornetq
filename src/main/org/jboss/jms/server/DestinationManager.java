@@ -21,10 +21,9 @@
   */
 package org.jboss.jms.server;
 
-import org.w3c.dom.Element;
-import org.jboss.messaging.core.CoreDestination;
-
 import javax.jms.JMSException;
+
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -49,11 +48,5 @@ public interface DestinationManager
     * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
     */
    void unregisterDestination(boolean isQueue, String name) throws JMSException;
-
-   CoreDestination getCoreDestination(boolean isQueue, String name) throws JMSException;
-   CoreDestination getCoreDestination(javax.jms.Destination d) throws JMSException;
-
-   void createTemporaryDestination(javax.jms.Destination d) throws JMSException;
-   void destroyTemporaryDestination(javax.jms.Destination d) throws JMSException;
 
 }

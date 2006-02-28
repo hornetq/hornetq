@@ -23,9 +23,8 @@ package org.jboss.messaging.core.local;
 
 import javax.jms.JMSException;
 
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.util.Util;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
  * 
@@ -47,18 +46,16 @@ public class CoreDurableSubscription extends CoreSubscription
    protected String name;
    protected String clientID;
 
-
    // Constructors --------------------------------------------------
 
-   public CoreDurableSubscription(String clientID, String name, Topic topic, String selector,
-                              boolean noLocal, MessageStore ms, PersistenceManager tl)
+   public CoreDurableSubscription(long id, String clientID, String name, Topic topic, String selector,
+                                  boolean noLocal, MessageStore ms, PersistenceManager pm)
    {
-      super(clientID + "." + name, topic, selector, noLocal, ms, tl);
+      super(id, topic, selector, noLocal, ms, pm);
       this.name = name;
       this.clientID = clientID;
    }
    
-
    // Channel implementation ----------------------------------------
 
    // Public --------------------------------------------------------
@@ -85,7 +82,7 @@ public class CoreDurableSubscription extends CoreSubscription
 
    public String toString()
    {
-      return "CoreDurableSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+      return "CoreDurableSubscription[" + getChannelID() + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------

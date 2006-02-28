@@ -53,7 +53,7 @@ public class NonRecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      channel = new Queue("test", ms);
+      channel = new Queue(1, ms);
    }
 
    public void tearDown() throws Exception

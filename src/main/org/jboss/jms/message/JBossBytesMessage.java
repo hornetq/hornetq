@@ -39,6 +39,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 
@@ -109,14 +110,12 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
-         boolean destinationIsQueue,
-         String destination,
-         boolean replyToIsQueue,
-         String replyTo,
+         JBossDestination destination,
+         JBossDestination replyTo,
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
+            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
       
       ostream = new ByteArrayOutputStream();

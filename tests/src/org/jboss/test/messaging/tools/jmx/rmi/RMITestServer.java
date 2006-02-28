@@ -30,7 +30,7 @@ import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.remoting.transport.Connector;
@@ -168,14 +168,14 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getDestinationManager();
    }
 
-   public DurableSubscriptionStore getDurableSubscriptionStore() throws Exception
+   public ChannelMapper getChannelMapper() throws Exception
    {
-      return server.getDurableSubscriptionStore();
+      return server.getChannelMapper();
    }
 
-   public ObjectName getDurableSubscriptionStoreObjectName() throws Exception
+   public ObjectName getChannelMapperObjectName() throws Exception
    {
-      return server.getDurableSubscriptionStoreObjectName();
+      return server.getChannelMapperObjectName();
    }
 
    public MessageStore getMessageStore() throws Exception

@@ -84,7 +84,7 @@ public class DistributedQueue extends Queue implements Distributed
    public DistributedQueue(String name, MessageStore ms, PersistenceManager tl,
                            RpcDispatcher dispatcher)
    {
-      super(name, ms, tl);
+      super(-1, ms, tl);
       viewKeeper = new QueueViewKeeper();
       peer = new QueuePeer(this, dispatcher);
    }
@@ -251,7 +251,7 @@ public class DistributedQueue extends Queue implements Distributed
 
       public Serializable getGroupID()
       {
-         return getChannelID();
+         return "FIXME";
       }
 
       public void addRemotePeer(RemotePeer remotePeer)

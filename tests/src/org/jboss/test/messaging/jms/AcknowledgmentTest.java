@@ -91,6 +91,7 @@ public class AcknowledgmentTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.disconnect();
       super.tearDown();
    }

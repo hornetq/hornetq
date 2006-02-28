@@ -50,7 +50,7 @@ import java.io.Serializable;
 public interface Channel extends DeliveryObserver, Receiver, Distributor
 {
 
-   Serializable getChannelID();
+   long getChannelID();
 
    /**
     * @return true if the channel can guarantee recoverability for <i>reliable</i> messages.

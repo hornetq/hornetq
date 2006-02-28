@@ -89,6 +89,8 @@ public class TemporaryDestinationTest extends MessagingTestCase
    {
       connection.close();
       
+      ServerManagement.undeployTopic("Topic");
+      
       super.tearDown();
    }
 

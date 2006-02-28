@@ -65,7 +65,7 @@ class TopicPeer extends PeerSupport implements TopicFacade
    public TopicPeer(Serializable peerID, DistributedTopic topic, RpcDispatcher dispatcher)
    {
       super(peerID, topic.getViewKeeper(), dispatcher);
-      this.replicatorID = topic.getName() + ".Replicator";
+      this.replicatorID = this + ".Replicator";
       this.topic = topic;
    }
 
@@ -99,7 +99,7 @@ class TopicPeer extends PeerSupport implements TopicFacade
       replicatorOutput.join();
       log.debug(replicatorOutput + " successfully joined the group");
 
-      rpcServer.register(topic.getName(), this);
+      rpcServer.register("FIXME", this);
       if (log.isTraceEnabled()) { log.trace(this + " registered"); }
    }
 
@@ -113,7 +113,7 @@ class TopicPeer extends PeerSupport implements TopicFacade
       replicator.leave();
       log.debug(replicator + " successfully left the group");
 
-      rpcServer.unregister(topic.getName(), this);
+      rpcServer.unregister("FIXME", this);
       if (log.isTraceEnabled()) { log.trace(this + " unregistered"); }
    }
 

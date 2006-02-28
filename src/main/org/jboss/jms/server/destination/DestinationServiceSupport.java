@@ -10,6 +10,7 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.w3c.dom.Element;
 
 import javax.management.ObjectName;
@@ -33,6 +34,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    protected ObjectName serverPeerObjectName;
    protected DestinationManager dm;
+   protected ChannelMapper cm;
    protected SecurityManager sm;
    protected Element securityConfig;
 
@@ -53,33 +55,53 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    public synchronized void startService() throws Exception
    {
-      started = true;
-
-      if (serviceName != null)
+      try
       {
-         name = serviceName.getKeyProperty("name");
+         
+         started = true;
+   
+         if (serviceName != null)
+         {
+            name = serviceName.getKeyProperty("name");
+         }
+   
+         if (name == null || name.length() == 0)
+         {
+            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") +
+                                             " name was not properly set in the service's ObjectName");
+         }
+   
+         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+         dm = serverPeer.getDestinationManager();
+         sm = serverPeer.getSecurityManager();
+         cm = serverPeer.getChannelMapperDelegate();
+   
+         jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
+         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(), serverPeer.getPersistenceManagerDelegate());
+   
+         log.info(this + " started");
       }
-
-      if (name == null || name.length() == 0)
+      catch (Exception e)
       {
-         throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") +
-                                          " name was not properly set in the service's ObjectName");
+         log.error("Failed to start service", e);
+         throw e;
       }
-
-      ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-      dm = serverPeer.getDestinationManager();
-      sm = serverPeer.getSecurityManager();
-
-      jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
-
-      log.info(this + " started");
    }
 
    public void stopService() throws Exception
    {
-      dm.unregisterDestination(isQueue(), name);
-      started = false;
-      log.info(this + " stopped");
+      try
+      {
+         dm.unregisterDestination(isQueue(), name);
+         cm.undeployCoreDestination(isQueue(), name);
+         started = false;
+         log.info(this + " stopped");
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to stop service", e);
+         throw e;
+      }
    }
 
    // JMX managed attributes ----------------------------------------

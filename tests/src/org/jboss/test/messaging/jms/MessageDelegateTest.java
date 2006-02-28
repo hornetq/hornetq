@@ -80,6 +80,7 @@ public class MessageDelegateTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
+      ServerManagement.undeployQueue("Queue");
       super.tearDown();
    }
    

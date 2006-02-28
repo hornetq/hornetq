@@ -94,7 +94,8 @@ public class PersistenceTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      
+      ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
       super.tearDown();
    }
 

@@ -21,18 +21,14 @@
   */
 package org.jboss.messaging.core.local;
 
-
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.util.Util;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
- * Represents a subscription to a destination (topic or queue). It  job is to recoverably hold
- * messages in transit to consumers.
+ * Represents a subscription to a destination (topic or queue).
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -54,16 +50,16 @@ public class CoreSubscription extends Pipe
    
    // Constructors --------------------------------------------------
 
-   public CoreSubscription(Topic topic, String selector, boolean noLocal, MessageStore ms)
+   public CoreSubscription(long id, Topic topic, String selector, boolean noLocal, MessageStore ms)
    {
-      this("sub" + new GUID().toString(), topic, selector, noLocal, ms, null);
+      this(id, topic, selector, noLocal, ms, null);
    }
    
-   protected CoreSubscription(String name, Topic topic, String selector, boolean noLocal,
-                          MessageStore ms, PersistenceManager tl)
+   protected CoreSubscription(long id, Topic topic, String selector, boolean noLocal,
+                              MessageStore ms, PersistenceManager tl)
    {
       // A CoreSubscription must accept reliable messages, even if itself is non-recoverable
-      super(name, ms, tl, true);
+      super(id, ms, tl, true);
       this.topic = topic;
       this.selector = selector;
       this.noLocal = noLocal;
@@ -118,7 +114,7 @@ public class CoreSubscription extends Pipe
 
    public String toString()
    {
-      return "CoreSubscription[" + Util.guidToString(getChannelID()) + ", " + topic + "]";
+      return "CoreSubscription[" + getChannelID() + ", " + topic + "]";
    }
 
    // Package protected ---------------------------------------------

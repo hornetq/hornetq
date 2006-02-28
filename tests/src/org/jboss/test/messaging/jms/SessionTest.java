@@ -96,7 +96,8 @@ public class SessionTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-      
+      ServerManagement.undeployTopic("TestTopic"); 
+      ServerManagement.undeployQueue("TestQueue");
       super.tearDown();
    }
    

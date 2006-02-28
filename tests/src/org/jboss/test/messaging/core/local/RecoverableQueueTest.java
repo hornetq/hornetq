@@ -60,7 +60,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
       ms = new PersistentMessageStore("s14", tl);
 
-      channel = new Queue("test", ms, tl);
+      channel = new Queue(1, ms, tl);
       
       tr.start(tl);
    }
@@ -85,7 +85,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, tl);
+      channel = new Queue(1, ms, tl);
    }
 
    // Public --------------------------------------------------------

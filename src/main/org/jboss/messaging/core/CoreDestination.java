@@ -25,11 +25,12 @@ package org.jboss.messaging.core;
  * Marker interface used as common type for a core destination (queue, topic, etc.)
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public interface CoreDestination extends Distributor, Receiver
 {
-   String getName();
+   long getId();
 }

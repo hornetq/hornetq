@@ -28,7 +28,7 @@ import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.remoting.transport.Connector;
 
@@ -80,7 +80,7 @@ public interface Server extends Remote
    boolean isServerPeerStarted() throws Exception;
 
    public ObjectName getServerPeerObjectName() throws Exception;
-   public ObjectName getDurableSubscriptionStoreObjectName() throws Exception;
+   public ObjectName getChannelMapperObjectName() throws Exception;
 
    boolean isStarted() throws Exception;
 
@@ -102,7 +102,7 @@ public interface Server extends Remote
    /**
     * Only for in-VM use!
     */
-   DurableSubscriptionStore getDurableSubscriptionStore() throws Exception;
+   ChannelMapper getChannelMapper() throws Exception;
    
    /**
     * Only for in-VM use

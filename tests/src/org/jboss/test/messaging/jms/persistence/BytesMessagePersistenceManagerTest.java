@@ -23,6 +23,7 @@ package org.jboss.test.messaging.jms.persistence;
 
 import java.util.HashMap;
 
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
@@ -64,20 +65,18 @@ public class BytesMessagePersistenceManagerTest extends MessagePersistenceManage
                
       JBossBytesMessage m = 
          new JBossBytesMessage(new GUID().toString(),
-               true,
-               System.currentTimeMillis() + 1000 * 60 * 60,
-               System.currentTimeMillis(),
-               i,
-               coreHeaders,
-               null,
-               i % 2 == 0 ? new GUID().toString() : null,
-               genCorrelationID(i),
-               i % 3 == 2 ? randByteArray(50) : null,
-               i % 2 == 0,
-               new GUID().toString(),
-               i % 2 == 1,
-               new GUID().toString(),            
-               jmsProperties); 
+         true,
+         System.currentTimeMillis() + 1000 * 60 * 60,
+         System.currentTimeMillis(),
+         i,
+         coreHeaders,
+         null,
+         i % 2 == 0 ? new GUID().toString() : null,
+         genCorrelationID(i),
+         i % 3 == 2 ? randByteArray(50) : null,
+         new JBossQueue("testDestination"),
+         new JBossQueue("testReplyTo"),            
+         jmsProperties); 
       
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());

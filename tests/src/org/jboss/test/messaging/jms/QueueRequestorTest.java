@@ -81,7 +81,7 @@ public class QueueRequestorTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      
+      ServerManagement.undeployQueue("Queue");
       super.tearDown();
    }
 

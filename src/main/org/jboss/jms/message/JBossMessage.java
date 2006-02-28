@@ -159,7 +159,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public JBossMessage(String messageID)
    {
       this(messageID, true, 0, System.currentTimeMillis(), (byte)4,
-           null, null, null, null, null, true, null, true, null, null);
+           null, null, null, null, null, null, null, null);
    }
 
    /*
@@ -175,10 +175,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        String jmsType,
                        String correlationID,
                        byte[] correlationIDBytes,
-                       boolean destinationIsQueue,
-                       String destination,
-                       boolean replyToIsQueue,
-                       String replyTo,                
+                       JBossDestination destination,
+                       JBossDestination replyTo,
                        HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, 0, 0, coreHeaders, payloadAsByteArray);
@@ -191,29 +189,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       
       this.connectionID = Integer.MIN_VALUE;
 
-      if (destination != null)
-      {
-         if (destinationIsQueue)
-         {
-            this.destination = new JBossQueue(destination);
-         }
-         else
-         {
-            this.destination = new JBossTopic(destination);
-         }
-      }
-
-      if (replyTo != null)
-      {
-         if (replyToIsQueue)
-         {
-            this.replyToDestination = new JBossQueue(replyTo);
-         }
-         else
-         {
-            this.replyToDestination = new JBossTopic(replyTo);
-         }
-      }
+      this.destination = destination;
+      
+      this.replyToDestination = replyTo;
 
       if (jmsProperties == null)
       {

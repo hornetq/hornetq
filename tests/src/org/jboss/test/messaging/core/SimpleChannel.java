@@ -22,7 +22,6 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * A test Channel implementation.
@@ -42,13 +41,13 @@ public class SimpleChannel implements Channel
 
    // Attributes ----------------------------------------------------
 
-   private String channelID;
+   private long channelID;
    private MessageStore ms;
    private boolean deliveryNotification = false;
 
    // Constructors --------------------------------------------------
 
-   public SimpleChannel(String channelID, MessageStore ms)
+   public SimpleChannel(long channelID, MessageStore ms)
    {
       this.channelID = channelID;
       this.ms = ms;
@@ -56,7 +55,7 @@ public class SimpleChannel implements Channel
 
    // Channel implementation ----------------------------------------
 
-   public Serializable getChannelID()
+   public long getChannelID()
    {
       return channelID;
    }

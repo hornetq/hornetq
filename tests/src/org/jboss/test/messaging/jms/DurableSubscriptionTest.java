@@ -108,7 +108,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
 
       Set subs = (Set)ServerManagement.
-         invoke(ServerManagement.getDurableSubscriptionStoreObjectName(),
+         invoke(ServerManagement.getChannelMapperObjectName(),
                 "getSubscriptions",
                 new Object[] { "brookeburke" },
                 new String[] { "java.lang.String" });
@@ -121,7 +121,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
       conn.close();
 
       subs = (Set)ServerManagement.
-         invoke(ServerManagement.getDurableSubscriptionStoreObjectName(),
+         invoke(ServerManagement.getChannelMapperObjectName(),
                 "getSubscriptions",
                 new Object[] { "brookeburke" },
                 new String[] { "java.lang.String" });

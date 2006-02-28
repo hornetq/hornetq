@@ -118,7 +118,7 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue("test", ms, tl);
+      channel = new Queue(-1, ms, tl);
    }
 
 

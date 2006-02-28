@@ -28,6 +28,7 @@ import org.jboss.messaging.core.CoreDestination;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -42,22 +43,15 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    
    // Constructors --------------------------------------------------
 
-   public Queue(String name, MessageStore ms)
+   public Queue(long id, MessageStore ms)
    {
-      this(name, ms, null);
+      this(id, ms, null);
    }
 
-   public Queue(String name, MessageStore ms, PersistenceManager tl)
+   public Queue(long id, MessageStore ms, PersistenceManager tl)
    {
-      super(name, ms, tl, false);
+      super(id, ms, tl, false);
       router = new PointToPointRouter();
-   }
-
-   // CoreDestination implementation --------------------------------
-   
-   public String getName()
-   {
-      return (String)channelID;
    }
 
    // Public --------------------------------------------------------
@@ -77,6 +71,13 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    public int getCurrentMessageCount()
    {
 	   return state.messageCount();
+   }
+   
+   // CoreDestination implementation -------------------------------
+   
+   public long getId()
+   {
+      return channelID;
    }
 
    // Package protected ---------------------------------------------

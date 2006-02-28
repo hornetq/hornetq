@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 
 /**
@@ -80,18 +81,16 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          long timestamp,
          byte priority,
          Map coreHeaders,
-         byte[] payload,
+         byte[] payloadAsByteArray,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
-         boolean destinationIsQueue,
-         String destination,
-         boolean replyToIsQueue,
-         String replyTo,
+         JBossDestination destination,
+         JBossDestination replyTo,
          HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload,
-            jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
+            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
    }
 

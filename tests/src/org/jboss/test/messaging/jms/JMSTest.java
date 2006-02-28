@@ -69,6 +69,10 @@ public class JMSTest extends MessagingTestCase
       ServerManagement.start("all");
 
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      
+      ServerManagement.deployTopic("Topic");
+      ServerManagement.deployQueue("Queue");
+
 
       log.debug("setup done");
    }
@@ -88,9 +92,7 @@ public class JMSTest extends MessagingTestCase
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      ServerManagement.deployTopic("Topic");
-      ServerManagement.deployQueue("Queue");
-
+      
       Topic topic = (Topic)ic.lookup("/topic/Topic");
       Queue queue = (Queue)ic.lookup("/queue/Queue");
 

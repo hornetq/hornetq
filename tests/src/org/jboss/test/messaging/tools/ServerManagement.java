@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.remoting.transport.Connector;
@@ -287,10 +287,10 @@ public class ServerManagement
       return server.getServerPeerObjectName();
    }
 
-   public static ObjectName getDurableSubscriptionStoreObjectName() throws Exception
+   public static ObjectName getChannelMapperObjectName() throws Exception
    {
       insureStarted();
-      return server.getDurableSubscriptionStoreObjectName();
+      return server.getChannelMapperObjectName();
    }
 
    public static Connector getConnector() throws Exception
@@ -317,11 +317,11 @@ public class ServerManagement
       return server.getDestinationManager();
    }
 
-   public static DurableSubscriptionStore getDurableSubscriptionStore()
+   public static ChannelMapper getChannelMapper()
       throws Exception
    {
       insureStarted();
-      return server.getDurableSubscriptionStore();
+      return server.getChannelMapper();
    }
 
    public static void configureSecurityForDestination(String destName, String config)

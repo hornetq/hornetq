@@ -38,7 +38,7 @@ public class NonRecoverableState2Test extends StateTestBase
 
       ms = new PersistentMessageStore("s61", persistenceManagerDelegate);      
 
-      channel = new SimpleChannel("test-channel", ms);
+      channel = new SimpleChannel(1, ms);
 
       // the state ACCEPTS reliable messages
       state = new NonRecoverableState(channel, true);

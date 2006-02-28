@@ -29,6 +29,7 @@ import org.jboss.messaging.core.ChannelSupport;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
@@ -42,20 +43,20 @@ public class Pipe extends ChannelSupport
    
    // Constructors --------------------------------------------------
 
-   public Pipe(String name, MessageStore ms)
+   public Pipe(long id, MessageStore ms)
    {
-      this(name, ms, null);
+      this(id, ms, null);
    }
    
-   public Pipe(String name, MessageStore ms, PersistenceManager tl)
+   public Pipe(long id, MessageStore ms, PersistenceManager tl)
    {
-      this(name, ms, tl, false);
+      this(id, ms, tl, false);
    }
 
-   public Pipe(String name, MessageStore ms, PersistenceManager tl,
+   public Pipe(long id, MessageStore ms, PersistenceManager tl,
                boolean acceptReliableMessages)
    {
-      super(name, ms, tl, acceptReliableMessages);
+      super(id, ms, tl, acceptReliableMessages);
       router = new SingleDestinationRouter();
    }
 

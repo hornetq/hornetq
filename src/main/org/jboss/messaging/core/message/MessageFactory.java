@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossTextMessage;
@@ -89,10 +90,8 @@ public class MessageFactory
                                        String jmsType,                                       
                                        String correlationID,
                                        byte[] correlationIDBytes,
-                                       boolean destinationIsQueue,
-                                       String destination,
-                                       boolean replyToIsQueue,
-                                       String replyTo,                                       
+                                       JBossDestination destination,
+                                       JBossDestination replyTo,                                                                              
                                        HashMap jmsProperties)
 
    {
@@ -102,38 +101,38 @@ public class MessageFactory
       if (type == JBossMessage.TYPE)
       {
          m = new JBossMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                              payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
-                              destination, replyToIsQueue, replyTo, jmsProperties);
+                              payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                              destination, replyTo, jmsProperties);
       }
       else if (type == JBossObjectMessage.TYPE)
       {
          m = new JBossObjectMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
-               destination, replyToIsQueue, replyTo, jmsProperties);
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
       }
       else if (type == JBossTextMessage.TYPE)
       {
          m = new JBossTextMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
-               destination, replyToIsQueue, replyTo, jmsProperties);
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
       }
       else if (type == JBossBytesMessage.TYPE)
       {
          m = new JBossBytesMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
-               destination, replyToIsQueue, replyTo, jmsProperties);
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
       }
       else if (type == JBossMapMessage.TYPE)
       {
          m = new JBossMapMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
-               destination, replyToIsQueue, replyTo, jmsProperties);
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
       }
       else if (type == JBossStreamMessage.TYPE)
       {
          m = new JBossStreamMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, jmsType, correlationID, correlationIDBytes, destinationIsQueue,
-               destination, replyToIsQueue, replyTo, jmsProperties);
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
       }
       else
       {

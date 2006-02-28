@@ -40,10 +40,10 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.tx.AckInfo;
@@ -113,7 +113,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private ServerPeer serverPeer;
 
    // access to server's extensions
-   private DestinationManager dm;
+   private ChannelMapper channelMapper;
    
    private SecurityManager sm;
    
@@ -130,7 +130,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       this.serverPeer = serverPeer;
 
-      dm = serverPeer.getDestinationManager();
+      channelMapper = serverPeer.getChannelMapperDelegate();
       sm = serverPeer.getSecurityManager();
       tr = serverPeer.getTxRepository();
       cm = serverPeer.getConnectionManager();
@@ -330,7 +330,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          iter = temporaryDestinations.iterator();
          while (iter.hasNext())
          {
-            dm.destroyTemporaryDestination((JBossDestination)iter.next());
+            JBossDestination dest = (JBossDestination)iter.next();
+            channelMapper.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
          }
          
          temporaryDestinations.clear();
@@ -585,17 +586,17 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
 
       //The JMSDestination header must already have been set for each message
-      JBossDestination jmsDestination = (JBossDestination)m.getJMSDestination();
-      if (jmsDestination == null)
+      JBossDestination jbDest = (JBossDestination)m.getJMSDestination();
+      if (jbDest == null)
       {
          throw new IllegalStateException("JMSDestination header not set!");
       }
 
-      CoreDestination coreDestination = dm.getCoreDestination(jmsDestination);
+      CoreDestination coreDestination = channelMapper.getCoreDestination(jbDest);
       
       if (coreDestination == null)
       {
-         throw new JMSException("Destination " + jmsDestination.getName() + " does not exist");
+         throw new JMSException("Destination " + jbDest.getName() + " does not exist");
       }
       
       //This allows the no-local consumers to filter out the messages that come from the
@@ -605,7 +606,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       Routable r = (Routable)m;
     
-      if (trace) { log.trace("sending " + r + " to the core destination " + jmsDestination.getName() + (tx == null ? "": ", tx " + tx)); }
+      if (trace) { log.trace("sending " + r + " to the core destination " + jbDest.getName() + (tx == null ? "": ", tx " + tx)); }
       
       Delivery d = coreDestination.handle(null, r, tx);
       

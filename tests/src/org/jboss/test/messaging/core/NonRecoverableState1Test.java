@@ -36,7 +36,7 @@ public class NonRecoverableState1Test extends StateTestBase
       super.setUp();
 
       ms = new InMemoryMessageStore("ms0");
-      channel = new SimpleChannel("test-channel", ms);
+      channel = new SimpleChannel(1, ms);
 
       // the state DOES not accept reliable messages
       state = new NonRecoverableState(channel, false);

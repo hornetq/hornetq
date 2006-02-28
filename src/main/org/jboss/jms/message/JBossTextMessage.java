@@ -31,6 +31,8 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.destination.JBossDestination;
+
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
  * 
@@ -86,14 +88,12 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
-         boolean destinationIsQueue,
-         String destination,
-         boolean replyToIsQueue,
-         String replyTo,
+         JBossDestination destination,
+         JBossDestination replyTo,
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
+            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
    }
 

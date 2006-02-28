@@ -34,7 +34,7 @@ import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -72,7 +72,7 @@ public class LocalTestServer implements Server
    private ObjectName threadPoolObjectName;
    private ObjectName persistenceManagerObjectName;
    private ObjectName messageStoreObjectName;
-   private ObjectName durableSubscriptionStoreObjectName;
+   private ObjectName channelMapperObjectName;
 
    // the server MBean itself
    private ObjectName serverPeerObjectName;
@@ -228,6 +228,13 @@ public class LocalTestServer implements Server
       threadPoolObjectName = sc.registerAndConfigureService(threadPoolConfig);
       sc.invoke(threadPoolObjectName, "create", new Object[0], new String[0]);
       sc.invoke(threadPoolObjectName, "start", new Object[0], new String[0]);
+      
+      MBeanConfigurationElement channelMapperConfig =
+         (MBeanConfigurationElement)sdd.query("service", "ChannelMapper").iterator().next();
+      channelMapperObjectName = sc.registerAndConfigureService(channelMapperConfig);
+      sc.invoke(channelMapperObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(channelMapperObjectName, "start", new Object[0], new String[0]);
+
 
       MBeanConfigurationElement persistenceManagerConfig =
          (MBeanConfigurationElement)sdd.query("service", "PersistenceManager").iterator().next();
@@ -240,12 +247,6 @@ public class LocalTestServer implements Server
       messageStoreObjectName = sc.registerAndConfigureService(messageStoreConfig);
       sc.invoke(messageStoreObjectName, "create", new Object[0], new String[0]);
       sc.invoke(messageStoreObjectName, "start", new Object[0], new String[0]);
-
-      MBeanConfigurationElement durableSubscriptionStoreConfig =
-         (MBeanConfigurationElement)sdd.query("service", "DurableSubscriptionStore").iterator().next();
-      durableSubscriptionStoreObjectName = sc.registerAndConfigureService(durableSubscriptionStoreConfig);
-      sc.invoke(durableSubscriptionStoreObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(durableSubscriptionStoreObjectName, "start", new Object[0], new String[0]);
 
       // register server peer as a service, dependencies are injected automatically
       MBeanConfigurationElement serverPeerConfig =
@@ -314,10 +315,6 @@ public class LocalTestServer implements Server
 
       log.debug("stopping all destinations");
 
-// Hmmm I don't see how this ever worked      
-//      Set destinations =
-//         (Set)sc.invoke(serverPeerObjectName, "getDestinations", new Object[0], new String[0]);
-      
       Set destinations = (Set)sc.getAttribute(serverPeerObjectName, "Destinations");
 
       for(Iterator i = destinations.iterator(); i.hasNext(); )
@@ -347,9 +344,9 @@ public class LocalTestServer implements Server
 
       log.debug("stopping ServerPeer's plug-in dependencies");
 
-      sc.invoke(durableSubscriptionStoreObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(durableSubscriptionStoreObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(durableSubscriptionStoreObjectName);
+      sc.invoke(channelMapperObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(channelMapperObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(channelMapperObjectName);
 
       sc.invoke(messageStoreObjectName, "stop", new Object[0], new String[0]);
       sc.invoke(messageStoreObjectName, "destroy", new Object[0], new String[0]);
@@ -381,9 +378,9 @@ public class LocalTestServer implements Server
       return serverPeerObjectName;
    }
 
-   public ObjectName getDurableSubscriptionStoreObjectName()
+   public ObjectName getChannelMapperObjectName()
    {
-      return durableSubscriptionStoreObjectName;
+      return channelMapperObjectName;
    }
 
    /**
@@ -416,10 +413,10 @@ public class LocalTestServer implements Server
    /**
     * Only for in-VM use!
     */
-   public DurableSubscriptionStore getDurableSubscriptionStore() throws Exception
+   public ChannelMapper getChannelMapper() throws Exception
    {
-      return (DurableSubscriptionStore)sc.
-         getAttribute(durableSubscriptionStoreObjectName, "Instance");
+      return (ChannelMapper)sc.
+         getAttribute(channelMapperObjectName, "Instance");
    }
    
    /**

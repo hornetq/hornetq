@@ -31,6 +31,12 @@
       <type>javax.management.ObjectName</type>
    </attribute>
    
+   <attribute access="read-write" getMethod="getChannelMapper" setMethod="setChannelMapper">
+      <description>The ObjectName of the ChannelMapper used by this persistence manager</description>
+      <name>ChannelMapper</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
+   
    <attribute access="read-write" getMethod="isTxIdGuid" setMethod="setTxIdGuid">
       <description>Should a GUID be used as the transactionn id?</description>
       <name>TxIdGuid</name>

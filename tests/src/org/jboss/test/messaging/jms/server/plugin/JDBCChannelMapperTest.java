@@ -23,46 +23,49 @@ package org.jboss.test.messaging.jms.server.plugin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.Iterator;
-import java.util.Set;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.plugin.contract.DurableSubscriptionStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.plugin.contract.ChannelMapper;
+import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.persistence.JDBCUtil;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.util.id.GUID;
 
-
 /**
- * These tests must not be ran in remote mode!
+ * These tests must not be run in remote mode!
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * JDBCChannelMapperTest.java,v 1.1 2006/02/28 16:48:15 timfox Exp
  */
-public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
+public class JDBCChannelMapperTest extends MessagingTestCase
 {
    // Attributes ----------------------------------------------------
 
-   protected PersistenceManager tl;
+   protected PersistenceManager pm;
    protected DestinationManager dm;
    protected MessageStore ms;
-   protected DurableSubscriptionStore dssd;
+   protected ChannelMapper channelMapper;
 
    // Constructors --------------------------------------------------
 
-   public JDBCDurableSubscriptionStoreTest(String name)
+   public JDBCChannelMapperTest(String name)
    {
       super(name);
    }
@@ -82,7 +85,7 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       dm = ServerManagement.getDestinationManager();
       ms = ServerManagement.getMessageStore();
-      dssd = ServerManagement.getDurableSubscriptionStore();
+      channelMapper = ServerManagement.getChannelMapper();
 
       log.debug("setup done");
    }
@@ -102,33 +105,29 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
 
-      CoreDurableSubscription sub = dssd.createDurableSubscription(topicName,
+      CoreDurableSubscription sub = channelMapper.createDurableSubscription(topicName,
                                                                clientID,
                                                                subscriptionName,
                                                                selector,
                                                                false,
-                                                               dm, ms, tl);
+                                                               ms, pm);
 
-      assertEquals(sub.getTopic().getName(), topicName);
-      assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
       assertEquals(sub.getSelector(), selector);
 
-      CoreDurableSubscription sub_r = dssd.getDurableSubscription(clientID,
+      CoreDurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
                                                               subscriptionName,
-                                                              dm, ms, tl);
+                                                              ms, pm);
 
-      assertEquals(sub_r.getTopic().getName(), topicName);
-      assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
       assertEquals(sub_r.getSelector(), selector);
 
-      boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      boolean removed = channelMapper.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
 
-      sub_r = dssd.getDurableSubscription(clientID, subscriptionName, dm, ms, tl);
+      sub_r = channelMapper.getDurableSubscription(clientID, subscriptionName, ms, pm);
 
       assertNull(sub_r);
 
-      removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      removed = channelMapper.removeDurableSubscription(clientID, subscriptionName);
       assertFalse(removed);
 
    }
@@ -141,40 +140,36 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
 
-      CoreDurableSubscription sub = dssd.createDurableSubscription(topicName,
+      CoreDurableSubscription sub = channelMapper.createDurableSubscription(topicName,
                                                                clientID,
                                                                subscriptionName,
                                                                null,
                                                                false,
-                                                               dm, ms, tl);
+                                                               ms, pm);
 
-      assertEquals(sub.getTopic().getName(), topicName);
-      assertEquals(sub.getChannelID(), clientID + "." + subscriptionName);
       assertNull(sub.getSelector());
 
-      CoreDurableSubscription sub_r = dssd.getDurableSubscription(clientID,
+      CoreDurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
                                                               subscriptionName,
-                                                              dm, ms, tl);
+                                                              ms, pm);
 
-      assertEquals(sub_r.getTopic().getName(), topicName);
-      assertEquals(sub_r.getChannelID(), clientID + "." + subscriptionName);
       assertNull(sub_r.getSelector());
 
-      boolean removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      boolean removed = channelMapper.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
 
-      sub_r = dssd.getDurableSubscription(clientID, subscriptionName, dm, ms, tl);
+      sub_r = channelMapper.getDurableSubscription(clientID, subscriptionName, ms, pm);
 
       assertNull(sub_r);
 
-      removed = dssd.removeDurableSubscription(clientID, subscriptionName);
+      removed = channelMapper.removeDurableSubscription(clientID, subscriptionName);
       assertFalse(removed);
 
    }
 
    public void testGetPreConfClientId_1() throws Exception
    {
-      String clientID = dssd.getPreConfiguredClientID("blahblah");
+      String clientID = channelMapper.getPreConfiguredClientID("blahblah");
       assertNull(clientID);
    }
 
@@ -212,64 +207,137 @@ public class JDBCDurableSubscriptionStoreTest extends MessagingTestCase
 
       conn.close();
 
-      String theClientID = dssd.getPreConfiguredClientID(username);
+      String theClientID = channelMapper.getPreConfiguredClientID(username);
 
       assertNotNull(theClientID);
       assertEquals(clientID, theClientID);
            
    }
    
-   public void testLoadDurableSubscriptionsForTopic() throws Exception
+   public void testGetDeployCoreDestinationTest() throws Exception
    {
-      final int NUM_SUBS = 10;
+      //Lookup a non existent core destination -  verify returns null
       
-      ServerManagement.deployTopic("topic1");
-      ServerManagement.deployTopic("topic2");
+      JBossQueue queue = new JBossQueue("queue1");
       
-      CoreDurableSubscription[] subs = new CoreDurableSubscription[NUM_SUBS];
+      JBossTopic topic = new JBossTopic("topic1");
       
-      for (int i = 0; i < NUM_SUBS; i++)
-      {
-         subs[i] = dssd.createDurableSubscription("topic1",
-                                                  new GUID().toString(),
-                                                  new GUID().toString(),
-                                                  new GUID().toString(),
-                                                  false,
-                                                  dm, ms, tl);
-         dssd.createDurableSubscription("topic2",
-                                        new GUID().toString(),
-                                        new GUID().toString(),
-                                        new GUID().toString(),
-                                        false,
-                                        dm, ms, tl);
-      }
+      CoreDestination cd = channelMapper.getCoreDestination(queue);
       
-      Set loaded = dssd.loadDurableSubscriptionsForTopic("topic1", dm, ms, tl);
-      assertNotNull(loaded);
-      assertEquals(NUM_SUBS, loaded.size());
+      assertNull(cd);
       
-      for (int i = 0; i < NUM_SUBS; i++)
-      {
-         Iterator iter = loaded.iterator();
-         boolean found = false;
-         while (iter.hasNext())
-         {
-            CoreDurableSubscription subloaded = (CoreDurableSubscription)iter.next();
-            if (subloaded.getChannelID().equals(subs[i].getChannelID()))
-            {
-               assertEquals(subloaded.getName(), subs[i].getName());
-               assertEquals(subloaded.getSelector(), subs[i].getSelector());
-               assertEquals(subloaded.getTopic().getName(), "topic1");
-               found = true;
-               break;
-            }
-         }
-         if (!found)
-         {
-            fail();
-         }
-      }
+      cd = channelMapper.getCoreDestination(topic);
+      
+      assertNull(cd);
+      
+      //Lookup a non existent jboss destination - verify returns null
+      
+      JBossDestination jbd = channelMapper.getJBossDestination(123);
+      
+      assertNull(jbd);
+      
+      //Deploy core destinations
+      
+      channelMapper.deployCoreDestination(true, "queue1", ms, pm);
+      
+      channelMapper.deployCoreDestination(false, "topic1", ms, pm);
+      
+      //Lookup core dest
+      
+      CoreDestination cd1 = channelMapper.getCoreDestination(queue);
+      
+      assertNotNull(cd1);
+      
+      assertTrue(cd1 instanceof Queue);
+      
+      Queue q = (Queue)cd1;
+      
+      CoreDestination cd2 = channelMapper.getCoreDestination(topic);
+      
+      assertNotNull(cd2);
+      
+      assertTrue(cd2 instanceof Topic);
+      
+      Topic t = (Topic)cd2;
+                  
+      //Lookup jboss dest
+      
+      JBossDestination jb1 = channelMapper.getJBossDestination(q.getChannelID());
+      
+      assertNotNull(jb1);
+      
+      assertEquals("queue1", jb1.getName());
+      
+      JBossDestination jb2 = channelMapper.getJBossDestination(t.getId());
+      
+      assertNotNull(jb2);
+      
+      assertEquals("topic1", jb2.getName());
+      
+      //undeploy core dest
+      
+      CoreDestination cd3 = channelMapper.undeployCoreDestination(true, "queue1");
+      
+      assertNotNull(cd3);
+      
+      assertEquals(q.getChannelID(), cd3.getId());
+      
+      CoreDestination cd4 = channelMapper.undeployCoreDestination(false, "topic1");
+      
+      assertNotNull(cd3);
+      
+      assertEquals(t.getId(), cd4.getId());
+      
+      cd3 = channelMapper.undeployCoreDestination(true, "queue1");
+      
+      assertNull(cd3);
+      
+      cd4 = channelMapper.undeployCoreDestination(false, "topic1");
+      
+      assertNull(cd4);
+      
+      //Lookup core dest - null
+      
+      cd3 = channelMapper.getCoreDestination(queue);
+      
+      assertNull(cd3);
+      
+      cd4 = channelMapper.getCoreDestination(topic);
+      
+      assertNull(cd4);
+      
+      //lookup jboss dest - null
+      
+      jb1 = channelMapper.getJBossDestination(q.getChannelID());
+      
+      assertNull(jb1);
+      
+      jb2 = channelMapper.getJBossDestination(t.getId());
+      
+      assertNull(jb2);
+      
+      //Deploy a core dest
+      
+      channelMapper.deployCoreDestination(true, "queue1", ms, pm);
+      
+      channelMapper.deployCoreDestination(false, "topic1", ms, pm);
+            
+      //lookup core dest - verify has same id
+      
+      cd3 = channelMapper.getCoreDestination(queue);
+      
+      assertNotNull(cd3);
+      
+      assertEquals(cd3.getId(), cd1.getId());
+      
+      cd4 = channelMapper.getCoreDestination(topic);
+      
+      assertNotNull(cd4);
+      
+      assertEquals(cd4.getId(), cd2.getId());
    }
+   
+   
 
    // Package protected ---------------------------------------------
 

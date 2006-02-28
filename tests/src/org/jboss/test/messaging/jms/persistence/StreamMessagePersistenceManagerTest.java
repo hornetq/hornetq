@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms.persistence;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.util.id.GUID;
@@ -74,10 +75,8 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
                i % 2 == 0 ? new GUID().toString() : null,
                genCorrelationID(i),
                i % 3 == 2 ? randByteArray(50) : null,
-               i % 2 == 0,
-               new GUID().toString(),
-               i % 2 == 1,
-               new GUID().toString(),            
+               new JBossQueue("testDestination"),
+               new JBossQueue("testReplyTo"),           
                jmsProperties); 
       m.setPayload(new ArrayList());
       m.writeBoolean(randBool().booleanValue());

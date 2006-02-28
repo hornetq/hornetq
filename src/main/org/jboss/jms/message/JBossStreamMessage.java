@@ -35,6 +35,7 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
 
@@ -105,14 +106,12 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
-         boolean destinationIsQueue,
-         String destination,
-         boolean replyToIsQueue,
-         String replyTo,
+         JBossDestination destination,
+         JBossDestination replyTo,
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destinationIsQueue, destination, replyToIsQueue, replyTo, 
+            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
    }
 

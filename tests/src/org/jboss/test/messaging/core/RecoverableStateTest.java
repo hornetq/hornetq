@@ -33,7 +33,7 @@ public class RecoverableStateTest extends StateTestBase
 
       ms = new PersistentMessageStore("s60", persistenceManagerDelegate);           
 
-      channel = new SimpleChannel("test-channel", ms);
+      channel = new SimpleChannel(1, ms);
 
       // the state accepts reliable messages
       state = new RecoverableState(channel, persistenceManagerDelegate);

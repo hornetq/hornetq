@@ -84,7 +84,8 @@ public class TransactedSessionTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-      
+      ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
       TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.OPERATIONAL);
       super.tearDown();
    }
