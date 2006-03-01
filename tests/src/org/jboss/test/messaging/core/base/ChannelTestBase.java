@@ -40,6 +40,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.core.BrokenReceiver;
 import org.jboss.test.messaging.util.MessageFactory;
 
 /**
@@ -4213,6 +4214,50 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertFalse(sm.isReliable());
       assertEquals("message0", sm.getMessageID());
    }
+
+
+   public void testRecoverableChannel_17_1() throws Exception
+   {
+      if (!channel.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
+      BrokenReceiver brokenReceiver = new BrokenReceiver(2);
+      assertTrue(channel.add(brokenReceiver));
+
+      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      Transaction tx = tr.createTransaction();
+
+
+      log.debug("sending message 1");
+
+      // transacted send, non-reliable message, one message
+      // for a transactional send, handle() return value is unspecified
+      channel.handle(observer, m, tx);
+
+      m = MessageFactory.createCoreMessage("message1", false, "payload");
+
+      log.debug("sending message 2");
+      channel.handle(observer, m, tx);
+
+      m = MessageFactory.createCoreMessage("message2", false, "payload");
+
+      log.debug("sending message 3");
+      channel.handle(observer, m, tx);
+
+      // no messages in the channel
+      assertEquals(0, channel.browse().size());
+
+      tx.commit();
+
+      assertEquals(2, channel.browse().size());
+      assertEquals(1, brokenReceiver.getMessages().size());
+   }
+
 
    //////////
    ////////// Multiple message
