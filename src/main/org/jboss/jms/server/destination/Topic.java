@@ -6,6 +6,11 @@
  */
 package org.jboss.jms.server.destination;
 
+import javax.jms.JMSException;
+
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.messaging.core.local.ManageableTopic;
+
 /**
  * A deployable JBoss Messaging topic.
  *
@@ -37,6 +42,20 @@ public class Topic extends DestinationServiceSupport
    // JMX managed attributes ----------------------------------------
 
    // JMX managed operations ----------------------------------------
+
+   public int subscriptionCount() throws JMSException
+   {
+      JBossTopic jbt = new JBossTopic(name);
+      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
+      return t.subscriptionCount();
+   }
+
+   public int subscriptionCount(boolean durable) throws JMSException
+   {
+      JBossTopic jbt = new JBossTopic(name);
+      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
+      return t.subscriptionCount(durable);
+   }
 
    // TODO implement these:
 

@@ -41,7 +41,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * $Id$
  */
-public class Topic implements CoreDestination
+public class Topic implements CoreDestination, ManageableTopic
 {
    // Constants -----------------------------------------------------
 
@@ -126,6 +126,39 @@ public class Topic implements CoreDestination
       return destinationId;
    }
 
+   // ManageableTopic implementation --------------------------------
+   public void removeAllMessages()
+   {
+      // TODO
+   }
+ 
+   public int subscriptionCount()
+   {
+      int count = 0;
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         count++;
+         Object sub = iter.next();
+         assert sub instanceof CoreSubscription;
+      }
+      return count;
+   }
+
+   public int subscriptionCount(boolean durable)
+   {
+      int count = 0;
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         Object sub = iter.next();
+         assert sub instanceof CoreSubscription;
+         if ((sub instanceof CoreDurableSubscription) ^ (!durable))
+            count++;
+      }
+      return count;
+   }
+   
    // Public --------------------------------------------------------
 
    public String toString()

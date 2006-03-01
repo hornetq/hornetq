@@ -91,5 +91,21 @@
       <description>JBoss Service lifecycle operation</description>
       <name>destroy</name>
    </operation>
+
+   <operation>
+      <description>Get durable/nondurable subscription count</description>
+      <name>subscriptionCount</name>
+      <parameter>
+         <name>durable</name>
+         <type>boolean</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation>
+      <description>Get all subscription count</description>
+      <name>subscriptionCount</name>
+      <return-type>int</return-type>
+   </operation>
    
 </mbean>
