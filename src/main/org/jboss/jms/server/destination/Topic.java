@@ -42,7 +42,22 @@ public class Topic extends DestinationServiceSupport
    // JMX managed attributes ----------------------------------------
 
    // JMX managed operations ----------------------------------------
+   
+   /**
+    * Remove all messages from subscription's storage.
+    */
+   public void removeAllMessages() throws JMSException
+   {
+      JBossTopic jbt = new JBossTopic(name);
+      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
+      t.removeAllMessages();
+   }
 
+   /**
+    * All subscription count
+    * @return all subscription count
+    * @throws JMSException
+    */
    public int subscriptionCount() throws JMSException
    {
       JBossTopic jbt = new JBossTopic(name);
@@ -50,6 +65,13 @@ public class Topic extends DestinationServiceSupport
       return t.subscriptionCount();
    }
 
+   /**
+    * Durable/nondurable subscription count
+    * @param durable If true return durable subscription count.
+    *                If false return nondurable subscription count.
+    * @return either durable or nondurable subscription count depending on param.
+    * @throws JMSException
+    */
    public int subscriptionCount(boolean durable) throws JMSException
    {
       JBossTopic jbt = new JBossTopic(name);

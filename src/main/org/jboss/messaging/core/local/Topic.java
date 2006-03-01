@@ -127,11 +127,25 @@ public class Topic implements CoreDestination, ManageableTopic
    }
 
    // ManageableTopic implementation --------------------------------
+   
+   /**
+    * @see ManageableCoreDestination#removeAllMessages()
+    */
    public void removeAllMessages()
    {
-      // TODO
+      // XXX How to lock down all subscriptions?
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         Object sub = iter.next();
+         assert sub instanceof CoreSubscription;
+         ((CoreSubscription)sub).removeAllMessages();
+      }
    }
  
+   /**
+    * @see ManageableTopic#subscriptionCount()
+    */
    public int subscriptionCount()
    {
       int count = 0;
@@ -145,6 +159,9 @@ public class Topic implements CoreDestination, ManageableTopic
       return count;
    }
 
+   /**
+    * @see ManageableTopic#subscriptionCount(boolean)
+    */
    public int subscriptionCount(boolean durable)
    {
       int count = 0;

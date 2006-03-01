@@ -93,6 +93,11 @@
    </operation>
 
    <operation>
+      <description>Remove all messages</description>
+      <name>removeAllMessages</name>
+   </operation>
+
+   <operation>
       <description>Get durable/nondurable subscription count</description>
       <name>subscriptionCount</name>
       <parameter>
