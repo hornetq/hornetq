@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,10 +48,9 @@ public class RecoverableState extends NonRecoverableState
    
    private boolean trace = log.isTraceEnabled();
 
-   private PersistenceManager pm;
-   private long channelID;
-   private Serializable storeID;
-   private MessageStore messageStore;
+   protected PersistenceManager pm;
+   
+   protected MessageStore messageStore;
    
    // Constructors --------------------------------------------------
 
@@ -66,13 +64,7 @@ public class RecoverableState extends NonRecoverableState
       }
       this.pm = pm;
 
-      // the channel isn't going to change, so cache its id
-      this.channelID = channel.getChannelID();
-      
-      this.storeID = channel.getMessageStore().getStoreID();
-      
-      this.messageStore = channel.getMessageStore();
-        
+      this.messageStore = channel.getMessageStore();     
    }
 
    // NonRecoverableState overrides -------------------------------------
@@ -90,7 +82,7 @@ public class RecoverableState extends NonRecoverableState
       {
          //Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-         pm.addReference(channelID, ref, tx);
+         pm.addReference(channel.getChannelID(), ref, tx);
       }
            
    }
@@ -103,7 +95,7 @@ public class RecoverableState extends NonRecoverableState
       {
          //Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
-         pm.addReference(channelID, ref, null);
+         pm.addReference(channel.getChannelID(), ref, null);
       }      
       
       return first;
@@ -115,7 +107,7 @@ public class RecoverableState extends NonRecoverableState
 
       if (d.getReference().isReliable())
       {
-         pm.removeReference(channelID, d.getReference(), tx);
+         pm.removeReference(channel.getChannelID(), d.getReference(), tx);
       }     
    }
    
@@ -129,7 +121,7 @@ public class RecoverableState extends NonRecoverableState
       //We should add a flag to check this
       if (d.getReference().isReliable())
       {
-         pm.removeReference(channelID, d.getReference(), null);
+         pm.removeReference(channel.getChannelID(), d.getReference(), null);
       }     
    }
    
@@ -147,8 +139,10 @@ public class RecoverableState extends NonRecoverableState
     */
    public void load() throws Exception
    {
-      List refs = pm.messageRefs(channelID);
+      List refs = pm.messageRefs(channel.getChannelID());
       
+      messageOrdering = pm.getMaxOrdering(channel.getChannelID());
+            
       Iterator iter = refs.iterator();
       while (iter.hasNext())
       {
@@ -171,7 +165,7 @@ public class RecoverableState extends NonRecoverableState
       {
          try 
          {
-            pm.removeReference(channelID, r, null);
+            pm.removeReference(channel.getChannelID(), r, null);
          }
          catch (Exception e)
          {

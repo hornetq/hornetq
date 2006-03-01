@@ -57,6 +57,8 @@ public interface PersistenceManager extends ServerPlugin
     * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
     */
    List messageRefs(long channelID) throws Exception;
+   
+   long getMaxOrdering(long channelID) throws Exception;
 
    Message getMessage(Serializable messageID) throws Exception;
    

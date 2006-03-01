@@ -84,9 +84,9 @@ public class CoreSubscription extends Pipe
       unsubscribe();
       try
       {
-         if (tl != null)
+         if (pm != null)
          {
-            tl.removeAllMessageData(this.channelID);
+            pm.removeAllMessageData(this.channelID);
          }
       }
       catch (Exception e)

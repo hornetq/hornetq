@@ -59,6 +59,8 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    private int deliveryCount;
    
+   private long ordering;
+   
    // Constructors --------------------------------------------------
 
    /**
@@ -76,7 +78,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {            
       this(holder.getMessage().getMessageID(), holder.getMessage().isReliable(), holder.getMessage().getExpiration(),
            holder.getMessage().getTimestamp(), holder.getMessage().getHeaders(), holder.getMessage().isRedelivered(),
-           holder.getMessage().getPriority(), holder.getMessage().getOrdering(), ms);
+           holder.getMessage().getPriority(), ms);
 
       for(Iterator i = holder.getMessage().getHeaderNames().iterator(); i.hasNext(); )
       {
@@ -96,17 +98,17 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {
       this(other.getMessageID(), other.isReliable(), other.getExpiration(),
             other.getTimestamp(), other.getHeaders(), other.isRedelivered(),
-            other.getPriority(), other.getOrdering(), other.ms);
+            other.getPriority(), other.ms);
       
       this.headers = other.headers;
       this.holder = other.holder;
    }
    
    protected SimpleMessageReference(Serializable messageID, boolean reliable, long expiration,
-                                  long timestamp, Map headers, boolean redelivered,
-                                  byte priority, long ordering, InMemoryMessageStore ms)
+                                    long timestamp, Map headers, boolean redelivered,
+                                    byte priority, InMemoryMessageStore ms)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, ordering, headers);
+      super(messageID, reliable, expiration, timestamp, priority, 0, headers);
       this.redelivered = redelivered;
       this.ms = ms;
    }
@@ -178,6 +180,16 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
          this.redelivered = true;
       }
    }
+   
+   public long getOrdering()
+   {
+      return ordering;
+   }
+   
+   public void setOrdering(long ordering)
+   {
+      this.ordering = ordering;
+   }
 
    
    // Public --------------------------------------------------------
@@ -203,12 +215,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    }
 
    public int hashCode()
-   {
-      if (messageID == null)
-      {
-         //FIXME - Why?? Looks dodgy to me
-         return 0;
-      }
+   {      
       return messageID.hashCode();
    }
 

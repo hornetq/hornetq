@@ -21,16 +21,15 @@
   */
 package org.jboss.messaging.core;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * A basic channel implementation. It supports atomicity, isolation and, if a non-null
@@ -55,7 +54,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
    protected long channelID;
    protected Router router;
    protected State state;
-   protected PersistenceManager tl;
+   protected PersistenceManager pm;
    protected MessageStore ms;
    
    private boolean trace = log.isTraceEnabled();
@@ -68,21 +67,21 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
     */
    protected ChannelSupport(long channelID,
                             MessageStore ms,
-                            PersistenceManager tl,
+                            PersistenceManager pm,
                             boolean acceptReliableMessages)
    {
-      if (trace) { log.trace("creating " + (tl != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
+      if (trace) { log.trace("creating " + (pm != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
 
       this.channelID = channelID;
       this.ms = ms;
-      this.tl = tl;
-      if (tl == null)
+      this.pm = pm;
+      if (pm == null)
       {
          state = new NonRecoverableState(this, acceptReliableMessages);
       }
       else
       {
-         state = new RecoverableState(this, tl);
+         state = new RecoverableState(this, pm);
          // acceptReliableMessage ignored, the channel alwyas accepts reliable messages
       }
       if (ms == null)

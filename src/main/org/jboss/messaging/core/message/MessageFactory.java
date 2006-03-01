@@ -138,7 +138,7 @@ public class MessageFactory
       {
          //Core message
          m = new MessageSupport(messageID, reliable, expiration, timestamp,
-               priority, 0, 0, coreHeaders,
+               priority, 0, coreHeaders,
                payloadAsByteArray);                           
       }
 

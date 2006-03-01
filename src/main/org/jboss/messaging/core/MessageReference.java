@@ -48,4 +48,8 @@ public interface MessageReference extends Routable
    
    MessageReference copy();
    
+   long getOrdering();
+   
+   void setOrdering(long ordering);
+   
 }

@@ -67,36 +67,28 @@ public class FactoryAspect
    public Object handleCreateMessage(Invocation invocation) throws Throwable
    {
       JBossMessage jbm = new JBossMessage((String)null);
-      
-      jbm.setOrdering(ordering++);
-      
+       
       return new MessageDelegate(jbm, 0);
    }
    
    public Object handleCreateBytesMessage(Invocation invocation) throws Throwable
    {
       JBossBytesMessage jbm = new JBossBytesMessage((String)null);
-      
-      jbm.setOrdering(ordering++);
-      
+         
       return new BytesMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateMapMessage(Invocation invocation) throws Throwable
    {
       JBossMapMessage jbm = new JBossMapMessage((String)null);
-      
-      jbm.setOrdering(ordering++);
-      
+       
       return new MapMessageDelegate(jbm, 0);      
    }
    
    public Object handleCreateObjectMessage(Invocation invocation) throws Throwable
    {
       JBossObjectMessage jbm = new JBossObjectMessage((String)null);
-      
-      jbm.setOrdering(ordering++);
-      
+       
       MethodInvocation mi = (MethodInvocation)invocation;
       
       if (mi.getArguments() != null)
@@ -111,16 +103,12 @@ public class FactoryAspect
    {
       JBossStreamMessage jbm = new JBossStreamMessage((String)null);
       
-      jbm.setOrdering(ordering++);
-      
       return new StreamMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateTextMessage(Invocation invocation) throws Throwable
    {
       JBossTextMessage jbm = new JBossTextMessage((String)null);
-      
-      jbm.setOrdering(ordering++);
       
       MethodInvocation mi = (MethodInvocation)invocation;
       

@@ -179,7 +179,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        JBossDestination replyTo,
                        HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, 0, coreHeaders, payloadAsByteArray);
+      super(messageID, reliable, expiration, timestamp, priority, 0, coreHeaders, payloadAsByteArray);
 
       this.jmsType = jmsType;      
 

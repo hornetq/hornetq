@@ -63,7 +63,9 @@ public class NonRecoverableState implements State
    protected Channel channel;
    
    protected boolean acceptReliableMessages;
-
+   
+   protected long messageOrdering;
+   
    // Constructors --------------------------------------------------
 
    public NonRecoverableState(Channel channel, boolean acceptReliableMessages)
@@ -119,6 +121,8 @@ public class NonRecoverableState implements State
       if (trace) { log.trace(this + " added " + ref + " in memory"); } 
       
       boolean first = messageRefs.addLast(ref, ref.getPriority());    
+      
+      ref.setOrdering(getNextMessageOrdering());
       
       return first;             
    }
@@ -306,9 +310,20 @@ public class NonRecoverableState implements State
    {
       // Not necessary?
       // r.release();
-   }
+   }      
    
    // Private -------------------------------------------------------
+   
+   /*
+    * TODO we could reduce contention on this lock by maintaining the ordering count per 
+    * ServerProducerEndpoint and with each ServerProducerEndpoint being allocated blocks
+    * of ids every so often from the server peer.
+    * Let us see whether this is a major synchronization bottleneck first - Tim
+    */
+   private synchronized long getNextMessageOrdering()
+   {
+      return ++messageOrdering;
+   }
    
    // Inner classes -------------------------------------------------  
    
