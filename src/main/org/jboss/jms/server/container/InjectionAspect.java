@@ -32,6 +32,8 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
+ * Server-side injection aspect.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id$
@@ -60,7 +62,7 @@ public class InjectionAspect
        
        ServerInvokerCallbackHandler handler =
           (ServerInvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS,
-                                                 MetaDataConstants.CALLBACK_HANDLER);
+                                                       MetaDataConstants.CALLBACK_HANDLER);
        
        if (handler == null)
        {
