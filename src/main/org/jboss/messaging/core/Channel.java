@@ -24,7 +24,6 @@ package org.jboss.messaging.core;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 import java.util.List;
-import java.io.Serializable;
 
 /**
  * A Channel is a transactional, reliable message delivery mechanism that forwards a message from a
