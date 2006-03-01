@@ -192,7 +192,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             try
             {
                if (trace) { log.trace("queueing message " + message + " for delivery to client"); }               
-               threadPoolDelegate.execute(new DeliveryRunnable(md, id, sessionEndpoint.getConnectionEndpoint(), trace));
+               threadPoolDelegate.execute(
+                  new DeliveryRunnable(md, id, sessionEndpoint.getConnectionEndpoint(), trace));
             }
             catch (InterruptedException e)
             {
@@ -294,8 +295,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    /**
     * We attempt to get the message directly fron the channel first. If we find one, we return that.
-    * Otherwise, if wait = true, we register as being interested in receiving a message asynchronously, then return
-    * and wait for it on the client side.
+    * Otherwise, if wait = true, we register as being interested in receiving a message
+    * asynchronously, then return and wait for it on the client side.
     */
    public javax.jms.Message getMessageNow(boolean wait) throws JMSException
    {  
@@ -447,7 +448,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
          catch(Throwable t)
          {
-            throw new JBossJMSException("Message " + messageID + "cannot be acknowledged to the source", t);
+            throw new JBossJMSException("Message " + messageID +
+                                        "cannot be acknowledged to the source", t);
          } 
       }
       else
