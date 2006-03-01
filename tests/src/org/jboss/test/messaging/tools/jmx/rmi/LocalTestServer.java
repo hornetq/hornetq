@@ -48,10 +48,8 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.w3c.dom.Element;
 
 /**
- * 
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>1.1</tt>
  *
  * LocalTestServer.java,v 1.1 2006/02/21 08:25:32 timfox Exp

@@ -58,7 +58,8 @@ public class RemoteContext implements Context
 
    public RemoteContext() throws Exception
    {
-      String n = "//localhost:" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.NAMING_SERVER_NAME;
+      String n =
+         "//localhost:" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.NAMING_SERVER_NAME;
       namingDelegate = (NamingDelegate)Naming.lookup(n);
    }
 

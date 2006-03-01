@@ -30,7 +30,7 @@ import org.jboss.remoting.transport.Connector;
  *
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>1.1</tt>
  *
  * RemoteTestServer.java,v 1.1 2006/02/21 08:25:33 timfox Exp

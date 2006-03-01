@@ -50,7 +50,8 @@ public class MessageFactory
          Map coreHeaders,
          Serializable payload)
    {
-      CoreMessage cm =  new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, null);
+      CoreMessage cm =  new CoreMessage(messageID, reliable, expiration,
+                                        timestamp, priority, coreHeaders, null);
       
       cm.setPayload(payload);
       
@@ -59,12 +60,11 @@ public class MessageFactory
    
    public static CoreMessage createCoreMessage(Serializable messageID)
    {
-      CoreMessage cm =  new CoreMessage(messageID, false, 0, 0, (byte)4, null, null);
-      
-      return cm;
+      return new CoreMessage(messageID, false, 0, 0, (byte)4, null, null);
    }
    
-   public static CoreMessage createCoreMessage(Serializable messageID, boolean reliable, Serializable payload)
+   public static CoreMessage createCoreMessage(Serializable messageID, boolean reliable,
+                                               Serializable payload)
    {
       CoreMessage cm =  new CoreMessage(messageID, reliable, 0, 0, (byte)4, null, null);
       
