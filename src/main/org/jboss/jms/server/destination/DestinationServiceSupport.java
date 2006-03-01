@@ -219,7 +219,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       int idx = -1;
       if (jndiName != null)
       {
-         jndiName.lastIndexOf('/');
+         idx = jndiName.lastIndexOf('/');
       }
       if (idx != -1)
       {
