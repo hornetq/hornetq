@@ -52,7 +52,7 @@ public interface Routable extends Serializable
     * If it is a Message instance, then it returns itself, otherwise it will return the Message
     * corresponding to this MessageReference.
     */
-   Message getMessage(); //FIXME Shouldn't this method be on MessageReference interface rather than this interface??
+   Message getMessage(); // TODO 55 Shouldn't this method be on MessageReference interface rather than this interface??
 
    boolean isReference();
 

@@ -48,16 +48,13 @@ import org.jboss.serial.io.JBossObjectOutputStream;
  * 
  * A JMSWireFormat.
  * 
- * For some invocations, e.g. message sends, acknowledgements and activations it
- * is vital that we minimise the amount of data sent in the invocation so that we
- * can maximise performance.
- * By default, Invocations and return values are sent over the wire as serialized Java
- * objects.
- * This adds considerable overhead in terms of the amount of data sent
- * (It adds class information plus block data information)
- * which significantly degrades performance.
- * Therefore for the invocations where performance is paramount we define a customer wire
- * format that minimises the amount of data sent.
+ * For some invocations, e.g. message sends, acknowledgements and activations it is vital that we
+ * minimise the amount of data sent in the invocation so that we can maximise performance.
+ * By default, Invocations and return values are sent over the wire as serialized Java objects.
+ * This adds considerable overhead in terms of the amount of data sent (it adds class information
+ * plus block data information) which significantly degrades performance. Therefore for the
+ * invocations where performance is paramount we define a customer wire format that minimises the
+ * amount of data sent.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1

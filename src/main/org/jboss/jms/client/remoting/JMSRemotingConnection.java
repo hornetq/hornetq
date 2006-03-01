@@ -104,12 +104,12 @@ public class JMSRemotingConnection
          {
             log.warn("Failed to start connection", e);
             
-            //Intermittently we can fail to open a socket on the address since it's already in use
-            //This is despite remoting having checked the port is free.
-            //This is either because the remoting implementation is buggy
-            //Or because of the small window between getting the port number and actually opening the connection
-            //during which some one else can use that port.
-            //Therefore we catch this and retry       
+            // Intermittently we can fail to open a socket on the address since it's already in use
+            // This is despite remoting having checked the port is free. This is either because the
+            // remoting implementation is buggy or because of the small window between getting the
+            // port number and actually opening the connection during which some one else can use
+            // that port. Therefore we catch this and retry.
+            
             count++;
             
             if (client != null)

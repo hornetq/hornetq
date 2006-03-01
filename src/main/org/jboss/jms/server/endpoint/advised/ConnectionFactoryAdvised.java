@@ -26,9 +26,11 @@ import javax.jms.JMSException;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 
+/**
+ * ConnectionFactoryAdvised.java,v 1.3 2006/03/01 22:56:51 ovidiu Exp
+ */
 public class ConnectionFactoryAdvised extends AdvisedSupport implements ConnectionFactoryEndpoint
 {
-
    protected ConnectionFactoryEndpoint endpoint;
    
    public ConnectionFactoryAdvised()
@@ -45,7 +47,8 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
       return endpoint;
    }
 
-   public ConnectionDelegate createConnectionDelegate(String username, String password) throws JMSException
+   public ConnectionDelegate createConnectionDelegate(String username, String password)
+      throws JMSException
    {
       return endpoint.createConnectionDelegate(username, password);
    }

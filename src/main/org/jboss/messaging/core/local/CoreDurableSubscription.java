@@ -48,8 +48,9 @@ public class CoreDurableSubscription extends CoreSubscription
 
    // Constructors --------------------------------------------------
 
-   public CoreDurableSubscription(long id, String clientID, String name, Topic topic, String selector,
-                                  boolean noLocal, MessageStore ms, PersistenceManager pm)
+   public CoreDurableSubscription(long id, String clientID, String name, Topic topic,
+                                  String selector, boolean noLocal, MessageStore ms,
+                                  PersistenceManager pm)
    {
       super(id, topic, selector, noLocal, ms, pm);
       this.name = name;

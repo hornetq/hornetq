@@ -59,7 +59,8 @@ public class DeliveryRunnable implements Runnable, Serializable
    
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(MessageDelegate msg, int consumerID, ServerConnectionEndpoint connection, boolean trace)
+   public DeliveryRunnable(MessageDelegate msg, int consumerID,
+                           ServerConnectionEndpoint connection, boolean trace)
    {
       this.msg = msg;
       
@@ -82,7 +83,7 @@ public class DeliveryRunnable implements Runnable, Serializable
       }
       catch(Throwable t)
       {
-         log.warn("Failed to deliver the message to the client, clearing up connection resources", t);   
+         log.warn("Failed to deliver the message to the client, clearing up connection resources", t);
          
          ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
          
