@@ -8,7 +8,6 @@
 
 package org.jboss.test.messaging.core;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 

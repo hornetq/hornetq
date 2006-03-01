@@ -7,9 +7,7 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.NonRecoverableState;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PersistentMessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.base.StateTestBase;
 
 
