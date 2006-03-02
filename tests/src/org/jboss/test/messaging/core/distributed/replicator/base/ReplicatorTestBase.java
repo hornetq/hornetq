@@ -39,7 +39,7 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.util.MessageFactory;
+import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * The test strategy is to try as many combination as it makes sense of the following

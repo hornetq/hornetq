@@ -598,8 +598,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public Object getObjectProperty(String name) throws JMSException
    {
-      Object value = properties.get(name);
-      return value;
+      return properties.get(name);
    }
 
    public Enumeration getPropertyNames() throws JMSException
@@ -607,8 +606,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       HashSet set = new HashSet();
       set.addAll(properties.keySet());
       set.add("JMSXDeliveryCount");
-      Enumeration names = Collections.enumeration(set);
-      return names;
+      return Collections.enumeration(set);
    }
 
    public void setBooleanProperty(String name, boolean value) throws JMSException
@@ -878,25 +876,33 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    void checkProperty(String name, Object value) throws JMSException
    {
       if (name == null)
+      {
          throw new IllegalArgumentException("The name of a property must not be null.");
+      }
 
       if (name.equals(""))
+      {
          throw new IllegalArgumentException("The name of a property must not be an empty String.");
+      }
 
-      if (Strings.isValidJavaIdentifier(name) == false)
-         throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
+      if (!Strings.isValidJavaIdentifier(name))
+      {
+         throw new IllegalArgumentException("The property name '" + name +
+                                            "' is not a valid java identifier.");
+      }
 
       if (reservedIdentifiers.contains(name))
-         throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
+      {
+         throw new IllegalArgumentException("The property name '" + name +
+                                            "' is reserved due to selector syntax.");
+      }
 
       if (name.regionMatches(false, 0, "JMSX", 0, 4) &&
-            !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"))
+         !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"))
       {
          throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq");
       }           
    }
-   
-
 
    // Protected -----------------------------------------------------
    

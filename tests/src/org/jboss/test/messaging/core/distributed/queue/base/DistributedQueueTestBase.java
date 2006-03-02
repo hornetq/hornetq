@@ -27,7 +27,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.DistributedChannelTestBase;
-import org.jboss.test.messaging.util.MessageFactory;
+import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

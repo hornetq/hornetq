@@ -22,7 +22,6 @@
 package org.jboss.messaging.core.message;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
@@ -32,7 +31,7 @@ import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.plugin.MessageHolder;
 
 /**
- * A Simple MessageReference implementation
+ * A Simple MessageReference implementation.
  * 
  * Note that we do not need WeakReferences to message/holder objects since with the new
  * lazy loading schema we guarantee that if a message ref is in memory - it's corresponding message is
@@ -81,12 +80,12 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
            holder.getMessage().getHeaders(), holder.getMessage().isRedelivered(),
            holder.getMessage().getPriority(), ms);
 
-      for(Iterator i = holder.getMessage().getHeaderNames().iterator(); i.hasNext(); )
-      {
-         String name = (String)i.next();
-         putHeader(name, holder.getMessage().getHeader(name));
-      }
-
+//      for(Iterator i = holder.getMessage().getHeaderNames().iterator(); i.hasNext(); )
+//      {
+//         String name = (String)i.next();
+//         putHeader(name, holder.getMessage().getHeader(name));
+//      }
+//
       this.holder = holder;
    }
    
@@ -191,7 +190,6 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {
       this.ordering = ordering;
    }
-
    
    // Public --------------------------------------------------------
 
@@ -224,7 +222,6 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {
       return "Reference[" + messageID + "]:" + (isReliable() ? "RELIABLE" : "NON-RELIABLE");
    }
-   
 
    // Package protected ---------------------------------------------
 

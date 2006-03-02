@@ -43,17 +43,17 @@ import java.util.Map;
  *
  * $Id$
  */
-public class MessageSupport extends RoutableSupport implements Message
+public abstract class MessageSupport extends RoutableSupport implements Message
 {
    // Constants -----------------------------------------------------
    private static final long serialVersionUID = -4474943687659785336L;
    
    // Attributes ----------------------------------------------------
    
-   //Must be hidden from subclasses
+   // Must be hidden from subclasses
    private transient Serializable payload;
    
-   //Must be hidden from subclasses
+   // Must be hidden from subclasses
    private byte[] payloadAsByteArray;
 
    // Constructors --------------------------------------------------

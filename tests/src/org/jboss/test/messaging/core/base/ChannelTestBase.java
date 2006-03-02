@@ -41,7 +41,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.BrokenReceiver;
-import org.jboss.test.messaging.util.MessageFactory;
+import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * The Channel test strategy is to try as many combination as it makes sense of the following

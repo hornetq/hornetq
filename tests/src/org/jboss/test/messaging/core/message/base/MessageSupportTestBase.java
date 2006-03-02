@@ -19,39 +19,49 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core;
+package org.jboss.test.messaging.core.message.base;
 
-import org.jboss.test.messaging.MessagingTestCase;
 
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class MessageSupportTest extends MessagingTestCase
+public class MessageSupportTestBase extends RoutableSupportTestBase
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    // Constructors --------------------------------------------------
 
-   public MessageSupportTest(String name)
+   public MessageSupportTestBase(String name)
    {
       super(name);
    }
 
-//   // Public --------------------------------------------------------
-//
-//   public void testEquals() throws Exception
-//   {
-//      // TODO not sure about that yet
-//      MessageSupport m1 = new MessageSupport("ID", true, 0);
-//      m1.putHeader("someHeader", "someValue");
-//      MessageSupport m2 = new MessageSupport("ID", false, 1);
-//      assertEquals(m1, m2);
-//      assertEquals(m1.hashCode(), m2.hashCode());
-//
-//   }
+   // Public --------------------------------------------------------
 
-   public void testNoop()
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void setUp() throws Exception
    {
+      super.setUp();
    }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

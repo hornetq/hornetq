@@ -19,37 +19,58 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core;
+package org.jboss.test.messaging.core.message;
 
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.message.base.MessageSupportTestBase;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.core.message.CoreMessage;
+import org.jboss.messaging.core.message.MessageFactory;
 
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class RoutableSupportTest extends MessagingTestCase
+public class CoreMessageTest extends MessageSupportTestBase
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    // Constructors --------------------------------------------------
 
-   public RoutableSupportTest(String name)
+   public CoreMessageTest(String name)
    {
       super(name);
    }
-//
-//   // Public --------------------------------------------------------
-//
-//   public void testNullAsHeaderValue() throws Exception
-//   {
-//      RoutableSupport rs = new RoutableSupport("messageID");
-//      rs.putHeader("someHeader", null);
-//      assertTrue(rs.containsHeader("someHeader"));
-//      assertNull(rs.getHeader("someHeader"));
-//      assertNull(rs.removeHeader("someHeader"));
-//      assertFalse(rs.containsHeader("someHeader"));
-//   }
-   public void testNoop()
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void setUp() throws Exception
    {
+      rs = MessageFactory.createCoreMessage("message0");
+
+      super.setUp();
+
+      log.debug("setup done");
    }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      rs = null;
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

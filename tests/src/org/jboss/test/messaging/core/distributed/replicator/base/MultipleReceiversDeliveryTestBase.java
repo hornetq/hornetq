@@ -17,7 +17,7 @@ import org.jboss.messaging.core.plugin.InMemoryMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.base.DeliveryTestBase;
-import org.jboss.test.messaging.util.MessageFactory;
+import org.jboss.messaging.core.message.MessageFactory;
 
 
 /**

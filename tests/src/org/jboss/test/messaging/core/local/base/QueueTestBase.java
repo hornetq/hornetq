@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core.local.base;
 import org.jboss.test.messaging.core.base.ChannelTestBase;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.util.MessageFactory;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 
