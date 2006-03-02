@@ -104,41 +104,40 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
 
       if (trace){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
 
-      // don't even attempt synchronous delivery for a reliable message when we have an
-      // non-recoverable state that doesn't accept reliable messages. If we do, we may get into the
-      // situation where we need to reliably store an active delivery of a reliable message, which
-      // in these conditions cannot be done.
-
       MessageReference ref = ref(r);
       
       try
       {
          
          if (tx == null)
-         {      
+         {
+            // Don't even attempt synchronous delivery for a reliable message when we have an
+            // non-recoverable state that doesn't accept reliable messages. If we do, we may get
+            // into the situation where we need to reliably store an active delivery of a reliable
+            // message, which in these conditions cannot be done.
+
             if (r.isReliable() && !state.acceptReliableMessages())
             {
                log.error("Cannot handle reliable message " + r +
                          " because the channel has a non-recoverable state!");
                return null;
             }
-            
-            //This returns true if the ref was added to an empty ref queue
+
+            // This returns true if the ref was added to an empty reference queue
             boolean first = state.addReference(ref);
             
-            ref.incChannelCount();
+            ref.incrementChannelCount();
                         
-            //Previously we would call push() at this point to push the reference to the consumer
-            //One of the problems this had was it would end up leap-frogging messages that were
-            //already in the queue.
-            //So now we add the message to the back of the queue and call deliver()            
-            //In fact we only need to call deliver() if the queue was empty before we added
-            //the ref.
-            //If the queue wasn't empty there would be no active waiting receiver, so there
-            //would be no need to call deliver()
-            //Once I have improve the locking on the ref queue, this should result in very little (if any)
-            //lock contention between the thread depositing the message on the queue and the thread
-            //activating the consumer and prompting delivery.
+            // Previously we would call push() at this point to push the reference to the consumer.
+            // One of the problems this had was it would end up leap-frogging messages that were
+            // already in the queue. So now we add the message to the back of the queue and call
+            // deliver(). In fact we only need to call deliver() if the queue was empty before we
+            // added the reference.
+            // If the queue wasn't empty there would be no active waiting receiver, so there would
+            // be no need to call deliver().
+            // Once I have improved the locking on the reference queue, this should result in very
+            // little (if any) lock contention between the thread depositing the message on the
+            // queue and the thread activating the consumer and prompting delivery.
             
             if (first)
             {
@@ -358,14 +357,14 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       // by default a noop
    }
         
-   /*
-    * Delivery for the channel must be synchronized.
-    * Otherwise we can end up with the same message being delivered more than once to the same consumer
-    * (if deliver() is called concurrently) or messages being delivered in the wrong order.
+   /**
+    * Delivery for the channel must be synchronized. Otherwise we can end up with the same message
+    * being delivered more than once to the same consumer (if deliver() is called concurrently) or
+    * messages being delivered in the wrong order.
     */
-   protected synchronized boolean deliver(DeliveryObserver sender, Receiver receiver) throws Throwable
+   protected synchronized boolean deliver(DeliveryObserver sender, Receiver receiver)
+      throws Throwable
    {
-
       MessageReference ref = state.peekFirst();
       
       if (ref == null)
@@ -375,7 +374,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       
       if (trace){ log.trace(this + " delivering " + ref); }
 
-      Delivery del = getDelivery(receiver, ref);
+      Delivery del = push(ref, receiver);
 
       if (del == null)
       {
@@ -389,10 +388,10 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       {
          if (trace){ log.trace(this + ": delivery returned for message:" + ref); }
          
-         //We must synchronize here to cope with another race condition where message is cancelled/acked
-         //in flight while the following few actions are being performed.
-         //e.g. delivery could be cancelled acked after being removed from state but before delivery being added
-         //(observed)
+         // We must synchronize here to cope with another race condition where message is
+         // cancelled/acked in flight while the following few actions are being performed.
+         // e.g. delivery could be cancelled acked after being removed from state but before
+         // delivery being added (observed).
          synchronized (del)
          {
             if (trace) { log.trace(this + " incrementing delivery count for " + del); }    
@@ -432,8 +431,12 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
          throw new IllegalStateException(this + " closed");
       }
    }
-   
-   private Delivery getDelivery(Receiver receiver, MessageReference ref)
+
+   /**
+    * Pushes the reference to the specified receiver. If the receiver is null, pushes the reference
+    * to <i>a</i> reciever, as dictated by the routing policy, if receivers are available.
+    */
+   private Delivery push(MessageReference ref, Receiver receiver)
    {      
       Delivery d = null;
             
@@ -485,7 +488,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
          //We remove the delivery from the state
          state.acknowledge(d);
          
-         d.getReference().decChannelCount();
+         d.getReference().decrementChannelCount();
          
          if (trace) { log.trace(this + " delivery " + d + " completed and forgotten"); }
          

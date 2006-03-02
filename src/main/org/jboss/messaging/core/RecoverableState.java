@@ -80,11 +80,10 @@ public class RecoverableState extends NonRecoverableState
 
       if (ref.isReliable())
       {
-         //Reliable message in a recoverable state - also add to db
+         // Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
          pm.addReference(channel.getChannelID(), ref, tx);
       }
-           
    }
 
    public boolean addReference(MessageReference ref) throws Throwable
@@ -93,7 +92,7 @@ public class RecoverableState extends NonRecoverableState
 
       if (ref.isReliable())
       {
-         //Reliable message in a recoverable state - also add to db
+         // Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
          pm.addReference(channel.getChannelID(), ref, null);
       }      
@@ -152,7 +151,7 @@ public class RecoverableState extends NonRecoverableState
          
          messageRefs.addLast(ref, ref.getPriority());     
          
-         ref.incChannelCount();         
+         ref.incrementChannelCount();
       }        
    }
 

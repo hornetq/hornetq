@@ -101,7 +101,7 @@ public class NonRecoverableState implements State
       }
       else
       {
-         //add to post commit callback
+         // add to post commit callback
          NonRecoverableAddReferenceCallback callback = new NonRecoverableAddReferenceCallback(ref);
          tx.addCallback(callback);
          if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
@@ -118,10 +118,10 @@ public class NonRecoverableState implements State
                                          " cannot be added to non-recoverable state");
       }
 
-      if (trace) { log.trace(this + " added " + ref + " in memory"); } 
-      
-      boolean first = messageRefs.addLast(ref, ref.getPriority());    
-      
+      boolean first = messageRefs.addLast(ref, ref.getPriority());
+
+      if (trace) { log.trace(this + " added " + ref + " in memory"); }
+
       ref.setOrdering(getNextMessageOrdering());
       
       return first;             
@@ -358,17 +358,17 @@ public class NonRecoverableState implements State
       
       public void afterCommit(boolean onePhase)
       {
-         //We add the reference to the state
+         // We add the reference to the state
          
          if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
          
          boolean first = messageRefs.addLast(ref, ref.getPriority());      
          
-         ref.incChannelCount();
+         ref.incrementChannelCount();
          
          if (first)
          {
-            //No need to call prompt delivery if there are already messages in the queue
+            // No need to call prompt delivery if there are already messages in the queue
             channel.deliver(null);
          }
       } 
@@ -414,7 +414,7 @@ public class NonRecoverableState implements State
          
          deliveries.remove(del);         
          
-         del.getReference().decChannelCount();
+         del.getReference().decrementChannelCount();
       } 
       
       public void afterRollback(boolean onePhase)

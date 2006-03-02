@@ -60,12 +60,12 @@ public class ReceiverAspect
       Object[] args = mi.getArguments();
       long timeout = args == null ? 0 : ((Long)args[0]).longValue();
       
-      return getHandler(invocation).receive(timeout);
+      return getMessageCallbackHandler(invocation).receive(timeout);
    }
    
    public Object handleReceiveNoWait(Invocation invocation) throws Throwable
    {      
-      return getHandler(invocation).receive(-1);
+      return getMessageCallbackHandler(invocation).receive(-1);
    }
    
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
@@ -74,14 +74,14 @@ public class ReceiverAspect
       Object[] args = mi.getArguments();
       MessageListener l = (MessageListener)args[0];
       
-      getHandler(invocation).setMessageListener(l);
+      getMessageCallbackHandler(invocation).setMessageListener(l);
       
       return null;
    }
    
    public MessageListener handleGetMessageListener(Invocation invocation) throws Throwable
    {       
-      return getHandler(invocation).getMessageListener();
+      return getMessageCallbackHandler(invocation).getMessageListener();
    }
 
    // Package protected ---------------------------------------------
@@ -90,7 +90,7 @@ public class ReceiverAspect
 
    // Private -------------------------------------------------------
    
-   private MessageCallbackHandler getHandler(Invocation inv)
+   private MessageCallbackHandler getMessageCallbackHandler(Invocation inv)
    {      
       ConsumerState state = (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
       return state.getMessageCallbackHandler();      

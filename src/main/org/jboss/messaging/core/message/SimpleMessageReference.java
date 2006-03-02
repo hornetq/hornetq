@@ -75,9 +75,10 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
     * Creates a reference based on a given message.
     */
    public SimpleMessageReference(MessageHolder holder, InMemoryMessageStore ms)
-   {            
-      this(holder.getMessage().getMessageID(), holder.getMessage().isReliable(), holder.getMessage().getExpiration(),
-           holder.getMessage().getTimestamp(), holder.getMessage().getHeaders(), holder.getMessage().isRedelivered(),
+   {
+      this(holder.getMessage().getMessageID(), holder.getMessage().isReliable(),
+           holder.getMessage().getExpiration(), holder.getMessage().getTimestamp(),
+           holder.getMessage().getHeaders(), holder.getMessage().isRedelivered(),
            holder.getMessage().getPriority(), ms);
 
       for(Iterator i = holder.getMessage().getHeaderNames().iterator(); i.hasNext(); )
@@ -97,8 +98,8 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    public SimpleMessageReference(SimpleMessageReference other)
    {
       this(other.getMessageID(), other.isReliable(), other.getExpiration(),
-            other.getTimestamp(), other.getHeaders(), other.isRedelivered(),
-            other.getPriority(), other.ms);
+           other.getTimestamp(), other.getHeaders(), other.isRedelivered(),
+           other.getPriority(), other.ms);
       
       this.headers = other.headers;
       this.holder = other.holder;
@@ -132,14 +133,14 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       return holder.getMessage();
    }
          
-   public void incChannelCount()
+   public void incrementChannelCount()
    {
-      holder.incChannelCount();
+      holder.incrementChannelCount();
    }
    
-   public void decChannelCount()
+   public void decrementChannelCount()
    {
-      holder.decChannelCount();
+      holder.decrementChannelCount();
    }
    
    public int getChannelCount()

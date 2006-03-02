@@ -54,21 +54,21 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
       connections = new ConcurrentReaderHashMap();
    }
 
-   public void registerConnection(String clientSessionId, ServerConnectionEndpoint endpoint)
+   public void registerConnection(String remotingClientSessionID, ServerConnectionEndpoint endpoint)
    {
-      connections.put(clientSessionId, endpoint);
-      log.trace("Registered connection:" + clientSessionId);
+      connections.put(remotingClientSessionID, endpoint);
+      log.trace("Registered connection:" + remotingClientSessionID);
    }
 
-   public ServerConnectionEndpoint unregisterConnection(String clientSessionId)
+   public ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID)
    {      
-      log.trace("Unregistered connection:" + clientSessionId);
-      return (ServerConnectionEndpoint)connections.remove(clientSessionId);
+      log.trace("Unregistered connection:" + remotingClientSessionID);
+      return (ServerConnectionEndpoint)connections.remove(remotingClientSessionID);
    }
    
-   public ServerConnectionEndpoint getConnection(String clientSessionId)
+   public ServerConnectionEndpoint getConnection(String remotingClientSessionID)
    {
-      return (ServerConnectionEndpoint)connections.get(clientSessionId);
+      return (ServerConnectionEndpoint)connections.get(remotingClientSessionID);
    }
    
    public void handleConnectionException(Throwable t, Client client)
@@ -87,7 +87,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
          }
          else
          {
-            log.info("Broken client connection, clearing up it's state" + sessionId, t);
+            log.info("Broken client connection, clearing up its state " + sessionId, t);
             
             if (log.isTraceEnabled()) { log.trace("Clearing up server resources for this connection"); }
             

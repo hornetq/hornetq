@@ -53,12 +53,12 @@ public class MessageHolder
       this.store = store;     
    }    
    
-   public synchronized void incChannelCount()
+   public synchronized void incrementChannelCount()
    {
       channelCount++;
    }
    
-   public synchronized void decChannelCount()
+   public synchronized void decrementChannelCount()
    {
       channelCount--;      
       
