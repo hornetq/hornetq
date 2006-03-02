@@ -29,7 +29,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
@@ -87,16 +86,45 @@ public class JMSTest extends MessagingTestCase
       super.tearDown();
    }
 
-   public void testAll() throws Exception
+   public void test_NonPersistent_NonTransactional() throws Exception
    {
-
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
       Queue queue = (Queue)ic.lookup("/queue/Queue");
 
-      // non-transacted send to queue
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      TextMessage m = session.createTextMessage("message one");
+
+      prod.send(m);
+
+      conn.close();
+
+      conn = cf.createConnection();
+
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage rm = (TextMessage)cons.receive();
+
+      assertEquals("message one", rm.getText());
+
+      conn.close();
+   }
+
+   public void test_Persistent_NonTransactional() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
 
       Connection conn = cf.createConnection();
 
@@ -124,10 +152,46 @@ public class JMSTest extends MessagingTestCase
       assertEquals("message one", rm.getText());
 
       conn.close();
-
-      // transacted send to queue
-      // TODO
    }
+
+   public void test_NonPersistent_Transactional() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      m = session.createTextMessage("message two");
+      prod.send(m);
+
+      session.commit();
+
+      conn.close();
+
+      conn = cf.createConnection();
+
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage rm = (TextMessage)cons.receive();
+      assertEquals("message one", rm.getText());
+      rm = (TextMessage)cons.receive();
+      assertEquals("message two", rm.getText());
+
+      conn.close();
+   }
+
 
    // Package protected ---------------------------------------------
 
