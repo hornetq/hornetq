@@ -322,7 +322,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       if (tx != null)
       {         
-         //In a tx so we just add the ref in the tx in memory for now
+         // In a tx so we just add the ref in the tx in memory for now
          
          TransactionCallback callback = getCallback(tx);
          
@@ -330,7 +330,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
       else
       {
-         //No tx so add the ref directly in the db in it's own jdbc tx
+         // No tx so add the ref directly in the db in it's own jdbc tx
          
          TransactionWrapper wrap = new TransactionWrapper();
          

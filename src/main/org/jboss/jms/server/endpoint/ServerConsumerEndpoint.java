@@ -141,7 +141,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // Receiver implementation --------------------------------------- 
    
-   //There is no need to synchronize this method. The channel synchronizes delivery to it's consumers
+   //There is no need to synchronize this method. The channel synchronizes delivery to its consumers
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
       if (trace) { log.trace(this + " receives reference " + Util.guidToString(reference.getMessageID()) + " for delivery"); }
@@ -335,7 +335,6 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          if (trace) { log.trace(this + " deactivated"); }
       }
    }
-   
    
    public void activate() throws JMSException
    {

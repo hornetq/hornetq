@@ -144,9 +144,7 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
          holder = addMessage(m);
       }
 
-      MessageReference ref = new SimpleMessageReference(holder, this);
-
-      return ref;
+      return new SimpleMessageReference(holder, this);
    }
 
    // Used when loading state - will disappear once lazy loading is implemented
@@ -159,9 +157,7 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
          return null;
       }
        
-      MessageReference ref = new SimpleMessageReference(holder, this);
-      
-      return ref;      
+      return new SimpleMessageReference(holder, this);
    }
    
    

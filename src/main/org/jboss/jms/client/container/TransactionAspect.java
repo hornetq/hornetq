@@ -146,7 +146,7 @@ public class TransactionAspect
          
          connState.getResourceManager().addMessage(txID, m);
          
-         //And we don't invoke any further interceptors in the stack
+         // ... and we don't invoke any further interceptors in the stack
          return null;               
       }
       else
