@@ -322,7 +322,6 @@ public class MessageCallbackHandler
     */
    public Message receive(long timeout) throws JMSException
    {                 
-      
       if (listener != null)
       {
          throw new JBossJMSException("A message listener is already registered");         
@@ -493,7 +492,7 @@ public class MessageCallbackHandler
       
       try
       {
-         if (trace) { log.trace("initiating activation"); }
+         if (trace) { log.trace("initiating consumer endpoint activation"); }
          pooledExecutor.execute(new ConsumerActivationRunnable());
          activationCount.increment();
       }
@@ -542,18 +541,18 @@ public class MessageCallbackHandler
          {
             if (timeout == 0)
             {
-               //Indefinite wait
+               // Indefinite wait
                m = (Message)buffer.take();
             }            
             else
             {
-               //wait with timeout
+               // Wait with timeout
                m = (Message)buffer.poll(timeout);
             }
          }
          finally
          {
-            //We only need to call this if we didn't receive a message synchronously
+            // We only need to call this if we didn't receive a message synchronously
             
             if (!closed)
             {

@@ -92,7 +92,7 @@ public class ResourceManager
     */
    public void addMessage(Object xid, Message m)
    {
-      if (trace) { log.trace("Addding message for xid:" + xid); }
+      if (trace) { log.trace("addding message for xid " + xid); }
       TxState tx = getTx(xid);
       tx.getMessages().add(m);
    }
@@ -105,7 +105,7 @@ public class ResourceManager
     */
    public void addAck(Object xid, AckInfo ackInfo) throws JMSException
    {
-      if (trace) { log.trace("Addding ack for xid:" + xid); }
+      if (trace) { log.trace("adding ack for xid " + xid); }
       TxState tx = getTx(xid);
       if (tx == null)
       {
@@ -116,7 +116,7 @@ public class ResourceManager
          
    public void commitLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
    {
-      if (trace) { log.trace("Commiting local xid=" + xid); }
+      if (trace) { log.trace("commiting local xid " + xid); }
       
       TxState tx = removeTx(xid);
       
@@ -135,7 +135,7 @@ public class ResourceManager
    
    public void rollbackLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
    {
-      if (trace) { log.trace("Rolling back local xid: " + xid); }
+      if (trace) { log.trace("rolling back local xid " + xid); }
       TxState tx = removeTx(xid);
       if (tx == null)
       {
@@ -173,7 +173,7 @@ public class ResourceManager
    
    public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
    {
-      if (trace) { log.trace("Commiting xid=" + xid + ", onePhase=" + onePhase); }
+      if (trace) { log.trace("commiting xid " + xid + ", onePhase=" + onePhase); }
       
       TxState tx = removeTx(xid);
           
@@ -382,20 +382,22 @@ public class ResourceManager
    
    public TxState getTx(Object xid)
    {
-      if (trace) { log.trace("Getting tx for tx id:" + xid); }
-      TxState tx = (TxState) transactions.get(xid);      
-      return tx;
+      if (trace) { log.trace("Getting tx for tx id " + xid); }
+      return (TxState)transactions.get(xid);
    }
    
    public TxState removeTx(Object xid)
    {
-      TxState tx = (TxState) transactions.remove(xid);      
-      return tx;
+      return (TxState)transactions.remove(xid);
    }
    
    // Inner Classes --------------------------------------------------
    
    public static class LocalTxXid
-   {      
+   {
+      public String toString()
+      {
+         return "LocalTxXid[" + Integer.toHexString(hashCode()) + "]";
+      }
    }  
 }

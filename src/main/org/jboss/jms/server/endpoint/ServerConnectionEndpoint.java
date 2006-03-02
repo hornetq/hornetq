@@ -377,7 +377,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                 
             if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
             {
-               if (trace) { log.trace("One phase commit request received"); }
+               if (trace) { log.trace("one phase commit request received"); }
                
                tx = tr.createTransaction();
                processCommit(request.getState(), tx);
@@ -585,7 +585,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
 
-      //The JMSDestination header must already have been set for each message
+      // The JMSDestination header must already have been set for each message
       JBossDestination jbDest = (JBossDestination)m.getJMSDestination();
       if (jbDest == null)
       {
@@ -693,9 +693,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          if (trace) { log.trace("sent " + m); }
       }
       
-      if (trace) { log.trace("Done the sends"); }
+      if (trace) { log.trace("done the sends"); }
       
-      //Then ack the acks
+      // Then ack the acks
       for(Iterator i = txState.getAcks().iterator(); i.hasNext(); )
       {
          AckInfo ack = (AckInfo)i.next();
@@ -703,7 +703,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          if (trace) { log.trace("acked " + ack.getMessageID()); }
       }
       
-      if (trace) { log.trace("Done the acks"); }
+      if (trace) { log.trace("done the acks"); }
    }
    
    private void cancelDeliveriesForTransaction(TxState txState) throws JMSException
