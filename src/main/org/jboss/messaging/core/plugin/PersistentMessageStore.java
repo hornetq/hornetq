@@ -158,13 +158,13 @@ public class PersistentMessageStore extends InMemoryMessageStore
    
    // Protected -----------------------------------------------------
    
-   protected Message retrieveMessage(String messageId) throws Exception
+   protected Message retrieveMessage(String messageID) throws Exception
    {
-      Message m = super.retrieveMessage(messageId);
+      Message m = super.retrieveMessage(messageID);
       
       if (m == null)
       {
-         m = pm.getMessage((Serializable)messageId);
+         m = pm.getMessage((Serializable)messageID);
          
          if (m != null)
          {

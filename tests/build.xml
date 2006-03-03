@@ -203,10 +203,15 @@
            description="Prepares the directory structure required by a test run">
       <mkdir dir="${build.tests.reports}"/>
       <mkdir dir="${module.output}/logs"/>
-      <!-- clean up the logs, since log4j runs in "append" mode -->
+   </target>
+
+   <target name="clear-test-logs" unless="test.logs.cleared">
+      <!-- At the beginning of a test run, clean up the logs, since log4j runs in "append" mode -->
+      <echo message="Cleaning test logs ${module.output}/logs/*.log"/>
       <delete quiet="true">
          <fileset dir="${module.output}/logs" includes="*.log"/>
       </delete>
+      <property name="test.logs.cleared" value="true"/>
    </target>
 
    <target name="start-rmi-server"
@@ -243,14 +248,15 @@
       </java>
    </target>
 
-   <target name="tests" depends="tests-jar, prepare-testdirs">
+   <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <antcall target="remote-tests"/>
    </target>
 
 
-   <target name="invm-tests" description="Runs all available tests an in-VM configuration">
+   <target name="invm-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+      description="Runs all available tests an in-VM configuration">
 
       <antcall target="print-testclasspath"/>
 
@@ -293,7 +299,7 @@
       </junit>
    </target>
 
-   <target name="remote-tests" depends="tests-jar, prepare-testdirs"
+   <target name="remote-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
       description="Runs remotely all tests for which it makes sense to run remotely">
 
       <antcall target="stop-rmi-server"/>
@@ -361,7 +367,7 @@
 
    </target>
 
-   <target name="crash-tests" depends="tests-jar, prepare-testdirs"
+   <target name="crash-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
       description="Runs crash tests">
 
       <antcall target="stop-rmi-server"/>
@@ -416,7 +422,7 @@
             usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
          -->
 
-         <sysproperty key="messaging-test-configuration" value="Remote"/>
+         <sysproperty key="messaging-test-configuration" value="Crash"/>
          <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
             usefile="${junit.formatter.usefile}" extension="-Crash.xml"/>
 
@@ -433,7 +439,7 @@
 
 
    <target name="jmstests"
-           depends="tests-jar, prepare-testdirs"
+           depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs the jms tests only">
 
       <antcall target="print-testclasspath"/>
@@ -476,7 +482,7 @@
    </target>
 
    <target name="messagetests"
-              depends="tests-jar, prepare-testdirs"
+              depends="tests-jar, prepare-testdirs, clear-test-logs"
               description="Runs the jms tests only">
 
       <antcall target="print-testclasspath"/>
@@ -516,7 +522,7 @@
    </target>
 
    <target name="coretests"
-           depends="tests-jar, prepare-testdirs"
+           depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs the jms tests only">
 
       <antcall target="print-testclasspath"/>
@@ -555,7 +561,7 @@
    </target>
 
    <target name="test"
-           depends="tests-jar, prepare-testdirs"
+           depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs a single test, specified by its FQ class name via 'test.classname'">
 
       <fail unless="test.classname"
@@ -685,7 +691,7 @@
 
    <!-- TODO move this out into it's own build.xml -->
 
-   <target name="perf" depends="prepare-testdirs">
+   <target name="perf" depends="prepare-testdirs, clear-test-logs">
 
       <antcall target="start-slave">
          <param name="slave.host" value="1234"/>
