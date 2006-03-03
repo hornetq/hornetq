@@ -101,6 +101,7 @@
       <description>Get durable/nondurable subscription count</description>
       <name>subscriptionCount</name>
       <parameter>
+         <description>Set the value to true to get durable subscription count; false to get nondurable count</description>
          <name>durable</name>
          <type>boolean</type>
       </parameter>
