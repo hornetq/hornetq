@@ -33,7 +33,7 @@ import org.jboss.messaging.core.ManageableCoreDestination;
  */
 public interface ManageableQueue extends ManageableCoreDestination
 {
-   int getCurrentMessageCount();
+   int getMessageCount();
 
    // TODO adding more manageable operations
 }

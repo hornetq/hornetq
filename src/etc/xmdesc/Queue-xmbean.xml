@@ -72,9 +72,9 @@
       <type>boolean</type>
    </attribute>
 
-   <attribute access="read-only" getMethod="getCurrentMessageCount">
+   <attribute access="read-only" getMethod="getMessageCount">
       <description>The number of messages in the queue</description>
-      <name>CurrentMessageCount</name>
+      <name>MessageCount</name>
       <type>int</type>
    </attribute>
 

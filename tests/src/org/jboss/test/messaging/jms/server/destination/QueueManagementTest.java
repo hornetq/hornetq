@@ -74,7 +74,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       super.tearDown();
    }
 
-   public void testCurrentMessageCount() throws Exception
+   public void testMessageCount() throws Exception
    {
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -82,10 +82,10 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ServerManagement.deployQueue("QueueMessageCount");
       Queue queue = (Queue)ic.lookup("/queue/QueueMessageCount");
       
-      // Test currentMessageCount, should be 0 msg
+      // Test MessageCount, should be 0 msg
       ObjectName destObjectName = 
          new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount");
-      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
       assertEquals(0, count.intValue());
       
       // Send 1 message to queue
@@ -98,8 +98,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
       prod.send(m);
       conn.close();
       
-      // Test currentMessageCount again, should be 1 msg
-      count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      // Test MessageCount again, should be 1 msg
+      count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
       assertEquals(1, count.intValue());
       
       
@@ -112,8 +112,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
       cons.receive();
       conn.close();
       
-      // Test currentMessageCount again, should be 0 msg
-      count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      // Test MessageCount again, should be 0 msg
+      count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
       assertEquals(0, count.intValue());
       
       ServerManagement.undeployQueue("QueueMessageCount");
@@ -143,8 +143,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
          new ObjectName("jboss.messaging.destination:service=Queue,name=QueueRemoveMessages");
       ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
 
-      // Test currentMessageCount again, should be 0 msg
-      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "CurrentMessageCount");
+      // Test MessageCount again, should be 0 msg
+      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
       assertEquals(0, count.intValue());
 
       // Send another message

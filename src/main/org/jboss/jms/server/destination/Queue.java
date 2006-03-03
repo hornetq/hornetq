@@ -41,11 +41,11 @@ public class Queue extends DestinationServiceSupport
 
    // JMX managed attributes ----------------------------------------
    
-   public int getCurrentMessageCount() throws JMSException
+   public int getMessageCount() throws JMSException
    {
       JBossQueue jbq = new JBossQueue(name);
 	   ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
-	   return q.getCurrentMessageCount();
+	   return q.getMessageCount();
    }
 
    // JMX managed operations ----------------------------------------
