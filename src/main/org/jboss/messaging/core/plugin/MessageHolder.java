@@ -40,7 +40,7 @@ public class MessageHolder
     */
    private int channelCount;
    
-   private boolean inStorage;
+   private boolean persisted;
    
    private Message msg;
    
@@ -73,15 +73,23 @@ public class MessageHolder
    {
       return channelCount;
    }
-   
-   public synchronized boolean isInStorage()
+
+   /**
+    * @return true if the message referenced by this holder has been stored to persistent storage,
+    *         false otherwise.
+    */
+   public synchronized boolean isMessagePersisted()
    {
-      return inStorage;
+      return persisted;
    }
-   
-   public synchronized void setInStorage(boolean inStorage)
+
+   /**
+    * Mark this holder as pointing to a persisted (for a 'true' argument) or non-persisted (for
+    * a 'false' argument) message.
+    */
+   public synchronized void setMessagePersisted(boolean persisted)
    {
-      this.inStorage = inStorage;
+      this.persisted = persisted;
    }
    
    public Message getMessage()

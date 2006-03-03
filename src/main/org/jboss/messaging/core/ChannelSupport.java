@@ -104,7 +104,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
 
       if (trace){ log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx) ); }
 
-      MessageReference ref = ref(r);
+      MessageReference ref = obtainReference(r);
       
       try
       {
@@ -318,23 +318,23 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
    
    // Protected -----------------------------------------------------
 
-   protected MessageReference ref(Routable r)
+   protected MessageReference obtainReference(Routable r)
    {
       MessageReference ref = null;
 
-      //Convert to reference
+      // Convert to reference
       try
       {
          if (r.isReference())
          {
-            //Make a copy - each channel has it's own copy of the reference - 
-            //this is becaause the headers for a particular message may vary depending
-            //on what channel it is in - e.g. deliveryCount
+            // Make a copy - each channel has it's own copy of the reference - this is becaause
+            // the headers for a particular message may vary depending on what channel it is in -
+            // e.g. deliveryCount
             ref = ((MessageReference)r).copy();
          }
          else
          {
-            //Reference it for the first time
+            // Reference it for the first time
             ref = ms.reference((Message)r);
          }
       

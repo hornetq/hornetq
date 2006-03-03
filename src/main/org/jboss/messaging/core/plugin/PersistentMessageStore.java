@@ -137,7 +137,7 @@ public class PersistentMessageStore extends InMemoryMessageStore
          //Put it in the memory cache
          MessageHolder holder = super.addMessage(m);
          
-         holder.setInStorage(true);
+         holder.setMessagePersisted(true);
          
          ref = new SimpleMessageReference(holder, this);
       }

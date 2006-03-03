@@ -331,34 +331,43 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       else
       {
          // No tx so add the ref directly in the db in it's own jdbc tx
-         
+
          TransactionWrapper wrap = new TransactionWrapper();
-         
+
          PreparedStatement psReference = null;
+         String insertReferenceSQLToString = null;
+         int refRows = -1;
+
          PreparedStatement psMessage = null;
-         
+         String insertMessageSQLToString = null;
+         int messageRows = -1;
+
          Connection conn = ds.getConnection();
+
          try
          {
-            
             psReference = conn.prepareStatement(insertMessageRef);
-            
-            //Add the reference
-            addReference(channelID, ref, psReference);
-            
-            int rows = psReference.executeUpdate();
-            
-            if (trace) { log.trace("Inserted " + rows + " rows"); }
-            
-            psMessage = conn.prepareStatement(insertMessage);
-            
-            //Maybe we need to persist the message itself
-            boolean added = checkStoreMessage(ref, psMessage);  
-            
-            if (added)
+
+            insertReferenceSQLToString =
+               prepareReferenceInsertStatement(channelID, ref, tx, insertMessageRef, psReference);
+
+            refRows = psReference.executeUpdate();
+
+            synchronized(ref)
             {
-               rows = psMessage.executeUpdate();
-               if (trace) { log.trace("Inserted " + rows + " rows"); }
+               // check if we need to persist the message itself
+
+               if (!ref.isMessagePersisted())
+               {
+                  psMessage = conn.prepareStatement(insertMessage);
+
+                  insertMessageSQLToString =
+                     prepareMessageInsertStatement(ref.getMessage(), insertMessage, psMessage);
+
+                  messageRows = psMessage.executeUpdate();
+
+                  ref.setMessagePersisted(true);
+               }
             }
          }
          catch (Exception e)
@@ -368,6 +377,26 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
          finally
          {
+            if (trace)
+            {
+               if (refRows == -1)
+               {
+                  log.trace(insertReferenceSQLToString + " failed!");
+               }
+               else
+               {
+                  log.trace(insertReferenceSQLToString + " inserted " + refRows + " rows");
+                  if (messageRows == -1)
+                  {
+                     log.trace(insertMessageSQLToString + " failed!");
+                  }
+                  else
+                  {
+                     log.trace(insertMessageSQLToString + " inserted " + messageRows + " rows");
+                  }
+               }
+            }
+
             if (psReference != null)
             {
                try
@@ -393,7 +422,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                   conn.close();
                }
                catch (Throwable t)
-               {               
+               {
                }
             }
             wrap.end();
@@ -1304,66 +1333,73 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          return new Long(tx.getLongTxId());
       }
    }
-   
-   protected void addReference(long channelID, MessageReference ref, PreparedStatement ps) throws Exception
+
+   /**
+    * Prepare the SQL statement used to store the message reference in the MESSAGE_REFERENCE table.
+    *
+    * @return a String representation of the prepared statement if tracing is active, or null
+    *         otherwise.
+    */
+   protected String prepareReferenceInsertStatement(long channelID,
+                                                    MessageReference ref,
+                                                    Transaction tx,
+                                                    String sql,
+                                                    PreparedStatement ps)
+      throws Exception
    {
-      if (trace) { log.trace("adding " + ref + " to channel "  + channelID); }
-           
+
+      String messageID = (String)ref.getMessageID();
+      Object txID = null;
+      String state = tx == null ? "C" : "+";
+      long ordering = ref.getOrdering();
+      int deliveryCount = ref.getDeliveryCount();
+
       ps.setLong(1, channelID);
-      ps.setString(2, (String)ref.getMessageID());
-      
-      if (this.txIdGUID)
+      ps.setString(2, messageID);
+      if (tx == null)
       {
-         ps.setNull(3, java.sql.Types.VARCHAR);
+         ps.setNull(3, txIdGUID ? java.sql.Types.VARCHAR : java.sql.Types.BIGINT);
       }
       else
       {
-         ps.setNull(3, java.sql.Types.BIGINT);
+         if (txIdGUID)
+         {
+            txID = tx.getGuidTxId();
+            ps.setString(3, (String)txID);
+         }
+         else
+         {
+            long l = tx.getLongTxId();
+            txID = new Long(l);
+            ps.setLong(3, l);
+         }
       }
-      
-      ps.setString(4, "C");
-      ps.setLong(5, ref.getOrdering());
-      ps.setInt(6, ref.getDeliveryCount());
-   }   
-   
-      
-   protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps) throws Exception
+      ps.setString(4, state);
+      ps.setLong(5, ordering);
+      ps.setInt(6, deliveryCount);
+
+      if (trace)
+      {
+         return JDBCUtil.statementToString(sql, new Long(channelID), messageID, txID, state,
+                                           new Long(ordering), new Integer(deliveryCount));
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps)
+      throws Exception
    {
-      if (trace) { log.trace("removing " + ref + " from channel "  + channelID); }     
-      
       ps.setLong(1, channelID);
       ps.setString(2, (String)ref.getMessageID());                 
    }      
    
-   protected void prepareToAddReference(long channelID,
-                                        MessageReference ref,     
-                                        Transaction tx,
-                                        PreparedStatement ps) throws Exception
-   {
-      if (trace) { log.trace("adding " + ref + " to channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
-      
-      ps.setLong(1, channelID);
-      ps.setString(2, (String)ref.getMessageID());
-      
-      if (this.txIdGUID)
-      {
-         ps.setString(3, tx.getGuidTxId());
-      }
-      else
-      {
-         ps.setLong(3, tx.getLongTxId());
-      }
-      
-      ps.setString(4, "+");
-      ps.setLong(5, ref.getOrdering());     
-   }
-   
    protected void prepareToRemoveReference(long channelID, MessageReference ref,
-         Transaction tx, PreparedStatement ps)
+                                           Transaction tx, PreparedStatement ps)
       throws Exception
    {
-      if (trace) { log.trace("removing " + ref + " from channel "  + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx));}
-      
       if (tx.getGuidTxId() != null)
       {
          ps.setString(1, tx.getGuidTxId());
@@ -1548,57 +1584,74 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
       }
    }
-         
+
+
    /**
-    * Stores the message in the MESSAGE table.
+    * Prepare the SQL statement used to store the message in the MESSAGE table.
+    *
+    * @return a String representation of the prepared statement if tracing is active, or null
+    *         otherwise.
     */
-   protected void storeMessage(Message m, PreparedStatement ps) throws Exception
+   protected String prepareMessageInsertStatement(Message m, String sql, PreparedStatement ps)
+      throws Exception
    {
+      String messageID = (String)m.getMessageID();
+      String reliableToString = m.isReliable() ? "Y" : "N";
+      long expiration = m.getExpiration();
+      long timestamp = m.getTimestamp();
+      byte priority = m.getPriority();
+      byte[] coreHeaders = mapToBytes(((MessageSupport)m).getHeaders());
+      byte[] payload = m.getPayloadAsByteArray();
+      int referenceCount = 1;
+
+      byte type;
+      String jmsType;
+      String jmsCorrelationID;
+      byte[] jmsCorrelationIDAsBytes;
+      long destID;
+      long replyToID = 0;
+      byte[] jmsProperties;
+
       /*
-      
-      Reference counting code commented out until 1.2
-      
+         TODO Reference counting code commented out until 1.2
+
       // get the reference count from the database
       // TODO Probably this can be done smarter than that incrementing directly in the database
       ps = conn.prepareStatement(selectReferenceCount);
       ps.setString(1, id);
-      
+
       int referenceCount = 0;
       ResultSet rs = ps.executeQuery();
       if (rs.next())
       {
          referenceCount = rs.getInt(1);
       }
-      
+
       if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, id) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
-      
+
       if (referenceCount == 0)
       {
-      
+
       */
-      
-      // physically insert the row in the database
-      
-      //First set the fields from org.jboss.messaging.core.Routable
-      ps.setString(1, (String)m.getMessageID());
-      ps.setString(2, m.isReliable() ? "Y" : "N");
-      ps.setLong(3, m.getExpiration());
-      ps.setLong(4, m.getTimestamp());
-      ps.setByte(5, m.getPriority());
-      
-      byte[] bytes = mapToBytes(((MessageSupport)m).getHeaders());
-      if (bytes != null)
+
+      // first set the fields from org.jboss.messaging.core.Routable
+
+      ps.setString(1, messageID);
+      ps.setString(2, reliableToString);
+      ps.setLong(3, expiration);
+      ps.setLong(4, timestamp);
+      ps.setByte(5, priority);
+      if (coreHeaders != null)
       {
-         setLongVarBinary(ps, 6, bytes);
+         setLongVarBinary(ps, 6, coreHeaders);
       }
       else
       {
          ps.setNull(6, Types.LONGVARBINARY);
       }
-                  
-      //Now set the fields from org.jboss.messaging.core.Message
-      
-      byte[] payload = m.getPayloadAsByteArray();
+
+      // now set the fields from org.jboss.messaging.core.Message
+
       if (payload != null)
       {
          setLongVarBinary(ps, 7, payload);
@@ -1607,53 +1660,75 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       {
          ps.setNull(7, Types.LONGVARBINARY);
       }
-            
-      //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
+
+      // now set the fields from org.joss.jms.message.JBossMessage if appropriate
       if (m instanceof JBossMessage)
       {
          JBossMessage jbm = (JBossMessage)m;
-         
-         ps.setByte(8, jbm.getType());
-         ps.setString(9, jbm.getJMSType());
-         ps.setString(10, jbm.getJMSCorrelationID());
-         ps.setBytes(11, jbm.getJMSCorrelationIDAsBytes());
-         
+
+         type = jbm.getType();
+         jmsType = jbm.getJMSType();
+         jmsCorrelationID = jbm.getJMSCorrelationID();
+         jmsCorrelationIDAsBytes = jbm.getJMSCorrelationIDAsBytes();
+
          JBossDestination jbd = (JBossDestination)jbm.getJMSDestination();
-         
          CoreDestination dest = cm.getCoreDestination(jbd);
-                 
-         long destId = dest.getId();
-         ps.setLong(12, destId);
-         
+         destID = dest.getId();
+
          JBossDestination replyTo = (JBossDestination)jbm.getJMSReplyTo();
+         if (replyTo != null)
+         {
+            replyToID = cm.getCoreDestination(replyTo).getId();
+         }
+
+         ps.setByte(8, type);
+         ps.setString(9, jmsType);
+         ps.setString(10, jmsCorrelationID);
+         ps.setBytes(11, jmsCorrelationIDAsBytes);
+         ps.setLong(12, destID);
+
          if (replyTo == null)
          {
             ps.setNull(13, Types.BIGINT);
          }
          else
          {
-            long replyToId = cm.getCoreDestination(replyTo).getId();
-            ps.setLong(13, replyToId);
+            ps.setLong(13, replyToID);
          }
-         
-         bytes = mapToBytes(jbm.getJMSProperties());
-         if (bytes != null)
+
+         jmsProperties = mapToBytes(jbm.getJMSProperties());
+         if (jmsProperties != null)
          {
-            setLongVarBinary(ps, 14, bytes);
+            setLongVarBinary(ps, 14, jmsProperties);
          }
          else
          {
             ps.setNull(14, Types.LONGVARBINARY);
-         }         
-      }      
-      ps.setInt(15, 1);
+         }
+      }
+
+      ps.setInt(15, referenceCount);
+
+      if (trace)
+      {
+         return JDBCUtil.statementToString(sql, messageID);
+      }
+      else
+      {
+         return null;
+      }
    }
-   
+
    /**
-    * Removes the message from the MESSAGE table.
+    * Prepare the SQL statement used to store the message in the MESSAGE table.
+    *
+    * @return a String representation of the prepared statement if tracing is active, or null
+    *         otherwise.
     */
-   protected void removeMessage(Message message, PreparedStatement ps) throws Exception
+   protected String prepareMessageRemoveStatement(Message m, String sql, PreparedStatement ps)
+      throws Exception
    {
+      String messageID = (String)m.getMessageID();
       /*
       
       Reference counting code commented out until 1.2
@@ -1682,8 +1757,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       */
       
-      // physically delete the row in the database
-      ps.setString(1, (String)message.getMessageID());
+      ps.setString(1, messageID);
                            
       /*   
         
@@ -1703,26 +1777,13 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
       
       */
-   
-   }
-   
-   protected boolean checkStoreMessage(MessageReference ref, PreparedStatement ps) throws Exception
-   {
-      synchronized (ref)
-      {               
-         if (!ref.isInStorage())
-         {
-            //Message hasn't been persisted yet - so we do this in the same tx as adding the reference
-            storeMessage(ref.getMessage(), ps);        
-            
-            ref.setInStorage(true);
-            
-            return true;
-         }     
-         else
-         {
-            return false;
-         }
+      if (trace)
+      {
+         return JDBCUtil.statementToString(sql, messageID);
+      }
+      else
+      {
+         return null;
       }
    }
    
@@ -1730,12 +1791,13 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       synchronized (ref)
       {          
-         if (ref.getChannelCount() == 1 && ref.isInStorage())
+         if (ref.getChannelCount() == 1 && ref.isMessagePersisted())
          {
             //Only one ref left (actually the one we just removed) so we can remove the message
-            removeMessage(ref.getMessage(), ps);     
+            // TODO - use the String representation returned by the metod to trace
+            prepareMessageRemoveStatement(ref.getMessage(), "sql", ps);
             
-            ref.setInStorage(false);
+            ref.setMessagePersisted(false);
             
             return true;
          } 
@@ -1781,59 +1843,89 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             
             while (iter.hasNext())
             {
-               ChannelRefPair pair = (ChannelRefPair)iter.next();
-               
-               //We may need to persist the message itself 
-               MessageReference ref = pair.ref;
-               
-               if (!batch)
+               int refRows = -1;
+               String referenceInsertSQLToString = null;
+               int messageRows = -1;
+               String messageInsertSQLToString = null;
+
+               try
                {
-                  psReference = conn.prepareStatement(insertMessageRef);
-               }
-               
-               //Now store the reference
-               addReference(pair.channelId, ref, psReference);
-               
-               if (batch)
-               {
-                  psReference.addBatch();
-               }
-               else
-               {
-                  int rows = psReference.executeUpdate();
-                  
-                  if (trace) { log.trace("Inserted " + rows + " rows"); }
-                  
-                  psReference.close();
-                  psReference = null;
-               }
-               
-               if (!batch)
-               {
-                  psMessage = conn.prepareStatement(insertMessage);
-               }
-               
-               //Maybe we need to persist the message itself
-               boolean added = checkStoreMessage(ref, psMessage);  
-               
-               if (batch)
-               {
-                  if (added)
+                  ChannelRefPair pair = (ChannelRefPair)iter.next();
+                  MessageReference ref = pair.ref;
+
+                  if (!batch)
                   {
-                     psMessage.addBatch();                    
-                     messagesInBatch = true;
+                     psReference = conn.prepareStatement(insertMessageRef);
+                  }
+
+                  referenceInsertSQLToString =
+                     prepareReferenceInsertStatement(pair.channelId, ref, null,
+                                                     insertMessageRef, psReference);
+
+                  if (!batch)
+                  {
+                     refRows = psReference.executeUpdate();
+                     psReference.close();
+                     psReference = null;
+                  }
+                  else
+                  {
+                     psReference.addBatch();
+                  }
+
+                  synchronized(ref)
+                  {
+                     // check if we need to persist the message itself
+
+                     if (!ref.isMessagePersisted())
+                     {
+
+                        if (!batch)
+                        {
+                           psMessage = conn.prepareStatement(insertMessage);
+                        }
+
+                        messageInsertSQLToString =
+                           prepareMessageInsertStatement(ref.getMessage(), insertMessage, psMessage);
+
+                        if (!batch)
+                        {
+                           messageRows = psMessage.executeUpdate();
+                           psMessage.close();
+                           psMessage = null;
+                        }
+                        else
+                        {
+                           psMessage.addBatch();
+                           messagesInBatch = true;
+                        }
+
+                        ref.setMessagePersisted(true);
+                     }
                   }
                }
-               else
+               finally
                {
-                  if (added)
+                  if (trace && !batch)
                   {
-                     int rows = psMessage.executeUpdate();
-                     
-                     if (trace) { log.trace("Inserted " + rows + " rows"); }
+                     if (refRows == -1)
+                     {
+                        log.trace(referenceInsertSQLToString + " failed!");
+                     }
+                     else
+                     {
+                        log.trace(referenceInsertSQLToString + " inserted " + refRows + " rows");
+
+                        if(messageRows == -1)
+                        {
+                           log.trace(messageInsertSQLToString + " failed!");
+                        }
+                        else
+                        {
+                           log.trace(messageInsertSQLToString + " inserted " + refRows + " rows");
+                        }
+                     }
                   }
-                  psMessage.close();
-                  psMessage = null;
                }
             }
             
@@ -2069,6 +2161,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          boolean batch = usingBatchUpdates && refsToAdd.size() > 1;
          boolean messagesInBatch = false;
+
          if (batch)
          {
             psReference = conn.prepareStatement(insertMessageRef);
@@ -2077,58 +2170,92 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          while (iter.hasNext())
          {
-            ChannelRefPair pair = (ChannelRefPair)iter.next();
-            
-            if (!batch)
+            int refRows = -1;
+            String referenceInsertSQLToString = null;
+            int messageRows = -1;
+            String messageInsertSQLToString = null;
+
+            try
             {
-               psReference = conn.prepareStatement(insertMessageRef);
-            }
-            
-            prepareToAddReference(pair.channelId, pair.ref, tx, psReference);  
-            
-            if (batch)
-            {
-               psReference.addBatch();
-            }
-            else
-            {
-               int rows = psReference.executeUpdate();
-               
-               if (trace) { log.trace("Inserted " + rows + " rows"); }
-               
-               psReference.close();
-               psReference = null;
-            }
-            
-            if (!batch)
-            {
-               psMessage = conn.prepareStatement(insertMessage);
-            }
-            
-            //Maybe we need to persist the message itself
-            boolean added = checkStoreMessage(pair.ref, psMessage);
-            
-            if (batch)
-            {
-               if (added)
+               ChannelRefPair pair = (ChannelRefPair)iter.next();
+               MessageReference ref = pair.ref;
+
+               if (!batch)
                {
-                  psMessage.addBatch();
-                  messagesInBatch = true;
-               }               
-            }
-            else
-            {
-               if (added)
-               {
-                  int rows = psMessage.executeUpdate();
-                  
-                  if (trace) { log.trace("Inserted " + rows + " rows"); }
+                  psReference = conn.prepareStatement(insertMessageRef);
                }
-               psMessage.close();
-               psMessage = null;
+
+               //referenceInsertSQLToString =
+               prepareReferenceInsertStatement(pair.channelId, ref, tx,
+                                               insertMessageRef, psReference);
+
+               if (!batch)
+               {
+                  refRows = psReference.executeUpdate();
+                  psReference.close();
+                  psReference = null;
+               }
+               else
+               {
+                  psReference.addBatch();
+               }
+
+               synchronized(ref)
+               {
+                  // check if we need to persist the message itself
+
+                  if (!ref.isMessagePersisted())
+                  {
+
+                     if (!batch)
+                     {
+                        psMessage = conn.prepareStatement(insertMessage);
+                     }
+
+                     messageInsertSQLToString =
+                        prepareMessageInsertStatement(ref.getMessage(), insertMessage, psMessage);
+
+                     if (!batch)
+                     {
+                        messageRows = psMessage.executeUpdate();
+                        psMessage.close();
+                        psMessage = null;
+                     }
+                     else
+                     {
+                        psMessage.addBatch();
+                        messagesInBatch = true;
+                     }
+
+                     ref.setMessagePersisted(true);
+                  }
+               }
+            }
+            finally
+            {
+               if (trace && !batch)
+               {
+                  if (refRows == -1)
+                  {
+                     log.trace(referenceInsertSQLToString + " failed!");
+                  }
+                  else
+                  {
+                     log.trace(referenceInsertSQLToString + " inserted " + refRows + " rows");
+
+                     if(messageRows == -1)
+                     {
+                        log.trace(messageInsertSQLToString + " failed!");
+                     }
+                     else
+                     {
+                        log.trace(messageInsertSQLToString + " inserted " + refRows + " rows");
+                     }
+                  }
+               }
             }
          }
-         
+
          if (batch)
          {
             int[] rowsReference = psReference.executeBatch();

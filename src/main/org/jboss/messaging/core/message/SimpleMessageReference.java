@@ -80,12 +80,6 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
            holder.getMessage().getHeaders(), holder.getMessage().isRedelivered(),
            holder.getMessage().getPriority(), ms);
 
-//      for(Iterator i = holder.getMessage().getHeaderNames().iterator(); i.hasNext(); )
-//      {
-//         String name = (String)i.next();
-//         putHeader(name, holder.getMessage().getHeader(name));
-//      }
-//
       this.holder = holder;
    }
    
@@ -147,14 +141,14 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       return holder.getChannelCount();
    }
    
-   public void setInStorage(boolean inStorage)
+   public void setMessagePersisted(boolean b)
    {
-      holder.setInStorage(inStorage);
+      holder.setMessagePersisted(b);
    }
    
-   public boolean isInStorage()
+   public boolean isMessagePersisted()
    {
-      return holder.isInStorage();
+      return holder.isMessagePersisted();
    }
    
    public MessageReference copy()

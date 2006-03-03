@@ -422,7 +422,7 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(m.getJMSMessageID());
       assertNotNull(ref);
       
-      assertTrue(ref.isInStorage());
+      assertTrue(ref.isMessagePersisted());
       assertEquals(1, ref.getChannelCount());
       
       
@@ -432,7 +432,7 @@ public class ReferencingTest extends MessagingTestCase
       assertEquals(m.getText(), m2.getText());
       
       
-      assertFalse(ref.isInStorage());
+      assertFalse(ref.isMessagePersisted());
       assertEquals(0, ref.getChannelCount());
       
    }
@@ -460,7 +460,7 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(m.getJMSMessageID());
       assertNotNull(ref);
       
-      assertFalse(ref.isInStorage());
+      assertFalse(ref.isMessagePersisted());
       assertEquals(1, ref.getChannelCount());
       
       
@@ -469,7 +469,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      assertFalse(ref.isInStorage());
+      assertFalse(ref.isMessagePersisted());
       assertEquals(0, ref.getChannelCount());
       
    }

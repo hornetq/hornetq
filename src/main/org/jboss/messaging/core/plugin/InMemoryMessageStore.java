@@ -135,7 +135,7 @@ public class InMemoryMessageStore extends ServiceMBeanSupport implements Message
          throw new IllegalStateException(this + " does not accept reliable messages (" + m + ")");
       }
       
-      if (trace) { log.trace(this + " referencing " + m); }
+      if (trace) { log.trace(this + " creating reference for " + m); }
       
       MessageHolder holder = (MessageHolder)messages.get(m.getMessageID());
       
