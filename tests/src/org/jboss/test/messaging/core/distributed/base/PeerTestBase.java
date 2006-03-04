@@ -30,9 +30,7 @@ import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
@@ -77,7 +75,7 @@ public abstract class PeerTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      ms = new InMemoryMessageStore("shared-in-memory-store");
+      ms = new PagingMessageStore("shared-in-memory-store");
 
       jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
       jchannel2 = new JChannel(JGroupsUtil.generateProperties(900000, 1));

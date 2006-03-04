@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core.distributed.queue;
 import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 
@@ -70,11 +70,11 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
       tl3 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl3.start();
 
-      ms = new PersistentMessageStore("s50", tl);
+      ms = new PagingMessageStore("s50", tl);
 
-      ms2 = new PersistentMessageStore("s51", tl);
+      ms2 = new PagingMessageStore("s51", tl);
 
-      ms3 = new PersistentMessageStore("s52", tl);
+      ms3 = new PagingMessageStore("s52", tl);
 
       channel = new DistributedQueue("test", ms, tl, dispatcher);
       channel2 = new DistributedQueue("test", ms2, tl2, dispatcher2);

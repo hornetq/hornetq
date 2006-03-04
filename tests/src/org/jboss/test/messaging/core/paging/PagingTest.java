@@ -19,17 +19,18 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.message;
+package org.jboss.test.messaging.core.paging;
 
-import org.jboss.test.messaging.core.message.base.RoutableSupportTestBase;
-import org.jboss.messaging.core.plugin.SimpleMessageReference;
-import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.message.CoreMessage;
+import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.local.Pipe;
 
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -37,7 +38,7 @@ import java.util.Set;
  *
  * $Id$
  */
-public class SimpleMessageReferenceTest extends RoutableSupportTestBase
+public class PagingTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -45,45 +46,54 @@ public class SimpleMessageReferenceTest extends RoutableSupportTestBase
 
    // Attributes ----------------------------------------------------
 
+   protected ServiceContainer sc;
+   protected PersistenceManager pm;
+   protected MessageStore ms;
+
    // Constructors --------------------------------------------------
 
-   public SimpleMessageReferenceTest(String name)
+   public PagingTest(String name)
    {
       super(name);
    }
 
    // Public --------------------------------------------------------
 
-   public void testHeader()
+   public void testPaging() throws Exception
    {
-      SimpleMessageReference ref = (SimpleMessageReference)rs;
-      Set headerNames = ref.getHeaderNames();
-      assertTrue(headerNames.contains("headerName01"));
-      assertEquals("headerValue01", ref.getHeader("headerName01"));
+      Pipe p = new Pipe(0, ms, pm);
+      CoreMessage m = null;
+
+      m = MessageFactory.createCoreMessage("message0");
+      p.handle(null, m, null);
+
+      m = MessageFactory.createCoreMessage("message1");
+      p.handle(null, m, null);
+
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
-      Message m = MessageFactory.createCoreMessage("message0");
-      m.putHeader("headerName01", "headerValue01");
-
-      MessageStore ms = new PagingMessageStore("0");
-
-      rs = (RoutableSupport)ms.reference(m);
-
       super.setUp();
+      sc = new ServiceContainer("all,-remoting,-security");
+      sc.start();
 
-      log.debug("setup done");
+      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      pm.start();
+      ms = new PagingMessageStore("store0", pm);
    }
 
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
+      ms = null;
+      pm = null;
+      sc.stop();
+      sc = null;
       super.tearDown();
-      rs = null;
    }
 
    // Private -------------------------------------------------------

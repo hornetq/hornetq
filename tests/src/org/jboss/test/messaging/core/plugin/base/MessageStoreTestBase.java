@@ -158,8 +158,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       ref.incrementChannelCount();
       ref.decrementChannelCount();
 
-      // the message store
-      // should be cleaned of everything that pertains to that message
+      // the message store should be cleaned of everything that pertains to that message
 
       ref = ms.reference((String)m.getMessageID());
       assertNull(ref);

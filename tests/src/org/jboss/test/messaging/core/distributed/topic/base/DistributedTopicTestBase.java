@@ -27,7 +27,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.distributed.topic.DistributedTopic;
 import org.jboss.messaging.core.distributed.util.RpcServer;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
@@ -79,12 +79,12 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       tl2 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl2.start();
 
-      ms2 = new PersistentMessageStore("s30", tl);
+      ms2 = new PagingMessageStore("s30", tl);
       
       tl3 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl3.start();
 
-      ms3 = new PersistentMessageStore("s31", tl);
+      ms3 = new PagingMessageStore("s31", tl);
       
       jchannel = new JChannel(JGroupsUtil.generateProperties(50, 1));
       jchannel2 = new JChannel(JGroupsUtil.generateProperties(900000, 1));

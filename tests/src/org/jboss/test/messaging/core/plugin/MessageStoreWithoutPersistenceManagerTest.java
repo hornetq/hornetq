@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.plugin;
 
 import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -31,11 +31,11 @@ import org.jboss.messaging.core.plugin.InMemoryMessageStore;
  *
  * $Id$
  */
-public class InMemoryMessageStoreTest extends MessageStoreTestBase
+public class MessageStoreWithoutPersistenceManagerTest extends MessageStoreTestBase
 {
    // Constants -----------------------------------------------------
 
-   protected Logger log = Logger.getLogger(InMemoryMessageStoreTest.class);
+   protected Logger log = Logger.getLogger(MessageStoreWithoutPersistenceManagerTest.class);
 
    // Static --------------------------------------------------------
 
@@ -43,7 +43,7 @@ public class InMemoryMessageStoreTest extends MessageStoreTestBase
 
    // Constructors --------------------------------------------------
 
-   public InMemoryMessageStoreTest(String name)
+   public MessageStoreWithoutPersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -54,7 +54,7 @@ public class InMemoryMessageStoreTest extends MessageStoreTestBase
    {
       super.setUp();
 
-      ms = new InMemoryMessageStore("test-memory-store");
+      ms = new PagingMessageStore("test-memory-store");
 
       log.debug("setup done");
    }

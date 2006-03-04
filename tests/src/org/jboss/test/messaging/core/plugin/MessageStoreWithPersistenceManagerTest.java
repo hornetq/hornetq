@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.plugin;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
@@ -34,11 +34,11 @@ import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
  *
  * $Id$
  */
-public class PersistentMessageStoreTest extends MessageStoreTestBase
+public class MessageStoreWithPersistenceManagerTest extends MessageStoreTestBase
 {
    // Constants -----------------------------------------------------
 
-   protected Logger log = Logger.getLogger(PersistentMessageStoreTest.class);
+   protected Logger log = Logger.getLogger(MessageStoreWithPersistenceManagerTest.class);
 
    // Static --------------------------------------------------------
 
@@ -50,7 +50,7 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
 
    // Constructors --------------------------------------------------
 
-   public PersistentMessageStoreTest(String name)
+   public MessageStoreWithPersistenceManagerTest(String name)
    {
       super(name);
    }
@@ -64,11 +64,9 @@ public class PersistentMessageStoreTest extends MessageStoreTestBase
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
       
-      ms = new PersistentMessageStore("s9", pm);
-      //ms.start();
+      ms = new PagingMessageStore("s9", pm);
 
-      ms2 = new PersistentMessageStore("s10", pm);
-      //ms2.start();
+      ms2 = new PagingMessageStore("s10", pm);
 
       log.debug("setup done");
    }

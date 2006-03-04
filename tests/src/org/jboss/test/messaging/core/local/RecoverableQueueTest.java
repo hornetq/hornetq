@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
 /**
@@ -58,7 +58,7 @@ public class RecoverableQueueTest extends QueueTestBase
       tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      ms = new PersistentMessageStore("s14", tl);
+      ms = new PagingMessageStore("s14", tl);
 
       channel = new Queue(1, ms, tl);
       

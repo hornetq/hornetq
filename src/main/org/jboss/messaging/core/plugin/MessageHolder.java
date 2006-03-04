@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.plugin;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * 
@@ -33,7 +34,7 @@ import org.jboss.messaging.core.Message;
  *
  * MessageHolder.java,v 1.1 2006/02/23 17:45:58 timfox Exp
  */
-public class MessageHolder
+class MessageHolder
 {
    /*
     * The number of channels that hold a reference to the message
@@ -44,13 +45,12 @@ public class MessageHolder
    
    private Message msg;
    
-   private InMemoryMessageStore store;
+   private PagingMessageStore ms;
    
-   public MessageHolder(Message msg, InMemoryMessageStore store)
+   public MessageHolder(Message msg, PagingMessageStore ms)
    {
       this.msg = msg;
-      
-      this.store = store;     
+      this.ms = ms;
    }    
    
    public synchronized void incrementChannelCount()
@@ -64,8 +64,8 @@ public class MessageHolder
       
       if (channelCount == 0)
       {
-         //Can remove the message from the in memory message store
-         store.removeMessage((String)msg.getMessageID());
+         // can remove the message from the message store
+         ms.forgetMessage((String)msg.getMessageID());
       }
    }
    

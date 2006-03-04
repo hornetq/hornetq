@@ -34,7 +34,7 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -95,7 +95,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       tl.setTxIdGuid(guid);
       tl.setUsingBatchUpdates(batch);
       
-      ms = new PersistentMessageStore("s0", tl);
+      ms = new PagingMessageStore("s0", tl);
       
       tl.start();
    }

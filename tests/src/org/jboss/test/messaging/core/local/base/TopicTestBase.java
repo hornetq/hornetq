@@ -28,7 +28,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -77,7 +77,7 @@ public abstract class TopicTestBase extends MessagingTestCase
       tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       ((JDBCPersistenceManager)tl).start();
       
-      ms = new PersistentMessageStore("s33", tl);
+      ms = new PagingMessageStore("s33", tl);
 
 
    }

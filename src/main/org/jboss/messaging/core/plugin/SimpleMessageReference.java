@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.message;
+package org.jboss.messaging.core.plugin;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -27,8 +27,8 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.InMemoryMessageStore;
-import org.jboss.messaging.core.plugin.MessageHolder;
+import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * A Simple MessageReference implementation.
@@ -52,7 +52,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
 
    private boolean trace = log.isTraceEnabled();
    
-   protected transient InMemoryMessageStore ms;
+   protected transient MessageStore ms;
    
    private MessageHolder holder;
    
@@ -73,7 +73,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    /**
     * Creates a reference based on a given message.
     */
-   public SimpleMessageReference(MessageHolder holder, InMemoryMessageStore ms)
+   public SimpleMessageReference(MessageHolder holder, MessageStore ms)
    {
       this(holder.getMessage().getMessageID(), holder.getMessage().isReliable(),
            holder.getMessage().getExpiration(), holder.getMessage().getTimestamp(),
@@ -100,7 +100,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    protected SimpleMessageReference(Serializable messageID, boolean reliable, long expiration,
                                     long timestamp, Map headers, boolean redelivered,
-                                    byte priority, InMemoryMessageStore ms)
+                                    byte priority, MessageStore ms)
    {
       super(messageID, reliable, expiration, timestamp, priority, 0, headers);
       this.redelivered = redelivered;

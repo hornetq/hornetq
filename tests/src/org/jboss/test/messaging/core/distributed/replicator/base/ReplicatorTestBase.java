@@ -32,7 +32,7 @@ import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
@@ -117,9 +117,9 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       tl2 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl2.start();
 
-      ms = new PersistentMessageStore("s40", tl);
+      ms = new PagingMessageStore("s40", tl);
 
-      ms2 = new PersistentMessageStore("s41", tl);
+      ms2 = new PagingMessageStore("s41", tl);
  
       // override previous definitions of distributed and distributed2
       distributed = createDistributed("test", ms, dispatcher);
@@ -132,9 +132,9 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       replicator2 = (Replicator)distributed2;
       replicator3 = (Replicator)distributed3;
 
-      outputms = new PersistentMessageStore("s42", tl);
-      outputms2 = new PersistentMessageStore("s43", tl);
-      outputms3 = new PersistentMessageStore("s44", tl);
+      outputms = new PagingMessageStore("s42", tl);
+      outputms2 = new PagingMessageStore("s43", tl);
+      outputms3 = new PagingMessageStore("s44", tl);
 
    }
 

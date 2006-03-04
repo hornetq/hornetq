@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core.local;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PersistentMessageStore;
+import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.test.messaging.core.base.ChannelTestBase;
 
 /**
@@ -43,7 +43,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
    private JDBCPersistenceManager tl;
 
-   // Constructors --------------------------------------------------
+   // Constructors --------------------------------------------------                                        /
 
    public DurableSubscriptionTest(String name)
    {
@@ -59,7 +59,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
       tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl.start();
 
-      ms = new PersistentMessageStore("s20", tl);
+      ms = new PagingMessageStore("s20", tl);
 
       tr.start(tl);
 
