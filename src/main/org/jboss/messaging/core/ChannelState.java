@@ -237,7 +237,7 @@ public class ChannelState implements State
     * Cancel an outstanding delivery.
     * This removes the delivery and adds the message reference back into the state
     */
-   public synchronized void cancelDelivery(Delivery del) throws Throwable
+   public void cancelDelivery(Delivery del) throws Throwable
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
       
@@ -286,7 +286,7 @@ public class ChannelState implements State
       }
    }
   
-   public synchronized void acknowledge(Delivery d, Transaction tx) throws Throwable
+   public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
       //Transactional so add a post commit callback to remove after tx commit
       RemoveDeliveryCallback callback = new RemoveDeliveryCallback(d);
@@ -317,7 +317,7 @@ public class ChannelState implements State
       }           
    }
          
-   public synchronized MessageReference removeFirstInMemory() throws Throwable
+   public MessageReference removeFirstInMemory() throws Throwable
    {      
       synchronized (lock)
       {         
@@ -329,7 +329,7 @@ public class ChannelState implements State
       }
    }
    
-   public synchronized MessageReference peekFirst() throws Throwable
+   public MessageReference peekFirst() throws Throwable
    {      
       synchronized (lock)
       {
@@ -340,7 +340,7 @@ public class ChannelState implements State
    }
  
    //FIXME synchronization here is broken - replace this with iterator
-   public synchronized List delivering(Filter filter)
+   public List delivering(Filter filter)
    {
       List delivering = new ArrayList();
       synchronized (deliveries)
@@ -362,7 +362,7 @@ public class ChannelState implements State
    }
 
    //FIXME synchronization here is broken - replace this with iterator
-   public synchronized List undelivered(Filter filter)
+   public List undelivered(Filter filter)
    {
       List undelivered = new ArrayList();
       synchronized(messageRefs)
@@ -419,7 +419,7 @@ public class ChannelState implements State
       }
    }
    
-   public synchronized void removeAll()
+   public void removeAll()
    {
       //FIXME - This locking is broken
       
@@ -657,8 +657,6 @@ public class ChannelState implements State
       
       if (!initial)
       {
-         //TODO - The following two db operations could probably be combined in the same op
-         
          //Now we remove the non persistent references from storage
          pm.removeNonPersistentMessageReferences(channel.getChannelID(), firstOrdering, lastOrdering);
          
