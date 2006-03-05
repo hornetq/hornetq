@@ -32,16 +32,16 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.test.messaging.core.BrokenReceiver;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.BrokenReceiver;
-import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * The Channel test strategy is to try as many combination as it makes sense of the following
@@ -64,6 +64,7 @@ import org.jboss.messaging.core.message.MessageFactory;
  * This test base also tests the Distributor interface.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -105,7 +106,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       ((JDBCPersistenceManager)msPersistenceManagerDelegate).start();
 
-      ms = new PagingMessageStore("s47", msPersistenceManagerDelegate);
+      ms = new PagingMessageStore("s47");
 
    }
 

@@ -31,6 +31,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.distributed.replicator.Replicator;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutput;
 import org.jboss.messaging.core.distributed.replicator.ReplicatorOutputDelivery;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -39,7 +40,6 @@ import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * The test strategy is to try as many combination as it makes sense of the following
@@ -117,10 +117,10 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       tl2 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl2.start();
 
-      ms = new PagingMessageStore("s40", tl);
+      ms = new PagingMessageStore("s40");
 
-      ms2 = new PagingMessageStore("s41", tl);
- 
+      ms2 = new PagingMessageStore("s41");
+
       // override previous definitions of distributed and distributed2
       distributed = createDistributed("test", ms, dispatcher);
       distributed2 = createDistributed("test", ms2, dispatcher2);
@@ -132,9 +132,9 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       replicator2 = (Replicator)distributed2;
       replicator3 = (Replicator)distributed3;
 
-      outputms = new PagingMessageStore("s42", tl);
-      outputms2 = new PagingMessageStore("s43", tl);
-      outputms3 = new PagingMessageStore("s44", tl);
+      outputms = new PagingMessageStore("s42");
+      outputms2 = new PagingMessageStore("s43");
+      outputms3 = new PagingMessageStore("s44");
 
    }
 

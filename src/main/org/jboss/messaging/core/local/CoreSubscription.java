@@ -49,20 +49,24 @@ public class CoreSubscription extends Pipe
    protected boolean noLocal;
    
    // Constructors --------------------------------------------------
-
-   public CoreSubscription(long id, Topic topic, String selector, boolean noLocal, MessageStore ms)
-   {
-      this(id, topic, selector, noLocal, ms, null);
-   }
-   
+ 
    protected CoreSubscription(long id, Topic topic, String selector, boolean noLocal,
-                              MessageStore ms, PersistenceManager tl)
+                              MessageStore ms, PersistenceManager pm, boolean recoverable,
+                              int fullSize, int pageSize, int downCacheSize)
+                              
    {
-      // A CoreSubscription must accept reliable messages, even if itself is non-recoverable
-      super(id, ms, tl, true);
+      // A CoreSubscription must accept reliable messages
+      super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
       this.topic = topic;
       this.selector = selector;
       this.noLocal = noLocal;
+   }
+
+   public CoreSubscription(long id, Topic topic, String selector, boolean noLocal,
+                           MessageStore ms, PersistenceManager pm, int fullSize,
+                           int pageSize, int downCacheSize)
+   {
+      this(id, topic, selector, noLocal, ms, pm, false, fullSize, pageSize, downCacheSize);
    }
    
    // Channel implementation ----------------------------------------
@@ -86,7 +90,7 @@ public class CoreSubscription extends Pipe
       {
          if (pm != null)
          {
-            pm.removeAllMessageData(this.channelID);
+            pm.removeAllChannelData(this.channelID);
          }
       }
       catch (Exception e)

@@ -105,8 +105,7 @@
       <constructor>
          <!-- StoreID -->
          <arg type="java.lang.String" value="store.0" />
-      </constructor>
-      <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
+      </constructor>      
    </mbean>
 
    <mbean code="org.jboss.jms.server.plugin.JDBCChannelMapper"

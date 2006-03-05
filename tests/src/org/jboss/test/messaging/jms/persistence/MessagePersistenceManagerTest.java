@@ -67,8 +67,8 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    {
       super.doSetup(guid, batch);
       
-      cm.deployCoreDestination(true, "testDestination", ms, tl);
-      cm.deployCoreDestination(true, "testReplyTo", ms, tl);
+      cm.deployCoreDestination(true, "testDestination", ms, pm);
+      cm.deployCoreDestination(true, "testReplyTo", ms, pm);
    }
 
    public void tearDown() throws Exception
@@ -127,7 +127,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
 
    }
    
-   protected Message createMessage(byte i) throws Exception
+   protected Message createMessage(byte i, boolean reliable) throws Exception
    {
       HashMap coreHeaders = generateFilledMap(true);         
       
@@ -135,7 +135,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
               
       JBossMessage jbm = 
          new JBossMessage(new GUID().toString(),
-            true,
+            reliable,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,

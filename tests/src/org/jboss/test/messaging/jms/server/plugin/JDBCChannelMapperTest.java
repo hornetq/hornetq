@@ -85,7 +85,9 @@ public class JDBCChannelMapperTest extends MessagingTestCase
 
       dm = ServerManagement.getDestinationManager();
       ms = ServerManagement.getMessageStore();
+      pm = ServerManagement.getPersistenceManager();
       channelMapper = ServerManagement.getChannelMapper();
+      
 
       log.debug("setup done");
    }

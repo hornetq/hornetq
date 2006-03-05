@@ -59,9 +59,9 @@ public class NonRecoverableDistributedQueueTest extends DistributedQueueTestBase
       PersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
 
-      ms2 = new PagingMessageStore("s45", pm);
+      ms2 = new PagingMessageStore("s45");
 
-      ms3 = new PagingMessageStore("s46", pm);
+      ms3 = new PagingMessageStore("s46");
 
       channel2 = new DistributedQueue("test", ms2, dispatcher2);
       channel3 = new DistributedQueue("test", ms3, dispatcher3);

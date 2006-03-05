@@ -42,22 +42,9 @@ public interface MessageReference extends Routable
    
    int getChannelCount();
 
-   /**
-    * Mark this reference as pointing to a persisted (for a 'true' argument) or non-persisted (for
-    * a 'false' argument) message.
-    */
-   void setMessagePersisted(boolean b);
-
-   /**
-    * @return true if the message corresponding to this reference has been stored to persistent
-    *         storage, false otherwise.
-    */
-   boolean isMessagePersisted();
-   
    MessageReference copy();
    
    long getOrdering();
    
-   void setOrdering(long ordering);
-   
+   void setOrdering(long ordering);   
 }

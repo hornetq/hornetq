@@ -21,11 +21,12 @@
 */
 package org.jboss.test.messaging.core.local;
 
-import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.CoreSubscription;
+import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
@@ -50,8 +51,8 @@ public class SubscriptionTest extends QueueTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      channel = new CoreSubscription(123, null, null, false, ms);
+      
+      channel = new CoreSubscription(123, null, null, false, ms, pm, 100, 20, 10);
       
       log.debug("setup done");
    }

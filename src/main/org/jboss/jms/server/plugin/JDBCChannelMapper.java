@@ -257,7 +257,9 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          // TODO I am using LocalQueues for the time being, switch to distributed Queues
          if (isQueue)
          {
-            cd = new Queue(id, ms, pm);
+            //FIXME
+            //Hardcoded for now
+            cd = new Queue(id, ms, pm, true, 100, 20, 10);
             
             try
             {
@@ -464,13 +466,14 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
       catch (Exception e)
       {
+         e.printStackTrace();
          throw new JBossJMSException("Failed to create durable subscription", e);        
       }
      
    }
    
    public CoreSubscription createSubscription(String topicName, String selector, boolean noLocal,
-         MessageStore ms) throws JMSException
+         MessageStore ms, PersistenceManager pm) throws JMSException
    {
       try
       {
@@ -484,7 +487,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
          }
                 
-         CoreSubscription sub = new CoreSubscription(id, topic, selector, noLocal, ms);
+         //FIXME - Size hardcoded for now
+         CoreSubscription sub = new CoreSubscription(id, topic, selector, noLocal, ms, pm, 100, 20, 10);
          
          return sub;
       }
@@ -1049,8 +1053,9 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
       
+      //FIXME size hardcoded for now
       CoreDurableSubscription subscription =
-         new CoreDurableSubscription(id, clientID, subscriptionName, topic, selector, noLocal, ms, pm);
+         new CoreDurableSubscription(id, clientID, subscriptionName, topic, selector, noLocal, ms, pm, 100, 20, 10);
       
       subs.put(subscriptionName, subscription);
       

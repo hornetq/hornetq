@@ -57,7 +57,7 @@ public class TextMessagePersistenceManagerTest extends MessagePersistenceManager
    }
   
    
-   protected Message createMessage(byte i) throws Exception
+   protected Message createMessage(byte i, boolean reliable) throws Exception
    {
       HashMap coreHeaders = generateFilledMap(true);         
       
@@ -65,7 +65,7 @@ public class TextMessagePersistenceManagerTest extends MessagePersistenceManager
                
       JBossTextMessage m = 
          new JBossTextMessage(new GUID().toString(),
-               true,
+               reliable,
                System.currentTimeMillis() + 1000 * 60 * 60,
                System.currentTimeMillis(),
                i,

@@ -43,14 +43,10 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    
    // Constructors --------------------------------------------------
 
-   public Queue(long id, MessageStore ms)
+   public Queue(long id, MessageStore ms, PersistenceManager pm, boolean recoverable,
+         int fullSize, int pageSize, int downCacheSize)
    {
-      this(id, ms, null);
-   }
-
-   public Queue(long id, MessageStore ms, PersistenceManager tl)
-   {
-      super(id, ms, tl, false);
+      super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
       router = new PointToPointRouter();
    }
 

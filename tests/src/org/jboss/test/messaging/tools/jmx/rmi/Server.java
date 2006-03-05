@@ -30,6 +30,7 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.transport.Connector;
 
 /**
@@ -98,6 +99,8 @@ public interface Server extends Remote
     * Only for in-VM use!
     */
    DestinationManager getDestinationManager() throws Exception;
+   
+   PersistenceManager getPersistenceManager() throws Exception;
 
    /**
     * Only for in-VM use!

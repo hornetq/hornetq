@@ -60,7 +60,7 @@ public interface ChannelMapper extends ServerPlugin
                                                      PersistenceManager pm) throws JMSException;
    
    CoreSubscription createSubscription(String topicName, String selector, boolean noLocal,
-                                       MessageStore ms)
+                                       MessageStore ms, PersistenceManager pm)
       throws JMSException;
 
    CoreDurableSubscription getDurableSubscription(String clientID,

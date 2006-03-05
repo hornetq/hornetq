@@ -427,9 +427,12 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
         
       //Acquire multiple times - this is what would happen with multiple deliveries
       //for the same reference
+
       ref.incrementChannelCount();
       ref.incrementChannelCount();
       ref.incrementChannelCount();
+      ref.incrementChannelCount();
+
       
       ref.decrementChannelCount();
       

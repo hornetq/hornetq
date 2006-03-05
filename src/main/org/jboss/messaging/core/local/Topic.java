@@ -138,7 +138,6 @@ public class Topic implements CoreDestination, ManageableTopic
       while (iter.hasNext())
       {
          Object sub = iter.next();
-         assert sub instanceof CoreSubscription;
          ((CoreSubscription)sub).removeAllMessages();
       }
    }
@@ -154,7 +153,6 @@ public class Topic implements CoreDestination, ManageableTopic
       {
          count++;
          Object sub = iter.next();
-         assert sub instanceof CoreSubscription;
       }
       return count;
    }
@@ -169,7 +167,6 @@ public class Topic implements CoreDestination, ManageableTopic
       while (iter.hasNext())
       {
          Object sub = iter.next();
-         assert sub instanceof CoreSubscription;
          if ((sub instanceof CoreDurableSubscription) ^ (!durable))
             count++;
       }

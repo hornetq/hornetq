@@ -42,6 +42,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
  * 8. A recoverable channel may be crashed and tested if it successfully recovers.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -400,10 +401,10 @@ public abstract class StateTestBase extends MessagingTestCase
       state.addReference(ref);
 
 
-      MessageReference rref = state.removeFirst();
+      MessageReference rref = state.removeFirstInMemory();
       assertEquals("message0", rref.getMessageID());
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -435,11 +436,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -1357,10 +1358,10 @@ public abstract class StateTestBase extends MessagingTestCase
       state.addReference(ref);
 
 
-      MessageReference rref = state.removeFirst();
+      MessageReference rref = state.removeFirstInMemory();
       assertEquals("message0", rref.getMessageID());
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -1392,11 +1393,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -1427,10 +1428,10 @@ public abstract class StateTestBase extends MessagingTestCase
       state.addReference(ref);
 
 
-      MessageReference rref = state.removeFirst();
+      MessageReference rref = state.removeFirstInMemory();
       assertEquals("message0", rref.getMessageID());
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -1462,11 +1463,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -1494,11 +1495,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -2700,10 +2701,10 @@ public abstract class StateTestBase extends MessagingTestCase
       state.addReference(ref);
 
 
-      MessageReference rref = state.removeFirst();
+      MessageReference rref = state.removeFirstInMemory();
       assertEquals("message0", rref.getMessageID());
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -2729,11 +2730,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -2758,10 +2759,10 @@ public abstract class StateTestBase extends MessagingTestCase
       state.addReference(ref);
 
 
-      MessageReference rref = state.removeFirst();
+      MessageReference rref = state.removeFirstInMemory();
       assertEquals("message0", rref.getMessageID());
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -2787,11 +2788,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -2814,11 +2815,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         MessageReference ref = state.removeFirst();
+         MessageReference ref = state.removeFirstInMemory();
          assertEquals("message" + i, ref.getMessageID());
       }
 
-      assertNull(state.removeFirst());
+      assertNull(state.removeFirstInMemory());
 
       log.info("ok");
    }
@@ -3453,6 +3454,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       log.info("ok");
    }
+   
+   //Now the paging tests
+   
+   //paging tests here
+   
 
    // Package protected ---------------------------------------------
    

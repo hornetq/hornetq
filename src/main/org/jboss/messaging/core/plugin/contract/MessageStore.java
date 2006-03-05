@@ -10,6 +10,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Message;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * An interface to a referencing/dereferencing message store.
@@ -40,15 +41,40 @@ public interface MessageStore extends ServerPlugin
    public boolean acceptReliableMessages();
 
    /**
-    * Creates a MessageReference that reference Message m
-    * if it doesn't already have one
+    * Message m is stored in the store if it is not already known to the store, then
+    * a new MessageReference is returned for the Message
     *
     * @param m The Message for which to create the MessageReference
     * @return The new MessageReference
     */
    MessageReference reference(Message m);
+   
+   /**
+    * Return a new reference for a message already stored in the store and identified by <messageID>
+    * @param messageID
+    * @return The reference or null if the message is not already stored in the store
+    */
+   MessageReference reference(String messageID);
 
-   //This will disappear once lazy loading is done
-   MessageReference reference(String messageID) throws Exception;
-
+   /**
+    * Does the message store already contain the Message
+    * @param messageID - the id of the message
+    * @return true if the store already contains the message
+    * @throws Exception
+    */
+   boolean containsMessage(String messageID);
+   
+   /**
+    * Remove a message from the store
+    * 
+    * @param messageID
+    * @return
+    */
+   public boolean forgetMessage(String messageID);
+   
+   //only used in testing
+   public int size();
+   
+   public List messageIds();
+   
 }

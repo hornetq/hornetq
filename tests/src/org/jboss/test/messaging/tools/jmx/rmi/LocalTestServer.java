@@ -38,6 +38,7 @@ import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
@@ -406,6 +407,12 @@ public class LocalTestServer implements Server
    {
       ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
       return serverPeer.getDestinationManager();
+   }
+   
+   public PersistenceManager getPersistenceManager() throws Exception
+   {
+      ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
+      return serverPeer.getPersistenceManagerDelegate();
    }
 
    /**

@@ -21,10 +21,8 @@
   */
 package org.jboss.messaging.core.plugin.contract;
 
-import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -47,25 +45,71 @@ public interface PersistenceManager extends ServerPlugin
    /**
     * TODO Do we really need this method?
     */
-   void removeAllMessageData(long channelID) throws Exception;
+   void removeAllChannelData(long channelID) throws Exception;
    
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
-
-   /**
-    * @return a List of StorageIdentifiers for all messages whose delivery hasn't been attempted yet.
-    */
-   List messageRefs(long channelID) throws Exception;
+   
+   void addReferences(long channelID, List references) throws Exception;
+   
+   
    
    long getMaxOrdering(long channelID) throws Exception;
-
-   Message getMessage(Serializable messageID) throws Exception;
    
+   int getNumberOfReferences(long channelID) throws Exception;
+   
+   List getReferenceInfos(long channelID, int number) throws Exception;
+   
+   List getMessages(List messageIds) throws Exception;
+   
+   void removeNonPersistentMessageReferences(long channelID, long orderStart, long orderEnd) throws Exception;
+   
+   void removeMessages(List messageIds) throws Exception;
+    
+
    /*
     * FIXME
     * Only used in testing - remove this
     * Commented out until 1.2
     */
    //int getMessageReferenceCount(Serializable messageID) throws Exception;
+   
+   
+   // Interface value classes
+   //---------------------------------------------------------------
+   
+   class ReferenceInfo
+   {
+      private String messageId;
+      
+      private long ordering;
+      
+      private int deliveryCount;
+      
+      public ReferenceInfo(String msgId, long ordering, int deliveryCount)
+      {
+         this.messageId = msgId;
+         
+         this.ordering = ordering;
+         
+         this.deliveryCount = deliveryCount;
+      }    
+      
+      public String getMessageId()
+      {
+         return messageId;
+      }
+      
+      public long getOrdering()
+      {
+         return ordering;
+      }
+      
+      public int getDeliveryCount()
+      {
+         return deliveryCount;
+      }
+      
+   }
 }

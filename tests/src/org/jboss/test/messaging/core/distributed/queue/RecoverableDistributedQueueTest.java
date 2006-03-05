@@ -70,11 +70,11 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
       tl3 = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       tl3.start();
 
-      ms = new PagingMessageStore("s50", tl);
+      ms = new PagingMessageStore("s50");
 
-      ms2 = new PagingMessageStore("s51", tl);
+      ms2 = new PagingMessageStore("s51");
 
-      ms3 = new PagingMessageStore("s52", tl);
+      ms3 = new PagingMessageStore("s52");
 
       channel = new DistributedQueue("test", ms, tl, dispatcher);
       channel2 = new DistributedQueue("test", ms2, tl2, dispatcher2);
@@ -118,7 +118,7 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue(-1, ms, tl);
+      channel = new Queue(-1, ms, tl, true, 0, 0, 0);
    }
 
 

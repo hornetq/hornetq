@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.plugin;
 
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
  * 
@@ -40,8 +39,6 @@ class MessageHolder
     * The number of channels that hold a reference to the message
     */
    private int channelCount;
-   
-   private boolean persisted;
    
    private Message msg;
    
@@ -73,25 +70,7 @@ class MessageHolder
    {
       return channelCount;
    }
-
-   /**
-    * @return true if the message referenced by this holder has been stored to persistent storage,
-    *         false otherwise.
-    */
-   public synchronized boolean isMessagePersisted()
-   {
-      return persisted;
-   }
-
-   /**
-    * Mark this holder as pointing to a persisted (for a 'true' argument) or non-persisted (for
-    * a 'false' argument) message.
-    */
-   public synchronized void setMessagePersisted(boolean persisted)
-   {
-      this.persisted = persisted;
-   }
-   
+ 
    public Message getMessage()
    {
       return msg;

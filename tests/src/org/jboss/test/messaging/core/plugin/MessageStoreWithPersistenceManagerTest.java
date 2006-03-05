@@ -64,9 +64,9 @@ public class MessageStoreWithPersistenceManagerTest extends MessageStoreTestBase
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
       
-      ms = new PagingMessageStore("s9", pm);
+      ms = new PagingMessageStore("s9");
 
-      ms2 = new PagingMessageStore("s10", pm);
+      ms2 = new PagingMessageStore("s10");
 
       log.debug("setup done");
    }

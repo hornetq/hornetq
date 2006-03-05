@@ -58,7 +58,7 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
    }
   
    
-   protected Message createMessage(byte i) throws Exception
+   protected Message createMessage(byte i, boolean reliable) throws Exception
    {
       HashMap coreHeaders = generateFilledMap(true);         
       
@@ -66,7 +66,7 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
                
       JBossStreamMessage m = 
          new JBossStreamMessage(new GUID().toString(),
-               true,
+               reliable,
                System.currentTimeMillis() + 1000 * 60 * 60,
                System.currentTimeMillis(),
                i,

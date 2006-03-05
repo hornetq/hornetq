@@ -141,16 +141,6 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       return holder.getChannelCount();
    }
    
-   public void setMessagePersisted(boolean b)
-   {
-      holder.setMessagePersisted(b);
-   }
-   
-   public boolean isMessagePersisted()
-   {
-      return holder.isMessagePersisted();
-   }
-   
    public MessageReference copy()
    {
       return new SimpleMessageReference(this);

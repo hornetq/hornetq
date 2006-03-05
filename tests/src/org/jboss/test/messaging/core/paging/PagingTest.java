@@ -61,7 +61,8 @@ public class PagingTest extends MessagingTestCase
 
    public void testPaging() throws Exception
    {
-      Pipe p = new Pipe(0, ms, pm);
+
+      Pipe p = new Pipe(0, ms, pm, true, true, 100, 20, 10);
       CoreMessage m = null;
 
       m = MessageFactory.createCoreMessage("message0");
@@ -84,7 +85,7 @@ public class PagingTest extends MessagingTestCase
 
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
-      ms = new PagingMessageStore("store0", pm);
+      ms = new PagingMessageStore("store0");
    }
 
    public void tearDown() throws Exception

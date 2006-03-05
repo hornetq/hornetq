@@ -40,6 +40,8 @@ public interface PrioritizedDeque
    
    Object removeFirst();
    
+   Object removeLast();
+   
    Object peekFirst();
    
    List getAll();

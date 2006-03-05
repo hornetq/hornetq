@@ -22,57 +22,51 @@
 package org.jboss.messaging.core.refqueue;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A basic non synchronized PrioritizedDeque implementation. It implements this by maintaining an
- * individual SingleLinkedDeque for each priority level. This should give significantly better
- * performance than storing all objects in the same list and applying some kind of ordering.<br>
+ * A basic non synchronized PrioritizedDeque implementation.
  * 
- * Adds cannot execute concurrently, but an add can execute concurrently with a remove
- *
+ * It implements this by maintaining an
+ * individual LinkedList for each priority level.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class BasicPrioritizedDeque implements PrioritizedDeque
-{
-//   private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
-      
-   protected SingleLinkedDeque[] deques;
+{     
+   protected LinkedList[] linkedLists;
    
    protected int priorities;
    
-   protected Object addLock;
+   protected int size;
    
    public BasicPrioritizedDeque(int priorities)
    {
       this.priorities = priorities;
-      this.addLock = new Object();
+       
       initDeques();
    }
    
    public boolean addFirst(Object obj, int priority)
-   {
-      synchronized (addLock)
-      {      
-         deques[priority].addFirst(obj); 
-         
-         //Now check if there is exactly one Object
-         return containsOne();         
-      }
+   {   
+      linkedLists[priority].addFirst(obj);
+      
+      size++;
+      
+      return size == 1;          
    }
    
    public boolean addLast(Object obj, int priority)
    {
-      synchronized (addLock)
-      {
-         deques[priority].addLast(obj);
-         
-         //Now check if there is exactly one Object
-         return containsOne();
-      }
+      linkedLists[priority].addLast(obj);
+      
+      size++;
+      
+      return size == 1;
    }
 
    public Object removeFirst()
@@ -87,13 +81,67 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       
       for (int i = priorities - 1; i >= 0; i--)
       {
-         obj = deques[i].removeFirst();
+         LinkedList ll = linkedLists[i];
+         
+         //TODO improve this further
+         int listSize = ll.size();
+         if (listSize == 1 || listSize == 2)
+         {
+            if (!ll.isEmpty())
+            {
+               obj = linkedLists[i].removeFirst();
+            }           
+         }
+         else
+         {
+            //No need to synchronize
+            if (!ll.isEmpty())
+            {
+               obj = linkedLists[i].removeFirst();
+            }
+         }
+                  
          if (obj != null)
          {
             break;
          }
       }
       
+      if (obj != null)
+      {
+         size--;
+      }
+      
+      return obj;      
+   }
+   
+   public Object removeLast()
+   {
+      Object obj = null;
+      
+      //Initially we are just using a simple prioritization algorithm:
+      //Lowest priority refs always get returned first.
+      
+      //TODO - A better prioritization algorithm
+            
+      for (int i = 0; i < priorities; i++)
+      {
+         LinkedList ll = linkedLists[i];
+         if (!ll.isEmpty())
+         {
+            obj = ll.removeLast();
+         }
+         if (obj != null)
+         {
+            break;
+         }
+      }
+      
+      if (obj != null)
+      {
+         size--;
+      }
+           
       return obj;      
    }
    
@@ -109,7 +157,11 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       
       for (int i = priorities - 1; i >= 0; i--)
       {
-         obj = deques[i].peekFirst();
+         LinkedList ll = linkedLists[i];
+         if (!ll.isEmpty())
+         {
+            obj = ll.getFirst();
+         }
          if (obj != null)
          {
             break;
@@ -124,8 +176,8 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       List all = new ArrayList();
       for (int i = priorities - 1; i >= 0; i--)
       {
-         SingleLinkedDeque deque = deques[i];
-         all.addAll(deque.getAll());
+         LinkedList deque = linkedLists[i];
+         all.addAll(deque);
       }
       return all;
    }
@@ -137,34 +189,18 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
    
    public int size()
    {
-      int amount = 0;
-      for (int i = 0; i < priorities; i++)
-      {
-         amount += deques[i].size();
-      }
-      return amount;
+      return size;
    }
    
    protected void initDeques()
    {      
-      deques = new SingleLinkedDeque[priorities];
+      linkedLists = new LinkedList[priorities];
       for (int i = 0; i < priorities; i++)
       {
-         deques[i] = new SingleLinkedDeque();
+         linkedLists[i] = new LinkedList();
       }
+      
+      size = 0;
    }
    
-   protected boolean containsOne()
-   {
-      int count = 0;
-      for (int i = 0; i < priorities; i++)
-      {
-         count += deques[i].size();            
-         if (count > 1)
-         {
-            break;        
-         }
-      }
-      return count == 1;
-   }       
 }

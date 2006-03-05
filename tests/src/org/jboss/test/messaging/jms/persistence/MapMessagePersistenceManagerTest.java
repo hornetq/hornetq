@@ -58,7 +58,7 @@ public class MapMessagePersistenceManagerTest extends MessagePersistenceManagerT
       super.tearDown();
    }
 
-   protected Message createMessage(byte i) throws Exception
+   protected Message createMessage(byte i, boolean reliable) throws Exception
    {
       HashMap coreHeaders = generateFilledMap(true);         
       
@@ -66,7 +66,7 @@ public class MapMessagePersistenceManagerTest extends MessagePersistenceManagerT
                
       JBossMapMessage m = 
          new JBossMapMessage(new GUID().toString(),
-               true,
+               reliable,
                System.currentTimeMillis() + 1000 * 60 * 60,
                System.currentTimeMillis(),
                i,

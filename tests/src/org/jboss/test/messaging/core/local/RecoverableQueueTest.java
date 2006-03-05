@@ -22,12 +22,12 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -40,8 +40,7 @@ public class RecoverableQueueTest extends QueueTestBase
    
    // Attributes ----------------------------------------------------
 
-   private JDBCPersistenceManager tl;
-
+  
    // Constructors --------------------------------------------------
 
    public RecoverableQueueTest(String name)
@@ -54,15 +53,13 @@ public class RecoverableQueueTest extends QueueTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      tl = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      tl.start();
-
-      ms = new PagingMessageStore("s14", tl);
-
-      channel = new Queue(1, ms, tl);
       
-      tr.start(tl);
+      ms = new PagingMessageStore("s14");
+
+      channel = new Queue(1, ms, pm, true, 100, 20, 10);
+
+      
+      tr.start(pm);
    }
 
    public void tearDown() throws Exception
@@ -70,7 +67,7 @@ public class RecoverableQueueTest extends QueueTestBase
       channel.close();
       channel = null;
 
-      tl.stop();
+      pm.stop();
       ms = null;
 
       super.tearDown();
@@ -85,7 +82,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue(1, ms, tl);
+      channel = new Queue(1, ms, pm, true, 100, 20, 10);
    }
 
    // Public --------------------------------------------------------

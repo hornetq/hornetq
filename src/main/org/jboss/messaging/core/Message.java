@@ -42,5 +42,9 @@ public interface Message extends Routable
    Serializable getPayload();
    
    byte[] getPayloadAsByteArray();
+   
+   boolean isInStorage();
+   
+   void setInStorage(boolean inStorage);
 
 }

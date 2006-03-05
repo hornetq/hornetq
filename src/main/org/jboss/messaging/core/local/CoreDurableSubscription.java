@@ -48,11 +48,11 @@ public class CoreDurableSubscription extends CoreSubscription
 
    // Constructors --------------------------------------------------
 
-   public CoreDurableSubscription(long id, String clientID, String name, Topic topic,
-                                  String selector, boolean noLocal, MessageStore ms,
-                                  PersistenceManager pm)
+   public CoreDurableSubscription(long id, String clientID, String name, Topic topic, String selector,
+                                  boolean noLocal, MessageStore ms, PersistenceManager pm,
+                                  int fullSize, int pageSize, int downCacheSize)
    {
-      super(id, topic, selector, noLocal, ms, pm);
+      super(id, topic, selector, noLocal, ms, pm, true, fullSize, pageSize, downCacheSize);
       this.name = name;
       this.clientID = clientID;
    }
@@ -76,14 +76,14 @@ public class CoreDurableSubscription extends CoreSubscription
       return clientID;
    }
 
-   public void load() throws Exception
-   {
-      this.state.load();
-   }
-
    public String toString()
    {
       return "CoreDurableSubscription[" + getChannelID() + ", " + topic + "]";
+   }
+   
+   public void load() throws Exception
+   {
+      state.load();
    }
 
    // Package protected ---------------------------------------------

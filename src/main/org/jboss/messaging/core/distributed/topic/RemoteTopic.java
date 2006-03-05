@@ -60,7 +60,7 @@ class RemoteTopic extends ChannelSupport
                          PersistenceManager tl,
                          Replicator replicator)
    {
-      super(-1, ms, tl, true);
+      super(-1, ms, tl, false, true, 0, 0, 0);
       this.router = replicator;
    }
 

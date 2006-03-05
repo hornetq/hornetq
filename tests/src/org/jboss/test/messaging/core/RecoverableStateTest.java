@@ -6,12 +6,14 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.RecoverableState;
+
+import org.jboss.messaging.core.ChannelState;
 import org.jboss.messaging.core.plugin.PagingMessageStore;
 import org.jboss.test.messaging.core.base.StateTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class RecoverableStateTest extends StateTestBase
@@ -31,12 +33,12 @@ public class RecoverableStateTest extends StateTestBase
    {
       super.setUp();
 
-      ms = new PagingMessageStore("s60", persistenceManagerDelegate);
+      ms = new PagingMessageStore("s60");
 
       channel = new SimpleChannel(1, ms);
-
+      
       // the state accepts reliable messages
-      state = new RecoverableState(channel, persistenceManagerDelegate);
+      state = new ChannelState(channel, persistenceManagerDelegate, true, true, 100, 20, 10);
 
       log.debug("setup done");
    }

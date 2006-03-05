@@ -47,9 +47,6 @@ public class MessageFactory
 
    // Static --------------------------------------------------------
 
-   /**
-    * Only use this method to generate instances that will be then used by externalization!
-    */
    public static Message createMessage(byte type)
    {
       Message m = null;
@@ -82,73 +79,6 @@ public class MessageFactory
       return m;
    }
    
-   public static Message createMessage(Serializable messageID,
-                                       boolean reliable, 
-                                       long expiration, 
-                                       long timestamp,
-                                       byte priority,
-                                       Map coreHeaders,
-                                       byte[] payloadAsByteArray,
-                                       byte type,
-                                       String jmsType,                                       
-                                       String correlationID,
-                                       byte[] correlationIDBytes,
-                                       JBossDestination destination,
-                                       JBossDestination replyTo,                                                                              
-                                       HashMap jmsProperties)
-   {
-
-      Message m = null;
-
-      if (type == JBossMessage.TYPE)
-      {
-         m = new JBossMessage((String)messageID, reliable, expiration, timestamp, priority,
-                              coreHeaders, payloadAsByteArray, jmsType, correlationID,
-                              correlationIDBytes, destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossObjectMessage.TYPE)
-      {
-         m = new JBossObjectMessage((String)messageID, reliable, expiration, timestamp, priority,
-                                    coreHeaders, payloadAsByteArray, jmsType, correlationID,
-                                    correlationIDBytes, destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossTextMessage.TYPE)
-      {
-         m = new JBossTextMessage((String)messageID, reliable, expiration, timestamp, priority,
-                                  coreHeaders, payloadAsByteArray, jmsType, correlationID,
-                                  correlationIDBytes, destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossBytesMessage.TYPE)
-      {
-         m = new JBossBytesMessage((String)messageID, reliable, expiration, timestamp, priority,
-                                   coreHeaders, payloadAsByteArray, jmsType, correlationID,
-                                   correlationIDBytes, destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossMapMessage.TYPE)
-      {
-         m = new JBossMapMessage((String)messageID, reliable, expiration, timestamp, priority,
-                                 coreHeaders, payloadAsByteArray, jmsType, correlationID,
-                                 correlationIDBytes, destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossStreamMessage.TYPE)
-      {
-         m = new JBossStreamMessage((String)messageID, reliable, expiration, timestamp, priority,
-                                    coreHeaders, payloadAsByteArray, jmsType, correlationID,
-                                    correlationIDBytes, destination, replyTo, jmsProperties);
-      }
-      else if (type == CoreMessage.TYPE)
-      {
-         m = new CoreMessage(messageID, reliable, expiration, timestamp,
-                             priority, coreHeaders, payloadAsByteArray);
-      }
-      else
-      {
-         throw new IllegalArgumentException("Unknown message type: " + type);
-      }
-
-      return m;
-   }
-
    public static CoreMessage createCoreMessage(Serializable messageID)
    {
       return createCoreMessage(messageID, false, 0, 0, (byte)4, null, null);
@@ -174,7 +104,71 @@ public class MessageFactory
       cm.setPayload(payload);
       return cm;
    }
+   
+   public static Message createJBossMessage(Serializable messageID,
+                                          boolean reliable, 
+                                          long expiration, 
+                                          long timestamp,
+                                          byte priority,
+                                          Map coreHeaders,
+                                          byte[] payloadAsByteArray,
+                                          byte type,
+                                          String jmsType,                                       
+                                          String correlationID,
+                                          byte[] correlationIDBytes,
+                                          JBossDestination destination,
+                                          JBossDestination replyTo,                                                                              
+                                          HashMap jmsProperties)
 
+   {
+
+      Message m = null;
+      
+      if (type == JBossMessage.TYPE)
+      {
+         m = new JBossMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                              payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                              destination, replyTo, jmsProperties);
+      }
+      else if (type == JBossObjectMessage.TYPE)
+      {
+         m = new JBossObjectMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
+      }
+      else if (type == JBossTextMessage.TYPE)
+      {
+         m = new JBossTextMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
+      }
+      else if (type == JBossBytesMessage.TYPE)
+      {
+         m = new JBossBytesMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
+      }
+      else if (type == JBossMapMessage.TYPE)
+      {
+         m = new JBossMapMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
+      }
+      else if (type == JBossStreamMessage.TYPE)
+      {
+         m = new JBossStreamMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+               destination, replyTo, jmsProperties);
+      }
+      else
+      {
+          throw new IllegalArgumentException("Unknow type " + type);                       
+      }
+
+      return m;
+
+   }
+      
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------

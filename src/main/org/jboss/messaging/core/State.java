@@ -128,14 +128,14 @@ public interface State
     *
     * @return The MessageReference
     */
-   MessageReference removeFirst();
+   MessageReference removeFirstInMemory() throws Throwable;
    
    /**
     * Peek the MessageReference at the head of the state without actually removing it
     * 
     * @return The MessageReference
     */
-   MessageReference peekFirst();
+   MessageReference peekFirst() throws Throwable;
    
    /**
     * A list of message references of messages in process of being delivered.
@@ -166,12 +166,11 @@ public interface State
     */
    void clear();
    
-   void load() throws Exception;
-   
    /**
     * Message amount. 
     * @return message amount.
     */
-   int messageCount();
+   int messageCount();   
    
+   void load() throws Exception;
 }

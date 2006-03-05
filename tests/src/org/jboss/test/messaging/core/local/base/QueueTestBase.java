@@ -27,6 +27,7 @@ import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 
 import java.util.List;
 
@@ -44,6 +45,8 @@ public abstract class QueueTestBase extends ChannelTestBase
    
    // Attributes ----------------------------------------------------
    
+   protected JDBCPersistenceManager pm;
+
    // Constructors --------------------------------------------------
    
    public QueueTestBase(String name)
@@ -56,6 +59,9 @@ public abstract class QueueTestBase extends ChannelTestBase
    public void setUp() throws Exception
    {
       super.setUp();
+      
+      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      pm.start();
    }
 
    public void tearDown() throws Exception

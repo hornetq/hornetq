@@ -31,6 +31,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -56,8 +57,8 @@ public class ReferencingTest extends MessagingTestCase
    protected InitialContext initialContext;
    
    protected JBossConnectionFactory cf;
+   
    protected Destination queue;
-
 
    // Constructors --------------------------------------------------
 
@@ -422,7 +423,8 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(m.getJMSMessageID());
       assertNotNull(ref);
       
-      assertTrue(ref.isMessagePersisted());
+      assertTrue(((MessageDelegate)m).getMessage().isInStorage());
+
       assertEquals(1, ref.getChannelCount());
       
       
@@ -431,8 +433,8 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      
-      assertFalse(ref.isMessagePersisted());
+      assertFalse(((MessageDelegate)m).getMessage().isInStorage());
+
       assertEquals(0, ref.getChannelCount());
       
    }
@@ -460,7 +462,8 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(m.getJMSMessageID());
       assertNotNull(ref);
       
-      assertFalse(ref.isMessagePersisted());
+      assertFalse(((MessageDelegate)m).getMessage().isInStorage());
+
       assertEquals(1, ref.getChannelCount());
       
       
@@ -469,7 +472,8 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      assertFalse(ref.isMessagePersisted());
+      assertFalse(((MessageDelegate)m).getMessage().isInStorage());
+
       assertEquals(0, ref.getChannelCount());
       
    }

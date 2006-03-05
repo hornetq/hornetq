@@ -55,6 +55,8 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    
    // Must be hidden from subclasses
    private byte[] payloadAsByteArray;
+   
+   private transient boolean inStorage;
 
    // Constructors --------------------------------------------------
 
@@ -224,6 +226,17 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    {
       this.payloadAsByteArray = null;
    }
+   
+   public boolean isInStorage()
+   {
+      return inStorage;
+   }
+   
+   public void setInStorage(boolean inStorage)
+   {
+      this.inStorage = inStorage;
+   }
+
 
    // Public --------------------------------------------------------
 

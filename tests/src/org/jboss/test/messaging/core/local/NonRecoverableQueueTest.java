@@ -28,6 +28,7 @@ import org.jboss.messaging.core.local.Queue;
  * Tests a non-recoverable queue that doesn't accept reliable messages.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
@@ -53,7 +54,7 @@ public class NonRecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      channel = new Queue(1, ms);
+      channel = new Queue(1, ms, pm, false, 100, 20, 10);
    }
 
    public void tearDown() throws Exception

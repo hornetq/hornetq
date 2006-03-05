@@ -199,7 +199,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             // non-durable subscription
             if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
-            subscription = cm.createSubscription(d.getName(), selector, noLocal, ms);
+            subscription = cm.createSubscription(d.getName(), selector, noLocal, ms, pm);
          }
          else
          {
@@ -542,7 +542,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       try
       {
-         pm.removeAllMessageData(subscription.getChannelID());
+         pm.removeAllChannelData(subscription.getChannelID());
       }
       catch (Exception e)
       {

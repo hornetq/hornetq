@@ -35,6 +35,7 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
@@ -317,6 +318,13 @@ public class ServerManagement
       return server.getDestinationManager();
    }
 
+   public static PersistenceManager getPersistenceManager()
+      throws Exception
+   {
+      insureStarted();
+      return server.getPersistenceManager();
+   }
+   
    public static ChannelMapper getChannelMapper()
       throws Exception
    {

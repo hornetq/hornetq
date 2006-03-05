@@ -33,6 +33,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.transport.Connector;
 
 /**
@@ -181,6 +182,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public MessageStore getMessageStore() throws Exception
    {
       return server.getMessageStore();
+   }
+   
+   public PersistenceManager getPersistenceManager() throws Exception
+   {
+      return null;
    }
 
    public ObjectName getServerPeerObjectName() throws Exception

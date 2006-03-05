@@ -54,8 +54,8 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
    protected long channelID;
    protected Router router;
    protected State state;
-   protected PersistenceManager pm;
    protected MessageStore ms;
+   protected PersistenceManager pm;
    
    private boolean trace = log.isTraceEnabled();
 
@@ -65,31 +65,33 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
     * @param acceptReliableMessages - it only makes sense if tl is null. Otherwise ignored (a
     *        recoverable channel always accepts reliable messages)
     */
+   
    protected ChannelSupport(long channelID,
                             MessageStore ms,
                             PersistenceManager pm,
-                            boolean acceptReliableMessages)
+                            boolean acceptReliableMessages,
+                            boolean recoverable,
+                            int fullSize, int pageSize, int downCacheSize)
    {
       if (trace) { log.trace("creating " + (pm != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
 
-      this.channelID = channelID;
-      this.ms = ms;
-      this.pm = pm;
-      if (pm == null)
-      {
-         state = new NonRecoverableState(this, acceptReliableMessages);
-      }
-      else
-      {
-         state = new RecoverableState(this, pm);
-         // acceptReliableMessage ignored, the channel alwyas accepts reliable messages
-      }
       if (ms == null)
       {
          throw new IllegalArgumentException("MessageStore is null");
       }
-   }
-
+      if (pm == null)
+      {
+         throw new IllegalArgumentException("PersistenceManager is null");
+      }
+      
+      this.state = new ChannelState(this, pm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize); 
+      
+      this.ms = ms;
+      this.pm = pm;
+      
+      this.channelID = channelID;
+   }     
+   
 
    // Receiver implementation ---------------------------------------
 
@@ -126,8 +128,6 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
             // This returns true if the ref was added to an empty reference queue
             boolean first = state.addReference(ref);
             
-            ref.incrementChannelCount();
-                        
             // Previously we would call push() at this point to push the reference to the consumer.
             // One of the problems this had was it would end up leap-frogging messages that were
             // already in the queue. So now we add the message to the back of the queue and call
@@ -135,9 +135,6 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
             // added the reference.
             // If the queue wasn't empty there would be no active waiting receiver, so there would
             // be no need to call deliver().
-            // Once I have improved the locking on the reference queue, this should result in very
-            // little (if any) lock contention between the thread depositing the message on the
-            // queue and the thread activating the consumer and prompting delivery.
             
             if (first)
             {
@@ -167,18 +164,22 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
 
    public void acknowledge(Delivery d, Transaction tx)
    {
-      if (tx == null)
-      {
-         // acknowledge non transactionally
-         acknowledgeNoTx(d);
-         return;
-      }
-
       if (trace){ log.trace("acknowledge " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
-
+            
       try
-      {
-         state.acknowledge(d, tx);         
+      {      
+         if (tx == null)
+         {
+            // acknowledge non transactionally
+            
+            state.acknowledge(d);
+               
+            if (trace) { log.trace(this + " delivery " + d + " completed and forgotten"); }                    
+         }
+         else
+         {
+            state.acknowledge(d, tx);         
+         }         
       }
       catch (Throwable t)
       {
@@ -313,7 +314,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
    }
 
    // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -406,7 +407,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
                return false;
             }
                         
-            state.removeFirst();
+            state.removeFirstInMemory();
             
             // delivered
             if (!del.isDone())
@@ -476,30 +477,6 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       return d;
    }
    
-
-   private void acknowledgeNoTx(Delivery d)
-   {
-      checkClosed();
-
-      if (trace){ log.trace(this + " acknowledging non transactionally " + d); }
-
-      try
-      {
-         //We remove the delivery from the state
-         state.acknowledge(d);
-         
-         d.getReference().decrementChannelCount();
-         
-         if (trace) { log.trace(this + " delivery " + d + " completed and forgotten"); }
-         
-      }
-      catch(Throwable t)
-      {
-         // a non transactional remove shouldn't throw any transaction
-         log.error(this + " failed to remove delivery", t);
-      }
-   }
-
    // Inner classes -------------------------------------------------
 
 }

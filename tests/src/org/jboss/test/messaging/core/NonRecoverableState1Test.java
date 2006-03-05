@@ -6,15 +6,17 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.test.messaging.core.base.StateTestBase;
+import org.jboss.messaging.core.ChannelState;
 import org.jboss.messaging.core.plugin.PagingMessageStore;
-import org.jboss.messaging.core.NonRecoverableState;
+import org.jboss.test.messaging.core.base.StateTestBase;
+
 
 
 /**
  * Tests a non-recoverable state that DOES NOT accept reliable messages.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public class NonRecoverableState1Test extends StateTestBase
@@ -36,9 +38,9 @@ public class NonRecoverableState1Test extends StateTestBase
 
       ms = new PagingMessageStore("ms0");
       channel = new SimpleChannel(1, ms);
-
+   
       // the state DOES not accept reliable messages
-      state = new NonRecoverableState(channel, false);
+      state = new ChannelState(channel, persistenceManagerDelegate, false, false, 100, 20, 10);
    }
 
    public void tearDown()throws Exception

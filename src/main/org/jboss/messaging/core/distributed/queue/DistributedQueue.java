@@ -84,7 +84,7 @@ public class DistributedQueue extends Queue implements Distributed
    public DistributedQueue(String name, MessageStore ms, PersistenceManager tl,
                            RpcDispatcher dispatcher)
    {
-      super(-1, ms, tl);
+      super(-1, ms, tl, true, 0, 0, 0);
       viewKeeper = new QueueViewKeeper();
       peer = new QueuePeer(this, dispatcher);
    }
