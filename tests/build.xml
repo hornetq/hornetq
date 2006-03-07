@@ -249,7 +249,7 @@
    </target>
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-     <!--  <antcall target="crash-tests"/> -->
+      <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <antcall target="remote-tests"/>
    </target>

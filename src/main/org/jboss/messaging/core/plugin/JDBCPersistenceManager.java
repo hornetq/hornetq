@@ -84,59 +84,81 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
 {
    // Constants -----------------------------------------------------
 
-   /* The default DML and DDL works with HSQLDB */
-
    private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class);
 
+   
+   /* The default DML and DDL works with HSQLDB */
+
+   //JMS_MESSAGE_REFERENCE
+   
+   protected String createMessageReference = "CREATE TABLE JMS_MESSAGE_REFERENCE (" + "CHANNELID BIGINT, "
+         + "MESSAGEID BIGINT, " + "TRANSACTIONID BIGINT, " + "STATE CHAR(1), " + "ORD BIGINT, "
+         + "DELIVERYCOUNT INTEGER, " + "PERSISTENT CHAR(1), " + "PRIMARY KEY(CHANNELID, MESSAGEID))";
+   
+   protected String createIdxMessageRefTx = "CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID)";
+
+   protected String createIdxMessageRefOrd = "CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)";
+   
+   protected String createIdxMessageRefMessageId = "CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON JMS_MESSAGE_REFERENCE (MESSAGEID)";
+     
    protected String insertMessageRef = "INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, PERSISTENT) "
          + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-   protected String deleteMessageRef = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
+   protected String deleteMessageRef = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'";
 
    protected String updateMessageRef = "UPDATE JMS_MESSAGE_REFERENCE SET TRANSACTIONID=?, STATE='-' "
-         + "WHERE CHANNELID=? AND MESSAGEID=? AND STATE='C'";
+         + "WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'";
 
-   protected String commitMessageRef1 = "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='+' AND TRANSACTIONID=?";
+   protected String commitMessageRef1 = "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE TRANSACTIONID=? AND STATE='+' ";
 
-   protected String commitMessageRef2 = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE STATE='-' AND TRANSACTIONID=?";
+   protected String commitMessageRef2 = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='-'";
 
    protected String rollbackMessageRef1 = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'";
 
-   protected String rollbackMessageRef2 = "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE STATE='-' AND TRANSACTIONID=?";
-
-   protected String deleteChannelMessageRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=?";
+   protected String rollbackMessageRef2 = "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE TRANSACTIONID=? AND STATE='-'";
 
    protected String loadReferenceInfo = "SELECT MESSAGEID, ORD, DELIVERYCOUNT FROM JMS_MESSAGE_REFERENCE "
          + "WHERE CHANNELID=? AND STATE <> '+' " + "ORDER BY ORD";
-
-   protected String loadMessages = "SELECT " + "MESSAGEID, " + "RELIABLE, " + "EXPIRATION, " + "TIMESTAMP, "
-         + "PRIORITY, " + "COREHEADERS, " + "PAYLOAD, " + "TYPE, " + "JMSTYPE, " + "CORRELATIONID, "
-         + "CORRELATIONID_BYTES, " + "DESTINATION_ID, " + "REPLYTO_ID, " + "JMSPROPERTIES " + "FROM JMS_MESSAGE ";
-
-   protected String messageIdColumn = "MESSAGEID";
-
-   protected String removeMessages = "DELETE FROM JMS_MESSAGE";
 
    protected String selectCountReferences = "SELECT COUNT(MESSAGEID) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=?";
 
    protected String selectMaxOrdering = "SELECT MAX(ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=?";
 
-   protected String removeNonPersistentMessages = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE PERSISTENT='N' AND CHANNELID=? AND ORD BETWEEN ? AND ?";
+   protected String removeNonPersistentMessages = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE ORD BETWEEN ? AND ? AND CHANNELID=? AND PERSISTENT='N'";
+     
+   protected String deleteChannelMessageRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=?";
 
-   protected String createTransaction = "CREATE TABLE JMS_TRANSACTION ("
-         + "TRANSACTIONID BIGINT, " + "BRANCH_QUAL VARBINARY(254), "
-         + "FORMAT_ID INTEGER, " + "GLOBAL_TXID VARBINARY(254), " + "PRIMARY KEY (TRANSACTIONID))";
-
+   
+   //JMS_MESSAGE
+   
    protected String createMessage = "CREATE TABLE JMS_MESSAGE (" + "MESSAGEID BIGINT, " + "RELIABLE CHAR(1), "
          + "EXPIRATION BIGINT, " + "TIMESTAMP BIGINT, " + "PRIORITY TINYINT, " + "COREHEADERS LONGVARBINARY, "
          + "PAYLOAD LONGVARBINARY, " + "TYPE TINYINT, " + "JMSTYPE VARCHAR(255), " + "CORRELATIONID VARCHAR(255), "
          + "CORRELATIONID_BYTES VARBINARY, " + "DESTINATION_ID BIGINT, " + "REPLYTO_ID BIGINT, "
          + "JMSPROPERTIES LONGVARBINARY, " + "REFERENCECOUNT TINYINT, " + "PRIMARY KEY (MESSAGEID))";
+        
+   protected String loadMessages = "SELECT " + "MESSAGEID, " + "RELIABLE, " + "EXPIRATION, " + "TIMESTAMP, "
+         + "PRIORITY, " + "COREHEADERS, " + "PAYLOAD, " + "TYPE, " + "JMSTYPE, " + "CORRELATIONID, "
+         + "CORRELATIONID_BYTES, " + "DESTINATION_ID, " + "REPLYTO_ID, " + "JMSPROPERTIES " + "FROM JMS_MESSAGE ";
+   
+   protected String insertMessage = "INSERT INTO JMS_MESSAGE (" + "MESSAGEID, " + "RELIABLE, " + "EXPIRATION, "
+         + "TIMESTAMP, " + "PRIORITY, " + "COREHEADERS, " + "PAYLOAD, " + "TYPE, " + "JMSTYPE, " + "CORRELATIONID, "
+         + "CORRELATIONID_BYTES, " + "DESTINATION_ID, " + "REPLYTO_ID, " + "JMSPROPERTIES, " + "REFERENCECOUNT) "
+         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-   protected String createMessageReference = "CREATE TABLE JMS_MESSAGE_REFERENCE (" + "CHANNELID BIGINT, "
-         + "MESSAGEID BIGINT, " + "TRANSACTIONID BIGINT, " + "STATE CHAR(1), " + "ORD BIGINT, "
-         + "DELIVERYCOUNT INTEGER, " + "PERSISTENT CHAR(1), " + "PRIMARY KEY(CHANNELID, MESSAGEID))";
+   protected String deleteMessage = "DELETE FROM JMS_MESSAGE WHERE MESSAGEID=?";
 
+   protected String messageIdColumn = "MESSAGEID";
+
+   protected String removeMessages = "DELETE FROM JMS_MESSAGE";
+
+
+   //JMS_TRANSACTION
+   
+   protected String createTransaction = "CREATE TABLE JMS_TRANSACTION ("
+         + "TRANSACTIONID BIGINT, " + "BRANCH_QUAL VARBINARY(254), "
+         + "FORMAT_ID INTEGER, " + "GLOBAL_TXID VARBINARY(254), " + "PRIMARY KEY (TRANSACTIONID))";
+   
    protected String insertTransaction = "INSERT INTO JMS_TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) "
          + "VALUES(?, ?, ?, ?)";
 
@@ -144,18 +166,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
 
    protected String selectPreparedTransactions = "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JMS_TRANSACTION";
 
-   protected String createIdxMessageRefTx = "CREATE INDEX MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID)";
 
-   protected String createIdxMessageRefOrd = "CREATE INDEX MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)";
-
-   protected String insertMessage = "INSERT INTO JMS_MESSAGE (" + "MESSAGEID, " + "RELIABLE, " + "EXPIRATION, "
-         + "TIMESTAMP, " + "PRIORITY, " + "COREHEADERS, " + "PAYLOAD, " + "TYPE, " + "JMSTYPE, " + "CORRELATIONID, "
-         + "CORRELATIONID_BYTES, " + "DESTINATION_ID, " + "REPLYTO_ID, " + "JMSPROPERTIES, " + "REFERENCECOUNT) "
-         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-   protected String deleteMessage = "DELETE FROM JMS_MESSAGE WHERE MESSAGEID=?";
+   //JMS_COUNTER
    
-   protected String createCounter = "CREATE TABLE JMS_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT)";
+   protected String createCounter = "CREATE TABLE JMS_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME))";
    
    protected String updateCounter = "UPDATE JMS_COUNTER SET NEXT_ID = ? WHERE NAME=?";
    
@@ -279,9 +293,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    {
       return this;
    }
-   
-   
-   
+         
    public long reserveIDBlock(String counterName, int size) throws Exception
    {
       //TODO This will need locking (e.g. SELECT ... FOR UPDATE...) in the clustered case
@@ -418,12 +430,12 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
 
          ps = conn.prepareStatement(removeNonPersistentMessages);
 
-         ps.setLong(1, channelID);
+         ps.setLong(1, orderStart);
 
-         ps.setLong(2, orderStart);
-
-         ps.setLong(3, orderEnd);
-
+         ps.setLong(2, orderEnd);
+         
+         ps.setLong(3, channelID);
+         
          int rows = ps.executeUpdate();
 
          if (trace)
@@ -1728,6 +1740,19 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          {
             log.debug(createIdxMessageRefOrd + " failed!", e);
          }
+         
+         try
+         {
+            conn.createStatement().executeUpdate(createIdxMessageRefMessageId);
+            if (trace)
+            {
+               log.trace(createIdxMessageRefMessageId + " succeeded");
+            }
+         }
+         catch (SQLException e)
+         {
+            log.debug(createIdxMessageRefOrd + " failed!", e);
+         }
 
          try
          {
@@ -1789,6 +1814,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       selectPreparedTransactions = sqlProperties.getProperty("SELECT_PREPARED_TRANSACTIONS", selectPreparedTransactions);
       createIdxMessageRefTx = sqlProperties.getProperty("CREATE_IDX_MESSAGE_REF_TX", createIdxMessageRefTx);
       createIdxMessageRefOrd = sqlProperties.getProperty("CREATE_IDX_MESSAGE_REF_ORD", createIdxMessageRefOrd);
+      createIdxMessageRefMessageId = sqlProperties.getProperty("CREATE_IDX_MESSAGE_REF_MESSAGEID", createIdxMessageRefMessageId);      
       commitMessageRef1 = sqlProperties.getProperty("COMMIT_MESSAGE_REF1", commitMessageRef1);
       commitMessageRef2 = sqlProperties.getProperty("COMMIT_MESSAGE_REF2", commitMessageRef2);
       rollbackMessageRef1 = sqlProperties.getProperty("ROLLBACK_MESSAGE_REF1", rollbackMessageRef1);
@@ -1909,8 +1935,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          log.trace("removing " + ref + " from channel " + channelID);
       }
 
-      ps.setLong(1, channelID);
-      ps.setLong(2, ref.getMessageID());
+      ps.setLong(1, ref.getMessageID());
+      ps.setLong(2, channelID);      
    }
 
    protected void prepareToAddReference(long channelID, MessageReference ref, Transaction tx, PreparedStatement ps)
@@ -1937,10 +1963,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          log.trace("removing " + ref + " from channel " + channelID
                + (tx == null ? " non-transactionally" : " on transaction: " + tx));
       }
-
-      ps.setLong(1, tx.getId());
-      ps.setLong(2, channelID);
-      ps.setLong(3, ref.getMessageID());
+      
+      ps.setLong(1, tx.getId()); 
+      ps.setLong(2, ref.getMessageID());
+      ps.setLong(3, channelID);           
    }
 
    protected void commitPreparedTransaction(Transaction tx, Connection conn) throws Exception
