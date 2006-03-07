@@ -573,11 +573,11 @@ public class ChannelState implements State
       {         
          PersistenceManager.ReferenceInfo info = (PersistenceManager.ReferenceInfo)iter.next();
          
-         String msgId = info.getMessageId();
+         long msgId = info.getMessageId();
           
          if (!ms.containsMessage(msgId))
          {
-            msgIds.add(msgId);
+            msgIds.add(new Long(msgId));
          }
       }
          
@@ -601,7 +601,7 @@ public class ChannelState implements State
          {
             Message m = (Message)iter.next();
             
-            msgMap.put(m.getMessageID(), m);        
+            msgMap.put(new Long(m.getMessageID()), m);        
          }
       }
       
@@ -620,13 +620,13 @@ public class ChannelState implements State
             firstOrdering = info.getOrdering();
          }
          
-         String msgId = info.getMessageId();
+         long msgId = info.getMessageId();
          
          Message m = null;
          
          if (messages != null)
          {
-            m = (Message)msgMap.get(msgId);
+            m = (Message)msgMap.get(new Long(msgId));
          }
          
          MessageReference ref;
@@ -673,7 +673,7 @@ public class ChannelState implements State
                
                if (!m.isReliable())
                {
-                  msgsToRemove.add(m.getMessageID());
+                  msgsToRemove.add(new Long(m.getMessageID()));
                }
             }
             

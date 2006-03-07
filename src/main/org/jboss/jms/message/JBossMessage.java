@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -43,6 +44,8 @@ import javax.jms.TextMessage;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTemporaryQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.messaging.core.message.MessageSupport;
@@ -76,6 +79,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    private static final int QUEUE = 1;
    
    private static final int TOPIC = 2;
+   
+   private static final int TEMP_QUEUE = 3;
+   
+   private static final int TEMP_TOPIC = 4;
 
    // Static --------------------------------------------------------
 
@@ -129,9 +136,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    // Attributes ----------------------------------------------------
 
-   protected Destination destination;
+   protected JBossDestination destination;
    
-   protected Destination replyToDestination;
+   protected JBossDestination replyToDestination;
 
    protected String jmsType;
 
@@ -155,7 +162,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossMessage(String messageID)
+   public JBossMessage(long messageID)
    {
       this(messageID, true, 0, System.currentTimeMillis(), (byte)4,
            null, null, null, null, null, null, null, null);
@@ -164,7 +171,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossMessage(String messageID,
+   public JBossMessage(long messageID,
                        boolean reliable,
                        long expiration,
                        long timestamp,
@@ -223,9 +230,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    /**
     * A copy constructor for non-JBoss Messaging JMS messages.
     */   
-   public JBossMessage(Message foreign) throws JMSException
+   public JBossMessage(Message foreign, long messageID) throws JMSException
    {
-      super(foreign.getJMSMessageID());
+      super(messageID);
 
       setJMSTimestamp(foreign.getJMSTimestamp());
 
@@ -243,8 +250,14 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
             setJMSCorrelationID(corrIDString);
          }
       }
-      setJMSReplyTo(foreign.getJMSReplyTo());
-      setJMSDestination(foreign.getJMSDestination());
+      if (foreign.getJMSReplyTo() instanceof JBossDestination)
+      {
+         setJMSReplyTo(foreign.getJMSReplyTo());
+      }
+      if (foreign.getJMSDestination() instanceof JBossDestination)
+      {
+         setJMSDestination(foreign.getJMSDestination());
+      }
       setJMSDeliveryMode(foreign.getJMSDeliveryMode());
       setJMSRedelivered(foreign.getJMSRedelivered());
       setJMSExpiration(foreign.getJMSExpiration());
@@ -280,15 +293,25 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    }
 
    // javax.jmx.Message implementation ------------------------------
+   
+   protected transient String jmsMessageID;
 
    public String getJMSMessageID() throws JMSException
    {
-      return (String) messageID;
+      if (jmsMessageID == null)
+      {       
+         jmsMessageID = "ID:JBM-" + messageID;
+      }
+      return jmsMessageID;
    }
 
-   public void setJMSMessageID(String messageID) throws JMSException
+   public void setJMSMessageID(String jmsMessageID) throws JMSException
    {
-      this.messageID = messageID;
+      if (jmsMessageID != null && !jmsMessageID.startsWith("ID:"))
+      {
+         throw new JMSException("JMSMessageID must start with ID:");
+      }
+      this.jmsMessageID = jmsMessageID;
    }
 
    public long getJMSTimestamp() throws JMSException
@@ -334,7 +357,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setJMSReplyTo(Destination replyTo) throws JMSException
    {
-      this.replyToDestination = replyTo;
+      if (!(replyTo instanceof JBossDestination))
+      {
+         throw new InvalidDestinationException("Replyto cannot be foreign");
+      }
+      this.replyToDestination = (JBossDestination)replyTo;
    }
 
    public Destination getJMSDestination() throws JMSException
@@ -344,7 +371,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setJMSDestination(Destination destination) throws JMSException
    {
-      this.destination = destination;
+      if (!(destination instanceof JBossDestination))
+      {
+         throw new InvalidDestinationException("Destination cannot be foreign");
+      }
+      this.destination = (JBossDestination)destination;
    }
 
    public int getJMSDeliveryMode() throws JMSException
@@ -772,6 +803,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       //do nothing - handled in thin delegate
    }
+   
+   public void setMessageId(long messageID)
+   {
+      this.messageID = messageID;
+   }
 
    // Externalizable implementation ---------------------------------
    
@@ -916,19 +952,33 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
       else
       {
-         if (jb.isQueue())
+         if (!jb.isTemporary())
          {
-            out.writeByte(QUEUE);
+            if (jb.isQueue())
+            {
+               out.writeByte(QUEUE);
+            }
+            else 
+            {
+               out.writeByte(TOPIC);
+            }
          }
          else
          {
-            out.writeByte(TOPIC);
+            if (jb.isQueue())
+            {
+               out.writeByte(TEMP_QUEUE);
+            }
+            else 
+            {
+               out.writeByte(TEMP_TOPIC);
+            }
          }
          out.writeUTF(jb.getName());
       }
    }
    
-   protected Destination readDestination(ObjectInput in) throws IOException
+   protected JBossDestination readDestination(ObjectInput in) throws IOException
    {
       byte b = in.readByte();
       
@@ -949,6 +999,14 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          else if (b == TOPIC)
          {
             dest = new JBossTopic(name);
+         }
+         else if (b == TEMP_QUEUE)
+         {
+            dest=  new JBossTemporaryQueue(name);
+         }
+         else if (b == TEMP_TOPIC)
+         {
+            dest = new JBossTemporaryTopic(name);
          }
          else
          {

@@ -64,7 +64,7 @@ public class BytesMessagePersistenceManagerTest extends MessagePersistenceManage
       HashMap jmsProperties = generateFilledMap(false);
                
       JBossBytesMessage m = 
-         new JBossBytesMessage(new GUID().toString(),
+         new JBossBytesMessage(i,
          reliable,
          System.currentTimeMillis() + 1000 * 60 * 60,
          System.currentTimeMillis(),

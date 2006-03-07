@@ -31,6 +31,7 @@ import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -127,6 +128,19 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       return serverPeer.getClientAOPConfig();
    }
+   
+   public IdBlock getIdBlock(int size) throws JMSException
+   {
+      try
+      {
+         return serverPeer.getMessageIdManager().getIdBlock(size);
+      }
+      catch (Exception e)
+      {
+         throw new JBossJMSException("Failed to get id block", e);
+      }
+   }
+
 
    // Public --------------------------------------------------------
    

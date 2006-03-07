@@ -144,7 +144,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
       for(Iterator i = dels.iterator(); i.hasNext(); )
       {
          ReplicatorOutputDelivery d = (ReplicatorOutputDelivery)i.next();
-         Object messageID = d.getReference().getMessageID();
+         Object messageID = new Long(d.getReference().getMessageID());
 
          Map perMessageMap = (Map)deliveries.get(messageID);
          if (perMessageMap == null)
@@ -183,7 +183,7 @@ public class AcknowledgmentCollector implements AcknowledgmentCollectorFacade
 
    private ReplicatorOutputDelivery remove(ReplicatorOutputDelivery d)
    {
-      Object messageID = d.getReference().getMessageID();
+      Object messageID = new Long(d.getReference().getMessageID());
       Map perMessageMap = (Map)deliveries.get(messageID);
 
       if (perMessageMap == null)

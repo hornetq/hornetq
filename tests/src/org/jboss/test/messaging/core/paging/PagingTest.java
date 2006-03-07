@@ -65,10 +65,10 @@ public class PagingTest extends MessagingTestCase
       Pipe p = new Pipe(0, ms, pm, true, true, 100, 20, 10);
       CoreMessage m = null;
 
-      m = MessageFactory.createCoreMessage("message0");
+      m = MessageFactory.createCoreMessage(0);
       p.handle(null, m, null);
 
-      m = MessageFactory.createCoreMessage("message1");
+      m = MessageFactory.createCoreMessage(1);
       p.handle(null, m, null);
 
    }

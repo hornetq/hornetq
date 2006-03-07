@@ -23,16 +23,16 @@ package org.jboss.jms.delegate;
 
 import java.io.Serializable;
 
-import javax.jms.BytesMessage;
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.message.BytesMessageDelegate;
+import org.jboss.jms.message.MapMessageDelegate;
+import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.ObjectMessageDelegate;
+import org.jboss.jms.message.StreamMessageDelegate;
+import org.jboss.jms.message.TextMessageDelegate;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
@@ -47,25 +47,25 @@ import org.jboss.jms.server.endpoint.SessionEndpoint;
  */
 public interface SessionDelegate extends SessionEndpoint
 {   
-   Message createMessage() throws JMSException;
+   MessageDelegate createMessage() throws JMSException;
    
-   BytesMessage createBytesMessage() throws JMSException;
+   BytesMessageDelegate createBytesMessage() throws JMSException;
   
-   MapMessage createMapMessage() throws JMSException;
+   MapMessageDelegate createMapMessage() throws JMSException;
 
-   ObjectMessage createObjectMessage() throws JMSException;
+   ObjectMessageDelegate createObjectMessage() throws JMSException;
 
-   ObjectMessage createObjectMessage(Serializable object) throws JMSException;
+   ObjectMessageDelegate createObjectMessage(Serializable object) throws JMSException;
 
-   StreamMessage createStreamMessage() throws JMSException;
+   StreamMessageDelegate createStreamMessage() throws JMSException;
 
-   TextMessage createTextMessage() throws JMSException;
+   TextMessageDelegate createTextMessage() throws JMSException;
    
-   TextMessage createTextMessage(String text) throws JMSException;
+   TextMessageDelegate createTextMessage(String text) throws JMSException;
    
-   void preDeliver(String messageID, int receiverID) throws JMSException;
+   void preDeliver(long messageID, int receiverID) throws JMSException;
    
-   void postDeliver(String messageID, int receiverID) throws JMSException;
+   void postDeliver(long messageID, int receiverID) throws JMSException;
    
    MessageListener getMessageListener() throws JMSException;
    
@@ -75,7 +75,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    XAResource getXAResource();
    
-   void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons);
+   void addAsfMessage(MessageDelegate m, int consumerID, ConsumerDelegate cons);
    
    public boolean getTransacted();
    

@@ -36,13 +36,7 @@
       <name>ChannelMapper</name>
       <type>javax.management.ObjectName</type>
    </attribute>   
-   
-   <attribute access="read-write" getMethod="isTxIdGuid" setMethod="setTxIdGuid">
-      <description>Should a GUID be used as the transactionn id?</description>
-      <name>TxIdGuid</name>
-      <type>boolean</type>
-   </attribute>   
-   
+    
    <attribute access="read-write" getMethod="isCreateTablesOnStartup" setMethod="setCreateTablesOnStartup">
       <description>Should database tables be created on startup?</description>
       <name>CreateTablesOnStartup</name>

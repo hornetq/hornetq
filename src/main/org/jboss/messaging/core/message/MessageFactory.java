@@ -79,19 +79,19 @@ public class MessageFactory
       return m;
    }
    
-   public static CoreMessage createCoreMessage(Serializable messageID)
+   public static CoreMessage createCoreMessage(long messageID)
    {
       return createCoreMessage(messageID, false, 0, 0, (byte)4, null, null);
    }
 
-   public static CoreMessage createCoreMessage(Serializable messageID,
+   public static CoreMessage createCoreMessage(long messageID,
                                                boolean reliable,
                                                Serializable payload)
    {
       return createCoreMessage(messageID, reliable, 0, 0, (byte)4, null, payload);
    }
 
-   public static CoreMessage createCoreMessage(Serializable messageID,
+   public static CoreMessage createCoreMessage(long messageID,
                                                boolean reliable,
                                                long expiration,
                                                long timestamp,
@@ -105,7 +105,7 @@ public class MessageFactory
       return cm;
    }
    
-   public static Message createJBossMessage(Serializable messageID,
+   public static Message createJBossMessage(long messageID,
                                           boolean reliable, 
                                           long expiration, 
                                           long timestamp,
@@ -126,37 +126,37 @@ public class MessageFactory
       
       if (type == JBossMessage.TYPE)
       {
-         m = new JBossMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+         m = new JBossMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
                               payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
                               destination, replyTo, jmsProperties);
       }
       else if (type == JBossObjectMessage.TYPE)
       {
-         m = new JBossObjectMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+         m = new JBossObjectMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
                payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
                destination, replyTo, jmsProperties);
       }
       else if (type == JBossTextMessage.TYPE)
       {
-         m = new JBossTextMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+         m = new JBossTextMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
                payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
                destination, replyTo, jmsProperties);
       }
       else if (type == JBossBytesMessage.TYPE)
       {
-         m = new JBossBytesMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+         m = new JBossBytesMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
                payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
                destination, replyTo, jmsProperties);
       }
       else if (type == JBossMapMessage.TYPE)
       {
-         m = new JBossMapMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+         m = new JBossMapMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
                payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
                destination, replyTo, jmsProperties);
       }
       else if (type == JBossStreamMessage.TYPE)
       {
-         m = new JBossStreamMessage((String)messageID, reliable, expiration, timestamp, priority, coreHeaders,
+         m = new JBossStreamMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
                payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
                destination, replyTo, jmsProperties);
       }

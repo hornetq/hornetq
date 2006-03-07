@@ -147,7 +147,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m =
-         MessageFactory.createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+         MessageFactory.createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -160,7 +160,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       // the message store should be cleaned of everything that pertains to that message
 
-      ref = ms.reference((String)m.getMessageID());
+      ref = ms.reference(m.getMessageID());
       assertNull(ref);
    }
 
@@ -177,7 +177,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m =
-         MessageFactory.createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+         MessageFactory.createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -204,7 +204,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
-         m[i] = MessageFactory.createCoreMessage("message" + i, false, 700 + i, 800 + i,
+         m[i] = MessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
                                              (byte)(i % 10), headers, "payload" + i);
 
          // non-recoverable store, non-reliable message, one message
@@ -224,7 +224,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.reference((String)m[i].getMessageID()));
+         assertNull(ms.reference(m[i].getMessageID()));
       }
    }
 
@@ -255,7 +255,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, reliable message, one message
       try
@@ -292,7 +292,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -304,7 +304,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref = ms.reference((String)m.getMessageID());
+      ref = ms.reference(m.getMessageID());
       assertNull(ref);
    }
 
@@ -330,7 +330,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
-         m[i] = MessageFactory.createCoreMessage("message" + i, false, 700 + i, 800 + i,
+         m[i] = MessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
                                              (byte)(i % 10), headers, "payload" + i);
 
          // non-recoverable store, non-reliable message, one message
@@ -352,7 +352,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.reference((String)m[i].getMessageID()));
+         assertNull(ms.reference(m[i].getMessageID()));
       }
    }
    
@@ -371,7 +371,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -386,7 +386,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       
       ref.decrementChannelCount();
       
-      MessageReference ref3 = ms.reference((String)m.getMessageID());
+      MessageReference ref3 = ms.reference(m.getMessageID());
       assertNotNull(ref3);
       
       assertCorrectReference(ref3, ms.getStoreID(), m);
@@ -396,7 +396,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref3 = ms.reference((String)m.getMessageID());
+      ref3 = ms.reference(m.getMessageID());
       assertNull(ref3);
    }
    
@@ -415,13 +415,13 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
       
-      MessageReference ref2 = ms.reference((String)ref.getMessageID());
+      MessageReference ref2 = ms.reference(ref.getMessageID());
       assertNotNull(ref2);      
       assertCorrectReference(ref2, ms.getStoreID(), m);
         
@@ -436,25 +436,25 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       
       ref.decrementChannelCount();
       
-      MessageReference ref3 = ms.reference((String)ref.getMessageID());
+      MessageReference ref3 = ms.reference(ref.getMessageID());
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
       
       ref.decrementChannelCount();
       
-      ref3 = ms.reference((String)ref.getMessageID());
+      ref3 = ms.reference(ref.getMessageID());
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
       
       ref.decrementChannelCount();
       
-      ref3 = ms.reference((String)ref.getMessageID());
+      ref3 = ms.reference(ref.getMessageID());
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
       
       ref.decrementChannelCount();
       
-      ref3 = ms.reference((String)ref.getMessageID());
+      ref3 = ms.reference(ref.getMessageID());
       assertNull(ref3);    
       
    }
@@ -484,7 +484,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -492,7 +492,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       ref.incrementChannelCount();
       ref.decrementChannelCount();
 
-      ref = ms.reference((String)m.getMessageID());
+      ref = ms.reference(m.getMessageID());
       assertNull(ref);
    }
 
@@ -509,7 +509,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", false, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -536,7 +536,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
-         m[i] = MessageFactory.createCoreMessage("message" + i, false, 700 + i, 800 + i,
+         m[i] = MessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
                                              (byte)(i % 10), headers, "payload" + i);
 
          // recoverable store, non-reliable message, one message
@@ -555,7 +555,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.reference((String)m[i].getMessageID()));
+         assertNull(ms.reference(m[i].getMessageID()));
       }
    }
 
@@ -580,7 +580,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -592,7 +592,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref = ms.reference((String)m.getMessageID());
+      ref = ms.reference(m.getMessageID());
       assertNull(ref);
    }
 
@@ -609,7 +609,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -636,7 +636,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
-         m[i] = MessageFactory.createCoreMessage("message" + i, true, 700 + i, 800 + i,
+         m[i] = MessageFactory.createCoreMessage(i, true, 700 + i, 800 + i,
                                              (byte)(i % 10), headers, "payload" + i);
 
          // recoverable store, non-reliable message, one message
@@ -657,7 +657,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertNull(ms.reference((String)m[i].getMessageID()));
+         assertNull(ms.reference(m[i].getMessageID()));
       }
    }
    
@@ -670,7 +670,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
@@ -685,7 +685,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       
       ref.decrementChannelCount();
       
-      MessageReference ref3 = ms.reference((String)m.getMessageID());
+      MessageReference ref3 = ms.reference(m.getMessageID());
       assertNotNull(ref3);
       ref3.decrementChannelCount();
       
@@ -696,7 +696,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
 
-      ref3 = ms.reference((String)m.getMessageID());
+      ref3 = ms.reference(m.getMessageID());
       assertNull(ref3);
    }
    
@@ -709,14 +709,14 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
 
       Message m = MessageFactory.
-      createCoreMessage("message0", true, 777l, 888l, (byte)9, headers, "payload");
+      createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
       ref.incrementChannelCount();
       assertCorrectReference(ref, ms.getStoreID(), m);
       
-      MessageReference ref2 = ms.reference((String)ref.getMessageID());
+      MessageReference ref2 = ms.reference(ref.getMessageID());
       ref2.incrementChannelCount();
       assertNotNull(ref2);      
       assertCorrectReference(ref2, ms.getStoreID(), m);
@@ -731,7 +731,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       
       ref.decrementChannelCount();
       
-      MessageReference ref3 = ms.reference((String)ref.getMessageID());
+      MessageReference ref3 = ms.reference(ref.getMessageID());
       ref3.incrementChannelCount();
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
@@ -739,7 +739,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       
       ref.decrementChannelCount();
       
-      ref3 = ms.reference((String)ref.getMessageID());
+      ref3 = ms.reference(ref.getMessageID());
       ref3.incrementChannelCount();
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
@@ -747,14 +747,14 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       
       ref.decrementChannelCount();
       
-      ref3 = ms.reference((String)ref.getMessageID());
+      ref3 = ms.reference(ref.getMessageID());
       ref3.incrementChannelCount();
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
       ref.decrementChannelCount();
       
       ref.decrementChannelCount();
-      ref3 = ms.reference((String)ref.getMessageID());
+      ref3 = ms.reference(ref.getMessageID());
       assertNull(ref3);                
    }
 

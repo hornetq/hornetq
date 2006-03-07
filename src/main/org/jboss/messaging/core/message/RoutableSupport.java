@@ -319,7 +319,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
    
    // Attributes ----------------------------------------------------
 
-   protected Serializable messageID;
+   protected long messageID;
    protected boolean reliable;
    /** GMT milliseconds at which this message expires. 0 means never expires **/
    protected long expiration;
@@ -341,7 +341,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
    /**
     * Constructs a generic Routable that is not reliable and does not expire.
     */
-   public RoutableSupport(Serializable messageID)
+   public RoutableSupport(long messageID)
    {
       this(messageID, false, Long.MAX_VALUE);
    }
@@ -349,12 +349,12 @@ public abstract class RoutableSupport implements Routable, Externalizable
    /**
     * Constructs a generic Routable that does not expire.
     */
-   public RoutableSupport(Serializable messageID, boolean reliable)
+   public RoutableSupport(long messageID, boolean reliable)
    {
       this(messageID, reliable, Long.MAX_VALUE);
    }
 
-   public RoutableSupport(Serializable messageID, boolean reliable, long timeToLive)
+   public RoutableSupport(long messageID, boolean reliable, long timeToLive)
    {
       this(messageID,
            reliable,
@@ -365,7 +365,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
            null);
    }
 
-   public RoutableSupport(Serializable messageID,
+   public RoutableSupport(long messageID,
                           boolean reliable, 
                           long expiration, 
                           long timestamp,
@@ -404,7 +404,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
 
    // Routable implementation ---------------------------------------
 
-   public Serializable getMessageID()
+   public long getMessageID()
    {
       return messageID;
    }
@@ -497,7 +497,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
    
    public void writeExternal(ObjectOutput out) throws IOException
    {      
-      out.writeUTF((String)messageID);
+      out.writeLong(messageID);
       out.writeBoolean(reliable);
       out.writeLong(expiration);
       out.writeLong(timestamp);
@@ -509,7 +509,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {     
-      messageID = (Serializable)in.readUTF();
+      messageID = in.readLong();
       reliable = in.readBoolean();
       expiration = in.readLong();
       timestamp = in.readLong();

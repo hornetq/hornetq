@@ -74,9 +74,10 @@ public class MessageTest extends MessagingTestCase
    /**
     * Loads the message header fields with significant values.
     */
-   public static void configureMessage(Message m) throws JMSException
+   public static void configureMessage(JBossMessage m) throws JMSException
    {
-      m.setJMSMessageID("messageID777");
+      //m.setJMSMessageID("messageID777");
+      m.setMessageId(123456);
       m.setJMSTimestamp(123456789l);
       m.setJMSCorrelationID("correlationID777");
       m.setJMSReplyTo(new JBossQueue("ReplyToQueue"));
@@ -99,11 +100,12 @@ public class MessageTest extends MessagingTestCase
     * Makes sure two physically different message are equivalent: they have identical JMS fields and
     * body.
     */
-   public static void ensureEquivalent(Message m1, Message m2) throws JMSException
+   public static void ensureEquivalent(Message m1, JBossMessage m2) throws JMSException
    {
       assertTrue(m1 != m2);
+      
+      //Can't compare message id since not set until send
 
-      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
       assertEquals(m1.getJMSTimestamp(), m2.getJMSTimestamp());
 
       byte[] corrIDBytes = null;
@@ -313,9 +315,9 @@ public class MessageTest extends MessagingTestCase
       }
    }
 
-   public static void ensureEquivalent(BytesMessage m1, BytesMessage m2) throws JMSException
+   public static void ensureEquivalent(BytesMessage m1, JBossBytesMessage m2) throws JMSException
    {
-      ensureEquivalent((Message)m1, (Message)m2);
+      ensureEquivalent((Message)m1, m2);
 
       long len = m1.getBodyLength();
       for(int i = 0; i < len; i++)
@@ -344,9 +346,9 @@ public class MessageTest extends MessagingTestCase
       }
    }
 
-   public static void ensureEquivalent(MapMessage m1, MapMessage m2) throws JMSException
+   public static void ensureEquivalent(MapMessage m1, JBossMapMessage m2) throws JMSException
    {
-      ensureEquivalent((Message)m1, (Message)m2);
+      ensureEquivalent((Message)m1, m2);
 
       for(Enumeration e = m1.getMapNames(); e.hasMoreElements(); )
       {
@@ -361,15 +363,15 @@ public class MessageTest extends MessagingTestCase
       }
    }
 
-   public static void ensureEquivalent(ObjectMessage m1, ObjectMessage m2) throws JMSException
+   public static void ensureEquivalent(ObjectMessage m1, JBossObjectMessage m2) throws JMSException
    {
-      ensureEquivalent((Message)m1, (Message)m2);
+      ensureEquivalent((Message)m1, m2);
       assertEquals(m1.getObject(), m2.getObject());
    }
 
-   public static void ensureEquivalent(StreamMessage m1, StreamMessage m2) throws JMSException
+   public static void ensureEquivalent(StreamMessage m1, JBossStreamMessage m2) throws JMSException
    {
-      ensureEquivalent((Message)m1, (Message)m2);
+      ensureEquivalent((Message)m1, m2);
 
       m1.reset();
       m2.reset();
@@ -426,6 +428,12 @@ public class MessageTest extends MessagingTestCase
             // OK
          }
       }
+   }
+   
+   public static void ensureEquivalent(TextMessage m1, JBossTextMessage m2) throws JMSException
+   {
+      ensureEquivalent((Message)m1, m2);
+      assertEquals(m1.getText(), m2.getText());
    }
 
    // Attributes ----------------------------------------------------
@@ -1083,7 +1091,7 @@ public class MessageTest extends MessagingTestCase
 
       configureMessage(jbossMessage);
 
-      JBossMessage copy = new JBossMessage(jbossMessage);
+      JBossMessage copy = new JBossMessage(jbossMessage, 0);
 
       ensureEquivalent(jbossMessage, copy);
    }
@@ -1093,7 +1101,7 @@ public class MessageTest extends MessagingTestCase
    {
       Message foreignMessage = new SimpleJMSMessage();
 
-      JBossMessage copy = new JBossMessage(foreignMessage);
+      JBossMessage copy = new JBossMessage(foreignMessage, 0);
 
       ensureEquivalent(foreignMessage, copy);
    }
@@ -1113,7 +1121,7 @@ public class MessageTest extends MessagingTestCase
 
       copy.reset();
 
-      ensureEquivalent((BytesMessage)jbossBytesMessage, (BytesMessage)copy);
+      ensureEquivalent(jbossBytesMessage, copy);
    }
 
 
@@ -1125,12 +1133,12 @@ public class MessageTest extends MessagingTestCase
          foreignBytesMessage.writeByte((byte)i);
       }
 
-      JBossBytesMessage copy = new JBossBytesMessage(foreignBytesMessage);
+      JBossBytesMessage copy = new JBossBytesMessage(foreignBytesMessage, 0);
 
       foreignBytesMessage.reset();
       copy.reset();
 
-      ensureEquivalent((BytesMessage)foreignBytesMessage, (BytesMessage)copy);
+      ensureEquivalent(foreignBytesMessage, copy);
    }
 
    public void testCopyOnJBossMapMessage() throws JMSException
@@ -1142,7 +1150,7 @@ public class MessageTest extends MessagingTestCase
 
       JBossMapMessage copy = new JBossMapMessage((JBossMapMessage)jbossMapMessage);
 
-      ensureEquivalent((MapMessage)jbossMapMessage, (MapMessage)copy);
+      ensureEquivalent(jbossMapMessage, copy);
    }
 
 
@@ -1152,9 +1160,9 @@ public class MessageTest extends MessagingTestCase
       foreignMapMessage.setInt("int", 1);
       foreignMapMessage.setString("string", "test");
 
-      JBossMapMessage copy = new JBossMapMessage(foreignMapMessage);
+      JBossMapMessage copy = new JBossMapMessage(foreignMapMessage, 0);
 
-      ensureEquivalent(foreignMapMessage, (MapMessage)copy);
+      ensureEquivalent(foreignMapMessage, copy);
    }
 
 
@@ -1164,7 +1172,7 @@ public class MessageTest extends MessagingTestCase
       
       JBossObjectMessage copy = new JBossObjectMessage(jbossObjectMessage);
 
-      ensureEquivalent(jbossObjectMessage, (ObjectMessage)copy);
+      ensureEquivalent(jbossObjectMessage, copy);
    }
 
 
@@ -1172,9 +1180,9 @@ public class MessageTest extends MessagingTestCase
    {
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
-      JBossObjectMessage copy = new JBossObjectMessage(foreignObjectMessage);
+      JBossObjectMessage copy = new JBossObjectMessage(foreignObjectMessage, 0);
 
-      ensureEquivalent((ObjectMessage)foreignObjectMessage, (ObjectMessage)copy);
+      ensureEquivalent(foreignObjectMessage, copy);
    }
 
 
@@ -1188,7 +1196,7 @@ public class MessageTest extends MessagingTestCase
 
       JBossStreamMessage copy = new JBossStreamMessage((JBossStreamMessage)jbossStreamMessage);
 
-      ensureEquivalent((StreamMessage)jbossStreamMessage, (StreamMessage)copy);
+      ensureEquivalent(jbossStreamMessage, copy);
    }
 
 
@@ -1199,9 +1207,9 @@ public class MessageTest extends MessagingTestCase
       foreignStreamMessage.writeByte((byte)2);
       foreignStreamMessage.writeByte((byte)3);
 
-      JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage);
+      JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage, 0);
 
-      ensureEquivalent((StreamMessage)foreignStreamMessage, (StreamMessage)copy);
+      ensureEquivalent(foreignStreamMessage, copy);
    }
 
 
@@ -1211,7 +1219,7 @@ public class MessageTest extends MessagingTestCase
       
       JBossTextMessage copy = new JBossTextMessage(jbossTextMessage);
 
-      ensureEquivalent(jbossTextMessage, (TextMessage)copy);
+      ensureEquivalent(jbossTextMessage, copy);
    }
 
 
@@ -1219,9 +1227,9 @@ public class MessageTest extends MessagingTestCase
    {
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 
-      JBossTextMessage copy = new JBossTextMessage(foreignTextMessage);
+      JBossTextMessage copy = new JBossTextMessage(foreignTextMessage, 0);
 
-      ensureEquivalent((TextMessage)foreignTextMessage, (TextMessage)copy);
+      ensureEquivalent(foreignTextMessage, copy);
    }
 
 
@@ -1231,11 +1239,7 @@ public class MessageTest extends MessagingTestCase
 
    // Private -------------------------------------------------------
 
-   private void ensureEquivalent(TextMessage m1, TextMessage m2) throws JMSException
-   {
-      ensureEquivalent((Message)m1, (Message)m2);
-      assertEquals(m1.getText(), m2.getText());
-   }
+   
 
 
    // Inner classes -------------------------------------------------

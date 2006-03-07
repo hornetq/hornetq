@@ -103,6 +103,7 @@ public class BrowserTest extends MessagingTestCase
       connection = null;
 		
 		super.tearDown();
+      
 	}
 	
 	// Public --------------------------------------------------------

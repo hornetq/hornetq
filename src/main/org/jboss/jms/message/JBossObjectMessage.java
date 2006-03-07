@@ -67,7 +67,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossObjectMessage(String messageID)
+   public JBossObjectMessage(long messageID)
    {
       super(messageID);
    }
@@ -75,7 +75,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossObjectMessage(String messageID,
+   public JBossObjectMessage(long messageID,
          boolean reliable,
          long expiration,
          long timestamp,
@@ -108,9 +108,9 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    /**
     * A copy constructor for non-JBoss Messaging JMS ObjectMessages.
     */
-   public JBossObjectMessage(ObjectMessage foreign) throws JMSException
+   public JBossObjectMessage(ObjectMessage foreign, long id) throws JMSException
    {
-      super(foreign);
+      super(foreign, id);
 
       setObject(foreign.getObject()); 
    }

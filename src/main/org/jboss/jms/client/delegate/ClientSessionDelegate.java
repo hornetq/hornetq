@@ -23,17 +23,8 @@ package org.jboss.jms.client.delegate;
 
 import java.io.Serializable;
 
-import javax.jms.BytesMessage;
-import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.state.ConnectionState;
@@ -41,6 +32,15 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.BytesMessageDelegate;
+import org.jboss.jms.message.MapMessageDelegate;
+import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.ObjectMessageDelegate;
+import org.jboss.jms.message.StreamMessageDelegate;
+import org.jboss.jms.message.TextMessageDelegate;
 import org.jboss.remoting.Client;
 
 /**
@@ -98,7 +98,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addTemporaryDestination(Destination destination) throws JMSException
+   public void addTemporaryDestination(JBossDestination destination) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -143,7 +143,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
       throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
@@ -153,7 +153,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public BytesMessage createBytesMessage() throws JMSException
+   public BytesMessageDelegate createBytesMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -162,7 +162,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
+   public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer) throws JMSException
    {
@@ -173,7 +173,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public MapMessage createMapMessage() throws JMSException
+   public MapMessageDelegate createMapMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -182,7 +182,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Message createMessage() throws JMSException
+   public MessageDelegate createMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -191,7 +191,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ObjectMessage createObjectMessage() throws JMSException
+   public ObjectMessageDelegate createObjectMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -200,7 +200,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ObjectMessage createObjectMessage(Serializable object) throws JMSException
+   public ObjectMessageDelegate createObjectMessage(Serializable object) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -209,7 +209,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException
+   public ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -218,7 +218,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Queue createQueue(String queueName) throws JMSException
+   public JBossQueue createQueue(String queueName) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -227,7 +227,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public StreamMessage createStreamMessage() throws JMSException
+   public StreamMessageDelegate createStreamMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -236,7 +236,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public TextMessage createTextMessage() throws JMSException
+   public TextMessageDelegate createTextMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -245,7 +245,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public TextMessage createTextMessage(String text) throws JMSException
+   public TextMessageDelegate createTextMessage(String text) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -254,7 +254,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Topic createTopic(String topicName) throws JMSException
+   public JBossTopic createTopic(String topicName) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -263,7 +263,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void deleteTemporaryDestination(Destination destination) throws JMSException
+   public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -281,7 +281,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void postDeliver(String messageID, int receiverID) throws JMSException
+   public void postDeliver(long messageID, int receiverID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -290,7 +290,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void preDeliver(String messageID, int receiverID) throws JMSException
+   public void preDeliver(long messageID, int receiverID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -371,7 +371,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons)
+   public void addAsfMessage(MessageDelegate m, int consumerID, ConsumerDelegate cons)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

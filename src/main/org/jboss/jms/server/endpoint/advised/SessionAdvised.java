@@ -21,14 +21,14 @@
   */
 package org.jboss.jms.server.endpoint.advised;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Topic;
 
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
@@ -70,30 +70,30 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.closing();
    }
 
-   public ProducerDelegate createProducerDelegate(Destination destination) throws JMSException
+   public ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException
    {
       return endpoint.createProducerDelegate(destination);
    }
 
-   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
+   public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer) throws JMSException
    {
       return endpoint.createConsumerDelegate(destination, selector, noLocal, subscriptionName, connectionConsumer);
    }
 
-   public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
       throws JMSException
    {
       return endpoint.createBrowserDelegate(queue, messageSelector);
    }
 
-   public Queue createQueue(String queueName) throws JMSException
+   public JBossQueue createQueue(String queueName) throws JMSException
    {
       return endpoint.createQueue(queueName);
    }
 
-   public Topic createTopic(String topicName) throws JMSException
+   public JBossTopic createTopic(String topicName) throws JMSException
    {
       return endpoint.createTopic(topicName);
    }
@@ -108,12 +108,12 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.cancelDeliveries();
    }
 
-   public void addTemporaryDestination(Destination destination) throws JMSException
+   public void addTemporaryDestination(JBossDestination destination) throws JMSException
    {
       endpoint.addTemporaryDestination(destination);
    }
 
-   public void deleteTemporaryDestination(Destination destination) throws JMSException
+   public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
    {
       endpoint.deleteTemporaryDestination(destination);
    }

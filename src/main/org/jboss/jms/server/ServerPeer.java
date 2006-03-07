@@ -44,6 +44,8 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -100,6 +102,7 @@ public class ServerPeer extends ServiceMBeanSupport
    protected ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
    protected TransactionRepository txRepository;
    protected ConnectionManager connectionManager;
+   protected IdManager messageIdManager;
 
    // plugins
 
@@ -181,11 +184,14 @@ public class ServerPeer extends ServiceMBeanSupport
       connFactoryJNDIMapper.start();
       txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
+        
+      //TODO Make block size configurable
+      messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
 
       initializeRemoting(mbeanServer);
 
       createRecoverable();
-
+            
       started = true;
 
       log.info("JMS " + this + " started");
@@ -360,6 +366,11 @@ public class ServerPeer extends ServiceMBeanSupport
    public Element getDefaultSecurityConfig()
    {
       return securityStore.getDefaultSecurityConfig();
+   }
+   
+   public IdManager getMessageIdManager()
+   {
+      return messageIdManager;
    }
 
    // JMX Operations ------------------------------------------------

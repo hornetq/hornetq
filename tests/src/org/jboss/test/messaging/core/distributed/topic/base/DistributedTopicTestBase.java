@@ -173,7 +173,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createCoreMessage("message0", false, "payload0");
+      Message m = MessageFactory.createCoreMessage(0, false, "payload0");
 
       log.debug("sending message");
       MessageReference ref = ms.reference(m);
@@ -184,14 +184,14 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       assertTrue(d.isDone());
 
       assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals(0, ((Message)r.getMessages().get(0)).getMessageID());
       assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
 
       // wait so the receiver gets the message
       assertTrue(r2.waitForHandleInvocations(1, 3000));
 
       assertEquals(1, r2.getMessages().size());
-      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
+      assertEquals(0, ((Message)r2.getMessages().get(0)).getMessageID());
       assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
 
       // allow time for acknowledgment to propagate back
@@ -234,7 +234,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("ACKING2", SimpleReceiver.ACKING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createCoreMessage("message0", true, "payload0");
+      Message m = MessageFactory.createCoreMessage(0, true, "payload0");
 
       log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);
@@ -243,14 +243,14 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       assertTrue(d.isDone());
 
       assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals(0, ((Message)r.getMessages().get(0)).getMessageID());
       assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
 
       // wait so the receiver gets the message
       assertTrue(r2.waitForHandleInvocations(1, 3000));
 
       assertEquals(1, r2.getMessages().size());
-      assertEquals("message0", ((Message)r2.getMessages().get(0)).getMessageID());
+      assertEquals(0, ((Message)r2.getMessages().get(0)).getMessageID());
       assertEquals("payload0", ((Message)r2.getMessages().get(0)).getPayload());
 
       // allow time for acknowledgment to propagate back
@@ -299,7 +299,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createCoreMessage("message0", false, "payload0");
+      Message m = MessageFactory.createCoreMessage(0, false, "payload0");
 
       log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);
@@ -308,7 +308,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       assertTrue(d.isDone());
 
       assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals(0, ((Message)r.getMessages().get(0)).getMessageID());
       assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
 
       // wait for a while so the acknowledgment has time to go back to the originating peer
@@ -353,7 +353,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       SimpleReceiver r2 = new SimpleReceiver("REJECTING", SimpleReceiver.REJECTING);
       assertTrue(topic2.add(r2));
 
-      Message m = MessageFactory.createCoreMessage("message0", true, "payload0");
+      Message m = MessageFactory.createCoreMessage(0, true, "payload0");
 
       log.debug("sending message");
       Delivery d = topic.handle(observer, ms.reference(m), null);
@@ -362,7 +362,7 @@ public abstract class DistributedTopicTestBase extends TopicTestBase
       assertTrue(d.isDone());
 
       assertEquals(1, r.getMessages().size());
-      assertEquals("message0", ((Message)r.getMessages().get(0)).getMessageID());
+      assertEquals(0, ((Message)r.getMessages().get(0)).getMessageID());
       assertEquals("payload0", ((Message)r.getMessages().get(0)).getPayload());
 
       // wait for a while so the acknowledgment has time to go back to the originating peer

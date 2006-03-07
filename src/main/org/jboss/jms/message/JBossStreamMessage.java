@@ -83,7 +83,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossStreamMessage(String messageID)
+   public JBossStreamMessage(long messageID)
    {
       super(messageID);      
       setPayload(new ArrayList());
@@ -96,7 +96,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossStreamMessage(String messageID,
+   public JBossStreamMessage(long messageID,
          boolean reliable,
          long expiration,
          long timestamp,
@@ -126,9 +126,9 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super(other);      
    }
 
-   public JBossStreamMessage(StreamMessage foreign) throws JMSException
+   public JBossStreamMessage(StreamMessage foreign, long id) throws JMSException
    {
-      super(foreign);
+      super(foreign, id);
       
       foreign.reset();
       

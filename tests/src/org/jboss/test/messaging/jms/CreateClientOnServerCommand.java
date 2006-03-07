@@ -78,26 +78,18 @@ public class CreateClientOnServerCommand implements Command
       }
       
       Connection conn = cf.createConnection();
-      
-      log.info("Created connection");
-      
+        
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      log.info("Created session");
-      
+          
       MessageProducer prod = sess.createProducer(queue);
       
       prod.send(sess.createMessage());
-      
-      log.info("Sent message");
-      
+         
       MessageConsumer cons = sess.createConsumer(queue);
       
       conn.start();
       
       cons.receive();
-      
-      log.info("Received message");
       
       //Leave the connection unclosed
       

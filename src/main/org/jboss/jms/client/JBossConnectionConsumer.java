@@ -32,11 +32,13 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
@@ -110,7 +112,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
     * @param maxMessages the maxmimum messages
     * @exception JMSException for any error
     */
-   public JBossConnectionConsumer(ConnectionDelegate conn, Destination dest, 
+   public JBossConnectionConsumer(ConnectionDelegate conn, JBossDestination dest, 
                                   String subName, String messageSelector,
                                   ServerSessionPool sessPool, int maxMessages) throws JMSException
    {
@@ -192,9 +194,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    }
    
    // Runnable implementation ---------------------------------------
-   
-   
-   
+     
    public void run()
    {
       if (trace) { log.trace("running connection consumer"); }
@@ -271,7 +271,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
                for (int i = 0; i < queue.size(); i++)
                {
-                  session.addAsfMessage((Message) queue.get(i), consumerID, cons);
+                  MessageDelegate md = (MessageDelegate)queue.get(i);                  
+                  session.addAsfMessage(md, consumerID, cons);
                   if (trace) { log.trace("Added message to session"); }
                }
 

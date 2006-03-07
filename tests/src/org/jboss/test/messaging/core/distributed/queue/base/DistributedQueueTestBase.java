@@ -99,7 +99,7 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
       peer3.join();
 
       // send a non-reliable message
-      Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+      Message m = MessageFactory.createCoreMessage(0, false, "payload");
       assertTrue(peer.handle(null, m, null).isDone());
 
       assertTrue(peer.browse().isEmpty());
@@ -116,7 +116,7 @@ public abstract class DistributedQueueTestBase extends DistributedChannelTestBas
 
       assertTrue(emptyList.isEmpty());
       assertEquals(1, messageList.size());
-      assertEquals("message0", ((Message)messageList.get(0)).getMessageID());
+      assertEquals(0, ((Message)messageList.get(0)).getMessageID());
       assertEquals("payload", ((Message)messageList.get(0)).getPayload());
 
    }

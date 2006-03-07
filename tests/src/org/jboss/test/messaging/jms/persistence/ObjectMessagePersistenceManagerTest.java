@@ -64,7 +64,7 @@ public class ObjectMessagePersistenceManagerTest extends MessagePersistenceManag
       HashMap jmsProperties = generateFilledMap(false);
                
       JBossObjectMessage m = 
-         new JBossObjectMessage(new GUID().toString(),
+         new JBossObjectMessage(i,
                reliable,
                System.currentTimeMillis() + 1000 * 60 * 60,
                System.currentTimeMillis(),

@@ -49,12 +49,8 @@ public class Transaction
    // Attributes ----------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
-   
-   protected boolean txIdSet;
-   
-   protected long longTxID;
-   
-   protected String guidTxID;
+     
+   protected long id;
    
    protected int state;
    
@@ -106,16 +102,17 @@ public class Transaction
 
    // Constructors --------------------------------------------------
    
-   Transaction()
+   Transaction(long id)
    {
+      this.id = id;
       state = STATE_ACTIVE;
       callbacks = new ArrayList();
       keyedCallbackMap = new HashMap();
    }
    
-   Transaction(Xid xid)
+   Transaction(long id, Xid xid)
    {
-      this();
+      this(id);
       this.xid = xid;
    }
    
@@ -264,49 +261,15 @@ public class Transaction
       state = STATE_ROLLBACK_ONLY;
    }
    
-   public String getGuidTxId()
+   public long getId()
    {
-      if (!txIdSet)
-      {
-         throw new IllegalStateException("Transaction id has not been set yet");
-      }
-      return guidTxID;
+      return id;
    }
-   
-   public long getLongTxId()
-   {
-      if (!txIdSet)
-      {
-         throw new IllegalStateException("Transaction id has not been set yet");
-      }
-      return longTxID;
-   }
-   
-   public void setLongTxId(long id)
-   {
-      this.longTxID = id;
       
-      txIdSet = true;
-   }
-   
-   public void setGuidTxID(String guid)
-   {
-      this.guidTxID = guid;
-      
-      txIdSet = true;
-   }
-
    public String toString()
    {
       StringBuffer sb = new StringBuffer("TX(");
-      if (this.guidTxID != null)
-      {
-         sb.append(this.guidTxID);
-      }
-      else
-      {
-         sb.append(this.longTxID);
-      }
+      sb.append(id);
       sb.append("):");
       sb.append(stateToString(state));
       return sb.toString();

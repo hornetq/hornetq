@@ -94,7 +94,6 @@
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>
-      <attribute name="TxIdGuid">false</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>

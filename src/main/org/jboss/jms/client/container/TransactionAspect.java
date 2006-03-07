@@ -163,7 +163,7 @@ public class TransactionAspect
       {
          MethodInvocation mi = (MethodInvocation)invocation;
          
-         String messageID = (String)mi.getArguments()[0];
+         long messageID = ((Long)mi.getArguments()[0]).longValue();
          
          int consumerID = ((Integer)mi.getArguments()[1]).intValue();
          

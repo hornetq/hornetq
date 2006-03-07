@@ -21,13 +21,12 @@
   */
 package org.jboss.jms.server.container;
 
-import java.io.Serializable;
-
 import javax.jms.Message;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
@@ -82,9 +81,9 @@ public class CachingInterceptor implements Interceptor
             {
                if (args[i] instanceof Message)
                {
-                  Message m = (Message)args[i];
+                  JBossMessage m = (JBossMessage)args[i];
 
-                  Serializable id = m.getJMSMessageID();
+                  long id = m.getMessage().getMessageID();
                   if (trace) log.trace("caching message " + id);
 
                   ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();

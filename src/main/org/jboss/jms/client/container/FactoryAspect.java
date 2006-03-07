@@ -34,10 +34,10 @@ import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.message.MapMessageDelegate;
 import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.ObjectMessageDelegate;
 import org.jboss.jms.message.StreamMessageDelegate;
 import org.jboss.jms.message.TextMessageDelegate;
-
 
 /**
  * Constructs various things that can be created entirely or partially on the client.
@@ -58,7 +58,7 @@ public class FactoryAspect
    
    // Attributes ----------------------------------------------------
    
-   protected long ordering;
+   protected MessageIdGenerator generator;
 
    // Constructors --------------------------------------------------
 
@@ -66,28 +66,28 @@ public class FactoryAspect
 
    public Object handleCreateMessage(Invocation invocation) throws Throwable
    {
-      JBossMessage jbm = new JBossMessage((String)null);
+      JBossMessage jbm = new JBossMessage(0);
        
       return new MessageDelegate(jbm, 0);
    }
    
    public Object handleCreateBytesMessage(Invocation invocation) throws Throwable
    {
-      JBossBytesMessage jbm = new JBossBytesMessage((String)null);
+      JBossBytesMessage jbm = new JBossBytesMessage(0);
          
       return new BytesMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateMapMessage(Invocation invocation) throws Throwable
    {
-      JBossMapMessage jbm = new JBossMapMessage((String)null);
+      JBossMapMessage jbm = new JBossMapMessage(0);
        
       return new MapMessageDelegate(jbm, 0);      
    }
    
    public Object handleCreateObjectMessage(Invocation invocation) throws Throwable
    {
-      JBossObjectMessage jbm = new JBossObjectMessage((String)null);
+      JBossObjectMessage jbm = new JBossObjectMessage(0);
        
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -101,14 +101,14 @@ public class FactoryAspect
    
    public Object handleCreateStreamMessage(Invocation invocation) throws Throwable
    {
-      JBossStreamMessage jbm = new JBossStreamMessage((String)null);
+      JBossStreamMessage jbm = new JBossStreamMessage(0);
       
       return new StreamMessageDelegate(jbm, 0);
    }
    
    public Object handleCreateTextMessage(Invocation invocation) throws Throwable
-   {
-      JBossTextMessage jbm = new JBossTextMessage((String)null);
+   {  
+      JBossTextMessage jbm = new JBossTextMessage(0);
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -123,7 +123,7 @@ public class FactoryAspect
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
+   
    // Private -------------------------------------------------------
 		
    // Inner classes -------------------------------------------------

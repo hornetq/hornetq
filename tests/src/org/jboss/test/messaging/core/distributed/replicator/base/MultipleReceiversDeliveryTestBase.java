@@ -54,7 +54,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
       super.setUp();
 
       ms = new PagingMessageStore("in-memory-store0");
-      ref = ms.reference(MessageFactory.createCoreMessage("message0"));
+      ref = ms.reference(MessageFactory.createCoreMessage(0));
       observer = new SimpleDeliveryObserver();
    }
 
@@ -100,7 +100,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
       Object receiver = createReceiver("group0", "peer0");
       ((MultipleReceiversDelivery)delivery).add(receiver);
 
-      Acknowledgment ack = new Acknowledgment("peer0", ref.getMessageID(), Acknowledgment.REJECTED);
+      Acknowledgment ack = new Acknowledgment("peer0", new Long(ref.getMessageID()), Acknowledgment.REJECTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
       log.info("acknowledgment handled");
@@ -128,7 +128,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
          ((MultipleReceiversDelivery)delivery).add(receiver);
       }
 
-      Acknowledgment ack = new Acknowledgment("peer5", ref.getMessageID(), Acknowledgment.REJECTED);
+      Acknowledgment ack = new Acknowledgment("peer5", new Long(ref.getMessageID()), Acknowledgment.REJECTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
       observer.waitForCancellation(delivery);
@@ -155,7 +155,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
       Object receiver = createReceiver("group0", "peer0");
       ((MultipleReceiversDelivery)delivery).add(receiver);
 
-      Acknowledgment ack = new Acknowledgment("peer0", ref.getMessageID(), Acknowledgment.ACCEPTED);
+      Acknowledgment ack = new Acknowledgment("peer0", new Long(ref.getMessageID()), Acknowledgment.ACCEPTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
       log.info("acknowledgment handled");
@@ -185,7 +185,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
 
       for(int i = 0; i < NUMBER_OF_RECEIVERS; i++)
       {
-         Acknowledgment ack = new Acknowledgment("peer" + i, ref.getMessageID(),
+         Acknowledgment ack = new Acknowledgment("peer" + i, new Long(ref.getMessageID()),
                                                  Acknowledgment.REJECTED);
          ((MultipleReceiversDelivery)delivery).handle(ack);
 
@@ -221,7 +221,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
 
       for(int i = 0; i < NUMBER_OF_RECEIVERS; i++)
       {
-         Acknowledgment ack = new Acknowledgment("peer" + i, ref.getMessageID(),
+         Acknowledgment ack = new Acknowledgment("peer" + i, new Long(ref.getMessageID()),
                                                  Acknowledgment.ACCEPTED);
          ((MultipleReceiversDelivery)delivery).handle(ack);
 
@@ -263,19 +263,19 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
 
       Acknowledgment ack = null;
 
-      ack = new Acknowledgment("ACKING", ref.getMessageID(), Acknowledgment.ACCEPTED);
+      ack = new Acknowledgment("ACKING", new Long(ref.getMessageID()), Acknowledgment.ACCEPTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
       assertFalse(delivery.isCancelled());
       assertFalse(delivery.isDone());
 
-      ack = new Acknowledgment("REJECTING", ref.getMessageID(), Acknowledgment.REJECTED);
+      ack = new Acknowledgment("REJECTING", new Long(ref.getMessageID()), Acknowledgment.REJECTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
       assertFalse(delivery.isCancelled());
       assertFalse(delivery.isDone());
 
-      ack = new Acknowledgment("CANCELLING", ref.getMessageID(), Acknowledgment.CANCELLED);
+      ack = new Acknowledgment("CANCELLING", new Long(ref.getMessageID()), Acknowledgment.CANCELLED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
       // TODO

@@ -21,35 +21,34 @@
   */
 package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.messaging.core.distributed.DistributedException;
-import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jboss.messaging.core.distributed.RemotePeerInfo;
-import org.jboss.messaging.core.distributed.Distributed;
-import org.jboss.messaging.core.distributed.Peer;
-import org.jboss.messaging.core.distributed.util.DelegatingMessageListener;
-import org.jboss.messaging.core.distributed.util.DelegatingMessageListenerSupport;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Set;
+
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.distributed.Distributed;
+import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.Peer;
+import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.RemotePeerInfo;
+import org.jboss.messaging.core.distributed.util.DelegatingMessageListener;
+import org.jboss.messaging.core.distributed.util.DelegatingMessageListenerSupport;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.messaging.util.Util;
-import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jgroups.MessageListener;
-import org.jgroups.ChannelListener;
 import org.jgroups.Address;
+import org.jgroups.ChannelListener;
+import org.jgroups.MessageListener;
 import org.jgroups.blocks.RpcDispatcher;
-
-import java.io.Serializable;
-import java.util.Set;
-import java.util.Iterator;
 
 
 
@@ -322,7 +321,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
                //       from ignored outputs.
                if (isReliable)
                {
-                  sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.ACCEPTED);
+                  sendAsynchronousResponse(collectorAddress, new Long(r.getMessageID()), Acknowledgment.ACCEPTED);
                }
                return;
             }
@@ -332,7 +331,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
                if (isReliable)
                {
                   // no receiver to forward to, asynchronously reject the message
-                  sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
+                  sendAsynchronousResponse(collectorAddress, new Long(r.getMessageID()), Acknowledgment.REJECTED);
                }
                return;
             }
@@ -373,7 +372,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
                if (isReliable)
                {
                   // broken receiver, asynchronously reject the message
-                  sendAsynchronousResponse(collectorAddress, r.getMessageID(), Acknowledgment.REJECTED);
+                  sendAsynchronousResponse(collectorAddress, new Long(r.getMessageID()), Acknowledgment.REJECTED);
                }
             }
 
@@ -449,7 +448,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
 
          if (log.isTraceEnabled()) { log.trace(this + " acknowledging " + d); }
          Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
-         sendAsynchronousResponse(collectorAddress, ref.getMessageID(), Acknowledgment.ACCEPTED);
+         sendAsynchronousResponse(collectorAddress, new Long(ref.getMessageID()), Acknowledgment.ACCEPTED);
       }
 
       public void cancel(Delivery d) throws Throwable
@@ -463,7 +462,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
 
          if (log.isTraceEnabled()) { log.trace(this + " cancelling " + d); }
          Address collectorAddress = (Address)ref.removeHeader(REPLICATOR_OUTPUT_COLLECTOR_ADDRESS);
-         sendAsynchronousResponse(collectorAddress, ref.getMessageID(),
+         sendAsynchronousResponse(collectorAddress, new Long(ref.getMessageID()),
                                   Acknowledgment.CANCELLED);
          return;
       }

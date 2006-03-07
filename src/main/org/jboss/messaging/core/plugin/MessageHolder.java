@@ -62,7 +62,7 @@ class MessageHolder
       if (channelCount == 0)
       {
          // can remove the message from the message store
-         ms.forgetMessage((String)msg.getMessageID());
+         ms.forgetMessage(msg.getMessageID());
       }
    }
    

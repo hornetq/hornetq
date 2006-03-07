@@ -56,7 +56,7 @@ public class JBossMessageTest extends MessageSupportTestBase
 
    protected void setUp() throws Exception
    {
-      rs = (MessageSupport)MessageFactory.createJBossMessage("message0", false, 0, 0, (byte)4, null,
+      rs = (MessageSupport)MessageFactory.createJBossMessage(0, false, 0, 0, (byte)4, null,
                                                         null, JBossMessage.TYPE,
                                                         null, null, null, null, null, null);
       super.setUp();

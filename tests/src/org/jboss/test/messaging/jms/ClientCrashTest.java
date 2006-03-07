@@ -74,19 +74,13 @@ public class ClientCrashTest extends MessagingTestCase
       
       //Start all the services locally
       localServer.start("all");
-      
-      log.info("Started local server");
-            
+               
       localServer.deployQueue("Queue", null);
-      
-      log.info("deployed queue");
-      
+          
       //Connect to the remote server, but don't start a servicecontainer on it
       //We are only using the remote server to open a client connection to the local server
       ServerManagement.create();
-      
-      log.info("Connected to server");
-      
+          
       remoteServer = ServerManagement.getServer();
    }
 
@@ -118,12 +112,8 @@ public class ClientCrashTest extends MessagingTestCase
       
       //Now we should have a client connection from the remote server to the local server
       
-      log.info("Now killing client");
-      
       remoteServer.exit();
-      
-      log.info("Killed client");
-      
+        
       //Wait for connection resources to be cleared up
       Thread.sleep(20000);
            

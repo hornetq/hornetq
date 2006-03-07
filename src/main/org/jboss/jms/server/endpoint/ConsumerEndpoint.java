@@ -21,12 +21,10 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.io.Serializable;
-
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.message.MessageDelegate;
 
 /**
  * Represents the set of methods from the ConsumerDelegate that are handled on the server.
@@ -39,9 +37,9 @@ import org.jboss.jms.client.Closeable;
  */
 public interface ConsumerEndpoint extends Closeable
 {
-   void cancelMessage(Serializable messageID) throws JMSException;
+   void cancelMessage(long messageID) throws JMSException;
    
-   Message getMessageNow(boolean wait) throws JMSException;
+   MessageDelegate getMessageNow(boolean wait) throws JMSException;
    
    void activate() throws JMSException;
    

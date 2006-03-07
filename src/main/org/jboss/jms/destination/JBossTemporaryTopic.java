@@ -53,6 +53,11 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       this.delegate = delegate;
    }
    
+   public JBossTemporaryTopic(String name)
+   {
+      super(name);
+   }
+   
    // TemporaryQueue implementation ---------------------------------
    
    public void delete() throws JMSException

@@ -137,7 +137,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       // non-recoverable state, unreliable message, non-transactional add
       state.addReference(ref);
@@ -146,11 +146,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -178,7 +178,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, non-transactional add
          state.addReference(refs[i]);
@@ -219,7 +219,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -236,11 +236,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -268,7 +268,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
          state.addReference(refs[i], tx);
@@ -309,7 +309,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -352,7 +352,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
          state.addReference(refs[i], tx);
@@ -397,12 +397,12 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       state.addReference(ref);
 
 
       MessageReference rref = state.removeFirstInMemory();
-      assertEquals("message0", rref.getMessageID());
+      assertEquals(0, rref.getMessageID());
 
       assertNull(state.removeFirstInMemory());
 
@@ -430,14 +430,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -471,7 +471,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // non-recoverable state, unreliable delivery, non-transactional add
@@ -479,13 +479,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -512,7 +512,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // non-recoverable state, unreliable delivery, non-transactional add
@@ -552,7 +552,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       state.addDelivery(d);
@@ -591,7 +591,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -637,7 +637,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -648,13 +648,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.commit();
 
@@ -688,7 +688,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -738,7 +738,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -749,25 +749,25 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.rollback();
 
       l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -795,7 +795,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] =  ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] =  ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
          state.addDelivery(deliveries[i]);
       }
@@ -848,7 +848,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       // non-recoverable state, unreliable message, non-transactional add
       state.addReference(ref);
@@ -857,11 +857,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -888,7 +888,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, non-transactional add
          state.addReference(refs[i]);
@@ -924,7 +924,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
 
       // non-recoverable state, reliable message, non-transactional add
       state.addReference(ref);
@@ -933,11 +933,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -964,7 +964,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
 
          // non-recoverable state, reliable message, non-transactional add
          state.addReference(refs[i]);
@@ -1004,7 +1004,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -1021,11 +1021,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -1053,7 +1053,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
          state.addReference(refs[i], tx);
@@ -1094,7 +1094,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -1111,11 +1111,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -1143,7 +1143,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
 
          // non-recoverable state, reliable message, transactional add
          state.addReference(refs[i], tx);
@@ -1185,7 +1185,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -1228,7 +1228,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // non-recoverable state, unreliable message, transactional add
          state.addReference(refs[i], tx);
@@ -1265,7 +1265,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -1308,7 +1308,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
 
          // non-recoverable state, reliable message, transactional add
          state.addReference(refs[i], tx);
@@ -1354,12 +1354,12 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       state.addReference(ref);
 
 
       MessageReference rref = state.removeFirstInMemory();
-      assertEquals("message0", rref.getMessageID());
+      assertEquals(0, rref.getMessageID());
 
       assertNull(state.removeFirstInMemory());
 
@@ -1387,14 +1387,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -1424,12 +1424,12 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       state.addReference(ref);
 
 
       MessageReference rref = state.removeFirstInMemory();
-      assertEquals("message0", rref.getMessageID());
+      assertEquals(0, rref.getMessageID());
 
       assertNull(state.removeFirstInMemory());
 
@@ -1457,14 +1457,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -1489,14 +1489,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, i % 2 == 0, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, i % 2 == 0, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -1531,7 +1531,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // non-recoverable state, unreliable delivery, non-transactional add
@@ -1539,13 +1539,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -1572,7 +1572,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // non-recoverable state, unreliable delivery, non-transactional add
@@ -1608,7 +1608,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // non-recoverable state, reliable delivery, non-transactional add
@@ -1616,13 +1616,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -1649,7 +1649,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // non-recoverable state, reliable delivery, non-transactional add
@@ -1690,7 +1690,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       state.addDelivery(d);
@@ -1729,7 +1729,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -1770,7 +1770,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       state.addDelivery(d);
@@ -1809,7 +1809,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -1856,7 +1856,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -1867,13 +1867,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.commit();
 
@@ -1907,7 +1907,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -1952,7 +1952,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -1963,13 +1963,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.commit();
 
@@ -2003,7 +2003,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -2054,7 +2054,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -2065,25 +2065,25 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.rollback();
 
       l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2111,7 +2111,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] =  ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] =  ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
          state.addDelivery(deliveries[i]);
       }
@@ -2156,7 +2156,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -2167,25 +2167,25 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.rollback();
 
       l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2213,7 +2213,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] =  ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] =  ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
          state.addDelivery(deliveries[i]);
       }
@@ -2263,7 +2263,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       // recoverable state, unreliable message, non-transactional add
       state.addReference(ref);
@@ -2272,11 +2272,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2297,7 +2297,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // recoverable state, unreliable message, non-transactional add
          state.addReference(refs[i]);
@@ -2327,7 +2327,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
 
       // recoverable state, reliable message, non-transactional add
       state.addReference(ref);
@@ -2336,11 +2336,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2361,7 +2361,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
 
          // recoverable state, reliable message, non-transactional add
          state.addReference(refs[i]);
@@ -2395,7 +2395,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -2412,11 +2412,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2438,7 +2438,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // recoverable state, unreliable message, transactional add
          state.addReference(refs[i], tx);
@@ -2473,7 +2473,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -2490,11 +2490,11 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.undelivered(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2516,7 +2516,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
 
          // recoverable state, reliable message, transactional add
          state.addReference(refs[i], tx);
@@ -2552,7 +2552,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -2589,7 +2589,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
 
          // recoverable state, unreliable message, transactional add
          state.addReference(refs[i], tx);
@@ -2620,7 +2620,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
 
       Transaction tx = tr.createTransaction();
 
@@ -2658,7 +2658,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
 
          // recoverable state, reliable message, transactional add
          state.addReference(refs[i], tx);
@@ -2697,12 +2697,12 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       state.addReference(ref);
 
 
       MessageReference rref = state.removeFirstInMemory();
-      assertEquals("message0", rref.getMessageID());
+      assertEquals(0, rref.getMessageID());
 
       assertNull(state.removeFirstInMemory());
 
@@ -2724,14 +2724,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -2755,12 +2755,12 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       state.addReference(ref);
 
 
       MessageReference rref = state.removeFirstInMemory();
-      assertEquals("message0", rref.getMessageID());
+      assertEquals(0, rref.getMessageID());
 
       assertNull(state.removeFirstInMemory());
 
@@ -2782,14 +2782,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -2809,14 +2809,14 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, i % 2 == 0, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, i % 2 == 0, "payload" + i));
          state.addReference(ref);
       }
 
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref = state.removeFirstInMemory();
-         assertEquals("message" + i, ref.getMessageID());
+         assertEquals(i, ref.getMessageID());
       }
 
       assertNull(state.removeFirstInMemory());
@@ -2845,7 +2845,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // recoverable state, unreliable delivery, non-transactional add
@@ -2853,13 +2853,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2880,7 +2880,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // recoverable state, unreliable delivery, non-transactional add
@@ -2910,7 +2910,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       // recoverable state, reliable delivery, non-transactional add
@@ -2918,13 +2918,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -2945,7 +2945,7 @@ public abstract class StateTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] = ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] = ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          Delivery d = new SimpleDelivery(channel, refs[i], false);
 
          // recoverable state, reliable delivery, non-transactional add
@@ -2980,7 +2980,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       state.addDelivery(d);
@@ -3013,7 +3013,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -3048,7 +3048,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
 
       state.addDelivery(d);
@@ -3080,7 +3080,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -3121,7 +3121,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -3132,13 +3132,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.commit();
 
@@ -3165,7 +3165,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -3204,7 +3204,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -3215,13 +3215,13 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.commit();
 
@@ -3248,7 +3248,7 @@ public abstract class StateTestBase extends MessagingTestCase
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          MessageReference ref =
-               ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+               ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, ref, false);
          state.addDelivery(deliveries[i]);
       }
@@ -3293,7 +3293,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", false, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, false, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -3304,25 +3304,25 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.rollback();
 
       l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -3343,7 +3343,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] =  ms.reference(MessageFactory.createCoreMessage("message" + i, false, "payload" + i));
+         refs[i] =  ms.reference(MessageFactory.createCoreMessage(i, false, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
          state.addDelivery(deliveries[i]);
       }
@@ -3382,7 +3382,7 @@ public abstract class StateTestBase extends MessagingTestCase
          return;
       }
 
-      MessageReference ref = ms.reference(MessageFactory.createCoreMessage("message0", true, "payload0"));
+      MessageReference ref = ms.reference(MessageFactory.createCoreMessage(0, true, "payload0"));
       Delivery d = new SimpleDelivery(channel, ref, false);
       state.addDelivery(d);
 
@@ -3393,25 +3393,25 @@ public abstract class StateTestBase extends MessagingTestCase
 
       List l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       tx.rollback();
 
       l = state.delivering(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       assertTrue(state.undelivered(null).isEmpty());
 
       l = state.browse(null);
       assertEquals(1, l.size());
-      assertEquals("message0", ((MessageReference)l.get(0)).getMessageID());
+      assertEquals(0, ((MessageReference)l.get(0)).getMessageID());
 
       log.info("ok");
    }
@@ -3432,7 +3432,7 @@ public abstract class StateTestBase extends MessagingTestCase
       Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         refs[i] =  ms.reference(MessageFactory.createCoreMessage("message" + i, true, "payload" + i));
+         refs[i] =  ms.reference(MessageFactory.createCoreMessage(i, true, "payload" + i));
          deliveries[i] = new SimpleDelivery(channel, refs[i], false);
          state.addDelivery(deliveries[i]);
       }

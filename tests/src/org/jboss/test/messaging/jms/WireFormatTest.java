@@ -104,7 +104,7 @@ public class WireFormatTest extends TestCase
       
       Class consumerDelegate = ConsumerDelegate.class;
       
-      sendMethod = producerDelegate.getMethod("send", new Class[] { Message.class });
+      sendMethod = producerDelegate.getMethod("send", new Class[] { JBossMessage.class });
       
       acknowledgeMethod = sessionDelegate.getMethod("acknowledge", null);
       
@@ -345,7 +345,7 @@ public class WireFormatTest extends TestCase
                   
       public void testSend() throws Exception
       {       
-         JBossMessage m = new JBossMessage(new GUID().toString());
+         JBossMessage m = new JBossMessage(123);
          
          MessageTest.configureMessage(m);
          
@@ -725,7 +725,7 @@ public class WireFormatTest extends TestCase
       {
          int consumerID = 12345678;
          
-         JBossMessage m = new JBossMessage(new GUID().toString());
+         JBossMessage m = new JBossMessage(123);
          
          MessageDelegate del = JBossMessage.createThinDelegate(m, 7);
          
@@ -801,7 +801,7 @@ public class WireFormatTest extends TestCase
       
       public void testGetMessageNowResponse() throws Exception
       {
-         JBossMessage m = new JBossMessage(new GUID().toString());
+         JBossMessage m = new JBossMessage(123);
          
          MessageTest.configureMessage(m);
          

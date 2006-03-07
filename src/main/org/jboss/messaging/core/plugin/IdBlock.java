@@ -19,31 +19,64 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint;
+package org.jboss.messaging.core.plugin;
 
-import javax.jms.JMSException;
-
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.messaging.core.plugin.IdBlock;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
- * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
+ * A IdBlock.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.1
  *
- * $Id$
+ * IdBlock.java,v 1.1 2006/03/07 17:11:15 timfox Exp
  */
-public interface ConnectionFactoryEndpoint
+public class IdBlock implements Externalizable
 {
-   ConnectionDelegate createConnectionDelegate(String username, String password)
-      throws JMSException;
+   private static final long serialVersionUID = 8923493066889334803L;
+
+   protected long low;
    
-   byte[] getClientAOPConfig();
+   protected long high;
    
-   IdBlock getIdBlock(int size) throws JMSException;
+   public IdBlock()
+   {
+      
+   }
+   
+   IdBlock(long low, long high)
+   {
+      this.low = low;
+      
+      this.high = high;
+   }
+   
+   public long getLow()
+   {
+      return low;
+   }
+   
+   public long getHigh()
+   {
+      return high;
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      low = in.readLong();
+      
+      high = in.readLong();
+   }
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      out.writeLong(low);
+      
+      out.writeLong(high);
+   }
 
 }
-

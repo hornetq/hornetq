@@ -27,6 +27,7 @@ import javax.jms.Message;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossMessage;
@@ -161,8 +162,8 @@ public class ProducerAspect
          
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
-         
-         toSend = new JBossMessage(m);
+                           
+         toSend = new JBossMessage(m, 0);
       }
       else
       {
@@ -172,6 +173,14 @@ public class ProducerAspect
          toSend.doAfterSend();
          del.setSent();
       }
+      
+      //Set the id
+      
+      ConnectionState cState = (ConnectionState)theState.getParent().getParent();
+      long id = cState.getIdGenerator().getId();
+      
+      toSend.setJMSMessageID(null);
+      toSend.setMessageId(id);
               
       // We now invoke the send(Message) method - we don't want to pass the rest of the arguments
       // across the wire

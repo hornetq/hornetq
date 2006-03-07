@@ -236,7 +236,7 @@ public class JMSExpirationHeaderTest extends MessageTest
 
    public void testExpirationOnReceive() throws Exception
    {
-      expectedMessage = new JBossMessage("placeholder-shouldnt-be-overwritten");
+      expectedMessage = new JBossMessage(123456);
 
       queueProducer.send(queueProducerSession.createMessage(), DeliveryMode.NON_PERSISTENT, 4, 2000);
 
@@ -281,7 +281,7 @@ public class JMSExpirationHeaderTest extends MessageTest
       
       assertNotNull(expectedMessage);
 
-      assertEquals("placeholder-shouldnt-be-overwritten", expectedMessage.getJMSMessageID());
+      assertEquals(123456, ((JBossMessage)expectedMessage).getMessageID());
    }
 
 

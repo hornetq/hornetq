@@ -101,8 +101,6 @@ public class JMSTestBase extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
 
-      //ServerManagement.stop();
-
       super.tearDown();
    }
 

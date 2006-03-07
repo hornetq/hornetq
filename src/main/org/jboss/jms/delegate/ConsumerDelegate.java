@@ -21,11 +21,11 @@
   */
 package org.jboss.jms.delegate;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
@@ -46,7 +46,7 @@ public interface ConsumerDelegate extends ConsumerEndpoint
    
    void setMessageListener(MessageListener listener);
    
-   Destination getDestination();
+   JBossDestination getDestination();
    
    boolean getNoLocal();
    

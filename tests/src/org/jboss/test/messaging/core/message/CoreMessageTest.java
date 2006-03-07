@@ -56,7 +56,7 @@ public class CoreMessageTest extends MessageSupportTestBase
 
    protected void setUp() throws Exception
    {
-      rs = MessageFactory.createCoreMessage("message0");
+      rs = MessageFactory.createCoreMessage(0);
 
       super.setUp();
 

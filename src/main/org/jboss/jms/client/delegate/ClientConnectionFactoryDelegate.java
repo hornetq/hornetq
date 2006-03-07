@@ -32,6 +32,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 
@@ -91,6 +92,15 @@ public class ClientConnectionFactoryDelegate
       throw new IllegalStateException("This invocation should not be handled here!");
    }
    
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public IdBlock getIdBlock(int size)
+   {      
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
    // Public --------------------------------------------------------
     
    public Object invoke(Invocation invocation) throws Throwable
@@ -104,26 +114,8 @@ public class ClientConnectionFactoryDelegate
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
       
       Object ret = null;
-      
-      if ("getClientAOPConfig".equals(methodName))
-      {
-         //This is invoked on it's own connection
-         InvokerLocator locator = new InvokerLocator(serverLocatorURI);
-         
-         Client client = new Client(locator);
-         
-         try
-         {            
-            ret = client.invoke(invocation, null);
             
-            //invocation.setResponseContextInfo(response.getContextInfo());
-         }
-         finally
-         {
-            client.disconnect();
-         }
-      }
-      else if ("createConnectionDelegate".equals(methodName))
+      if ("createConnectionDelegate".equals(methodName))
       {
          //This must be invoked on the same connection subsequently used by the created JMS connection
          JMSRemotingConnection connection = new JMSRemotingConnection(serverLocatorURI);
@@ -154,7 +146,21 @@ public class ClientConnectionFactoryDelegate
       }
       else
       {
-         throw new IllegalStateException("Unknown invocation");
+         //This is invoked on it's own connection
+         InvokerLocator locator = new InvokerLocator(serverLocatorURI);
+         
+         Client client = new Client(locator);
+         
+         try
+         {            
+            ret = client.invoke(invocation, null);
+            
+            //invocation.setResponseContextInfo(response.getContextInfo());
+         }
+         finally
+         {
+            client.disconnect();
+         }
       }
 
       if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }

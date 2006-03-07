@@ -68,7 +68,7 @@ public class SimpleMessageReferenceTest extends RoutableSupportTestBase
 
    protected void setUp() throws Exception
    {
-      Message m = MessageFactory.createCoreMessage("message0");
+      Message m = MessageFactory.createCoreMessage(0);
       m.putHeader("headerName01", "headerValue01");
 
       MessageStore ms = new PagingMessageStore("0");

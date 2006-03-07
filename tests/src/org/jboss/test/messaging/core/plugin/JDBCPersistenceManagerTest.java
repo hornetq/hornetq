@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -93,19 +92,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doSetup(boolean guid, boolean batch) throws Exception
+   protected void doSetup(boolean batch) throws Exception
    {
-      pm = createPM();
-      
-      if (guid)
-      {
-         pm.setSqlProperties(this.getConfigTablesForGUID());
-      }
-      pm.setTxIdGuid(guid);
-      pm.setUsingBatchUpdates(batch);
-      
-      ms = new PagingMessageStore("s0");
-    
+      pm = createPM();      
+      pm.setUsingBatchUpdates(batch);      
+      ms = new PagingMessageStore("s0");    
       pm.start();
    }
    
@@ -127,7 +118,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetMaxOrdering() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -168,30 +159,30 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
       
       long maxOrdering = pm.getMaxOrdering(channel.getChannelID());
       
@@ -203,7 +194,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetNumberOfReferences() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -234,30 +225,30 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
       
       int numberOfReferences = pm.getNumberOfReferences(channel.getChannelID());
       
@@ -275,7 +266,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetReferenceInfos() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -316,30 +307,30 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
       
       List refInfos = pm.getReferenceInfos(channel.getChannelID(), 0);
       
@@ -388,7 +379,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetMessages() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -419,37 +410,37 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
       
       List msgIds = new ArrayList();
-      msgIds.add(ref3.getMessageID());
-      msgIds.add(ref4.getMessageID());
-      msgIds.add(ref7.getMessageID());
-      msgIds.add(ref9.getMessageID());
-      msgIds.add(ref1.getMessageID());
+      msgIds.add(new Long(ref3.getMessageID()));
+      msgIds.add(new Long(ref4.getMessageID()));
+      msgIds.add(new Long(ref7.getMessageID()));
+      msgIds.add(new Long(ref9.getMessageID()));
+      msgIds.add(new Long(ref1.getMessageID()));
       
       List ms = pm.getMessages(msgIds);
       assertNotNull(ms);
@@ -464,13 +455,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       pm.removeAllChannelData(channel.getChannelID());    
    }
    
-   protected boolean containsMessage(List msgs, Serializable msgId)
+   protected boolean containsMessage(List msgs, long msgId)
    {
       Iterator iter = msgs.iterator();
       while (iter.hasNext())
       {
          Message m = (Message)iter.next();
-         if (m.getMessageID().equals(msgId))
+         if (m.getMessageID() == msgId)
          {
             return true;
          }           
@@ -480,7 +471,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetMessagesMaxParams() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       pm.setMaxParams(5);
       
@@ -513,37 +504,37 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
       
       List msgIds = new ArrayList();
-      msgIds.add(ref3.getMessageID());
-      msgIds.add(ref4.getMessageID());
-      msgIds.add(ref7.getMessageID());
-      msgIds.add(ref9.getMessageID());
-      msgIds.add(ref1.getMessageID());
+      msgIds.add(new Long(ref3.getMessageID()));
+      msgIds.add(new Long(ref4.getMessageID()));
+      msgIds.add(new Long(ref7.getMessageID()));
+      msgIds.add(new Long(ref9.getMessageID()));
+      msgIds.add(new Long(ref1.getMessageID()));
       
       List ms = pm.getMessages(msgIds);
       assertNotNull(ms);
@@ -559,7 +550,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testAddReferences() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -593,37 +584,37 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
       
       List msgIds = new ArrayList();
-      msgIds.add(ref3.getMessageID());
-      msgIds.add(ref4.getMessageID());
-      msgIds.add(ref7.getMessageID());
-      msgIds.add(ref9.getMessageID());
-      msgIds.add(ref1.getMessageID());
+      msgIds.add(new Long(ref3.getMessageID()));
+      msgIds.add(new Long(ref4.getMessageID()));
+      msgIds.add(new Long(ref7.getMessageID()));
+      msgIds.add(new Long(ref9.getMessageID()));
+      msgIds.add(new Long(ref1.getMessageID()));
       
       List ms = pm.getMessages(msgIds);
       assertNotNull(ms);
@@ -640,30 +631,30 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testRemoveNonPersistentMessages() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
       Message m1 = createMessage((byte)0, false);    
-      Message m2 = createMessage((byte)0, true);
-      Message m3 = createMessage((byte)0, true);
-      Message m4 = createMessage((byte)0, false);
-      Message m5 = createMessage((byte)0, false);
-      Message m6 = createMessage((byte)0, false);
-      Message m7 = createMessage((byte)0, true);
-      Message m8 = createMessage((byte)0, true);
-      Message m9 = createMessage((byte)0, false);
-      Message m10 = createMessage((byte)0, true);
-      Message m11 = createMessage((byte)0, false);
-      Message m12 = createMessage((byte)0, false);
-      Message m13 = createMessage((byte)0, false);
-      Message m14 = createMessage((byte)0, false);
-      Message m15 = createMessage((byte)0, true);
-      Message m16 = createMessage((byte)0, true);
-      Message m17 = createMessage((byte)0, false);
-      Message m18 = createMessage((byte)0, false);
-      Message m19 = createMessage((byte)0, false);
-      Message m20 = createMessage((byte)0, true);
+      Message m2 = createMessage((byte)1, true);
+      Message m3 = createMessage((byte)2, true);
+      Message m4 = createMessage((byte)3, false);
+      Message m5 = createMessage((byte)4, false);
+      Message m6 = createMessage((byte)5, false);
+      Message m7 = createMessage((byte)6, true);
+      Message m8 = createMessage((byte)7, true);
+      Message m9 = createMessage((byte)8, false);
+      Message m10 = createMessage((byte)9, true);
+      Message m11 = createMessage((byte)10, false);
+      Message m12 = createMessage((byte)11, false);
+      Message m13 = createMessage((byte)12, false);
+      Message m14 = createMessage((byte)13, false);
+      Message m15 = createMessage((byte)14, true);
+      Message m16 = createMessage((byte)15, true);
+      Message m17 = createMessage((byte)16, false);
+      Message m18 = createMessage((byte)17, false);
+      Message m19 = createMessage((byte)18, false);
+      Message m20 = createMessage((byte)19, true);
       
                   
       MessageReference ref1 = ms.reference(m1);
@@ -731,50 +722,50 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
       assertEquals(20, refIds.size());
-      assertTrue(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertTrue(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
-      assertTrue(refIds.contains(ref11.getMessageID()));
-      assertTrue(refIds.contains(ref12.getMessageID()));
-      assertTrue(refIds.contains(ref13.getMessageID()));
-      assertTrue(refIds.contains(ref14.getMessageID()));
-      assertTrue(refIds.contains(ref15.getMessageID()));
-      assertTrue(refIds.contains(ref16.getMessageID()));
-      assertTrue(refIds.contains(ref17.getMessageID()));
-      assertTrue(refIds.contains(ref18.getMessageID()));
-      assertTrue(refIds.contains(ref19.getMessageID()));
-      assertTrue(refIds.contains(ref20.getMessageID()));
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref12.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref13.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref14.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref15.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref16.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref17.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref18.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref19.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref20.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(20, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
-      assertTrue(msgs.contains(ref6.getMessageID()));
-      assertTrue(msgs.contains(ref7.getMessageID()));
-      assertTrue(msgs.contains(ref8.getMessageID()));
-      assertTrue(msgs.contains(ref9.getMessageID()));
-      assertTrue(msgs.contains(ref10.getMessageID()));
-      assertTrue(msgs.contains(ref11.getMessageID()));
-      assertTrue(msgs.contains(ref12.getMessageID()));
-      assertTrue(msgs.contains(ref13.getMessageID()));
-      assertTrue(msgs.contains(ref14.getMessageID()));
-      assertTrue(msgs.contains(ref15.getMessageID()));
-      assertTrue(msgs.contains(ref16.getMessageID()));
-      assertTrue(msgs.contains(ref17.getMessageID()));
-      assertTrue(msgs.contains(ref18.getMessageID()));
-      assertTrue(msgs.contains(ref19.getMessageID()));
-      assertTrue(msgs.contains(ref20.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref11.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref12.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref13.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref14.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref15.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref16.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref17.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref18.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref19.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref20.getMessageID())));
       
       pm.removeNonPersistentMessageReferences(channel.getChannelID(), 1, 4);
       
@@ -782,26 +773,26 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertNotNull(refIds);
       assertEquals(18, refIds.size());
       
-      assertFalse(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertFalse(refIds.contains(ref4.getMessageID()));
-      assertTrue(refIds.contains(ref5.getMessageID()));
-      assertTrue(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertTrue(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
-      assertTrue(refIds.contains(ref11.getMessageID()));
-      assertTrue(refIds.contains(ref12.getMessageID()));
-      assertTrue(refIds.contains(ref13.getMessageID()));
-      assertTrue(refIds.contains(ref14.getMessageID()));
-      assertTrue(refIds.contains(ref15.getMessageID()));
-      assertTrue(refIds.contains(ref16.getMessageID()));
-      assertTrue(refIds.contains(ref17.getMessageID()));
-      assertTrue(refIds.contains(ref18.getMessageID()));
-      assertTrue(refIds.contains(ref19.getMessageID()));
-      assertTrue(refIds.contains(ref20.getMessageID()));
+      assertFalse(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref12.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref13.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref14.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref15.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref16.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref17.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref18.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref19.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref20.getMessageID())));
       
       pm.removeNonPersistentMessageReferences(channel.getChannelID(), 4, 14);
       
@@ -809,33 +800,33 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertNotNull(refIds);
       assertEquals(11, refIds.size());
       
-      assertFalse(refIds.contains(ref1.getMessageID()));
-      assertTrue(refIds.contains(ref2.getMessageID()));
-      assertTrue(refIds.contains(ref3.getMessageID()));
-      assertFalse(refIds.contains(ref4.getMessageID()));
-      assertFalse(refIds.contains(ref5.getMessageID()));
-      assertFalse(refIds.contains(ref6.getMessageID()));
-      assertTrue(refIds.contains(ref7.getMessageID()));
-      assertTrue(refIds.contains(ref8.getMessageID()));
-      assertFalse(refIds.contains(ref9.getMessageID()));
-      assertTrue(refIds.contains(ref10.getMessageID()));
-      assertFalse(refIds.contains(ref11.getMessageID()));
-      assertFalse(refIds.contains(ref12.getMessageID()));
-      assertFalse(refIds.contains(ref13.getMessageID()));
-      assertFalse(refIds.contains(ref14.getMessageID()));
-      assertTrue(refIds.contains(ref15.getMessageID()));
-      assertTrue(refIds.contains(ref16.getMessageID()));
-      assertTrue(refIds.contains(ref17.getMessageID()));
-      assertTrue(refIds.contains(ref18.getMessageID()));
-      assertTrue(refIds.contains(ref19.getMessageID()));
-      assertTrue(refIds.contains(ref20.getMessageID()));
+      assertFalse(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref4.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref5.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref11.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref12.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref13.getMessageID())));
+      assertFalse(refIds.contains(new Long(ref14.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref15.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref16.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref17.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref18.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref19.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref20.getMessageID())));
       
       pm.removeAllChannelData(channel.getChannelID());    
    }
    
    public void testAddRemoveReference() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel1 = new SimpleChannel(0, ms);
       Channel channel2 = new SimpleChannel(1, ms);
@@ -867,21 +858,21 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
          assertNotNull(refs);
          assertEquals(2, refs.size());
-         assertTrue(refs.contains(m1.getMessageID()));
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m1.getMessageID())));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          refs = getReferenceIds(channel2.getChannelID());
          
          assertNotNull(refs);
          assertEquals(2, refs.size());
-         assertTrue(refs.contains(m1.getMessageID()));
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m1.getMessageID())));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          List msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(2, msgs.size());
-         assertTrue(msgs.contains(m1.getMessageID()));
-         assertTrue(msgs.contains(m2.getMessageID()));
+         assertTrue(msgs.contains(new Long(m1.getMessageID())));
+         assertTrue(msgs.contains(new Long(m2.getMessageID())));
                   
          ref1_1.decrementChannelCount();
          pm.removeReference(channel1.getChannelID(), ref1_1, null);
@@ -889,19 +880,19 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          refs = getReferenceIds(channel1.getChannelID());
          assertNotNull(refs);
          assertEquals(1, refs.size());
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          refs = getReferenceIds(channel2.getChannelID());
          assertNotNull(refs);
          assertEquals(2, refs.size());
-         assertTrue(refs.contains(m1.getMessageID()));
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m1.getMessageID())));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(2, msgs.size());
-         assertTrue(msgs.contains(m1.getMessageID()));
-         assertTrue(msgs.contains(m2.getMessageID()));
+         assertTrue(msgs.contains(new Long(m1.getMessageID())));
+         assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
          ref1_2.decrementChannelCount();
          pm.removeReference(channel2.getChannelID(), ref1_2, null);
@@ -909,17 +900,17 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          refs = getReferenceIds(channel1.getChannelID());
          assertNotNull(refs);
          assertEquals(1, refs.size());
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          refs = getReferenceIds(channel2.getChannelID());
          assertNotNull(refs);
          assertEquals(1, refs.size());         
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(1, msgs.size());
-         assertTrue(msgs.contains(m2.getMessageID()));
+         assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
          ref2_1.decrementChannelCount();
          pm.removeReference(channel1.getChannelID(), ref2_1, null);
@@ -931,12 +922,12 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          refs = getReferenceIds(channel2.getChannelID());
          assertNotNull(refs);
          assertEquals(1, refs.size());         
-         assertTrue(refs.contains(m2.getMessageID()));
+         assertTrue(refs.contains(new Long(m2.getMessageID())));
          
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(1, msgs.size());
-         assertTrue(msgs.contains(m2.getMessageID()));
+         assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
          ref2_2.decrementChannelCount();
          pm.removeReference(channel2.getChannelID(), ref2_2, null);
@@ -958,7 +949,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
        
    public void testRemoveAllChannelData() throws Exception
    {
-      doSetup(false, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -985,7 +976,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       for (int i = 0; i < messages.length; i++)
       {
          Message m = messages[i];         
-         assertTrue(refs.contains(m.getMessageID()));         
+         assertTrue(refs.contains(new Long(m.getMessageID())));         
       }
       
       pm.removeAllChannelData(channel.getChannelID());
@@ -999,42 +990,22 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testCommit_NotXA_Long_NB() throws Exception
    {
-      doTransactionCommit(false, false, false);
+      doTransactionCommit(false, false);
    }
    
-   public void testCommit_NotXA_Guid_NB() throws Exception
-   {
-      doTransactionCommit(false, true, false);
-   }
-     
    public void testCommit_XA_Long_NB() throws Exception
    {
-      doTransactionCommit(true, false, false);
+      doTransactionCommit(true, false);
    }
 
-   public void testCommit_XA_Guid_NB() throws Exception
-   {
-      doTransactionCommit(true, true, false);
-   }
-   
    public void testRollback_NotXA_Long_NB() throws Exception
    {
-      doTransactionRollback(false, false, false);
-   }
-    
-   public void testRollback_NotXA_Guid_NB() throws Exception
-   {
-      doTransactionRollback(false, true, false);
+      doTransactionRollback(false, false);
    }
        
    public void testRollback_XA_Long_NB() throws Exception
    {
-      doTransactionRollback(true, false, false);
-   }
-   
-   public void testRollback_XA_Guid_NB() throws Exception
-   {
-      doTransactionRollback(true, true, false);
+      doTransactionRollback(true, false);
    }
    
 
@@ -1042,62 +1013,28 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testCommit_NotXA_Long_B() throws Exception
    {
-      doTransactionCommit(false, false, true);
-   }
-   
-   public void testCommit_NotXA_Guid_B() throws Exception
-   {
-      doTransactionCommit(false, true, true);
+      doTransactionCommit(false, true);
    }
      
    public void testCommit_XA_Long_B() throws Exception
    {
-      doTransactionCommit(true, false, true);
+      doTransactionCommit(true, true);
    }
 
-   public void testCommit_XA_Guid_B() throws Exception
-   {
-      doTransactionCommit(true, true, true);
-   }
-   
    public void testRollback_NotXA_Long_B() throws Exception
    {
-      doTransactionRollback(false, false, true);
+      doTransactionRollback(false, true);
    }
-    
-   public void testRollback_NotXA_Guid_B() throws Exception
-   {
-      doTransactionRollback(false, true, true);
-   }
-       
+        
    public void testRollback_XA_Long_B() throws Exception
    {
-      doTransactionRollback(true, false, true);
+      doTransactionRollback(true, true);
    }
    
-   public void testRollback_XA_Guid_B() throws Exception
+
+   public void testRetrievePreparedTransactions() throws Exception
    {
-      doTransactionRollback(true, true, true);
-   }
- 
-   
-   //
-   
-   public void testRetrievePreparedTransactions_Long() throws Exception
-   {
-      retrievePreparedTransactions(false);
-   }
-   
-   public void testRetrievePreparedTransactions_Guid() throws Exception
-   {
-      retrievePreparedTransactions(true);
-   }
-   
-   
-   
-   protected void retrievePreparedTransactions(boolean guid) throws Exception
-   {
-      doSetup(guid, false);
+      doSetup(false);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -1143,7 +1080,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    {
       Map headers = generateFilledMap(true);
       
-      Message m = MessageFactory.createCoreMessage(new GUID().toString(),
+      Message m = MessageFactory.createCoreMessage(i,
             reliable,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
@@ -1455,9 +1392,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doTransactionCommit(boolean xa, boolean idIsGuid, boolean batch) throws Exception
+   protected void doTransactionCommit(boolean xa, boolean batch) throws Exception
    {
-      doSetup(idIsGuid, batch);
+      doSetup(batch);
 
       Channel channel = new SimpleChannel(0, ms);
       TransactionRepository txRep = new TransactionRepository();
@@ -1499,14 +1436,14 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refs = getReferenceIds(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));
+      assertTrue(refs.contains(new Long(ref1.getMessageID())));
+      assertTrue(refs.contains(new Long(ref2.getMessageID())));
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
 
       log.debug("ref1 and ref2 are there");
 
@@ -1523,14 +1460,14 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs = getReferenceIds(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));  
+      assertTrue(refs.contains(new Long(ref1.getMessageID())));
+      assertTrue(refs.contains(new Long(ref2.getMessageID())));  
       
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
       
       //commit transaction
       tx.commit();
@@ -1539,24 +1476,24 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs = getReferenceIds(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(3, refs.size()); 
-      assertTrue(refs.contains(ref3.getMessageID()));
-      assertTrue(refs.contains(ref4.getMessageID()));  
-      assertTrue(refs.contains(ref5.getMessageID()));
+      assertTrue(refs.contains(new Long(ref3.getMessageID())));
+      assertTrue(refs.contains(new Long(ref4.getMessageID())));  
+      assertTrue(refs.contains(new Long(ref5.getMessageID())));
       
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(3, msgs.size());
-      assertTrue(msgs.contains(ref3.getMessageID()));
-      assertTrue(msgs.contains(ref4.getMessageID()));
-      assertTrue(msgs.contains(ref5.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
       
       pm.removeAllChannelData(channel.getChannelID());
       
    }
          
-   protected void doTransactionRollback(boolean xa, boolean idIsGuid, boolean batch) throws Exception
+   protected void doTransactionRollback(boolean xa, boolean batch) throws Exception
    {
-      doSetup(idIsGuid, batch);
+      doSetup(batch);
 
       Channel channel = new SimpleChannel(0, ms);
       TransactionRepository txRep = new TransactionRepository();
@@ -1595,14 +1532,14 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       List refs = getReferenceIds(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));      
+      assertTrue(refs.contains(new Long(ref1.getMessageID())));
+      assertTrue(refs.contains(new Long(ref2.getMessageID())));      
       
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
       
       
       
@@ -1619,14 +1556,14 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs = getReferenceIds(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));  
+      assertTrue(refs.contains(new Long(ref1.getMessageID())));
+      assertTrue(refs.contains(new Long(ref2.getMessageID())));  
       
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
       
       //rollback transaction
       tx.rollback();
@@ -1634,46 +1571,18 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs = getReferenceIds(channel.getChannelID());
       assertNotNull(refs);
       assertEquals(2, refs.size());
-      assertTrue(refs.contains(ref1.getMessageID()));
-      assertTrue(refs.contains(ref2.getMessageID()));  
+      assertTrue(refs.contains(new Long(ref1.getMessageID())));
+      assertTrue(refs.contains(new Long(ref2.getMessageID())));  
       
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
-      assertTrue(msgs.contains(ref1.getMessageID()));
-      assertTrue(msgs.contains(ref2.getMessageID()));
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
       
       pm.removeAllChannelData(channel.getChannelID());
             
    }
-   
-
-   protected Properties getConfigTablesForGUID()
-   {
-      Properties props = new Properties();
-      
-      props.put("CREATE_TRANSACTION",
-            "CREATE TABLE TRANSACTION (" +
-            "TRANSACTIONID VARCHAR(255), " +
-            "BRANCH_QUAL VARBINARY(254), " +
-            "FORMAT_ID INTEGER, " +
-            "GLOBAL_TXID VARBINARY(254), " +      
-            "PRIMARY KEY (TRANSACTIONID))");
-      
-      props.put("CREATE_MESSAGE_REF",
-            "CREATE TABLE MESSAGE_REFERENCE (" +
-            "CHANNELID BIGINT, " +
-            "MESSAGEID VARCHAR(256), " +
-            "TRANSACTIONID VARCHAR(255), " +
-            "STATE CHAR(1), " +
-            "ORD BIGINT, " +
-            "DELIVERYCOUNT INTEGER, " +
-            "PERSISTENT CHAR(1), " +
-            "PRIMARY KEY(CHANNELID, MESSAGEID))");
-
-      return props;
-   }
-   
    
    protected List getReferenceIds(long channelId) throws Exception
    {
@@ -1686,7 +1595,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID FROM MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
+      String sql = "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
@@ -1696,8 +1605,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       while (rs.next())
       {
-         String msgId = rs.getString(1);
-         msgIds.add(msgId);
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
       }
       rs.close();
       ps.close();
@@ -1724,7 +1633,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID FROM MESSAGE ORDER BY MESSAGEID";
+      String sql = "SELECT MESSAGEID FROM JMS_MESSAGE ORDER BY MESSAGEID";
       PreparedStatement ps = conn.prepareStatement(sql);
       
       ResultSet rs = ps.executeQuery();
@@ -1733,8 +1642,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       while (rs.next())
       {
-         String msgId = rs.getString(1);
-         msgIds.add(msgId);
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
       }
       rs.close();
       ps.close();

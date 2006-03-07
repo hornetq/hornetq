@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.TransactionRolledBackException;
 import javax.transaction.xa.Xid;
 
@@ -581,7 +580,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionId;
    }
 
-   protected void sendMessage(Message m, Transaction tx) throws JMSException
+   protected void sendMessage(JBossMessage m, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
 
@@ -602,7 +601,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       //This allows the no-local consumers to filter out the messages that come from the
       //same connection
       //TODO Do we want to set this for ALL messages. Optimisation is possible here
-      ((JBossMessage)m).setConnectionID(connectionID);
+      m.setConnectionID(connectionID);
       
       Routable r = (Routable)m;
     
@@ -619,7 +618,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }
    
-   protected void acknowledge(String messageID, int consumerID, Transaction tx) throws JMSException
+   protected void acknowledge(long messageID, int consumerID, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("acknowledging " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
 
@@ -631,7 +630,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       consumer.acknowledge(messageID, tx);
    }
    
-   protected void cancel(String messageID, int consumerID) throws JMSException
+   protected void cancel(long messageID, int consumerID) throws JMSException
    {
       ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
       if (consumer == null)
@@ -688,7 +687,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       for(Iterator i = txState.getMessages().iterator(); i.hasNext(); )
       {
-         Message m = (Message)i.next();
+         JBossMessage m = (JBossMessage)i.next();
          sendMessage(m, tx);
          if (trace) { log.trace("sent " + m); }
       }

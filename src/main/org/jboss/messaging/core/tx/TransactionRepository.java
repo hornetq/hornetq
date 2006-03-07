@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -55,14 +56,16 @@ public class TransactionRepository
    protected Map globalToLocalMap;     
    
    protected PersistenceManager persistenceManager;
+   
+   protected IdManager idManager;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public TransactionRepository()
+   public TransactionRepository() throws Exception
    {
-      globalToLocalMap = new ConcurrentReaderHashMap();
+      globalToLocalMap = new ConcurrentReaderHashMap();           
    }
    
    // Public --------------------------------------------------------
@@ -70,6 +73,9 @@ public class TransactionRepository
    public void start(PersistenceManager persistenceManager) throws Exception
    {
       this.persistenceManager = persistenceManager;
+      
+      //TODO make this configurable
+      idManager = new IdManager("TRANSACTION_ID", 4096, persistenceManager);
    }
 
    public void stop() throws Exception
@@ -94,18 +100,11 @@ public class TransactionRepository
    /*
     * Load any prepared transactions into the repository so they can be recovered
     */
-   public void loadPreparedTransactions() throws TransactionException
+   public void loadPreparedTransactions() throws Exception
    {
       List prepared = null;
-      
-      try
-      {
-         prepared = persistenceManager.retrievePreparedTransactions();
-      }
-      catch (Exception e)
-      {
-         throw new TransactionException("Failed to retrieve prepared transactions", e);
-      }
+            
+      prepared = persistenceManager.retrievePreparedTransactions();
       
       if (prepared != null)
       {         
@@ -122,7 +121,7 @@ public class TransactionRepository
       }
    }
          
-   public Transaction getPreparedTx(Xid xid) throws TransactionException
+   public Transaction getPreparedTx(Xid xid) throws Exception
    {
       Transaction tx = (Transaction)globalToLocalMap.get(xid);
       if (tx == null)
@@ -136,13 +135,13 @@ public class TransactionRepository
       return tx;
    }
    
-   public Transaction createTransaction(Xid xid) throws TransactionException
+   public Transaction createTransaction(Xid xid) throws Exception
    {
       if (globalToLocalMap.containsKey(xid))
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(xid);
+      Transaction tx = new Transaction(idManager.getId(), xid);
       
       if (trace) { log.trace("created transaction " + tx); }
       
@@ -150,9 +149,9 @@ public class TransactionRepository
       return tx;
    }
    
-   public Transaction createTransaction() throws TransactionException
+   public Transaction createTransaction() throws Exception
    {
-      Transaction tx = new Transaction(null);
+      Transaction tx = new Transaction(idManager.getId());
 
       if (trace) { log.trace("created transaction " + tx); }
 

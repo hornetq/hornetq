@@ -21,12 +21,13 @@
   */
 package org.jboss.jms.client.delegate;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.remoting.Client;
 
 /**
@@ -93,7 +94,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Destination getDestination() throws JMSException
+   public JBossDestination getDestination() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -138,7 +139,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void send(Destination destination, Message message, int deliveryMode,
+   public void send(JBossDestination destination, Message message, int deliveryMode,
                     int priority, long timeToLive) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
@@ -148,7 +149,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void send(Message message) throws JMSException
+   public void send(JBossMessage message) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");  
    }
@@ -166,7 +167,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void setDestination(Destination dest)
+   public void setDestination(JBossDestination dest)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

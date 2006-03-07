@@ -74,7 +74,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossMapMessage(String messageID)
+   public JBossMapMessage(long messageID)
    {
       super(messageID);
       this.setPayload(new HashMap());
@@ -84,7 +84,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossMapMessage(String messageID,
+   public JBossMapMessage(long messageID,
          boolean reliable,
          long expiration,
          long timestamp,
@@ -114,9 +114,9 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
     * @param foreign
     * @throws JMSException
     */
-   public JBossMapMessage(MapMessage foreign) throws JMSException
+   public JBossMapMessage(MapMessage foreign, long id) throws JMSException
    {
-      super(foreign);     
+      super(foreign, id);     
       this.setPayload(new HashMap());
       clearPayloadAsByteArray();
       Enumeration names = foreign.getMapNames();

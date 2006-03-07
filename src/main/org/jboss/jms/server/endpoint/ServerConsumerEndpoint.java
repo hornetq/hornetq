@@ -22,7 +22,6 @@
 package org.jboss.jms.server.endpoint;
 
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -53,7 +52,6 @@ import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
-import org.jboss.messaging.util.Util;
 
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
@@ -144,11 +142,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    //There is no need to synchronize this method. The channel synchronizes delivery to its consumers
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      if (trace) { log.trace(this + " receives reference " + Util.guidToString(reference.getMessageID()) + " for delivery"); }
+      if (trace) { log.trace(this + " receives reference " + reference.getMessageID() + " for delivery"); }
 
       if (!isReady())
       {
-         if (trace) { log.trace(this + " rejects " + Util.guidToString(reference.getMessageID())); }
+         if (trace) { log.trace(this + " rejects " + reference.getMessageID()); }
          return null;
       }
       
@@ -176,7 +174,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }                         
          
          delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
-         deliveries.put(reference.getMessageID(), delivery);
+         deliveries.put(new Long(reference.getMessageID()), delivery);
                   
          //We don't send the message as-is, instead we create a MessageDelegate instance
          //This allows local fields such as deliveryCount to be handled by the delegate
@@ -272,9 +270,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // ConsumerEndpoint implementation -------------------------------
    
-   public void cancelMessage(Serializable messageID) throws JMSException
+   public void cancelMessage(long messageID) throws JMSException
    {            
-      SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(messageID);
+      SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
       if (del != null)
       {         
          try
@@ -298,7 +296,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     * Otherwise, if wait = true, we register as being interested in receiving a message
     * asynchronously, then return and wait for it on the client side.
     */
-   public javax.jms.Message getMessageNow(boolean wait) throws JMSException
+   public MessageDelegate getMessageNow(boolean wait) throws JMSException
    {  
       synchronized (channel)
       { 
@@ -309,15 +307,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             //This will always deliver a message (if there is one) on the same thread
             promptDelivery();
             
-            javax.jms.Message ret = (javax.jms.Message)toGrab;
-            
-            if (wait && ret == null)
+            if (wait && toGrab == null)
             {
                active = true;
             }
             
-            return ret;
-            
+            return toGrab;            
          }
          finally
          {
@@ -416,7 +411,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    }
    
    
-   void acknowledge(String messageID, Transaction tx) throws JMSException
+   void acknowledge(long messageID, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("acknowledging " + messageID); }
       
@@ -425,12 +420,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       if (tx == null)
       {
          //No transaction so we remove the delivery now
-         d = (SingleReceiverDelivery)deliveries.remove(messageID);
+         d = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
       }
       else
       {
          //The actual removal of the deliveries from the delivery list is deferred until tx commit 
-         d = (SingleReceiverDelivery)deliveries.get(messageID);
+         d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
          if (deliveryCallback == null)
          {
             deliveryCallback = new DeliveryCallback();
@@ -607,7 +602,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          Iterator iter = delList.iterator();
          while (iter.hasNext())
          {
-            String messageID = (String)iter.next();
+            Long messageID = (Long)iter.next();
             
             if (deliveries.remove(messageID) == null)
             {
@@ -623,7 +618,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          //Need to be cancelled in reverse order to maintain ordering
          for (int i = delList.size() - 1; i >= 0; i--)
          {               
-            String messageID = (String)delList.get(i);
+            Long messageID = (Long)delList.get(i);
             
             SingleReceiverDelivery del = null;
             if ((del = (SingleReceiverDelivery)deliveries.remove(messageID)) == null)
@@ -643,9 +638,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          deliveryCallback = null;
       }
       
-      void addMessageID(String messageID)
+      void addMessageID(long messageID)
       {
-         delList.add(messageID);
+         delList.add(new Long(messageID));
       }
    }
    

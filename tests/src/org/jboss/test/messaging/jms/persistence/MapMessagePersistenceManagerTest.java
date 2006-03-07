@@ -65,7 +65,7 @@ public class MapMessagePersistenceManagerTest extends MessagePersistenceManagerT
       HashMap jmsProperties = generateFilledMap(false);
                
       JBossMapMessage m = 
-         new JBossMapMessage(new GUID().toString(),
+         new JBossMapMessage(i,
                reliable,
                System.currentTimeMillis() + 1000 * 60 * 60,
                System.currentTimeMillis(),

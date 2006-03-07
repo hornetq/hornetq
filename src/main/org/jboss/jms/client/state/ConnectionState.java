@@ -25,8 +25,8 @@ import java.util.HashSet;
 
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
@@ -52,11 +52,13 @@ public class ConnectionState extends HierarchicalStateSupport
    
    private ResourceManager resourceManager;
    
+   private MessageIdGenerator idGenerator;
+   
    //Thread pool used for making asynch calls to server - e.g. activateConsumer
    private PooledExecutor pooledExecutor;
    
-   public ConnectionState(ConnectionDelegate delegate, String serverId,
-         JMSRemotingConnection remotingConnection)
+   public ConnectionState(ConnectionDelegate delegate, ResourceManager rm, MessageIdGenerator gen,
+                          JMSRemotingConnection remotingConnection)
       throws Exception
    {
       super(null, delegate);
@@ -65,7 +67,9 @@ public class ConnectionState extends HierarchicalStateSupport
       
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
       
-      resourceManager = ResourceManagerFactory.instance.getResourceManager(serverId);
+      this.resourceManager = rm;
+      
+      this.idGenerator = gen;
       
       //TODO size should be configurable
       pooledExecutor = new PooledExecutor(new LinkedQueue(), 50);
@@ -78,6 +82,11 @@ public class ConnectionState extends HierarchicalStateSupport
    public ResourceManager getResourceManager()
    {
       return resourceManager;
+   }
+   
+   public MessageIdGenerator getIdGenerator()
+   {
+      return idGenerator;
    }
    
    public Executor getPooledExecutor()

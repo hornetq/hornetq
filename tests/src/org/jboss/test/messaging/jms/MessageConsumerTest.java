@@ -423,8 +423,6 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testSendMessageAndCloseConsumer2() throws Exception
    {
-
-
       // create my consumer from scratch
       consumerConnection.close();
 

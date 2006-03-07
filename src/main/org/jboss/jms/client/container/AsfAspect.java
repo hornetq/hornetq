@@ -24,9 +24,7 @@ package org.jboss.jms.client.container;
 import java.util.LinkedList;
 
 import javax.jms.ConnectionConsumer;
-import javax.jms.Destination;
 import javax.jms.IllegalStateException;
-import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ServerSessionPool;
 
@@ -39,6 +37,8 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.logging.Logger;
 import org.jgroups.protocols.JMS;
 
@@ -109,7 +109,7 @@ public class AsfAspect
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      Destination dest = (Destination)mi.getArguments()[0];
+      JBossDestination dest = (JBossDestination)mi.getArguments()[0];
       String subscriptionName = (String)mi.getArguments()[1];
       String messageSelector = (String)mi.getArguments()[2];
       ServerSessionPool sessionPool = (ServerSessionPool)mi.getArguments()[3];
@@ -129,7 +129,7 @@ public class AsfAspect
       
       //Load the session with a message to be processed during a subsequent call to run()
 
-      Message m = (Message)mi.getArguments()[0];
+      MessageDelegate m = (MessageDelegate)mi.getArguments()[0];
       int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
       ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
       
@@ -184,7 +184,7 @@ public class AsfAspect
    
    protected static class AsfMessageHolder
    {
-      Message msg;
+      MessageDelegate msg;
       int consumerID;
       ConsumerDelegate consumerDelegate;
    }

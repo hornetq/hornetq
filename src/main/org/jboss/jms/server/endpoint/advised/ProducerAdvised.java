@@ -22,8 +22,8 @@
 package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.ProducerEndpoint;
 
 /**
@@ -65,7 +65,7 @@ public class ProducerAdvised extends AdvisedSupport implements ProducerEndpoint
       endpoint.closing();
    }
 
-   public void send(Message message) throws JMSException
+   public void send(JBossMessage message) throws JMSException
    {
       endpoint.send(message);
    }

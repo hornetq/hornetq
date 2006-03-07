@@ -24,8 +24,8 @@ package org.jboss.jms.server.endpoint;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.logging.Logger;
@@ -97,7 +97,7 @@ public class ServerProducerEndpoint implements ProducerEndpoint
       closed = true;
    }
    
-   public void send(Message m) throws JMSException
+   public void send(JBossMessage m) throws JMSException
    {
       if (closed)
       {

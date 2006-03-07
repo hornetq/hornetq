@@ -46,7 +46,7 @@ public interface Routable extends Serializable
    static final String REPLICATOR_ID = "REPLICATOR_ID";
    static final String COLLECTOR_ID = "COLLECTOR_ID";
 
-   Serializable getMessageID();
+   long getMessageID();
 
    /**
     * If it is a Message instance, then it returns itself, otherwise it will return the Message

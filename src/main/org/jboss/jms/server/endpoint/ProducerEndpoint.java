@@ -22,9 +22,9 @@
 package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * Represents the set of methods from the ProducerDelegate that are handled on the server. The rest
@@ -43,6 +43,6 @@ public interface ProducerEndpoint extends Closeable
     *
     * @param message - the message to be sent.
    */
-   void send(Message message) throws JMSException;
+   void send(JBossMessage message) throws JMSException;
 }
 

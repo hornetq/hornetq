@@ -159,7 +159,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
    public void testHandleReplicatorDidNotJoin() throws Exception
    {
       assertFalse(peer.hasJoined());
-      assertNull(replicator.handle(null, MessageFactory.createCoreMessage("message0"), null));
+      assertNull(replicator.handle(null, MessageFactory.createCoreMessage(0), null));
    }
 
    //
@@ -192,7 +192,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
       assertTrue(replicator.getOutputs().isEmpty());
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-      Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+      Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
       Set deliveries = replicator.handle(observer, m, null);
 
@@ -254,7 +254,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          log.debug("sending the message");
          Set deliveries = replicator.handle(observer, m, null);
@@ -320,7 +320,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -387,7 +387,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          log.debug("sending the message");
          Set deliveries = replicator.handle(observer, m, null);
@@ -453,7 +453,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -526,7 +526,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          log.debug("sending the message");
          Set deliveries = replicator.handle(observer, m, null);
@@ -599,7 +599,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -675,7 +675,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -747,7 +747,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -831,7 +831,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -905,7 +905,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
@@ -986,7 +986,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -1062,7 +1062,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
             Set dels = replicator.handle(observer, m, null);
 
             assertEquals(1, dels.size());
@@ -1157,7 +1157,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -1235,7 +1235,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
@@ -1321,7 +1321,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -1399,7 +1399,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery[] deliveries = new Delivery[NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
             Set dels = replicator.handle(observer, m, null);
 
             assertEquals(1, dels.size());
@@ -1503,7 +1503,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -1575,7 +1575,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -1649,7 +1649,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -1729,7 +1729,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -1818,7 +1818,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -1902,7 +1902,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -1991,7 +1991,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -2080,7 +2080,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -2179,7 +2179,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -2277,7 +2277,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
@@ -2408,7 +2408,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -2516,7 +2516,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -2633,7 +2633,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery[] deliveries = new Delivery[2 * NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
@@ -2789,7 +2789,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -2928,7 +2928,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -3011,7 +3011,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -3095,7 +3095,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -3197,7 +3197,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -3306,7 +3306,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -3399,7 +3399,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -3497,7 +3497,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
 
@@ -3606,7 +3606,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set deliveries = replicator.handle(observer, m, null);
 
@@ -3726,7 +3726,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -3831,7 +3831,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, false, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, false, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
@@ -3971,7 +3971,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -4087,7 +4087,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -4214,7 +4214,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          Delivery[] deliveries = new Delivery[2 * NUMBER_OF_MESSAGES];
          for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
-            Message m = MessageFactory.createCoreMessage("message" + i, true, "payload" + i);
+            Message m = MessageFactory.createCoreMessage(i, true, "payload" + i);
 
             Set dels = replicator.handle(observer, m, null);
 
@@ -4381,7 +4381,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          assertTrue(identities.contains(replicator.getPeerIdentity()));
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -4518,7 +4518,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m = MessageFactory.createCoreMessage("message0", false, "payload");
+         Message m = MessageFactory.createCoreMessage(0, false, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -4622,7 +4622,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m = MessageFactory.createCoreMessage("message0", true, "payload");
+         Message m = MessageFactory.createCoreMessage(0, true, "payload");
 
          Set deliveries = replicator.handle(observer, m, null);
          log.debug("message submitted to replicator");
@@ -4778,7 +4778,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", false, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, false, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -4796,7 +4796,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          receiver.clear();
          receiver.resetInvocationCount();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, false, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -4887,7 +4887,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", true, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -4904,7 +4904,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", true, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5010,7 +5010,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", false, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, false, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5028,7 +5028,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          receiver.clear();
          receiver.resetInvocationCount();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, false, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5129,7 +5129,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", true, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5146,7 +5146,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", true, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5247,7 +5247,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", false, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, false, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5265,7 +5265,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          receiver.clear();
          receiver.resetInvocationCount();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, false, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5362,7 +5362,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", true, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5379,7 +5379,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", true, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5483,7 +5483,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", false, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, false, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5501,7 +5501,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          receiver.clear();
          receiver.resetInvocationCount();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, false, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5601,7 +5601,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", true, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5618,7 +5618,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", true, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5736,7 +5736,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", false, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, false, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5755,7 +5755,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
          receiver.clear();
          receiver.resetInvocationCount();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", false, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, false, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 
@@ -5870,7 +5870,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
 
-         Message m1 = MessageFactory.createCoreMessage("message1", true, "payload1");
+         Message m1 = MessageFactory.createCoreMessage(1, true, "payload1");
 
          Set deliveries = replicator.handle(observer, m1, null);
 
@@ -5888,7 +5888,7 @@ public abstract class ReplicatorTestBase extends PeerTestBase
 
          receiver.clear();
 
-         Message m2 = MessageFactory.createCoreMessage("message2", true, "payload2");
+         Message m2 = MessageFactory.createCoreMessage(2, true, "payload2");
 
          deliveries = replicator2.handle(observer, m2, null);
 

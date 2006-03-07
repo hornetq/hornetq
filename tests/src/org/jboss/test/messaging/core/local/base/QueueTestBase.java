@@ -83,7 +83,7 @@ public abstract class QueueTestBase extends ChannelTestBase
       channel.add(r1);
       channel.add(r2);
 
-      Delivery d = channel.handle(observer, MessageFactory.createCoreMessage("message0", false, "payload"), null);
+      Delivery d = channel.handle(observer, MessageFactory.createCoreMessage(0, false, "payload"), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
@@ -118,7 +118,7 @@ public abstract class QueueTestBase extends ChannelTestBase
       assertTrue(channel.add(r1));
       assertTrue(channel.add(r2));
 
-      Delivery d = channel.handle(observer, MessageFactory.createCoreMessage("message0", true, "payload"), null);
+      Delivery d = channel.handle(observer, MessageFactory.createCoreMessage(0, true, "payload"), null);
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();

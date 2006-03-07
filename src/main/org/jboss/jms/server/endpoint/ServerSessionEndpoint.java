@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -52,7 +51,6 @@ import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
@@ -117,18 +115,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    // SessionDelegate implementation --------------------------------
 
-   public ProducerDelegate createProducerDelegate(Destination jmsDestination) throws JMSException
+   public ProducerDelegate createProducerDelegate(JBossDestination jmsDestination) throws JMSException
    {
       if (closed)
       {
          throw new IllegalStateException("Session is closed");
       }
       
-      JBossDestination dest = (JBossDestination)jmsDestination;
-            
       if (jmsDestination != null)
       {
-         if (cm.getCoreDestination(dest) == null)
+         if (cm.getCoreDestination(jmsDestination) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
@@ -151,7 +147,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return d;
    }
 
-	public ConsumerDelegate createConsumerDelegate(Destination jmsDestination,
+	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selector,
                                                   boolean noLocal,
                                                   String subscriptionName,
@@ -167,15 +163,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
          selector = null;
       }
       
-      JBossDestination d = (JBossDestination)jmsDestination;
-      
-      if (trace) { log.trace("creating consumer endpoint for " + d + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName); }
+      if (trace) { log.trace("creating consumer endpoint for " + jmsDestination + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName); }
             
-      if (d.isTemporary())
+      if (jmsDestination.isTemporary())
       {
          // Can only create a consumer for a temporary destination on the same connection
          // that created it
-         if (!connectionEndpoint.hasTemporaryDestination(d))
+         if (!connectionEndpoint.hasTemporaryDestination(jmsDestination))
          {
             String msg = "Cannot create a message consumer on a different connection " +
                          "to that which created the temporary destination";
@@ -183,7 +177,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      CoreDestination coreDestination = cm.getCoreDestination(d);
+      CoreDestination coreDestination = cm.getCoreDestination(jmsDestination);
       if (coreDestination == null)
       {
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
@@ -193,17 +187,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
      
       CoreSubscription subscription = null;
 
-      if (d.isTopic())
+      if (jmsDestination.isTopic())
       {
          if (subscriptionName == null)
          {
             // non-durable subscription
             if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
-            subscription = cm.createSubscription(d.getName(), selector, noLocal, ms, pm);
+            subscription = cm.createSubscription(jmsDestination.getName(), selector, noLocal, ms, pm);
          }
          else
          {
-            if (d.isTemporary())
+            if (jmsDestination.isTemporary())
             {
                throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
             }
@@ -220,7 +214,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             if (subscription == null)
             {
                if (trace) { log.trace("creating new durable subscription on " + coreDestination); }
-               subscription = cm.createDurableSubscription(d.getName(),
+               subscription = cm.createDurableSubscription(jmsDestination.getName(),
                                                            clientID,
                                                            subscriptionName,
                                                            selector,
@@ -268,7 +262,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   subscription.unsubscribe();
 
                   // create a fresh new subscription
-                  subscription = cm.createDurableSubscription(d.getName(),
+                  subscription = cm.createDurableSubscription(jmsDestination.getName(),
                                                               clientID,
                                                               subscriptionName,
                                                               selector,
@@ -303,7 +297,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return stub;
    }
 	
-	public BrowserDelegate createBrowserDelegate(Destination jmsDestination, String messageSelector)
+	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination, String messageSelector)
 	   throws JMSException
 	{
 	   if (closed)
@@ -316,9 +310,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	      throw new InvalidDestinationException("null destination");
 	   }
 	   
-      JBossDestination dest = (JBossDestination)jmsDestination;
-      
-	   CoreDestination destination = cm.getCoreDestination(dest);
+	   CoreDestination destination = cm.getCoreDestination(jmsDestination);
 	   
 	   if (destination == null)
 	   {
@@ -346,7 +338,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   return stub;
 	}
 
-   public javax.jms.Queue createQueue(String name) throws JMSException
+   public JBossQueue createQueue(String name) throws JMSException
    {
       if (closed)
       {
@@ -363,7 +355,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return new JBossQueue(name);
    }
 
-   public javax.jms.Topic createTopic(String name) throws JMSException
+   public JBossTopic createTopic(String name) throws JMSException
    {
       if (closed)
       {
@@ -448,51 +440,48 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public void addTemporaryDestination(Destination dest) throws JMSException
+   public void addTemporaryDestination(JBossDestination dest) throws JMSException
    {
       if (closed)
       {
          throw new IllegalStateException("Session is closed");
       }
-      JBossDestination d = (JBossDestination)dest;
-      if (!d.isTemporary())
+      if (!dest.isTemporary())
       {
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
       connectionEndpoint.addTemporaryDestination(dest);
-      cm.deployTemporaryCoreDestination(d.isQueue(), d.getName(), ms, pm);
+      cm.deployTemporaryCoreDestination(dest.isQueue(), dest.getName(), ms, pm);
    }
    
-   public void deleteTemporaryDestination(Destination dest) throws JMSException
+   public void deleteTemporaryDestination(JBossDestination dest) throws JMSException
    {
       if (closed)
       {
          throw new IllegalStateException("Session is closed");
       }
-      JBossDestination d = (JBossDestination)dest;
-      
-      if (!d.isTemporary())
+
+      if (!dest.isTemporary())
       {
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
       
       //It is illegal to delete a temporary destination if there any active consumers on it
-      CoreDestination destination = cm.getCoreDestination(d);
+      CoreDestination destination = cm.getCoreDestination(dest);
       
       if (destination == null)
       {
          throw new InvalidDestinationException("Destination:" + dest + " does not exist");         
       }
       
-   
-      if (destination instanceof Queue)
+      if (dest instanceof JBossQueue)
       {
          if (destination.iterator().hasNext())
          {
             throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
          }
       }
-      else if (destination instanceof Topic)
+      else if (dest instanceof JBossTopic)
       {
          Iterator iter = destination.iterator();
          while (iter.hasNext())
@@ -505,7 +494,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      cm.undeployTemporaryCoreDestination(d.isQueue(), d.getName());
+      cm.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
       connectionEndpoint.removeTemporaryDestination(dest);
    }
    

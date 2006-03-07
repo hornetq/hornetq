@@ -65,7 +65,7 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
       HashMap jmsProperties = generateFilledMap(false);
                
       JBossStreamMessage m = 
-         new JBossStreamMessage(new GUID().toString(),
+         new JBossStreamMessage(i,
                reliable,
                System.currentTimeMillis() + 1000 * 60 * 60,
                System.currentTimeMillis(),

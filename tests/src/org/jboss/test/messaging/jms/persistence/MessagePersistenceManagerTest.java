@@ -63,9 +63,9 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       super.setUp();              
    }
    
-   protected void doSetup(boolean guid, boolean batch) throws Exception
+   protected void doSetup(boolean batch) throws Exception
    {
-      super.doSetup(guid, batch);
+      super.doSetup(batch);
       
       cm.deployCoreDestination(true, "testDestination", ms, pm);
       cm.deployCoreDestination(true, "testReplyTo", ms, pm);
@@ -85,8 +85,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    {
       cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
       cm.start();
-            
-      log.info(this + " creatpm");      
+                 
       return new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
    }
   
@@ -134,7 +133,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       HashMap jmsProperties = generateFilledMap(false);
               
       JBossMessage jbm = 
-         new JBossMessage(new GUID().toString(),
+         new JBossMessage(i,
             reliable,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),

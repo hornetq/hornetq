@@ -70,33 +70,33 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    /**
     * @param messageID
     */
-   public MessageSupport(Serializable messageID)
+   public MessageSupport(long messageID)
    {
       super(messageID);
    }
 
-   public MessageSupport(Serializable messageID, Serializable payload)
+   public MessageSupport(long messageID, Serializable payload)
    {
       super(messageID);
       this.payload = payload;
    }
    
-   public MessageSupport(Serializable messageID, boolean reliable, Serializable payload)
+   public MessageSupport(long messageID, boolean reliable, Serializable payload)
    {
       this(messageID, reliable, Long.MAX_VALUE, payload);
    }
 
-   public MessageSupport(Serializable messageID, boolean reliable)
+   public MessageSupport(long messageID, boolean reliable)
    {
       this(messageID, reliable, Long.MAX_VALUE, null);
    }
 
-   public MessageSupport(Serializable messageID, boolean reliable, long timeToLive)
+   public MessageSupport(long messageID, boolean reliable, long timeToLive)
    {
       this(messageID, reliable, timeToLive, null);
    }
 
-   public MessageSupport(Serializable messageID,
+   public MessageSupport(long messageID,
                          boolean reliable,
                          long timeToLive,
                          Serializable payload)
@@ -108,7 +108,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    /*
     * This constructor is used to create a message from persistent storage
     */
-   public MessageSupport(Serializable messageID,
+   public MessageSupport(long messageID,
                          boolean reliable,
                          long expiration,
                          long timestamp,
@@ -251,11 +251,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
          return false;
       }
       MessageSupport that = (MessageSupport)o;
-      if (messageID == null)
-      {
-         return that.messageID == null;
-      }
-      return messageID.equals(that.messageID);
+      return that.messageID == this.messageID;
    }
 
    /**
@@ -269,11 +265,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
 
    public int hashCode()
    {
-      if (messageID == null)
-      {
-         return 0;
-      }
-      return messageID.hashCode();
+      return (int)((this.messageID >>> 32) ^ this.messageID);
    }
 
    public String toString()

@@ -56,20 +56,8 @@ public class SimpleJMSMessage implements Message
 
    // Message implementation ----------------------------------------
 
-   private String hiddenPrivateField;
-   
    private String messageID;
 
-   public String getHiddenPrivateField()
-   {
-      return hiddenPrivateField;
-   }
-   
-   public void setHiddenPrivateField(String f)
-   {
-      hiddenPrivateField = f;
-   }
-   
    public String getJMSMessageID() throws JMSException
    {
       return messageID;

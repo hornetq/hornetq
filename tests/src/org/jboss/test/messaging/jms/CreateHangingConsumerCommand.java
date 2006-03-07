@@ -64,13 +64,9 @@ public class CreateHangingConsumerCommand implements Command
    public Object execute() throws Exception
    {
       Connection conn = cf.createConnection();
-      
-      log.info("Created connection");
-      
+          
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      log.info("Created session");
-      
+       
       conn.start();
       
       consumer = sess.createConsumer(queue);

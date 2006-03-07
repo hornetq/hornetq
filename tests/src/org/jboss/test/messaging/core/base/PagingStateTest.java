@@ -35,7 +35,6 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.tm.TransactionManagerService;
-import org.jboss.util.id.GUID;
 
 /**
  * 
@@ -101,7 +100,6 @@ public class PagingStateTest extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-      log.info("pm is:" + pm);
       ((JDBCPersistenceManager)pm).stop();
       pm = null;
       sc.stop();
@@ -129,7 +127,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -189,7 +187,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1 + 1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -201,12 +199,12 @@ public class PagingStateTest extends MessagingTestCase
       //Check one ref
       List refIds = getReferenceIds(channel1.getChannelID());
       assertEquals(1, refIds.size());
-      assertTrue(refIds.contains(refs[FULL_SIZE1].getMessageID()));
+      assertTrue(refIds.contains(new Long(refs[FULL_SIZE1].getMessageID())));
             
       //Check one message is in storage
       List msgIds = getMessageIds();
       assertEquals(1, refIds.size());
-      assertTrue(refIds.contains(refs[FULL_SIZE1].getMessageID()));     
+      assertTrue(refIds.contains(new Long(refs[FULL_SIZE1].getMessageID())));     
       
       //Check all but one msgs are in the store
       assertEquals(FULL_SIZE1, ms.size());
@@ -251,7 +249,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1 + PAGE_SIZE1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -269,8 +267,8 @@ public class PagingStateTest extends MessagingTestCase
       int count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String refId = (String)iter.next();
-         assertEquals(refId, refs[count].getMessageID());
+         Long refId = (Long)iter.next();
+         assertEquals(refId.longValue(), refs[count].getMessageID());
          count++;
       }
                   
@@ -281,7 +279,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
             
@@ -328,7 +326,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1 + 2 * PAGE_SIZE1 + 1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -346,8 +344,8 @@ public class PagingStateTest extends MessagingTestCase
       int count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String refId = (String)iter.next();
-         assertEquals(refId, refs[count].getMessageID());
+         Long refId = (Long)iter.next();
+         assertEquals(refId.longValue(), refs[count].getMessageID());
          count++;
       }
                   
@@ -358,7 +356,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
       
@@ -408,7 +406,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1 + PAGE_SIZE1 / 2; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
           
@@ -426,8 +424,8 @@ public class PagingStateTest extends MessagingTestCase
       int count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String refId = (String)iter.next();
-         assertEquals(refId, refs[count].getMessageID());
+         Long refId = (Long)iter.next();
+         assertEquals(refId.longValue(), refs[count].getMessageID());
          count++;
       }
                   
@@ -438,7 +436,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
       
@@ -464,8 +462,8 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String refId = (String)iter.next();
-         assertEquals(refId, refs[count].getMessageID());
+         Long refId = (Long)iter.next();
+         assertEquals(refId.longValue(), refs[count].getMessageID());
          count++;
       }
                   
@@ -476,7 +474,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
          
@@ -543,7 +541,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1 + PAGE_SIZE1 + 1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -561,8 +559,8 @@ public class PagingStateTest extends MessagingTestCase
       int count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String refId = (String)iter.next();
-         assertEquals(refId, refs[count].getMessageID());
+         Long refId = (Long)iter.next();
+         assertEquals(refId.longValue(), refs[count].getMessageID());
          count++;
       }
                   
@@ -573,7 +571,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
       
@@ -599,8 +597,8 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String refId = (String)iter.next();
-         assertEquals(refId, refs[count].getMessageID());
+         Long refId = (Long)iter.next();
+         assertEquals(refId.longValue(), refs[count].getMessageID());
          count++;
       }
                   
@@ -611,7 +609,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
       
@@ -629,12 +627,12 @@ public class PagingStateTest extends MessagingTestCase
       
       assertEquals(1, refIds.size());
       
-      assertEquals(refs[FULL_SIZE1 + PAGE_SIZE1].getMessageID(), (String)refIds.get(0));
+      assertEquals(refs[FULL_SIZE1 + PAGE_SIZE1].getMessageID(), ((Long)refIds.get(0)).longValue());
       
       //Check one message is in storage
       msgIds = getMessageIds();
       assertEquals(1, msgIds.size());   
-      assertEquals(refs[FULL_SIZE1 + PAGE_SIZE1].getMessageID(), (String)msgIds.get(0));
+      assertEquals(refs[FULL_SIZE1 + PAGE_SIZE1].getMessageID(), ((Long)msgIds.get(0)).longValue());
       
       //Consumer one more
       ref = state1.removeFirstInMemory();
@@ -654,10 +652,10 @@ public class PagingStateTest extends MessagingTestCase
       assertTrue(msgIds.isEmpty());     
       
       //Add a couple more messages - verify they don't go to storage
-      Message mNew1 = MessageFactory.createCoreMessage(new GUID().toString(), false, null);              
+      Message mNew1 = MessageFactory.createCoreMessage(FULL_SIZE1 + PAGE_SIZE1 + 1, false, null);              
       MessageReference refNew1 = ms.reference(mNew1);      
       state1.addReference(refNew1);
-      Message mNew2 = MessageFactory.createCoreMessage(new GUID().toString(), false, null);              
+      Message mNew2 = MessageFactory.createCoreMessage(FULL_SIZE1 + PAGE_SIZE1 + 2, false, null);              
       MessageReference refNew2 = ms.reference(mNew2);      
       state1.addReference(refNew2);
       
@@ -736,7 +734,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE2; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref1 = ms.reference(m);
          
@@ -764,7 +762,7 @@ public class PagingStateTest extends MessagingTestCase
       
       //Send another message
       
-      Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+      Message m = MessageFactory.createCoreMessage(FULL_SIZE2, false, null);        
       
       msgs[FULL_SIZE2] = m;
       
@@ -783,12 +781,12 @@ public class PagingStateTest extends MessagingTestCase
             
       refIds = getReferenceIds(channel2.getChannelID());
       assertEquals(1, refIds.size());
-      assertEquals(ref2.getMessageID(), (String)refIds.get(0));
+      assertEquals(ref2.getMessageID(), ((Long)refIds.get(0)).longValue());
             
       //Check message in storage
       msgIds = getMessageIds();
       assertEquals(1, msgIds.size());
-      assertEquals(ref2.getMessageID(), (String)refIds.get(0));
+      assertEquals(ref2.getMessageID(), ((Long)refIds.get(0)).longValue());
       
       //Check messages still in memory store      
       assertEquals(FULL_SIZE2 + 1, ms.size());
@@ -797,7 +795,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = FULL_SIZE2 + 1; i < FULL_SIZE1 + 1; i++)
       {
-         m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         m = MessageFactory.createCoreMessage(i, false, null);        
          
          ref1 = ms.reference(m);
          
@@ -844,7 +842,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < 100; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), true, null);        
+         Message m = MessageFactory.createCoreMessage(i, true, null);        
          
          MessageReference ref1 = ms.reference(m);
          
@@ -903,7 +901,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -964,7 +962,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1 + 1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -982,7 +980,7 @@ public class PagingStateTest extends MessagingTestCase
       //Add more refs
       for (int i = 0; i < DOWNCACHE_SIZE - 1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(FULL_SIZE1 + 1 + i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -997,8 +995,8 @@ public class PagingStateTest extends MessagingTestCase
       int count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String id = (String)iter.next();
-         assertEquals(refs[count].getMessageID(), id);
+         Long id = (Long)iter.next();
+         assertEquals(refs[count].getMessageID(), id.longValue());
          count++;
       }
       msgIds = getMessageIds();
@@ -1007,7 +1005,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
           
@@ -1055,7 +1053,7 @@ public class PagingStateTest extends MessagingTestCase
       
       for (int i = 0; i < FULL_SIZE1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
@@ -1070,36 +1068,28 @@ public class PagingStateTest extends MessagingTestCase
       List msgIds = getMessageIds();
       assertTrue(msgIds.isEmpty());
       
-      log.info("Adding np refs:");
-      
       //Add more np refs
       for (int i = 0; i < DOWNCACHE_SIZE - 1; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), false, null);        
+         Message m = MessageFactory.createCoreMessage(FULL_SIZE1 + i, false, null);        
          
          MessageReference ref = ms.reference(m);
          
          state1.addReference(ref);
-         
-         log.info("Added ref:" + ref.getMessageID());
-           
+               
          refs[FULL_SIZE1 + i] = ref;
       }
       
       //Add some persistent refs
       
-      log.info("Adding p refs");
-      
       for (int i = 0; i < DOWNCACHE_SIZE; i++)
       {
-         Message m = MessageFactory.createCoreMessage(new GUID().toString(), true, null);        
+         Message m = MessageFactory.createCoreMessage(FULL_SIZE1 + DOWNCACHE_SIZE - 1 + i, true, null);        
          
          MessageReference ref = ms.reference(m);
          
          state1.addReference(ref);
-         
-         log.info("Added p ref:" + ref.getMessageID());
-           
+        
          refs[FULL_SIZE1 + DOWNCACHE_SIZE - 1 + i] = ref;
       }
       
@@ -1111,8 +1101,8 @@ public class PagingStateTest extends MessagingTestCase
       int count = FULL_SIZE1 + DOWNCACHE_SIZE - 1;
       while (iter.hasNext())
       {
-         String id = (String)iter.next();
-         assertEquals(refs[count].getMessageID(), id);         
+         Long id = (Long)iter.next();
+         assertEquals(refs[count].getMessageID(), id.longValue());         
          count++;
       }
       msgIds = getMessageIds();
@@ -1121,7 +1111,7 @@ public class PagingStateTest extends MessagingTestCase
       count = FULL_SIZE1 + DOWNCACHE_SIZE - 1;
       while (iter.hasNext())
       {
-         String msgId = (String)iter.next();
+         Long msgId = (Long)iter.next();
          assertTrue(refIds.contains(msgId));
       }
           
@@ -1142,15 +1132,6 @@ public class PagingStateTest extends MessagingTestCase
       
       //Check no messages are in storage
       msgIds = getMessageIds();
-      log.info("msgs ids size:" + msgIds.size());
-      //log.info("msgids:" + msgIds);
-      
-      log.info("Remaining message ids:");
-      iter = msgIds.iterator();
-      while (iter.hasNext())
-      {
-         log.info(iter.next());
-      }
       
       assertTrue(msgIds.isEmpty());     
       
@@ -1174,7 +1155,7 @@ public class PagingStateTest extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID, ORD FROM MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
+      String sql = "SELECT MESSAGEID, ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
@@ -1184,8 +1165,8 @@ public class PagingStateTest extends MessagingTestCase
       
       while (rs.next())
       {
-         String msgId = rs.getString(1);
-         msgIds.add(msgId);
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
       }
       rs.close();
       ps.close();
@@ -1212,7 +1193,7 @@ public class PagingStateTest extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID FROM MESSAGE ORDER BY MESSAGEID";
+      String sql = "SELECT MESSAGEID FROM JMS_MESSAGE ORDER BY MESSAGEID";
       PreparedStatement ps = conn.prepareStatement(sql);
       
       ResultSet rs = ps.executeQuery();
@@ -1221,8 +1202,8 @@ public class PagingStateTest extends MessagingTestCase
       
       while (rs.next())
       {
-         String msgId = rs.getString(1);
-         msgIds.add(msgId);
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
       }
       rs.close();
       ps.close();

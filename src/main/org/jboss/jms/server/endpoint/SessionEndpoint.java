@@ -22,15 +22,15 @@
 package org.jboss.jms.server.endpoint;
 
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Topic;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -42,13 +42,13 @@ import org.jboss.jms.delegate.ProducerDelegate;
  */
 public interface SessionEndpoint extends Closeable
 {
-   ProducerDelegate createProducerDelegate(Destination destination) throws JMSException;
+   ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
 
-   ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
+   ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer) throws JMSException;   
    
-   BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
+   BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
       throws JMSException;
 
    /**
@@ -56,14 +56,14 @@ public interface SessionEndpoint extends Closeable
     * creation of queues is an administrative task and is not to be initiated by the JMS API, with
     * the exception of temporary queues.
     */
-   Queue createQueue(String queueName) throws JMSException;
+   JBossQueue createQueue(String queueName) throws JMSException;
 
    /**
     * Creates a topic identity given a Queue name. Does NOT create the physical topic. The physical
     * creation of topics is an administrative task and is not to be initiated by the JMS API, with
     * the exception of temporary topics.
     */
-   Topic createTopic(String topicName) throws JMSException;
+   JBossTopic createTopic(String topicName) throws JMSException;
 
    /**
     * Acknowledges the session
@@ -75,12 +75,12 @@ public interface SessionEndpoint extends Closeable
    /**
     * Add a temporary destination.
     */
-   void addTemporaryDestination(Destination destination) throws JMSException;
+   void addTemporaryDestination(JBossDestination destination) throws JMSException;
    
    /**
     * Delete a temporary destination
     */
-   void deleteTemporaryDestination(Destination destination) throws JMSException;
+   void deleteTemporaryDestination(JBossDestination destination) throws JMSException;
    
    /**
     * Unsubscribe the client from the durable subscription

@@ -21,9 +21,6 @@
   */
 package org.jboss.jms.client.delegate;
 
-import java.io.Serializable;
-
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -31,6 +28,8 @@ import javax.jms.MessageListener;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.remoting.Client;
 
@@ -80,7 +79,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void cancelMessage(Serializable messageID) throws JMSException
+   public void cancelMessage(long messageID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -125,7 +124,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Message getMessageNow(boolean wait) throws JMSException
+   public MessageDelegate getMessageNow(boolean wait) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -161,7 +160,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public Destination getDestination()
+   public JBossDestination getDestination()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

@@ -24,6 +24,7 @@ package org.jboss.jms.client;
 import java.io.Serializable;
 
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
@@ -33,6 +34,7 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 
 /**
@@ -154,7 +156,11 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
                     int priority,
                     long timeToLive) throws JMSException
    {
-      delegate.send(destination, m, deliveryMode, priority, timeToLive);
+      if (destination != null && !(destination instanceof JBossDestination))
+      {
+         throw new InvalidDestinationException("Not a JBossDestination:" + destination);
+      }
+      delegate.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
    }
 
 

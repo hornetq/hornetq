@@ -137,7 +137,7 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
       
       if (trace) { log.trace(this + " referencing " + m); }
       
-      MessageHolder holder = (MessageHolder)messages.get(m.getMessageID());
+      MessageHolder holder = (MessageHolder)messages.get(new Long(m.getMessageID()));
       
       if (holder == null)
       {      
@@ -149,9 +149,9 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
       return ref;
    }
 
-   public MessageReference reference(String messageId)
+   public MessageReference reference(long messageId)
    {
-      MessageHolder holder = (MessageHolder)messages.get(messageId);
+      MessageHolder holder = (MessageHolder)messages.get(new Long(messageId));
       
       if (holder == null)
       {
@@ -163,14 +163,14 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
       return ref;      
    }
    
-   public boolean containsMessage(String messageId)
+   public boolean containsMessage(long messageId)
    {
-      return messages.get(messageId) != null;
+      return messages.get(new Long(messageId)) != null;
    }
    
-   public boolean forgetMessage(String messageID)
+   public boolean forgetMessage(long messageID)
    {
-      return messages.remove(messageID) != null;
+      return messages.remove(new Long(messageID)) != null;
    }
    
    public int size()
@@ -204,7 +204,7 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
    {
       MessageHolder holder = new MessageHolder(m, this);
       
-      messages.put(m.getMessageID(), holder);
+      messages.put(new Long(m.getMessageID()), holder);
       
       return holder;
    }

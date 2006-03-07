@@ -55,6 +55,11 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
       this.delegate = delegate;
    }
    
+   public JBossTemporaryQueue(String name)
+   {
+      super(name);
+   }
+   
    // TemporaryQueue implementation ---------------------------------
    
    public void delete() throws JMSException

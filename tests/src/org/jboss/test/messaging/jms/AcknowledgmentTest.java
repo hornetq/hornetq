@@ -92,8 +92,8 @@ public class AcknowledgmentTest extends MessagingTestCase
    {
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
-      ServerManagement.disconnect();
       super.tearDown();
+      
    }
 
 

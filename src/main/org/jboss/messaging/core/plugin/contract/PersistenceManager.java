@@ -66,6 +66,8 @@ public interface PersistenceManager extends ServerPlugin
    void removeNonPersistentMessageReferences(long channelID, long orderStart, long orderEnd) throws Exception;
    
    void removeMessages(List messageIds) throws Exception;
+   
+   long reserveIDBlock(String counterName, int size) throws Exception;
     
 
    /*
@@ -81,13 +83,13 @@ public interface PersistenceManager extends ServerPlugin
    
    class ReferenceInfo
    {
-      private String messageId;
+      private long messageId;
       
       private long ordering;
       
       private int deliveryCount;
       
-      public ReferenceInfo(String msgId, long ordering, int deliveryCount)
+      public ReferenceInfo(long msgId, long ordering, int deliveryCount)
       {
          this.messageId = msgId;
          
@@ -96,7 +98,7 @@ public interface PersistenceManager extends ServerPlugin
          this.deliveryCount = deliveryCount;
       }    
       
-      public String getMessageId()
+      public long getMessageId()
       {
          return messageId;
       }

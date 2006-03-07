@@ -19,31 +19,52 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint;
+package org.jboss.jms.message;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 
 /**
- * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
+ * This class manages instances of MessageIdGenerator. It ensures there is one instance per instance
+ * of JMS server as specified by the server id.
  *
- * $Id$
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.1
+ *
+ * MessageIdGeneratorFactory.java,v 1.1 2006/03/07 17:11:14 timfox Exp
  */
-public interface ConnectionFactoryEndpoint
+public class MessageIdGeneratorFactory
 {
-   ConnectionDelegate createConnectionDelegate(String username, String password)
-      throws JMSException;
+   public static MessageIdGeneratorFactory instance;
    
-   byte[] getClientAOPConfig();
+   //TODO Make configurable
+   protected static final int BLOCK_SIZE = 256;
    
-   IdBlock getIdBlock(int size) throws JMSException;
-
+   static
+   {
+      instance = new MessageIdGeneratorFactory();
+   }
+   
+   private MessageIdGeneratorFactory()
+   {      
+      generators = new HashMap();
+   }
+   
+   protected Map generators;
+   
+   public synchronized MessageIdGenerator getGenerator(String serverId, ConnectionFactoryDelegate cf) throws JMSException
+   {
+      MessageIdGenerator gen = (MessageIdGenerator)generators.get(serverId);
+      if (gen == null)
+      {
+         gen = new MessageIdGenerator(cf, BLOCK_SIZE);
+         generators.put(serverId, gen);
+      }
+      return gen;
+   }
+  
 }
-

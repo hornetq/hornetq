@@ -54,7 +54,7 @@ public interface MessageStore extends ServerPlugin
     * @param messageID
     * @return The reference or null if the message is not already stored in the store
     */
-   MessageReference reference(String messageID);
+   MessageReference reference(long messageID);
 
    /**
     * Does the message store already contain the Message
@@ -62,7 +62,7 @@ public interface MessageStore extends ServerPlugin
     * @return true if the store already contains the message
     * @throws Exception
     */
-   boolean containsMessage(String messageID);
+   boolean containsMessage(long messageID);
    
    /**
     * Remove a message from the store
@@ -70,7 +70,7 @@ public interface MessageStore extends ServerPlugin
     * @param messageID
     * @return
     */
-   public boolean forgetMessage(String messageID);
+   public boolean forgetMessage(long messageID);
    
    //only used in testing
    public int size();

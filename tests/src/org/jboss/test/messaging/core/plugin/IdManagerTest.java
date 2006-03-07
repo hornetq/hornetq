@@ -19,24 +19,26 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.core.plugin;
 
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.naming.InitialContext;
-
+import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
+ * 
+ * A IdManagerTest.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.1
  *
- * $Id$
+ * IdManagerTest.java,v 1.1 2006/03/07 17:11:18 timfox Exp
  */
-public class ConnectionFactoryTest extends MessagingTestCase
+public class IdManagerTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -44,11 +46,13 @@ public class ConnectionFactoryTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected InitialContext initialContext;
+   protected ServiceContainer sc;
 
+   protected PersistenceManager pm;
+   
    // Constructors --------------------------------------------------
 
-   public ConnectionFactoryTest(String name)
+   public IdManagerTest(String name)
    {
       super(name);
    }
@@ -58,43 +62,55 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.start("all");
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      sc = new ServiceContainer("all");
+      sc.start();                
+      
+      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      
+      pm.start();
+            
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {      
+      if (!ServerManagement.isRemote())
+      {
+         sc.stop();
+         sc = null;
+      }
+      pm.stop();
       super.tearDown();
    }
-
-   /* Test that ConnectionFactory can be cast to QueueConnectionFactory
-    * and QueueConnection can be created
-    */
-   public void testQueueConnectionFactory() throws Exception
-   {
-      QueueConnectionFactory qcf =
-         (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      QueueConnection qc = qcf.createQueueConnection();
-      qc.close();
-   }
    
-   /* Test that ConnectionFactory can be cast to TopicConnectionFactory
-    * and TopicConnection can be created
-    */
-   public void testTopicConnectionFactory() throws Exception
+   public void test1() throws Exception
    {
-      TopicConnectionFactory qcf =
-         (TopicConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      TopicConnection tc = qcf.createTopicConnection();
-      tc.close();
+      IdManager idm = new IdManager("test_counter", 1000, pm);
+      
+      int blockSize = 37;
+            
+      long nextLow = Long.MIN_VALUE;
+      
+      for (int i = 0; i < 1000; i++)
+      {
+         IdBlock block = idm.getIdBlock(blockSize);
+                   
+         assertTrue(block.getLow() >= nextLow);
+         
+         assertEquals(blockSize, 1 + block.getHigh() - block.getLow());
+         
+         nextLow = block.getHigh() + 1;         
+      }
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }
+

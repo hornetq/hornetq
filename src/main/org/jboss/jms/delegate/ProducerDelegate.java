@@ -25,6 +25,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.ProducerEndpoint;
 
 /**
@@ -57,15 +58,15 @@ public interface ProducerDelegate extends ProducerEndpoint
    
    long getTimeToLive() throws JMSException;
    
-   Destination getDestination() throws JMSException;
+   JBossDestination getDestination() throws JMSException;
    
-   void setDestination(Destination dest);
+   void setDestination(JBossDestination dest);
 
    /**
     * This method is only handled by the advice stack, the corresponding invocation is never sent
     * to the server.
     */
-   void send(Destination destination,
+   void send(JBossDestination destination,
              Message message,
              int deliveryMode,
              int priority,

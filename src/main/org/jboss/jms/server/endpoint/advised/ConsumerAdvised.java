@@ -21,11 +21,9 @@
   */
 package org.jboss.jms.server.endpoint.advised;
 
-import java.io.Serializable;
-
 import javax.jms.JMSException;
-import javax.jms.Message;
 
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
@@ -62,7 +60,7 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.activate();
    }
 
-   public void cancelMessage(Serializable messageID) throws JMSException
+   public void cancelMessage(long messageID) throws JMSException
    {
       endpoint.cancelMessage(messageID);
    }
@@ -82,7 +80,7 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.deactivate();
    }
 
-   public Message getMessageNow(boolean wait) throws JMSException
+   public MessageDelegate getMessageNow(boolean wait) throws JMSException
    {
       return endpoint.getMessageNow(wait);
    }

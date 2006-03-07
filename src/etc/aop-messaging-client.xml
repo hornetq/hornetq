@@ -192,7 +192,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->getTimeToLive())">
       <advice name="handleGetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(javax.jms.Destination, javax.jms.Message, int, int, long))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(org.jboss.jms.destination.JBossDestination, javax.jms.Message, int, int, long))">
       <advice name="handleSend" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setDeliveryMode(..))">
@@ -213,7 +213,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setTimeToLive(..))">
       <advice name="handleSetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(javax.jms.Message))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(org.jboss.jms.message.JBossMessage))">
       <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>
    

@@ -89,7 +89,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossBytesMessage(String messageID)
+   public JBossBytesMessage(long messageID)
    {
       super(messageID);
       ostream = new ByteArrayOutputStream();
@@ -100,7 +100,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossBytesMessage(String messageID,
+   public JBossBytesMessage(long messageID,
          boolean reliable,
          long expiration,
          long timestamp,
@@ -136,9 +136,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       
    }
 
-   public JBossBytesMessage(BytesMessage foreign) throws JMSException
+   public JBossBytesMessage(BytesMessage foreign, long id) throws JMSException
    {
-      super(foreign);
+      super(foreign, id);
       
       foreign.reset();
       

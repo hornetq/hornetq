@@ -70,7 +70,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossTextMessage(String messageID)
+   public JBossTextMessage(long messageID)
    {
       super(messageID);
    }
@@ -78,7 +78,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossTextMessage(String messageID,
+   public JBossTextMessage(long messageID,
          boolean reliable,
          long expiration,
          long timestamp,
@@ -111,9 +111,9 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    /**
     * A copy constructor for non-JBoss Messaging JMS TextMessages.
     */
-   public JBossTextMessage(TextMessage foreign) throws JMSException
+   public JBossTextMessage(TextMessage foreign, long id) throws JMSException
    {
-      super(foreign);
+      super(foreign, id);
       String text = foreign.getText();
       if (text != null)
       {

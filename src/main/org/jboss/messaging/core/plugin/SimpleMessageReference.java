@@ -98,7 +98,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       this.holder = other.holder;
    }
    
-   protected SimpleMessageReference(Serializable messageID, boolean reliable, long expiration,
+   protected SimpleMessageReference(long messageID, boolean reliable, long expiration,
                                     long timestamp, Map headers, boolean redelivered,
                                     byte priority, MessageStore ms)
    {
@@ -190,16 +190,13 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       }
       
       SimpleMessageReference that = (SimpleMessageReference)o;
-      if (messageID == null)
-      {
-         return that.messageID == null;
-      }
-      return messageID.equals(that.messageID);
+      
+      return this.messageID == that.messageID;
    }
 
    public int hashCode()
    {      
-      return messageID.hashCode();
+      return (int)((this.messageID >>> 32) ^ this.messageID);
    }
 
    public String toString()

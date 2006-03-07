@@ -23,14 +23,14 @@
 
 package org.jboss.messaging.core.distributed.replicator;
 
+import java.io.Serializable;
+
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.StatefulReceiverDelivery;
 import org.jboss.messaging.util.Util;
-import org.jboss.logging.Logger;
-
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -78,8 +78,10 @@ public class ReplicatorOutputDelivery extends SimpleDelivery implements Stateful
 
       Object messageID = ack.getMessageID();
       Object outputID = ack.getReplicatorOutputID();
+      
+      Long msgId = new Long(reference.getMessageID());
 
-      if (!reference.getMessageID().equals(messageID) ||
+      if (!msgId.equals(messageID) ||
           !replicatorOutputID.equals(outputID))
       {
          // not my acknowledgment, ignore it

@@ -21,10 +21,7 @@
   */
 package org.jboss.jms.client.remoting;
 
-import java.io.Serializable;
-
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
@@ -33,7 +30,6 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.util.Util;
 import org.jboss.remoting.callback.HandleCallbackException;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
@@ -68,7 +64,7 @@ public class MessageCallbackHandler
                                     MessageListener listener,
                                     int consumerID,
                                     boolean isConnectionConsumer,
-                                    Message m,
+                                    MessageDelegate m,
                                     int ackMode)
          throws JMSException
    {
@@ -80,9 +76,9 @@ public class MessageCallbackHandler
       }
       catch (RuntimeException e)
       {
-         Serializable id = m.getJMSMessageID();
+         long id = m.getMessage().getMessageID();
 
-         log.error("RuntimeException was thrown from onMessage, " + Util.guidToString(id) + " will be redelivered", e);
+         log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
          
          //See JMS1.1 spec 4.5.2
 
@@ -90,14 +86,14 @@ public class MessageCallbackHandler
          {
             //Cancel the message - this means it will be immediately redelivered
 
-            if (trace) { log.trace("cancelling " + Util.guidToString(id)); }
+            if (trace) { log.trace("cancelling " + id); }
             cons.cancelMessage(id);
          }
          else
          {
             //Session is either transacted or CLIENT_ACKNOWLEDGE
             //We just deliver next message
-            if (trace) { log.trace("ignoring exception on " + Util.guidToString(id)); }
+            if (trace) { log.trace("ignoring exception on " + id); }
          }
       }
             
@@ -107,7 +103,7 @@ public class MessageCallbackHandler
    
    protected static void preDeliver(SessionDelegate sess,
                                     int consumerID,
-                                    Message m,
+                                    MessageDelegate m,
                                     boolean isConnectionConsumer)
       throws JMSException
    {
@@ -115,13 +111,13 @@ public class MessageCallbackHandler
       //to acknowledge or add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.preDeliver(m.getJMSMessageID(), consumerID);
+         sess.preDeliver(m.getMessage().getMessageID(), consumerID);
       }         
    }
    
    protected static void postDeliver(SessionDelegate sess,
                                      int consumerID,
-                                     Message m,
+                                     MessageDelegate m,
                                      boolean isConnectionConsumer)
       throws JMSException
    {
@@ -129,7 +125,7 @@ public class MessageCallbackHandler
       //to acknowledge or add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.postDeliver(m.getJMSMessageID(), consumerID);
+         sess.postDeliver(m.getMessage().getMessageID(), consumerID);
       }         
    }
    
@@ -320,7 +316,7 @@ public class MessageCallbackHandler
     *        or null if one is not immediately available. Returns null if the consumer is
     *        concurrently closed.
     */
-   public Message receive(long timeout) throws JMSException
+   public MessageDelegate receive(long timeout) throws JMSException
    {                 
       if (listener != null)
       {
@@ -331,7 +327,7 @@ public class MessageCallbackHandler
             
       long startTimestamp = System.currentTimeMillis();
       
-      Message m = null;
+      MessageDelegate m = null;
       
       try
       {
@@ -405,7 +401,7 @@ public class MessageCallbackHandler
             
             if (trace) { log.trace("got " + m); }
                                
-            if (!((MessageDelegate)m).getMessage().isExpired())
+            if (!m.getMessage().isExpired())
             {
                if (trace) { log.trace("message " + m + " is not expired, returning it to the caller"); }
                
@@ -446,11 +442,11 @@ public class MessageCallbackHandler
    
    // Protected -----------------------------------------------------
    
-   protected void cancelMessage(Message m)
+   protected void cancelMessage(MessageDelegate m)
    {
       try
       {
-         consumerDelegate.cancelMessage(m.getJMSMessageID());
+         consumerDelegate.cancelMessage(m.getMessage().getMessageID());
       }
       catch (Exception e)
       {
@@ -507,7 +503,7 @@ public class MessageCallbackHandler
       consumerDelegate.deactivate();
    }
    
-   protected Message getMessageNow() throws JMSException
+   protected MessageDelegate getMessageNow() throws JMSException
    {
       MessageDelegate del = (MessageDelegate)consumerDelegate.getMessageNow(false);
       if (del != null)
@@ -520,15 +516,14 @@ public class MessageCallbackHandler
       }
    }
    
-   protected Message getMessage(long timeout) throws InterruptedException, JMSException
+   protected MessageDelegate getMessage(long timeout) throws InterruptedException, JMSException
    {
-      Message m = null;
+      MessageDelegate m = null;
       
       // If it's receiveNoWait then get the message directly
       if (timeout == -1)
       {
-         m = getMessageNow();
-         
+         m = getMessageNow();        
       }
       else
       {
@@ -542,12 +537,12 @@ public class MessageCallbackHandler
             if (timeout == 0)
             {
                // Indefinite wait
-               m = (Message)buffer.take();
+               m = (MessageDelegate)buffer.take();
             }            
             else
             {
                // Wait with timeout
-               m = (Message)buffer.poll(timeout);
+               m = (MessageDelegate)buffer.poll(timeout);
             }
          }
          finally
@@ -567,7 +562,7 @@ public class MessageCallbackHandler
       return m;
    }
    
-   protected Message processMessage(MessageDelegate del)
+   protected MessageDelegate processMessage(MessageDelegate del)
    {
       //if this is the handler for a connection consumer we don't want to set the session delegate
       //since this is only used for client acknowledgement which is illegal for a session
@@ -589,9 +584,9 @@ public class MessageCallbackHandler
    {
       private MessageCallbackHandler handler;
       
-      private Message message;
+      private MessageDelegate message;
       
-      private ClientDeliveryRunnable(MessageCallbackHandler handler, Message message)
+      private ClientDeliveryRunnable(MessageCallbackHandler handler, MessageDelegate message)
       {
          this.handler = handler;
          this.message = message;

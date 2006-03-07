@@ -26,19 +26,24 @@ import javax.jms.Destination;
 import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.BrowserState;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.MessageIdGenerator;
+import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 
 /**
  * Maintains the hierarchy of parent and child state objects. For each delegate, this interceptor
@@ -73,8 +78,15 @@ public class StateCreationAspect
       
       delegate.init();
       
+      ConnectionFactoryDelegate cf = (ConnectionFactoryDelegate)invocation.getTargetObject();
+      
+      ResourceManager rm = ResourceManagerFactory.instance.getResourceManager(delegate.getServerID());
+      
+      MessageIdGenerator gen = MessageIdGeneratorFactory.instance.getGenerator(delegate.getServerID(), cf);
+      
+      
       delegate.setState(new ConnectionState(delegate,
-                                            delegate.getServerID(),
+                                            rm, gen,
                                             delegate.getRemotingConnection()));
                   
       return delegate;

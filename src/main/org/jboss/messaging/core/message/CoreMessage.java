@@ -50,7 +50,7 @@ public class CoreMessage extends MessageSupport
    {
    }
 
-   public CoreMessage(Serializable messageID,
+   public CoreMessage(long messageID,
                       boolean reliable,
                       long expiration,
                       long timestamp,

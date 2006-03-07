@@ -53,14 +53,18 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.MessageDelegate;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
@@ -197,14 +201,18 @@ class JBossSession implements
 
    public MessageProducer createProducer(Destination d) throws JMSException
    {
-
+      if (d != null && !(d instanceof JBossDestination))
+      {
+         throw new InvalidDestinationException("Not a JBossDestination:" + d);
+      }
+           
       ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
 
       try
       {
          tccc.set(getClass().getClassLoader());
 
-         ProducerDelegate producerDelegate = delegate.createProducerDelegate(d);
+         ProducerDelegate producerDelegate = delegate.createProducerDelegate((JBossDestination)d);
          return new JBossMessageProducer(producerDelegate);
       }
       finally
@@ -230,6 +238,10 @@ class JBossSession implements
       {
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
+      if (!(d instanceof JBossDestination))
+      {
+         throw new InvalidDestinationException("Not a JBossDestination:" + d);
+      }
 
       log.debug("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
@@ -240,7 +252,7 @@ class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          ConsumerDelegate consumerDelegate
-            = delegate.createConsumerDelegate(d, messageSelector, noLocal, null, false);
+            = delegate.createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
          return new JBossMessageConsumer(consumerDelegate);
       }
       finally
@@ -280,8 +292,12 @@ class JBossSession implements
       {
          throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
       }
+      if (!(topic instanceof JBossTopic))
+      {
+         throw new InvalidDestinationException("Not a JBossTopic:" + topic);
+      }
       ConsumerDelegate consumerDelegate =
-            delegate.createConsumerDelegate(topic, null, false, name, false);
+            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false);
       return new JBossMessageConsumer(consumerDelegate);
    }
 
@@ -300,12 +316,16 @@ class JBossSession implements
       {
          throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
       }
+      if (!(topic instanceof JBossTopic))
+      {
+         throw new InvalidDestinationException("Not a JBossTopic:" + topic);
+      }
       if ("".equals(messageSelector))
       {
          messageSelector = null;
       }
       ConsumerDelegate consumerDelegate =
-         delegate.createConsumerDelegate(topic, messageSelector, noLocal, name, false);
+         delegate.createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false);
       return new JBossMessageConsumer(consumerDelegate);
    }
 
@@ -325,6 +345,10 @@ class JBossSession implements
       {
          throw new InvalidDestinationException("Cannot create a browser with a null queue");
       }
+      if (!(queue instanceof JBossQueue))
+      {
+         throw new InvalidDestinationException("Not a JBossQueue:" + queue);
+      }
       if ("".equals(messageSelector))
       {
          messageSelector = null;
@@ -336,7 +360,7 @@ class JBossSession implements
       {
          tccc.set(getClass().getClassLoader());
 
-         BrowserDelegate del = this.delegate.createBrowserDelegate(queue, messageSelector);
+         BrowserDelegate del = this.delegate.createBrowserDelegate((JBossQueue)queue, messageSelector);
          return new JBossQueueBrowser(queue, messageSelector, del);
       }
       finally
@@ -459,7 +483,7 @@ class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(Message m, int consumerID, ConsumerDelegate cons)
+   void addAsfMessage(MessageDelegate m, int consumerID, ConsumerDelegate cons)
    {
       delegate.addAsfMessage(m, consumerID, cons);
    }

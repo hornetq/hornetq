@@ -78,19 +78,13 @@ public class CallbackFailureTest extends MessagingTestCase
       
       //Start all the services locally
       localServer.start("all");
-      
-      log.info("Started local server");
             
       localServer.deployQueue("Queue", null);
-      
-      log.info("deployed queue");
-      
+           
       //Connect to the remote server, but don't start a servicecontainer on it
       //We are only using the remote server to open a client connection to the local server
       ServerManagement.create();
-      
-      log.info("Connected to server");
-      
+          
       remoteServer = ServerManagement.getServer();
    }
 
@@ -155,8 +149,6 @@ public class CallbackFailureTest extends MessagingTestCase
       prod.send(sess.createMessage());
       prod.send(sess.createMessage());
       
-      log.info("Sent messages **************");
-       
       Thread.sleep(10000);
       
       assertNull(cm.getConnection(remotingSessionId));   

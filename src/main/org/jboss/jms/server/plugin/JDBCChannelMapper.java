@@ -1067,7 +1067,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       Map m = isQueue ? queues : topics;
       
       CoreDestination dest = (CoreDestination)m.get(destName);
-       
+        
       return dest;
    }
    
@@ -1078,6 +1078,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
     */
    protected synchronized long getNextId()
    {
+      //TODO Use IdManager
       return idCounter++;
    }
    
