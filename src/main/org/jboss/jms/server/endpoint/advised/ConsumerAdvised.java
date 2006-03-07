@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
@@ -80,7 +80,7 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.deactivate();
    }
 
-   public MessageDelegate getMessageNow(boolean wait) throws JMSException
+   public MessageProxy getMessageNow(boolean wait) throws JMSException
    {
       return endpoint.getMessageNow(wait);
    }

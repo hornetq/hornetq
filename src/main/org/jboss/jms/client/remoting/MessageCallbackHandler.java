@@ -27,7 +27,7 @@ import javax.jms.Session;
 
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.callback.HandleCallbackException;
@@ -64,7 +64,7 @@ public class MessageCallbackHandler
                                     MessageListener listener,
                                     int consumerID,
                                     boolean isConnectionConsumer,
-                                    MessageDelegate m,
+                                    MessageProxy m,
                                     int ackMode)
          throws JMSException
    {
@@ -103,7 +103,7 @@ public class MessageCallbackHandler
    
    protected static void preDeliver(SessionDelegate sess,
                                     int consumerID,
-                                    MessageDelegate m,
+                                    MessageProxy m,
                                     boolean isConnectionConsumer)
       throws JMSException
    {
@@ -117,7 +117,7 @@ public class MessageCallbackHandler
    
    protected static void postDeliver(SessionDelegate sess,
                                      int consumerID,
-                                     MessageDelegate m,
+                                     MessageProxy m,
                                      boolean isConnectionConsumer)
       throws JMSException
    {
@@ -197,7 +197,7 @@ public class MessageCallbackHandler
       this.consumerID = consumerID;
    }
 
-   public synchronized void handleMessage(MessageDelegate md) throws HandleCallbackException
+   public synchronized void handleMessage(MessageProxy md) throws HandleCallbackException
    {
       if (trace) { log.trace("receiving message " + md + " from the remoting layer"); }
 
@@ -316,7 +316,7 @@ public class MessageCallbackHandler
     *        or null if one is not immediately available. Returns null if the consumer is
     *        concurrently closed.
     */
-   public MessageDelegate receive(long timeout) throws JMSException
+   public MessageProxy receive(long timeout) throws JMSException
    {                 
       if (listener != null)
       {
@@ -327,7 +327,7 @@ public class MessageCallbackHandler
             
       long startTimestamp = System.currentTimeMillis();
       
-      MessageDelegate m = null;
+      MessageProxy m = null;
       
       try
       {
@@ -442,7 +442,7 @@ public class MessageCallbackHandler
    
    // Protected -----------------------------------------------------
    
-   protected void cancelMessage(MessageDelegate m)
+   protected void cancelMessage(MessageProxy m)
    {
       try
       {
@@ -503,9 +503,9 @@ public class MessageCallbackHandler
       consumerDelegate.deactivate();
    }
    
-   protected MessageDelegate getMessageNow() throws JMSException
+   protected MessageProxy getMessageNow() throws JMSException
    {
-      MessageDelegate del = (MessageDelegate)consumerDelegate.getMessageNow(false);
+      MessageProxy del = (MessageProxy)consumerDelegate.getMessageNow(false);
       if (del != null)
       {
          return processMessage(del);
@@ -516,9 +516,9 @@ public class MessageCallbackHandler
       }
    }
    
-   protected MessageDelegate getMessage(long timeout) throws InterruptedException, JMSException
+   protected MessageProxy getMessage(long timeout) throws InterruptedException, JMSException
    {
-      MessageDelegate m = null;
+      MessageProxy m = null;
       
       // If it's receiveNoWait then get the message directly
       if (timeout == -1)
@@ -537,12 +537,12 @@ public class MessageCallbackHandler
             if (timeout == 0)
             {
                // Indefinite wait
-               m = (MessageDelegate)buffer.take();
+               m = (MessageProxy)buffer.take();
             }            
             else
             {
                // Wait with timeout
-               m = (MessageDelegate)buffer.poll(timeout);
+               m = (MessageProxy)buffer.poll(timeout);
             }
          }
          finally
@@ -562,7 +562,7 @@ public class MessageCallbackHandler
       return m;
    }
    
-   protected MessageDelegate processMessage(MessageDelegate del)
+   protected MessageProxy processMessage(MessageProxy del)
    {
       //if this is the handler for a connection consumer we don't want to set the session delegate
       //since this is only used for client acknowledgement which is illegal for a session
@@ -584,9 +584,9 @@ public class MessageCallbackHandler
    {
       private MessageCallbackHandler handler;
       
-      private MessageDelegate message;
+      private MessageProxy message;
       
-      private ClientDeliveryRunnable(MessageCallbackHandler handler, MessageDelegate message)
+      private ClientDeliveryRunnable(MessageCallbackHandler handler, MessageProxy message)
       {
          this.handler = handler;
          this.message = message;
@@ -626,7 +626,7 @@ public class MessageCallbackHandler
          {
             if (trace) { log.trace("activating consumer endpoint"); }
             //consumerDelegate.activate();
-            MessageDelegate m = (MessageDelegate)consumerDelegate.getMessageNow(true);
+            MessageProxy m = (MessageProxy)consumerDelegate.getMessageNow(true);
             
             if (m != null)
             {

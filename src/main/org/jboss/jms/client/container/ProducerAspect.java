@@ -31,7 +31,7 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 
@@ -156,7 +156,7 @@ public class ProducerAspect
       m.setJMSDestination(destination);
       
       JBossMessage toSend;
-      if (!(m instanceof MessageDelegate))
+      if (!(m instanceof MessageProxy))
       {
          //It's a foreign message
          
@@ -168,7 +168,7 @@ public class ProducerAspect
       else
       {
          //Get the actual message
-         MessageDelegate del = (MessageDelegate)m;
+         MessageProxy del = (MessageProxy)m;
          toSend = del.getMessage();
          toSend.doAfterSend();
          del.setSent();

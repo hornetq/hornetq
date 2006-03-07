@@ -64,7 +64,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
@@ -483,7 +483,7 @@ class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(MessageDelegate m, int consumerID, ConsumerDelegate cons)
+   void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons)
    {
       delegate.addAsfMessage(m, consumerID, cons);
    }

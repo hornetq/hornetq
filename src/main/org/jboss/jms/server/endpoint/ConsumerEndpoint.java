@@ -24,7 +24,7 @@ package org.jboss.jms.server.endpoint;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 
 /**
  * Represents the set of methods from the ConsumerDelegate that are handled on the server.
@@ -39,7 +39,7 @@ public interface ConsumerEndpoint extends Closeable
 {
    void cancelMessage(long messageID) throws JMSException;
    
-   MessageDelegate getMessageNow(boolean wait) throws JMSException;
+   MessageProxy getMessageNow(boolean wait) throws JMSException;
    
    void activate() throws JMSException;
    

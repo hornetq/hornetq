@@ -40,7 +40,7 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.logging.Logger;
@@ -727,7 +727,7 @@ public class WireFormatTest extends TestCase
          
          JBossMessage m = new JBossMessage(123);
          
-         MessageDelegate del = JBossMessage.createThinDelegate(m, 7);
+         MessageProxy del = JBossMessage.createThinDelegate(m, 7);
          
          MessageTest.configureMessage(m);
          
@@ -787,7 +787,7 @@ public class WireFormatTest extends TestCase
          
          DeliveryRunnable dr2 = (DeliveryRunnable)ir2.getParameter();
          
-         MessageDelegate del2 = dr2.getMessageDelegate();
+         MessageProxy del2 = dr2.getMessageProxy();
          
          JBossMessage m3 = del2.getMessage();
          
@@ -805,7 +805,7 @@ public class WireFormatTest extends TestCase
          
          MessageTest.configureMessage(m);
          
-         MessageDelegate del = JBossMessage.createThinDelegate(m, 4);
+         MessageProxy del = JBossMessage.createThinDelegate(m, 4);
          
          InvocationResponse ir = new InvocationResponse(null, del, false, null);
          
@@ -861,7 +861,7 @@ public class WireFormatTest extends TestCase
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
-         MessageDelegate del2 = (MessageDelegate)ir2.getResult();
+         MessageProxy del2 = (MessageProxy)ir2.getResult();
          
          JBossMessage m3 = del2.getMessage();
          

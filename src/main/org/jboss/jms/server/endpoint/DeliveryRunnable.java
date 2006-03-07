@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 import java.io.Serializable;
 
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
 
@@ -51,7 +51,7 @@ public class DeliveryRunnable implements Runnable, Serializable
    
    private boolean trace;
    
-   private MessageDelegate msg;
+   private MessageProxy msg;
          
    private int consumerID;
    
@@ -59,7 +59,7 @@ public class DeliveryRunnable implements Runnable, Serializable
    
    // Constructors --------------------------------------------------
 
-   public DeliveryRunnable(MessageDelegate msg, int consumerID,
+   public DeliveryRunnable(MessageProxy msg, int consumerID,
                            ServerConnectionEndpoint connection, boolean trace)
    {
       this.msg = msg;
@@ -93,7 +93,7 @@ public class DeliveryRunnable implements Runnable, Serializable
 
    // Public --------------------------------------------------------
    
-   public MessageDelegate getMessageDelegate()
+   public MessageProxy getMessageProxy()
    {
       return msg;
    }

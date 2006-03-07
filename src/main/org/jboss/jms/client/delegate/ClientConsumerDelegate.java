@@ -29,7 +29,7 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.remoting.Client;
 
@@ -124,7 +124,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public MessageDelegate getMessageNow(boolean wait) throws JMSException
+   public MessageProxy getMessageNow(boolean wait) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

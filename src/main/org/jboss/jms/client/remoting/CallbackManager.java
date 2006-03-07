@@ -25,7 +25,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
@@ -72,7 +72,7 @@ public class CallbackManager implements ServerInvocationHandler
       
       int consumerID = dr.getConsumerID();
       
-      MessageDelegate del = dr.getMessageDelegate();
+      MessageProxy del = dr.getMessageProxy();
       
       MessageCallbackHandler handler =
          (MessageCallbackHandler)callbackHandlers.get(new Integer(consumerID));

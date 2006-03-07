@@ -31,7 +31,7 @@ import java.util.Map;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
@@ -246,7 +246,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                     
             int consumerID = dr.getConsumerID();
             
-            MessageDelegate del = dr.getMessageDelegate();
+            MessageProxy del = dr.getMessageProxy();
             
             oos.writeInt(consumerID);
             
@@ -288,12 +288,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             if (trace) { log.trace("Wrote null response"); }
          }
-         else if (res instanceof MessageDelegate)
+         else if (res instanceof MessageProxy)
          {
             //Return value from getMessageNow
             oos.write(MESSAGE_RESPONSE);
             
-            MessageDelegate del = (MessageDelegate)res;
+            MessageProxy del = (MessageProxy)res;
             
             oos.writeByte(del.getMessage().getType());
             
@@ -424,7 +424,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             m.readExternal(ois);
             
-            MessageDelegate md = JBossMessage.createThinDelegate(m, deliveryCount);
+            MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
             
             DeliveryRunnable dr = new DeliveryRunnable(md, consumerID, null, trace);
             
@@ -444,7 +444,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             m.readExternal(ois);
             
-            MessageDelegate md = JBossMessage.createThinDelegate(m, deliveryCount);
+            MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
                         
             InvocationResponse resp = new InvocationResponse(null, md, false, null);
             

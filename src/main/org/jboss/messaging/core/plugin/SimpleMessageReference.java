@@ -85,7 +85,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    /*
     * Creates a WeakMessageReference as a shallow copy of another
-    * TODO - By using a proxy pattern similarly to how the MessageDelegates are done
+    * TODO - By using a proxy pattern similarly to how the MessageProxies are done
     * we can prevent unnecessary copying of MessageReference data since most of it is read only :)
     */
    public SimpleMessageReference(SimpleMessageReference other)

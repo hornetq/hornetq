@@ -31,7 +31,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -123,7 +123,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
    }
@@ -153,7 +153,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
    }
@@ -181,13 +181,13 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       m2.acknowledge();
       
-      ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
    }
@@ -217,13 +217,13 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       m2.acknowledge();
       
-      ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
    }
@@ -253,9 +253,9 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       sess.recover();
       
@@ -264,13 +264,13 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m3);
       assertEquals(m.getText(), m3.getText());
       
-      ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
             
       m2.acknowledge();
       
-      ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
    }
@@ -299,12 +299,12 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       sess.commit();
       
-      ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       assertNull(ref);
    }
    
@@ -332,8 +332,8 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       sess.rollback();
       
@@ -342,12 +342,12 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m3);
       assertEquals(m.getText(), m3.getText());
       
-      ref = store.reference(((MessageDelegate)m3).getMessage().getMessageID());
-      assertEquals(((MessageDelegate)m).getMessage().getMessageID(), ref.getMessageID());
+      ref = store.reference(((MessageProxy)m3).getMessage().getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       sess.commit();
       
-      ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       assertNull(ref);
    }
    
@@ -395,7 +395,7 @@ public class ReferencingTest extends MessagingTestCase
       
       m6.acknowledge();
       
-      MessageReference ref = store.reference(((MessageDelegate)m2).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
    }
@@ -420,10 +420,10 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      MessageReference ref = store.reference(((MessageDelegate)m).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m).getMessage().getMessageID());
       assertNotNull(ref);
       
-      assertTrue(((MessageDelegate)m).getMessage().isInStorage());
+      assertTrue(((MessageProxy)m).getMessage().isInStorage());
 
       assertEquals(1, ref.getChannelCount());
       
@@ -433,7 +433,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      assertFalse(((MessageDelegate)m).getMessage().isInStorage());
+      assertFalse(((MessageProxy)m).getMessage().isInStorage());
 
       assertEquals(0, ref.getChannelCount());
       
@@ -459,10 +459,10 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      MessageReference ref = store.reference(((MessageDelegate)m).getMessage().getMessageID());
+      MessageReference ref = store.reference(((MessageProxy)m).getMessage().getMessageID());
       assertNotNull(ref);
       
-      assertFalse(((MessageDelegate)m).getMessage().isInStorage());
+      assertFalse(((MessageProxy)m).getMessage().isInStorage());
 
       assertEquals(1, ref.getChannelCount());
       
@@ -472,7 +472,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      assertFalse(((MessageDelegate)m).getMessage().isInStorage());
+      assertFalse(((MessageProxy)m).getMessage().isInStorage());
 
       assertEquals(0, ref.getChannelCount());
       

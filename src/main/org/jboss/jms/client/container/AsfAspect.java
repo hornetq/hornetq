@@ -38,7 +38,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 import org.jgroups.protocols.JMS;
 
@@ -129,7 +129,7 @@ public class AsfAspect
       
       //Load the session with a message to be processed during a subsequent call to run()
 
-      MessageDelegate m = (MessageDelegate)mi.getArguments()[0];
+      MessageProxy m = (MessageProxy)mi.getArguments()[0];
       int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
       ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
       
@@ -184,7 +184,7 @@ public class AsfAspect
    
    protected static class AsfMessageHolder
    {
-      MessageDelegate msg;
+      MessageProxy msg;
       int consumerID;
       ConsumerDelegate consumerDelegate;
    }

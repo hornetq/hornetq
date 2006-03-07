@@ -102,33 +102,33 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       reservedIdentifiers.add("ESCAPE");
    }
 
-   public static MessageDelegate createThinDelegate(JBossMessage m, int deliveryCount)
+   public static MessageProxy createThinDelegate(JBossMessage m, int deliveryCount)
    {
-      MessageDelegate del;
+      MessageProxy del;
       
       if (m instanceof BytesMessage)
       {
-         del = new BytesMessageDelegate((JBossBytesMessage)m, deliveryCount);
+         del = new BytesMessageProxy((JBossBytesMessage)m, deliveryCount);
       }
       else if (m instanceof MapMessage)
       {
-         del = new MapMessageDelegate((JBossMapMessage)m, deliveryCount);
+         del = new MapMessageProxy((JBossMapMessage)m, deliveryCount);
       }
       else if (m instanceof ObjectMessage)
       {
-         del = new ObjectMessageDelegate((JBossObjectMessage)m, deliveryCount);
+         del = new ObjectMessageProxy((JBossObjectMessage)m, deliveryCount);
       }
       else if (m instanceof StreamMessage)
       {
-         del = new StreamMessageDelegate((JBossStreamMessage)m, deliveryCount);
+         del = new StreamMessageProxy((JBossStreamMessage)m, deliveryCount);
       }
       else if (m instanceof TextMessage)
       {
-         del = new TextMessageDelegate((JBossTextMessage)m, deliveryCount);
+         del = new TextMessageProxy((JBossTextMessage)m, deliveryCount);
       }      
       else
       {
-         del = new MessageDelegate(m, deliveryCount);
+         del = new MessageProxy(m, deliveryCount);
       }
 
       return del;

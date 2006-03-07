@@ -38,7 +38,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
@@ -271,7 +271,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
                for (int i = 0; i < queue.size(); i++)
                {
-                  MessageDelegate md = (MessageDelegate)queue.get(i);                  
+                  MessageProxy md = (MessageProxy)queue.get(i);                  
                   session.addAsfMessage(md, consumerID, cons);
                   if (trace) { log.trace("Added message to session"); }
                }

@@ -33,7 +33,7 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -229,7 +229,7 @@ public class TemporaryDestinationTest extends MessagingTestCase
       final String messageText = "This is a message";
       
       final Message m = producerSession.createTextMessage(messageText);
-      log.trace("Message reliable:" + ((MessageDelegate)m).getMessage().isReliable());
+      log.trace("Message reliable:" + ((MessageProxy)m).getMessage().isReliable());
       
       Thread t = new Thread(new Runnable()
       {

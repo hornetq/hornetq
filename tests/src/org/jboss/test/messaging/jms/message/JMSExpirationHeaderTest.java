@@ -26,7 +26,7 @@ import javax.jms.Message;
 import javax.jms.DeliveryMode;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -185,7 +185,7 @@ public class JMSExpirationHeaderTest extends MessageTest
                Message m = queueProducerSession.createMessage();
                queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, -1);
 
-               JBossMessage jbm = ((MessageDelegate)m).getMessage();
+               JBossMessage jbm = ((MessageProxy)m).getMessage();
                
                if (!jbm.isExpired())
                {

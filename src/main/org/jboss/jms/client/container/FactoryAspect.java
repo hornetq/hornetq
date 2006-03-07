@@ -25,19 +25,19 @@ import java.io.Serializable;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.message.BytesMessageDelegate;
+import org.jboss.jms.message.BytesMessageProxy;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.message.MapMessageDelegate;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MapMessageProxy;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.MessageIdGenerator;
-import org.jboss.jms.message.ObjectMessageDelegate;
-import org.jboss.jms.message.StreamMessageDelegate;
-import org.jboss.jms.message.TextMessageDelegate;
+import org.jboss.jms.message.ObjectMessageProxy;
+import org.jboss.jms.message.StreamMessageProxy;
+import org.jboss.jms.message.TextMessageProxy;
 
 /**
  * Constructs various things that can be created entirely or partially on the client.
@@ -58,8 +58,6 @@ public class FactoryAspect
    
    // Attributes ----------------------------------------------------
    
-   protected MessageIdGenerator generator;
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -68,21 +66,21 @@ public class FactoryAspect
    {
       JBossMessage jbm = new JBossMessage(0);
        
-      return new MessageDelegate(jbm, 0);
+      return new MessageProxy(jbm, 0);
    }
    
    public Object handleCreateBytesMessage(Invocation invocation) throws Throwable
    {
       JBossBytesMessage jbm = new JBossBytesMessage(0);
          
-      return new BytesMessageDelegate(jbm, 0);
+      return new BytesMessageProxy(jbm, 0);
    }
    
    public Object handleCreateMapMessage(Invocation invocation) throws Throwable
    {
       JBossMapMessage jbm = new JBossMapMessage(0);
        
-      return new MapMessageDelegate(jbm, 0);      
+      return new MapMessageProxy(jbm, 0);      
    }
    
    public Object handleCreateObjectMessage(Invocation invocation) throws Throwable
@@ -96,14 +94,14 @@ public class FactoryAspect
          jbm.setObject((Serializable)mi.getArguments()[0]);
       }
       
-      return new ObjectMessageDelegate(jbm, 0);
+      return new ObjectMessageProxy(jbm, 0);
    }
    
    public Object handleCreateStreamMessage(Invocation invocation) throws Throwable
    {
       JBossStreamMessage jbm = new JBossStreamMessage(0);
       
-      return new StreamMessageDelegate(jbm, 0);
+      return new StreamMessageProxy(jbm, 0);
    }
    
    public Object handleCreateTextMessage(Invocation invocation) throws Throwable
@@ -117,7 +115,7 @@ public class FactoryAspect
          jbm.setText((String)mi.getArguments()[0]);
       }
       
-      return new TextMessageDelegate(jbm, 0);
+      return new TextMessageProxy(jbm, 0);
    }   
 
    // Package protected ---------------------------------------------

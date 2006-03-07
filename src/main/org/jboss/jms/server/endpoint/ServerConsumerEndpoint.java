@@ -33,7 +33,7 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSDispatcher;
@@ -104,7 +104,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    private boolean grabbing;
    
-   private MessageDelegate toGrab;
+   private MessageProxy toGrab;
    
    private DeliveryCallback deliveryCallback;
       
@@ -176,11 +176,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
          deliveries.put(new Long(reference.getMessageID()), delivery);
                   
-         //We don't send the message as-is, instead we create a MessageDelegate instance
-         //This allows local fields such as deliveryCount to be handled by the delegate
+         //We don't send the message as-is, instead we create a MessageProxy instance
+         //This allows local fields such as deliveryCount to be handled by the proxy
          //but global data to be fielded by the same underlying Message instance.
          //This allows us to avoid expensive copying of messages
-         MessageDelegate md = JBossMessage.createThinDelegate(message, reference.getDeliveryCount());
+         MessageProxy md = JBossMessage.createThinDelegate(message, reference.getDeliveryCount());
          
          if (!grabbing)
          {
@@ -296,7 +296,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     * Otherwise, if wait = true, we register as being interested in receiving a message
     * asynchronously, then return and wait for it on the client side.
     */
-   public MessageDelegate getMessageNow(boolean wait) throws JMSException
+   public MessageProxy getMessageNow(boolean wait) throws JMSException
    {  
       synchronized (channel)
       { 
