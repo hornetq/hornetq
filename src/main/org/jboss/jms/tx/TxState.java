@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.core.message.MessageFactory;
+
 /**
  * Holds information for a JMS transaction to be sent to the server for
  * processing.
@@ -100,15 +103,74 @@ public class TxState implements Externalizable
    public void writeExternal(ObjectOutput out) throws IOException
    {
       out.writeInt(state);
-      writeList(messages, out);
-      writeList(acks, out);
+      if (messages == null)
+      {
+         out.writeInt(-1);
+      }
+      else
+      {
+         out.writeInt(messages.size());
+         Iterator iter = messages.iterator();
+         while (iter.hasNext())
+         {
+            JBossMessage m = (JBossMessage)iter.next();
+            //We don't use writeObject to avoid serialization overhead
+            out.writeByte(m.getType());
+            m.writeExternal(out);
+         } 
+      }
+      if (acks == null)
+      {
+         out.writeInt(-1);
+      }
+      else
+      {
+         out.writeInt(acks.size());
+         Iterator iter = acks.iterator();
+         while (iter.hasNext())
+         {
+            AckInfo a = (AckInfo)iter.next();
+            //We don't use writeObject to avoid serialization overhead
+            a.writeExternal(out);
+         }
+      }
    }
    
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       state = in.readInt();
-      messages = readList(in);
-      acks = readList(in);
+      int numMessages = in.readInt();
+      if (numMessages == -1)
+      {
+         messages = null;
+      }
+      else
+      {
+         messages = new ArrayList(numMessages);
+         for (int i = 0; i < numMessages; i++)
+         {
+            byte type = in.readByte();
+            JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
+            m.readExternal(in);
+            messages.add(m);
+         }
+      }
+      
+      int numAcks = in.readInt();
+      if (numAcks == -1)
+      {
+         acks = null;
+      }
+      else
+      {
+         acks = new ArrayList(numAcks);
+         for (int i = 0; i < numAcks; i++)
+         {
+            AckInfo info = new AckInfo();
+            info.readExternal(in);
+            acks.add(info);
+         }
+      }  
    }
    
    // Class YYY overrides -------------------------------------------
@@ -118,45 +180,7 @@ public class TxState implements Externalizable
    // Package Private -----------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   private void writeList(List l, ObjectOutput out) throws IOException
-   {
-      if (l == null)
-      {
-         out.writeInt(-1);
-      }
-      else
-      {
-         out.writeInt(l.size());
-         Iterator iter = l.iterator();
-         while (iter.hasNext())
-         {
-            out.writeObject(iter.next());
-         }
-      }
-   }
-   
-   private List readList(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-      int size = in.readInt();
       
-      List l = null;
-      
-      if (size != -1)
-      {
-      
-         l = new ArrayList(size);
-         
-         for (int i = 0; i < size; i++)
-         {
-            l.add(in.readObject());
-         }
-      }
-      
-      return l;      
-   }
-   
    // Inner Classes -------------------------------------------------
-   
-   
+      
 }

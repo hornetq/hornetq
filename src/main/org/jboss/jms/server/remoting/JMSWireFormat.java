@@ -33,8 +33,10 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
+import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.marshal.Marshaller;
@@ -88,6 +90,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte NULL_RESPONSE = 7;
    
    protected static final byte MESSAGE_RESPONSE = 8;
+   
+   protected static final byte SEND_TRANSACTION = 9;
+   
+   protected static final byte GET_ID_BLOCK = 10;
+   
+   protected static final byte ID_BLOCK_RESPONSE = 11;
          
    protected boolean trace;
    
@@ -224,6 +232,34 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                if (trace) { log.trace("Wrote acknowledge"); }
             }
+            else if ("sendTransaction".equals(methodName))
+            {
+               oos.writeByte(SEND_TRANSACTION);
+               
+               writeHeader(mi, oos);    
+               
+               TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
+               
+               request.writeExternal(oos);
+               
+               oos.flush();
+               
+               if (trace) { log.trace("Wrote getMessageNow"); }
+            }
+            else if ("getIdBlock".equals(methodName))
+            {
+               oos.writeByte(GET_ID_BLOCK);
+               
+               writeHeader(mi, oos);    
+               
+               int size = ((Integer)mi.getArguments()[0]).intValue();
+               
+               oos.writeInt(size);
+               
+               oos.flush();
+               
+               if (trace) { log.trace("Wrote getIdBlock"); }
+            }
             else
             {
                oos.write(SERIALIZED);
@@ -300,6 +336,19 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             oos.writeInt(del.getDeliveryCount());
             
             del.getMessage().writeExternal(oos);
+            
+            oos.flush();
+            
+            if (trace) { log.trace("Wrote message response"); }
+         }
+         else if (res instanceof IdBlock)
+         {
+            //Return value from getMessageNow
+            oos.write(ID_BLOCK_RESPONSE);
+            
+            IdBlock block = (IdBlock)res;
+            
+            block.writeExternal(oos);
             
             oos.flush();
             
@@ -402,6 +451,40 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             return request;      
          }
+         case SEND_TRANSACTION:            
+         { 
+            MethodInvocation mi = readHeader(ois);
+            
+            TransactionRequest tr = new TransactionRequest();
+            
+            tr.readExternal(ois);
+                                                          
+            Object[] args = new Object[] {tr};
+            
+            mi.setArguments(args);
+                
+            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            
+            if (trace) { log.trace("Read sendTransaction"); }
+            
+            return request;      
+         }
+         case GET_ID_BLOCK:            
+         { 
+            MethodInvocation mi = readHeader(ois);
+            
+            int size = ois.readInt();
+            
+            Object[] args = new Object[] {new Integer(size)};
+            
+            mi.setArguments(args);
+                
+            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            
+            if (trace) { log.trace("Read getIdBlock"); }
+            
+            return request;      
+         }
          case ACKNOWLEDGE:
          {
             MethodInvocation mi = readHeader(ois);                
@@ -447,6 +530,18 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
                         
             InvocationResponse resp = new InvocationResponse(null, md, false, null);
+            
+            if (trace) { log.trace("Read message response"); }
+            
+            return resp;            
+         }
+         case ID_BLOCK_RESPONSE:
+         {
+            IdBlock block = new IdBlock();
+            
+            block.readExternal(ois);
+                                  
+            InvocationResponse resp = new InvocationResponse(null, block, false, null);
             
             if (trace) { log.trace("Read message response"); }
             

@@ -28,6 +28,8 @@ import java.io.ObjectOutput;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.tx.XidImpl;
+
 /**
  * This class contians all the data needed to perform a JMS transaction.
  * 
@@ -49,7 +51,6 @@ public class TransactionRequest implements Externalizable
    
    private static final long serialVersionUID = -5371388526898322431L;
    
-
    public final static byte ONE_PHASE_COMMIT_REQUEST = 0;
    
    public final static byte ONE_PHASE_ROLLBACK_REQUEST = 1;
@@ -60,9 +61,12 @@ public class TransactionRequest implements Externalizable
 
    public final static byte TWO_PHASE_ROLLBACK_REQUEST = 4;
    
+   private static final byte XID = 0;
+   
+   private static final byte NO_XID = -1;
+   
    // Attributes ----------------------------------------------------
    
-   /** Request type */
    protected int requestType;
 
    /** For 2 phase commit, this identifies the transaction. */
@@ -107,15 +111,58 @@ public class TransactionRequest implements Externalizable
    public void writeExternal(ObjectOutput out) throws IOException
    {
       out.writeInt(requestType);
-      out.writeObject(xid);
-      out.writeObject(state);
+            
+      if (xid == null)
+      {
+         out.writeByte(NO_XID);
+      }
+      else
+      {
+         //Write XId info
+         byte[] branchQual = xid.getBranchQualifier();
+         int formatId = xid.getFormatId();
+         byte[] globalTxId = xid.getGlobalTransactionId();
+                  
+         out.write(XID);
+         out.writeInt(branchQual.length);
+         out.write(branchQual);
+         out.writeInt(formatId);
+         out.writeInt(globalTxId.length);
+         out.write(globalTxId);
+      }
+      
+      state.writeExternal(out);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
      requestType = in.readInt();
-     xid = (Xid)in.readObject();
-     state = (TxState)in.readObject();
+     
+     byte isXid = in.readByte();
+     
+     if (isXid == NO_XID)
+     {
+        xid = null;
+     }
+     else if (isXid == XID)
+     {
+        int l = in.readInt();
+        byte[] branchQual = new byte[l];
+        in.readFully(branchQual);
+        int formatId = in.readInt();
+        l = in.readInt();
+        byte[] globalTxId = new byte[l];
+        in.readFully(globalTxId);
+        xid = new XidImpl(branchQual, formatId, globalTxId);
+     }
+     else
+     {
+        throw new IllegalStateException("Invalid value:" + isXid);
+     }
+     
+     state = new TxState();
+     
+     state.readExternal(in);
    }
    
    // Package protected ---------------------------------------------
