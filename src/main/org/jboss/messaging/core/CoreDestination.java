@@ -33,4 +33,23 @@ package org.jboss.messaging.core;
 public interface CoreDestination extends Distributor, Receiver
 {
    long getId();
+   
+   /**
+    * Get in-memory message limit
+    * @return memory limit 
+    */
+   int getFullSize();
+   
+   /**
+    * Get paging size
+    * @return paging size
+    */
+   int getPageSize();
+   
+   /**
+    * Get write-cache size
+    * @return cache size
+    */
+   int getDownCacheSize();
+
 }

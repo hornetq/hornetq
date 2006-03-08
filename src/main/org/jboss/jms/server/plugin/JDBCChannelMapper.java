@@ -226,9 +226,23 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       return (JBossDestination)idMap.get(new Long(coreDestinationId));
    }
    
-   
+   /**
+    * @deprecated
+    * @see #deployCoreDestination(boolean, String, MessageStore, PersistenceManager, int, int, int)
+    */
    public void deployCoreDestination(boolean isQueue, String destName,
                                      MessageStore ms, PersistenceManager pm) throws JMSException
+   {
+      deployCoreDestination(isQueue, destName, ms, pm, 100, 20, 10);
+   }
+   
+   public void deployCoreDestination(boolean isQueue, 
+                                     String destName,
+                                     MessageStore ms, 
+                                     PersistenceManager pm,
+                                     int fullSize, 
+                                     int pageSize, 
+                                     int downCacheSize) throws JMSException
    {
       try
       {         
@@ -257,9 +271,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          // TODO I am using LocalQueues for the time being, switch to distributed Queues
          if (isQueue)
          {
-            //FIXME
-            //Hardcoded for now
-            cd = new Queue(id, ms, pm, true, 100, 20, 10);
+            cd = new Queue(id, ms, pm, true, fullSize, pageSize, downCacheSize);
             
             try
             {
@@ -279,7 +291,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          else
          {
             // TODO I am using LocalTopics for the time being, switch to distributed Topics
-            cd = new Topic(id);
+            cd = new Topic(id, fullSize, pageSize, downCacheSize);
             
             topics.put(destName, cd);
             
@@ -487,8 +499,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
          }
                 
-         //FIXME - Size hardcoded for now
-         CoreSubscription sub = new CoreSubscription(id, topic, selector, noLocal, ms, pm, 100, 20, 10);
+         CoreSubscription sub = new CoreSubscription(id, topic, selector, noLocal, ms, pm, 
+               topic.getFullSize(), topic.getPageSize(), topic.getDownCacheSize());
          
          return sub;
       }
@@ -1036,8 +1048,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                                                        String selector, 
                                                                        boolean noLocal,                                                            
                                                                        MessageStore ms,
-                                                                       PersistenceManager pm)
-      throws Exception
+                                                                       PersistenceManager pm) throws Exception
    {
       Map subs = (Map)subscriptions.get(clientID);
       if (subs == null)
@@ -1053,9 +1064,9 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
       
-      //FIXME size hardcoded for now
       CoreDurableSubscription subscription =
-         new CoreDurableSubscription(id, clientID, subscriptionName, topic, selector, noLocal, ms, pm, 100, 20, 10);
+         new CoreDurableSubscription(id, clientID, subscriptionName, topic, selector, noLocal, ms, pm, 
+               topic.getFullSize(), topic.getPageSize(), topic.getDownCacheSize());
       
       subs.put(subscriptionName, subscription);
       

@@ -40,6 +40,9 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   private int m_fullSize;
+   private int m_pageSize;
+   private int m_downCacheSize;
    
    // Constructors --------------------------------------------------
 
@@ -48,6 +51,9 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    {
       super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
       router = new PointToPointRouter();
+      m_fullSize = fullSize;
+      m_pageSize = pageSize;
+      m_downCacheSize = downCacheSize;
    }
 
    // Public --------------------------------------------------------
@@ -68,12 +74,36 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    {
 	   return state.messageCount();
    }
-   
+
    // CoreDestination implementation -------------------------------
    
    public long getId()
    {
       return channelID;
+   }
+
+   /**
+    * @see CoreDestination#getFullSize()
+    */
+   public int getFullSize()
+   {
+      return m_fullSize;
+   }
+   
+   /**
+    * @see CoreDestination#getPageSize()
+    */
+   public int getPageSize()
+   {
+      return m_pageSize;
+   }
+   
+   /**
+    * @see CoreDestination#getDownCacheSize()
+    */
+   public int getDownCacheSize()
+   {
+      return m_downCacheSize;
    }
 
    // Package protected ---------------------------------------------

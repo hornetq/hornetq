@@ -27,6 +27,9 @@ import javax.management.ObjectName;
 public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
+   private static final int FULL_SIZE = 100;
+   private static final int PAGE_SIZE = 20;
+   private static final int DOWN_CACHE_SIZE = 10;
 
    // Static --------------------------------------------------------
    
@@ -43,6 +46,14 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    protected boolean started = false;
    private boolean createdProgrammatically = false;
+   
+   // The following 3 attributes can only be changed when service is stopped.
+   // In memory message number limit
+   private int m_fullSize = FULL_SIZE;
+   // Paging size
+   private int m_pageSize = PAGE_SIZE;
+   // Write-cache size
+   private int m_downCacheSize = DOWN_CACHE_SIZE;
 
    // Constructors --------------------------------------------------
 
@@ -77,7 +88,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          cm = serverPeer.getChannelMapperDelegate();
    
          jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
-         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(), serverPeer.getPersistenceManagerDelegate());
+         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(), serverPeer.getPersistenceManagerDelegate(),
+               m_fullSize, m_pageSize, m_downCacheSize);
    
          log.info(this + " started");
       }
@@ -166,6 +178,78 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    }
 
    // JMX managed operations ----------------------------------------
+   
+   /**
+    * Get in-memory message limit
+    * @return message limit
+    */
+   public int getFullSize()
+   {
+      // XXX This value should be the same as getting from core destination
+      return m_fullSize;
+   }
+   
+   /**
+    * Set in-memory message limit when destination is stopped.
+    * @param fullSize the message limit
+    */
+   public void setFullSize(int fullSize)
+   {
+      if (started)
+      {
+         log.warn("FullSize can only be changed when destination is stopped");
+         return;
+      }
+      m_fullSize = fullSize;
+   }
+   
+   /**
+    * Get paging size
+    * @return paging size
+    */
+   public int getPageSize()
+   {
+      // XXX This value should be the same as getting from core destination
+      return m_pageSize;
+   }
+
+   /**
+    * Set paging size when destination is stopped.
+    * @param pageSize the paging size
+    */
+   public void setPageSize(int pageSize)
+   {
+      if (started)
+      {
+         log.warn("PageSize can only be changed when destination is stopped");
+         return;
+      }
+      m_pageSize = pageSize;
+   }
+   
+   /**
+    * Get write-cache size
+    * @return cache size
+    */
+   public int getDownCacheSize()
+   {
+      // XXX This value should be the same as getting from core destination
+      return m_downCacheSize;
+   }
+
+   /**
+    * Set write-cache size when destination is stopped.
+    * @param downCacheSize the cache size
+    */
+   public void setDownCacheSize(int downCacheSize)
+   {
+      if (started)
+      {
+         log.warn("DownCacheSize can only be changed when destination is stopped");
+         return;
+      }
+      m_downCacheSize = downCacheSize;
+   }
 
    // TODO implement the following:
 

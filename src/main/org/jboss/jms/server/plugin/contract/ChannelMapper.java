@@ -42,8 +42,19 @@ public interface ChannelMapper extends ServerPlugin
    
    JBossDestination getJBossDestination(long coreDestinationId);
    
+   /**
+    * @deprecated
+    */
    void deployCoreDestination(boolean isQueue, String destName, MessageStore ms, PersistenceManager pm) throws JMSException;
    
+   void deployCoreDestination(boolean isQueue, 
+                              String destName, 
+                              MessageStore ms, 
+                              PersistenceManager pm,
+                              int fullSize, 
+                              int pageSize, 
+                              int downCacheSize) throws JMSException;
+
    CoreDestination undeployCoreDestination(boolean isQueue, String destName);
    
    void deployTemporaryCoreDestination(boolean isQueue, String destName,

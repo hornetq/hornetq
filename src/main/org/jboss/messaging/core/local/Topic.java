@@ -57,15 +57,32 @@ public class Topic implements CoreDestination, ManageableTopic
    
    protected long destinationId;
    
+   private int m_fullSize;
+   private int m_pageSize;
+   private int m_downCacheSize;
+   
    // Constructors --------------------------------------------------
-
+   
+   /**
+    * @deprecated
+    * @see #Topic(long, int, int, int)
+    */
    public Topic(long id)
    {
+      this(id, 100, 20, 10);
+   }
+   
+   public Topic(long id, int fullSize, int pageSize, int downCacheSize)
+   {
       router = new PointToMultipointRouter();
-
+      
       if (log.isTraceEnabled()) { log.trace(this + " created"); }
       
       this.destinationId = id;
+      
+      m_fullSize = fullSize;
+      m_pageSize = pageSize;
+      m_downCacheSize = downCacheSize;
    }
 
    // Receiver implementation ---------------------------------------
@@ -126,6 +143,30 @@ public class Topic implements CoreDestination, ManageableTopic
       return destinationId;
    }
 
+   /**
+    * @see CoreDestination#getFullSize()
+    */
+   public int getFullSize()
+   {
+      return m_fullSize;
+   }
+   
+   /**
+    * @see CoreDestination#getPageSize()
+    */
+   public int getPageSize()
+   {
+      return m_pageSize;
+   }
+   
+   /**
+    * @see CoreDestination#getDownCacheSize()
+    */
+   public int getDownCacheSize()
+   {
+      return m_downCacheSize;
+   }
+   
    // ManageableTopic implementation --------------------------------
    
    /**
@@ -152,7 +193,7 @@ public class Topic implements CoreDestination, ManageableTopic
       while (iter.hasNext())
       {
          count++;
-         Object sub = iter.next();
+         iter.next();
       }
       return count;
    }

@@ -70,6 +70,24 @@
       <type>boolean</type>
    </attribute>
 
+   <attribute access="read-write" getMethod="getFullSize" setMethod="setFullSize">
+      <description>The in-memory message limit, can only be set when topic is stopped</description>
+      <name>FullSize</name>
+      <type>int</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getPageSize" setMethod="setPageSize">
+      <description>The paging size, can only be set when topic is stopped</description>
+      <name>PageSize</name>
+      <type>int</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDownCacheSize" setMethod="setDownCacheSize">
+      <description>The write-cache size, can only be set when topic is stopped</description>
+      <name>DownCacheSize</name>
+      <type>int</type>
+   </attribute>
+
    <!-- Managed operations -->
 
    <operation>

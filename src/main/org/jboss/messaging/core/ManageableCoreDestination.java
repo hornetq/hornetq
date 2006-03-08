@@ -36,5 +36,6 @@ public interface ManageableCoreDestination
     *
     */
    void removeAllMessages();
+   
    // TODO adding more common manageable operations
 }
