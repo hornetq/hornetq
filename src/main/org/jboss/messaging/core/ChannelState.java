@@ -23,6 +23,7 @@ package org.jboss.messaging.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,6 @@ import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
 import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
-import org.jboss.messaging.core.util.ConcurrentHashSet;
 
 /**
  * Represents the state of a Channel
@@ -84,7 +84,9 @@ public class ChannelState implements State
    
    protected int refsInStorage;
    
-   private Object lock;
+   private Object refLock;
+   
+   private Object deliveryLock;
    
    // Constructors --------------------------------------------------
    
@@ -129,7 +131,7 @@ public class ChannelState implements State
       
       messageRefs = new BasicPrioritizedDeque(10);
       
-      deliveries = new ConcurrentHashSet();
+      deliveries = new HashSet();
       
       downCache = new ArrayList();
       
@@ -139,7 +141,9 @@ public class ChannelState implements State
       
       this.downCacheSize = downCacheSize;
       
-      lock = new Object();
+      refLock = new Object();
+      
+      deliveryLock = new Object();
    }
 
    // State implementation -----------------------------------
@@ -187,7 +191,7 @@ public class ChannelState implements State
       
       ref.incrementChannelCount();
       
-      synchronized (lock)
+      synchronized (refLock)
       {         
          if (paging)
          {         
@@ -228,9 +232,12 @@ public class ChannelState implements State
    
    public void addDelivery(Delivery d) throws Throwable
    {
-      deliveries.add(d);
-
-      if (trace) { log.trace(this + " added " + d + " to memory"); }
+      synchronized (deliveryLock)
+      {
+         deliveries.add(d);
+   
+         if (trace) { log.trace(this + " added " + d + " to memory"); }
+      }
    }
    
    /*
@@ -241,46 +248,49 @@ public class ChannelState implements State
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
       
-      boolean removed = deliveries.remove(del);
-      
-      if (!removed)
-      {
-         //This is ok
-         //This can happen if the message is cancelled before the result of ServerConsumerDelegate.handle
-         //has returned, in which case we won't have a record of the delivery in the Set
-         
-         //In this case we don't want to add the message reference back into the state
-         //since it was never removed in the first place
-         
-         if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
-      }
-      else
+      synchronized (deliveryLock)
       {         
-         synchronized (lock)
+         boolean removed = deliveries.remove(del);
+         
+         if (!removed)
          {
-            messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
-                        
-            if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }
+            //This is ok
+            //This can happen if the message is cancelled before the result of ServerConsumerDelegate.handle
+            //has returned, in which case we won't have a record of the delivery in the Set
             
-            if (paging)
+            //In this case we don't want to add the message reference back into the state
+            //since it was never removed in the first place
+            
+            if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
+         }
+         else
+         {         
+            synchronized (refLock)
             {
-               //if paging we need to evict the end reference to storage to preserve the number of refs in the queue
-                              
-               MessageReference ref = (MessageReference)messageRefs.removeLast();
+               messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
+                           
+               if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }
                
-               ref.decrementChannelCount();
-               
-               if (!ref.isReliable())
+               if (paging)
                {
-                  if (downCacheSize > 0)
+                  //if paging we need to evict the end reference to storage to preserve the number of refs in the queue
+                                 
+                  MessageReference ref = (MessageReference)messageRefs.removeLast();
+                  
+                  ref.decrementChannelCount();
+                  
+                  if (!ref.isReliable())
                   {
-                     addToDownCache(ref);
-                  }
-                  else
-                  {                     
-                     pm.addReference(channel.getChannelID(), ref, null); 
-                  }   
-               }              
+                     if (downCacheSize > 0)
+                     {
+                        addToDownCache(ref);
+                     }
+                     else
+                     {                     
+                        pm.addReference(channel.getChannelID(), ref, null); 
+                     }   
+                  }              
+               }
             }
          }
       }
@@ -319,7 +329,7 @@ public class ChannelState implements State
          
    public MessageReference removeFirstInMemory() throws Throwable
    {      
-      synchronized (lock)
+      synchronized (refLock)
       {         
          MessageReference result = (MessageReference)messageRefs.removeFirst();
          
@@ -331,23 +341,24 @@ public class ChannelState implements State
    
    public MessageReference peekFirst() throws Throwable
    {      
-      synchronized (lock)
+      synchronized (refLock)
       {
          MessageReference result = (MessageReference)messageRefs.peekFirst();
                
          return result;   
       }
    }
- 
-   //FIXME synchronization here is broken - replace this with iterator
+    
    public List delivering(Filter filter)
    {
       List delivering = new ArrayList();
-      synchronized (deliveries)
+      
+      synchronized (deliveryLock)
       {
          for(Iterator i = deliveries.iterator(); i.hasNext(); )
          {
             Delivery d = (Delivery)i.next();
+            
             MessageReference r = d.getReference();
 
             // TODO: I need to dereference the message each time I apply the filter. Refactor so the message reference will also contain JMS properties
@@ -358,16 +369,18 @@ public class ChannelState implements State
          }
       }
       if (trace) {  log.trace(this + ": the non-recoverable state has " + delivering.size() + " messages being delivered"); }
+      
       return delivering;
    }
 
-   //FIXME synchronization here is broken - replace this with iterator
    public List undelivered(Filter filter)
    {
       List undelivered = new ArrayList();
-      synchronized(messageRefs)
+      
+      synchronized(refLock)
       {
          Iterator iter = messageRefs.getAll().iterator();
+         
          while (iter.hasNext())
          {
             MessageReference r = (MessageReference)iter.next();
@@ -384,11 +397,14 @@ public class ChannelState implements State
          }
       }
       if (trace) { log.trace(this + ": undelivered() returns a list of " + undelivered.size() + " undelivered memory messages"); }
+      
       return undelivered;
    }
 
    public List browse(Filter filter)
    {
+      //FIXME - This is currently broken since it doesn't take into account refs paged into persistent storage
+      //Also is very inefficient since it makes a copy
       List result = delivering(filter);
       List undel = undelivered(filter);
       
@@ -403,12 +419,18 @@ public class ChannelState implements State
    
    public int messageCount()
    {
-      return messageRefs.size() + deliveries.size();
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {
+            return messageRefs.size() + deliveries.size();
+         }
+      }      
    }
 
    public void load() throws Exception
    {
-      synchronized (lock)
+      synchronized (refLock)
       {
          refsInStorage = pm.getNumberOfReferences(channel.getChannelID());
          
@@ -421,31 +443,33 @@ public class ChannelState implements State
    
    public void removeAll()
    {
-      //FIXME - This locking is broken
-      
-      // Remove all deliveries
-      synchronized(deliveries)
+      synchronized (refLock)
       {
-         Iterator iter = deliveries.iterator();
-         while (iter.hasNext())
+         synchronized (deliveryLock)
          {
-            Delivery d = (Delivery)iter.next();
-            MessageReference r = d.getReference();
-            removeCompletely(r);
+            //Remove all deliveries
+
+            Iterator iter = deliveries.iterator();
+            while (iter.hasNext())
+            {
+               Delivery d = (Delivery)iter.next();
+               MessageReference r = d.getReference();
+               removeCompletely(r);
+            }
+            deliveries.clear();
+         
+            //Remove all holding messages
+
+            iter = messageRefs.getAll().iterator();
+            while (iter.hasNext())
+            {
+               MessageReference r = (MessageReference)iter.next();
+               removeCompletely(r);
+            }
+            messageRefs.clear();
+            
          }
-         deliveries.clear();
-      }
-      // Remove all holding messages
-      synchronized(messageRefs)
-      {
-         Iterator iter = messageRefs.getAll().iterator();
-         while (iter.hasNext())
-         {
-            MessageReference r = (MessageReference)iter.next();
-            removeCompletely(r);
-         }
-         messageRefs.clear();
-      }
+      }           
    }
    
    // Public --------------------------------------------------------
@@ -510,9 +534,12 @@ public class ChannelState implements State
          throw new IllegalArgumentException("Can't acknowledge a null delivery");
       }
       
-      boolean removed = deliveries.remove(d);
-      
-      if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); }   
+      synchronized (deliveryLock)
+      {      
+         boolean removed = deliveries.remove(d);
+         
+         if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); } 
+      }
    }
          
    protected void removeCompletely(MessageReference r)

@@ -57,20 +57,11 @@ public class Topic implements CoreDestination, ManageableTopic
    
    protected long destinationId;
    
-   private int m_fullSize;
-   private int m_pageSize;
-   private int m_downCacheSize;
+   private int fullSize;
+   private int pageSize;
+   private int downCacheSize;
    
    // Constructors --------------------------------------------------
-   
-   /**
-    * @deprecated
-    * @see #Topic(long, int, int, int)
-    */
-   public Topic(long id)
-   {
-      this(id, 100, 20, 10);
-   }
    
    public Topic(long id, int fullSize, int pageSize, int downCacheSize)
    {
@@ -80,9 +71,9 @@ public class Topic implements CoreDestination, ManageableTopic
       
       this.destinationId = id;
       
-      m_fullSize = fullSize;
-      m_pageSize = pageSize;
-      m_downCacheSize = downCacheSize;
+      this.fullSize = fullSize;
+      this.pageSize = pageSize;
+      this.downCacheSize = downCacheSize;
    }
 
    // Receiver implementation ---------------------------------------
@@ -148,7 +139,7 @@ public class Topic implements CoreDestination, ManageableTopic
     */
    public int getFullSize()
    {
-      return m_fullSize;
+      return fullSize;
    }
    
    /**
@@ -156,7 +147,7 @@ public class Topic implements CoreDestination, ManageableTopic
     */
    public int getPageSize()
    {
-      return m_pageSize;
+      return pageSize;
    }
    
    /**
@@ -164,7 +155,7 @@ public class Topic implements CoreDestination, ManageableTopic
     */
    public int getDownCacheSize()
    {
-      return m_downCacheSize;
+      return downCacheSize;
    }
    
    // ManageableTopic implementation --------------------------------

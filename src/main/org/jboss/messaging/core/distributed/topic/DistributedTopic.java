@@ -68,7 +68,7 @@ public class DistributedTopic extends Topic implements Distributed
    public DistributedTopic(String name, MessageStore ms,
                            PersistenceManager pm, RpcDispatcher dispatcher)
    {
-      super(-1);
+      super(-1, 0, 0, 0);
       this.ms = ms;
       this.pm = pm;
       viewKeeper = new TopicViewKeeper(name);
