@@ -33,9 +33,9 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.message.MessageProxy;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -49,11 +49,11 @@ public class TemporaryDestinationTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected InitialContext initialContext;
-   
+
    protected ConnectionFactory cf;
 
    protected Connection connection;
@@ -88,37 +88,37 @@ public class TemporaryDestinationTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       connection.close();
-      
+
       ServerManagement.undeployTopic("Topic");
-      
+
       super.tearDown();
    }
 
 
    // Public --------------------------------------------------------
-   
+
    public void testTemp() throws Exception
    {
       TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-      
+
       MessageProducer producer = producerSession.createProducer(tempTopic);
-      
+
       MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
-      
+
       connection.start();
-      
+
       final String messageText = "This is a message";
-      
+
       Message m = producerSession.createTextMessage(messageText);
-      
+
       producer.send(m);
-      
+
       TextMessage m2 = (TextMessage)consumer.receive(2000);
-      
+
       assertNotNull(m2);
-      
+
       assertEquals(messageText, m2.getText());
-      
+
       try
       {
          tempTopic.delete();
@@ -128,35 +128,35 @@ public class TemporaryDestinationTest extends MessagingTestCase
       {
          //Can't delete temp dest if there are open consumers
       }
-            
+
       consumer.close();
       tempTopic.delete();
-      
-      
+
+
    }
-   
-   
+
+
    public void testTemporaryQueueBasic() throws Exception
    {
 
       TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-      
+
       MessageProducer producer = producerSession.createProducer(tempQueue);
-      
+
       MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
-      
+
       connection.start();
-      
+
       final String messageText = "This is a message";
-      
+
       Message m = producerSession.createTextMessage(messageText);
-      
+
       producer.send(m);
-      
+
       TextMessage m2 = (TextMessage)consumer.receive(2000);
-      
+
       assertNotNull(m2);
-      
+
       assertEquals(messageText, m2.getText());
    }
 
@@ -181,31 +181,31 @@ public class TemporaryDestinationTest extends MessagingTestCase
    public void testTemporaryQueueDeleted() throws Exception
    {
       //Make sure temporary queue cannot be used after it has been deleted
-      
+
       TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-      
+
       MessageProducer producer = producerSession.createProducer(tempQueue);
-      
+
       MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
-      
+
       connection.start();
-      
+
       final String messageText = "This is a message";
-      
+
       Message m = producerSession.createTextMessage(messageText);
-      
+
       producer.send(m);
-      
+
       TextMessage m2 = (TextMessage)consumer.receive(2000);
-      
+
       assertNotNull(m2);
-      
+
       assertEquals(messageText, m2.getText());
-      
+
       consumer.close();
-      
+
       tempQueue.delete();
-      
+
       try
       {
          producer.send(m);
@@ -213,24 +213,24 @@ public class TemporaryDestinationTest extends MessagingTestCase
       }
       catch (JMSException e) {}
    }
-   
-  
-   
+
+
+
    public void testTemporaryTopicBasic() throws Exception
    {
       TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-      
+
       final MessageProducer producer = producerSession.createProducer(tempTopic);
-      
+
       MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
-      
+
       connection.start();
-      
+
       final String messageText = "This is a message";
-      
+
       final Message m = producerSession.createTextMessage(messageText);
       log.trace("Message reliable:" + ((MessageProxy)m).getMessage().isReliable());
-      
+
       Thread t = new Thread(new Runnable()
       {
          public void run()
@@ -248,13 +248,13 @@ public class TemporaryDestinationTest extends MessagingTestCase
          }
       }, "Producer");
       t.start();
-        
+
       TextMessage m2 = (TextMessage)consumer.receive(3000);
-      
+
       assertNotNull(m2);
-      
+
       assertEquals(messageText, m2.getText());
-      
+
       t.join();
    }
 
@@ -278,18 +278,18 @@ public class TemporaryDestinationTest extends MessagingTestCase
    }
 
 
-   
-   
+
+
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
-  
-   
+
+
 }
 

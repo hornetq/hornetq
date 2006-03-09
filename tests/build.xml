@@ -145,7 +145,6 @@
          depend="${javac.depend}"
          verbose="${javac.verbose}"
          deprecation="${javac.deprecation}"
-         includeAntRuntime="yes"
          includeJavaRuntime="${javac.include.java.runtime}"
          failonerror="${javac.fail.onerror}">
          <src path="${source.tests.java}"/>
@@ -685,103 +684,6 @@
    <target name="print-testclasspath">
       <pathconvert targetos="unix" property="test.classpath.property" refid="test.classpath"/>
       <echo message="${test.classpath.property}"/>
-   </target>
-
-
-
-   <!-- TODO move this out into it's own build.xml -->
-
-   <target name="perf" depends="prepare-testdirs, clear-test-logs">
-
-      <antcall target="start-slave">
-         <param name="slave.host" value="1234"/>
-         <param name="slave.port" value="localhost"/>
-      </antcall>
-
-      <antcall target="start-slave">
-         <param name="slave.host" value="1235"/>
-         <param name="slave.port" value="localhost"/>
-      </antcall>
-
-      <sleep seconds="5"/>
-
-      <echo>Running perf</echo>
-
-      <java classname="org.jboss.jms.perf.framework.Runner" fork="true">
-         <arg value="${slave.host}"/>
-         <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="remote.test.suffix" value="-perf"/>
-         <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <pathelement location="${module.output}/classes"/>
-            <pathelement location="${module.root}/../output/classes"/>
-            <path refid="test.classpath"/>
-         </classpath>
-      </java>
-
-      <antcall target="kill-slaves"/>
-
-      <sleep seconds="5"/>
-
-      <antcall target="perf-chart"/>
-
-   </target>
-
-   <target name="start-slave"
-           description="Starts a perf slave">
-      <java classname="org.jboss.jms.perf.framework.Slave" fork="true" spawn="true">
-         <arg value="${slave.host}"/>
-         <arg value="${slave.port}"/>
-         <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="remote.test.suffix" value="-start-slave-${slave.host}"/>
-         <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <pathelement location="${module.output}/classes"/>
-            <pathelement location="${module.root}/../output/classes"/>
-            <path refid="test.classpath"/>
-         </classpath>
-      </java>
-   </target>
-
-   <target name="kill-slaves">
-      <antcall target="kill-slave">
-         <param name="slave.host" value="1234"/>
-         <param name="slave.port" value="localhost"/>
-      </antcall>
-
-      <antcall target="kill-slave">
-         <param name="slave.host" value="1235"/>
-         <param name="slave.port" value="localhost"/>
-      </antcall>
-   </target>
-
-   <target name="kill-slave"
-           description="Kills a perf slave">
-      <java classname="org.jboss.jms.perf.framework.SlaveKiller" fork="true">
-         <arg value="${slave.host}"/>
-         <arg value="${slave.port}"/>
-         <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="remote.test.suffix" value="-kill-slave-${slave.host}"/>
-         <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <pathelement location="${module.output}/classes"/>
-            <pathelement location="${module.root}/../output/classes"/>
-            <path refid="test.classpath"/>
-         </classpath>
-      </java>
-   </target>
-
-   <target name="perf-chart">
-      <java classname="org.jboss.jms.perf.framework.Charter" fork="true">
-         <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="remote.test.suffix" value="-perf-chart"/>
-         <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <pathelement location="${module.output}/classes"/>
-            <pathelement location="${module.root}/../output/classes"/>
-            <path refid="test.classpath"/>
-         </classpath>
-      </java>
    </target>
 
 </project>

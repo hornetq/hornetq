@@ -34,7 +34,6 @@ import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.message.MapMessageProxy;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;

@@ -156,13 +156,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
       if (obj instanceof InvocationRequest)
       {         
-         if (trace) { log.trace("Writing InvocationRequest"); }
+         if (trace) { log.trace("writing InvocationRequest"); }
          
          InvocationRequest req = (InvocationRequest)obj;
          
          Object param = req.getParameter();
          
-         if (trace) { log.trace("Param is " + param); }
+         if (trace) { log.trace("param is " + param); }
          
          if (param instanceof MethodInvocation)
          {            
@@ -170,7 +170,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             String methodName = mi.getMethod().getName();
             
-            if (trace) { log.trace("MethodInvocation, Method name:" + methodName); }
+            if (trace) { log.trace("methodInvocation (" + methodName + "())"); }
             
             if (methodName.equals("send"))
             {               
@@ -186,7 +186,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();  
                
-               if (trace) { log.trace("Wrote send"); }               
+               if (trace) { log.trace("wrote send()"); }
             }
             else if ("activate".equals(methodName))
             {
@@ -196,7 +196,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("Wrote activate"); }
+               if (trace) { log.trace("wrote activate()"); }
             }
             else if ("deactivate".equals(methodName))
             {
@@ -206,7 +206,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("Wrote deactivate"); }
+               if (trace) { log.trace("wrote deactivate()"); }
             }
             else if ("getMessageNow".equals(methodName))
             {
@@ -220,7 +220,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("Wrote getMessageNow"); }
+               if (trace) { log.trace("wrote getMessageNow()"); }
             }
             else if ("acknowledge".equals(methodName))
             {
@@ -230,7 +230,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("Wrote acknowledge"); }
+               if (trace) { log.trace("wrote acknowledge()"); }
             }
             else if ("sendTransaction".equals(methodName))
             {
@@ -244,7 +244,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("Wrote getMessageNow"); }
+               if (trace) { log.trace("wrote getMessageNow()"); }
             }
             else if ("getIdBlock".equals(methodName))
             {
@@ -258,7 +258,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("Wrote getIdBlock"); }
+               if (trace) { log.trace("wrote getIdBlock()"); }
             }
             else
             {
@@ -267,7 +267,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                //Delegate to serialization to handle the wire format
                serializableMarshaller.write(obj, oos);
                
-               if (trace) { log.trace("Wrote using standard serialization"); }
+               if (trace) { log.trace("wrote using standard serialization"); }
             }
          }
          else if (param instanceof DeliveryRunnable)
@@ -294,7 +294,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             oos.flush();    
             
-            if (trace) { log.trace("Wrote DeliveryRunnable"); }
+            if (trace) { log.trace("wrote DeliveryRunnable"); }
          }            
          else
          {           
@@ -303,18 +303,18 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             //Delegate to serialization to handle the wire format
             serializableMarshaller.write(obj, oos);
             
-            if (trace) { log.trace("Wrote using standard serialization"); }
+            if (trace) { log.trace("wrote using standard serialization"); }
          }
       }
       else if (obj instanceof InvocationResponse)
       {
-         if (trace) { log.trace("Writing InvocationResponse"); }
+         if (trace) { log.trace("writing InvocationResponse"); }
          
          InvocationResponse resp = (InvocationResponse)obj;
          
          Object res = resp.getResult();
          
-         if (trace) { log.trace("Result is " + res); }
+         if (trace) { log.trace("result is " + res); }
          
          if (res == null && !resp.isException())
          {
@@ -322,7 +322,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             oos.flush();            
             
-            if (trace) { log.trace("Wrote null response"); }
+            if (trace) { log.trace("wrote null response"); }
          }
          else if (res instanceof MessageProxy)
          {
@@ -339,7 +339,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             oos.flush();
             
-            if (trace) { log.trace("Wrote message response"); }
+            if (trace) { log.trace("wrote message response"); }
          }
          else if (res instanceof IdBlock)
          {
@@ -352,7 +352,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             oos.flush();
             
-            if (trace) { log.trace("Wrote message response"); }
+            if (trace) { log.trace("wrote message response"); }
          }
          else
          {      
@@ -361,7 +361,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             //Delegate to serialization to handle the wire format
             serializableMarshaller.write(obj, out);
             
-            if (trace) { log.trace("Wrote using standard serialization"); }
+            if (trace) { log.trace("wrote using standard serialization"); }
          }
       }
       else
@@ -382,7 +382,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
       byte formatType = (byte)ois.read();
       
-      if (trace) { log.trace("Reading, format type=" + formatType); }
+      if (trace) { log.trace("reading, format type is " + formatType); }
        
       switch (formatType)
       {
@@ -391,7 +391,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             //Delegate to serialization
             Object ret = serializableUnMarshaller.read(ois, map);            
             
-            if (trace) { log.trace("Read using standard serialization"); }
+            if (trace) { log.trace("read using standard serialization"); }
             
             return ret;            
          }            
@@ -411,7 +411,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read send"); }
+            if (trace) { log.trace("read send()"); }
             
             return request; 
          }            
@@ -421,7 +421,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read activate"); }
+            if (trace) { log.trace("read activate()"); }
             
             return request;      
          }
@@ -431,7 +431,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read deactivate"); }
+            if (trace) { log.trace("read deactivate()"); }
             
             return request;      
          }
@@ -447,7 +447,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                 
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read getMessageNow"); }
+            if (trace) { log.trace("read getMessageNow()"); }
             
             return request;      
          }
@@ -465,7 +465,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                 
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read sendTransaction"); }
+            if (trace) { log.trace("read sendTransaction()"); }
             
             return request;      
          }
@@ -481,7 +481,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                 
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read getIdBlock"); }
+            if (trace) { log.trace("read getIdBlock()"); }
             
             return request;      
          }
@@ -491,7 +491,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
  
             InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
             
-            if (trace) { log.trace("Read acknowledge"); }
+            if (trace) { log.trace("read acknowledge()"); }
             
             return request;
          }         
@@ -513,7 +513,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             InvocationRequest request = new InvocationRequest(null, null, dr, null, null, null);
             
-            if (trace) { log.trace("Read callback"); }
+            if (trace) { log.trace("read callback()"); }
             
             return request;            
          }
@@ -531,7 +531,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                         
             InvocationResponse resp = new InvocationResponse(null, md, false, null);
             
-            if (trace) { log.trace("Read message response"); }
+            if (trace) { log.trace("read message response"); }
             
             return resp;            
          }
@@ -543,7 +543,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                                   
             InvocationResponse resp = new InvocationResponse(null, block, false, null);
             
-            if (trace) { log.trace("Read message response"); }
+            if (trace) { log.trace("read message response"); }
             
             return resp;            
          }
@@ -551,7 +551,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          {
             InvocationResponse resp = new InvocationResponse(null, null, false, null);
             
-            if (trace) { log.trace("Read null response"); }
+            if (trace) { log.trace("read null response"); }
             
             return resp;
          }

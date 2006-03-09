@@ -112,8 +112,6 @@
        <path refid="junit.junit.classpath"/>
        <path refid="gnu.regexp.classpath"/>
        <path refid="trove.trove.classpath"/>
-       <path location="src/resources/jcommon-1.0.0-rc1.jar"/>
-       <path location="src/resources/jfreechart-1.0.0-rc1.jar"/>
     </path>
 
 
@@ -163,6 +161,7 @@
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>
     <property name="release.id" value="${install.id}"/>
+    <property name="install.root" value="${module.output}/${install.id}"/>
     <property name="install.root" value="${module.output}/${install.id}"/>
 
     <!-- The combined thirdparty classpath -->
@@ -463,7 +462,7 @@
       <ant dir="./docs/examples/topic" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/mdb" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
-
+      <ant dir="./perf" antfile="build.xml" inheritAll="false" target="clean"/>
   </target>
 
   <!-- Clean up all generated files -->

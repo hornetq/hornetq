@@ -19,98 +19,107 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.local;
+package org.jboss.jms.perf.framework;
 
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.ChannelSupport;
-import org.jboss.messaging.core.CoreDestination;
+import java.io.Serializable;
 
 /**
+ *
+ * A ThroughputResult.
+ *
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version $Revision$
  *
  * $Id$
  */
-public class Queue extends ChannelSupport implements CoreDestination, ManageableQueue
+public class ThroughputResult implements Serializable
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = -6238059261642836113L;
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   private int m_fullSize;
-   private int m_pageSize;
-   private int m_downCacheSize;
-   
+
+   private long time;
+   private long messages;
+
    // Constructors --------------------------------------------------
 
-   public Queue(long id, MessageStore ms, PersistenceManager pm,
-                boolean recoverable, int fullSize, int pageSize, int downCacheSize)
+   public ThroughputResult(long time, long messages)
    {
-      super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
-      router = new PointToPointRouter();
-      m_fullSize = fullSize;
-      m_pageSize = pageSize;
-      m_downCacheSize = downCacheSize;
+      this.time = time;
+      this.messages = messages;
    }
 
    // Public --------------------------------------------------------
 
+   public long getTime()
+   {
+      return time;
+   }
+
+   public long getMessages()
+   {
+      return messages;
+   }
+
+   public double getThroughput()
+   {
+      return 1000 * (double)messages / time;
+   }
+
+
+   private Job job;
+
+   public void setJob(Job job)
+   {
+      this.job = job;
+   }
+
+   public Job getJob()
+   {
+      return job;
+   }
+
    public String toString()
    {
-      return "CoreQueue[" + getChannelID() + "]";
-   }
-   
-   public void load() throws Exception
-   {
-      state.load();
-   }
-   
-   // ManageableQueue implementation --------------------------------
-   
-   public int getMessageCount()
-   {
-	   return state.messageCount();
-   }
+      if (job == null)
+      {
+         return "INCOMPLETE THROUGHPUT RESULT";
+      }
 
-   // CoreDestination implementation -------------------------------
-   
-   public long getId()
-   {
-      return channelID;
-   }
 
-   /**
-    * @see CoreDestination#getFullSize()
-    */
-   public int getFullSize()
-   {
-      return m_fullSize;
-   }
-   
-   /**
-    * @see CoreDestination#getPageSize()
-    */
-   public int getPageSize()
-   {
-      return m_pageSize;
-   }
-   
-   /**
-    * @see CoreDestination#getDownCacheSize()
-    */
-   public int getDownCacheSize()
-   {
-      return m_downCacheSize;
+      boolean isSender = job instanceof SenderJob;
+      boolean isReceiver = job instanceof ReceiverJob;
+      boolean isDrain = job instanceof DrainJob;
+
+      StringBuffer sb = new StringBuffer();
+
+      sb.append(job.toString());
+      sb.append(isSender ? " sent " : (isReceiver ? " received " : " drained "));
+      sb.append(getMessages()).append(" messages");
+
+      if (!isDrain)
+      {
+         double t = getThroughput();
+         t = ((double)Math.round(t * 100))/100;
+         sb.append(" in ").append(getTime()).append(" ms at a rate of ").append(t).
+            append(" messages/sec");
+      }
+
+      return sb.toString();
+
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
+
 }
