@@ -116,6 +116,12 @@
    </operation>
 
    <operation>
+      <description>Get all subscription count</description>
+      <name>subscriptionCount</name>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation>
       <description>Get durable/nondurable subscription count</description>
       <name>subscriptionCount</name>
       <parameter>
@@ -127,9 +133,19 @@
    </operation>
 
    <operation>
-      <description>Get all subscription count</description>
-      <name>subscriptionCount</name>
-      <return-type>int</return-type>
+      <description>Get a list of all subscription</description>
+      <name>listSubscriptions</name>
+      <return-type>java.util.List</return-type>
    </operation>
    
+   <operation>
+      <description>Get a list of all subscription</description>
+      <name>listSubscriptions</name>
+      <parameter>
+         <description>Set the value to true to get durable subscription list; false to get nondurable list</description>
+         <name>durable</name>
+         <type>boolean</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
 </mbean>

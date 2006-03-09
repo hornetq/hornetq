@@ -21,7 +21,9 @@
   */
 package org.jboss.messaging.core.local;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
@@ -203,6 +205,36 @@ public class Topic implements CoreDestination, ManageableTopic
             count++;
       }
       return count;
+   }
+   
+   /**
+    * @see ManageableTopic#getSubscriptions()
+    */
+   public List getSubscriptions()
+   {
+      ArrayList list = new ArrayList();
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         list.add(iter.next());
+      }
+      return list;
+   }
+   
+   /**
+    * @see ManageableTopic#getSubscriptions(boolean)
+    */
+   public List getSubscriptions(boolean durable)
+   {
+      ArrayList list = new ArrayList();
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         Object sub = iter.next();
+         if ((sub instanceof CoreDurableSubscription) ^ (!durable))
+            list.add(sub);
+      }
+      return list;
    }
    
    // Public --------------------------------------------------------

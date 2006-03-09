@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.List;
+
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossTopic;
@@ -78,7 +80,33 @@ public class Topic extends DestinationServiceSupport
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.subscriptionCount(durable);
    }
+   
+   /**
+    * Get all subscription list.
+    * @return List of CoreSubscription. Never null. 
+    * @throws JMSException
+    */
+   public List listSubscriptions() throws JMSException
+   {
+      JBossTopic jbt = new JBossTopic(name);
+      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
+      return t.getSubscriptions();
+   }
 
+   /**
+    * Get durable/non-durable subscription list.
+    * @param durable If true, return durable subscription list.
+    *                If false, return non-durable subscription list.
+    * @return List of CoreDurableSubscription/CoreSubscription. Never null.
+    * @throws JMSException
+    */
+   public List listSubscriptions(boolean durable) throws JMSException
+   {
+      JBossTopic jbt = new JBossTopic(name);
+      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
+      return t.getSubscriptions(durable);
+   }
+   
    // TODO implement these:
 
 //   int getAllMessageCount();
