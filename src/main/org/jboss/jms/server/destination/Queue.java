@@ -6,6 +6,9 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.List;
+
+import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossQueue;
@@ -55,6 +58,22 @@ public class Queue extends DestinationServiceSupport
       JBossQueue jbq = new JBossQueue(name);
       ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
       q.removeAllMessages();
+   }
+   
+   public List listMessages(String selector) throws JMSException
+   {
+      JBossQueue jbq = new JBossQueue(name);
+      ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
+      try 
+      {
+         return q.getMessages(selector);
+      }
+      catch (InvalidSelectorException e)
+      {
+         Throwable th = new JMSException(e.getMessage());
+         th.initCause(e);
+         throw (JMSException)th;
+      }
    }
 
    // TODO implement these:

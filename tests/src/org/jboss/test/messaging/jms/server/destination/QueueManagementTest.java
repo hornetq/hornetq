@@ -21,6 +21,8 @@
   */
 package org.jboss.test.messaging.jms.server.destination;
 
+import java.util.List;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -165,6 +167,67 @@ public class QueueManagementTest extends DestinationManagementTestBase
       conn.close();
       
       ServerManagement.undeployQueue("QueueRemoveMessages");
+   }
+   
+   public void testListMessages() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      ServerManagement.deployQueue("QueueListMessages");
+      Queue queue = (Queue)ic.lookup("/queue/QueueListMessages");
+      
+      // Test listMessages, should be 0 msg
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueListMessages");
+      
+      List list = (List)ServerManagement.invoke(
+            destObjectName, 
+            "listMessages", 
+            new String[] {null}, 
+            new String[] {"java.lang.String"});
+      assertNotNull(list);
+      assertEquals(0, list.size());
+      
+      // Send 1 message to queue
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      conn.close();
+      
+      // Test listMessages again, should be 1 msg
+      list = (List)ServerManagement.invoke(
+            destObjectName, 
+            "listMessages", 
+            new String[] {null}, 
+            new String[] {"java.lang.String"});
+      assertEquals(1, list.size());
+      assertTrue(list.get(0) instanceof TextMessage);
+      TextMessage m1 = (TextMessage)list.get(0);
+      assertEquals(m1.getText(), m.getText());
+      
+      // Consume the message
+      conn = cf.createConnection();
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons = session.createConsumer(queue);
+      conn.start();
+      
+      cons.receive();
+      conn.close();
+      
+      // Test MessageCount again, should be 0 msg
+      list = (List)ServerManagement.invoke(
+            destObjectName, 
+            "listMessages", 
+            new String[] {null}, 
+            new String[] {"java.lang.String"});
+      assertEquals(0, list.size());
+      
+      ServerManagement.undeployQueue("QueueListMessages");
    }
    
    // Package protected ---------------------------------------------

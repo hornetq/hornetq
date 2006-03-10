@@ -21,6 +21,11 @@
   */
 package org.jboss.messaging.core.local;
 
+import java.util.List;
+
+import javax.jms.InvalidSelectorException;
+
+import org.jboss.jms.selector.Selector;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
@@ -70,9 +75,20 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    
    // ManageableQueue implementation --------------------------------
    
+   /**
+    * @see ManageableQueue#getMessageCount()
+    */
    public int getMessageCount()
    {
 	   return state.messageCount();
+   }
+   
+   public List getMessages(String selector) throws InvalidSelectorException
+   {
+      if (null == selector)
+         return browse();
+      else
+         return browse(new Selector(selector));
    }
 
    // CoreDestination implementation -------------------------------

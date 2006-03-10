@@ -122,5 +122,16 @@
       <description>Remove all messages in the queue</description>
       <name>removeAllMessages</name>
    </operation>
+
+   <operation>
+      <description>List all messages which meet the condition described in selector</description>
+      <name>listMessages</name>
+      <parameter>
+         <description>Expression to define the selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
    
 </mbean>

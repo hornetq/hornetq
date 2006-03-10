@@ -21,6 +21,10 @@
  */
 package org.jboss.messaging.core.local;
 
+import java.util.List;
+
+import javax.jms.InvalidSelectorException;
+
 import org.jboss.messaging.core.ManageableCoreDestination;
 
 /**
@@ -35,5 +39,13 @@ public interface ManageableQueue extends ManageableCoreDestination
 {
    int getMessageCount();
 
+   /**
+    * Get messages from the queue.
+    * @param selector See readme for the syntax of the expression.
+    * @return List of javax.jms.Message.
+    * @throws InvalidSelectorException.
+    */
+   List getMessages(String selector)  throws InvalidSelectorException;
+   
    // TODO adding more manageable operations
 }
