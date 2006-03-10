@@ -67,8 +67,8 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    {
       super.doSetup(batch);
       
-      cm.deployCoreDestination(true, "testDestination", ms, pm);
-      cm.deployCoreDestination(true, "testReplyTo", ms, pm);
+      cm.deployCoreDestination(true, "testDestination", ms, pm, 100, 20, 10);
+      cm.deployCoreDestination(true, "testReplyTo", ms, pm, 100, 20, 10);
    }
 
    public void tearDown() throws Exception

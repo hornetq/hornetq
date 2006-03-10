@@ -152,7 +152,7 @@ public class ConnectionAspect implements ConnectionListener
       if (connMetaData == null)
       {
          ClientConnectionDelegate delegate = (ClientConnectionDelegate)invocation.getTargetObject();
-         connMetaData = new JBossConnectionMetaData(delegate.getServerVersion());
+         connMetaData = new JBossConnectionMetaData(((ConnectionState)delegate.getState()).getVersionToUse());
       }
 
       return connMetaData;

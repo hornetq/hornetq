@@ -25,6 +25,7 @@ import java.io.Serializable;
 
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.ConnectionManager;
+import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.logging.Logger;
 
 /**
@@ -79,7 +80,9 @@ public class DeliveryRunnable implements Runnable, Serializable
       {
          if (trace) { log.trace("handing " + this.msg + " over to the remoting layer"); }
          
-         connection.getCallbackClient().invoke(this);         
+         MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), this);
+         
+         connection.getCallbackClient().invoke(mm);         
       }
       catch(Throwable t)
       {

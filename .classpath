@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="perf/src"/>
 	<classpathentry kind="src" path="output/parsers"/>
 	<classpathentry kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="/j2ee"/>

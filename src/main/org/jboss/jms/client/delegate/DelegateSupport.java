@@ -31,6 +31,7 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.HierarchicalState;
+import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.serialization.SerializationStreamFactory;
@@ -103,13 +104,16 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
                                            new Integer(id), PayloadKey.AS_IS);
+      
+      byte version = getState().getVersionToUse().getProviderIncrementingVersion();
+      
+      MessagingMarshallable mm = new MessagingMarshallable(version, invocation);
 
-      Object ret = getClient().invoke(invocation, null);
-      //invocation.setResponseContextInfo(response.getContextInfo());
+      mm = (MessagingMarshallable)getClient().invoke(mm, null);            
 
       if (trace) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 
-      return ret;
+      return mm.getLoad();
    }
 
    // Public --------------------------------------------------------

@@ -49,11 +49,11 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    // The following 3 attributes can only be changed when service is stopped.
    // In memory message number limit
-   private int m_fullSize = FULL_SIZE;
+   private int fullSize = FULL_SIZE;
    // Paging size
-   private int m_pageSize = PAGE_SIZE;
+   private int pageSize = PAGE_SIZE;
    // Write-cache size
-   private int m_downCacheSize = DOWN_CACHE_SIZE;
+   private int downCacheSize = DOWN_CACHE_SIZE;
 
    // Constructors --------------------------------------------------
 
@@ -89,7 +89,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
          jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
          cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(), serverPeer.getPersistenceManagerDelegate(),
-               m_fullSize, m_pageSize, m_downCacheSize);
+               fullSize, pageSize, downCacheSize);
    
          log.info(this + " started");
       }
@@ -186,7 +186,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    public int getFullSize()
    {
       // XXX This value should be the same as getting from core destination
-      return m_fullSize;
+      return fullSize;
    }
    
    /**
@@ -200,7 +200,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("FullSize can only be changed when destination is stopped");
          return;
       }
-      m_fullSize = fullSize;
+      this.fullSize = fullSize;
    }
    
    /**
@@ -210,7 +210,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    public int getPageSize()
    {
       // XXX This value should be the same as getting from core destination
-      return m_pageSize;
+      return pageSize;
    }
 
    /**
@@ -224,7 +224,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("PageSize can only be changed when destination is stopped");
          return;
       }
-      m_pageSize = pageSize;
+      this.pageSize = pageSize;
    }
    
    /**
@@ -234,7 +234,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    public int getDownCacheSize()
    {
       // XXX This value should be the same as getting from core destination
-      return m_downCacheSize;
+      return downCacheSize;
    }
 
    /**
@@ -248,7 +248,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("DownCacheSize can only be changed when destination is stopped");
          return;
       }
-      m_downCacheSize = downCacheSize;
+      this.downCacheSize = downCacheSize;
    }
 
    // TODO implement the following:

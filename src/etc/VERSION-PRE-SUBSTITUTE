@@ -8,3 +8,4 @@ jboss.messaging.jmsProviderName=@MODULE_NAME@
 jboss.messaging.providerVersion=@MODULE_VERSION@
 jboss.messaging.providerMajorVersion=@MESSAGING_VERSION_MAJOR@
 jboss.messaging.providerMinorVersion=@MESSAGING_VERSION_MINOR@
+jboss.messaging.providerIncrementingVersion=@MESSAGING_VERSION_INCREMENTING@

@@ -32,6 +32,7 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
@@ -144,6 +145,39 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       return mi;
    }
    
+   protected void handleVersion(Object obj, JBossObjectOutputStream oos) throws IOException
+   {
+      Object load = null;
+      
+      if (obj instanceof InvocationRequest)
+      {
+         InvocationRequest ir = (InvocationRequest)obj;
+         load = ir.getParameter();
+      }
+      else if (obj instanceof InvocationResponse)
+      {
+         InvocationResponse ir = (InvocationResponse)obj;
+         load = ir.getResult();
+      }
+            
+      byte version;
+      if (load instanceof MessagingMarshallable)
+      {
+         //We need to write the version for the marshallable
+         version = ((MessagingMarshallable)load).getVersion();
+      }
+      else
+      {
+         //This is some kind of remoting internal invocation, we still write a version
+         //but it is the version of the client code not the connection
+         //(since we are not associated to any connection)
+         version = Version.instance().getProviderIncrementingVersion();
+      }
+      
+      //The first byte written for any request/response is the version
+      oos.writeByte(version);         
+   }
+   
    public void write(Object obj, OutputStream out) throws IOException
    {
       //Sanity check
@@ -153,6 +187,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       }
            
       JBossObjectOutputStream oos = (JBossObjectOutputStream)out;
+      
+      handleVersion(obj, oos);
 
       if (obj instanceof InvocationRequest)
       {         
@@ -160,8 +196,17 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          
          InvocationRequest req = (InvocationRequest)obj;
          
-         Object param = req.getParameter();
+         Object param;
          
+         if (req.getParameter() instanceof MessagingMarshallable)
+         {
+            param = ((MessagingMarshallable)req.getParameter()).getLoad();
+         }
+         else
+         {
+            param = req.getParameter();
+         }
+
          if (trace) { log.trace("param is " + param); }
          
          if (param instanceof MethodInvocation)
@@ -261,7 +306,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                if (trace) { log.trace("wrote getIdBlock()"); }
             }
             else
-            {
+            { 
                oos.write(SERIALIZED);
                
                //Delegate to serialization to handle the wire format
@@ -298,6 +343,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }            
          else
          {           
+            //Internal invocation
+            
             oos.write(SERIALIZED);
             
             //Delegate to serialization to handle the wire format
@@ -312,7 +359,16 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          
          InvocationResponse resp = (InvocationResponse)obj;
          
-         Object res = resp.getResult();
+         Object res;
+         
+         if (resp.getResult() instanceof MessagingMarshallable)
+         {
+            res = ((MessagingMarshallable)resp.getResult()).getLoad();
+         }
+         else
+         {
+            res = resp.getResult();
+         }
          
          if (trace) { log.trace("result is " + res); }
          
@@ -379,6 +435,10 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       }
       
       JBossObjectInputStream ois = (JBossObjectInputStream)in;
+      
+      //First byte read is always version
+      
+      byte version = ois.readByte();
 
       byte formatType = (byte)ois.read();
       
@@ -392,7 +452,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             Object ret = serializableUnMarshaller.read(ois, map);            
             
             if (trace) { log.trace("read using standard serialization"); }
-            
+                 
             return ret;            
          }            
          case SEND:
@@ -409,31 +469,35 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             mi.setArguments(args);
             
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read send()"); }
             
-            return request; 
+            return request;
          }            
          case ACTIVATE:            
          {
             MethodInvocation mi = readHeader(ois);                
             
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read activate()"); }
             
-            return request;      
+            return request;    
          }
          case DEACTIVATE:            
          {
             MethodInvocation mi = readHeader(ois);
             
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+            
             
             if (trace) { log.trace("read deactivate()"); }
             
-            return request;      
+            return request;
          }
          case GETMESSAGENOW:            
          { 
@@ -445,11 +509,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             mi.setArguments(args);
                 
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read getMessageNow()"); }
             
-            return request;      
+            return request;
          }
          case SEND_TRANSACTION:            
          { 
@@ -463,11 +528,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             mi.setArguments(args);
                 
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read sendTransaction()"); }
             
-            return request;      
+            return request;
          }
          case GET_ID_BLOCK:            
          { 
@@ -479,17 +545,19 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             mi.setArguments(args);
                 
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read getIdBlock()"); }
             
-            return request;      
+            return request;
          }
          case ACKNOWLEDGE:
          {
             MethodInvocation mi = readHeader(ois);                
  
-            InvocationRequest request = new InvocationRequest(null, null, mi, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read acknowledge()"); }
             
@@ -511,11 +579,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             DeliveryRunnable dr = new DeliveryRunnable(md, consumerID, null, trace);
             
-            InvocationRequest request = new InvocationRequest(null, null, dr, null, null, null);
+            InvocationRequest request =
+               new InvocationRequest(null, null, new MessagingMarshallable(version, dr), null, null, null);
             
             if (trace) { log.trace("read callback()"); }
             
-            return request;            
+            return request;        
          }
          case MESSAGE_RESPONSE:
          {
@@ -529,11 +598,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
                         
-            InvocationResponse resp = new InvocationResponse(null, md, false, null);
+            InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, md), false, null);
             
             if (trace) { log.trace("read message response"); }
             
-            return resp;            
+            return resp;
          }
          case ID_BLOCK_RESPONSE:
          {
@@ -541,15 +610,15 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             block.readExternal(ois);
                                   
-            InvocationResponse resp = new InvocationResponse(null, block, false, null);
+            InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, block), false, null);
             
             if (trace) { log.trace("read message response"); }
             
-            return resp;            
+            return resp;
          }
          case NULL_RESPONSE:
          {
-            InvocationResponse resp = new InvocationResponse(null, null, false, null);
+            InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, null), false, null);
             
             if (trace) { log.trace("read null response"); }
             

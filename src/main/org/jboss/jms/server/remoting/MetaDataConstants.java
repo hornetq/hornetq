@@ -40,4 +40,6 @@ public class MetaDataConstants
    public static final String CONSUMER_ID = "CONSUMER_ID";   
    
    public static final String CLIENT_CONNECTION_ID = "CC_ID";
+   
+   public static final String VERSION_NUMBER = "VERSION_NUMBER";
 }

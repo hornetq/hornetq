@@ -27,6 +27,7 @@ import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.BrowserState;
 import org.jboss.jms.client.state.ConnectionState;
@@ -35,7 +36,6 @@ import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -74,20 +74,19 @@ public class StateCreationAspect
 
    public Object handleCreateConnectionDelegate(Invocation invocation) throws Throwable
    {
+      ClientConnectionFactoryDelegate cf = (ClientConnectionFactoryDelegate)invocation.getTargetObject();
+                 
       ClientConnectionDelegate delegate = (ClientConnectionDelegate)invocation.invokeNext();
       
       delegate.init();
       
-      ConnectionFactoryDelegate cf = (ConnectionFactoryDelegate)invocation.getTargetObject();
+      ResourceManager rm = ResourceManagerFactory.instance.getResourceManager(cf.getServerID());
       
-      ResourceManager rm = ResourceManagerFactory.instance.getResourceManager(delegate.getServerID());
-      
-      MessageIdGenerator gen = MessageIdGeneratorFactory.instance.getGenerator(delegate.getServerID(), cf);
-      
-      
-      delegate.setState(new ConnectionState(delegate,
-                                            rm, gen,
-                                            delegate.getRemotingConnection()));
+      MessageIdGenerator gen = MessageIdGeneratorFactory.instance.getGenerator(cf.getServerID(), cf);
+                                     
+      delegate.setState(new ConnectionState(delegate,                                            
+                                            delegate.getRemotingConnection(),
+                                            cf.getVersionToUse(), rm, gen));
                   
       return delegate;
    }

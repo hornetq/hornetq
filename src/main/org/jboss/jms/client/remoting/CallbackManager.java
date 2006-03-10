@@ -27,6 +27,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
+import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
@@ -68,7 +69,9 @@ public class CallbackManager implements ServerInvocationHandler
 
    public Object invoke(InvocationRequest ir) throws Throwable
    {
-      DeliveryRunnable dr = (DeliveryRunnable)ir.getParameter();
+      MessagingMarshallable mm = (MessagingMarshallable)ir.getParameter();
+      
+      DeliveryRunnable dr = (DeliveryRunnable)mm.getLoad();
       
       int consumerID = dr.getConsumerID();
       

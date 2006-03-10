@@ -39,7 +39,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
  *
  * $Id$
  */
-public class HierarchicalStateSupport implements HierarchicalState
+public abstract class HierarchicalStateSupport implements HierarchicalState
 {
    // Constants -----------------------------------------------------
 

@@ -90,6 +90,19 @@ public class InjectionAspect
        
        endpoint.setRemotingClientSessionId(sessionId);
        
+       //Then we inject the version number from to be used
+       
+       Byte ver =
+          (Byte)mi.getMetaData(MetaDataConstants.JMS,
+                                 MetaDataConstants.VERSION_NUMBER);
+       
+       if (ver == null)
+       {
+          throw new IllegalStateException("Can't find version");
+       }
+       
+       endpoint.setUsingVersion(ver.byteValue());
+       
        return del;
     }
     

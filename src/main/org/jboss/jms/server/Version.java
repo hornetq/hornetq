@@ -37,6 +37,9 @@ public class Version implements Serializable
    private String providerVersion = "UNKNOWN";
    private int providerMajorVersion = 0;
    private int providerMinorVersion = 0;
+   private byte providerIncrementingVersion;
+   
+   private static Version singleton;
 
    // Constructors --------------------------------------------------
 
@@ -45,12 +48,21 @@ public class Version implements Serializable
     *        current class loader.
     */
 
-   public Version(String versionFile)
+   private Version(String versionFile)
    {
       load(versionFile);
    }
 
    // Public -------------------------------------------------------
+   
+   public static synchronized Version instance()
+   {
+      if (singleton == null)
+      {
+         singleton = new Version("VERSION");
+      }
+      return singleton;
+   }
 
    public String getJMSVersion()
    {
@@ -86,6 +98,11 @@ public class Version implements Serializable
    {
       return providerMinorVersion;
    }
+   
+   public byte getProviderIncrementingVersion()
+   {
+      return providerIncrementingVersion;
+   }
 
    // Package protected ---------------------------------------------
    
@@ -100,6 +117,7 @@ public class Version implements Serializable
       try
       {
          Properties versionInfo = new Properties();
+
          is = getClass().getClassLoader().getResourceAsStream(versionFile);
          versionInfo.load(is);
 
@@ -172,6 +190,19 @@ public class Version implements Serializable
             catch(Exception e)
             {
                log.debug("failed to parse providerMinorVersion: " + s);
+            }
+         }
+         
+         s = versionInfo.getProperty("jboss.messaging.providerIncrementingVersion");
+         if (s != null)
+         {
+            try
+            {
+               providerIncrementingVersion = Byte.parseByte(s);
+            }
+            catch(Exception e)
+            {
+               log.debug("failed to parse providerIncrementingVersion: " + s);
             }
          }
       }

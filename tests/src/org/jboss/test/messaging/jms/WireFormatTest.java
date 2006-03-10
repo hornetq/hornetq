@@ -27,15 +27,16 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import javax.jms.Message;
 
 import junit.framework.TestCase;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -43,7 +44,12 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.jms.server.remoting.JMSWireFormat;
+import org.jboss.jms.server.remoting.MessagingMarshallable;
+import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.tx.TxState;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.InvokerLocator;
@@ -82,6 +88,8 @@ public class WireFormatTest extends TestCase
    protected Method deactivateMethod;
    
    protected Method getMessageNowMethod;
+   
+   protected Method sendTransactionMethod;
 
    // Constructors --------------------------------------------------
 
@@ -104,6 +112,8 @@ public class WireFormatTest extends TestCase
       
       Class consumerDelegate = ConsumerDelegate.class;
       
+      Class connectionDelegate = ConnectionDelegate.class;
+      
       sendMethod = producerDelegate.getMethod("send", new Class[] { JBossMessage.class });
       
       acknowledgeMethod = sessionDelegate.getMethod("acknowledge", null);
@@ -113,6 +123,8 @@ public class WireFormatTest extends TestCase
       deactivateMethod = consumerDelegate.getMethod("deactivate", null);
       
       getMessageNowMethod = consumerDelegate.getMethod("getMessageNow", new Class[] { Boolean.TYPE });
+      
+      sendTransactionMethod = connectionDelegate.getMethod("sendTransaction", new Class[] { TransactionRequest.class });
       
    }
 
@@ -152,9 +164,9 @@ public class WireFormatTest extends TestCase
       wf.testGetMessageNow();
    }
    
-   public void testGetMessageNowResponse() throws Exception
+   public void testMessageResponse() throws Exception
    {
-      wf.testGetMessageNowResponse();
+      wf.testMessageResponse();
    }
    
    public void testNullResponse() throws Exception
@@ -165,6 +177,11 @@ public class WireFormatTest extends TestCase
    public void testSend() throws Exception
    {
       wf.testSend();
+   }
+   
+   public void testSendTransaction() throws Exception
+   {
+      wf.testSendTransaction();
    }
    
    public void testSerializableRequest() throws Exception
@@ -242,8 +259,19 @@ public class WireFormatTest extends TestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
+         //Check the bytes
+                  
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
          
+         //First byte should be version
+         byte version = ois.readByte();
+         
+         assertEquals(1, version);
+         
+         bis.reset();
+         
+         ois = new JBossObjectInputStream(bis);
+                                 
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
          assertNotNull(ir2);
@@ -294,6 +322,15 @@ public class WireFormatTest extends TestCase
          
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
          
+         //First byte should be version
+         byte version = ois.readByte();
+         
+         assertEquals(1, version);
+         
+         bis.reset();
+         
+         ois = new JBossObjectInputStream(bis);
+            
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
          assertNotNull(ir2);
@@ -329,6 +366,15 @@ public class WireFormatTest extends TestCase
          
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
          
+         //First byte should be version
+         byte version = ois.readByte();
+         
+         assertEquals(1, version);
+         
+         bis.reset();
+         
+         ois = new JBossObjectInputStream(bis);
+                  
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
          assertNotNull(ir2);
@@ -359,7 +405,9 @@ public class WireFormatTest extends TestCase
          
          mi.setArguments(new Object[] {m});
          
-         InvocationRequest ir = new InvocationRequest(null, null, mi, null, null, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -376,6 +424,9 @@ public class WireFormatTest extends TestCase
          JBossObjectInputStream ois = new JBossObjectInputStream(bis); 
                
          //Check the bytes
+         
+         //First byte should be version
+         assertEquals(77, ois.readByte());
          
          //First byte should be SEND
          assertEquals(JMSWireFormat.SEND, ois.readByte());
@@ -415,7 +466,11 @@ public class WireFormatTest extends TestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         MethodInvocation mi2 = (MethodInvocation)ir2.getParameter();
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
          
          assertEquals(methodHash, mi2.getMethodHash());
          
@@ -427,9 +482,125 @@ public class WireFormatTest extends TestCase
                   
       }  
       
+      public void testSendTransaction() throws Exception
+      {       
+         JBossMessage m = new JBossMessage(123);
+         MessageTest.configureMessage(m);
+         
+         AckInfo info = new AckInfo(123, 456);
+         
+         TxState state = new TxState();
+         state.getMessages().add(m);
+         state.getAcks().add(info);
+          
+         TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, state);
+                           
+         long methodHash = 62365354;
+         
+         int objectId = 54321;
+         
+         MethodInvocation mi = new MethodInvocation(null, methodHash, sendTransactionMethod, sendTransactionMethod, null);
+         
+         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
+         
+         mi.setArguments(new Object[] {request});
+         
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         
+         JBossObjectOutputStream oos = new JBossObjectOutputStream(bos);
+                  
+         wf.write(ir, oos);
+        
+         oos.flush();
+               
+         byte[] bytes = bos.toByteArray();
+              
+         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                  
+         JBossObjectInputStream ois = new JBossObjectInputStream(bis); 
+               
+         //Check the bytes
+             
+         //First byte should be version
+         assertEquals(77, ois.readByte());
+         
+         //First byte should be SEND_TRANSACTION
+         assertEquals(JMSWireFormat.SEND_TRANSACTION, ois.readByte());
+         
+         //Next int should be objectId
+         assertEquals(objectId, ois.readInt());
+         
+         //Next long should be methodHash
+         assertEquals(methodHash, ois.readLong());
+                  
+         //Next should come the transaction request
+         
+         TransactionRequest req = new TransactionRequest();
+                         
+         req.readExternal(ois);
+         
+         //should be eos
+                
+         try
+         {
+            ois.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+
+         JBossMessage m2 = (JBossMessage)req.getState().getMessages().get(0);
+         
+         MessageTest.ensureEquivalent(m, m2);
+         
+         assertEquals(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, req.getRequestType());
+         
+         AckInfo info2 = (AckInfo)req.getState().getAcks().get(0);
+         
+         assertEquals(info.getConsumerID(), info2.getConsumerID());
+         assertEquals(info.getMessageID(), info2.getMessageID());
+         
+         bis.reset();
+         ois = new JBossObjectInputStream(bis);
+         
+         InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
+         
+         assertEquals(methodHash, mi2.getMethodHash());
+         
+         assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
+         
+         TransactionRequest req2 = (TransactionRequest)mi2.getArguments()[0];
+         
+         JBossMessage m3 = (JBossMessage)req2.getState().getMessages().get(0);
+         
+         MessageTest.ensureEquivalent(m, m3);
+         
+         assertEquals(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, req2.getRequestType());
+         
+         AckInfo info3 = (AckInfo)req2.getState().getAcks().get(0);
+         
+         assertEquals(info.getConsumerID(), info3.getConsumerID());
+         assertEquals(info.getMessageID(), info3.getMessageID());
+                  
+      }  
+      
       public void testNullResponse() throws Exception
       {
-         InvocationResponse resp = new InvocationResponse(null, null, false, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, null);
+         
+         InvocationResponse resp = new InvocationResponse(null, mm, false, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
                   
@@ -442,6 +613,9 @@ public class WireFormatTest extends TestCase
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
          DataInputStream dis = new DataInputStream(bis);
+         
+         //First byte should be version
+         assertEquals(77, dis.readByte());
          
          //Should be 1 byte
          byte b = dis.readByte();
@@ -465,7 +639,11 @@ public class WireFormatTest extends TestCase
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
-         assertNull(ir2.getResult());
+         mm = (MessagingMarshallable)ir2.getResult();
+         
+         assertEquals(77, mm.getVersion());
+         
+         assertNull(mm.getLoad());
             
       }
          
@@ -481,7 +659,9 @@ public class WireFormatTest extends TestCase
          
          mi.setArguments(new Object[] {Boolean.valueOf(true)});
          
-         InvocationRequest ir = new InvocationRequest(null, null, mi, null, null, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -499,7 +679,10 @@ public class WireFormatTest extends TestCase
          
          //Check the bytes
          
-         //First byte should be GETMESSAGENOW
+         //First byte should be version
+         assertEquals(77, ois.readByte());         
+         
+         //Second byte should be GETMESSAGENOW
          assertEquals(JMSWireFormat.GETMESSAGENOW, ois.readByte());
          
          //Next int should be objectId
@@ -527,7 +710,11 @@ public class WireFormatTest extends TestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         MethodInvocation mi2 = (MethodInvocation)ir2.getParameter();
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
          
          assertEquals(methodHash, mi2.getMethodHash());
          
@@ -549,7 +736,9 @@ public class WireFormatTest extends TestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         InvocationRequest ir = new InvocationRequest(null, null, mi, null, null, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -567,7 +756,10 @@ public class WireFormatTest extends TestCase
          
          //Check the bytes
          
-         //First byte should be ACTIVATE
+         //First byte should be version
+         assertEquals(77, ois.readByte());         
+         
+         //Second byte should be ACTIVATE
          assertEquals(JMSWireFormat.ACTIVATE, ois.readByte());
          
          //Next int should be objectId
@@ -592,7 +784,11 @@ public class WireFormatTest extends TestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         MethodInvocation mi2 = (MethodInvocation)ir2.getParameter();
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
          
          assertEquals(methodHash, mi2.getMethodHash());
          
@@ -609,7 +805,9 @@ public class WireFormatTest extends TestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         InvocationRequest ir = new InvocationRequest(null, null, mi, null, null, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -627,7 +825,10 @@ public class WireFormatTest extends TestCase
                   
          //Check the bytes
          
-         //First byte should be ACTIVATE
+         //First byte should be version
+         assertEquals(77, ois.readByte());         
+         
+         //Second byte should be ACTIVATE
          assertEquals(JMSWireFormat.DEACTIVATE, ois.readByte());
          
          //Next int should be objectId
@@ -653,7 +854,11 @@ public class WireFormatTest extends TestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         MethodInvocation mi2 = (MethodInvocation)ir2.getParameter();
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
          
          assertEquals(methodHash, mi2.getMethodHash());
          
@@ -670,7 +875,9 @@ public class WireFormatTest extends TestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         InvocationRequest ir = new InvocationRequest(null, null, mi, null, null, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -687,6 +894,9 @@ public class WireFormatTest extends TestCase
          JBossObjectInputStream ois = new JBossObjectInputStream(bis); 
                  
          //Check the bytes
+         
+         //First byte should be version
+         assertEquals(77, ois.readByte());
          
          //First byte should be ACKNOWLEDGE
          assertEquals(JMSWireFormat.ACKNOWLEDGE, ois.readByte());
@@ -714,7 +924,11 @@ public class WireFormatTest extends TestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         MethodInvocation mi2 = (MethodInvocation)ir2.getParameter();
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
          
          assertEquals(methodHash, mi2.getMethodHash());
          
@@ -737,7 +951,9 @@ public class WireFormatTest extends TestCase
          
          JBossObjectOutputStream oos = new JBossObjectOutputStream(bos);
          
-         InvocationRequest ir = new InvocationRequest(null, null, dr, null, null, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, dr);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          wf.write(ir, oos);
          
@@ -749,7 +965,10 @@ public class WireFormatTest extends TestCase
          
          //Check the bytes
          
-         //First byte should be CALLBACK
+         //First byte should be version
+         assertEquals(77, ois.readByte());         
+         
+         //Second byte should be CALLBACK
          assertEquals(JMSWireFormat.CALLBACK, ois.readByte());
          
          //Next int should be consumer id
@@ -785,7 +1004,11 @@ public class WireFormatTest extends TestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         DeliveryRunnable dr2 = (DeliveryRunnable)ir2.getParameter();
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+                  
+         DeliveryRunnable dr2 = (DeliveryRunnable)mm.getLoad();
          
          MessageProxy del2 = dr2.getMessageProxy();
          
@@ -799,7 +1022,7 @@ public class WireFormatTest extends TestCase
           
       }
       
-      public void testGetMessageNowResponse() throws Exception
+      public void testMessageResponse() throws Exception
       {
          JBossMessage m = new JBossMessage(123);
          
@@ -807,7 +1030,9 @@ public class WireFormatTest extends TestCase
          
          MessageProxy del = JBossMessage.createThinDelegate(m, 4);
          
-         InvocationResponse ir = new InvocationResponse(null, del, false, null);
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, del);
+         
+         InvocationResponse ir = new InvocationResponse(null, mm, false, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -820,8 +1045,9 @@ public class WireFormatTest extends TestCase
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
-         
-         //First byte should be MESSAGE_RESPONSE
+                   
+         //First byte should be version
+         assertEquals(77, ois.readByte());         
          
          int b = ois.readByte();
          
@@ -861,13 +1087,78 @@ public class WireFormatTest extends TestCase
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
-         MessageProxy del2 = (MessageProxy)ir2.getResult();
+         mm = (MessagingMarshallable)ir2.getResult();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MessageProxy del2 = (MessageProxy)mm.getLoad();
          
          JBossMessage m3 = del2.getMessage();
          
          MessageTest.ensureEquivalent(m, m3);                 
          
          assertEquals(4, del2.getDeliveryCount());
-      }            
+      }      
+                  
+      public void testGetIdBlockResponse() throws Exception
+      {
+         IdBlock block = new IdBlock(132, 465);
+         
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, block);
+                  
+         InvocationResponse ir = new InvocationResponse(null, mm, false, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         
+         JBossObjectOutputStream oos = new JBossObjectOutputStream(bos);
+         
+         wf.write(ir, oos);
+         
+         oos.flush();
+         
+         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+         
+         JBossObjectInputStream ois = new JBossObjectInputStream(bis);
+                   
+         //First byte should be version
+         assertEquals(1, ois.readByte());         
+         
+         int b = ois.readByte();
+         
+         assertEquals(JMSWireFormat.ID_BLOCK_RESPONSE, b);
+         
+         IdBlock block2 = new IdBlock();
+         
+         block2.readExternal(ois);
+         
+         assertEquals(block.getLow(), block2.getLow());
+         assertEquals(block.getHigh(), block2.getHigh());
+         
+         //eos
+         try
+         {
+            ois.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+         
+         bis.reset();
+         
+         ois = new JBossObjectInputStream(bis);
+         
+         InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getResult();
+         
+         assertEquals(1, mm.getVersion());
+         
+         IdBlock block3 = (IdBlock)mm.getLoad();
+         
+         assertEquals(block.getLow(), block3.getLow());
+         assertEquals(block.getHigh(), block3.getHigh());                  
+      }      
    }
 }

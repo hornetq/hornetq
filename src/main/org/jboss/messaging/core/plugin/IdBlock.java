@@ -48,7 +48,7 @@ public class IdBlock implements Externalizable
       
    }
    
-   IdBlock(long low, long high)
+   public IdBlock(long low, long high)
    {
       this.low = low;
       

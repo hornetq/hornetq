@@ -98,6 +98,7 @@ fi
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
 $reldir/../../src/etc${SEP}\
+$reldir/../../output/etc${SEP}\
 $reldir/../output/classes${SEP}\
 $reldir/../../output/classes${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\

@@ -33,7 +33,6 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.remoting.Client;
 
@@ -55,23 +54,15 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Attributes ----------------------------------------------------
 
-   private String serverID;
-   
-   private Version serverVersion;
-   
    private transient JMSRemotingConnection connection;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConnectionDelegate(int objectID,
-                                   String serverID, Version serverVersion)
+   public ClientConnectionDelegate(int objectID)
    {
-      super(objectID);
-      
-      this.serverID = serverID;
-      this.serverVersion = serverVersion;
+      super(objectID);      
    }
    
    public ClientConnectionDelegate()
@@ -204,16 +195,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    }
 
    // Public --------------------------------------------------------
-
-   public String getServerID()
-   {
-      return serverID;
-   }
-
-   public Version getServerVersion()
-   {
-      return serverVersion;
-   }
 
    public String toString()
    {

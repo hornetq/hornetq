@@ -19,30 +19,44 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.state;
+package org.jboss.jms.server.remoting;
 
-import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.server.Version;
+import java.io.Serializable;
+
 
 /**
- * State corresponding to a browser
- * This state is acessible inside aspects/interceptors
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * A MessagingMarshallableSupport.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision$
  *
  * $Id$
  */
-public class BrowserState extends HierarchicalStateSupport
+public class MessagingMarshallable implements Serializable
 {
-   public BrowserState(SessionState parent, BrowserDelegate delegate)
-   {
-      super(parent, delegate);      
-   }    
-   
-   public Version getVersionToUse()
-   {
-      return parent.getVersionToUse();
-   }
-}
+   /** The serialVersionUID */
+   private static final long serialVersionUID = -575513130283539747L;
 
+   protected byte version;
+   
+   protected Object load;
+   
+   public MessagingMarshallable(byte version, Object load)
+   {
+      this.version = version;
+      
+      this.load = load;
+   }
+   
+   public Object getLoad()
+   {
+      return load;
+   }
+   
+   public byte getVersion()
+   {
+      return version;
+   }
+   
+}

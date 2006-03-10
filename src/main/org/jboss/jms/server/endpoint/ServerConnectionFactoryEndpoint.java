@@ -112,9 +112,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       ClientConnectionDelegate delegate;
       try
       {
-         delegate = new ClientConnectionDelegate(connectionID,                                                 
-                                                 serverPeer.getServerPeerID(),
-                                                 serverPeer.getVersion());
+         delegate = new ClientConnectionDelegate(connectionID);
       }
       catch (Exception e)
       {

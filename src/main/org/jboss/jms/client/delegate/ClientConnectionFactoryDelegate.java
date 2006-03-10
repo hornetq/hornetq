@@ -30,6 +30,8 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.Version;
+import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
@@ -59,16 +61,25 @@ public class ClientConnectionFactoryDelegate
    // Attributes ----------------------------------------------------
     
    protected String serverLocatorURI;
+   
+   protected Version serverVersion;
+   
+   protected String serverID;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(int objectID, String serverLocatorURI)
+   public ClientConnectionFactoryDelegate(int objectID, String serverLocatorURI,
+                                          Version serverVersion, String serverID)
    {
       super(objectID);
       
       this.serverLocatorURI = serverLocatorURI;
+      
+      this.serverVersion = serverVersion;
+      
+      this.serverID = serverID;
    }
    
    // ConnectionFactoryDelegateImplementation -----------------------
@@ -131,8 +142,11 @@ public class ClientConnectionFactoryDelegate
              
          try
          {            
-            ret = client.invoke(invocation, null);
+            MessagingMarshallable mm =
+               (MessagingMarshallable)client.invoke(new MessagingMarshallable(getVersionToUse().getProviderIncrementingVersion(), mi), null);
              
+            ret = mm.getLoad();
+            
             ClientConnectionDelegate delegate = (ClientConnectionDelegate)ret;
             
             delegate.setConnnectionState(connection);
@@ -152,10 +166,13 @@ public class ClientConnectionFactoryDelegate
          Client client = new Client(locator);
          
          try
-         {            
-            ret = client.invoke(invocation, null);
+         {                                    
+            byte v = getVersionToUse().getProviderIncrementingVersion();
             
-            //invocation.setResponseContextInfo(response.getContextInfo());
+            MessagingMarshallable mm = (MessagingMarshallable)
+               client.invoke(new MessagingMarshallable(v, invocation), null);
+            
+            ret = mm.getLoad();
          }
          finally
          {
@@ -172,6 +189,34 @@ public class ClientConnectionFactoryDelegate
    public String toString()
    {
       return "ConnectionFactoryDelegate[" + id + "]";
+   }
+   
+   public Version getServerVersion()
+   {
+      return serverVersion;
+   }
+   
+   public String getServerID()
+   {
+      return serverID;
+   }
+   
+   public Version getVersionToUse()
+   {
+      Version clientVersion = Version.instance();
+      
+      Version versionToUse;
+      
+      if (serverVersion.getProviderIncrementingVersion() <= clientVersion.getProviderIncrementingVersion())
+      {
+         versionToUse = serverVersion;
+      }
+      else
+      {
+         versionToUse = clientVersion;
+      }
+      
+      return versionToUse;
    }
    
    // Protected -----------------------------------------------------

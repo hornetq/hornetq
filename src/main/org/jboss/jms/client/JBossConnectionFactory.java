@@ -159,7 +159,7 @@ public class JBossConnectionFactory implements
    {
       return "JBossConnectionFactory->" + delegate;
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -177,8 +177,12 @@ public class JBossConnectionFactory implements
 
          ensureAOPConfigLoaded((ClientConnectionFactoryDelegate)delegate);
          initDelegate();
-
-         ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);
+           
+         //The version used by the connection is the minimum of the server version for the connection factory
+         //and the client code version
+         
+         ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);        
+          
          return new JBossConnection(cd, type);
       }
       finally

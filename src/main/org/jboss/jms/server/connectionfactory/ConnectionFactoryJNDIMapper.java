@@ -83,7 +83,8 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       ClientConnectionFactoryDelegate delegate;
       try
       {
-         delegate = new ClientConnectionFactoryDelegate(id, serverPeer.getLocatorURI());
+         delegate = new ClientConnectionFactoryDelegate(id, serverPeer.getLocatorURI(),
+                                                        serverPeer.getVersion(), serverPeer.getServerPeerID());
       }
       catch (Exception e)
       {

@@ -121,6 +121,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private TransactionRepository tr;
    
    private Client callbackClient;
+   
+   private byte usingVersion;
 
    // Constructors --------------------------------------------------
    
@@ -474,6 +476,17 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       this.serverPeer.getConnectionManager().registerConnection(remotingClientSessionId, this);
    }
+   
+   public void setUsingVersion(byte version)
+   {
+      this.usingVersion = version;
+   }
+   
+   public byte getUsingVersion()
+   {
+      return usingVersion;
+   }
+   
    
    
    public String toString()

@@ -130,6 +130,7 @@
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/etc"/>
       <pathelement path="${module.root}/../src/etc"/>
+      <pathelement path="${module.root}/../output/etc"/>
    </path>
 
    <!-- Compile all test files -->

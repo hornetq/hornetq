@@ -26,6 +26,7 @@ import java.util.HashSet;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
+import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
@@ -56,9 +57,13 @@ public class ConnectionState extends HierarchicalStateSupport
    
    //Thread pool used for making asynch calls to server - e.g. activateConsumer
    private PooledExecutor pooledExecutor;
+ 
+   private Version versionToUse;
    
-   public ConnectionState(ConnectionDelegate delegate, ResourceManager rm, MessageIdGenerator gen,
-                          JMSRemotingConnection remotingConnection)
+   public ConnectionState(ConnectionDelegate delegate,
+                          JMSRemotingConnection remotingConnection, Version versionToUse,
+                          ResourceManager rm,
+                          MessageIdGenerator gen)
       throws Exception
    {
       super(null, delegate);
@@ -66,17 +71,18 @@ public class ConnectionState extends HierarchicalStateSupport
       if (log.isTraceEnabled()) { log.trace("Creating connection state"); }
       
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
-      
-      this.resourceManager = rm;
-      
-      this.idGenerator = gen;
-      
+            
       //TODO size should be configurable
       pooledExecutor = new PooledExecutor(new LinkedQueue(), 50);
       pooledExecutor.setMinimumPoolSize(50);
       
       this.remotingConnection = remotingConnection;
       
+      this.versionToUse = versionToUse;
+      
+      this.resourceManager = rm;
+      
+      this.idGenerator = gen;
    }
     
    public ResourceManager getResourceManager()
@@ -97,6 +103,16 @@ public class ConnectionState extends HierarchicalStateSupport
    public JMSRemotingConnection getRemotingConnection()
    {
       return remotingConnection;
+   }
+   
+//   public ClientConnectionFactoryDelegate getConnectionFactoryDelegate()
+//   {
+//      return cf;
+//   }
+   
+   public Version getVersionToUse()
+   {
+      return versionToUse;
    }
     
 }

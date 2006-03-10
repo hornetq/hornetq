@@ -45,7 +45,6 @@ import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdManager;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -137,7 +136,7 @@ public class ServerPeer extends ServiceMBeanSupport
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       connectionManager = new ConnectionManagerImpl();
 
-      version = new Version("VERSION");
+      version = Version.instance();
 
       started = false;
       

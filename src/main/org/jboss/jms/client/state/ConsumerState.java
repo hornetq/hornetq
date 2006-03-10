@@ -27,6 +27,7 @@ import javax.jms.Destination;
 
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.server.Version;
 
 /**
  * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.
@@ -95,6 +96,11 @@ public class ConsumerState extends HierarchicalStateSupport
    public MessageCallbackHandler getMessageCallbackHandler()
    {
       return messageCallbackHandler;
+   }
+   
+   public Version getVersionToUse()
+   {
+      return parent.getVersionToUse();
    }
    
 }

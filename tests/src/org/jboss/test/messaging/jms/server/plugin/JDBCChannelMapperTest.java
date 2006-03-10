@@ -240,9 +240,9 @@ public class JDBCChannelMapperTest extends MessagingTestCase
       
       //Deploy core destinations
       
-      channelMapper.deployCoreDestination(true, "queue1", ms, pm);
+      channelMapper.deployCoreDestination(true, "queue1", ms, pm, 100, 20, 10);
       
-      channelMapper.deployCoreDestination(false, "topic1", ms, pm);
+      channelMapper.deployCoreDestination(false, "topic1", ms, pm, 100, 20, 10);
       
       //Lookup core dest
       
@@ -320,9 +320,9 @@ public class JDBCChannelMapperTest extends MessagingTestCase
       
       //Deploy a core dest
       
-      channelMapper.deployCoreDestination(true, "queue1", ms, pm);
+      channelMapper.deployCoreDestination(true, "queue1", ms, pm, 100, 20, 10);
       
-      channelMapper.deployCoreDestination(false, "topic1", ms, pm);
+      channelMapper.deployCoreDestination(false, "topic1", ms, pm, 100, 20, 10);
             
       //lookup core dest - verify has same id
       

@@ -30,6 +30,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.aop.joinpoint.InvocationResponse;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.util.PayloadKey;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.InvocationRequest;
@@ -89,8 +90,14 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    {      
       if (trace) { log.trace("Invoking:" + invocation); }
       
-      MethodInvocation i = (MethodInvocation)invocation.getParameter();
+      MessagingMarshallable mm = (MessagingMarshallable)invocation.getParameter();
       
+      MethodInvocation i = (MethodInvocation)mm.getLoad();
+            
+      //Put the version number into meta data for use in the InjectionInterceptor
+      i.getMetaData().addMetaData(MetaDataConstants.JMS,
+            MetaDataConstants.VERSION_NUMBER, new Byte(mm.getVersion()), PayloadKey.TRANSIENT);
+            
       String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
       
       if (s != null)
@@ -104,7 +111,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          {
             if (trace) { log.trace("found calllback handler for session " + Util.guidToString(s)); }
             i.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                        MetaDataConstants.CALLBACK_HANDLER, callbackHandler);
+                                        MetaDataConstants.CALLBACK_HANDLER, callbackHandler, PayloadKey.TRANSIENT);
          }
          else
          {
@@ -115,7 +122,9 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
       InvocationResponse resp = JMSDispatcher.instance.invoke(i);
       
-      return resp.getResponse();
+      byte version = mm.getVersion();
+      
+      return new MessagingMarshallable(version, resp.getResponse());
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)

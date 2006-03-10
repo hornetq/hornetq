@@ -27,6 +27,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.server.Version;
 
 /**
  * State corresponding to a producer. This state is acessible inside aspects/interceptors.
@@ -115,6 +116,11 @@ public class ProducerState extends HierarchicalStateSupport
    public void setDeliveryMode(int deliveryMode)
    {
       this.deliveryMode = deliveryMode;
+   }
+   
+   public Version getVersionToUse()
+   {
+      return parent.getVersionToUse();
    }
    
    

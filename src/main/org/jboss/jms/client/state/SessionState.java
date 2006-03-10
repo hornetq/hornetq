@@ -25,6 +25,7 @@ import java.util.HashSet;
 
 import org.jboss.jms.client.JBossXAResource;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.Version;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -107,6 +108,11 @@ public class SessionState extends HierarchicalStateSupport
    public void setCurrentTxId(Object id)
    {
       this.currentTxId = id;
+   }
+   
+   public Version getVersionToUse()
+   {
+      return parent.getVersionToUse();
    }
 
 }
