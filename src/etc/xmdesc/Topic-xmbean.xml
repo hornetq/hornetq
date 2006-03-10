@@ -133,13 +133,13 @@
    </operation>
 
    <operation>
-      <description>Get a list of all subscription</description>
+      <description>Get a subscription list of String[] {ChannelID, ClientID, SubscriptionName}</description>
       <name>listSubscriptions</name>
       <return-type>java.util.List</return-type>
    </operation>
    
    <operation>
-      <description>Get a list of all subscription</description>
+      <description>Get a subscription list of String[] {ChannelID, ClientID, SubscriptionName}</description>
       <name>listSubscriptions</name>
       <parameter>
          <description>Set the value to true to get durable subscription list; false to get nondurable list</description>

@@ -51,8 +51,7 @@ public interface ManageableTopic extends ManageableCoreDestination
    
    /**
     * Get all subscription list.
-    * @return List of CoreSubscription. Never null. 
-    * FIXME better return a list of informational interface.
+    * @return List of String[] {ChannelID, ClientID, SubscriptionName}. Never null. 
     */
    List getSubscriptions();
    
@@ -60,8 +59,7 @@ public interface ManageableTopic extends ManageableCoreDestination
     * Get durable/non-durable subscription list.
     * @param durable If true, return durable subscription list.
     *                If false, return non-durable subscription list.
-    * @return List of CoreDurableSubscription/CoreSubscription. Never null.
-    * FIXME better return a list of informational interface.
+    * @return List of String[] {ChannelID, ClientID, SubscriptionName}. Never null. 
     */
    List getSubscriptions(boolean durable);
    

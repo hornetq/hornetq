@@ -216,7 +216,15 @@ public class Topic implements CoreDestination, ManageableTopic
       Iterator iter = iterator();
       while (iter.hasNext())
       {
-         list.add(iter.next());
+         CoreSubscription sub = (CoreSubscription)iter.next();
+         if (sub instanceof CoreDurableSubscription)
+            list.add(new String[]{ 
+                        Long.toString(sub.getChannelID()), 
+                        ((CoreDurableSubscription)sub).getClientID(),
+                        ((CoreDurableSubscription)sub).getName()});
+         else
+            list.add(new String[]{ 
+                  Long.toString(sub.getChannelID()), "", ""});
       }
       return list;
    }
@@ -230,9 +238,15 @@ public class Topic implements CoreDestination, ManageableTopic
       Iterator iter = iterator();
       while (iter.hasNext())
       {
-         Object sub = iter.next();
-         if ((sub instanceof CoreDurableSubscription) ^ (!durable))
-            list.add(sub);
+         CoreSubscription sub = (CoreSubscription)iter.next();
+         if (sub instanceof CoreDurableSubscription && durable)
+            list.add(new String[]{ 
+                        Long.toString(sub.getChannelID()), 
+                        ((CoreDurableSubscription)sub).getClientID(),
+                        ((CoreDurableSubscription)sub).getName()});
+         else if (!(sub instanceof CoreDurableSubscription) && !durable)
+            list.add(new String[]{ 
+                  Long.toString(sub.getChannelID()), "", ""});
       }
       return list;
    }

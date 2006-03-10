@@ -241,7 +241,10 @@ public class TopicManagementTest extends DestinationManagementTestBase
             new Object[] {Boolean.TRUE}, 
             new String[] {"boolean"});
       assertEquals(1, duraList.size());
-      assertTrue(duraList.get(0) instanceof CoreDurableSubscription);
+      // String[] {ChannelID, ClientID, SubscriptionName}
+      String[] strs = (String[])duraList.get(0);
+      assertEquals("Client1", strs[1]);
+      assertEquals("SubscriberA", strs[2]);
       
       // There should be 2 non-durable subscription
       List nonduraList = (List)ServerManagement.invoke(
@@ -250,8 +253,14 @@ public class TopicManagementTest extends DestinationManagementTestBase
             new Object[] {Boolean.FALSE}, 
             new String[] {"boolean"});
       assertEquals(2, nonduraList.size());
-      assertFalse(nonduraList.get(0) instanceof CoreDurableSubscription);
-      assertFalse(nonduraList.get(1) instanceof CoreDurableSubscription);
+      // String[] {ChannelID, ClientID, SubscriptionName}
+      strs = (String[])nonduraList.get(0);
+      assertEquals("", strs[1]);
+      assertEquals("", strs[2]);
+      // String[] {ChannelID, ClientID, SubscriptionName}
+      strs = (String[])nonduraList.get(1);
+      assertEquals("", strs[1]);
+      assertEquals("", strs[2]);
       
       // Now disconnect
       conn.close();
@@ -267,7 +276,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
             new Object[] {Boolean.TRUE}, 
             new String[] {"boolean"});
       assertEquals(1, duraList.size());
-      
+       
       // There should be 0 non-durable subscription
       nonduraList = (List)ServerManagement.invoke(
             destObjectName, 
