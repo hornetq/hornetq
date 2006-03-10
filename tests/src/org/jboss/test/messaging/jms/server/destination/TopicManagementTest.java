@@ -35,7 +35,6 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.core.local.CoreDurableSubscription;
 import org.jboss.test.messaging.jms.server.destination.base.DestinationManagementTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -211,8 +210,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
  
-      ServerManagement.deployTopic("TopicSubscription");
-      Topic topic = (Topic)ic.lookup("/topic/TopicSubscription");
+      ServerManagement.deployTopic("TopicSubscriptionList");
+      Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionList");
 
       TopicConnection conn = cf.createTopicConnection();
 
@@ -230,7 +229,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
 
       // There should be 3 subscriptions
       ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscription");
+         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscriptionList");
       List list = (List)ServerManagement.invoke(destObjectName, "listSubscriptions", null, null);
       assertEquals(3, list.size());
       
@@ -284,7 +283,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
             new Object[] {Boolean.FALSE}, 
             new String[] {"boolean"});
       assertEquals(0, nonduraList.size());
-      ServerManagement.undeployTopic("TopicSubscription");
+      ServerManagement.undeployTopic("TopicSubscriptionList");
    }
    
    /**
