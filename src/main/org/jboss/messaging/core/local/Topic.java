@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.jms.InvalidSelectorException;
+
+import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.Delivery;
@@ -251,6 +254,23 @@ public class Topic implements CoreDestination, ManageableTopic
       return list;
    }
    
+   /**
+    * @see ManageableTopic#getMessages(long, String, String, String)
+    */
+   public List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException
+   {
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         CoreSubscription sub = (CoreSubscription)iter.next();
+         // If subID matches, then get message list from the subscription
+         if (matchSubscription(channelID, clientID, subName, sub))
+            return sub.browse(null == selector ? null : new Selector(selector));
+      }   
+      // No match, return an empty list
+      return new ArrayList();
+   }
+   
    // Public --------------------------------------------------------
 
    public String toString()
@@ -263,6 +283,28 @@ public class Topic implements CoreDestination, ManageableTopic
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+
+   // Test if the subID array matches the subscription
+   private boolean matchSubscription(long channelID, String clientID, String subName, CoreSubscription sub)
+   {
+      // Validate the subID
+      if (null == clientID || null == subName)
+         throw new IllegalArgumentException();
+      // First channel ID must be the same
+      if (channelID != sub.getChannelID())
+         return false;
+      if (sub instanceof CoreDurableSubscription)
+      {
+         CoreDurableSubscription duraSub = (CoreDurableSubscription)sub;
+         // Client ID check
+         if (!clientID.equals(duraSub.getClientID()))
+            return false;
+         // Subscription name check
+         if (!subName.equals(duraSub.getName()))
+            return false;
+      }
+      return true;
+   }
    
    // Inner classes -------------------------------------------------   
 }

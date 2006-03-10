@@ -23,6 +23,8 @@ package org.jboss.messaging.core.local;
 
 import java.util.List;
 
+import javax.jms.InvalidSelectorException;
+
 import org.jboss.messaging.core.ManageableCoreDestination;
 
 /**
@@ -62,6 +64,17 @@ public interface ManageableTopic extends ManageableCoreDestination
     * @return List of String[] {ChannelID, ClientID, SubscriptionName}. Never null. 
     */
    List getSubscriptions(boolean durable);
+   
+   /**
+    * Get list of messages that is in certain subscription and meet the condition of selector.
+    * @param channelID String array element 0 that you get from getSubscriptions().
+    * @param clientID String array element 1 that you get from getSubscriptions().
+    * @param subName String array element 2 that you get from getSubscriptions().
+    * @param selector Filter expression
+    * @return List of javax.jms.Message. Never null.
+    * @throws InvalidSelectorException
+    */
+   List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException;
    
    // TODO adding more manageable operations
 }

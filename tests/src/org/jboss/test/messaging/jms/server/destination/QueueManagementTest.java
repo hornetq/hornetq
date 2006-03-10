@@ -184,7 +184,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       List list = (List)ServerManagement.invoke(
             destObjectName, 
             "listMessages", 
-            new String[] {null}, 
+            new Object[] {null}, 
             new String[] {"java.lang.String"});
       assertNotNull(list);
       assertEquals(0, list.size());
@@ -203,7 +203,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       list = (List)ServerManagement.invoke(
             destObjectName, 
             "listMessages", 
-            new String[] {null}, 
+            new Object[] {null}, 
             new String[] {"java.lang.String"});
       assertEquals(1, list.size());
       assertTrue(list.get(0) instanceof TextMessage);
@@ -223,7 +223,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       list = (List)ServerManagement.invoke(
             destObjectName, 
             "listMessages", 
-            new String[] {null}, 
+            new Object[] {null}, 
             new String[] {"java.lang.String"});
       assertEquals(0, list.size());
       

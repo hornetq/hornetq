@@ -148,4 +148,27 @@
       </parameter>
       <return-type>java.util.List</return-type>
    </operation>
+
+   <operation>
+      <description>Get a list of messages for certain subscription that filtered by selector</description>
+      <name>listMessages</name>
+      <parameter>
+         <name>channelID</name>
+         <type>long</type>
+      </parameter>
+      <parameter>
+         <name>clientID</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <description>Expression to define the selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
 </mbean>

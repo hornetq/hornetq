@@ -85,6 +85,7 @@ public class Topic extends DestinationServiceSupport
     * Get all subscription list.
     * @return List of CoreSubscription. Never null. 
     * @throws JMSException
+    * @see ManageableTopic#getSubscriptions()
     */
    public List listSubscriptions() throws JMSException
    {
@@ -99,12 +100,29 @@ public class Topic extends DestinationServiceSupport
     *                If false, return non-durable subscription list.
     * @return List of CoreDurableSubscription/CoreSubscription. Never null.
     * @throws JMSException
+    * @see ManageableTopic#getSubscriptions(boolean)
     */
    public List listSubscriptions(boolean durable) throws JMSException
    {
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getSubscriptions(durable);
+   }
+   /**
+    * Get messages from certain subscription.
+    * @param channelID @see #listSubscriptions()
+    * @param clientID @see #listSubscriptions()
+    * @param subName @see #listSubscriptions()
+    * @param selector Filter expression
+    * @return list of javax.jms.Message
+    * @throws JMSException
+    * @see ManageableTopic#getMessages(long, String, String, String)
+    */
+   public List listMessages(long channelID, String clientID, String subName, String selector) throws JMSException
+   {
+      JBossTopic jbt = new JBossTopic(name);
+      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
+      return t.getMessages(channelID, clientID, subName, selector);
    }
    
    // TODO implement these:

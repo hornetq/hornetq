@@ -26,6 +26,7 @@ import java.util.List;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
@@ -353,6 +354,79 @@ public class TopicManagementTest extends DestinationManagementTestBase
       ServerManagement.undeployTopic("TopicRemoveAllMessages");
    }
    
+   public void testListMessages() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+ 
+      ServerManagement.deployTopic("TopicMessageList");
+      Topic topic = (Topic)ic.lookup("/topic/TopicMessageList");
+
+      TopicConnection conn = cf.createTopicConnection();
+
+      conn.setClientID("Client1");
+
+      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = s.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+      // Create 1 durable subscription and 2 non-durable subscription
+      s.createDurableSubscriber(topic, "SubscriberA");
+      
+      s.createSubscriber(topic);
+      s.createSubscriber(topic);
+      
+      // Send 1 message
+      prod.send(s.createTextMessage("First one"));
+      
+      // Start the connection for delivery
+      conn.start();
+
+      // There should be 3 subscriptions
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList");
+      List listSub = (List)ServerManagement.invoke(destObjectName, "listSubscriptions", null, null);
+      assertEquals(3, listSub.size());
+      // Each subscription will have the same message
+      for (int i = 0; i < 3; i++)
+      {
+         String[] strs = (String[])listSub.get(i);
+         List listMsg = (List)ServerManagement.invoke(destObjectName, 
+               "listMessages",
+               new Object[] {new Long(strs[0]), strs[1], strs[2], null},
+               new String[] {"long", "java.lang.String", "java.lang.String", "java.lang.String"});
+         assertEquals(1, listMsg.size());
+         assertTrue(listMsg.get(0) instanceof TextMessage);
+         assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
+      }
+
+      // Send another message
+      prod.send(s.createTextMessage("Second one"));
+
+      // There should be 1 durable subscription
+      List duraListSub = (List)ServerManagement.invoke(
+            destObjectName, 
+            "listSubscriptions", 
+            new Object[] {Boolean.TRUE}, 
+            new String[] {"boolean"});
+      assertEquals(1, duraListSub.size());
+      String[] strs = (String[])duraListSub.get(0);
+      // The durable subscription has 2 messages
+      List listMsg = (List)ServerManagement.invoke(destObjectName, 
+            "listMessages",
+            new Object[] {new Long(strs[0]), strs[1], strs[2], null},
+            new String[] {"long", "java.lang.String", "java.lang.String", "java.lang.String"});
+      assertEquals(2, listMsg.size());
+      assertTrue(listMsg.get(0) instanceof TextMessage);
+      assertTrue(listMsg.get(1) instanceof TextMessage);
+      assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
+      assertEquals(((TextMessage)listMsg.get(1)).getText(), "Second one");
+      
+      // Clean-up
+      conn.close();
+      ServerManagement.undeployTopic("TopicMessageList");
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
