@@ -32,23 +32,41 @@ package org.jboss.jms.perf.framework;
  */
 public class KillRequest implements ServerRequest
 {
+  // Constants -----------------------------------------------------
 
-   /** The serialVersionUID */
-   private static final long serialVersionUID = -777019545487801390L;
+  private static final long serialVersionUID = -777019545487801390L;
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // ServerRequest implementation ----------------------------------
 
    public Object execute(JobStore store) throws Exception
    {
       new Thread(new Killer()).start();
       return null;
    }
-   
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
    class Killer implements Runnable
    {
       public void run()
       {
          try
          {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
          }
          catch (InterruptedException e)
          {

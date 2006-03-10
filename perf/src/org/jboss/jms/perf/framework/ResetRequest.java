@@ -22,37 +22,42 @@
 package org.jboss.jms.perf.framework;
 
 /**
- * 
- * A SubmitJobRequest.
- * 
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version 1.1
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version $Revision$
  *
- * SubmitJobRequest.java,v 1.1 2006/02/01 17:38:30 timfox Exp
+ * $Id$
  */
-public class SubmitJobRequest implements ServerRequest
+public class ResetRequest implements ServerRequest
 {
-   private static final long serialVersionUID = -4083875589896827910L;
-   
-   private Job job;
-   
-   public SubmitJobRequest(Job job)
-   {
-      this.job = job;
-   }
-   
+  // Constants -----------------------------------------------------
+
+  private static final long serialVersionUID = -349573297432452357L;
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // ServerRequest implementation ----------------------------------
+
    public Object execute(JobStore store) throws Exception
    {
-      store.addJob(job);
-      
-      job.initialize();
-      
+      if (store.size() != 0)
+      {
+         throw new Exception("Cannot reset, there are jobs executing!");
+      }
       return null;
    }
 
-   public String toString()
-   {
-      return "SubmitJobRequest[" + job + "]";
-   }
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

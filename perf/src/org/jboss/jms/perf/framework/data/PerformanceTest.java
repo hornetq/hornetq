@@ -9,10 +9,11 @@ package org.jboss.jms.perf.framework.data;
 import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.Job;
 import org.jboss.jms.perf.framework.ThroughputResult;
-import org.jboss.jms.perf.framework.SubmitJobRequest;
-import org.jboss.jms.perf.framework.ExecuteJobRequest;
+import org.jboss.jms.perf.framework.StoreJobRequest;
+import org.jboss.jms.perf.framework.ExecuteStoredJobRequest;
 import org.jboss.jms.perf.framework.Runner;
 import org.jboss.jms.perf.framework.BaseJob;
+import org.jboss.jms.perf.framework.Failure;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -152,11 +153,12 @@ public class PerformanceTest implements Serializable, JobList
          for(Iterator i = jobs.iterator(); i.hasNext(); )
          {
             Object o = i.next();
-            
+
             if (o instanceof Job)
             {
                Job job = (Job)o;
                configureJob(job, providerJNDIProperties);
+
                ThroughputResult result = runJob(job);
 
                log.info(e.size() + " " + result);
@@ -167,6 +169,7 @@ public class PerformanceTest implements Serializable, JobList
             {
                JobList parallelJobs = (JobList)o;
                configureJobs(parallelJobs, providerJNDIProperties);
+
                List results = runParallelJobs(parallelJobs);
 
                log.info(e.size() + " PARALLEL");
@@ -243,6 +246,8 @@ public class PerformanceTest implements Serializable, JobList
    {
       ThroughputResult result = null;
 
+      try
+      {
       if (local)
       {
          job.initialize();
@@ -258,11 +263,19 @@ public class PerformanceTest implements Serializable, JobList
          }
 
          if (log.isTraceEnabled()) { log.trace("submitting job " + job + " to " + executorURL); }
-         Runner.sendRequestToExecutor(executorURL, new SubmitJobRequest(job));
+         Runner.sendRequestToExecutor(executorURL, new StoreJobRequest(job));
 
 
          if (log.isTraceEnabled()) { log.trace("executing job " + job + " on " + executorURL); }
-         result = Runner.sendRequestToExecutor(executorURL, new ExecuteJobRequest(job.getID()));
+         result = Runner.sendRequestToExecutor(executorURL, new ExecuteStoredJobRequest(job.getID()));
+      }
+      }
+      catch(Exception e)
+      {
+         // job failed, record that
+         log.warn("job " + job + " failed: " + e.getMessage());
+         log.debug("job " + job + " failed", e);
+         result = new Failure();
       }
 
       result.setJob(job);

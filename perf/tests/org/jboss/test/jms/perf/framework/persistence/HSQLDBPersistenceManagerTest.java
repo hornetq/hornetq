@@ -17,6 +17,7 @@ import org.jboss.jms.perf.framework.SenderJob;
 import org.jboss.jms.perf.framework.DrainJob;
 import org.jboss.jms.perf.framework.ReceiverJob;
 import org.jboss.jms.perf.framework.FillJob;
+import org.jboss.jms.perf.framework.Failure;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -251,11 +252,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
       Iterator measurments = execution.iterator();
 
-      List list = null;
-      ThroughputResult tr = null;
-      Job job = null;
-
-      list = (List)measurments.next();
+      List list = (List)measurments.next();
       assertContains(list, SenderJob.TYPE, 1, 2, 3, 4, 5, 6);
       assertEquals(0, list.size());
 
@@ -334,6 +331,36 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
    }
 
+   public void testFailureStorage() throws Exception
+   {
+      PerformanceTest t = new PerformanceTest(null, "One");
+      Execution e = new Execution("someexecution");
+      t.addExecution(e);
+
+      Job j = new SenderJob();
+      ThroughputResult r = new Failure();
+      r.setJob(j);
+      e.addMeasurement(r);
+
+      pm.savePerformanceTest(t);
+
+      // retrieve and check data
+
+      PerformanceTest pt = pm.getPerformanceTest("One");
+      List executions = pt.getExecutions();
+      assertEquals(1, executions.size());
+      Execution execution = (Execution)executions.get(0);
+      Iterator measurments = execution.iterator();
+
+      List list = (List)measurments.next();
+      assertEquals(1, list.size());
+      Failure f = (Failure)list.get(0);
+      assertEquals(SenderJob.TYPE, f.getJob().getType());
+
+      assertFalse(measurments.hasNext());
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -343,6 +370,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       super.setUp();
       pm = new HSQLDBPersistenceManager(databaseURL);
       pm.start();
+      log.debug("setup done");
    }
 
    protected void tearDown() throws Exception

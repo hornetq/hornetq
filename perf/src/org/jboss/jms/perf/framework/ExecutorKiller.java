@@ -21,23 +21,41 @@
   */
 package org.jboss.jms.perf.framework;
 
-/**
- * 
- * A JobStore.
- * 
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
- *
- * JobStore.java,v 1.1 2006/02/01 17:38:30 timfox Exp
- */
-public interface JobStore
-{
-   void addJob(Job job);
-     
-   Job getJob(String jobId);
-      
-   void removeJob(String jobId);
+import org.jboss.remoting.Client;
+import org.jboss.remoting.InvokerLocator;
 
-   int size();
+public class ExecutorKiller
+{
+   //private static final Logger log = Logger.getLogger(ExecutorKiller.class);
+   
+   
+   public static void main(String[] args)
+   {
+      new ExecutorKiller().run(Integer.valueOf(args[0]).intValue(), args[1]);
+   }
+   
+   private void run(int port, String host)
+   {
+      try
+      {
+         sendRequestToSlave("socket://" + host + ":" + port, new KillRequest());
+      }
+      catch (Throwable e)
+      {
+         //Ignore - we will get exceptions anyway if the slave is not running
+      }
+   }
+
+   protected ThroughputResult sendRequestToSlave(String slaveURL, ServerRequest request) throws Throwable
+   {
+      InvokerLocator locator = new InvokerLocator(slaveURL);
+      
+      Client client = new Client(locator, "executor");
+            
+      Object res = client.invoke(request);
+                        
+      return (ThroughputResult)res; 
+   }
+   
    
 }

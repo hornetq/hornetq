@@ -12,7 +12,6 @@ import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.Queue;
 
 import org.jboss.jms.perf.framework.factories.MessageFactory;
 import org.jboss.logging.Logger;

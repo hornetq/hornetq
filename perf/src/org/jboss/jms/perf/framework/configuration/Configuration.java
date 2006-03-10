@@ -44,6 +44,27 @@ public class Configuration
 
    // Static --------------------------------------------------------
 
+   public boolean toBoolean(String os)
+   {
+      if (os == null)
+      {
+         throw new IllegalArgumentException("literal boolean required");
+      }
+
+      String s = os.toLowerCase();
+
+      if ("true".equals(s) || "yes".equals(s))
+      {
+         return true;
+      }
+      else if ("false".equals(s) || "no".equals(s))
+      {
+         return false;
+      }
+
+      throw new IllegalArgumentException("invalid boolean literal: " + os);
+   }
+
    // Attributes ----------------------------------------------------
 
    private File xmlConfiguration;
@@ -51,6 +72,7 @@ public class Configuration
 
    private String dbURL;
    private String reportDirectory;
+   private boolean startExecutors;
    private List performanceTests;
 
    // Map<providerName - Properties>
@@ -86,6 +108,11 @@ public class Configuration
       return reportDirectory;
    }
 
+   public boolean isStartExecutors()
+   {
+      return startExecutors;
+   }
+
    public Properties getJNDIProperties(String providerName)
    {
       Properties p = (Properties)jndiProperties.get(providerName);
@@ -99,6 +126,44 @@ public class Configuration
    public List getPerformanceTests()
    {
       return performanceTests;
+   }
+
+   /**
+    * @return a List of Strings
+    */
+   public List getExecutorURLs()
+   {
+      List result = new ArrayList();
+      for(Iterator i = performanceTests.iterator(); i.hasNext(); )
+      {
+         PerformanceTest pt = (PerformanceTest)i.next();
+         for(Iterator ji = pt.iterator(); ji.hasNext(); )
+         {
+            Object o = ji.next();
+
+            if (o instanceof Job)
+            {
+               String executorURL = ((Job)o).getExecutorURL();
+               if (!result.contains(executorURL))
+               {
+                  result.add(executorURL);
+               }
+            }
+            else
+            {
+               JobList jl = (JobList)o;
+               for(Iterator jli = jl.iterator(); jli.hasNext(); )
+               {
+                  String executorURL = ((Job)jli.next()).getExecutorURL();
+                  if (!result.contains(executorURL))
+                  {
+                     result.add(executorURL);
+                  }
+               }
+            }
+         }
+      }
+      return result;
    }
 
    public String toString()
@@ -151,6 +216,10 @@ public class Configuration
                {
                   reportDirectory = XMLUtil.getTextContent(n);
                }
+               else if ("start-executors".equals(name))
+               {
+                  startExecutors = toBoolean(XMLUtil.getTextContent(n));
+               }
                else if ("providers".equals(name))
                {
                   extractProviders(n);
@@ -167,8 +236,8 @@ public class Configuration
                {
                   if (!name.startsWith("#"))
                   {
-                     throw new Exception("Unexpected child " + name +
-                                         " of node " + root.getNodeName());
+                     throw new Exception("Unexpected child <" + name +
+                                         "> of node " + root.getNodeName());
                   }
                }
             }
@@ -252,8 +321,8 @@ public class Configuration
          {
             if(!name.startsWith("#"))
             {
-               throw new Exception("Unexpected child " + name +
-                                   " of node " + tests.getNodeName());
+               throw new Exception("Unexpected child <" + name +
+                                   "> of node " + tests.getNodeName());
             }
          }
       }
@@ -315,7 +384,8 @@ public class Configuration
             {
                if (!name.startsWith("#"))
                {
-                  throw new Exception("Unexpected child " + name + " of node " + test.getNodeName());
+                  throw new Exception("Unexpected child <" + name +
+                     "> of node " + test.getNodeName());
                }
             }
          }

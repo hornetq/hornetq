@@ -1,14 +1,20 @@
 <benchmark>
 
-   <!-- benchmark defaults -->
-
+   <!-- benchmark configuration -->
    <db-url>jdbc:hsqldb:./output/db/perfdb</db-url>
    <report-directory>./output/results</report-directory>
+
+   <!-- If it doesn't find needed executors on-line, start them. If 'false', just complain -->
+   <!-- <start-executors>true</start-executors> -->
+
+   <!-- benchmark-wide defaults -->
+
    <destination>/queue/testQueue</destination>
    <connection-factory>/ConnectionFactory</connection-factory>
    <message-size>0</message-size>
    <duration>60000</duration> <!-- safeguard for receive jobs that block waiting -->
    <executor-url>socket://localhost:1234</executor-url>
+   <acknowledgment-mode>AUTO_ACKNOWLEDGE</acknowledgment-mode>
 
    <providers>
       <provider name="JBossMessaging">
@@ -18,39 +24,67 @@
       </provider>
       <provider name="JBossMQ">
          <factory>org.jnp.interfaces.NamingContextFactory</factory>
-         <url>jnp://localhost:1099</url>
+         <url>jnp://localhost:1199</url>
          <pkg>org.jboss.naming:org.jnp.interfaces</pkg>
       </provider>
    </providers>
 
    <performance-tests>
 
-      <performance-test name="One">
+      <performance-test name="Throughput O KB Message Non-Persistent Non-Transactional, 1 sender, 1 receiver">
+
+         <message-size>0</message-size>
+         <messages>4000</messages>
 
          <drain/>
 
          <parallel>
-            <send messages="1000" rate="200"/>
-            <receive messages="1000" executor-url="socket://localhost:1235"/>
+            <send rate="200" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
          </parallel>
 
          <parallel>
-            <send messages="1000" rate="400"/>
-            <receive messages="1000" executor-url="socket://localhost:1235"/>
+            <send rate="400" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
          </parallel>
 
          <parallel>
-            <send messages="1600" rate="800"/>
-            <receive messages="1600" executor-url="socket://localhost:1235"/>
+            <send rate="800" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
          </parallel>
 
          <parallel>
-            <send messages="3000" rate="1000"/>
-            <receive messages="3000" executor-url="socket://localhost:1235"/>
+            <send rate="1000" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
          </parallel>
 
-         <!-- <execution provider="JBossMessaging"/> -->
-         <execution provider="JBossMQ"/>
+         <parallel>
+            <send rate="1200" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
+         </parallel>
+
+         <parallel>
+            <send rate="2000" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
+         </parallel>
+
+         <parallel>
+            <send rate="2500" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
+         </parallel>
+
+         <parallel>
+            <send rate="3000" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
+         </parallel>
+
+         <parallel>
+            <send rate="4000" executor-url="socket://localhost:1234"/>
+            <receive executor-url="socket://localhost:1235"/>
+         </parallel>
+
+         <execution provider="JBossMessaging"/>
+         <!-- <execution provider="JBossMQ"/> -->
       </performance-test>
 
    </performance-tests>

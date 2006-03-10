@@ -24,6 +24,7 @@ import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.ThroughputResult;
 import org.jboss.jms.perf.framework.Job;
 import org.jboss.jms.perf.framework.BaseJob;
+import org.jboss.jms.perf.framework.Failure;
 import org.jboss.logging.Logger;
 
 /**
@@ -291,7 +292,16 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                j.setMessageSize(messageSize);
                j.setDuration(duration);
                j.setRate(rate);
-               ThroughputResult r = new ThroughputResult(measuredDuration, measuredMessageCount);
+
+               ThroughputResult r = null;
+               if (measuredDuration == Long.MAX_VALUE && measuredMessageCount == 0)
+               {
+                  r = new Failure();
+               }
+               else
+               {
+                  r = new ThroughputResult(measuredDuration, measuredMessageCount);
+               }
                r.setJob(j);
                l.add(r);
             }

@@ -14,7 +14,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.Queue;
 
 import org.jboss.logging.Logger;
 
@@ -40,7 +39,6 @@ public class ReceiverJob extends BaseThroughputJob
 
    // Attributes ----------------------------------------------------
 
-   protected int ackMode;
    protected String subName;
    protected String selector;
    protected boolean noLocal;
@@ -62,7 +60,7 @@ public class ReceiverJob extends BaseThroughputJob
                       boolean transacted,
                       int transactionSize,
                       long testTime,
-                      int ackMode,
+                      int acknowledgmentMode,
                       String subName,
                       String selector,
                       boolean noLocal,
@@ -72,7 +70,7 @@ public class ReceiverJob extends BaseThroughputJob
       super(jndiProperties, destinationName, connectionFactoryJndiName, numConnections,
             numSessions, transacted, transactionSize, testTime, 0);
 
-      this.ackMode = ackMode;
+      this.acknowledgmentMode = acknowledgmentMode;
       this.subName = subName;
       this.selector = selector;
       this.noLocal = noLocal;
@@ -90,11 +88,6 @@ public class ReceiverJob extends BaseThroughputJob
    public Servitor createServitor(long testTime)
    {
       return new Receiver(testTime);
-   }
-
-   public void setAckMode(int ackMode)
-   {
-      this.ackMode = ackMode;
    }
 
    public void setAsynch(boolean asynch)
@@ -133,7 +126,7 @@ public class ReceiverJob extends BaseThroughputJob
       StringBuffer sb = new StringBuffer();
       Properties p = getJNDIProperties();
 
-      sb.append("sender job\n");
+      sb.append("receiver job\n");
       sb.append("    JNDI properties\n");
       sb.append("        java.naming.factory.initial: ").
          append(p.getProperty("java.naming.factory.initial")).append('\n');
@@ -145,6 +138,10 @@ public class ReceiverJob extends BaseThroughputJob
          append(getDestinationName()).append('\n');
       sb.append("    connection factory name:         ").
          append(getConnectionFactoryName()).append('\n');
+      sb.append("    transacted:                      ").
+         append(isTransacted()).append('\n');
+      sb.append("    acknowledgmentMode:              ").
+         append(BaseJob.acknowledgmentModeToString(getAcknowledgmentMode())).append('\n');
       sb.append("    message size:                    ").
          append(getMessageSize()).append(" bytes").append('\n');
       sb.append("    message count:                   ").
@@ -164,9 +161,8 @@ public class ReceiverJob extends BaseThroughputJob
          super(testTime);
       }
 
-      Session sess;
-
-      MessageConsumer cons;
+      private Session session;
+      private MessageConsumer consumer;
 
       public void deInit()
       {
@@ -174,10 +170,10 @@ public class ReceiverJob extends BaseThroughputJob
          {
             if (subName != null)
             {
-               sess.unsubscribe(subName);
+               session.unsubscribe(subName);
             }
 
-            sess.close();
+            session.close();
          }
          catch (Throwable e)
          {
@@ -204,15 +200,18 @@ public class ReceiverJob extends BaseThroughputJob
                }
             }
 
-            sess = conn.createSession(transacted, ackMode);
+            session = conn.createSession(transacted, getAcknowledgmentMode());
+
+            log.debug("session " + session + " created");
 
             if (subName == null)
             {
-               cons = sess.createConsumer(destination, selector, noLocal);
+               consumer = session.createConsumer(destination, selector, noLocal);
             }
             else
             {
-               cons = sess.createDurableSubscriber((Topic)destination, subName, selector, noLocal);
+               consumer = session.createDurableSubscriber((Topic)destination, subName,
+                                                          selector, noLocal);
             }
          }
          catch (Throwable e)
@@ -220,7 +219,6 @@ public class ReceiverJob extends BaseThroughputJob
             log.error("Init failed", e);
             failed = true;
          }
-
       }
 
       public void run()
@@ -237,15 +235,15 @@ public class ReceiverJob extends BaseThroughputJob
 
                if (timeLeft <= 0)
                {
-                  log.debug("terminating receiving because time expired");
+                  log.debug("terminating receiving because time (" + duration + " ms) expired");
                   break;
                }
 
-               Message m = cons.receive(timeLeft);
+               Message m = consumer.receive(timeLeft);
 
                if (m == null)
                {
-                  log.debug("terminating receiving because time expired");
+                  log.debug("terminating receiving because time (" + duration + " ms) expired");
                   break;
                }
 
@@ -255,7 +253,7 @@ public class ReceiverJob extends BaseThroughputJob
                {
                   if (currentMessageCount % transactionSize == 0)
                   {
-                     sess.commit();
+                     session.commit();
                   }
                }
 
@@ -263,10 +261,11 @@ public class ReceiverJob extends BaseThroughputJob
                {
                   if (transacted)
                   {
-                     sess.commit();
+                     session.commit();
                   }
 
-                  log.debug("terminating receiving because message count has been reached");
+                  log.debug("terminating receiving because message count (" + messageCount +
+                     ") has been reached");
                   break;
                }
             }

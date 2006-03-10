@@ -71,7 +71,7 @@ public class Runner
       try
       {
          InvokerLocator locator = new InvokerLocator(executorURL);
-         Client client = new Client(locator, "perftest");
+         Client client = new Client(locator, "executor");
          return (ThroughputResult)client.invoke(request);
       }
       catch (PerfException e)
@@ -204,6 +204,7 @@ public class Runner
    {
       if ("measure".equals(action))
       {
+         checkExecutors();
          measure();
 
       }
@@ -287,6 +288,30 @@ public class Runner
       log.info("charts created");
    }
 
+   private void checkExecutors() throws Exception
+   {
+      for(Iterator i = configuration.getExecutorURLs().iterator(); i.hasNext(); )
+      {
+         String executorURL = (String)i.next();
+
+         try
+         {
+            Runner.sendRequestToExecutor(executorURL, new ResetRequest());
+            log.info("executor " + executorURL + " on-line and reset");
+         }
+         catch(Exception e)
+         {
+            log.error("executor " + executorURL + " failed", e);
+            throw new Exception("executor check failed");
+         }
+      }
+
+      if (configuration.isStartExecutors())
+      {
+         throw new Exception("Not able to dynamically start executors yet!");
+      }
+   }
+
    // Inner classes -------------------------------------------------
 
    static class JobInitializer implements Runnable
@@ -310,7 +335,7 @@ public class Runner
             }
             else
             {
-               sendRequestToExecutor(job.getExecutorURL(), new SubmitJobRequest(job));
+               sendRequestToExecutor(job.getExecutorURL(), new StoreJobRequest(job));
             }
          }
          catch (PerfException e)
@@ -344,13 +369,15 @@ public class Runner
             else
             {
                result =
-                  sendRequestToExecutor(job.getExecutorURL(), new ExecuteJobRequest(job.getID()));
+                  sendRequestToExecutor(job.getExecutorURL(), new ExecuteStoredJobRequest(job.getID()));
             }
          }
-         catch (PerfException e)
+         catch (Exception e)
          {
-            log.error("Failed to execute job", e);
-            exception = e;
+            // job failed, record that
+            log.warn("job " + job + " failed: " + e.getMessage());
+            log.debug("job " + job + " failed", e);
+            result = new Failure();
          }
       }
    }

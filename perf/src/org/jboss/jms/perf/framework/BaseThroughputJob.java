@@ -29,8 +29,6 @@ public abstract class BaseThroughputJob extends BaseJob
    /* Number of concurrent session to use - sessions use connections in round-robin fashion */
    protected int numSessions;
    
-   protected boolean transacted;
-    
    protected Connection[] conns;
    
    protected int connIndex;
@@ -105,7 +103,7 @@ public abstract class BaseThroughputJob extends BaseJob
    public ThroughputResult execute() throws PerfException
    {
 
-      if (log.isTraceEnabled()) { log.trace(this + " executing ..."); }
+      log.debug(this + " executing ...");
 
       try
       {         
@@ -124,7 +122,7 @@ public abstract class BaseThroughputJob extends BaseJob
    {
       boolean failed = false;
 
-      if (log.isTraceEnabled()) { log.trace(this + " runs test with " + numSessions + " parallel sessions"); }
+      log.debug(this + " runs test with " + numSessions + " parallel sessions");
                     
       for (int i = 0; i < numSessions; i++)
       {         
@@ -144,25 +142,21 @@ public abstract class BaseThroughputJob extends BaseJob
       }
       
       long totalTime = 0;
-      
       long totalMessages = 0;
       
       for (int i = 0; i < numSessions; i++)
       {
          Servitor servitor = servitors[i];
-                  
          servitor.deInit();
          
          if (servitor.isFailed())           
          {
             failed = true;       
-            
             break;
          }
          else
          {
             totalTime += servitor.getTime();
-            
             totalMessages += servitor.getMessages();
          }
       }       
@@ -175,11 +169,6 @@ public abstract class BaseThroughputJob extends BaseJob
       return new ThroughputResult(totalTime, totalMessages);
    }
 
-
-
-
-
-        
    protected synchronized Connection getNextConnection()
    {
       return conns[connIndex++ % conns.length];
@@ -203,11 +192,6 @@ public abstract class BaseThroughputJob extends BaseJob
    public void setNumSessions(int numSessions)
    {
       this.numSessions = numSessions;
-   }
-
-   public void setTransacted(boolean transacted)
-   {
-      this.transacted = transacted;
    }
 
    public void setTransactionSize(int transactionSize)

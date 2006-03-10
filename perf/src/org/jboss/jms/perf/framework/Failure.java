@@ -21,42 +21,42 @@
   */
 package org.jboss.jms.perf.framework;
 
-import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
-
-public class SlaveKiller
+/**
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version $Revision$
+ *
+ * $Id$
+ */
+public class Failure extends ThroughputResult
 {
-   //private static final Logger log = Logger.getLogger(SlaveKiller.class);   
-   
-   
-   public static void main(String[] args)
+   // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 5338059261642836113L;
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   public Failure()
    {
-      new SlaveKiller().run(Integer.valueOf(args[0]).intValue(), args[1]);
-   }
-   
-   private void run(int port, String host)
-   {
-      try
-      {
-         sendRequestToSlave("socket://" + host + ":" + port, new KillRequest());
-      }
-      catch (Throwable e)
-      {
-         //Ignore - we will get exceptions anyway if the slave is not running
-      }
+      super(Long.MAX_VALUE, 0);
    }
 
-   protected ThroughputResult sendRequestToSlave(String slaveURL, ServerRequest request) throws Throwable
+   // Public --------------------------------------------------------
+
+   public String toString()
    {
-      InvokerLocator locator = new InvokerLocator(slaveURL);
-      
-      Client client = new Client(locator, "perftest");
-            
-      Object res = client.invoke(request);
-                        
-      return (ThroughputResult)res; 
+      return "FAILURE";
    }
-   
-   
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

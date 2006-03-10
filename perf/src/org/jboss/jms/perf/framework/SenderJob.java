@@ -13,7 +13,6 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.DeliveryMode;
-import javax.jms.Queue;
 
 import org.jboss.jms.perf.framework.factories.MessageFactory;
 import org.jboss.jms.perf.framework.factories.MessageMessageFactory;
@@ -143,6 +142,8 @@ public class SenderJob extends BaseThroughputJob
          append(getDestinationName()).append('\n');
       sb.append("    connection factory name:         ").
          append(getConnectionFactoryName()).append('\n');
+      sb.append("    transacted:                      ").
+         append(isTransacted()).append('\n');
       sb.append("    message factory:                 ").
          append(getMessageFactory()).append('\n');
       sb.append("    message size:                    ").
@@ -190,7 +191,7 @@ public class SenderJob extends BaseThroughputJob
          {
             Connection conn = getNextConnection();
             
-            sess = conn.createSession(transacted, Session.AUTO_ACKNOWLEDGE); //Ackmode doesn't matter            
+            sess = conn.createSession(transacted, getAcknowledgmentMode()); //Ackmode doesn't matter            
             
             prod = null;
             

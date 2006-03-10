@@ -10,6 +10,8 @@ import org.w3c.dom.Node;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.jms.perf.framework.Job;
 
+import javax.jms.Session;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -26,6 +28,7 @@ public class JobConfiguration
    private static final String MESSAGE_SIZE = "message-size";
    private static final String DURATION = "duration";
    private static final String RATE = "rate";
+   private static final String ACKNOWLEDGMENT_MODE = "acknowledgment-mode";
 
    // Static --------------------------------------------------------
 
@@ -37,12 +40,52 @@ public class JobConfiguration
           MESSAGES.equals(name) ||
           MESSAGE_SIZE.equals(name) ||
           DURATION.equals(name) ||
-          RATE.equals(name))
+          RATE.equals(name) ||
+          ACKNOWLEDGMENT_MODE.equals(name))
       {
          return true;
 
       }
       return false;
+   }
+
+   public static void validateAcknowledgmentMode(int acknowledgmentMode)
+   {
+      if (acknowledgmentMode != Session.AUTO_ACKNOWLEDGE &&
+          acknowledgmentMode != Session.CLIENT_ACKNOWLEDGE &&
+          acknowledgmentMode != Session.DUPS_OK_ACKNOWLEDGE &&
+          acknowledgmentMode != Session.SESSION_TRANSACTED)
+      {
+         throw new IllegalArgumentException("invalid acknowledgment mode: " + acknowledgmentMode);
+      }
+   }
+
+   public static int validateAcknowledgmentMode(String acknowledgmentMode)
+   {
+      if (acknowledgmentMode == null)
+      {
+         throw new IllegalArgumentException("null acknowledgment mode");
+      }
+
+      String s = acknowledgmentMode.toUpperCase();
+
+      if ("AUTO_ACKNOWLEDGE".equals(s))
+      {
+         return Session.AUTO_ACKNOWLEDGE;
+      }
+      else if ("CLIENT_ACKNOWLEDGE".equals(s))
+      {
+         return Session.CLIENT_ACKNOWLEDGE;
+      }
+      else if ("DUPS_OK_ACKNOWLEDGE".equals(s))
+      {
+         return Session.DUPS_OK_ACKNOWLEDGE;
+      }
+      else if ("SESSION_TRANSACTED".equals(s))
+      {
+         return Session.SESSION_TRANSACTED;
+      }
+      throw new IllegalArgumentException("invalid acknowledgment mode: " + acknowledgmentMode);
    }
 
    public static String executionURLToString(String executionURL)
@@ -66,6 +109,7 @@ public class JobConfiguration
    private Integer messageSize;
    private Long duration;
    private Integer rate;
+   private Integer acknowledgmentMode;
 
    // Constructors --------------------------------------------------
 
@@ -78,6 +122,7 @@ public class JobConfiguration
       messageSize = null;
       duration = null;
       rate = null;
+      acknowledgmentMode = null;
    }
 
    // Public --------------------------------------------------------
@@ -173,6 +218,19 @@ public class JobConfiguration
       this.rate = new Integer(rate);
    }
 
+   /**
+    * null means no default
+    */
+   public Integer getAcknowledgmentMode()
+   {
+      return acknowledgmentMode;
+   }
+
+   public void setAcknowledgmentMode(int acknowledgmentMode)
+   {
+      validateAcknowledgmentMode(acknowledgmentMode);
+      this.acknowledgmentMode = new Integer(acknowledgmentMode);
+   }
 
    public JobConfiguration copy()
    {
@@ -184,6 +242,7 @@ public class JobConfiguration
       n.messageSize = this.messageSize;
       n.duration = this.duration;
       n.rate = this.rate;
+      n.acknowledgmentMode = this.acknowledgmentMode;
 
       return n;
    }
@@ -231,6 +290,11 @@ public class JobConfiguration
          int i = Integer.parseInt(value);
          setRate(i);
       }
+      else if (ACKNOWLEDGMENT_MODE.equals(name))
+      {
+         int i = validateAcknowledgmentMode(value);
+         setAcknowledgmentMode(i);
+      }
       else
       {
          throw new Exception("Unknown node " + name);
@@ -277,6 +341,11 @@ public class JobConfiguration
       if (i != null)
       {
          j.setRate(i.intValue());
+      }
+      i = getAcknowledgmentMode();
+      if (i != null)
+      {
+         j.setAcknowledgmentMode(i.intValue());
       }
    }
 

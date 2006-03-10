@@ -13,7 +13,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.Queue;
 
 import org.jboss.logging.Logger;
 

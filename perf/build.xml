@@ -102,16 +102,15 @@
 
    <target name="run" depends="compile">
 
-      <antcall target="start-executors"/>
-      <sleep seconds="5"/>
+      <!-- <antcall target="start-executors"/> -->
+
       <antcall target="runner">
          <param name="action" value="measure"/>
       </antcall>
-      <antcall target="kill-executors"/>
-      <sleep seconds="5"/>
-      <antcall target="runner">
-         <param name="action" value="chart"/>
-      </antcall>
+
+      <!-- <antcall target="kill-executors"/> -->
+
+      <antcall target="chart"/>
    </target>
 
    <target name="chart" depends="compile">
@@ -126,7 +125,7 @@
          <jvmarg value="-Xdebug"/>
          <jvmarg value="-Xnoagent"/>
          <jvmarg value="-Djava.compiler=NONE"/>
-         <jvmarg value="-Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
+         <jvmarg value="-Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=runner"/>
          -->
          <arg line="-config ${module.root}/perf.xml -action ${action}"/>
          <sysproperty key="module.output" value="${module.output}"/>
@@ -134,6 +133,12 @@
          <classpath refid="perf.execution.classpath"/>
       </java>
    </target>
+
+   <target name="bounce-executors">
+      <antcall target="kill-executors"/>
+      <antcall target="start-executors"/>
+   </target>
+
 
    <target name="start-executors">
       <antcall target="start-executor">
@@ -159,7 +164,7 @@
 
    <target name="start-executor" description="Start a perf executor">
       <echo message="Starting executor ${executor.host}:${executor.port}"/>
-      <java classname="org.jboss.jms.perf.framework.Slave" fork="true" spawn="true">
+      <java classname="org.jboss.jms.perf.framework.Executor" fork="true" spawn="true">
          <arg value="${executor.port}"/>
          <arg value="${executor.host}"/>
          <sysproperty key="module.output" value="${module.output}"/>
@@ -173,7 +178,7 @@
 
    <target name="kill-executor" description="Kill a perf executor">
       <echo message="Killing executor ${executor.host}:${executor.port}"/>
-      <java classname="org.jboss.jms.perf.framework.SlaveKiller" fork="true">
+      <java classname="org.jboss.jms.perf.framework.ExecutorKiller" fork="true">
          <arg value="${executor.port}"/>
          <arg value="${executor.host}"/>
          <sysproperty key="module.output" value="${module.output}"/>
@@ -188,6 +193,12 @@
    <target name="clean">
       <delete dir="${module.output}"/>
    </target>
+
+   <target name="clean-data">
+      <delete dir="${module.output}/db"/>
+      <delete dir="${module.output}/results"/>
+   </target>
+
 
    <target name="report" depends="tests, copy-stylesheets, compile-report"/>
 
@@ -245,6 +256,10 @@
             todir="${module.output}/reports/html"
             styledir="${module.output}/stylesheets"/>
       </junitreport>
+   </target>
+
+   <target name="sleep">
+      <sleep seconds="2"/>
    </target>
 
    <target name="something">

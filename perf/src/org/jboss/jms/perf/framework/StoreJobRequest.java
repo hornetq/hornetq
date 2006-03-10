@@ -21,64 +21,52 @@
   */
 package org.jboss.jms.perf.framework;
 
-import java.util.Map;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
-import org.jboss.logging.Logger;
-
 /**
  * 
- * A SimpleJobStore.
+ * A StoreJobRequest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
- * SimpleJobStore.java,v 1.1 2006/02/01 17:38:30 timfox Exp
+ * StoreJobRequest.java,v 1.1 2006/02/01 17:38:30 timfox Exp
  */
-public class SimpleJobStore implements JobStore
+public class StoreJobRequest implements ServerRequest
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(BaseJob.class);
+   private static final long serialVersionUID = -4083875589896827910L;
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private Map jobs;
+   private Job job;
 
    // Constructors --------------------------------------------------
 
-   public SimpleJobStore()
+   public StoreJobRequest(Job job)
    {
-      jobs = new ConcurrentReaderHashMap();
+      this.job = job;
    }
 
-   // JobStore implementation ---------------------------------------
+   // ServerRequest implementation ----------------------------------
 
-   public void addJob(Job job)
+   public Object execute(JobStore store) throws Exception
    {
-      if (log.isTraceEnabled()) { log.trace("adding job " + job); }
-      jobs.put(job.getID(), job);
-   }
+      store.addJob(job);
 
-   public Job getJob(String jobId)
-   {
-      return (Job)jobs.get(jobId);
-   }
+      job.initialize();
 
-   public void removeJob(String jobId)
-   {
-      jobs.remove(jobId);
-   }
-
-   public int size()
-   {
-      return jobs.size();
+      return null;
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "StoreJobRequest[" + job + "]";
+   }
 
    // Package protected ---------------------------------------------
 
@@ -87,7 +75,5 @@ public class SimpleJobStore implements JobStore
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-
 
 }

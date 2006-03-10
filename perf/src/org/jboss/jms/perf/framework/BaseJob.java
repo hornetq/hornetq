@@ -10,9 +10,8 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Topic;
 import javax.jms.Destination;
+import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
@@ -29,7 +28,11 @@ import org.jboss.jms.perf.framework.configuration.JobConfiguration;
  */
 public abstract class BaseJob implements Job, Serializable
 {
+   // Constants -----------------------------------------------------
+
    private transient static final Logger log = Logger.getLogger(BaseJob.class);
+
+   // Static --------------------------------------------------------
 
    public static Job create(String type)
    {
@@ -55,6 +58,32 @@ public abstract class BaseJob implements Job, Serializable
       }
    }
 
+   public static String acknowledgmentModeToString(int ackMode)
+   {
+      if (Session.AUTO_ACKNOWLEDGE == ackMode)
+      {
+         return "AUTO_ACKNOWLEDGE";
+      }
+      else if (Session.CLIENT_ACKNOWLEDGE == ackMode)
+      {
+         return "CLIENT_ACKNOWLEDGE";
+      }
+      else if (Session.DUPS_OK_ACKNOWLEDGE == ackMode)
+      {
+         return "DUPS_OK_ACKNOWLEDGE";
+      }
+      else if (Session.SESSION_TRANSACTED == ackMode)
+      {
+         return "SESSION_TRANSACTED";
+      }
+      else
+      {
+         return "UNKNOWN";
+      }
+   }
+
+   // Attributes ----------------------------------------------------
+
    protected String id;
    protected String executorURL;
    protected int messageCount;
@@ -69,6 +98,11 @@ public abstract class BaseJob implements Job, Serializable
    protected Destination destination;
    protected String connectionFactoryName;
    protected ConnectionFactory cf;
+
+   protected boolean transacted;
+   protected int acknowledgmentMode;
+
+   // Constructors --------------------------------------------------
 
    public BaseJob()
    {
@@ -85,6 +119,8 @@ public abstract class BaseJob implements Job, Serializable
       this.destinationName = destinationName;
       this.connectionFactoryName = connectionFactoryJndiName;
    }
+
+   // Job implementation --------------------------------------------
 
    public String getID()
    {
@@ -161,6 +197,26 @@ public abstract class BaseJob implements Job, Serializable
       this.connectionFactoryName = connectionFactoryName;
    }
 
+   public boolean isTransacted()
+   {
+      return transacted;
+   }
+
+   public void setTransacted(boolean transacted)
+   {
+      this.transacted = transacted;
+   }
+
+   public int getAcknowledgmentMode()
+   {
+      return acknowledgmentMode;
+   }
+
+   public void setAcknowledgmentMode(int acknowledgmentMode)
+   {
+      this.acknowledgmentMode = acknowledgmentMode;
+   }
+
    public void initialize() throws PerfException
    {
       try
@@ -180,10 +236,7 @@ public abstract class BaseJob implements Job, Serializable
       }
    }
 
-   protected void tearDown() throws Exception
-   {
-      ic.close();
-   }
+   // Public --------------------------------------------------------
 
    public Properties getJNDIProperties()
    {
@@ -201,6 +254,17 @@ public abstract class BaseJob implements Job, Serializable
          getDestinationName() + "]";
    }
 
+   // Package protected ---------------------------------------------
 
+   // Protected -----------------------------------------------------
+
+   protected void tearDown() throws Exception
+   {
+      ic.close();
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

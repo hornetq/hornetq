@@ -67,6 +67,14 @@ public interface Job
 
    void setConnectionFactoryName(String connectionFactoryName);
 
+   boolean isTransacted();
+
+   void setTransacted(boolean b);
+
+   int getAcknowledgmentMode();
+
+   void setAcknowledgmentMode(int acknowledgmentMode);
+
    void initialize() throws PerfException;
    
    ThroughputResult execute() throws PerfException;

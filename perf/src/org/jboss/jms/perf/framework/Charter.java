@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.PerformanceTest;
@@ -66,6 +67,18 @@ class Charter
 
    // Static --------------------------------------------------------
 
+   String generateImageName(String testName)
+   {
+      StringBuffer sb = new StringBuffer();
+      for(StringTokenizer st = new StringTokenizer(testName, " \t,;!:-"); st.hasMoreTokens();)
+      {
+         String s = st.nextToken();
+         sb.append(s);
+      }
+      sb.append(".jpg");
+      return sb.toString();
+   }
+
    // Attributes ----------------------------------------------------
 
    private String outputDirName;
@@ -102,6 +115,7 @@ class Charter
          writer.write("<html><body>\n");
          doCharts();
          writer.write("</body></html>\n");
+         log.debug("success");
       }
       finally
       {
@@ -109,7 +123,84 @@ class Charter
       }
    }
 
-   protected void createImage(JFreeChart chart, String imageFileName) throws Exception
+   protected void doCharts() throws Exception
+   {
+
+      // one chart (image) per performance test
+
+      List ptests = pm.getPerformanceTestNames();
+      for(Iterator i = ptests.iterator(); i.hasNext(); )
+      {
+         String perfTestName = (String)i.next();
+         PerformanceTest pt = pm.getPerformanceTest(perfTestName);
+         chartPerformanceTest(pt);
+      }
+   }
+
+   protected void chartPerformanceTest(PerformanceTest pt) throws Exception
+   {
+      // a chart depicts more executions
+
+      String testName = pt.getName();
+
+      XYSeriesCollection dataset = new XYSeriesCollection();
+
+      for(Iterator i = pt.getExecutions().iterator(); i.hasNext(); )
+      {
+         Execution e = (Execution)i.next();
+         chartExecution(dataset, e);
+      }
+
+      JFreeChart chart =
+         ChartFactory.createXYLineChart(testName, "send rate (msg/s)", "receive rate (msg/s)",
+                                        dataset, PlotOrientation.VERTICAL, true, true, false);
+
+      createImage(chart, generateImageName(testName));
+   }
+
+   protected void chartExecution(XYSeriesCollection dataset, Execution execution) throws Exception
+   {
+      String providerName = execution.getProviderName();
+
+      XYSeries series = new XYSeries(providerName);
+      for(Iterator i = execution.iterator(); i.hasNext(); )
+      {
+         List measurement = (List)i.next();
+
+         // TODO This is a particular case, make it more general
+
+         if (measurement.size() != 2)
+         {
+            // ignore datapoints that do not have 2 parallel measurements (e.g. drains)
+            continue;
+         }
+
+         ThroughputResult sendRate = (ThroughputResult)measurement.get(0);
+         ThroughputResult receiveRate = (ThroughputResult)measurement.get(1);
+
+         if (sendRate instanceof Failure || receiveRate instanceof Failure)
+         {
+            // ignore this too
+            continue;
+         }
+
+         if (sendRate.getJob().getType() == ReceiverJob.TYPE)
+         {
+            ThroughputResult tmp = sendRate;
+            sendRate = receiveRate;
+            receiveRate = tmp;
+         }
+
+         series.add(sendRate.getThroughput(), receiveRate.getThroughput());
+      }
+
+      dataset.addSeries(series);
+   }
+
+
+   // Private -------------------------------------------------------
+
+   private void createImage(JFreeChart chart, String imageFileName) throws Exception
    {
       XYPlot plot = (XYPlot)chart.getPlot();
 
@@ -141,76 +232,6 @@ class Charter
 
       writer.write("<img src=\"" + imageFileName + "\"><br>\n");
    }
-
-   protected void doCharts() throws Exception
-   {
-
-      // one chart (image) per performance test
-
-      List ptests = pm.getPerformanceTestNames();
-      for(Iterator i = ptests.iterator(); i.hasNext(); )
-      {
-         String perfTestName = (String)i.next();
-         PerformanceTest pt = pm.getPerformanceTest(perfTestName);
-         chartPerformanceTest(pt);
-      }
-   }
-
-   protected void chartPerformanceTest(PerformanceTest pt) throws Exception
-   {
-      // a chart depicts more executions
-
-      for(Iterator i = pt.getExecutions().iterator(); i.hasNext(); )
-      {
-         Execution e = (Execution)i.next();
-         chartExecution(pt.getName(), e);
-      }
-   }
-
-   protected void chartExecution(String testName, Execution execution) throws Exception
-   {
-      String providerName = execution.getProviderName();
-
-      XYSeries series = new XYSeries(providerName);
-      for(Iterator i = execution.iterator(); i.hasNext(); )
-      {
-         List measurement = (List)i.next();
-
-         // TODO This is a particular case, make it more general
-
-         if (measurement.size() != 2)
-         {
-            // ignore datapoints that do not have 2 parallel measurements (e.g. drains)
-            continue;
-         }
-
-         ThroughputResult sendRate = (ThroughputResult)measurement.get(0);
-         ThroughputResult receiveRate = (ThroughputResult)measurement.get(1);
-
-         if (sendRate.getJob().getType() == ReceiverJob.TYPE)
-         {
-            ThroughputResult tmp = sendRate;
-            sendRate = receiveRate;
-            receiveRate = tmp;
-         }
-
-         series.add(sendRate.getThroughput(), receiveRate.getThroughput());
-      }
-
-      XYSeriesCollection dataset = new XYSeriesCollection();
-      dataset.addSeries(series);
-
-      JFreeChart chart =
-         ChartFactory.createXYLineChart(testName, "send rate (msg/s)", "receive rate (msg/s)",
-                                        dataset, PlotOrientation.VERTICAL, true, true, false);
-
-      createImage(chart, "image.jpg");
-   }
-
-
-
-
-   // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 
