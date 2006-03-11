@@ -6,7 +6,7 @@
  */
 package org.jboss.jms.perf.framework.data;
 
-import org.jboss.jms.perf.framework.ThroughputResult;
+import org.jboss.jms.perf.framework.remoting.Result;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,15 +56,15 @@ public class Execution implements Serializable
       return measurements.size();
    }
 
-   public void addMeasurement(List throughputResults)
+   public void addMeasurement(List results)
    {
-      measurements.add(throughputResults);
+      measurements.add(results);
    }
 
-   public void addMeasurement(ThroughputResult throughputResult)
+   public void addMeasurement(Result result)
    {
       List l = new ArrayList();
-      l.add(throughputResult);
+      l.add(result);
       measurements.add(l);
    }
 

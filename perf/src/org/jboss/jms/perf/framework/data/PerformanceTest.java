@@ -7,13 +7,11 @@
 package org.jboss.jms.perf.framework.data;
 
 import org.jboss.logging.Logger;
-import org.jboss.jms.perf.framework.Job;
-import org.jboss.jms.perf.framework.ThroughputResult;
-import org.jboss.jms.perf.framework.StoreJobRequest;
-import org.jboss.jms.perf.framework.ExecuteStoredJobRequest;
+import org.jboss.jms.perf.framework.protocol.Job;
 import org.jboss.jms.perf.framework.Runner;
-import org.jboss.jms.perf.framework.BaseJob;
-import org.jboss.jms.perf.framework.Failure;
+import org.jboss.jms.perf.framework.protocol.Failure;
+import org.jboss.jms.perf.framework.remoting.Coordinator;
+import org.jboss.jms.perf.framework.remoting.Result;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,9 +20,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 /**
- * 
- * A PerformanceTest.
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version $Revision$
@@ -133,7 +128,7 @@ public class PerformanceTest implements Serializable, JobList
       return id;
    }
 
-   public void run() throws Exception
+   public void run(Coordinator coordinator) throws Exception
    {
       log.info("");
       log.info("Performance Test \"" + getName() + "\"");
@@ -144,11 +139,10 @@ public class PerformanceTest implements Serializable, JobList
       {
          Execution e = (Execution)ei.next();
 
-         String provider = e.getProviderName();
-         Properties providerJNDIProperties = runner.getConfiguration().getJNDIProperties(provider);
-
          log.info("");
-         log.info("Execution " + executionCounter++ + " (provider " + provider + ")");
+         log.info("Execution " + executionCounter++ + " (provider " + e.getProviderName() + ")");
+
+         prepare(e);
 
          for(Iterator i = jobs.iterator(); i.hasNext(); )
          {
@@ -156,30 +150,19 @@ public class PerformanceTest implements Serializable, JobList
 
             if (o instanceof Job)
             {
-               Job job = (Job)o;
-               configureJob(job, providerJNDIProperties);
-
-               ThroughputResult result = runJob(job);
-
-               log.info(e.size() + " " + result);
-
+               Result result = run(coordinator, (Job)o);
+               log.info(e.size() + ". " + result);
                e.addMeasurement(result);
             }
             else
             {
-               JobList parallelJobs = (JobList)o;
-               configureJobs(parallelJobs, providerJNDIProperties);
+               log.info(e.size() + ". PARALLEL");
 
-               List results = runParallelJobs(parallelJobs);
-
-               log.info(e.size() + " PARALLEL");
-
+               List results = runParallel(coordinator, (JobList)o);
                for(Iterator ri = results.iterator(); ri.hasNext(); )
                {
-                  ThroughputResult r = (ThroughputResult)ri.next();
-                  log.info("    " + r);
+                  log.info("    " + ri.next());
                }
-
                e.addMeasurement(results);
             }
          }
@@ -201,9 +184,7 @@ public class PerformanceTest implements Serializable, JobList
          }
       }
       sb.append(")");
-
       return sb.toString();
-
    }
 
    // Package protected ---------------------------------------------
@@ -212,82 +193,117 @@ public class PerformanceTest implements Serializable, JobList
 
    // Private -------------------------------------------------------
 
-   private void configureJobs(JobList jobList, Properties providerJNDIProperties)
+   /**
+    * Prepares the list of jobs to be ran in a specific execution context.
+    */
+   private void prepare(Execution e)
    {
-      for(Iterator i = jobList.iterator(); i.hasNext(); )
+      String provider = e.getProviderName();
+      Properties providerJNDIProperties = runner.getConfiguration().getJNDIProperties(provider);
+
+      for(Iterator i = jobs.iterator(); i.hasNext(); )
       {
-         Job j = (Job)i.next();
-         configureJob(j, providerJNDIProperties);
+         Object o = i.next();
+         if (o instanceof Job)
+         {
+            ((Job)o).setJNDIProperties(providerJNDIProperties);
+         }
+         else
+         {
+            for(Iterator ji = ((JobList)o).iterator(); ji.hasNext(); )
+            {
+               ((Job)ji.next()).setJNDIProperties(providerJNDIProperties);
+            }
+         }
       }
    }
 
-   private void configureJob(Job job, Properties providerJNDIProperties)
+   private Result run(Coordinator coordinator, Job job)
    {
-      // apply defaults, in case values are not set
-
-      BaseJob baseJob = (BaseJob)job;
-
-      if (baseJob.getDestinationName() == null)
-      {
-         baseJob.setDestinationName(destination);
-      }
-
-      if (baseJob.getConnectionFactoryName() == null)
-      {
-         baseJob.setConnectionFactoryName(connectionFactory);
-      }
-
-      baseJob.setJNDIProperties(providerJNDIProperties);
-   }
-
-   private boolean local = false;
-
-   private ThroughputResult runJob(Job job) throws Exception
-   {
-      ThroughputResult result = null;
-
       try
-      {
-      if (local)
-      {
-         job.initialize();
-         result = job.execute();
-      }
-      else
       {
          String executorURL = job.getExecutorURL();
 
          if (executorURL == null)
          {
-            throw new Exception("At least on executorURL must be configured");
+            throw new Exception("At least on executorURL must be configured on this job");
          }
 
-         if (log.isTraceEnabled()) { log.trace("submitting job " + job + " to " + executorURL); }
-         Runner.sendRequestToExecutor(executorURL, new StoreJobRequest(job));
-
-
-         if (log.isTraceEnabled()) { log.trace("executing job " + job + " on " + executorURL); }
-         result = Runner.sendRequestToExecutor(executorURL, new ExecuteStoredJobRequest(job.getID()));
+         Result result = coordinator.sendToExecutor(executorURL, job);
+         result.setRequest(job);
+         return result;
       }
-      }
-      catch(Exception e)
+      catch(Throwable t)
       {
-         // job failed, record that
-         log.warn("job " + job + " failed: " + e.getMessage());
-         log.debug("job " + job + " failed", e);
-         result = new Failure();
+         log.warn("job " + job + " failed: " + t.getMessage());
+         log.debug("job " + job + " failed", t);
+         return new Failure(job);
       }
-
-      result.setJob(job);
-      return result;
    }
 
-   private List runParallelJobs(JobList parallelJobs) throws Exception
+   private List runParallel(Coordinator coordinator, JobList parallelJobs)
    {
-      return Runner.runParallelJobs(parallelJobs);
+      List jobExecutors = new ArrayList();
 
+      for(Iterator i = parallelJobs.iterator(); i.hasNext(); )
+      {
+         JobExecutor je = new JobExecutor(coordinator, (Job)i.next());
+         jobExecutors.add(je);
+         Thread t = new Thread(je);
+         je.setThread(t);
+         t.start();
+      }
+
+      log.debug("all jobs fired");
+
+      List results = new ArrayList();
+      for(Iterator i = jobExecutors.iterator(); i.hasNext(); )
+      {
+         JobExecutor je = (JobExecutor)i.next();
+         try
+         {
+            je.getThread().join();
+         }
+         catch (InterruptedException e)
+         {}
+         results.add(je.getResult());
+      }
+      return results;
    }
 
    // Inner classes -------------------------------------------------
 
+   private class JobExecutor implements Runnable
+   {
+      private Job job;
+      private Coordinator coordinator;
+      private Result result;
+      private Thread thread;
+
+      JobExecutor(Coordinator coordinator, Job job)
+      {
+         this.coordinator = coordinator;
+         this.job = job;
+      }
+
+      public void run()
+      {
+         result = PerformanceTest.this.run(coordinator, job);
+      }
+
+      private void setThread(Thread thread)
+      {
+         this.thread = thread;
+      }
+
+      private Thread getThread()
+      {
+         return thread;
+      }
+
+      private Result getResult()
+      {
+         return result;
+      }
+   }
 }

@@ -20,6 +20,7 @@
    <!-- overridden to resolve thirdparty & module deps -->
    <dirname property="remote.root" file="${basedir}"/>
    <dirname property="project.root" file="${remote.root}"/>
+   <property environment="ENV"/>
 
    <import file="../../tools/etc/buildmagic/build-common.xml"/>
 
@@ -76,13 +77,13 @@
 
    <target name="init">
       <mkdir dir="${build.classes}"/>
+      <mkdir dir="${module.output}/lib"/>
       <mkdir dir="${module.output}/logs"/>
       <mkdir dir="${module.output}/db"/>
       <mkdir dir="${module.output}/results"/>
    </target>
 
    <target name="compile" depends="init">
-
       <javac destdir="${build.classes}"
          optimize="${javac.optimize}"
          target="${javac.target}"
@@ -98,9 +99,26 @@
          <src path="${module.root}/tests"/>
          <classpath refid="perf.compilation.classpath"/>
       </javac>
+      <rmic base="${build.classes}" includes="**/RMIExecutor.class">
+         <classpath refid="perf.compilation.classpath"/>
+      </rmic>
+
    </target>
 
-   <target name="run" depends="compile">
+   <target name="sar" depends="compile">
+      <mkdir dir="${build.classes}/META-INF"/>
+      <mkdir dir="${build.classes}/xmdesc"/>
+      <copy file="./src/etc/executor-service.xml" tofile="${build.classes}/META-INF/jboss-service.xml"/>
+      <copy file="./src/etc/JBossRemotingExecutor-xmbean.xml" todir="${build.classes}/xmdesc"/>
+      <jar jarfile="${module.output}/lib/remoting-executor.sar"
+           manifest="./src/etc/default.mf">
+         <fileset dir="${build.classes}">
+            <include name="**"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="run" depends="sar">
 
       <!-- <antcall target="start-executors"/> -->
 
@@ -134,41 +152,67 @@
       </java>
    </target>
 
-   <target name="bounce-executors">
-      <antcall target="kill-executors"/>
-      <antcall target="start-executors"/>
-   </target>
+   <target name="start-executors" depends="start-rmi-executors"/>
+   <target name="kill-executors" depends="kill-rmi-executors"/>
 
-
-   <target name="start-executors">
-      <antcall target="start-executor">
+   <target name="start-remoting-executors">
+      <antcall target="start-standalone-remoting-executor">
          <param name="executor.host" value="localhost"/>
          <param name="executor.port" value="1234"/>
       </antcall>
-      <antcall target="start-executor">
+      <antcall target="start-standalone-remoting-executor">
+         <param name="executor.host" value="localhost"/>
+         <param name="executor.port" value="1235"/>
+      </antcall>
+      <!-- no use to deploy colocated executors, they don't work with Remoting anyway -->
+   </target>
+
+   <target name="start-rmi-executors">
+      <antcall target="start-standalone-rmi-executor">
+         <param name="registry.host" value="localhost"/>
+         <param name="registry.port" value="2234"/>
+         <param name="executor.name" value="standalone"/>
+      </antcall>
+      <antcall target="start-standalone-rmi-executor">
+         <param name="registry.host" value="localhost"/>
+         <param name="registry.port" value="2235"/>
+         <param name="executor.name" value="standalone2"/>
+      </antcall>
+      <!-- deploy colocated executors; port values hardcoded for the time being -->
+      <!-- <copy file="${module.output}/lib/rmi-executor.sar" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/> -->
+   </target>
+
+   <target name="kill-remoting-executors">
+      <antcall target="kill-remoting-executor">
+         <param name="executor.host" value="localhost"/>
+         <param name="executor.port" value="1234"/>
+      </antcall>
+      <antcall target="kill-remoting-executor">
          <param name="executor.host" value="localhost"/>
          <param name="executor.port" value="1235"/>
       </antcall>
    </target>
 
-   <target name="kill-executors">
-      <antcall target="kill-executor">
-         <param name="executor.host" value="localhost"/>
-         <param name="executor.port" value="1234"/>
+   <target name="kill-rmi-executors">
+      <antcall target="kill-rmi-executor">
+         <param name="registry.host" value="localhost"/>
+         <param name="registry.port" value="2234"/>
+         <param name="executor.name" value="standalone"/>
       </antcall>
-      <antcall target="kill-executor">
-         <param name="executor.host" value="localhost"/>
-         <param name="executor.port" value="1235"/>
+      <antcall target="kill-rmi-executor">
+         <param name="registry.host" value="localhost"/>
+         <param name="registry.port" value="2235"/>
+         <param name="executor.name" value="standalone2"/>
       </antcall>
    </target>
 
-   <target name="start-executor" description="Start a perf executor">
-      <echo message="Starting executor ${executor.host}:${executor.port}"/>
-      <java classname="org.jboss.jms.perf.framework.Executor" fork="true" spawn="true">
+   <target name="start-standalone-remoting-executor" description="Start a standalone (its own VM) JBoss Remoting executor">
+      <echo message="Starting standalone Remoting executor ${executor.host}:${executor.port}"/>
+      <java classname="org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingExecutor" fork="true" spawn="true">
          <arg value="${executor.port}"/>
          <arg value="${executor.host}"/>
          <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="log.suffix" value="executor-${executor.host}-${executor.port}"/>
+         <sysproperty key="log.suffix" value="remoting-executor-${executor.host}-${executor.port}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
          -->
@@ -176,13 +220,43 @@
       </java>
    </target>
 
-   <target name="kill-executor" description="Kill a perf executor">
-      <echo message="Killing executor ${executor.host}:${executor.port}"/>
-      <java classname="org.jboss.jms.perf.framework.ExecutorKiller" fork="true">
+   <target name="start-standalone-rmi-executor" description="Start a standalone (its own VM) RMI executor">
+      <echo message="Starting standalone RMI executor rmi://${registry.host}:${registry.port}/${executor.name}"/>
+      <java classname="org.jboss.jms.perf.framework.remoting.rmi.RMIExecutor" fork="true" spawn="true">
+         <arg value="${executor.name}"/>
+         <arg value="${registry.port}"/>
+         <arg value="${registry.host}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="log.suffix" value="rmi-executor-${registry.host}-${registry.port}-${executor.name}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
+         -->
+         <classpath refid="perf.execution.classpath"/>
+      </java>
+   </target>
+
+   <target name="kill-remoting-executor" description="Kill a remoting executor (co-located or standalone)">
+      <echo message="Killing remoting executor ${executor.host}:${executor.port}"/>
+      <java classname="org.jboss.jms.perf.framework.remoting.jbossremoting.ExecutorKiller" fork="true">
          <arg value="${executor.port}"/>
          <arg value="${executor.host}"/>
          <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="log.suffix" value="executor-${executor.host}-${executor.port}.death"/>
+         <sysproperty key="log.suffix" value="remoting-executor-${executor.host}-${executor.port}.kill"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
+         -->
+         <classpath refid="perf.execution.classpath"/>
+      </java>
+   </target>
+
+   <target name="kill-rmi-executor" description="Kill a RMI executor (co-located or standalone)">
+      <echo message="Killing RMI executor rmi://${registry.host}:${registry.port}/${executor.name}"/>
+      <java classname="org.jboss.jms.perf.framework.remoting.rmi.ExecutorKiller" fork="true">
+         <arg value="${executor.name}"/>
+         <arg value="${registry.port}"/>
+         <arg value="${registry.host}"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="log.suffix" value="rmi-executor-${registry.host}-${registry.port}-${executor.name}.kill"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
          -->
@@ -198,7 +272,6 @@
       <delete dir="${module.output}/db"/>
       <delete dir="${module.output}/results"/>
    </target>
-
 
    <target name="report" depends="tests, copy-stylesheets, compile-report"/>
 
@@ -291,5 +364,56 @@
    </target>
 
 
+   <!-- TODO Move all the perf related stuff to own build.xml and separate out into sub project -->
+
+   <!-- I collected these taks from the main project's build.xml. They don't really belong there
+        since this is perf framework business and the perf framework is going to be separated in
+        its own project anyway. I preserved them here for future consideration.
+        TODO clean up and place these tasks where they belong
+    -->
+
+   <!--
+   <target name="perf-sar-structure-messaging" depends="compile">
+      <mkdir dir="${build.lib}"/>
+      <mkdir dir="${build.perfsar}/META-INF"/>
+      <mkdir dir="${build.perfsar}/xmdesc"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/PerfRunner-xmbean.xml" tofile="${build.perfsar}/xmdesc/PerfRunner-xmbean.xml"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/jboss-service-jbossmessaging.xml" tofile="${build.perfsar}/META-INF/jboss-service.xml"/>
+      <copy file="${module.source}/../tests/bin/perf-jndi.properties" tofile="${build.perfsar}/perf-jndi.properties"/>
+      <copy file="${module.source}/../tests/bin/jbossmessaging-perf.properties" tofile="${build.perfsar}/perf.properties"/>
+      <copy todir="${build.perfsar}"> <fileset dir="${build.classes}"> <include name="**/jms/perf/**/*.class"/> </fileset> </copy>
+   </target>
+
+   <target name="perf-sar-messaging" depends="perf-sar-structure-messaging">
+      <jar jarfile="${build.lib}/jboss-perf-messaging.sar" manifest="${build.etc}/default.mf">
+          <fileset dir="${build.perfsar}">
+             <include name="**"/>
+          </fileset>
+      </jar>
+   </target>
+
+   <target name="perf-sar-structure-mq" depends="compile">
+      <mkdir dir="${build.lib}"/>
+      <mkdir dir="${build.perfsar}/META-INF"/>
+      <mkdir dir="${build.perfsar}/xmdesc"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/PerfRunner-xmbean.xml" tofile="${build.perfsar}/xmdesc/PerfRunner-xmbean.xml"/>
+      <copy file="${source.java}/org/jboss/jms/perf/framework/jboss-service-jbossmq.xml" tofile="${build.perfsar}/META-INF/jboss-service.xml"/>
+      <copy file="${module.source}/../tests/bin/perf-jndi.properties" tofile="${build.perfsar}/perf-jndi.properties"/>
+      <copy file="${module.source}/../tests/bin/jbossmq-perf.properties" tofile="${build.perfsar}/perf.properties"/>
+      <copy todir="${build.perfsar}">
+         <fileset dir="${build.classes}">
+            <include name="**/jms/perf/**/*.class"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="perf-sar-mq" depends="perf-sar-structure-mq">
+      <jar jarfile="${build.lib}/jboss-perf-mq.sar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.perfsar}">
+            <include name="**"/>
+         </fileset>
+      </jar>
+   </target>
+   -->
 </project>
 

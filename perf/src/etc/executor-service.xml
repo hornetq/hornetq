@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     An JBossRemotingExecutor service deployment descriptor. Used by co-located performance tests.
+     $Id$
+ -->
+
+<server>
+
+   <mbean code="org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingExecutor"
+      name="jboss.messaging.performance:service=RemotingExecutor,port=1236"
+      xmbean-dd="xmdesc/JBossRemotingExecutor-xmbean.xml">
+      <constructor>
+         <arg type="int" value="1236"/>
+         <arg type="java.lang.String" value="localhost"/>
+      </constructor>
+   </mbean>
+
+   <mbean code="org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingExecutor"
+      name="jboss.messaging.performance:service=RemotingExecutor,port=1237"
+      xmbean-dd="xmdesc/JBossRemotingExecutor-xmbean.xml">
+      <constructor>
+         <arg type="int" value="1237"/>
+         <arg type="java.lang.String" value="localhost"/>
+      </constructor>
+   </mbean>
+
+</server>

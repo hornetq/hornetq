@@ -13,7 +13,8 @@
    <connection-factory>/ConnectionFactory</connection-factory>
    <message-size>0</message-size>
    <duration>60000</duration> <!-- safeguard for receive jobs that block waiting -->
-   <executor-url>socket://localhost:1234</executor-url>
+   <!-- <executor-url>socket://localhost:1234</executor-url> -->
+   <executor-url>rmi://localhost:2234/standalone</executor-url>
    <acknowledgment-mode>AUTO_ACKNOWLEDGE</acknowledgment-mode>
 
    <providers>
@@ -34,24 +35,26 @@
       <performance-test name="Throughput O KB Message Non-Persistent Non-Transactional, 1 sender, 1 receiver">
 
          <message-size>0</message-size>
-         <messages>4000</messages>
+         <messages>2000</messages>
 
          <drain/>
 
          <parallel>
-            <send rate="200" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="200" executor-url="rmi://localhost:2234/standalone"/>
+            <receive executor-url="rmi://localhost:2235/standalone2"/>
          </parallel>
 
          <parallel>
-            <send rate="400" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="400" executor-url="rmi://localhost:2234/standalone"/>
+            <receive executor-url="rmi://localhost:2235/standalone2"/>
          </parallel>
 
          <parallel>
-            <send rate="800" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="800" executor-url="rmi://localhost:2234/standalone"/>
+            <receive executor-url="rmi://localhost:2235/standalone2"/>
          </parallel>
+
+         <!--
 
          <parallel>
             <send rate="1000" executor-url="socket://localhost:1234"/>
@@ -82,6 +85,9 @@
             <send rate="4000" executor-url="socket://localhost:1234"/>
             <receive executor-url="socket://localhost:1235"/>
          </parallel>
+
+         -->
+
 
          <execution provider="JBossMessaging"/>
          <!-- <execution provider="JBossMQ"/> -->

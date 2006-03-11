@@ -11,11 +11,12 @@ import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.JobList;
 import org.jboss.jms.perf.framework.data.SimpleJobList;
-import org.jboss.jms.perf.framework.DrainJob;
+import org.jboss.jms.perf.framework.protocol.DrainJob;
 import org.jboss.jms.perf.framework.Runner;
-import org.jboss.jms.perf.framework.SenderJob;
-import org.jboss.jms.perf.framework.ReceiverJob;
-import org.jboss.jms.perf.framework.Job;
+import org.jboss.jms.perf.framework.remoting.Coordinator;
+import org.jboss.jms.perf.framework.protocol.SendJob;
+import org.jboss.jms.perf.framework.protocol.ReceiveJob;
+import org.jboss.jms.perf.framework.protocol.Job;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -44,7 +45,7 @@ public class Configuration
 
    // Static --------------------------------------------------------
 
-   public boolean toBoolean(String os)
+   public static boolean toBoolean(String os)
    {
       if (os == null)
       {
@@ -63,6 +64,22 @@ public class Configuration
       }
 
       throw new IllegalArgumentException("invalid boolean literal: " + os);
+   }
+
+   public static String coordinatorTypeToString(int type)
+   {
+      if (Coordinator.JBOSSREMOTING == type)
+      {
+         return "JBoss Remoting";
+      }
+      else if (Coordinator.RMI == type)
+      {
+         return "RMI";
+      }
+      else
+      {
+         return "UNKNOWN (" + type +")";
+      }
    }
 
    // Attributes ----------------------------------------------------
@@ -473,7 +490,7 @@ public class Configuration
    private void addSenderJob(JobList jl, Node send, JobConfiguration defaultPerTest)
       throws Exception
    {
-      SenderJob sj = new SenderJob();
+      SendJob sj = new SendJob();
       setCommonJobAttributes(sj, send, defaultPerTest);
       jl.addJob(sj);
    }
@@ -481,7 +498,7 @@ public class Configuration
    private void addReceiverJob(JobList jl, Node receive, JobConfiguration defaultPerTest)
       throws Exception
    {
-      ReceiverJob rj = new ReceiverJob();
+      ReceiveJob rj = new ReceiveJob();
       setCommonJobAttributes(rj, receive, defaultPerTest);
       jl.addJob(rj);
    }

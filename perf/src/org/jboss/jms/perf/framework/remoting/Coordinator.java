@@ -4,23 +4,17 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.perf.framework.data;
-
-import org.jboss.jms.perf.framework.protocol.Job;
-
-import java.util.Iterator;
+package org.jboss.jms.perf.framework.remoting;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public interface JobList
+public interface Coordinator
 {
-   void addJob(Job job);
+   int JBOSSREMOTING = 1;
+   int RMI = 2;
 
-   int size();
-
-   Iterator iterator();
-
+   Result sendToExecutor(String executorURL, Request request) throws Throwable;
 }

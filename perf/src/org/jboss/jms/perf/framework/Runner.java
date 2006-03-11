@@ -22,18 +22,17 @@
 package org.jboss.jms.perf.framework;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
 import java.io.File;
 
 import org.jboss.jms.perf.framework.data.PerformanceTest;
-import org.jboss.jms.perf.framework.data.JobList;
 import org.jboss.jms.perf.framework.persistence.HSQLDBPersistenceManager;
 import org.jboss.jms.perf.framework.persistence.PersistenceManager;
 import org.jboss.jms.perf.framework.configuration.Configuration;
+import org.jboss.jms.perf.framework.remoting.Coordinator;
+import org.jboss.jms.perf.framework.remoting.rmi.RMICoordinator;
+import org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingCoordinator;
+import org.jboss.jms.perf.framework.protocol.ResetRequest;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -65,109 +64,12 @@ public class Runner
       }
    }
 
-   public static ThroughputResult sendRequestToExecutor(String executorURL, ServerRequest request)
-      throws PerfException
-   {
-      try
-      {
-         InvokerLocator locator = new InvokerLocator(executorURL);
-         Client client = new Client(locator, "executor");
-         return (ThroughputResult)client.invoke(request);
-      }
-      catch (PerfException e)
-      {
-         throw e;
-      }
-      catch (Throwable t)
-      {
-         throw new PerfException("Failed to invoke", t);
-      }
-   }
-
-   /**
-    * Run the jobs concurrently.
-    * @return a List of ThroughputResults
-    */
-   public static List runParallelJobs(JobList parallelJobs) throws PerfException
-   {
-      List initializers = new ArrayList();
-
-      for(Iterator i = parallelJobs.iterator(); i.hasNext(); )
-      {
-         Job j = (Job)i.next();
-         JobInitializer ji = new JobInitializer(j);
-         initializers.add(ji);
-         Thread t = new Thread(ji);
-         ji.thread = t;
-         t.start();
-      }
-
-      for(Iterator i = initializers.iterator(); i.hasNext(); )
-      {
-         JobInitializer ji = (JobInitializer)i.next();
-         try
-         {
-            ji.thread.join();
-         }
-         catch (InterruptedException e)
-         {}
-
-         if (ji.exception != null)
-         {
-            throw ji.exception;
-         }
-      }
-
-      // now execute them
-
-      List jobExecutors = new ArrayList();
-
-      for(Iterator i = parallelJobs.iterator(); i.hasNext(); )
-      {
-         Job j = (Job)i.next();
-         JobExecutor je = new JobExecutor(j);
-         jobExecutors.add(je);
-         Thread t = new Thread(je);
-         je.thread = t;
-         t.start();
-      }
-
-      for(Iterator i = jobExecutors.iterator(); i.hasNext(); )
-      {
-         JobExecutor je = (JobExecutor)i.next();
-         try
-         {
-            je.thread.join();
-         }
-         catch (InterruptedException e)
-         {}
-
-         if (je.exception != null)
-         {
-            throw je.exception;
-         }
-      }
-
-      List results = new ArrayList();
-
-      for(Iterator i = jobExecutors.iterator(); i.hasNext(); )
-      {
-         JobExecutor ex = (JobExecutor)i.next();
-         ThroughputResult result = ex.result;
-         result.setJob(ex.job);
-         results.add(result);
-      }
-
-      return results;
-   }
-
    // Attributes ----------------------------------------------------
 
    private Configuration configuration;
+   private Coordinator coordinator;
    protected PersistenceManager pm;
    private String action;
-
-   protected static boolean local; // TODO get rid of this
 
    // Constructors --------------------------------------------------
 
@@ -204,6 +106,7 @@ public class Runner
    {
       if ("measure".equals(action))
       {
+         initializeCoordinator();
          checkExecutors();
          measure();
 
@@ -218,12 +121,6 @@ public class Runner
       }
    }
 
-   protected void tearDown() throws PerfException
-   {
-//      sendRequestToExecutor(slaveURL, new KillRequest());
-//      sendRequestToExecutor(slaveURL2, new KillRequest());
-   }
-   
    // Private -------------------------------------------------------
 
    private void init(String[] args) throws Exception
@@ -276,7 +173,7 @@ public class Runner
       for(Iterator i = configuration.getPerformanceTests().iterator(); i.hasNext(); )
       {
          PerformanceTest pt = (PerformanceTest)i.next();
-         pt.run();
+         pt.run(coordinator);
          pm.savePerformanceTest(pt);
       }
    }
@@ -288,6 +185,50 @@ public class Runner
       log.info("charts created");
    }
 
+   /**
+    * Initialize coordinator based on executor addresses I found in the configuration file.
+    */
+   private void initializeCoordinator() throws Exception
+   {
+      int coordinatorType = -1;
+
+      for(Iterator i = configuration.getExecutorURLs().iterator(); i.hasNext(); )
+      {
+         String executorURL = (String)i.next();
+         int type;
+         if (JBossRemotingCoordinator.isValidURL(executorURL))
+         {
+            type = Coordinator.JBOSSREMOTING;
+         }
+         else if (RMICoordinator.isValidURL(executorURL))
+         {
+            type = Coordinator.RMI;
+         }
+         else
+         {
+            throw new Exception("Unknown URL type: " + executorURL);
+         }
+
+         if (coordinatorType != -1 && coordinatorType != type)
+         {
+            throw new Exception("Mixed URL types (" +
+               Configuration.coordinatorTypeToString(coordinatorType) + ", " +
+               Configuration.coordinatorTypeToString(type) + "), use a homogeneous configuration");
+         }
+
+         coordinatorType = type;
+      }
+
+      if (coordinatorType == Coordinator.JBOSSREMOTING)
+      {
+         coordinator = new JBossRemotingCoordinator();
+      }
+      else if (coordinatorType == Coordinator.RMI)
+      {
+         coordinator = new RMICoordinator();
+      }
+   }
+
    private void checkExecutors() throws Exception
    {
       for(Iterator i = configuration.getExecutorURLs().iterator(); i.hasNext(); )
@@ -296,10 +237,11 @@ public class Runner
 
          try
          {
-            Runner.sendRequestToExecutor(executorURL, new ResetRequest());
+            log.debug("resetting " + executorURL);
+            coordinator.sendToExecutor(executorURL, new ResetRequest());
             log.info("executor " + executorURL + " on-line and reset");
          }
-         catch(Exception e)
+         catch(Throwable e)
          {
             log.error("executor " + executorURL + " failed", e);
             throw new Exception("executor check failed");
@@ -314,71 +256,4 @@ public class Runner
 
    // Inner classes -------------------------------------------------
 
-   static class JobInitializer implements Runnable
-   {
-      Job job;
-      Thread thread;
-      PerfException exception;
-
-      JobInitializer(Job job)
-      {
-         this.job = job;
-      }
-      
-      public void run()
-      {
-         try
-         {
-            if (local)
-            {
-               job.initialize();
-            }
-            else
-            {
-               sendRequestToExecutor(job.getExecutorURL(), new StoreJobRequest(job));
-            }
-         }
-         catch (PerfException e)
-         {
-            log.error("Failed to intialize job", e);
-            exception = e;
-         }
-      }
-   }
-
-   static class JobExecutor implements Runnable
-   {
-      Job job;
-      ThroughputResult result;
-      Thread thread;
-      PerfException exception;
-
-      JobExecutor(Job job)
-      {
-         this.job = job;
-      }
-
-      public void run()
-      {
-         try
-         {
-            if (local)
-            {
-               result = job.execute();
-            }
-            else
-            {
-               result =
-                  sendRequestToExecutor(job.getExecutorURL(), new ExecuteStoredJobRequest(job.getID()));
-            }
-         }
-         catch (Exception e)
-         {
-            // job failed, record that
-            log.warn("job " + job + " failed: " + e.getMessage());
-            log.debug("job " + job + " failed", e);
-            result = new Failure();
-         }
-      }
-   }
 }

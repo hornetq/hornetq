@@ -34,6 +34,11 @@ import java.util.StringTokenizer;
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.persistence.PersistenceManager;
+import org.jboss.jms.perf.framework.protocol.Failure;
+import org.jboss.jms.perf.framework.protocol.ReceiveJob;
+import org.jboss.jms.perf.framework.protocol.ThroughputResult;
+import org.jboss.jms.perf.framework.protocol.Job;
+import org.jboss.jms.perf.framework.remoting.Result;
 import org.jboss.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -175,8 +180,8 @@ class Charter
             continue;
          }
 
-         ThroughputResult sendRate = (ThroughputResult)measurement.get(0);
-         ThroughputResult receiveRate = (ThroughputResult)measurement.get(1);
+         Result sendRate = (Result)measurement.get(0);
+         Result receiveRate = (Result)measurement.get(1);
 
          if (sendRate instanceof Failure || receiveRate instanceof Failure)
          {
@@ -184,14 +189,15 @@ class Charter
             continue;
          }
 
-         if (sendRate.getJob().getType() == ReceiverJob.TYPE)
+         if (((Job)sendRate.getRequest()).getType() == ReceiveJob.TYPE)
          {
-            ThroughputResult tmp = sendRate;
+            Result tmp = sendRate;
             sendRate = receiveRate;
             receiveRate = tmp;
          }
 
-         series.add(sendRate.getThroughput(), receiveRate.getThroughput());
+         series.add(((ThroughputResult)sendRate).getThroughput(),
+                    ((ThroughputResult)receiveRate).getThroughput());
       }
 
       dataset.addSeries(series);

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+<mbean>
+
+   <description>A co-located executor. Essential for Messaging IN-VM performance tests.</description>
+   <class>org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingExecutor</class>
+
+   <!-- Managed constructors -->
+
+   <constructor>
+      <name>JBossRemotingExecutor</name>
+      <parameter>
+         <name>port</name>
+         <type>int</type>
+      </parameter>
+   </constructor>
+
+   <constructor>
+      <name>JBossRemotingExecutor</name>
+      <parameter>
+         <name>port</name>
+         <type>int</type>
+      </parameter>
+      <parameter>
+         <name>address</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </constructor>
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getPort">
+      <description>The port the associated Connector is listening on</description>
+      <name>Port</name>
+      <type>int</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getAddress">
+      <description>The address the associated Connector is bound on</description>
+      <name>Address</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getLocatorURI">
+      <description>The full locator URI of the associated Connector</description>
+      <name>LocatorURI</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+</mbean>

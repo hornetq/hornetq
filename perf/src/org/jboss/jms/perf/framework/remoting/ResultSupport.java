@@ -4,20 +4,14 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.perf.framework.data;
-
-import org.jboss.jms.perf.framework.protocol.Job;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+package org.jboss.jms.perf.framework.remoting;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class SimpleJobList implements JobList
+public class ResultSupport implements Result
 {
    // Constants -----------------------------------------------------
 
@@ -25,30 +19,29 @@ public class SimpleJobList implements JobList
 
    // Attributes ----------------------------------------------------
 
-   private List jobs;
+   protected Request request;
 
    // Constructors --------------------------------------------------
 
-   public SimpleJobList()
+   public ResultSupport()
    {
-      jobs = new ArrayList();
    }
 
-   // JobList implementation ----------------------------------------
-
-   public void addJob(Job job)
+   public ResultSupport(Request request)
    {
-      jobs.add(job);
+      this.request = request;
    }
 
-   public int size()
+   // Result support ------------------------------------------------
+
+   public Request getRequest()
    {
-      return jobs.size();
+      return request;
    }
 
-   public Iterator iterator()
+   public void setRequest(Request request)
    {
-      return jobs.iterator();
+      this.request = request;
    }
 
    // Public --------------------------------------------------------
@@ -60,4 +53,5 @@ public class SimpleJobList implements JobList
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 }

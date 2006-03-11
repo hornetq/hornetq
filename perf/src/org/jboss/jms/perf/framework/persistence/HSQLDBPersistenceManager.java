@@ -21,10 +21,11 @@ import java.util.Collections;
 
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.PerformanceTest;
-import org.jboss.jms.perf.framework.ThroughputResult;
-import org.jboss.jms.perf.framework.Job;
-import org.jboss.jms.perf.framework.BaseJob;
-import org.jboss.jms.perf.framework.Failure;
+import org.jboss.jms.perf.framework.protocol.ThroughputResult;
+import org.jboss.jms.perf.framework.protocol.Job;
+import org.jboss.jms.perf.framework.protocol.Failure;
+import org.jboss.jms.perf.framework.protocol.JobSupport;
+import org.jboss.jms.perf.framework.remoting.Result;
 import org.jboss.logging.Logger;
 
 /**
@@ -165,8 +166,8 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             {
                for(Iterator m = ((List)j.next()).iterator(); m.hasNext(); )
                {
-                  ThroughputResult r = (ThroughputResult)m.next();
-                  Job job = r.getJob();
+                  Result r = (Result)m.next();
+                  Job job = (Job)r.getRequest();
                   ps = conn.prepareStatement("INSERT INTO MEASUREMENT (EXECUTION_ID, MEASUREMENT_INDEX, JOB_TYPE, MESSAGE_COUNT, MESSAGE_SIZE, DURATION, RATE, MEASURED_DURATION, MEASURED_MESSAGE_COUNT) VALUES (?,?,?,?,?,?,?,?,?)");
                   ps.setLong(1, executionId);
                   ps.setInt(2, index);
@@ -175,8 +176,16 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                   ps.setInt(5, job.getMessageSize());
                   ps.setLong(6, job.getDuration());
                   ps.setInt(7, job.getRate());
-                  ps.setLong(8, r.getTime());
-                  ps.setLong(9, r.getMessages());
+                  if (r instanceof ThroughputResult)
+                  {
+                     ps.setLong(8, ((ThroughputResult)r).getTime());
+                     ps.setLong(9, ((ThroughputResult)r).getMessages());
+                  }
+                  else
+                  {
+                     ps.setLong(8, Long.MAX_VALUE);
+                     ps.setLong(9, 0);
+                  }
                   ps.executeUpdate();
                   ps.close();
                }
@@ -287,13 +296,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                long measuredDuration = rs2.getLong(7);
                long measuredMessageCount = rs2.getLong(8);
 
-               Job j = BaseJob.create(jobType);
+               Job j = JobSupport.create(jobType);
                j.setMessageCount(messageCount);
                j.setMessageSize(messageSize);
                j.setDuration(duration);
                j.setRate(rate);
 
-               ThroughputResult r = null;
+               Result r = null;
                if (measuredDuration == Long.MAX_VALUE && measuredMessageCount == 0)
                {
                   r = new Failure();
@@ -302,7 +311,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
                {
                   r = new ThroughputResult(measuredDuration, measuredMessageCount);
                }
-               r.setJob(j);
+               r.setRequest(j);
                l.add(r);
             }
 

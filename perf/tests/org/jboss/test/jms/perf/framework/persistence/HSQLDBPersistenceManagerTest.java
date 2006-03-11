@@ -11,13 +11,14 @@ import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.persistence.HSQLDBPersistenceManager;
 import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.data.Execution;
-import org.jboss.jms.perf.framework.Job;
-import org.jboss.jms.perf.framework.ThroughputResult;
-import org.jboss.jms.perf.framework.SenderJob;
-import org.jboss.jms.perf.framework.DrainJob;
-import org.jboss.jms.perf.framework.ReceiverJob;
-import org.jboss.jms.perf.framework.FillJob;
-import org.jboss.jms.perf.framework.Failure;
+import org.jboss.jms.perf.framework.protocol.Job;
+import org.jboss.jms.perf.framework.protocol.ThroughputResult;
+import org.jboss.jms.perf.framework.protocol.SendJob;
+import org.jboss.jms.perf.framework.protocol.DrainJob;
+import org.jboss.jms.perf.framework.protocol.ReceiveJob;
+import org.jboss.jms.perf.framework.protocol.FillJob;
+import org.jboss.jms.perf.framework.protocol.Failure;
+import org.jboss.jms.perf.framework.remoting.Result;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -81,43 +82,43 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       ThroughputResult r = null;
       List l = null;
 
-      j = new SenderJob();
+      j = new SendJob();
       j.setMessageCount(1);
       j.setMessageSize(2);
       j.setDuration(3);
       j.setRate(4);
       r = new ThroughputResult(5, 6);
-      r.setJob(j);
+      r.setRequest(j);
 
       e.addMeasurement(r);
 
       l = new ArrayList();
 
-      j = new SenderJob();
+      j = new SendJob();
       j.setMessageCount(7);
       j.setMessageSize(8);
       j.setDuration(9);
       j.setRate(10);
       r = new ThroughputResult(11, 12);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
-      j = new SenderJob();
+      j = new SendJob();
       j.setMessageCount(13);
       j.setMessageSize(14);
       j.setDuration(15);
       j.setRate(16);
       r = new ThroughputResult(17, 18);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
-      j = new SenderJob();
+      j = new SendJob();
       j.setMessageCount(19);
       j.setMessageSize(20);
       j.setDuration(21);
       j.setRate(22);
       r = new ThroughputResult(23, 24);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
       e.addMeasurement(l);
@@ -128,7 +129,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       j.setDuration(27);
       j.setRate(28);
       r = new ThroughputResult(29, 30);
-      r.setJob(j);
+      r.setRequest(j);
 
       e.addMeasurement(r);
 
@@ -142,22 +143,22 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
       l = new ArrayList();
 
-      j = new ReceiverJob();
+      j = new ReceiveJob();
       j.setMessageCount(31);
       j.setMessageSize(32);
       j.setDuration(33);
       j.setRate(34);
       r = new ThroughputResult(35, 36);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
-      j = new SenderJob();
+      j = new SendJob();
       j.setMessageCount(37);
       j.setMessageSize(38);
       j.setDuration(39);
       j.setRate(40);
       r = new ThroughputResult(41, 42);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
       j = new DrainJob();
@@ -166,7 +167,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       j.setDuration(45);
       j.setRate(46);
       r = new ThroughputResult(47, 48);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
       j = new FillJob();
@@ -175,28 +176,28 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       j.setDuration(51);
       j.setRate(52);
       r = new ThroughputResult(53, 54);
-      r.setJob(j);
+      r.setRequest(j);
       l.add(r);
 
       e.addMeasurement(l);
 
-      j = new ReceiverJob();
+      j = new ReceiveJob();
       j.setMessageCount(55);
       j.setMessageSize(56);
       j.setDuration(57);
       j.setRate(58);
       r = new ThroughputResult(59, 60);
-      r.setJob(j);
+      r.setRequest(j);
 
       e.addMeasurement(r);
 
-      j = new SenderJob();
+      j = new SendJob();
       j.setMessageCount(61);
       j.setMessageSize(62);
       j.setDuration(63);
       j.setRate(64);
       r = new ThroughputResult(65, 66);
-      r.setJob(j);
+      r.setRequest(j);
 
       e.addMeasurement(r);
 
@@ -207,7 +208,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       j.setDuration(69);
       j.setRate(70);
       r = new ThroughputResult(71, 72);
-      r.setJob(j);
+      r.setRequest(j);
 
       e.addMeasurement(r);
 
@@ -217,7 +218,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       j.setDuration(75);
       j.setRate(76);
       r = new ThroughputResult(77, 78);
-      r.setJob(j);
+      r.setRequest(j);
 
       e.addMeasurement(r);
 
@@ -253,15 +254,15 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       Iterator measurments = execution.iterator();
 
       List list = (List)measurments.next();
-      assertContains(list, SenderJob.TYPE, 1, 2, 3, 4, 5, 6);
+      assertContains(list, SendJob.TYPE, 1, 2, 3, 4, 5, 6);
       assertEquals(0, list.size());
 
 
       list = (List)measurments.next();
       assertEquals(3, list.size());
-      assertContains(list, SenderJob.TYPE, 7, 8, 9, 10, 11, 12);
-      assertContains(list, SenderJob.TYPE, 13, 14, 15, 16, 17, 18);
-      assertContains(list, SenderJob.TYPE, 19, 20, 21, 22, 23, 24);
+      assertContains(list, SendJob.TYPE, 7, 8, 9, 10, 11, 12);
+      assertContains(list, SendJob.TYPE, 13, 14, 15, 16, 17, 18);
+      assertContains(list, SendJob.TYPE, 19, 20, 21, 22, 23, 24);
       assertEquals(0, list.size());
 
       list = (List)measurments.next();
@@ -301,20 +302,20 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
       list = (List)measurments.next();
       assertEquals(4, list.size());
-      assertContains(list, ReceiverJob.TYPE, 31, 32, 33, 34, 35, 36);
-      assertContains(list, SenderJob.TYPE, 37, 38, 39, 40, 41, 42);
+      assertContains(list, ReceiveJob.TYPE, 31, 32, 33, 34, 35, 36);
+      assertContains(list, SendJob.TYPE, 37, 38, 39, 40, 41, 42);
       assertContains(list, DrainJob.TYPE, 43, 44, 45, 46, 47, 48);
       assertContains(list, FillJob.TYPE, 49, 50, 51, 52, 53, 54);
       assertEquals(0, list.size());
 
       list = (List)measurments.next();
       assertEquals(1, list.size());
-      assertContains(list, ReceiverJob.TYPE, 55, 56, 57, 58, 59, 60);
+      assertContains(list, ReceiveJob.TYPE, 55, 56, 57, 58, 59, 60);
       assertEquals(0, list.size());
 
       list = (List)measurments.next();
       assertEquals(1, list.size());
-      assertContains(list, SenderJob.TYPE, 61, 62, 63, 64, 65, 66);
+      assertContains(list, SendJob.TYPE, 61, 62, 63, 64, 65, 66);
       assertEquals(0, list.size());
 
       list = (List)measurments.next();
@@ -337,9 +338,9 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       Execution e = new Execution("someexecution");
       t.addExecution(e);
 
-      Job j = new SenderJob();
-      ThroughputResult r = new Failure();
-      r.setJob(j);
+      Job j = new SendJob();
+      Result r = new Failure();
+      r.setRequest(j);
       e.addMeasurement(r);
 
       pm.savePerformanceTest(t);
@@ -355,7 +356,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       List list = (List)measurments.next();
       assertEquals(1, list.size());
       Failure f = (Failure)list.get(0);
-      assertEquals(SenderJob.TYPE, f.getJob().getType());
+      assertEquals(SendJob.TYPE, ((Job)f.getRequest()).getType());
 
       assertFalse(measurments.hasNext());
    }
@@ -394,7 +395,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       for(Iterator i = list.iterator(); i.hasNext(); )
       {
          ThroughputResult tr = (ThroughputResult)i.next();
-         Job job = tr.getJob();
+         Job job = (Job)tr.getRequest();
 
          if (jobType.equals(job.getType()) &&
             messageCount == job.getMessageCount() &&

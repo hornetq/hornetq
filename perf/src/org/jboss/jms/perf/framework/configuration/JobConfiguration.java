@@ -8,7 +8,7 @@ package org.jboss.jms.perf.framework.configuration;
 
 import org.w3c.dom.Node;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.perf.framework.Job;
+import org.jboss.jms.perf.framework.protocol.Job;
 
 import javax.jms.Session;
 
