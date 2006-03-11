@@ -80,6 +80,9 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    {
       super.tearDown();
    }
+
+   // TODO - why are these commented out?
+
 //
 //   public void testDeployDestinationAdministratively() throws Exception
 //   {

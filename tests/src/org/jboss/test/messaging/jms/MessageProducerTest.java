@@ -30,13 +30,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
-import javax.jms.InvalidDestinationException;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.destination.JBossTopic;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -341,7 +339,9 @@ public class MessageProducerTest extends MessagingTestCase
    }
    
    //Is this test valid?
-   //How can we check if the destination is valid if it is created on the client side only??      
+   //How can we check if the destination is valid if it is created on the client side only??
+
+   // TODO - verify what spec says about this and enable/delete the test accordingly
 
 //   public void testCreateProducerOnInexistentDestination() throws Exception
 //   {
