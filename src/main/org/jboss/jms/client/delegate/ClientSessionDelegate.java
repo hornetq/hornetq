@@ -36,6 +36,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.BytesMessageProxy;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MapMessageProxy;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.ObjectMessageProxy;
@@ -372,6 +373,15 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * server-side endpoint.
     */
    public void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons)
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void send(JBossMessage m)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

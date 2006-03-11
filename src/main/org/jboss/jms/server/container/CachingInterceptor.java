@@ -27,7 +27,6 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -75,27 +74,29 @@ public class CachingInterceptor implements Interceptor
          MethodInvocation mi = (MethodInvocation)invocation;
          Object[] args = mi.getArguments();
 
-         if (args != null)
-         {
-            for(int i = 0; i < args.length; i++)
-            {
-               if (args[i] instanceof Message)
-               {
-                  JBossMessage m = (JBossMessage)args[i];
-
-                  long id = m.getMessage().getMessageID();
-                  if (trace) log.trace("caching message " + id);
-
-                  ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();
-                  MessageStore ms = spd.getServerPeer().getMessageStoreDelegate();
-
-                  MessageReference r = ms.reference((org.jboss.messaging.core.Message)m);
-
-                  // replace the message with its reference
-                  args[i] = r;
-               }
-            }
-         }
+         //Does this interceptor serve any purpose??
+         
+//         if (args != null)
+//         {
+//            for(int i = 0; i < args.length; i++)
+//            {
+//               if (args[i] instanceof Message)
+//               {
+//                  JBossMessage m = (JBossMessage)args[i];
+//
+//                  long id = m.getMessage().getMessageID();
+//                  if (trace) log.trace("caching message " + id);
+//
+//                  ServerProducerEndpoint spd = (ServerProducerEndpoint)invocation.getTargetObject();
+//                  MessageStore ms = spd.getServerPeer().getMessageStoreDelegate();
+//
+//                  MessageReference r = ms.reference((org.jboss.messaging.core.Message)m);
+//
+//                  // replace the message with its reference
+//                  args[i] = r;
+//               }
+//            }
+//         }
       }
 
       return invocation.invokeNext();

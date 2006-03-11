@@ -33,6 +33,7 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.remoting.Client;
 
@@ -148,7 +149,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.

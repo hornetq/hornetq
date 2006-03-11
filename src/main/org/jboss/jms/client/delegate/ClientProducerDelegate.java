@@ -24,7 +24,6 @@ package org.jboss.jms.client.delegate;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
@@ -52,14 +51,11 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    // Constructors --------------------------------------------------
 
-   public ClientProducerDelegate(int objectID)
+   public ClientProducerDelegate()
    {
-      super(objectID);
+      super(-1);
    }
    
-   public ClientProducerDelegate()
-   {      
-   }
 
    // ProducerDelegate implementation -------------------------------
 
@@ -219,9 +215,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
    
    protected Client getClient()
    {
-      // Use the Client in the Connection's state
-      return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getInvokingClient();
+      throw new UnsupportedOperationException("Producers only exist on the client");
    }
 
    // Package Private -----------------------------------------------

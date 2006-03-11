@@ -162,7 +162,9 @@ public class SecurityTest extends MessagingTestCase
       boolean namedSucceeded = true;
       try
       {
-         sess.createProducer(dest);         
+         MessageProducer prod = sess.createProducer(dest);         
+         Message m = sess.createTextMessage("Kippers");
+         prod.send(m);
       }
       catch (JMSSecurityException e)
       {

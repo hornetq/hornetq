@@ -27,9 +27,7 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -38,7 +36,6 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
@@ -106,15 +103,13 @@ public class WireFormatTest extends TestCase
       
       wf = new TestWireFormat();
       
-      Class producerDelegate = ProducerDelegate.class;
-      
       Class sessionDelegate = SessionDelegate.class;
       
       Class consumerDelegate = ConsumerDelegate.class;
       
       Class connectionDelegate = ConnectionDelegate.class;
       
-      sendMethod = producerDelegate.getMethod("send", new Class[] { JBossMessage.class });
+      sendMethod = sessionDelegate.getMethod("send", new Class[] { JBossMessage.class });
       
       acknowledgeMethod = sessionDelegate.getMethod("acknowledge", null);
       

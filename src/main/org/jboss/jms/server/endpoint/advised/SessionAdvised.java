@@ -25,10 +25,10 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
@@ -69,12 +69,12 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       endpoint.closing();
    }
-
-   public ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException
+   
+   public void send(JBossMessage msg) throws JMSException
    {
-      return endpoint.createProducerDelegate(destination);
+      endpoint.send(msg);
    }
-
+   
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer) throws JMSException

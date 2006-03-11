@@ -27,6 +27,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.BytesMessageProxy;
 import org.jboss.jms.message.MapMessageProxy;
 import org.jboss.jms.message.MessageProxy;
@@ -86,5 +87,8 @@ public interface SessionDelegate extends SessionEndpoint
    void rollback() throws JMSException;
    
    void recover() throws JMSException;
+   
+   ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
+
 
 }

@@ -32,17 +32,15 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
-import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
-import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.logging.Logger;
@@ -79,8 +77,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private boolean closed;
 
-   private Map producers;
-   
    private Map consumers;
    
    private Map browsers;
@@ -108,44 +104,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       pm = sp.getPersistenceManagerDelegate();
       ms = sp.getMessageStoreDelegate();
 
-      producers = new HashMap();
       consumers = new HashMap();
 		browsers = new HashMap();
    }
 
    // SessionDelegate implementation --------------------------------
-
-   public ProducerDelegate createProducerDelegate(JBossDestination jmsDestination) throws JMSException
-   {
-      if (closed)
-      {
-         throw new IllegalStateException("Session is closed");
-      }
-      
-      if (jmsDestination != null)
-      {
-         if (cm.getCoreDestination(jmsDestination) == null)
-         {
-            throw new InvalidDestinationException("No such destination: " + jmsDestination);
-         }
-      }
-     
-      int producerID = connectionEndpoint.getServerPeer().getNextObjectID();
-      
-      // create the corresponding server-side producer endpoint and register it with this
-      // session endpoint instance
-      ServerProducerEndpoint ep = new ServerProducerEndpoint(producerID, jmsDestination, this);
-      
-      putProducerDelegate(producerID, ep);
-      ProducerAdvised producerAdvised = new ProducerAdvised(ep);
-      JMSDispatcher.instance.registerTarget(new Integer(producerID), producerAdvised);
-         
-      ClientProducerDelegate d = new ClientProducerDelegate(producerID);
-      
-      log.debug("created and registered " + ep);
-
-      return d;
-   }
 
 	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selector,
@@ -387,14 +350,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       for(Iterator i = consumerSet.iterator(); i.hasNext(); )
       {
          ((ServerConsumerEndpoint)i.next()).remove();
-      }
-      
-      HashSet producerSet = new HashSet(producers.values());
-      
-      for(Iterator i = producerSet.iterator(); i.hasNext(); )
-      {
-         ((ServerProducerEndpoint)i.next()).close();
-      }
+      }           
       
       connectionEndpoint.removeSessionDelegate(sessionID);
       
@@ -409,6 +365,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       //Currently does nothing
    }
+   
+   public void send(JBossMessage message) throws JMSException
+   {
+      connectionEndpoint.sendMessage(message, null);
+   }
+   
    
    /**
     * Cancel all the deliveries in the session
@@ -555,21 +517,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
-   protected ServerProducerEndpoint putProducerDelegate(int producerID, ServerProducerEndpoint d)
-   {
-      return (ServerProducerEndpoint)producers.put(new Integer(producerID), d);
-   }
-
-   protected ServerProducerEndpoint getProducerDelegate(int producerID)
-   {
-      return (ServerProducerEndpoint)producers.get(new Integer(producerID));
-   }
-   
-   protected ServerProducerEndpoint removeProducerDelegate(int producerID)
-   {
-      return (ServerProducerEndpoint)producers.remove(new Integer(producerID));
-   }
    
    protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint d)
    {

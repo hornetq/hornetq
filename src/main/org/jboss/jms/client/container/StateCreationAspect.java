@@ -28,6 +28,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.BrowserState;
 import org.jboss.jms.client.state.ConnectionState;
@@ -144,12 +145,11 @@ public class StateCreationAspect
    
    public Object handleCreateProducerDelegate(Invocation invocation) throws Throwable
    {
-      ProducerDelegate prod = (ProducerDelegate)invocation.invokeNext();
+      //ProducerDelegates are not created on the server
+      ProducerDelegate prod = new ClientProducerDelegate();
       
       DelegateSupport delegate = (DelegateSupport)prod;
-      
-      delegate.init();
-      
+            
       SessionState sessState = (SessionState)getState(invocation);
       
       MethodInvocation mi = (MethodInvocation)invocation;

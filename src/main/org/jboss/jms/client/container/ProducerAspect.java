@@ -29,18 +29,18 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ProducerState;
-import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
-import org.jboss.util.id.GUID;
 
 /**
  * 
  * Handles sending of messages plus handles get and set methods for Producer - 
  * returning state from local cache
  * 
- * This aspect is PER_VM.
+ * This aspect is PER_INSTANCE.
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -56,6 +56,12 @@ public class ProducerAspect
    // Attributes ----------------------------------------------------     
    
    private boolean trace = log.isTraceEnabled();
+   
+   protected ProducerState producerState;
+   
+   protected ConnectionState connectionState;
+   
+   protected SessionState sessionState;
    
    // Static --------------------------------------------------------      
    
@@ -77,10 +83,7 @@ public class ProducerAspect
 
       // configure the message for sending, using attributes stored as metadata
 
-      String messageID = generateMessageID();
-      m.setJMSMessageID(messageID);
-      
-      ProducerState theState = getState(mi);
+      ProducerState theState = getProducerState(mi);
 
       if (deliveryMode == -1)
       {
@@ -176,15 +179,17 @@ public class ProducerAspect
       
       //Set the id
       
-      ConnectionState cState = (ConnectionState)theState.getParent().getParent();
+      ConnectionState cState = getConnectionState(invocation);
+      
       long id = cState.getIdGenerator().getId();
       
       toSend.setJMSMessageID(null);
       toSend.setMessageId(id);
+      
+      SessionState sState = getSessionState(invocation);
               
-      // We now invoke the send(Message) method - we don't want to pass the rest of the arguments
-      // across the wire
-      ((ProducerDelegate)invocation.getTargetObject()).send(toSend);
+      // We now invoke the send(Message) method on the connection
+      ((SessionDelegate)sState.getDelegate()).send(toSend);
       
       return null;
    }
@@ -193,83 +198,93 @@ public class ProducerAspect
    { 
       Object[] args = ((MethodInvocation)invocation).getArguments();
       
-      getState(invocation).setDisableMessageID(((Boolean)args[0]).booleanValue());   
+      getProducerState(invocation).setDisableMessageID(((Boolean)args[0]).booleanValue());   
       
       return null;
    }
    
    public Object handleGetDisableMessageID(Invocation invocation) throws Throwable
    {
-      return getState(invocation).isDisableMessageID() ? Boolean.TRUE : Boolean.FALSE;
+      return getProducerState(invocation).isDisableMessageID() ? Boolean.TRUE : Boolean.FALSE;
    }
    
    public Object handleSetDisableMessageTimestamp(Invocation invocation) throws Throwable
    {
       Object[] args = ((MethodInvocation)invocation).getArguments();
       
-      getState(invocation).setDisableMessageTimestamp(((Boolean)args[0]).booleanValue());   
+      getProducerState(invocation).setDisableMessageTimestamp(((Boolean)args[0]).booleanValue());   
       
       return null;
    }
    
    public Object handleGetDisableMessageTimestamp(Invocation invocation) throws Throwable
    {
-      return getState(invocation).isDisableMessageTimestamp() ? Boolean.TRUE : Boolean.FALSE;   
+      return getProducerState(invocation).isDisableMessageTimestamp() ? Boolean.TRUE : Boolean.FALSE;   
    }
    
    public Object handleSetDeliveryMode(Invocation invocation) throws Throwable
    { 
       Object[] args = ((MethodInvocation)invocation).getArguments();
       
-      getState(invocation).setDeliveryMode(((Integer)args[0]).intValue());          
+      getProducerState(invocation).setDeliveryMode(((Integer)args[0]).intValue());          
       
       return null;
    }
    
    public Object handleGetDeliveryMode(Invocation invocation) throws Throwable
    { 
-      return new Integer(getState(invocation).getDeliveryMode());  
+      return new Integer(getProducerState(invocation).getDeliveryMode());  
    }
    
    public Object handleSetPriority(Invocation invocation) throws Throwable
    { 
       Object[] args = ((MethodInvocation)invocation).getArguments();
       
-      getState(invocation).setPriority(((Integer)args[0]).intValue());      
+      getProducerState(invocation).setPriority(((Integer)args[0]).intValue());      
       
       return null;
    }
    
    public Object handleGetPriority(Invocation invocation) throws Throwable
    { 
-      return new Integer(getState(invocation).getPriority());  
+      return new Integer(getProducerState(invocation).getPriority());  
    }
    
    public Object handleSetTimeToLive(Invocation invocation) throws Throwable
    {
       Object[] args = ((MethodInvocation)invocation).getArguments();
       
-      getState(invocation).setTimeToLive(((Long)args[0]).longValue());         
+      getProducerState(invocation).setTimeToLive(((Long)args[0]).longValue());         
       
       return null;
    }
    
    public Object handleGetTimeToLive(Invocation invocation) throws Throwable
    {
-      return new Long(getState(invocation).getTimeToLive()); 
+      return new Long(getProducerState(invocation).getTimeToLive()); 
    }
    
    public Object handleGetDestination(Invocation invocation) throws Throwable
    {
-      return getState(invocation).getDestination();
+      return getProducerState(invocation).getDestination();
    }
    
    public Object handleSetDestination(Invocation invocation) throws Throwable
    {
       Object[] args = ((MethodInvocation)invocation).getArguments();
       
-      getState(invocation).setDestination((Destination)args[0]);
+      getProducerState(invocation).setDestination((Destination)args[0]);
       
+      return null;
+   }
+   
+   public Object handleClosing(Invocation invocation) throws Throwable
+   {
+      return null;
+   }
+   
+   public Object handleClose(Invocation invocation) throws Throwable
+   {
       return null;
    }
    
@@ -281,18 +296,33 @@ public class ProducerAspect
 
    // Private -------------------------------------------------------
    
-   private String generateMessageID()
+   private ProducerState getProducerState(Invocation inv)
    {
-      StringBuffer sb = new StringBuffer("ID:");
-      
-      sb.append(new GUID().toString());
-      
-      return sb.toString();
+      if (producerState == null)
+      {
+         producerState = (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
+      }
+      return producerState;
    }
    
-   private ProducerState getState(Invocation inv)
+   private ConnectionState getConnectionState(Invocation inv)
    {
-      return (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
+      if (connectionState == null)
+      {
+         connectionState = 
+            (ConnectionState)((DelegateSupport)inv.getTargetObject()).getState().getParent().getParent();
+      }
+      return connectionState;
+   }
+   
+   private SessionState getSessionState(Invocation inv)
+   {
+      if (sessionState == null)
+      {
+         sessionState = 
+            (SessionState)((DelegateSupport)inv.getTargetObject()).getState().getParent();
+      }
+      return sessionState;
    }
    
    // Inner Classes -------------------------------------------------

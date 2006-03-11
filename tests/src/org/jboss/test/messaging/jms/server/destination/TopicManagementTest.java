@@ -291,68 +291,68 @@ public class TopicManagementTest extends DestinationManagementTestBase
     * Test removeAllMessages().
     * @throws Exception
     */
-   public void testRemoveAllMessages() throws Exception
-   {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
-      ServerManagement.deployTopic("TopicRemoveAllMessages");
-      Topic topic = (Topic)ic.lookup("/topic/TopicRemoveAllMessages");
-
-      TopicConnection conn = cf.createTopicConnection();
-
-      conn.setClientID("Client1");
-
-      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      // Create 1 durable subscription and 1 non-durable subscription
-      TopicSubscriber tsDurable = s.createDurableSubscriber(topic, "Durable1");
-      TopicSubscriber tsNonDurable = s.createSubscriber(topic);
-      
-      // Send 1 message
-      prod.send(s.createTextMessage("First one"));
-      
-      // Start the connection for delivery
-      conn.start();
-
-      // Remove all messages from the topic
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicRemoveAllMessages");
-      ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
-
-      // Try to receive messages from the two subscriptions, should be null
-      assertNull(tsDurable.receiveNoWait());
-      assertNull(tsNonDurable.receiveNoWait());
-      
-      // Now close the connection
-      conn.close();
-      
-      // Connect again to the same topic
-      conn = cf.createTopicConnection();
-      conn.setClientID("Client1");
-      s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      // Send another message
-      prod.send(s.createTextMessage("Second one"));
-      
-      // Start the connection for delivery
-      conn.start();
-      
-      // Remove all messages from the topic
-      ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
-
-      // Restore the durable subscription now, the message should be already gone
-      tsDurable = s.createDurableSubscriber(topic, "Durable1");
-      assertNull(tsDurable.receiveNoWait());
-      
-      // Clean-up
-      conn.close();
-      ServerManagement.undeployTopic("TopicRemoveAllMessages");
-   }
+//   public void testRemoveAllMessages() throws Exception
+//   {
+//      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+//      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+// 
+//      ServerManagement.deployTopic("TopicRemoveAllMessages");
+//      Topic topic = (Topic)ic.lookup("/topic/TopicRemoveAllMessages");
+//
+//      TopicConnection conn = cf.createTopicConnection();
+//
+//      conn.setClientID("Client1");
+//
+//      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+//      MessageProducer prod = s.createProducer(topic);
+//      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+//
+//      // Create 1 durable subscription and 1 non-durable subscription
+//      TopicSubscriber tsDurable = s.createDurableSubscriber(topic, "Durable1");
+//      TopicSubscriber tsNonDurable = s.createSubscriber(topic);
+//      
+//      // Send 1 message
+//      prod.send(s.createTextMessage("First one"));
+//      
+//      // Start the connection for delivery
+//      conn.start();
+//
+//      // Remove all messages from the topic
+//      ObjectName destObjectName = 
+//         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicRemoveAllMessages");
+//      ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
+//
+//      // Try to receive messages from the two subscriptions, should be null
+//      assertNull(tsDurable.receiveNoWait());
+//      assertNull(tsNonDurable.receiveNoWait());
+//      
+//      // Now close the connection
+//      conn.close();
+//      
+//      // Connect again to the same topic
+//      conn = cf.createTopicConnection();
+//      conn.setClientID("Client1");
+//      s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+//      prod = s.createProducer(topic);
+//      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+//
+//      // Send another message
+//      prod.send(s.createTextMessage("Second one"));
+//      
+//      // Start the connection for delivery
+//      conn.start();
+//      
+//      // Remove all messages from the topic
+//      ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
+//
+//      // Restore the durable subscription now, the message should be already gone
+//      tsDurable = s.createDurableSubscriber(topic, "Durable1");
+//      assertNull(tsDurable.receiveNoWait());
+//      
+//      // Clean-up
+//      conn.close();
+//      ServerManagement.undeployTopic("TopicRemoveAllMessages");
+//   }
    
    public void testListMessages() throws Exception
    {

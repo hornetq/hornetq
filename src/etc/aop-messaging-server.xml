@@ -17,14 +17,11 @@
    <!-- Connection -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
-   </bind>
+   </bind>   
 
    <!-- Session -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
-   </bind>
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->createProducerDelegate(..))">
-      <advice name="handleCreateProducerDelegate" aspect="org.jboss.jms.server.container.SecurityAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->createBrowserDelegate(..))">
       <advice name="handleCreateBrowserDelegate" aspect="org.jboss.jms.server.container.SecurityAspect"/>
@@ -32,15 +29,10 @@
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.server.container.SecurityAspect"/>
    </bind>   
-   
-   <!-- Producer -->
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ProducerAdvised->$implementing{org.jboss.jms.server.endpoint.ProducerEndpoint}(..))">
-      <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
-   </bind>
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ProducerAdvised->send(..))">
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->send(..))">
       <advice name="handleSend" aspect="org.jboss.jms.server.container.SecurityAspect"/>
    </bind>
-
+   
    <!-- Consumer -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>

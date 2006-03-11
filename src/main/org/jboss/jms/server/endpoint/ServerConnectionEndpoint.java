@@ -353,7 +353,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       log.trace("closing (noop)");    
    }
-   
+     
    public void sendTransaction(TransactionRequest request) throws JMSException
    {
       try
@@ -536,8 +536,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return new GUID().toString();
    }
-   
-   
+      
    protected ServerSessionEndpoint putSessionDelegate(int sessionID, ServerSessionEndpoint d)
    {
       return (ServerSessionEndpoint)sessions.put(new Integer(sessionID), d);
@@ -592,7 +591,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return remotingClientSessionId;
    }
-
+   
    protected void sendMessage(JBossMessage m, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }

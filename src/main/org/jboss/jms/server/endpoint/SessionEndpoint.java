@@ -31,6 +31,7 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -41,9 +42,7 @@ import org.jboss.jms.destination.JBossTopic;
  * $Id$
  */
 public interface SessionEndpoint extends Closeable
-{
-   ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
-
+{ 
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer) throws JMSException;   
@@ -90,6 +89,9 @@ public interface SessionEndpoint extends Closeable
     * @throws JMSException if the unsubscribe fails
     */
    void unsubscribe(String subscriptionName) throws JMSException;
+   
+   void send(JBossMessage message) throws JMSException;
+   
      
 }
 

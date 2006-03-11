@@ -32,9 +32,8 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.jms.server.endpoint.ServerProducerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.advised.ProducerAdvised;
+import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
@@ -85,28 +84,7 @@ public class SecurityAspect
       }
       
       return invocation.invokeNext();
-   }
-   
-   public Object handleCreateProducerDelegate(Invocation invocation) throws Throwable
-   {
-      // write permission required on the destination
-      
-      // Null represents an anonymous producer - the destination for this is specified at send time
-      
-      MethodInvocation mi = (MethodInvocation)invocation;
-      
-      Destination dest = (Destination)mi.getArguments()[0];
-      
-      if (dest != null)
-      {               
-         SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
-         ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
-                        
-         check(dest, CheckType.WRITE, sess.getConnectionEndpoint());
-      }
-      
-      return invocation.invokeNext();
-   }
+   }   
    
    public Object handleCreateBrowserDelegate(Invocation invocation) throws Throwable
    {
@@ -133,13 +111,14 @@ public class SecurityAspect
       Message m = (Message)mi.getArguments()[0];
       Destination dest = m.getJMSDestination();
 
-      ProducerAdvised del = (ProducerAdvised)invocation.getTargetObject();
-      ServerProducerEndpoint prod = (ServerProducerEndpoint)del.getEndpoint();
+      SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
+      ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
+      ServerConnectionEndpoint conn = sess.getConnectionEndpoint();
                   
       if (dest != null)
       {
          // Anonymous producer
-         check(dest, CheckType.WRITE, prod.getSessionEndpoint().getConnectionEndpoint());
+         check(dest, CheckType.WRITE, conn);
       }
       
       return invocation.invokeNext();

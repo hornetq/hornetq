@@ -339,30 +339,33 @@ public class MessageProducerTest extends MessagingTestCase
          pconn.close();
       }
    }
+   
+   //Is this test valid?
+   //How can we check if the destination is valid if it is created on the client side only??      
 
-   public void testCreateProducerOnInexistentDestination() throws Exception
-   {
-      Connection pconn = cf.createConnection();
-
-      try
-      {
-         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         try
-         {
-            ps.createProducer(new JBossTopic("NoSuchTopic"));
-            fail("should throw exception");
-         }
-         catch(InvalidDestinationException e)
-         {
-            // OK
-         }
-      }
-      finally
-      {
-         pconn.close();
-      }
-   }
+//   public void testCreateProducerOnInexistentDestination() throws Exception
+//   {
+//      Connection pconn = cf.createConnection();
+//
+//      try
+//      {
+//         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         try
+//         {
+//            ps.createProducer(new JBossTopic("NoSuchTopic"));
+//            fail("should throw exception");
+//         }
+//         catch(InvalidDestinationException e)
+//         {
+//            // OK
+//         }
+//      }
+//      finally
+//      {
+//         pconn.close();
+//      }
+//   }
 
    //
    // disabled MessageID tests

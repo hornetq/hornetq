@@ -12,7 +12,7 @@
    <aspect class="org.jboss.jms.client.container.StateCreationAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.ReceiverAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_VM"/>
-   <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_VM"/>
+   <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.TransactionAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.AsfAspect" scope="PER_INSTANCE"/>
@@ -61,7 +61,7 @@
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createSessionDelegate(..))">
       <advice name="handleCreateSessionDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
-   </bind>
+   </bind>   
    
    <!-- Session Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))">
@@ -123,6 +123,9 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->preDeliver(..))">
       <advice name="handlePreDeliver" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>   
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->send(..))">
+      <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   
@@ -212,10 +215,14 @@
    </bind>      
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setTimeToLive(..))">
       <advice name="handleSetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
-   </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->send(org.jboss.jms.message.JBossMessage))">
-      <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+   </bind> 
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->closing())">
+      <advice name="handleClosing" aspect="org.jboss.jms.client.container.ProducerAspect"/>
    </bind>
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->close())">
+      <advice name="handleClose" aspect="org.jboss.jms.client.container.ProducerAspect"/>
+   </bind>     
+
    
    <!-- Browser Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))">
