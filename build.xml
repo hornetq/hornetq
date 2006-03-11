@@ -512,7 +512,7 @@
       <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
          tofile="${build.classes}/META-INF/jboss-service.xml"/>
 
-      <copy file="${build.etc}/VERSION-PRE-SUBSTITUTE" toFile="${build.classes}/VERSION"/>
+      <copy file="${build.etc}/VERSION" toFile="${build.classes}/VERSION"/>
 
       <!-- copy all other deployment descriptors from ${source.etc}/server/default/deploy -->
       <copy todir="${build.classes}">
