@@ -20,8 +20,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
 	<classpathentry kind="lib" path="src/resources/hsqldb.jar"/>
 	<classpathentry kind="lib" path="/thirdparty/jgroups/lib/jgroups.jar"/>
-	<classpathentry kind="lib" path="src/resources/jcommon-1.0.0-rc1.jar"/>
-	<classpathentry kind="lib" path="src/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/thirdparty/apache-logging/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/ant.jar"/>
@@ -31,5 +29,7 @@
 	<classpathentry kind="lib" path="src/resources/jboss-remoting.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/security"/>
 	<classpathentry kind="lib" path="src/resources/jboss-serialization.jar"/>
+	<classpathentry kind="lib" path="perf/resources/jcommon-1.0.0-rc1.jar"/>
+	<classpathentry kind="lib" path="perf/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="output" path="output/eclipse-classes"/>
 </classpath>
