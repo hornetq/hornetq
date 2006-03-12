@@ -9,9 +9,13 @@ package org.jboss.jms.perf.framework.data;
 import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.protocol.Job;
 import org.jboss.jms.perf.framework.Runner;
+import org.jboss.jms.perf.framework.configuration.Configuration;
 import org.jboss.jms.perf.framework.protocol.Failure;
+import org.jboss.jms.perf.framework.protocol.ResetRequest;
 import org.jboss.jms.perf.framework.remoting.Coordinator;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.rmi.RMICoordinator;
+import org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingCoordinator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -128,7 +132,7 @@ public class PerformanceTest implements Serializable, JobList
       return id;
    }
 
-   public void run(Coordinator coordinator) throws Exception
+   public void run() throws Exception
    {
       log.info("");
       log.info("Performance Test \"" + getName() + "\"");
@@ -139,10 +143,10 @@ public class PerformanceTest implements Serializable, JobList
       {
          Execution e = (Execution)ei.next();
 
+         Coordinator coordinator = prepare(e);
+
          log.info("");
          log.info("Execution " + executionCounter++ + " (provider " + e.getProviderName() + ")");
-
-         prepare(e);
 
          for(Iterator i = jobs.iterator(); i.hasNext(); )
          {
@@ -194,27 +198,134 @@ public class PerformanceTest implements Serializable, JobList
    // Private -------------------------------------------------------
 
    /**
-    * Prepares the list of jobs to be ran in a specific execution context.
+    * Prepares the list of jobs to be ran in a specific execution context, and also probe
+    * executors.
     */
-   private void prepare(Execution e)
+   private Coordinator prepare(Execution e) throws Exception
    {
-      String provider = e.getProviderName();
-      Properties providerJNDIProperties = runner.getConfiguration().getJNDIProperties(provider);
+      String providerName = e.getProviderName();
+      List executorURLs = new ArrayList();
 
       for(Iterator i = jobs.iterator(); i.hasNext(); )
       {
          Object o = i.next();
          if (o instanceof Job)
          {
-            ((Job)o).setJNDIProperties(providerJNDIProperties);
+            prepare((Job)o, providerName, executorURLs);
          }
          else
          {
             for(Iterator ji = ((JobList)o).iterator(); ji.hasNext(); )
             {
-               ((Job)ji.next()).setJNDIProperties(providerJNDIProperties);
+               prepare((Job)ji.next(), providerName, executorURLs);
             }
          }
+      }
+
+      Coordinator coordinator = pickCoordinator(executorURLs);
+      checkExecutors(coordinator, executorURLs);
+      return coordinator;
+   }
+
+   private Coordinator pickCoordinator(List executorURLs) throws Exception
+   {
+      int coordinatorType = -1;
+
+      for(Iterator i = executorURLs.iterator(); i.hasNext(); )
+      {
+         String executorURL = (String)i.next();
+         int type;
+         if (JBossRemotingCoordinator.isValidURL(executorURL))
+         {
+            type = Coordinator.JBOSSREMOTING;
+         }
+         else if (RMICoordinator.isValidURL(executorURL))
+         {
+            type = Coordinator.RMI;
+         }
+         else
+         {
+            throw new Exception("Unknown URL type: " + executorURL);
+         }
+
+         if (coordinatorType != -1 && coordinatorType != type)
+         {
+            throw new Exception("Mixed URL types (" +
+               Configuration.coordinatorTypeToString(coordinatorType) + ", " +
+               Configuration.coordinatorTypeToString(type) + "), use a homogeneous configuration");
+         }
+
+         coordinatorType = type;
+      }
+
+      if (coordinatorType == Coordinator.JBOSSREMOTING)
+      {
+         return new JBossRemotingCoordinator();
+      }
+      else if (coordinatorType == Coordinator.RMI)
+      {
+         return new RMICoordinator();
+      }
+      else
+      {
+         throw new Exception("Cannot decide on a coordinator");
+      }
+   }
+
+   private void checkExecutors(Coordinator coordinator, List executorURLs) throws Exception
+   {
+      for(Iterator i = executorURLs.iterator(); i.hasNext(); )
+      {
+         String executorURL = (String)i.next();
+
+         try
+         {
+            log.debug("resetting " + executorURL);
+            coordinator.sendToExecutor(executorURL, new ResetRequest());
+            log.info("executor " + executorURL + " on-line and reset");
+         }
+         catch(Throwable e)
+         {
+            log.error("executor " + executorURL + " failed", e);
+            throw new Exception("executor check failed");
+         }
+      }
+   }
+
+   /**
+    * @param executorURLs - list to be updated with current run's executor URLs.
+    */
+   private void prepare(Job j, String providerName, List executorURLs) throws Exception
+   {
+      Configuration config = runner.getConfiguration();
+      Provider provider = config.getProvider(providerName);
+      Properties jndiProperties = provider.getJNDIProperties();
+
+      String executorName = j.getExecutorName();
+      String executorURL;
+
+      if (executorName == null)
+      {
+         // use the default executor
+         executorURL = config.getDefaultExecutorURL();
+      }
+      else
+      {
+         executorURL = provider.getExecutorURL(executorName);
+         if (executorURL == null)
+         {
+            throw new Exception("Provider " + providerName +
+               " doesn't know to map executor " + executorName);
+         }
+      }
+
+      j.setJNDIProperties(jndiProperties);
+      j.setExecutorURL(executorURL);
+
+      // update the executor URL list
+      if (!executorURLs.contains(executorURL))
+      {
+         executorURLs.add(executorURL);
       }
    }
 
@@ -226,8 +337,10 @@ public class PerformanceTest implements Serializable, JobList
 
          if (executorURL == null)
          {
-            throw new Exception("At least on executorURL must be configured on this job");
+            throw new Exception("An executorURL must be configured on this job");
          }
+
+         log.debug("sending job " + job + " to " + coordinator);
 
          Result result = coordinator.sendToExecutor(executorURL, job);
          result.setRequest(job);
@@ -254,15 +367,17 @@ public class PerformanceTest implements Serializable, JobList
          t.start();
       }
 
-      log.debug("all jobs fired");
+      log.debug("all " + parallelJobs.size() + " jobs fired");
 
       List results = new ArrayList();
+
       for(Iterator i = jobExecutors.iterator(); i.hasNext(); )
       {
          JobExecutor je = (JobExecutor)i.next();
          try
          {
             je.getThread().join();
+            log.debug("parallel job finished");
          }
          catch (InterruptedException e)
          {}
@@ -270,6 +385,7 @@ public class PerformanceTest implements Serializable, JobList
       }
       return results;
    }
+
 
    // Inner classes -------------------------------------------------
 
@@ -288,6 +404,7 @@ public class PerformanceTest implements Serializable, JobList
 
       public void run()
       {
+         log.debug("parallel job fired");
          result = PerformanceTest.this.run(coordinator, job);
       }
 

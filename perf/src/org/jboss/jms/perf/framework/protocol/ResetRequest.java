@@ -23,6 +23,9 @@ package org.jboss.jms.perf.framework.protocol;
 
 import org.jboss.jms.perf.framework.remoting.Request;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.SimpleResult;
+import org.jboss.jms.perf.framework.remoting.Context;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -34,6 +37,8 @@ public class ResetRequest implements Request
 {
   // Constants -----------------------------------------------------
 
+   private transient static final Logger log = Logger.getLogger(ResetRequest.class);
+
   private static final long serialVersionUID = -349573297432452357L;
 
    // Static --------------------------------------------------------
@@ -44,12 +49,19 @@ public class ResetRequest implements Request
 
    // Request implementation ----------------------------------------
 
-   public Result execute() throws Exception
+   public Result execute(Context context) throws Exception
    {
-      return null;
+      log.info("reset request executed");
+      return new SimpleResult();
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "RESET REQUEST";
+   }
+
 
    // Package protected ---------------------------------------------
 

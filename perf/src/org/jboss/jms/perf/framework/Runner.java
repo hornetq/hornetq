@@ -28,10 +28,6 @@ import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.persistence.HSQLDBPersistenceManager;
 import org.jboss.jms.perf.framework.persistence.PersistenceManager;
 import org.jboss.jms.perf.framework.configuration.Configuration;
-import org.jboss.jms.perf.framework.remoting.Coordinator;
-import org.jboss.jms.perf.framework.remoting.rmi.RMICoordinator;
-import org.jboss.jms.perf.framework.remoting.jbossremoting.JBossRemotingCoordinator;
-import org.jboss.jms.perf.framework.protocol.ResetRequest;
 import org.jboss.logging.Logger;
 
 /**
@@ -67,7 +63,6 @@ public class Runner
    // Attributes ----------------------------------------------------
 
    private Configuration configuration;
-   private Coordinator coordinator;
    protected PersistenceManager pm;
    private String action;
 
@@ -106,8 +101,6 @@ public class Runner
    {
       if ("measure".equals(action))
       {
-         initializeCoordinator();
-         checkExecutors();
          measure();
 
       }
@@ -173,7 +166,7 @@ public class Runner
       for(Iterator i = configuration.getPerformanceTests().iterator(); i.hasNext(); )
       {
          PerformanceTest pt = (PerformanceTest)i.next();
-         pt.run(coordinator);
+         pt.run();
          pm.savePerformanceTest(pt);
       }
    }
@@ -183,75 +176,6 @@ public class Runner
       Charter charter = new Charter(pm, configuration.getReportDirectory());
       charter.run();
       log.info("charts created");
-   }
-
-   /**
-    * Initialize coordinator based on executor addresses I found in the configuration file.
-    */
-   private void initializeCoordinator() throws Exception
-   {
-      int coordinatorType = -1;
-
-      for(Iterator i = configuration.getExecutorURLs().iterator(); i.hasNext(); )
-      {
-         String executorURL = (String)i.next();
-         int type;
-         if (JBossRemotingCoordinator.isValidURL(executorURL))
-         {
-            type = Coordinator.JBOSSREMOTING;
-         }
-         else if (RMICoordinator.isValidURL(executorURL))
-         {
-            type = Coordinator.RMI;
-         }
-         else
-         {
-            throw new Exception("Unknown URL type: " + executorURL);
-         }
-
-         if (coordinatorType != -1 && coordinatorType != type)
-         {
-            throw new Exception("Mixed URL types (" +
-               Configuration.coordinatorTypeToString(coordinatorType) + ", " +
-               Configuration.coordinatorTypeToString(type) + "), use a homogeneous configuration");
-         }
-
-         coordinatorType = type;
-      }
-
-      if (coordinatorType == Coordinator.JBOSSREMOTING)
-      {
-         coordinator = new JBossRemotingCoordinator();
-      }
-      else if (coordinatorType == Coordinator.RMI)
-      {
-         coordinator = new RMICoordinator();
-      }
-   }
-
-   private void checkExecutors() throws Exception
-   {
-      for(Iterator i = configuration.getExecutorURLs().iterator(); i.hasNext(); )
-      {
-         String executorURL = (String)i.next();
-
-         try
-         {
-            log.debug("resetting " + executorURL);
-            coordinator.sendToExecutor(executorURL, new ResetRequest());
-            log.info("executor " + executorURL + " on-line and reset");
-         }
-         catch(Throwable e)
-         {
-            log.error("executor " + executorURL + " failed", e);
-            throw new Exception("executor check failed");
-         }
-      }
-
-      if (configuration.isStartExecutors())
-      {
-         throw new Exception("Not able to dynamically start executors yet!");
-      }
    }
 
    // Inner classes -------------------------------------------------

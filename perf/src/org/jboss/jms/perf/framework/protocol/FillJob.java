@@ -13,6 +13,7 @@ import javax.jms.Session;
 
 import org.jboss.jms.perf.framework.factories.MessageFactory;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.Context;
 import org.jboss.logging.Logger;
 
 /**
@@ -52,7 +53,7 @@ public class FillJob extends JobSupport
 
    // JobSupport overrides ---------------------------------------------
 
-   protected Result doWork() throws Exception
+   protected Result doWork(Context context) throws Exception
    {
       Connection conn = null;
 
@@ -89,6 +90,11 @@ public class FillJob extends JobSupport
    public void setDeliveryMode(int deliveryMode)
    {
       this.deliveryMode = deliveryMode;
+   }
+
+   public String toString()
+   {
+      return "FILL JOB";
    }
 
    // Package protected ---------------------------------------------

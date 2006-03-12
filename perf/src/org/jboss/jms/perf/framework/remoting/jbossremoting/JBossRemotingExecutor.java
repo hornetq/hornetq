@@ -9,6 +9,7 @@ package org.jboss.jms.perf.framework.remoting.jbossremoting;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.Connector;
+import org.jboss.jms.perf.framework.remoting.Context;
 
 /**
  * An Executor listens on a port and executes generic commands submitted to it. It can be deployed
@@ -21,7 +22,7 @@ import org.jboss.remoting.transport.Connector;
  *
  * $Id$
  */
-public class JBossRemotingExecutor
+public class JBossRemotingExecutor implements Context
 {
    // Constants -----------------------------------------------------
 
@@ -53,7 +54,9 @@ public class JBossRemotingExecutor
             return;
          }
 
-         new JBossRemotingExecutor(port, ip).start();
+         JBossRemotingExecutor ex = new JBossRemotingExecutor(port, ip);
+         ex.setColocated(false);
+         ex.start();
       }
       catch(Throwable t)
       {
@@ -70,6 +73,8 @@ public class JBossRemotingExecutor
    private InvokerLocator locator;
    private Connector connector;
 
+   private boolean colocated;
+
    // Constructors --------------------------------------------------
 
    public JBossRemotingExecutor(int port)
@@ -84,6 +89,14 @@ public class JBossRemotingExecutor
    {
       this.port = port;
       this.address = address;
+      colocated = true;
+   }
+
+   // Context implemenation -----------------------------------------
+
+   public boolean isColocated()
+   {
+      return colocated;
    }
 
    // JMX managed attributes ----------------------------------------
@@ -129,7 +142,7 @@ public class JBossRemotingExecutor
 
       connector.setInvokerLocator(locator.getLocatorURI());
       connector.create();
-      connector.addInvocationHandler("executor", new ExecutorInvocationHandler());
+      connector.addInvocationHandler("executor", new ExecutorInvocationHandler(this));
       connector.start();
 
       log.info(this + " successfully started");
@@ -169,6 +182,11 @@ public class JBossRemotingExecutor
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void setColocated(boolean colocated)
+   {
+      this.colocated = colocated;
+   }
 
    // Inner classes -------------------------------------------------
 

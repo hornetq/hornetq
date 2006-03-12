@@ -4,94 +4,113 @@
    <db-url>jdbc:hsqldb:./output/db/perfdb</db-url>
    <report-directory>./output/results</report-directory>
 
-   <!-- If it doesn't find needed executors on-line, start them. If 'false', just complain -->
-   <!-- <start-executors>true</start-executors> -->
 
-   <!-- benchmark-wide defaults -->
+   <!-- benchmark-wide test defaults -->
+
+   <default-executor-url>rmi://localhost:7777/standalone</default-executor-url>
 
    <destination>/queue/testQueue</destination>
    <connection-factory>/ConnectionFactory</connection-factory>
    <message-size>0</message-size>
-   <duration>60000</duration> <!-- safeguard for receive jobs that block waiting -->
-   <!-- <executor-url>socket://localhost:1234</executor-url> -->
-   <executor-url>rmi://localhost:2234/standalone</executor-url>
+
+   <!-- safeguard for receive jobs that block waiting messages will never arrive -->
+   <duration>60000</duration>
+
    <acknowledgment-mode>AUTO_ACKNOWLEDGE</acknowledgment-mode>
 
    <providers>
+
       <provider name="JBossMessaging">
          <factory>org.jnp.interfaces.NamingContextFactory</factory>
          <url>jnp://localhost:1099</url>
          <pkg>org.jboss.naming:org.jnp.interfaces</pkg>
+         <executor name="REMOTE" url="rmi://localhost:7777/standalone"/>
+         <executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
+         <executor name="COLOCATED" url="rmi://localhost:7777/colocated-messaging"/>
+         <executor name="COLOCATED2" url="rmi://localhost:7777/colocated-messaging2"/>
       </provider>
+
       <provider name="JBossMQ">
          <factory>org.jnp.interfaces.NamingContextFactory</factory>
          <url>jnp://localhost:1199</url>
          <pkg>org.jboss.naming:org.jnp.interfaces</pkg>
+         <executor name="REMOTE" url="rmi://localhost:7777/standalone"/>
+         <executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
+         <executor name="COLOCATED" url="rmi://localhost:7777/colocated-jbossmq"/>
+         <executor name="COLOCATED2" url="rmi://localhost:7777/colocated-jbossmq2"/>
       </provider>
    </providers>
 
    <performance-tests>
 
+      <!-- just makes sure the executors are deployed and ready -->
+      <performance-test name="Ping">
+
+         <ping executor="REMOTE"/>
+         <ping executor="REMOTE2"/>
+         <ping executor="COLOCATED"/>
+         <ping executor="COLOCATED2"/>
+         <parallel>
+            <ping executor="REMOTE"/>
+            <ping executor="REMOTE2"/>
+            <ping executor="COLOCATED"/>
+            <ping executor="COLOCATED2"/>
+         </parallel>
+
+         <execution provider="JBossMessaging"/>
+         <execution provider="JBossMQ"/>
+
+      </performance-test>
+
+      <!--
+
       <performance-test name="Throughput O KB Message Non-Persistent Non-Transactional, 1 sender, 1 receiver">
 
          <message-size>0</message-size>
-         <messages>2000</messages>
+         <messages>10000</messages>
 
          <drain/>
 
          <parallel>
-            <send rate="200" executor-url="rmi://localhost:2234/standalone"/>
-            <receive executor-url="rmi://localhost:2235/standalone2"/>
+            <send rate="200" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
 
          <parallel>
-            <send rate="400" executor-url="rmi://localhost:2234/standalone"/>
-            <receive executor-url="rmi://localhost:2235/standalone2"/>
+            <send rate="400" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
 
          <parallel>
-            <send rate="800" executor-url="rmi://localhost:2234/standalone"/>
-            <receive executor-url="rmi://localhost:2235/standalone2"/>
-         </parallel>
-
-         <!--
-
-         <parallel>
-            <send rate="1000" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="800" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
 
          <parallel>
-            <send rate="1200" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="1000" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
 
          <parallel>
-            <send rate="2000" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="1500" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
 
          <parallel>
-            <send rate="2500" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="2000" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
 
          <parallel>
-            <send rate="3000" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
+            <send rate="2500" executor="COLOCATED"/>
+            <receive executor="COLOCATED2"/>
          </parallel>
-
-         <parallel>
-            <send rate="4000" executor-url="socket://localhost:1234"/>
-            <receive executor-url="socket://localhost:1235"/>
-         </parallel>
-
-         -->
-
 
          <execution provider="JBossMessaging"/>
-         <!-- <execution provider="JBossMQ"/> -->
+
       </performance-test>
+
+      -->
 
    </performance-tests>
 

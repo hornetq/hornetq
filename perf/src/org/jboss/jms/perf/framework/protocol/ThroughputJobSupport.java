@@ -11,6 +11,7 @@ import javax.jms.Connection;
 
 import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.Context;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -49,7 +50,7 @@ abstract class ThroughputJobSupport extends JobSupport
 
    // JobSupport overrides ------------------------------------------
 
-   protected final Result doWork() throws Exception
+   protected final Result doWork(Context context) throws Exception
    {
       try
       {
@@ -130,9 +131,9 @@ abstract class ThroughputJobSupport extends JobSupport
 
    protected abstract Servitor createServitor(long duration);
 
-   protected void initialize() throws Exception
+   protected void initialize(Context context) throws Exception
    {
-      super.initialize();
+      super.initialize(context);
 
       conns = new Connection[numConnections];
 

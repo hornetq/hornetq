@@ -6,14 +6,16 @@
  */
 package org.jboss.jms.perf.framework.remoting;
 
-import java.io.Serializable;
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public interface Request extends Serializable
+public interface Context
 {
-   Result execute(Context c) throws Exception;
+   /**
+    * @return true if this execution context was deployed inside an AS, false if it a "remote"
+    *         execution context.
+    */
+   boolean isColocated();
 }

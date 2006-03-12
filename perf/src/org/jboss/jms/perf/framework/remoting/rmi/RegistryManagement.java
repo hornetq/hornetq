@@ -4,16 +4,16 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.perf.framework.remoting;
+package org.jboss.jms.perf.framework.remoting.rmi;
 
-import java.io.Serializable;
+import java.rmi.Remote;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- * $Id$
+ *          $Id$
  */
-public interface Request extends Serializable
+public interface RegistryManagement extends Remote
 {
-   Result execute(Context c) throws Exception;
+   void kill() throws Exception;
 }

@@ -11,12 +11,14 @@ import org.jboss.jms.perf.framework.data.PerformanceTest;
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.JobList;
 import org.jboss.jms.perf.framework.data.SimpleJobList;
+import org.jboss.jms.perf.framework.data.Provider;
 import org.jboss.jms.perf.framework.protocol.DrainJob;
 import org.jboss.jms.perf.framework.Runner;
 import org.jboss.jms.perf.framework.remoting.Coordinator;
 import org.jboss.jms.perf.framework.protocol.SendJob;
 import org.jboss.jms.perf.framework.protocol.ReceiveJob;
 import org.jboss.jms.perf.framework.protocol.Job;
+import org.jboss.jms.perf.framework.protocol.PingJob;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -90,10 +92,11 @@ public class Configuration
    private String dbURL;
    private String reportDirectory;
    private boolean startExecutors;
+   private String defaultExecutorURL;
    private List performanceTests;
 
-   // Map<providerName - Properties>
-   private Map jndiProperties;
+   // Map<providerName - provider>
+   private Map providers;
 
    private JobConfiguration defaultsPerBenchmark;
 
@@ -105,7 +108,7 @@ public class Configuration
       this.xmlConfiguration = xmlConfiguration;
 
       performanceTests = new ArrayList();
-      jndiProperties = new HashMap();
+      providers = new HashMap();
 
       defaultsPerBenchmark = new JobConfiguration();
 
@@ -130,14 +133,9 @@ public class Configuration
       return startExecutors;
    }
 
-   public Properties getJNDIProperties(String providerName)
+   public String getDefaultExecutorURL()
    {
-      Properties p = (Properties)jndiProperties.get(providerName);
-      if (p == null)
-      {
-         throw new IllegalStateException("No such provider: " + providerName);
-      }
-      return p;
+      return defaultExecutorURL;
    }
 
    public List getPerformanceTests()
@@ -145,42 +143,9 @@ public class Configuration
       return performanceTests;
    }
 
-   /**
-    * @return a List of Strings
-    */
-   public List getExecutorURLs()
+   public Provider getProvider(String providerName)
    {
-      List result = new ArrayList();
-      for(Iterator i = performanceTests.iterator(); i.hasNext(); )
-      {
-         PerformanceTest pt = (PerformanceTest)i.next();
-         for(Iterator ji = pt.iterator(); ji.hasNext(); )
-         {
-            Object o = ji.next();
-
-            if (o instanceof Job)
-            {
-               String executorURL = ((Job)o).getExecutorURL();
-               if (!result.contains(executorURL))
-               {
-                  result.add(executorURL);
-               }
-            }
-            else
-            {
-               JobList jl = (JobList)o;
-               for(Iterator jli = jl.iterator(); jli.hasNext(); )
-               {
-                  String executorURL = ((Job)jli.next()).getExecutorURL();
-                  if (!result.contains(executorURL))
-                  {
-                     result.add(executorURL);
-                  }
-               }
-            }
-         }
-      }
-      return result;
+      return (Provider)providers.get(providerName);
    }
 
    public String toString()
@@ -237,11 +202,15 @@ public class Configuration
                {
                   startExecutors = toBoolean(XMLUtil.getTextContent(n));
                }
+               else if ("default-executor-url".equals(name))
+               {
+                  defaultExecutorURL = XMLUtil.getTextContent(n);
+               }
                else if ("providers".equals(name))
                {
                   extractProviders(n);
                }
-               else if (JobConfiguration.isValidElementName(name))
+               else if (JobConfiguration.isValidJobConfigurationElementName(name))
                {
                   defaultsPerBenchmark.add(n);
                }
@@ -291,6 +260,8 @@ public class Configuration
       Node nameNode = attrs.getNamedItem("name");
       String providerName = nameNode.getNodeValue();
 
+      Provider provider = new Provider(providerName);
+
       if (pn.hasChildNodes())
       {
          Properties props = new Properties();
@@ -312,9 +283,31 @@ public class Configuration
             {
                props.setProperty("java.naming.factory.url.pkg", value);
             }
+            else if ("executor".equals(name))
+            {
+               addExecutor(provider, n);
+            }
+            else if (name.startsWith("#"))
+            {
+               // ignore
+            }
+            else
+            {
+               throw new Exception("Unknown provider configuration element: " + name);
+            }
          }
-         jndiProperties.put(providerName, props);
+
+         provider.setJNDIProperties(props);
+         providers.put(providerName, provider);
       }
+   }
+
+   private void addExecutor(Provider provider, Node n) throws Exception
+   {
+      NamedNodeMap attrs = n.getAttributes();
+      Node name = attrs.getNamedItem("name");
+      Node url = attrs.getNamedItem("url");
+      provider.addExecutor(name.getNodeValue(), url.getNodeValue());
    }
 
    private void extractPerformanceTests(Node tests)
@@ -373,21 +366,13 @@ public class Configuration
             Node n = nl.item(i);
             String name = n.getNodeName();
 
-            if (JobConfiguration.isValidElementName(name))
+            if (JobConfiguration.isValidJobConfigurationElementName(name))
             {
                defaultsPerTest.add(n);
             }
-            else if ("drain".equals(name))
+            else if (JobConfiguration.isValidJobName(name))
             {
-               addDrainJob(pt, n, defaultsPerTest);
-            }
-            else if ("send".equals(name))
-            {
-               addSenderJob(pt, n, defaultsPerTest);
-            }
-            else if ("receive".equals(name))
-            {
-               addReceiverJob(pt, n, defaultsPerTest);
+               addJob(pt, n, defaultsPerTest);
             }
             else if ("parallel".equals(name))
             {
@@ -465,42 +450,42 @@ public class Configuration
       for(int i = 0; i < nl.getLength(); i++)
       {
          Node n = nl.item(i);
-         String name = n.getNodeName();
-         if ("send".equals(name))
-         {
-            addSenderJob(parallelJobs, n, defaultPerTest);
-         }
-         else if ("receive".equals(name))
-         {
-            addReceiverJob(parallelJobs, n, defaultPerTest);
-         }
+         addJob(parallelJobs, n, defaultPerTest);
       }
-
       pt.addParallelJobs(parallelJobs);
    }
 
-   private void addDrainJob(JobList jl, Node drain, JobConfiguration defaultPerTest)
-      throws Exception
+   private void addJob(JobList jl, Node n, JobConfiguration defaultPerTest) throws Exception
    {
-      DrainJob dj = new DrainJob();
-      setCommonJobAttributes(dj, drain, defaultPerTest);
-      jl.addJob(dj);
-   }
+      String name = n.getNodeName();
+      Job job = null;
 
-   private void addSenderJob(JobList jl, Node send, JobConfiguration defaultPerTest)
-      throws Exception
-   {
-      SendJob sj = new SendJob();
-      setCommonJobAttributes(sj, send, defaultPerTest);
-      jl.addJob(sj);
-   }
-
-   private void addReceiverJob(JobList jl, Node receive, JobConfiguration defaultPerTest)
-      throws Exception
-   {
-      ReceiveJob rj = new ReceiveJob();
-      setCommonJobAttributes(rj, receive, defaultPerTest);
-      jl.addJob(rj);
+      if (name.startsWith("#"))
+      {
+         return;
+      }
+      else if ("drain".equals(name))
+      {
+         job = new DrainJob();
+      }
+      else if ("send".equals(name))
+      {
+         job = new SendJob();
+      }
+      else if ("receive".equals(name))
+      {
+         job = new ReceiveJob();
+      }
+      else if ("ping".equals(name))
+      {
+         job = new PingJob();
+      }
+      else
+      {
+         throw new Exception("Unknown job " + name);
+      }
+      setCommonJobAttributes(job, n, defaultPerTest);
+      jl.addJob(job);
    }
 
    private void setCommonJobAttributes(Job j, Node jn, JobConfiguration defaultPerTest)
@@ -517,7 +502,7 @@ public class Configuration
          {
             Node n = attrs.item(i);
             String name = n.getNodeName();
-            if (!JobConfiguration.isValidElementName(name))
+            if (!JobConfiguration.isValidJobConfigurationElementName(name))
             {
                throw new Exception("Invalid job configuration attribute: " + name);
             }
@@ -536,7 +521,7 @@ public class Configuration
             {
                continue;
             }
-            if (!JobConfiguration.isValidElementName(name))
+            if (!JobConfiguration.isValidJobConfigurationElementName(name))
             {
                throw new Exception("Invalid job configuration element: " + name);
             }

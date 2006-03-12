@@ -15,6 +15,7 @@ import javax.jms.Topic;
 
 import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.Context;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -51,7 +52,7 @@ public class DrainJob extends JobSupport
 
    // JobSupport overrides ---------------------------------------------
 
-   protected Result doWork() throws Exception
+   protected Result doWork(Context context) throws Exception
    {
       Connection conn = null;
 
@@ -119,6 +120,11 @@ public class DrainJob extends JobSupport
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "DRAIN JOB";
+   }
 
    // Package protected ---------------------------------------------
 

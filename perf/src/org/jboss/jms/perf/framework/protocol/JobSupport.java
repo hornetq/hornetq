@@ -17,6 +17,7 @@ import javax.naming.InitialContext;
 import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.configuration.JobConfiguration;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.Context;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -29,6 +30,8 @@ import org.jboss.jms.perf.framework.remoting.Result;
 public abstract class JobSupport implements Job, Serializable
 {
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 2343453409584398L;
 
    private transient static final Logger log = Logger.getLogger(JobSupport.class);
 
@@ -51,6 +54,10 @@ public abstract class JobSupport implements Job, Serializable
       else if (DrainJob.TYPE.equals(type))
       {
          return new DrainJob();
+      }
+      else if (PingJob.TYPE.equals(type))
+      {
+         return new PingJob();
       }
       else
       {
@@ -84,6 +91,7 @@ public abstract class JobSupport implements Job, Serializable
 
    // Attributes ----------------------------------------------------
 
+   private String executorName;
    protected String executorURL;
    protected int messageCount;
    protected int messageSize;
@@ -109,18 +117,28 @@ public abstract class JobSupport implements Job, Serializable
 
    // Job implementation --------------------------------------------
 
-   public final Result execute() throws Exception
+   public synchronized final Result execute(Context c) throws Exception
    {
       try
       {
-         initialize();
-         return doWork();
+         initialize(c);
+         return doWork(c);
       }
       catch(Exception e)
       {
          log.error("job failed", e);
          throw e;
       }
+   }
+
+   public String getExecutorName()
+   {
+      return executorName;
+   }
+
+   public void setExecutorName(String executorName)
+   {
+      this.executorName = executorName;
    }
 
    public String getExecutorURL()
@@ -235,9 +253,9 @@ public abstract class JobSupport implements Job, Serializable
 
    // Protected -----------------------------------------------------
 
-   protected abstract Result doWork() throws Exception;
+   protected abstract Result doWork(Context context) throws Exception;
 
-   protected void initialize() throws Exception
+   protected void initialize(Context context) throws Exception
    {
       if (jndiProperties == null)
       {

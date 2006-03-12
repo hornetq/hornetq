@@ -15,6 +15,7 @@ import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.jms.perf.framework.remoting.Request;
+import org.jboss.jms.perf.framework.remoting.Executor;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -33,21 +34,21 @@ public class ExecutorInvocationHandler implements ServerInvocationHandler
 
    // Attributes ----------------------------------------------------
 
+   private Executor delegateExecutor;
+
    // Constructors --------------------------------------------------
 
-   public ExecutorInvocationHandler()
+   public ExecutorInvocationHandler(JBossRemotingExecutor remotingExecutor)
    {
+      delegateExecutor = new Executor(remotingExecutor);
    }
 
    // ServerInvocationHandler implementation -----------------------
 
-   public Object invoke(InvocationRequest invocation) throws Throwable
+   public synchronized Object invoke(InvocationRequest invocation) throws Throwable
    {
       Request request = (Request)invocation.getParameter();
-
-      log.debug("received " + request);
-
-      return request.execute();
+      return delegateExecutor.execute(request);
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)

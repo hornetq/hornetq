@@ -99,18 +99,66 @@
          <src path="${module.root}/tests"/>
          <classpath refid="perf.compilation.classpath"/>
       </javac>
-      <rmic base="${build.classes}" includes="**/RMIExecutor.class">
+      <rmic base="${build.classes}" includes="**/RMIExecutor.class, **/RegistryRunner.class">
          <classpath refid="perf.compilation.classpath"/>
       </rmic>
 
    </target>
 
-   <target name="sar" depends="compile">
+   <target name="sar" depends="rmi-sar"/>
+
+   <target name="rmi-sar" depends="compile">
+
+      <!-- make first the unscoped sar for JBossMQ ... -->
       <mkdir dir="${build.classes}/META-INF"/>
       <mkdir dir="${build.classes}/xmdesc"/>
-      <copy file="./src/etc/executor-service.xml" tofile="${build.classes}/META-INF/jboss-service.xml"/>
+      <copy file="./src/etc/rmi-executor-service.xml"
+            tofile="${build.classes}/META-INF/jboss-service.xml"
+            filtering="yes">
+         <filterset>
+            <filter token="NAME_1" value="colocated-jbossmq"/>
+            <filter token="NAME_2" value="colocated-jbossmq2"/>
+         </filterset>
+      </copy>
+      <copy file="./src/etc/RMIExecutor-xmbean.xml" todir="${build.classes}/xmdesc"/>
+      <jar jarfile="${module.output}/lib/rmi-executor.sar"
+           manifest="./src/etc/default.mf">
+         <fileset dir="${build.classes}">
+            <include name="**"/>
+         </fileset>
+      </jar>
+
+      <!-- ... then the scoped one for Messaging -->
+
+      <delete file="${build.classes}/META-INF/jboss-service.xml"/>
+      <copy file="./src/etc/rmi-executor-service.xml"
+            tofile="${build.classes}/META-INF/jboss-service.xml"
+            filtering="yes">
+         <filterset>
+            <filter token="NAME_1" value="colocated-messaging"/>
+            <filter token="NAME_2" value="colocated-messaging2"/>
+         </filterset>
+      </copy>
+      <!-- enable scoping -->
+      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
+      <jar jarfile="${module.output}/lib/rmi-executor-scoped.sar"
+           manifest="./src/etc/default.mf">
+         <fileset dir="${build.classes}">
+            <include name="**"/>
+         </fileset>
+      </jar>
+
+   </target>
+
+   <target name="jbossremoting-sar" depends="compile">
+      <mkdir dir="${build.classes}/META-INF"/>
+      <mkdir dir="${build.classes}/xmdesc"/>
+      <copy file="./src/etc/jbossremoting-executor-service.xml" tofile="${build.classes}/META-INF/jboss-service.xml"/>
       <copy file="./src/etc/JBossRemotingExecutor-xmbean.xml" todir="${build.classes}/xmdesc"/>
-      <jar jarfile="${module.output}/lib/remoting-executor.sar"
+      <jar jarfile="${module.output}/lib/jbossremoting-executor.sar"
            manifest="./src/etc/default.mf">
          <fileset dir="${build.classes}">
             <include name="**"/>
@@ -124,16 +172,20 @@
 
       <antcall target="runner">
          <param name="action" value="measure"/>
+         <param name="module.output" value="${module.output}"/>
+         <param name="log.suffix" value="runner"/>
       </antcall>
 
       <!-- <antcall target="kill-executors"/> -->
 
-      <antcall target="chart"/>
+      <antcall target="charter"/>
    </target>
 
-   <target name="chart" depends="compile">
+   <target name="charter" depends="compile">
       <antcall target="runner">
          <param name="action" value="chart"/>
+         <param name="module.output" value="${module.output}"/>
+         <param name="log.suffix" value="charter"/>
       </antcall>
    </target>
 
@@ -147,7 +199,7 @@
          -->
          <arg line="-config ${module.root}/perf.xml -action ${action}"/>
          <sysproperty key="module.output" value="${module.output}"/>
-         <sysproperty key="log.suffix" value="runner"/>
+         <sysproperty key="log.suffix" value="${log.suffix}"/>
          <classpath refid="perf.execution.classpath"/>
       </java>
    </target>
@@ -168,18 +220,21 @@
    </target>
 
    <target name="start-rmi-executors">
+      <antcall target="start-rmi-registry"/>
+      <sleep seconds="1"/>
       <antcall target="start-standalone-rmi-executor">
          <param name="registry.host" value="localhost"/>
-         <param name="registry.port" value="2234"/>
+         <param name="registry.port" value="7777"/>
          <param name="executor.name" value="standalone"/>
       </antcall>
       <antcall target="start-standalone-rmi-executor">
          <param name="registry.host" value="localhost"/>
-         <param name="registry.port" value="2235"/>
+         <param name="registry.port" value="7777"/>
          <param name="executor.name" value="standalone2"/>
       </antcall>
       <!-- deploy colocated executors; port values hardcoded for the time being -->
-      <!-- <copy file="${module.output}/lib/rmi-executor.sar" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/> -->
+      <copy file="${module.output}/lib/rmi-executor-scoped.sar" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
+      <copy file="${module.output}/lib/rmi-executor.sar" todir="${ENV.JBOSS_HOME}/server/jbossmq/deploy"/>
    </target>
 
    <target name="kill-remoting-executors">
@@ -194,16 +249,23 @@
    </target>
 
    <target name="kill-rmi-executors">
+      <!-- undeploy colocated executors -->
+      <delete file="${ENV.JBOSS_HOME}/server/messaging/deploy/rmi-executor-scoped.sar"/>
+      <delete file="${ENV.JBOSS_HOME}/server/jbossmq/deploy/rmi-executor.sar"/>
+      <!-- and kill the standalone VMs -->
       <antcall target="kill-rmi-executor">
          <param name="registry.host" value="localhost"/>
-         <param name="registry.port" value="2234"/>
+         <param name="registry.port" value="7777"/>
          <param name="executor.name" value="standalone"/>
       </antcall>
       <antcall target="kill-rmi-executor">
          <param name="registry.host" value="localhost"/>
-         <param name="registry.port" value="2235"/>
+         <param name="registry.port" value="7777"/>
          <param name="executor.name" value="standalone2"/>
       </antcall>
+      <!-- allow some time for service undeployment -->
+      <sleep seconds="3"/>
+      <antcall target="kill-rmi-registry"/>
    </target>
 
    <target name="start-standalone-remoting-executor" description="Start a standalone (its own VM) JBoss Remoting executor">
@@ -228,6 +290,30 @@
          <arg value="${registry.host}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="log.suffix" value="rmi-executor-${registry.host}-${registry.port}-${executor.name}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
+         -->
+         <classpath refid="perf.execution.classpath"/>
+      </java>
+   </target>
+
+   <target name="start-rmi-registry">
+      <echo message="Starting registry"/>
+      <java classname="org.jboss.jms.perf.framework.remoting.rmi.RegistryRunner" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="log.suffix" value="registry"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
+         -->
+         <classpath refid="perf.execution.classpath"/>
+      </java>
+   </target>
+
+   <target name="kill-rmi-registry">
+      <echo message="Killing registry"/>
+      <java classname="org.jboss.jms.perf.framework.remoting.rmi.RegistryKiller" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="log.suffix" value="registry.kill"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
          -->

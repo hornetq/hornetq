@@ -9,17 +9,20 @@ package org.jboss.jms.perf.framework.remoting.rmi;
 import org.jboss.logging.Logger;
 import org.jboss.jms.perf.framework.remoting.Result;
 import org.jboss.jms.perf.framework.remoting.Request;
+import org.jboss.jms.perf.framework.remoting.Executor;
+import org.jboss.jms.perf.framework.remoting.Context;
 
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.AlreadyBoundException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class RMIExecutor extends UnicastRemoteObject implements Server
+public class RMIExecutor extends UnicastRemoteObject implements Server, Context
 {
    // Constants -----------------------------------------------------
 
@@ -49,7 +52,9 @@ public class RMIExecutor extends UnicastRemoteObject implements Server
             }
          }
 
-         new RMIExecutor(name, port, host).start();
+         RMIExecutor executor = new RMIExecutor(name, port, host);
+         executor.setColocated(false);
+         executor.start();
       }
       catch(Throwable t)
       {
@@ -66,8 +71,11 @@ public class RMIExecutor extends UnicastRemoteObject implements Server
    private int registryPort;
    private String registryHost;
    private String url;
-
    private Registry registry;
+
+   private Executor delegateExecutor;
+
+   private boolean colocated;
 
    // Constructors --------------------------------------------------
 
@@ -79,19 +87,44 @@ public class RMIExecutor extends UnicastRemoteObject implements Server
       this.registryPort = registryPort;
       this.registryHost = registryHost;
       registry = null;
+      delegateExecutor = new Executor(this);
+      colocated = true;
    }
 
    // Server implemenation ------------------------------------------
 
    public Result execute(Request request) throws Exception
    {
-      log.debug("receiving request for execution: " + request);
-      Result result = request.execute();
-      log.debug("request executed successfully");
-      return result;
+      return delegateExecutor.execute(request);
+   }
+
+   // Context implementation ----------------------------------------
+
+   public boolean isColocated()
+   {
+      return colocated;
    }
 
    // Public --------------------------------------------------------
+
+   // JMX managed attributes ----------------------------------------
+
+   public int getRegistryPort()
+   {
+      return registryPort;
+   }
+
+   public String getRegistryHost()
+   {
+      return registryHost;
+   }
+
+   public String getName()
+   {
+      return name;
+   }
+
+   // JMX managed operations ----------------------------------------
 
    public void start() throws Exception
    {
@@ -101,14 +134,10 @@ public class RMIExecutor extends UnicastRemoteObject implements Server
          {
             url = "//" + registryHost + ":" + registryPort + "/" + name;
             System.setProperty("java.rmi.server.hostname", registryHost);
-            registry = LocateRegistry.createRegistry(registryPort);
-            log.debug("registry(1) : " + registry + ", url: " + url);
          }
          else
          {
             url = "//localhost:" + registryPort + "/" + name;
-            registry = LocateRegistry.createRegistry(registryPort);
-            log.debug("registry(2) : " + registry + ", url: " + url);
          }
       }
       else
@@ -116,13 +145,22 @@ public class RMIExecutor extends UnicastRemoteObject implements Server
          throw new Exception("registry port name needed");
       }
 
-      registry.bind(url, this);
-      log.info(this + " started");
+      registry = LocateRegistry.getRegistry(registryHost, registryPort);
+      try
+      {
+         registry.bind(url, this);
+         log.info(this + " started");
+      }
+      catch(AlreadyBoundException e)
+      {
+         log.warn(this + " already started, try to stop it first!");
+      }
    }
 
    public void stop() throws Exception
    {
-      registry.unbind(name);
+      log.debug("Unbinding " + url + " from " + registry);
+      registry.unbind(url);
       log.info(this + " stopped");
    }
 
@@ -136,6 +174,11 @@ public class RMIExecutor extends UnicastRemoteObject implements Server
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void setColocated(boolean colocated)
+   {
+      this.colocated = colocated;
+   }
 
    // Inner classes -------------------------------------------------
 }

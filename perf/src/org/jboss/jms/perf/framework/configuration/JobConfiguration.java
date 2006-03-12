@@ -23,7 +23,7 @@ public class JobConfiguration
 
    private static final String DESTINATION = "destination";
    private static final String CONNECTION_FACTORY = "connection-factory";
-   private static final String EXECUTOR_URL = "executor-url";
+   private static final String EXECUTOR = "executor";
    private static final String MESSAGES = "messages";
    private static final String MESSAGE_SIZE = "message-size";
    private static final String DURATION = "duration";
@@ -32,11 +32,11 @@ public class JobConfiguration
 
    // Static --------------------------------------------------------
 
-   public static boolean isValidElementName(String name)
+   public static boolean isValidJobConfigurationElementName(String name)
    {
       if (DESTINATION.equals(name) ||
           CONNECTION_FACTORY.equals(name) ||
-          EXECUTOR_URL.equals(name) ||
+          EXECUTOR.equals(name) ||
           MESSAGES.equals(name) ||
           MESSAGE_SIZE.equals(name) ||
           DURATION.equals(name) ||
@@ -44,10 +44,23 @@ public class JobConfiguration
           ACKNOWLEDGMENT_MODE.equals(name))
       {
          return true;
-
       }
       return false;
    }
+
+   public static boolean isValidJobName(String name)
+   {
+      if ("send".equals(name) ||
+          "receive".equals(name) ||
+          "drain".equals(name) ||
+          "fill".equals(name) ||
+          "ping".equals(name))
+      {
+         return true;
+      }
+      return false;
+   }
+
 
    public static void validateAcknowledgmentMode(int acknowledgmentMode)
    {
@@ -104,7 +117,7 @@ public class JobConfiguration
 
    private String destinationName;
    private String connectionFactoryName;
-   private String executorURL;
+   private String executor;
    private Integer messageCount;
    private Integer messageSize;
    private Long duration;
@@ -117,7 +130,7 @@ public class JobConfiguration
    {
       destinationName = null;
       connectionFactoryName = null;
-      executorURL = null;
+      executor = null;
       messageCount = null;
       messageSize = null;
       duration = null;
@@ -156,14 +169,14 @@ public class JobConfiguration
    /**
     * null means no default
     */
-   public String getExecutorURL()
+   public String getExecutor()
    {
-      return executorURL;
+      return executor;
    }
 
-   public void setExecutorURL(String executorURL)
+   public void setExecutor(String executor)
    {
-      this.executorURL = executorURL;
+      this.executor = executor;
    }
 
    /**
@@ -237,7 +250,7 @@ public class JobConfiguration
       JobConfiguration n = new JobConfiguration();
       n.destinationName = this.destinationName;
       n.connectionFactoryName = this.connectionFactoryName;
-      n.executorURL = this.executorURL;
+      n.executor = this.executor;
       n.messageCount = this.messageCount;
       n.messageSize = this.messageSize;
       n.duration = this.duration;
@@ -266,9 +279,9 @@ public class JobConfiguration
       {
          setConnectionFactoryName(value);
       }
-      else if (EXECUTOR_URL.equals(name))
+      else if (EXECUTOR.equals(name))
       {
-         setExecutorURL(value);
+         setExecutor(value);
       }
       else if (MESSAGES.equals(name))
       {
@@ -317,10 +330,10 @@ public class JobConfiguration
       {
          j.setConnectionFactoryName(s);
       }
-      s = getExecutorURL();
+      s = getExecutor();
       if (s != null)
       {
-         j.setExecutorURL(s);
+         j.setExecutorName(s);
       }
       i = getMessageCount();
       if (i != null)

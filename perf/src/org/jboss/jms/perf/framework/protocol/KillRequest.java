@@ -23,6 +23,8 @@ package org.jboss.jms.perf.framework.protocol;
 
 import org.jboss.jms.perf.framework.remoting.Request;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.SimpleResult;
+import org.jboss.jms.perf.framework.remoting.Context;
 import org.jboss.logging.Logger;
 
 /**
@@ -48,14 +50,29 @@ public class KillRequest implements Request
 
    // Request implementation ----------------------------------------
 
-   public Result execute() throws Exception
+   public Result execute(Context context) throws Exception
    {
-      new Thread(new Killer()).start();
-      log.info("killer thread started");
-      return null;
+
+      if (context.isColocated())
+      {
+         // You SHALL NOT KILL in a colocated context
+         log.warn(this + " ignored!");
+         return new Failure();
+      }
+      else
+      {
+         new Thread(new Killer()).start();
+         log.info("killer thread started");
+         return new SimpleResult();
+      }
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "KILL REQUEST";
+   }
 
    // Package protected ---------------------------------------------
 

@@ -6,37 +6,42 @@
  */
 package org.jboss.jms.perf.framework.remoting.rmi;
 
-import org.jboss.jms.perf.framework.remoting.Coordinator;
-import org.jboss.jms.perf.framework.remoting.Result;
-import org.jboss.jms.perf.framework.remoting.Request;
 import org.jboss.logging.Logger;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class RMICoordinator implements Coordinator
+public class RegistryKiller
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(RMICoordinator.class);
+   private static final Logger log = Logger.getLogger(RegistryKiller.class);
 
    // Static --------------------------------------------------------
 
-   public static boolean isValidURL(String url)
+   public static void main(String[] args)
    {
       try
       {
-         new RMIURL(url);
-         return true;
+         Registry registry = LocateRegistry.getRegistry("localhost", 7777);
+
+         log.info("registry: " + registry);
+
+         RegistryManagement m = (RegistryManagement)registry.lookup("//localhost:7777/management");
+
+         m.kill();
+
+         log.info("registry killed");
       }
-      catch(Exception e)
+      catch(Throwable t)
       {
-         return false;
+         log.error("exception", t);
       }
    }
 
@@ -44,29 +49,9 @@ public class RMICoordinator implements Coordinator
 
    // Constructors --------------------------------------------------
 
-   // Coordinator implementation ------------------------------------
-
-   public Result sendToExecutor(String executorURL, Request request) throws Throwable
-   {
-      RMIURL url = new RMIURL(executorURL);
-
-      log.debug(this + " sending " + request + " to " + executorURL);
-
-      Registry r = LocateRegistry.getRegistry(url.getHost(), url.getPort());
-      Server server = (Server)r.lookup(url.getURL());
-      Result result = server.execute(request);
-
-      log.debug(this + " received result from " + executorURL);
-
-      return result;
-   }
+   // RegistryManagement interface ----------------------------------
 
    // Public --------------------------------------------------------
-
-   public String toString()
-   {
-      return "RMICoordinator[" + Integer.toHexString(hashCode()) + "]";
-   }
 
    // Package protected ---------------------------------------------
 
@@ -76,4 +61,3 @@ public class RMICoordinator implements Coordinator
 
    // Inner classes -------------------------------------------------
 }
-

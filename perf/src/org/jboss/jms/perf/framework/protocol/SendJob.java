@@ -96,6 +96,11 @@ public class SendJob extends ThroughputJobSupport
       return messageFactory;
    }
 
+   public String toString()
+   {
+      return "SEND JOB";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -202,19 +207,20 @@ public class SendJob extends ThroughputJobSupport
             log.debug("start sending using " + fullDump());
 
             long start = System.currentTimeMillis();
-            
-            long now = 0;
+
+            long timeLeft;
 
             while (true)
             {
-               now = System.currentTimeMillis();
-               
-               if (duration != Long.MAX_VALUE && now > start + duration)
-               {                                    
-                  log.debug("terminating sending because time expired");
+
+               timeLeft = duration - System.currentTimeMillis() + start;
+
+               if (timeLeft <= 0)
+               {
+                  log.debug("terminating sending because time (" + duration + " ms) expired");
                   break;
                }
-               
+
                Message m = messageFactory.getMessage(sess, messageSize);
                
                if (anon)
@@ -252,11 +258,11 @@ public class SendJob extends ThroughputJobSupport
                   break;
                }
                
-               doThrottle(now);
+               doThrottle();
                              
             }
                                      
-            actualTime = now - start;
+            actualTime = System.currentTimeMillis() - start;
             
             log.info("sent " + currentMessageCount + " messages, actual duration is " + actualTime + " ms");
 
@@ -275,12 +281,14 @@ public class SendJob extends ThroughputJobSupport
       private long lastTime = 0;
       private int lastCount = 0;
                   
-      protected void doThrottle(long now)
+      protected void doThrottle()
       {
          if (rate == 0)
          {
             return;
          }
+
+         long now = System.currentTimeMillis();
 
          if (log.isTraceEnabled()) { log.trace("doThrottle(" + now + ")"); }
 

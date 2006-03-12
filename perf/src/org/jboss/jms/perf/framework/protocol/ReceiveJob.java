@@ -89,6 +89,11 @@ public class ReceiveJob extends ThroughputJobSupport
       this.clientID = clientID;
    }
 
+   public String toString()
+   {
+      return "RECEIVE JOB";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

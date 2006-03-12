@@ -23,6 +23,10 @@ public interface Job extends Request
 {
    String getType();
 
+   String getExecutorName();
+
+   void setExecutorName(String executorName);
+
    String getExecutorURL();
 
    void setExecutorURL(String executorURL);
