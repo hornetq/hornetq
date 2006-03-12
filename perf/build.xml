@@ -112,6 +112,7 @@
       <!-- make first the unscoped sar for JBossMQ ... -->
       <mkdir dir="${build.classes}/META-INF"/>
       <mkdir dir="${build.classes}/xmdesc"/>
+      <delete file="${build.classes}/META-INF/jboss-service.xml"/>
       <copy file="./src/etc/rmi-executor-service.xml"
             tofile="${build.classes}/META-INF/jboss-service.xml"
             filtering="yes">
