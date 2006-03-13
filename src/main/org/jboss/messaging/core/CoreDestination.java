@@ -51,5 +51,11 @@ public interface CoreDestination extends Distributor, Receiver
     * @return cache size
     */
    int getDownCacheSize();
+   
+   /**
+    * 
+    * @return true if the CoreDestination represents a Queue
+    */
+   boolean isQueue();
 
 }

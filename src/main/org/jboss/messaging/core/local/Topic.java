@@ -163,6 +163,11 @@ public class Topic implements CoreDestination, ManageableTopic
       return downCacheSize;
    }
    
+   public boolean isQueue()
+   {
+      return false;
+   }
+   
    // ManageableTopic implementation --------------------------------
    
    /**
@@ -253,6 +258,7 @@ public class Topic implements CoreDestination, ManageableTopic
       }
       return list;
    }
+      
    
    /**
     * @see ManageableTopic#getMessages(long, String, String, String)

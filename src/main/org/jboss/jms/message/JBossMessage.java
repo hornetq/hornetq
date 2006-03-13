@@ -148,7 +148,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    
    protected byte[] correlationIDBytes;
    
-   protected int connectionID;
+   protected transient int connectionID;
    
    // Constructors --------------------------------------------------
  
@@ -842,9 +842,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          out.writeInt(correlationIDBytes.length);  
          
          out.write(correlationIDBytes);
-      }
-      
-      out.writeInt(connectionID);            
+      }            
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -896,8 +894,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          
          in.readFully(correlationIDBytes);
       }
-  
-      connectionID = in.readInt();
    }
 
    // Package protected ---------------------------------------------

@@ -172,9 +172,13 @@ public class ChannelState implements State
       else
       {
          //add to post commit callback
-         AddReferenceCallback callback = new AddReferenceCallback(ref);
-         tx.addCallback(callback);
-         if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
+         synchronized (refLock)
+         {
+            ref.setOrdering(getNextReferenceOrdering());
+            AddReferenceCallback callback = new AddReferenceCallback(ref);
+            tx.addCallback(callback);
+            if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
+         }                  
       }  
       
       if (recoverable && ref.isReliable())
@@ -193,10 +197,11 @@ public class ChannelState implements State
       
       synchronized (refLock)
       {         
+         ref.setOrdering(getNextReferenceOrdering());
+         
          if (paging)
          {         
             // We are in paging mode so the ref must go into persistent storage
-            ref.setOrdering(getNextReferenceOrdering());
             
             if (!ref.isReliable() && downCacheSize > 0)
             {
@@ -515,8 +520,6 @@ public class ChannelState implements State
                                          " cannot be added to non-recoverable state");
       }
 
-      ref.setOrdering(getNextReferenceOrdering());
-      
       boolean first = messageRefs.addLast(ref, ref.getPriority());
 
       if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
@@ -771,7 +774,10 @@ public class ChannelState implements State
          boolean first = false;
          try
          {         
-            first = addReferenceInMemory(ref);
+            synchronized (refLock)
+            {
+               first = addReferenceInMemory(ref);
+            }
          }
          catch (Throwable t)
          {

@@ -73,6 +73,11 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
       state.load();
    }
    
+   public boolean isQueue()
+   {
+      return true;
+   }
+   
    // ManageableQueue implementation --------------------------------
    
    /**

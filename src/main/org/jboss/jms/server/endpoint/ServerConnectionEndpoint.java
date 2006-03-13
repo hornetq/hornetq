@@ -592,6 +592,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionId;
    }
    
+
    protected void sendMessage(JBossMessage m, Transaction tx) throws JMSException
    {
       // The JMSDestination header must already have been set for each message
@@ -618,14 +619,59 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     
       if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx + " to the core destination " + jbDest.getName())); }
       
-      Delivery d = coreDestination.handle(null, r, tx);
+      //If we are sending to a topic, then we *always* do the send in the context of a transaction,
+      //in order to ensure that the message is delivered to all durable subscriptions (if any)
+      //attached to the topic. Otherwise if the server crashed in mid send, we may end up with the
+      //message in some, but not all of the durable subscriptions, which would be in
+      //contravention of the spec.
+      //When there are many durable subs for the topic, this actually should give us a performance gain
+      //since all the inserts can be done in the same JDBC tx too.
       
-      // The core destination is supposed to acknowledge immediately. If not, there's a problem.
-      if (d == null || !d.isDone())
+      boolean internalTx = false;
+      if (r.isReliable() && tx == null && !coreDestination.isQueue())
       {
-         String msg = "The message was not acknowledged by destination " + coreDestination;
-         log.error(msg);
-         throw new JBossJMSException(msg);
+         try
+         {
+            tx = tr.createTransaction();
+         }
+         catch (Exception e)
+         {
+            throw new JBossJMSException("Failed to create internal transaction", e);
+         }
+         internalTx = true;
+      }
+      
+      try
+      {         
+         Delivery d = coreDestination.handle(null, r, tx);
+         
+         if (internalTx)
+         {
+            tx.commit();
+         }
+         
+         // The core destination is supposed to acknowledge immediately. If not, there's a problem.
+         if (d == null || !d.isDone())
+         {
+            String msg = "The message was not acknowledged by destination " + coreDestination;
+            log.error(msg);
+            throw new JBossJMSException(msg);
+         }
+      }
+      catch (Throwable t)
+      {
+         if (internalTx)
+         {
+            try
+            {               
+               tx.rollback();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to rollback internal transaction", e);
+            }
+         }
+         throw new JBossJMSException("Failed to send message", t);
       }
    }
    
