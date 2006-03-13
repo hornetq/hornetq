@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
 /**
@@ -54,7 +54,7 @@ public class RecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
       
-      ms = new PagingMessageStore("s14");
+      ms = new SimpleMessageStore("s14");
 
       channel = new Queue(1, ms, pm, true, 100, 20, 10);
 

@@ -25,7 +25,7 @@ import org.jboss.test.messaging.core.message.base.RoutableSupportTestBase;
 import org.jboss.messaging.core.plugin.SimpleMessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.RoutableSupport;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.Message;
 
@@ -71,7 +71,7 @@ public class SimpleMessageReferenceTest extends RoutableSupportTestBase
       Message m = MessageFactory.createCoreMessage(0);
       m.putHeader("headerName01", "headerValue01");
 
-      MessageStore ms = new PagingMessageStore("0");
+      MessageStore ms = new SimpleMessageStore("0");
 
       rs = (RoutableSupport)ms.reference(m);
 

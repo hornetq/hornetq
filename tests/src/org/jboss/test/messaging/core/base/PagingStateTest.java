@@ -29,7 +29,7 @@ import org.jboss.messaging.core.State;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -88,7 +88,7 @@ public class PagingStateTest extends MessagingTestCase
 
       ((JDBCPersistenceManager)pm).start();
 
-      ms = new PagingMessageStore("store1");
+      ms = new SimpleMessageStore("store1");
       
       if (FULL_SIZE2 >= FULL_SIZE1)
       {
@@ -862,7 +862,7 @@ public class PagingStateTest extends MessagingTestCase
 
       ((JDBCPersistenceManager)pm).start();
       
-      ms = new PagingMessageStore("store1");
+      ms = new SimpleMessageStore("store1");
             
       channel1 = new Queue(1, ms, pm, true, FULL_SIZE1, PAGE_SIZE1, 0);
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     The JBossMQ performance test destinations.
+
+     $Id$
+ -->
+
+<server>
+
+   <mbean code="org.jboss.mq.server.jmx.Queue"
+          name="jboss.mq.destination:service=Queue,name=simpleQueue">
+     <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+     <depends optional-attribute-name="SecurityManager">jboss.mq:service=SecurityManager</depends>
+   </mbean>
+
+</server>

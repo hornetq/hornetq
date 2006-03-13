@@ -38,7 +38,9 @@ import org.jboss.jms.perf.framework.protocol.Failure;
 import org.jboss.jms.perf.framework.protocol.ReceiveJob;
 import org.jboss.jms.perf.framework.protocol.ThroughputResult;
 import org.jboss.jms.perf.framework.protocol.Job;
+import org.jboss.jms.perf.framework.protocol.SendJob;
 import org.jboss.jms.perf.framework.remoting.Result;
+import org.jboss.jms.perf.framework.remoting.Request;
 import org.jboss.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -150,54 +152,92 @@ class Charter
 
       XYSeriesCollection dataset = new XYSeriesCollection();
 
+      int mode = 2;
+
       for(Iterator i = pt.getExecutions().iterator(); i.hasNext(); )
       {
          Execution e = (Execution)i.next();
-         chartExecution(dataset, e);
+         chartExecution(dataset, e, mode);
+      }
+
+      String xLabel = "undefined";
+      String yLabel = "undefined";
+
+      if (mode == 1)
+      {
+         xLabel = "send rate (msg/s)";
+         yLabel = "receive rate (msg/s)";
+      }
+      else if (mode == 2)
+      {
+         xLabel = "target send rate (msg/s)";
+         yLabel = "measured send rate (msg/s)";
       }
 
       JFreeChart chart =
-         ChartFactory.createXYLineChart(testName, "send rate (msg/s)", "receive rate (msg/s)",
-                                        dataset, PlotOrientation.VERTICAL, true, true, false);
+         ChartFactory.createXYLineChart(testName, xLabel, yLabel, dataset, PlotOrientation.VERTICAL,
+                                        true, true, false);
 
       createImage(chart, generateImageName(testName));
    }
 
-   protected void chartExecution(XYSeriesCollection dataset, Execution execution) throws Exception
+   protected void chartExecution(XYSeriesCollection dataset, Execution execution, int mode)
+      throws Exception
    {
       String providerName = execution.getProviderName();
 
       XYSeries series = new XYSeries(providerName);
+
       for(Iterator i = execution.iterator(); i.hasNext(); )
       {
          List measurement = (List)i.next();
 
-         // TODO This is a particular case, make it more general
+         // TODO This are just particular cases, make it more general
 
-         if (measurement.size() != 2)
+         double x = 0, y = 0;
+
+         if (mode == 1)
          {
-            // ignore datapoints that do not have 2 parallel measurements (e.g. drains)
-            continue;
+            if (measurement.size() != 2)
+            {
+               // ignore datapoints that do not have 2 parallel measurements (e.g. drains)
+               continue;
+            }
+
+            Result sendRate = (Result)measurement.get(0);
+            Result receiveRate = (Result)measurement.get(1);
+
+            if (sendRate instanceof Failure || receiveRate instanceof Failure)
+            {
+               // ignore this too
+               continue;
+            }
+
+            if (((Job)sendRate.getRequest()).getType() == ReceiveJob.TYPE)
+            {
+               Result tmp = sendRate;
+               sendRate = receiveRate;
+               receiveRate = tmp;
+            }
+            x = ((ThroughputResult)sendRate).getThroughput();
+            y = ((ThroughputResult)receiveRate).getThroughput();
+         }
+         else if (mode == 2)
+         {
+            Result result = (Result)measurement.get(0);
+            Request request = result.getRequest();
+            if (!(request instanceof SendJob) || (result instanceof Failure))
+            {
+               continue;
+            }
+
+            SendJob j = (SendJob)request;
+            ThroughputResult tr = (ThroughputResult)result;
+            x = j.getRate();
+            y = tr.getThroughput();
          }
 
-         Result sendRate = (Result)measurement.get(0);
-         Result receiveRate = (Result)measurement.get(1);
-
-         if (sendRate instanceof Failure || receiveRate instanceof Failure)
-         {
-            // ignore this too
-            continue;
-         }
-
-         if (((Job)sendRate.getRequest()).getType() == ReceiveJob.TYPE)
-         {
-            Result tmp = sendRate;
-            sendRate = receiveRate;
-            receiveRate = tmp;
-         }
-
-         series.add(((ThroughputResult)sendRate).getThroughput(),
-                    ((ThroughputResult)receiveRate).getThroughput());
+         series.add(x, y);
       }
 
       dataset.addSeries(series);

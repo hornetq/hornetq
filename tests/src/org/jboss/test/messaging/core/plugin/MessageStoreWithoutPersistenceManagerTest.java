@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.plugin;
 
 import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -54,7 +54,7 @@ public class MessageStoreWithoutPersistenceManagerTest extends MessageStoreTestB
    {
       super.setUp();
 
-      ms = new PagingMessageStore("test-memory-store");
+      ms = new SimpleMessageStore("test-memory-store");
 
       log.debug("setup done");
    }

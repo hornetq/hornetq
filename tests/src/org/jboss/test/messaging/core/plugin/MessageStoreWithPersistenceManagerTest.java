@@ -23,7 +23,7 @@ package org.jboss.test.messaging.core.plugin;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.plugin.base.MessageStoreTestBase;
@@ -64,9 +64,9 @@ public class MessageStoreWithPersistenceManagerTest extends MessageStoreTestBase
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
       
-      ms = new PagingMessageStore("s9");
+      ms = new SimpleMessageStore("s9");
 
-      ms2 = new PagingMessageStore("s10");
+      ms2 = new SimpleMessageStore("s10");
 
       log.debug("setup done");
    }

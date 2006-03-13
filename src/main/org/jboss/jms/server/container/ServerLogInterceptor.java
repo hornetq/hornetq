@@ -118,7 +118,7 @@ public class ServerLogInterceptor implements Interceptor
              }
              else
              {
-                log.trace(target + "." + methodName + "() ok");
+                log.trace(target + "." + methodName + "() OK");
              }
           }
        }

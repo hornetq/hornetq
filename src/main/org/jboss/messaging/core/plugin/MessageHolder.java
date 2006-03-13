@@ -42,9 +42,9 @@ class MessageHolder
    
    private Message msg;
    
-   private PagingMessageStore ms;
+   private SimpleMessageStore ms;
    
-   public MessageHolder(Message msg, PagingMessageStore ms)
+   public MessageHolder(Message msg, SimpleMessageStore ms)
    {
       this.msg = msg;
       this.ms = ms;

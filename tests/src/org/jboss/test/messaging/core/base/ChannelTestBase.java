@@ -34,7 +34,7 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -108,7 +108,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       
       tr.start(this.msPersistenceManagerDelegate);
       
-      ms = new PagingMessageStore("s47");
+      ms = new SimpleMessageStore("s47");
 
    }
 

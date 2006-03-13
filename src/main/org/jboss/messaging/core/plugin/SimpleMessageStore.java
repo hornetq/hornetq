@@ -35,25 +35,19 @@ import org.jboss.messaging.util.Util;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
- * A MessageStore implementation that stores messages in an in-memory cache.
+ * A MessageStore implementation.
  * 
- * It stores one instance of the actual message in memory and returns new WeakMessageReference
- * instances to those messages via one of the reference() methods. Calling one of the reference()
- * methods causes the reference count for the message to be increased.
- *   
- * TODO - do spillover onto disc at low memory by reusing jboss mq message cache.
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class PagingMessageStore extends ServiceMBeanSupport implements MessageStore
+public class SimpleMessageStore extends ServiceMBeanSupport implements MessageStore
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PagingMessageStore.class);
+   private static final Logger log = Logger.getLogger(SimpleMessageStore.class);
 
    // Static --------------------------------------------------------
    
@@ -74,7 +68,7 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
     * @param storeID - if more than one message store is to be used in a distributed messaging
     *        configuration, each store must have an unique store ID.
     */
-   public PagingMessageStore(String storeID)
+   public SimpleMessageStore(String storeID)
    {
       this(storeID, true);
    }
@@ -83,7 +77,7 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
     * @param storeID - if more than one message store is to be used in a distributed messaging
     *        configuration, each store must have an unique store ID.
     */
-   public PagingMessageStore(String storeID, boolean acceptReliableMessages)
+   public SimpleMessageStore(String storeID, boolean acceptReliableMessages)
    {
       this.storeID = storeID;
       
@@ -135,8 +129,6 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
          throw new IllegalStateException(this + " does not accept reliable messages (" + m + ")");
       }
       
-      if (trace) { log.trace(this + " referencing " + m); }
-      
       MessageHolder holder = (MessageHolder)messages.get(new Long(m.getMessageID()));
       
       if (holder == null)
@@ -145,13 +137,13 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
       }
 
       MessageReference ref = new SimpleMessageReference(holder, this);
-
+      if (trace) { log.trace(this + " generated " + ref + " for " + m); }
       return ref;
    }
 
-   public MessageReference reference(long messageId)
+   public MessageReference reference(long messageID)
    {
-      MessageHolder holder = (MessageHolder)messages.get(new Long(messageId));
+      MessageHolder holder = (MessageHolder)messages.get(new Long(messageID));
       
       if (holder == null)
       {
@@ -159,7 +151,7 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
       }
        
       MessageReference ref = new SimpleMessageReference(holder, this);
-      
+      if (trace) { log.trace(this + " generates " + ref + " for " + messageID); }
       return ref;      
    }
    
@@ -180,8 +172,7 @@ public class PagingMessageStore extends ServiceMBeanSupport implements MessageSt
    
    public List messageIds()
    {
-      List msgs = new ArrayList(messages.keySet());
-      return msgs;
+      return new ArrayList(messages.keySet());
    }
 
    // Public --------------------------------------------------------

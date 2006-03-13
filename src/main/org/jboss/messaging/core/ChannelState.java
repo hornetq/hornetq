@@ -38,7 +38,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 
 /**
- * Represents the state of a Channel
+ * Represents the state of a Channel.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -195,7 +195,7 @@ public class ChannelState implements State
       {         
          if (paging)
          {         
-            //We are in paging mode so the ref must go into persistent storage
+            // We are in paging mode so the ref must go into persistent storage
             ref.setOrdering(getNextReferenceOrdering());
             
             if (!ref.isReliable() && downCacheSize > 0)
@@ -204,7 +204,7 @@ public class ChannelState implements State
             }
             else
             {
-               //Reliable so need to persist now
+               // Reliable (or no downcache) so need to persist now
                pm.addReference(channel.getChannelID(), ref, null); 
             }
             
@@ -343,9 +343,7 @@ public class ChannelState implements State
    {      
       synchronized (refLock)
       {
-         MessageReference result = (MessageReference)messageRefs.peekFirst();
-               
-         return result;   
+         return (MessageReference)messageRefs.peekFirst();
       }
    }
     
@@ -485,42 +483,49 @@ public class ChannelState implements State
    
    protected void addToDownCache(MessageReference ref) throws Exception
    {
-      //Non reliable refs can be cached in a down cache and then flushed to storage
-      //in blocks
+      // Non reliable refs can be cached in a down cache and then flushed to storage in blocks
+
       downCache.add(ref);
+
+      if (trace) { log.trace(ref + " sent to downcache"); }
       
       if (downCache.size() == downCacheSize)
       {
+         if (trace) { log.trace(this + "'s downcache is full (" + downCache.size() + " messages)"); }
          flushDownCache();
       }
    }
    
    protected void flushDownCache() throws Exception
    {
+      if (trace) { log.trace(this + " flushes downcache"); }
+
       pm.addReferences(channel.getChannelID(), downCache);
       
       downCache.clear();
+
+      if (trace) { log.trace(this + " cleared downcache"); }
    }
    
    protected boolean addReferenceInMemory(MessageReference ref) throws Throwable
    {
-      if (trace) { log.trace(this + " adding " + ref + " non-transactionally"); }
-
       if (ref.isReliable() && !acceptReliableMessages)
       {
          throw new IllegalStateException("Reliable reference " + ref +
                                          " cannot be added to non-recoverable state");
       }
 
-      if (trace) { log.trace(this + " added " + ref + " in memory"); } 
-      
       ref.setOrdering(getNextReferenceOrdering());
       
       boolean first = messageRefs.addLast(ref, ref.getPriority());
-       
+
+      if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
+
       if (messageRefs.size() == fullSize)
       {            
-         //We are full in memory - go into paging mode
+         // We are full in memory - go into paging mode
+
+         if (trace) { log.trace(this + " going into paging mode"); }
          paging = true;
       }
             
@@ -712,6 +717,7 @@ public class ChannelState implements State
       
       if (refsInStorage == 0)
       {
+         if (trace) { log.trace(this + " exiting paging mode"); }
          paging = false;
       }         
    }  

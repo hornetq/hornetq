@@ -203,6 +203,8 @@ public class PerformanceTest implements Serializable, JobList
     */
    private Coordinator prepare(Execution e) throws Exception
    {
+      log.info("");
+      
       String providerName = e.getProviderName();
       List executorURLs = new ArrayList();
 
@@ -282,7 +284,7 @@ public class PerformanceTest implements Serializable, JobList
          {
             log.debug("resetting " + executorURL);
             coordinator.sendToExecutor(executorURL, new ResetRequest());
-            log.info("executor " + executorURL + " on-line and reset");
+            log.info("executor " + executorURL + " on-line");
          }
          catch(Throwable e)
          {

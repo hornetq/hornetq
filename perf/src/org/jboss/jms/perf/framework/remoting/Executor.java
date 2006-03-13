@@ -64,9 +64,11 @@ public class Executor implements Context
          {
             lock.acquire();
 
+            log.info(delegator + " executing " + request);
+
             Result result = request.execute(this);
 
-            log.debug(request + " executed successfully");
+            log.info(delegator + " executed " + request + " successfully");
 
             return result;
          }

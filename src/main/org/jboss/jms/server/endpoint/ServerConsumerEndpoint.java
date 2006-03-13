@@ -116,7 +116,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                                     String selector, boolean noLocal)
                                     throws InvalidSelectorException
    {
-      log.debug("creating ConsumerEndpoint[" + id + "]");
+      if (trace) { log.trace("creating consumer endpoint " + id); }
       
       this.id = id;
       this.channel = channel;
@@ -134,7 +134,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       this.deliveries = new LinkedHashMap();
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
-      this.channel.add(this);      
+      this.channel.add(this);
+
+      log.debug(this + " created");
    }
    
    // Receiver implementation --------------------------------------- 
@@ -519,8 +521,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    }
    
    /**
-    * Disconnect this consumer from the Channel that feeds it. This method does not clear up
-    * any deliveries.
+    * Disconnect this consumer from the Channel that feeds it. This method does not clear up any
+    * deliveries.
     */
    protected void disconnect()
    {
@@ -529,7 +531,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       if (removed)
       {
          disconnected = true;
-         if (trace) { log.trace(this + " disconnected from the channel"); }
+         if (trace) { log.trace(this + " removed from the channel"); }
       }
    }
    

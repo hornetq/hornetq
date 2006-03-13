@@ -68,7 +68,6 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public JMSServerInvocationHandler()
    {
       callbackHandlers = new HashMap();
-      
       trace = log.isTraceEnabled();
    }
 
@@ -77,28 +76,31 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public void setMBeanServer(MBeanServer server)
    {
       this.server = server;
-      if (trace) { log.trace("set MBeanServer to " + this.server); }
+      log.debug("set MBeanServer to " + this.server);
    }
 
    public void setInvoker(ServerInvoker invoker)
    {
       this.invoker = invoker;
-      if (trace) {log.trace("set ServerInvoker to " + this.invoker); }
+      log.debug("set ServerInvoker to " + this.invoker);
    }
 
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
-      if (trace) { log.trace("Invoking:" + invocation); }
+      if (trace) { log.trace("invoking " + invocation); }
       
       MessagingMarshallable mm = (MessagingMarshallable)invocation.getParameter();
       
       MethodInvocation i = (MethodInvocation)mm.getLoad();
             
-      //Put the version number into meta data for use in the InjectionInterceptor
+      // put the version number into meta data for use in the InjectionInterceptor
       i.getMetaData().addMetaData(MetaDataConstants.JMS,
-            MetaDataConstants.VERSION_NUMBER, new Byte(mm.getVersion()), PayloadKey.TRANSIENT);
+                                  MetaDataConstants.VERSION_NUMBER,
+                                  new Byte(mm.getVersion()),
+                                  PayloadKey.TRANSIENT);
             
-      String s = (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
+      String s =
+         (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
       
       if (s != null)
       {
@@ -109,9 +111,10 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
          if (callbackHandler != null)
          {
-            if (trace) { log.trace("found calllback handler for session " + Util.guidToString(s)); }
+            log.debug("found calllback handler for remoting session " + Util.guidToString(s));
             i.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                        MetaDataConstants.CALLBACK_HANDLER, callbackHandler, PayloadKey.TRANSIENT);
+                                        MetaDataConstants.CALLBACK_HANDLER,
+                                        callbackHandler, PayloadKey.TRANSIENT);
          }
          else
          {
@@ -129,7 +132,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void addListener(InvokerCallbackHandler callbackHandler)
    {                 
-      if (trace) { log.trace("adding callback handler " + callbackHandler); }
+      log.debug("adding callback handler " + callbackHandler);
       
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
@@ -155,7 +158,8 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      if (trace) { log.trace("removing callback handler: " + callbackHandler); }
+      log.debug("removing callback handler: " + callbackHandler);
+
       synchronized(callbackHandlers)
       {
          for(Iterator i = callbackHandlers.keySet().iterator(); i.hasNext();)
@@ -182,6 +186,11 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JMSServerInvocationHandler[" + invoker + ", " + server + "]";
+   }
    
    // Package protected ---------------------------------------------
    

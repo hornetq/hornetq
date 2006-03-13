@@ -44,6 +44,7 @@
    <performance-tests>
 
       <!-- just makes sure the executors are deployed and ready -->
+      <!--
       <performance-test name="Ping">
 
          <ping executor="REMOTE"/>
@@ -61,56 +62,66 @@
          <execution provider="JBossMQ"/>
 
       </performance-test>
+      -->
 
-      <!--
+      <performance-test name="Send Rate O KB Message Non-Persistent Non-Transactional Remote Client">
 
-      <performance-test name="Throughput O KB Message Non-Persistent Non-Transactional, 1 sender, 1 receiver">
-
+         <destination>/queue/simpleQueue</destination>
          <message-size>0</message-size>
-         <messages>10000</messages>
+         <messages>20000</messages>
 
-         <drain/>
+         <drain executor="COLOCATED"/>
+         <send rate="200" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="200" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="400" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="400" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="800" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="800" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="1200" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="1000" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="1600" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="1500" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="2000" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="2000" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="2400" executor="COLOCATED"/>
 
-         <parallel>
-            <send rate="2500" executor="COLOCATED"/>
-            <receive executor="COLOCATED2"/>
-         </parallel>
+         <drain executor="COLOCATED"/>
+         <send rate="2800" executor="COLOCATED"/>
 
+         <drain executor="COLOCATED"/>
+         <send rate="3200" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="3600" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4000" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4400" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4800" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="5200" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="5600" executor="COLOCATED"/>
+
+         <drain executor="COLOCATED"/> 
+         <send rate="6000" executor="COLOCATED"/>
+
+         <execution provider="JBossMQ"/>
          <execution provider="JBossMessaging"/>
 
       </performance-test>
-
-      -->
 
    </performance-tests>
 

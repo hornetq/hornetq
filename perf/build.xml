@@ -167,7 +167,21 @@
       </jar>
    </target>
 
-   <target name="run" depends="sar">
+   <target name="deploy-destinations">
+
+      <!-- The performance tests may need specially crafted destination that behave equivalently
+           on diferent providers.
+      -->
+      <copy file="./messaging-destinations-service.xml" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
+      <copy file="./jbossmq-destinations-service.xml" todir="${ENV.JBOSS_HOME}/server/jbossmq/deploy"/>
+   </target>
+
+   <target name="undeploy-destinations">
+      <delete file="${ENV.JBOSS_HOME}/server/messaging/deploy/messaging-destinations-service.xml"/>
+      <delete file="${ENV.JBOSS_HOME}/server/jbossmq/deploy/jbossmq-destinations-service.xml"/>
+   </target>
+
+   <target name="run">
 
       <!-- <antcall target="start-executors"/> -->
 

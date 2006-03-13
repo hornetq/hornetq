@@ -8,7 +8,7 @@ package org.jboss.test.messaging.core;
 
 
 import org.jboss.messaging.core.ChannelState;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.test.messaging.core.base.StateTestBase;
 
 /**
@@ -33,7 +33,7 @@ public class RecoverableStateTest extends StateTestBase
    {
       super.setUp();
 
-      ms = new PagingMessageStore("s60");
+      ms = new SimpleMessageStore("s60");
 
       channel = new SimpleChannel(1, ms);
       

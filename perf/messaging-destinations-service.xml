@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     The JBoss Messaging performance test destinations.
+
+     $Id$
+ -->
+
+<server>
+
+   <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
+       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
+   </loader-repository>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.performance:service=Queue,name=simpleQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="FullSize">500000</attribute>
+   </mbean>
+
+</server>

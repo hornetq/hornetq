@@ -48,11 +48,14 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    private boolean createdProgrammatically = false;
    
    // The following 3 attributes can only be changed when service is stopped.
+
    // In memory message number limit
    private int fullSize = FULL_SIZE;
+
    // Paging size
    private int pageSize = PAGE_SIZE;
-   // Write-cache size
+
+   // Down-cache size
    private int downCacheSize = DOWN_CACHE_SIZE;
 
    // Constructors --------------------------------------------------
@@ -68,7 +71,6 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    {
       try
       {
-         
          started = true;
    
          if (serviceName != null)
@@ -78,19 +80,23 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
          if (name == null || name.length() == 0)
          {
-            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") +
-                                             " name was not properly set in the service's ObjectName");
+            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") + " " +
+                                             "name was not properly set in the service's" +
+                                             "ObjectName");
          }
    
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+
          dm = serverPeer.getDestinationManager();
          sm = serverPeer.getSecurityManager();
          cm = serverPeer.getChannelMapperDelegate();
    
          jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
-         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(), serverPeer.getPersistenceManagerDelegate(),
-               fullSize, pageSize, downCacheSize);
-   
+
+         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(),
+                                  serverPeer.getPersistenceManagerDelegate(), fullSize,
+                                  pageSize, downCacheSize);
+
          log.info(this + " started");
       }
       catch (Exception e)
@@ -177,8 +183,6 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       return createdProgrammatically;
    }
 
-   // JMX managed operations ----------------------------------------
-   
    /**
     * Get in-memory message limit
     * @return message limit
@@ -188,7 +192,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       // XXX This value should be the same as getting from core destination
       return fullSize;
    }
-   
+
    /**
     * Set in-memory message limit when destination is stopped.
     * @param fullSize the message limit
@@ -202,7 +206,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       }
       this.fullSize = fullSize;
    }
-   
+
    /**
     * Get paging size
     * @return paging size
@@ -226,7 +230,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       }
       this.pageSize = pageSize;
    }
-   
+
    /**
     * Get write-cache size
     * @return cache size
@@ -251,6 +255,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       this.downCacheSize = downCacheSize;
    }
 
+   // JMX managed operations ----------------------------------------
+   
    // TODO implement the following:
 
 //   void removeAllMessages() throws Exception;

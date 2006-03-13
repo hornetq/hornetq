@@ -31,6 +31,7 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
+import org.jboss.messaging.util.Util;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -45,61 +46,78 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  */
 public class ConnectionManagerImpl implements ConnectionManager, ConnectionListener
 {
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(ConnectionManagerImpl.class);
-   
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected Map connections;
-   
+
+   // Constructors --------------------------------------------------
+
    public ConnectionManagerImpl()
    {
       connections = new ConcurrentReaderHashMap();
    }
 
+   // ConnectionManager ---------------------------------------------
+
    public void registerConnection(String remotingClientSessionID, ServerConnectionEndpoint endpoint)
    {
       connections.put(remotingClientSessionID, endpoint);
-      log.trace("Registered connection:" + remotingClientSessionID);
+      log.debug("registered connection " + endpoint + " as " +
+                Util.guidToString(remotingClientSessionID));
    }
 
    public ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID)
-   {      
-      log.trace("Unregistered connection:" + remotingClientSessionID);
-      return (ServerConnectionEndpoint)connections.remove(remotingClientSessionID);
+   {
+      ServerConnectionEndpoint e =
+         (ServerConnectionEndpoint)connections.remove(remotingClientSessionID);
+
+      log.debug("unregistered connection " + e + " with remoting session ID " +
+                Util.guidToString(remotingClientSessionID));
+      return e;
    }
-   
+
    public ServerConnectionEndpoint getConnection(String remotingClientSessionID)
    {
       return (ServerConnectionEndpoint)connections.get(remotingClientSessionID);
    }
-   
+
+   // ConnectionListener --------------------------------------------
+
    public void handleConnectionException(Throwable t, Client client)
    {
       String sessionId = client.getSessionId();
       if (sessionId == null)
-      {         
+      {
          log.warn("Session id is null for client " + client);
       }
       else
-      {            
+      {
          if (t instanceof ClientDisconnectedException)
          {
-            //This is ok
-            if (log.isTraceEnabled()) { log.trace("Client " + client + " has disconnected"); } 
+            // This is OK
+            if (log.isTraceEnabled()) { log.trace("client " + client + " has disconnected"); }
          }
          else
          {
             log.info("Broken client connection, clearing up its state " + sessionId, t);
-            
+
             if (log.isTraceEnabled()) { log.trace("Clearing up server resources for this connection"); }
-            
-            ServerConnectionEndpoint endpoint = 
+
+            ServerConnectionEndpoint endpoint =
                (ServerConnectionEndpoint)connections.remove(sessionId);
-            
+
             if (endpoint == null)
             {
                log.error("Cannot find ServerConnectionEndpoint for session id " + sessionId);
             }
             else
-            {       
+            {
                try
                {
                   endpoint.close();
@@ -109,10 +127,20 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
                   log.error("Failed to close connection", e);
                }
             }
-            
-            log.info("Cleared up state for connection");            
+
+            log.info("Cleared up state for connection");
          }
-      }  
-   } 
+      }
+   }
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

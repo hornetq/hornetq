@@ -13,7 +13,7 @@ import java.io.Serializable;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.distributed.replicator.Acknowledgment;
 import org.jboss.messaging.core.distributed.replicator.MultipleReceiversDelivery;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.base.DeliveryTestBase;
@@ -53,7 +53,7 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
    {
       super.setUp();
 
-      ms = new PagingMessageStore("in-memory-store0");
+      ms = new SimpleMessageStore("in-memory-store0");
       ref = ms.reference(MessageFactory.createCoreMessage(0));
       observer = new SimpleDeliveryObserver();
    }

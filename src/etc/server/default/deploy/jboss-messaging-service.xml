@@ -98,9 +98,9 @@
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.PagingMessageStore"
+   <mbean code="org.jboss.messaging.core.plugin.SimpleMessageStore"
       name="jboss.messaging:service=MessageStore"
-      xmbean-dd="xmdesc/PagingMessageStore-xmbean.xml">
+      xmbean-dd="xmdesc/SimpleMessageStore-xmbean.xml">
       <constructor>
          <!-- StoreID -->
          <arg type="java.lang.String" value="store.0" />

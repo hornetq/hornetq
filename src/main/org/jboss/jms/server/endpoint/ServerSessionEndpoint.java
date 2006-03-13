@@ -126,8 +126,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          selector = null;
       }
       
-      if (trace) { log.trace("creating consumer endpoint for " + jmsDestination + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName); }
-            
+      log.debug("creating consumer for " + jmsDestination + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
+
       if (jmsDestination.isTemporary())
       {
          // Can only create a consumer for a temporary destination on the same connection
@@ -361,16 +361,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void closing() throws JMSException
    {
-      if (trace) log.trace("closing (noop)");
-
       //Currently does nothing
+      if (trace) log.trace("closing (noop)");
    }
    
    public void send(JBossMessage message) throws JMSException
    {
       connectionEndpoint.sendMessage(message, null);
    }
-   
    
    /**
     * Cancel all the deliveries in the session

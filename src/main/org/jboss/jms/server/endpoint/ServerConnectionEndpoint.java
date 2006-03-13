@@ -168,8 +168,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
       try
       {
-         if (trace) { log.trace("creating session, transacted=" + transacted + " ackMode=" + ToString.acknowledgmentMode(acknowledgmentMode) + " XA=" + isXA); }
-         
+         log.debug("creating session " + (transacted ? "transacted" :"non transacted")+ ", " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " + (isXA ? "XA": "non XA"));
+
          if (closed)
          {
             throw new IllegalStateException("Connection is closed");
@@ -186,7 +186,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
                  
-         log.debug("created session delegate (sessionID=" + sessionID + ")");
+         log.debug("created " + d);
          log.debug("created and registered " + ep);
 
          return d;
@@ -594,10 +594,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    protected void sendMessage(JBossMessage m, Transaction tx) throws JMSException
    {
-      if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx)); }
-
       // The JMSDestination header must already have been set for each message
       JBossDestination jbDest = (JBossDestination)m.getJMSDestination();
+
       if (jbDest == null)
       {
          throw new IllegalStateException("JMSDestination header not set!");
@@ -610,14 +609,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          throw new JMSException("Destination " + jbDest.getName() + " does not exist");
       }
       
-      //This allows the no-local consumers to filter out the messages that come from the
-      //same connection
-      //TODO Do we want to set this for ALL messages. Optimisation is possible here
+      // This allows the no-local consumers to filter out the messages that come from the same
+      //  connection
+      // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       m.setConnectionID(connectionID);
       
       Routable r = (Routable)m;
     
-      if (trace) { log.trace("sending " + r + " to the core destination " + jbDest.getName() + (tx == null ? "": ", tx " + tx)); }
+      if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx + " to the core destination " + jbDest.getName())); }
       
       Delivery d = coreDestination.handle(null, r, tx);
       

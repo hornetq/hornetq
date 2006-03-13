@@ -7,12 +7,12 @@
 
 <mbean>
    <description>A paging message store</description>
-   <class>org.jboss.messaging.core.plugin.PagingMessageStore</class>
+   <class>org.jboss.messaging.core.plugin.SimpleMessageStore</class>
 
    <!-- Managed constructors -->
 
    <constructor>
-      <name>PagingMessageStore</name>
+      <name>SimpleMessageStore</name>
       <parameter>
          <name>StoreID</name>
          <type>java.io.Serializable</type>

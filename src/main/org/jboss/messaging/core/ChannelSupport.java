@@ -200,7 +200,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
 
    public boolean add(Receiver r)
    {
-      if (trace) { log.trace(this + ": attempting to add receiver " + r); }
+      if (trace) { log.trace(this + " attempting to add receiver " + r); }
       
       boolean added = router.add(r);
 

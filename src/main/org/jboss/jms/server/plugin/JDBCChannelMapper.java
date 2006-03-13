@@ -217,8 +217,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    
    public CoreDestination getCoreDestination(JBossDestination jbDest)
    {
-      CoreDestination cd =  getCoreDestinationInternal(jbDest.isQueue(), jbDest.getName());
-      return cd;
+      return getCoreDestinationInternal(jbDest.isQueue(), jbDest.getName());
    }
    
    public JBossDestination getJBossDestination(long coreDestinationId)
@@ -254,7 +253,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             throw new JMSException("Destination " + destName + " already deployed");
          }
          
-         //Might already be in db
+         // Might already be in db
          long id;
          Long l = getIdForDestination(isQueue, destName);
          if (l == null)
@@ -322,7 +321,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             }
          }
          
-         //Put in id map too
+         // Put in id map too
          
          JBossDestination jbd ;
          
@@ -336,7 +335,9 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          }
          
          idMap.put(new Long(id), jbd);
-         
+
+         log.debug("core destination " + cd + " (fullSize=" + fullSize + ", pageSize=" +
+                   pageSize  + ", downCacheSize=" + downCacheSize + ") deployed");
       }
       catch (Exception e)
       {
@@ -499,10 +500,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
          }
                 
-         CoreSubscription sub = new CoreSubscription(id, topic, selector, noLocal, ms, pm, 
-               topic.getFullSize(), topic.getPageSize(), topic.getDownCacheSize());
-         
-         return sub;
+         return new CoreSubscription(id, topic, selector, noLocal, ms, pm, topic.getFullSize(),
+                                     topic.getPageSize(), topic.getDownCacheSize());
       }
       catch (Exception e)
       {
@@ -1077,9 +1076,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    {
       Map m = isQueue ? queues : topics;
       
-      CoreDestination dest = (CoreDestination)m.get(destName);
-        
-      return dest;
+      return (CoreDestination)m.get(destName);
    }
    
    /*

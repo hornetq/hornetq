@@ -26,7 +26,7 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.local.Pipe;
@@ -85,7 +85,7 @@ public class PagingTest extends MessagingTestCase
 
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
-      ms = new PagingMessageStore("store0");
+      ms = new SimpleMessageStore("store0");
    }
 
    public void tearDown() throws Exception

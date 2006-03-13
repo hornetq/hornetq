@@ -41,7 +41,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.PagingMessageStore;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -96,7 +96,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    {
       pm = createPM();      
       pm.setUsingBatchUpdates(batch);      
-      ms = new PagingMessageStore("s0");    
+      ms = new SimpleMessageStore("s0");
       pm.start();
    }
    
