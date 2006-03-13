@@ -81,319 +81,316 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       super.tearDown();
    }
 
-   // TODO - why are these commented out?
+   public void testDeployDestinationAdministratively() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
-//
-//   public void testDeployDestinationAdministratively() throws Exception
-//   {
-//      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-//
-//      String config =
-//         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
-//         "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
-//         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
-//         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
-//         "</mbean>";
-//
-//      config = adjustConfiguration(config);
-//
-//      ObjectName destObjectName = deploy(config);
-//
-//      assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
-//
-//      String jndiName = (isQueue() ? "/queue" : "/topic") + "/Kirkwood";
-//      String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
-//      assertEquals(jndiName, s);
-//
-//
-////      Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
-////                                                      new Object[0], new String[0]);
-//      
-//      Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-//
-//
-//      assertEquals(1, destinations.size());
-//
-//      if (isQueue())
-//      {
-//         Queue q = (Queue)destinations.iterator().next();
-//         assertEquals("Kirkwood", q.getQueueName());
-//      }
-//      else
-//      {
-//         Topic t = (Topic)destinations.iterator().next();
-//         assertEquals("Kirkwood", t.getTopicName());
-//      }
-//
-//      assertEquals(serverPeerObjectName,
-//                   ServerManagement.getAttribute(destObjectName, "ServerPeer"));
-//
-//      // try to change it
-//      ServerManagement.setAttribute(destObjectName, "ServerPeer",
-//                                    "theresnosuchdomain:service=TheresNoSuchService");
-//
-//      assertEquals(serverPeerObjectName,
-//                   ServerManagement.getAttribute(destObjectName, "ServerPeer"));
-//
-//      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
-//   }
-//
-//   public void testDefaultSecurityConfiguration() throws Exception
-//   {
-//      String config =
-//         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
-//         "       name=\"somedomain:service=@TOREPLACE@,name=DefaultSecurity\"" +
-//         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
-//         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
-//         "</mbean>";
-//
-//      config = adjustConfiguration(config);
-//
-//      ObjectName destObjectName = deploy(config);
-//
-//      assertNull(ServerManagement.getAttribute(destObjectName, "SecurityConfig"));
-//
-//      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
-//   }
-//
-//   public void testSecurityConfigurationManagement() throws Exception
-//   {
-//      String securityConfig =
-//         "        <security>\n" +
-//         "           <role name=\"guest\" read=\"true\" write=\"true\"/>\n" +
-//         "           <role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>\n" +
-//         "           <role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>\n" +
-//         "        </security>";
-//
-//      String config =
-//         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\"\n" +
-//         "       name=\"somedomain:service=@TOREPLACE@,name=DefaultSecurity\"\n" +
-//         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">\n" +
-//         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-//         "       <attribute name=\"SecurityConfig\">\n" +
-//                 securityConfig +
-//         "       </attribute> \n" +
-//         "</mbean>";
-//
-//
-//      config = adjustConfiguration(config);
-//
-//      ObjectName destObjectName = deploy(config);
-//
-//      Element security = (Element)ServerManagement.getAttribute(destObjectName, "SecurityConfig");
-//
-//      XMLUtil.assertEquivalent(XMLUtil.stringToElement(securityConfig), security);
-//
-//      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
-//   }
-//
-//   public void testArbitraryJNDIName() throws Exception
-//   {
-//      String testJNDIName = "/a/totally/arbitrary/jndi/name/thisisthequeue";
-//
-//      String config =
-//         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
-//         "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
-//         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
-//         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
-//         "    <attribute name=\"JNDIName\">" + testJNDIName + "</attribute>" +
-//         "</mbean>";
-//
-//      config = adjustConfiguration(config);
-//
-//      ObjectName destObjectName = deploy(config);
-//
-//      assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
-//      assertEquals(testJNDIName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
-//
-//      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-//
-//      Destination d = (Destination)ic.lookup(testJNDIName);
-//
-//      if (isQueue())
-//      {
-//         Queue q = (Queue)d;
-//         assertEquals("Kirkwood", q.getQueueName());
-//      }
-//      else
-//      {
-//         Topic t = (Topic)d;
-//         assertEquals("Kirkwood", t.getTopicName());
-//      }
-//
-//      ic.close();
-//
-//      // try to change the JNDI name after initialization
-//
-//      ServerManagement.setAttribute(destObjectName, "JNDIName", "total/junk");
-//      assertEquals(testJNDIName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
-//
-//      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
-//   }
-//
-//
-//   public void testDeployDestinationProgramatically() throws Exception
-//   {
-//      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-//
-//      String destinationType = isQueue() ? "Queue" : "Topic";
-//      String createMethod = "create" + destinationType;
-//      String destroyMethod = "destroy" + destinationType;
-//      String destinationName = "BlahBlah";
-//      String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
-//      ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
-//                                                 destinationType +",name=" + destinationName);
-//
-//      // deploy it
-//
-//      String jndiName = (String)ServerManagement.
-//         invoke(serverPeerObjectName, createMethod,
-//                new Object[] { destinationName, null },
-//                new String[] { "java.lang.String", "java.lang.String" });
-//
-//      assertEquals(expectedJNDIName, jndiName);
-//
-//      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-//
-//      if (isQueue())
-//      {
-//         Queue q = (Queue)ic.lookup(jndiName);
-//         assertEquals(destinationName, q.getQueueName());
-//      }
-//      else
-//      {
-//         Topic t = (Topic)ic.lookup(jndiName);
-//         assertEquals(destinationName, t.getTopicName());
-//      }
-//
-//      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
-//      assertEquals(expectedJNDIName,
-//                   (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
-//
-//      // undeploy it
-//
-//      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
-//                                                   new Object[] { destinationName },
-//                                                   new String[] { "java.lang.String" });
-//
-//      assertTrue(b.booleanValue());
-//
-//      try
-//      {
-//         ic.lookup(expectedJNDIName);
-//         fail("should throw exception");
-//      }
-//      catch(NamingException e)
-//      {
-//         // OK
-//      }
-//
-//      Set set = ServerManagement.query(destObjectName);
-//      assertTrue(set.isEmpty());
-//
-////      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
-////                                         new Object[0], new String[0]);
-//      
-//      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-//
-//
-//      assertTrue(set.isEmpty());
-//
-//      ic.close();
-//
-//   }
-//
-//   public void testDestroyNonProgrammaticDestination() throws Exception
-//   {
-//      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-//
-//      String destinationType = isQueue() ? "Queue" : "Topic";
-//      String destroyMethod = "destroy" + destinationType;
-//      String destinationName = "XXX";
-//
-//      // deploy "classically"
-//
-//      String config =
-//         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
-//         "       name=\"jboss.messaging.destination:service=@TOREPLACE@,name=" + destinationName + "\" " +
-//         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
-//         "    <depends optional-attribute-name=\"ServerPeer\">" + serverPeerObjectName + "</depends>" +
-//         "</mbean>";
-//
-//      config = adjustConfiguration(config);
-//
-//      ObjectName destObjectName = deploy(config);
-//
-//      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
-//
-//      // try to undeploy programatically
-//
-//      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
-//                                                   new Object[] { destinationName },
-//                                                   new String[] { "java.lang.String" });
-//
-//      assertFalse(b.booleanValue());
-//   }
-//
-//   public void testPageableChannelAttributes() throws Exception
-//   {
-//      String config =
-//         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
-//         "       name=\"somedomain:service=@TOREPLACE@,name=PageableAttributes\"" +
-//         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
-//         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
-//         "</mbean>";
-//
-//      config = adjustConfiguration(config);
-//
-//      ObjectName destObjectName = deploy(config);
-//      
-//      // Test the default values
-//      // FIXME hardcoded default values
-//      assertEquals(new Integer(100), ServerManagement.getAttribute(destObjectName, "FullSize"));
-//      assertEquals(new Integer(20), ServerManagement.getAttribute(destObjectName, "PageSize"));
-//      assertEquals(new Integer(10), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
-//
-//      ChannelMapper cm = ServerManagement.getChannelMapper();
-//      JBossDestination jbd = isQueue() ? (JBossDestination)new JBossQueue("PageableAttributes") : 
-//         (JBossDestination)new JBossTopic("PageableAttributes");
-//      CoreDestination cd = cm.getCoreDestination(jbd);
-//      
-//      // FIXME hardcoded default values
-//      assertEquals(100, cd.getFullSize());
-//      assertEquals(20, cd.getPageSize());
-//      assertEquals(10, cd.getDownCacheSize());
-//      
-//      // Try to change the values when destination lives, no effect
-//      // FIXME hardcoded default values
-//      ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
-//      assertEquals(new Integer(100), ServerManagement.getAttribute(destObjectName, "FullSize"));
-//      ServerManagement.setAttribute(destObjectName, "PageSize", "222");
-//      assertEquals(new Integer(20), ServerManagement.getAttribute(destObjectName, "PageSize"));
-//      ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
-//      assertEquals(new Integer(10), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
-//      
-//      // Stop the destination and change the value then test them from MBean
-//      ServerManagement.invoke(destObjectName, "stop", null, null);
-//      // FIXME hardcoded default values
-//      ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
-//      assertEquals(new Integer(1111), ServerManagement.getAttribute(destObjectName, "FullSize"));
-//      ServerManagement.setAttribute(destObjectName, "PageSize", "222");
-//      assertEquals(new Integer(222), ServerManagement.getAttribute(destObjectName, "PageSize"));
-//      ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
-//      assertEquals(new Integer(33), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
-// 
-//      // Start the service again and test the value from core destination
-//      ServerManagement.invoke(destObjectName, "start", null, null);
-//      
-//      // XXX Must get core destination again! The old one is out-of-date
-//      cd = cm.getCoreDestination(jbd);
-//      assertEquals(1111, cd.getFullSize());
-//      assertEquals(222, cd.getPageSize());
-//      assertEquals(33, cd.getDownCacheSize());
-//
-//      undeployDestination("PageableAttributes");
-//   }
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
+
+      String jndiName = (isQueue() ? "/queue" : "/topic") + "/Kirkwood";
+      String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
+      assertEquals(jndiName, s);
+
+
+//      Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
+//                                                      new Object[0], new String[0]);
+
+      Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
+
+      assertEquals(1, destinations.size());
+
+      if (isQueue())
+      {
+         Queue q = (Queue)destinations.iterator().next();
+         assertEquals("Kirkwood", q.getQueueName());
+      }
+      else
+      {
+         Topic t = (Topic)destinations.iterator().next();
+         assertEquals("Kirkwood", t.getTopicName());
+      }
+
+      assertEquals(serverPeerObjectName,
+                   ServerManagement.getAttribute(destObjectName, "ServerPeer"));
+
+      // try to change it
+      ServerManagement.setAttribute(destObjectName, "ServerPeer",
+                                    "theresnosuchdomain:service=TheresNoSuchService");
+
+      assertEquals(serverPeerObjectName,
+                   ServerManagement.getAttribute(destObjectName, "ServerPeer"));
+
+      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
+   }
+
+   public void testDefaultSecurityConfiguration() throws Exception
+   {
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"somedomain:service=@TOREPLACE@,name=DefaultSecurity\"" +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      assertNull(ServerManagement.getAttribute(destObjectName, "SecurityConfig"));
+
+      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
+   }
+
+   public void testSecurityConfigurationManagement() throws Exception
+   {
+      String securityConfig =
+         "        <security>\n" +
+         "           <role name=\"guest\" read=\"true\" write=\"true\"/>\n" +
+         "           <role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>\n" +
+         "           <role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>\n" +
+         "        </security>";
+
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\"\n" +
+         "       name=\"somedomain:service=@TOREPLACE@,name=DefaultSecurity\"\n" +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">\n" +
+         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
+         "       <attribute name=\"SecurityConfig\">\n" +
+                 securityConfig +
+         "       </attribute> \n" +
+         "</mbean>";
+
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      Element security = (Element)ServerManagement.getAttribute(destObjectName, "SecurityConfig");
+
+      XMLUtil.assertEquivalent(XMLUtil.stringToElement(securityConfig), security);
+
+      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
+   }
+
+   public void testArbitraryJNDIName() throws Exception
+   {
+      String testJNDIName = "/a/totally/arbitrary/jndi/name/thisisthequeue";
+
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "    <attribute name=\"JNDIName\">" + testJNDIName + "</attribute>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
+      assertEquals(testJNDIName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
+
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      Destination d = (Destination)ic.lookup(testJNDIName);
+
+      if (isQueue())
+      {
+         Queue q = (Queue)d;
+         assertEquals("Kirkwood", q.getQueueName());
+      }
+      else
+      {
+         Topic t = (Topic)d;
+         assertEquals("Kirkwood", t.getTopicName());
+      }
+
+      ic.close();
+
+      // try to change the JNDI name after initialization
+
+      ServerManagement.setAttribute(destObjectName, "JNDIName", "total/junk");
+      assertEquals(testJNDIName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
+
+      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
+   }
+
+
+   public void testDeployDestinationProgramatically() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String destinationType = isQueue() ? "Queue" : "Topic";
+      String createMethod = "create" + destinationType;
+      String destroyMethod = "destroy" + destinationType;
+      String destinationName = "BlahBlah";
+      String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
+      ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
+                                                 destinationType +",name=" + destinationName);
+
+      // deploy it
+
+      String jndiName = (String)ServerManagement.
+         invoke(serverPeerObjectName, createMethod,
+                new Object[] { destinationName, null },
+                new String[] { "java.lang.String", "java.lang.String" });
+
+      assertEquals(expectedJNDIName, jndiName);
+
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      if (isQueue())
+      {
+         Queue q = (Queue)ic.lookup(jndiName);
+         assertEquals(destinationName, q.getQueueName());
+      }
+      else
+      {
+         Topic t = (Topic)ic.lookup(jndiName);
+         assertEquals(destinationName, t.getTopicName());
+      }
+
+      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
+      assertEquals(expectedJNDIName,
+                   (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
+
+      // undeploy it
+
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+                                                   new Object[] { destinationName },
+                                                   new String[] { "java.lang.String" });
+
+      assertTrue(b.booleanValue());
+
+      try
+      {
+         ic.lookup(expectedJNDIName);
+         fail("should throw exception");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
+
+      Set set = ServerManagement.query(destObjectName);
+      assertTrue(set.isEmpty());
+
+//      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
+//                                         new Object[0], new String[0]);
+
+      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
+
+      assertTrue(set.isEmpty());
+
+      ic.close();
+
+   }
+
+   public void testDestroyNonProgrammaticDestination() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String destinationType = isQueue() ? "Queue" : "Topic";
+      String destroyMethod = "destroy" + destinationType;
+      String destinationName = "XXX";
+
+      // deploy "classically"
+
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"jboss.messaging.destination:service=@TOREPLACE@,name=" + destinationName + "\" " +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">" + serverPeerObjectName + "</depends>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
+
+      // try to undeploy programatically
+
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+                                                   new Object[] { destinationName },
+                                                   new String[] { "java.lang.String" });
+
+      assertFalse(b.booleanValue());
+   }
+
+   public void testPageableChannelAttributes() throws Exception
+   {
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"somedomain:service=@TOREPLACE@,name=PageableAttributes\"" +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      // Test the default values
+      // FIXME hardcoded default values
+      assertEquals(new Integer(100), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(20), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(10), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+
+      ChannelMapper cm = ServerManagement.getChannelMapper();
+      JBossDestination jbd = isQueue() ? (JBossDestination)new JBossQueue("PageableAttributes") :
+         (JBossDestination)new JBossTopic("PageableAttributes");
+      CoreDestination cd = cm.getCoreDestination(jbd);
+
+      // FIXME hardcoded default values
+      assertEquals(100, cd.getFullSize());
+      assertEquals(20, cd.getPageSize());
+      assertEquals(10, cd.getDownCacheSize());
+
+      // Try to change the values when destination lives, no effect
+      // FIXME hardcoded default values
+      ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
+      assertEquals(new Integer(100), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      ServerManagement.setAttribute(destObjectName, "PageSize", "222");
+      assertEquals(new Integer(20), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
+      assertEquals(new Integer(10), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+
+      // Stop the destination and change the value then test them from MBean
+      ServerManagement.invoke(destObjectName, "stop", null, null);
+      // FIXME hardcoded default values
+      ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
+      assertEquals(new Integer(1111), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      ServerManagement.setAttribute(destObjectName, "PageSize", "222");
+      assertEquals(new Integer(222), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
+      assertEquals(new Integer(33), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+
+      // Start the service again and test the value from core destination
+      ServerManagement.invoke(destObjectName, "start", null, null);
+
+      // XXX Must get core destination again! The old one is out-of-date
+      cd = cm.getCoreDestination(jbd);
+      assertEquals(1111, cd.getFullSize());
+      assertEquals(222, cd.getPageSize());
+      assertEquals(33, cd.getDownCacheSize());
+
+      undeployDestination("PageableAttributes");
+   }
 
    // Package protected ---------------------------------------------
    
