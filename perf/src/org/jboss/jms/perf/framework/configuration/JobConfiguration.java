@@ -11,6 +11,7 @@ import org.jboss.jms.util.XMLUtil;
 import org.jboss.jms.perf.framework.protocol.Job;
 
 import javax.jms.Session;
+import javax.jms.DeliveryMode;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -29,6 +30,8 @@ public class JobConfiguration
    private static final String DURATION = "duration";
    private static final String RATE = "rate";
    private static final String ACKNOWLEDGMENT_MODE = "acknowledgment-mode";
+   private static final String DELIVERY_MODE = "delivery-mode";
+
 
    // Static --------------------------------------------------------
 
@@ -41,7 +44,8 @@ public class JobConfiguration
           MESSAGE_SIZE.equals(name) ||
           DURATION.equals(name) ||
           RATE.equals(name) ||
-          ACKNOWLEDGMENT_MODE.equals(name))
+          ACKNOWLEDGMENT_MODE.equals(name) ||
+          DELIVERY_MODE.equals(name))
       {
          return true;
       }
@@ -61,7 +65,6 @@ public class JobConfiguration
       return false;
    }
 
-
    public static void validateAcknowledgmentMode(int acknowledgmentMode)
    {
       if (acknowledgmentMode != Session.AUTO_ACKNOWLEDGE &&
@@ -70,6 +73,15 @@ public class JobConfiguration
           acknowledgmentMode != Session.SESSION_TRANSACTED)
       {
          throw new IllegalArgumentException("invalid acknowledgment mode: " + acknowledgmentMode);
+      }
+   }
+
+   public static void validateDeliveryMode(int deliveryMode)
+   {
+      if (deliveryMode != DeliveryMode.NON_PERSISTENT &&
+          deliveryMode != DeliveryMode.PERSISTENT)
+      {
+         throw new IllegalArgumentException("invalid delivery mode: " + deliveryMode);
       }
    }
 
@@ -101,6 +113,26 @@ public class JobConfiguration
       throw new IllegalArgumentException("invalid acknowledgment mode: " + acknowledgmentMode);
    }
 
+   public static int validateDeliveryMode(String deliveryMode)
+   {
+      if (deliveryMode == null)
+      {
+         throw new IllegalArgumentException("null delivery mode");
+      }
+
+      String s = deliveryMode.toUpperCase();
+
+      if ("NON_PERSISTENT".equals(s))
+      {
+         return DeliveryMode.NON_PERSISTENT;
+      }
+      else if ("PERSISTENT".equals(s))
+      {
+         return DeliveryMode.PERSISTENT;
+      }
+      throw new IllegalArgumentException("invalid delivery mode: " + deliveryMode);
+   }
+
    public static String executionURLToString(String executionURL)
    {
       if (executionURL == null)
@@ -112,7 +144,6 @@ public class JobConfiguration
       return executionURL.substring(i + 3);
    }
 
-
    // Attributes ----------------------------------------------------
 
    private String destinationName;
@@ -123,6 +154,7 @@ public class JobConfiguration
    private Long duration;
    private Integer rate;
    private Integer acknowledgmentMode;
+   private Integer deliveryMode;
 
    // Constructors --------------------------------------------------
 
@@ -136,6 +168,7 @@ public class JobConfiguration
       duration = null;
       rate = null;
       acknowledgmentMode = null;
+      deliveryMode = null;
    }
 
    // Public --------------------------------------------------------
@@ -245,6 +278,20 @@ public class JobConfiguration
       this.acknowledgmentMode = new Integer(acknowledgmentMode);
    }
 
+   /**
+    * null means no default
+    */
+   public Integer getDeliveryMode()
+   {
+      return deliveryMode;
+   }
+
+   public void setDeliveryMode(int deliveryMode)
+   {
+      validateDeliveryMode(deliveryMode);
+      this.deliveryMode = new Integer(deliveryMode);
+   }
+
    public JobConfiguration copy()
    {
       JobConfiguration n = new JobConfiguration();
@@ -256,6 +303,7 @@ public class JobConfiguration
       n.duration = this.duration;
       n.rate = this.rate;
       n.acknowledgmentMode = this.acknowledgmentMode;
+      n.deliveryMode = this.deliveryMode;
 
       return n;
    }
@@ -308,6 +356,11 @@ public class JobConfiguration
          int i = validateAcknowledgmentMode(value);
          setAcknowledgmentMode(i);
       }
+      else if (DELIVERY_MODE.equals(name))
+      {
+         int i = validateDeliveryMode(value);
+         setDeliveryMode(i);
+      }
       else
       {
          throw new Exception("Unknown node " + name);
@@ -359,6 +412,11 @@ public class JobConfiguration
       if (i != null)
       {
          j.setAcknowledgmentMode(i.intValue());
+      }
+      i = getDeliveryMode();
+      if (i != null)
+      {
+         j.setDeliveryMode(i.intValue());
       }
    }
 

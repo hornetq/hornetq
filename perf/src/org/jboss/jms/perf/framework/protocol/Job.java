@@ -85,4 +85,8 @@ public interface Job extends Request
 
    void setAcknowledgmentMode(int acknowledgmentMode);
 
+   int getDeliveryMode();
+
+   void setDeliveryMode(int deliveryMode);
+
 }

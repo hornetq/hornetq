@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Session;
+import javax.jms.DeliveryMode;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
@@ -89,6 +90,22 @@ public abstract class JobSupport implements Job, Serializable
       }
    }
 
+   public static String deliveryModeToString(int deliveryMode)
+   {
+      if (DeliveryMode.NON_PERSISTENT == deliveryMode)
+      {
+         return "NON_PERSISTENT";
+      }
+      else if (DeliveryMode.PERSISTENT == deliveryMode)
+      {
+         return "PERSISTENT";
+      }
+      else
+      {
+         return "UNKNOWN";
+      }
+   }
+
    // Attributes ----------------------------------------------------
 
    private String executorName;
@@ -107,6 +124,7 @@ public abstract class JobSupport implements Job, Serializable
 
    protected boolean transacted;
    protected int acknowledgmentMode;
+   protected int deliveryMode;
 
    // Constructors --------------------------------------------------
 
@@ -239,6 +257,16 @@ public abstract class JobSupport implements Job, Serializable
    public void setAcknowledgmentMode(int acknowledgmentMode)
    {
       this.acknowledgmentMode = acknowledgmentMode;
+   }
+
+   public int getDeliveryMode()
+   {
+      return deliveryMode;
+   }
+
+   public void setDeliveryMode(int deliveryMode)
+   {
+      this.deliveryMode = deliveryMode;
    }
 
    // Public --------------------------------------------------------

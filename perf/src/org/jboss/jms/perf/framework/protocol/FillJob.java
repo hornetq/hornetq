@@ -37,7 +37,6 @@ public class FillJob extends JobSupport
    // Attributes ----------------------------------------------------
 
    protected int numMessages;  // TODO - it's already availabe in JobSupport
-   protected int deliveryMode;  // TODO - it's already availabe in JobSupport
    protected int msgSize; // TODO - it's already availabe in JobSupport
    protected MessageFactory mf;  // TODO - it's already availabe in JobSupport
 

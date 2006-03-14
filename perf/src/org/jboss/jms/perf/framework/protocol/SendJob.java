@@ -12,7 +12,6 @@ import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.DeliveryMode;
 
 import org.jboss.jms.perf.framework.factories.MessageFactory;
 import org.jboss.jms.perf.framework.factories.MessageMessageFactory;
@@ -42,7 +41,6 @@ public class SendJob extends ThroughputJobSupport
    // Attributes ----------------------------------------------------
 
    protected boolean anon;
-   protected int deliveryMode;
    protected MessageFactory messageFactory;
 
    double targetMsgsPerSamplePeriod;
@@ -59,7 +57,6 @@ public class SendJob extends ThroughputJobSupport
       anon = false;
       messageSize = 0;
       messageFactory = new MessageMessageFactory();
-      deliveryMode = DeliveryMode.NON_PERSISTENT;
       rate = 0;
       targetMsgsPerSamplePeriod = (((double)rate) * SAMPLE_PERIOD) / 1000;
    }
@@ -79,11 +76,6 @@ public class SendJob extends ThroughputJobSupport
    public void setAnon(boolean anon)
    {
       this.anon = anon;
-   }
-
-   public void setDeliveryMode(int deliveryMode)
-   {
-      this.deliveryMode = deliveryMode;
    }
 
    public void setMessageFactory(MessageFactory messageFactory)
@@ -128,6 +120,8 @@ public class SendJob extends ThroughputJobSupport
          append(isTransacted()).append('\n');
       sb.append("    message factory:                 ").
          append(getMessageFactory()).append('\n');
+      sb.append("    delivery mode:                   ").
+         append(JobSupport.deliveryModeToString(getDeliveryMode())).append('\n');
       sb.append("    message size:                    ").
          append(getMessageSize()).append(" bytes").append('\n');
       sb.append("    message count:                   ").

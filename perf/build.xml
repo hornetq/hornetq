@@ -117,8 +117,8 @@
             tofile="${build.classes}/META-INF/jboss-service.xml"
             filtering="yes">
          <filterset>
-            <filter token="NAME_1" value="colocated-jbossmq"/>
-            <filter token="NAME_2" value="colocated-jbossmq2"/>
+            <filter token="NAME_1" value="local-jbossmq"/>
+            <filter token="NAME_2" value="local-jbossmq2"/>
          </filterset>
       </copy>
       <copy file="./src/etc/RMIExecutor-xmbean.xml" todir="${build.classes}/xmdesc"/>
@@ -136,8 +136,8 @@
             tofile="${build.classes}/META-INF/jboss-service.xml"
             filtering="yes">
          <filterset>
-            <filter token="NAME_1" value="colocated-messaging"/>
-            <filter token="NAME_2" value="colocated-messaging2"/>
+            <filter token="NAME_1" value="local-messaging"/>
+            <filter token="NAME_2" value="local-messaging2"/>
          </filterset>
       </copy>
       <!-- enable scoping -->
@@ -240,12 +240,12 @@
       <antcall target="start-standalone-rmi-executor">
          <param name="registry.host" value="localhost"/>
          <param name="registry.port" value="7777"/>
-         <param name="executor.name" value="standalone"/>
+         <param name="executor.name" value="remote"/>
       </antcall>
       <antcall target="start-standalone-rmi-executor">
          <param name="registry.host" value="localhost"/>
          <param name="registry.port" value="7777"/>
-         <param name="executor.name" value="standalone2"/>
+         <param name="executor.name" value="remote2"/>
       </antcall>
       <!-- deploy colocated executors; port values hardcoded for the time being -->
       <copy file="${module.output}/lib/rmi-executor-scoped.sar" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
@@ -271,12 +271,12 @@
       <antcall target="kill-rmi-executor">
          <param name="registry.host" value="localhost"/>
          <param name="registry.port" value="7777"/>
-         <param name="executor.name" value="standalone"/>
+         <param name="executor.name" value="remote"/>
       </antcall>
       <antcall target="kill-rmi-executor">
          <param name="registry.host" value="localhost"/>
          <param name="registry.port" value="7777"/>
-         <param name="executor.name" value="standalone2"/>
+         <param name="executor.name" value="remote2"/>
       </antcall>
       <!-- allow some time for service undeployment -->
       <sleep seconds="3"/>

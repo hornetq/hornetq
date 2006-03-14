@@ -155,14 +155,14 @@ public class PerformanceTest implements Serializable, JobList
 
    public void run() throws Exception
    {
-      log.info("");
-      log.info(this);
-
       if (getRequestedExecutions().size() == 0)
       {
-         log.warn(this + " has no executions requested, skipping ...");
+         log.debug(this + " has no executions requested, skipping ...");
          return;
       }
+
+      log.info("");
+      log.info(this);
 
       int executionCounter = 1;
 
