@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Date;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -46,7 +47,10 @@ public class PerformanceTest implements Serializable, JobList
 
    protected long id;
    protected String name;
-   protected List executions;
+   private int loops;
+
+   private List requestedExecutions; // the executions declared in the XML file
+   private List effectiveExecutions; // the execution effectively performed
 
    protected String destination;
    protected String connectionFactory;
@@ -56,10 +60,17 @@ public class PerformanceTest implements Serializable, JobList
 
    public PerformanceTest(Runner runner, String name)
    {
+      this(runner, name, 1);
+   }
+
+   public PerformanceTest(Runner runner, String name, int loops)
+   {
       this.runner = runner;
       this.name = name;
+      this.loops = loops;
       id = Long.MIN_VALUE;
-      executions = new ArrayList();
+      requestedExecutions = new ArrayList();
+      effectiveExecutions = new ArrayList();
       jobs = new ArrayList();
    }
 
@@ -107,14 +118,24 @@ public class PerformanceTest implements Serializable, JobList
       return connectionFactory;
    }
 
-   public void addExecution(Execution exec)
+   public void addRequestedExecution(Execution e)
    {
-      executions.add(exec);
+      requestedExecutions.add(e);
    }
 
-   public List getExecutions()
+   public void addEffectiveExecution(Execution e)
    {
-      return executions;
+      effectiveExecutions.add(e);
+   }
+
+   public List getRequestedExecutions()
+   {
+      return requestedExecutions;
+   }
+
+   public List getEffectiveExecutions()
+   {
+      return effectiveExecutions;
    }
 
    public String getName()
@@ -135,59 +156,81 @@ public class PerformanceTest implements Serializable, JobList
    public void run() throws Exception
    {
       log.info("");
-      log.info("Performance Test \"" + getName() + "\"");
+      log.info(this);
+
+      if (getRequestedExecutions().size() == 0)
+      {
+         log.warn(this + " has no executions requested, skipping ...");
+         return;
+      }
 
       int executionCounter = 1;
 
-      for(Iterator ei = executions.iterator(); ei.hasNext(); )
+      for(int loopCounter = 0; loopCounter < loops; loopCounter++)
       {
-         Execution e = (Execution)ei.next();
-
-         Coordinator coordinator = prepare(e);
-
-         log.info("");
-         log.info("Execution " + executionCounter++ + " (provider " + e.getProviderName() + ")");
-
-         for(Iterator i = jobs.iterator(); i.hasNext(); )
+         for(Iterator ri = getRequestedExecutions().iterator(); ri.hasNext(); )
          {
-            Object o = i.next();
+            String providerName = ((Execution)ri.next()).getProviderName();
+            Execution effectiveExecution = new Execution(providerName);
 
-            if (o instanceof Job)
-            {
-               Result result = run(coordinator, (Job)o);
-               log.info(e.size() + ". " + result);
-               e.addMeasurement(result);
-            }
-            else
-            {
-               log.info(e.size() + ". PARALLEL");
+            addEffectiveExecution(effectiveExecution);
 
-               List results = runParallel(coordinator, (JobList)o);
-               for(Iterator ri = results.iterator(); ri.hasNext(); )
+            Coordinator coordinator = prepareJobs(providerName);
+
+            log.info("");
+            log.info("Execution " + executionCounter++ + " (provider " +
+               effectiveExecution.getProviderName() + ")");
+
+            effectiveExecution.setStartDate(new Date());
+
+            for(Iterator i = jobs.iterator(); i.hasNext(); )
+            {
+               Object o = i.next();
+
+               if (o instanceof Job)
                {
-                  log.info("    " + ri.next());
+                  Result result = run(coordinator, (Job)o);
+                  log.info(effectiveExecution.size() + ". " + result);
+                  effectiveExecution.addMeasurement(result);
                }
-               e.addMeasurement(results);
+               else
+               {
+                  log.info(effectiveExecution.size() + ". PARALLEL");
+
+                  List results = runParallel(coordinator, (JobList)o);
+                  for(Iterator resi = results.iterator(); resi.hasNext(); )
+                  {
+                     log.info("    " + resi.next());
+                  }
+                  effectiveExecution.addMeasurement(results);
+               }
             }
+
+            effectiveExecution.setFinishDate(new Date());
          }
       }
+
    }
 
    public String toString()
    {
       StringBuffer sb = new StringBuffer();
 
-      sb.append("PerformanceTest[").append(name).append("](");
-      for(Iterator i = executions.iterator(); i.hasNext(); )
+      sb.append("PerformanceTest[").append(name).append("]");
+      if (requestedExecutions.size() > 0)
       {
-         Execution e = (Execution)i.next();
-         sb.append(e.getProviderName());
-         if (i.hasNext())
+         sb.append('(');
+         for(Iterator i = requestedExecutions.iterator(); i.hasNext(); )
          {
-            sb.append(", ");
+            Execution e = (Execution)i.next();
+            sb.append(e.getProviderName());
+            if (i.hasNext())
+            {
+               sb.append(", ");
+            }
          }
+         sb.append(")");
       }
-      sb.append(")");
       return sb.toString();
    }
 
@@ -198,14 +241,13 @@ public class PerformanceTest implements Serializable, JobList
    // Private -------------------------------------------------------
 
    /**
-    * Prepares the list of jobs to be ran in a specific execution context, and also probe
-    * executors.
+    * Prepares the list of jobs to be ran in a specific execution context, and also probe executors.
     */
-   private Coordinator prepare(Execution e) throws Exception
+   private Coordinator prepareJobs(String providerName) throws Exception
    {
+      // leave this here!
       log.info("");
-      
-      String providerName = e.getProviderName();
+
       List executorURLs = new ArrayList();
 
       for(Iterator i = jobs.iterator(); i.hasNext(); )

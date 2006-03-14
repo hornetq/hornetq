@@ -32,7 +32,7 @@ public class PingJob extends JobSupport
 
    // Attributes ----------------------------------------------------
 
-   private int sleep = 2;
+   private long sleep = 500;
 
    // Constructors --------------------------------------------------
 
@@ -44,8 +44,8 @@ public class PingJob extends JobSupport
 
    protected Result doWork(Context context) throws Exception
    {
-      log.info("sleeping for " + sleep + " seconds");
-      Thread.sleep(sleep * 1000);
+      log.info("sleeping for " + sleep + " milliseconds");
+      Thread.sleep(sleep);
       log.info("woke up, returning");
       return new SimpleResult();
    }

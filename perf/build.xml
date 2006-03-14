@@ -193,10 +193,10 @@
 
       <!-- <antcall target="kill-executors"/> -->
 
-      <antcall target="charter"/>
+      <antcall target="chart"/>
    </target>
 
-   <target name="charter" depends="compile">
+   <target name="chart" depends="compile">
       <antcall target="runner">
          <param name="action" value="chart"/>
          <param name="module.output" value="${module.output}"/>

@@ -23,6 +23,7 @@ import org.jboss.jms.perf.framework.remoting.Result;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Date;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -58,12 +59,24 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
    public void testPerformanceTestStorage() throws Exception
    {
       PerformanceTest t = new PerformanceTest(null, "One");
+      Execution e = new Execution("someexecution");
+      t.addEffectiveExecution(e);
+
       pm.savePerformanceTest(t);
 
       PerformanceTest tl = pm.getPerformanceTest("One");
 
       assertEquals("One", tl.getName());
-      assertTrue(tl.getExecutions().isEmpty());
+
+      List executions = tl.getEffectiveExecutions();
+      assertEquals(1, executions.size());
+
+      Execution execution = (Execution)executions.get(0);
+      assertEquals("someexecution", execution.getProviderName());
+      assertNull(execution.getStartDate());
+      assertNull(execution.getFinishDate());
+      Iterator measurments = execution.iterator();
+      assertFalse(measurments.hasNext());
    }
 
    public void testComplexPerformanceTestStorage() throws Exception
@@ -71,12 +84,15 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       PerformanceTest t;
 
       t = new PerformanceTest(null, "One");
+      Execution e = new Execution("someexecution");
+      t.addEffectiveExecution(e);
+
       pm.savePerformanceTest(t);
 
       t = new PerformanceTest(null, "Two");
 
-      Execution e = new Execution("JBossMessaging");
-      t.addExecution(e);
+      e = new Execution("JBossMessaging");
+      t.addEffectiveExecution(e);
 
       Job j = null;
       ThroughputResult r = null;
@@ -135,11 +151,11 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
       e = new Execution("ActiveMQ");
 
-      t.addExecution(e);
+      t.addEffectiveExecution(e);
 
       e = new Execution("JBossMQ");
 
-      t.addExecution(e);
+      t.addEffectiveExecution(e);
 
       l = new ArrayList();
 
@@ -229,17 +245,23 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
       PerformanceTest pt = pm.getPerformanceTest("One");
       assertEquals("One", pt.getName());
-      assertTrue(pt.getExecutions().isEmpty());
+      List executions = pt.getEffectiveExecutions();
+      assertEquals(1, executions.size());
+
+      Execution execution = (Execution)executions.get(0);
+      assertEquals("someexecution", execution.getProviderName());
+      Iterator measurments = execution.iterator();
+      assertFalse(measurments.hasNext());
 
       PerformanceTest pt2 = pm.getPerformanceTest("Two");
       assertEquals("Two", pt2.getName());
 
-      List executions = pt2.getExecutions();
+      executions = pt2.getEffectiveExecutions();
       assertEquals(3, executions.size());
 
       // JBossMessaging execution
 
-      Execution execution = null;
+      execution = null;
 
       for(Iterator i = executions.iterator(); i.hasNext(); )
       {
@@ -251,7 +273,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
          }
       }
 
-      Iterator measurments = execution.iterator();
+      measurments = execution.iterator();
 
       List list = (List)measurments.next();
       assertContains(list, SendJob.TYPE, 1, 2, 3, 4, 5, 6);
@@ -336,7 +358,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
    {
       PerformanceTest t = new PerformanceTest(null, "One");
       Execution e = new Execution("someexecution");
-      t.addExecution(e);
+      t.addEffectiveExecution(e);
 
       Job j = new SendJob();
       Result r = new Failure();
@@ -348,7 +370,7 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
       // retrieve and check data
 
       PerformanceTest pt = pm.getPerformanceTest("One");
-      List executions = pt.getExecutions();
+      List executions = pt.getEffectiveExecutions();
       assertEquals(1, executions.size());
       Execution execution = (Execution)executions.get(0);
       Iterator measurments = execution.iterator();
@@ -360,6 +382,35 @@ public class HSQLDBPersistenceManagerTest extends PerformanceFrameworkTestCase
 
       assertFalse(measurments.hasNext());
    }
+
+
+   public void testPersistEmptyTest() throws Exception
+   {
+      PerformanceTest t = new PerformanceTest(null, "Empty");
+
+      pm.savePerformanceTest(t);
+
+      assertNull(pm.getPerformanceTest("Empty"));
+   }
+
+   public void testExecutionStartAndFinishDates() throws Exception
+   {
+      PerformanceTest t = new PerformanceTest(null, "One");
+      Execution e = new Execution("someexecution");
+      e.setStartDate(new Date(1));
+      e.setFinishDate(new Date(2));
+      t.addEffectiveExecution(e);
+
+      pm.savePerformanceTest(t);
+
+      PerformanceTest tl = pm.getPerformanceTest("One");
+      List executions = tl.getEffectiveExecutions();
+      Execution execution = (Execution)executions.get(0);
+      assertEquals(1l, execution.getStartDate().getTime());
+      assertEquals(2l, execution.getFinishDate().getTime());
+   }
+
+
 
 
    // Package protected ---------------------------------------------

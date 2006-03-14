@@ -9,6 +9,7 @@ package org.jboss.jms.perf.framework.data;
 import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
+import java.awt.*;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -27,6 +28,7 @@ public class Provider
    private Properties jndiProperties;
    // Map <executorName - executorURL>
    private Map executorMap;
+   private Color color;
 
    // Constructors --------------------------------------------------
 
@@ -63,6 +65,16 @@ public class Provider
    public String getExecutorURL(String executorName)
    {
       return (String)executorMap.get(executorName);
+   }
+
+   public Color getColor()
+   {
+      return color;
+   }
+
+   public void setColor(Color color)
+   {
+      this.color = color;
    }
 
    // Protected -----------------------------------------------------

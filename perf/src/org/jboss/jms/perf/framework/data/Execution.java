@@ -12,6 +12,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * Represents the record of an execution of a PerformanceTest on a particular Date, against a
@@ -29,11 +32,15 @@ public class Execution implements Serializable
 
    private static final long serialVersionUID = 8086268408804672852L;
 
+   public static final DateFormat dateFormat = new SimpleDateFormat("MMM d yy HH:mm:ss:SSS a");
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private String providerName;
+   private Date start;
+   private Date finish;
    private List measurements;
 
    // Constructors --------------------------------------------------
@@ -49,6 +56,26 @@ public class Execution implements Serializable
    public String getProviderName()
    {
       return providerName;
+   }
+
+   public void setStartDate(Date start)
+   {
+      this.start = start;
+   }
+
+   public Date getStartDate()
+   {
+      return start;
+   }
+
+   public void setFinishDate(Date finish)
+   {
+      this.finish = finish;
+   }
+
+   public Date getFinishDate()
+   {
+      return finish;
    }
 
    public int size()
@@ -75,7 +102,9 @@ public class Execution implements Serializable
 
    public String toString()
    {
-      return "Execution[" + providerName + "]";
+      Date sd = getStartDate();
+      return "Execution[" + providerName + ", " +
+         (sd == null ? "not dated" : dateFormat.format(sd)) + "]";
    }
 
    // Package protected ---------------------------------------------

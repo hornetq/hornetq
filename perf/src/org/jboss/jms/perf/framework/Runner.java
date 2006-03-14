@@ -173,7 +173,7 @@ public class Runner
 
    private void chart() throws Exception
    {
-      Charter charter = new Charter(pm, configuration.getReportDirectory());
+      Charter charter = new Charter(pm, configuration);
       charter.run();
       log.info("charts created");
    }

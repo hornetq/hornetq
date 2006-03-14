@@ -12,12 +12,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.Date;
 
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.PerformanceTest;
@@ -108,6 +110,13 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       PreparedStatement ps = null;
       ResultSet rs = null;
 
+      // if the performance test has no executions, don't bother
+      if (pt.getEffectiveExecutions().size() == 0)
+      {
+         log.debug(pt + " has no executions, skipping");
+         return;
+      }
+
       try
       {
          ps = conn.prepareStatement("SELECT ID, NAME FROM PERFORMANCE_TEST WHERE NAME=?");
@@ -143,14 +152,25 @@ public class HSQLDBPersistenceManager implements PersistenceManager
             ps.close();
          }
 
-         for(Iterator i = pt.getExecutions().iterator(); i.hasNext(); )
+         for(Iterator i = pt.getEffectiveExecutions().iterator(); i.hasNext(); )
          {
             Execution e = (Execution)i.next();
 
-            ps = conn.prepareStatement("INSERT INTO EXECUTION (PERFORMANCE_TEST_ID, PROVIDER) VALUES (?,?)");
+            ps = conn.prepareStatement("INSERT INTO EXECUTION (PERFORMANCE_TEST_ID, PROVIDER, STARTDATE, FINISHDATE) VALUES (?,?,?,?)");
             ps.setLong(1, id);
-//         ps.setTimestamp(2, new java.sql.Timestamp(exec.getDate().getTime()));
             ps.setString(2, e.getProviderName());
+
+            Date d = e.getStartDate();
+            if (d != null)
+            {
+               ps.setTimestamp(3, new java.sql.Timestamp(d.getTime()));
+            }
+            d = e.getFinishDate();
+            if (d != null)
+            {
+               ps.setTimestamp(4, new java.sql.Timestamp(d.getTime()));
+            }
+
             ps.executeUpdate();
             ps.close();
 
@@ -259,17 +279,25 @@ public class HSQLDBPersistenceManager implements PersistenceManager
          rs.close();
          ps.close();
 
-         ps = conn.prepareStatement("SELECT ID, PROVIDER FROM EXECUTION WHERE PERFORMANCE_TEST_ID=?");
+         ps = conn.prepareStatement("SELECT ID, PROVIDER, STARTDATE, FINISHDATE FROM EXECUTION WHERE PERFORMANCE_TEST_ID=?");
          ps.setLong(1, id);
          rs = ps.executeQuery();
          while (rs.next())
          {
             long executionID = rs.getLong(1);
-            //Timestamp timeStamp = rs.getTimestamp(2);
-            //Date runDate = new Date(timeStamp.getTime());
             String provider = rs.getString(2);
+            Timestamp start = rs.getTimestamp(3);
+            Timestamp finish = rs.getTimestamp(4);
             Execution ex = new Execution(provider);
-            pt.addExecution(ex);
+            if (start != null)
+            {
+               ex.setStartDate(new Date(start.getTime()));
+            }
+            if (finish != null)
+            {
+               ex.setFinishDate(new Date(finish.getTime()));
+            }
+            pt.addEffectiveExecution(ex);
 
             PreparedStatement ps2 = conn.prepareStatement("SELECT MEASUREMENT_INDEX, JOB_TYPE, MESSAGE_COUNT, MESSAGE_SIZE, DURATION, RATE, MEASURED_DURATION, MEASURED_MESSAGE_COUNT FROM MEASUREMENT WHERE EXECUTION_ID=?");
             ps2.setLong(1, executionID);
@@ -353,7 +381,7 @@ public class HSQLDBPersistenceManager implements PersistenceManager
 
       try
       {
-         String sql = "CREATE TABLE EXECUTION (ID IDENTITY, PERFORMANCE_TEST_ID INTEGER, PROVIDER VARCHAR, FOREIGN KEY (PERFORMANCE_TEST_ID) REFERENCES PERFORMANCE_TEST (ID))";
+         String sql = "CREATE TABLE EXECUTION (ID IDENTITY, PERFORMANCE_TEST_ID INTEGER, PROVIDER VARCHAR, STARTDATE TIMESTAMP, FINISHDATE TIMESTAMP, FOREIGN KEY (PERFORMANCE_TEST_ID) REFERENCES PERFORMANCE_TEST (ID))";
          conn.createStatement().executeUpdate(sql);
       }
       catch (SQLException e)
@@ -372,35 +400,6 @@ public class HSQLDBPersistenceManager implements PersistenceManager
       }
       log.debug("created tables");
    }
-
-
-   public void dump() throws Exception
-   {
-      System.out.println("");
-      System.out.println("");
-
-      for(Iterator i = getPerformanceTestNames().iterator(); i.hasNext(); )
-      {
-         String name = (String)i.next();
-         PerformanceTest t = getPerformanceTest(name);
-         System.out.println(t);
-
-         for(Iterator j = t.getExecutions().iterator(); j.hasNext(); )
-         {
-            Execution e = (Execution)j.next();
-            System.out.println(e);
-
-            int index = 0;
-            for(Iterator k = e.iterator(); k.hasNext(); index ++)
-            {
-               System.out.println("    " + index + " " + k.next());
-            }
-         }
-      }
-   }
-
-
-
 
    // Public --------------------------------------------------------
 

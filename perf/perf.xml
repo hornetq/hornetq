@@ -3,12 +3,12 @@
    <!-- benchmark configuration -->
    <db-url>jdbc:hsqldb:./output/db/perfdb</db-url>
    <report-directory>./output/results</report-directory>
+   <color-step>25</color-step>
 
 
    <!-- benchmark-wide test defaults -->
 
    <default-executor-url>rmi://localhost:7777/standalone</default-executor-url>
-
    <destination>/queue/testQueue</destination>
    <connection-factory>/ConnectionFactory</connection-factory>
    <message-size>0</message-size>
@@ -28,6 +28,7 @@
          <executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
          <executor name="COLOCATED" url="rmi://localhost:7777/colocated-messaging"/>
          <executor name="COLOCATED2" url="rmi://localhost:7777/colocated-messaging2"/>
+         <color>0,0,255</color>
       </provider>
 
       <provider name="JBossMQ">
@@ -38,14 +39,14 @@
          <executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
          <executor name="COLOCATED" url="rmi://localhost:7777/colocated-jbossmq"/>
          <executor name="COLOCATED2" url="rmi://localhost:7777/colocated-jbossmq2"/>
+         <color>255,0,0</color>
       </provider>
    </providers>
 
    <performance-tests>
 
       <!-- just makes sure the executors are deployed and ready -->
-      <!--
-      <performance-test name="Ping">
+      <performance-test name="Ping" loops="2">
 
          <ping executor="REMOTE"/>
          <ping executor="REMOTE2"/>
@@ -58,13 +59,141 @@
             <ping executor="COLOCATED2"/>
          </parallel>
 
+         <!--
+         <execution provider="JBossMessaging"/>
+         <execution provider="JBossMQ"/>
+         -->
+
+      </performance-test>
+
+      <performance-test name="Single Burst" loops="10">
+
+         <destination>/queue/simpleQueue</destination>
+         <message-size>0</message-size>
+         <messages>30000</messages>
+
+         <drain executor="COLOCATED"/>
+         <send rate="10000" executor="REMOTE"/>
+
+         <!-- <execution provider="JBossMessaging"/> -->
+
+      </performance-test>
+
+
+      <performance-test
+         name="Send Rate O KB Message Non-Persistent Non-Transactional Remote 30000 messages"
+         loops="5">
+
+         <destination>/queue/simpleQueue</destination>
+         <message-size>0</message-size>
+         <messages>2000</messages>
+
+         <drain executor="COLOCATED"/>
+         <send rate="1000" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="2000" executor="REMOTE"/>
+
+         <!--
+
+         <drain executor="COLOCATED"/>
+         <send rate="3000" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4000" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="5000" executor="REMOTE"/>
+
+-->
          <execution provider="JBossMessaging"/>
          <execution provider="JBossMQ"/>
 
-      </performance-test>
-      -->
 
-      <performance-test name="Send Rate O KB Message Non-Persistent Non-Transactional Remote Client">
+
+      </performance-test>
+
+
+      <!--
+      <performance-test name="Send Rate O KB Message Non-Persistent Non-Transactional Remote 30000 messages">
+
+         <destination>/queue/simpleQueue</destination>
+         <message-size>0</message-size>
+         <messages>30000</messages>
+
+         <drain executor="COLOCATED"/>
+         <send rate="200" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="400" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="800" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="1200" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="1600" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="2000" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="2400" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="2800" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="3200" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="3600" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4000" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4400" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="4800" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="5200" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="5600" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="6000" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="6400" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="6800" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="7200" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="7800" executor="REMOTE"/>
+
+         <drain executor="COLOCATED"/>
+         <send rate="8200" executor="REMOTE"/>
+
+         <execution provider="JBossMQ"/>
+
+
+      </performance-test>
+
+                 -->
+
+      <!--
+
+      <performance-test name="Send Rate O KB Message Non-Persistent Non-Transactional Colocated">
 
          <destination>/queue/simpleQueue</destination>
          <message-size>0</message-size>
@@ -122,6 +251,8 @@
          <execution provider="JBossMessaging"/>
 
       </performance-test>
+
+      -->
 
    </performance-tests>
 

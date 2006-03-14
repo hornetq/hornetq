@@ -100,7 +100,7 @@ public class DrainJob extends JobSupport
                break;
             }
             count++;
-            if (count % 100 == 0)
+            if (count % 1000 == 0)
             {
                log.info("received " + count + " messages");
             }

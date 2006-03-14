@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.StringTokenizer;
+import java.awt.*;
 
 /**
  * A performance run configuration.
@@ -93,6 +95,7 @@ public class Configuration
    private String reportDirectory;
    private boolean startExecutors;
    private String defaultExecutorURL;
+   int colorStep;
    private List performanceTests;
 
    // Map<providerName - provider>
@@ -136,6 +139,11 @@ public class Configuration
    public String getDefaultExecutorURL()
    {
       return defaultExecutorURL;
+   }
+
+   public int getColorStep()
+   {
+      return colorStep;
    }
 
    public List getPerformanceTests()
@@ -205,6 +213,10 @@ public class Configuration
                else if ("default-executor-url".equals(name))
                {
                   defaultExecutorURL = XMLUtil.getTextContent(n);
+               }
+               else if ("color-step".equals(name))
+               {
+                  colorStep = Integer.parseInt(XMLUtil.getTextContent(n));
                }
                else if ("providers".equals(name))
                {
@@ -287,6 +299,10 @@ public class Configuration
             {
                addExecutor(provider, n);
             }
+            else if ("color".equals(name))
+            {
+               addColor(provider, n);
+            }
             else if (name.startsWith("#"))
             {
                // ignore
@@ -310,8 +326,22 @@ public class Configuration
       provider.addExecutor(name.getNodeValue(), url.getNodeValue());
    }
 
-   private void extractPerformanceTests(Node tests)
-      throws Exception
+   private void addColor(Provider provider, Node n) throws Exception
+   {
+      String color = XMLUtil.getTextContent(n);
+      StringTokenizer st = new StringTokenizer(color, ",; ");
+
+      String reds = st.nextToken();
+      int red = Integer.parseInt(reds);
+      String greens = st.nextToken();
+      int green = Integer.parseInt(greens);
+      String blues = st.nextToken();
+      int blue = Integer.parseInt(blues);
+
+      provider.setColor(new Color(red, green, blue));
+   }
+
+   private void extractPerformanceTests(Node tests) throws Exception
    {
       if (!tests.hasChildNodes())
       {
@@ -345,7 +375,14 @@ public class Configuration
       Node nameNode = attrs.getNamedItem("name");
       String performanceTestName = nameNode.getNodeValue();
 
-      PerformanceTest pt = new PerformanceTest(runner, performanceTestName);
+      Node loopsNode = attrs.getNamedItem("loops");
+      int loops = 1;
+      if (loopsNode != null)
+      {
+         loops = Integer.parseInt(loopsNode.getNodeValue());
+      }
+
+      PerformanceTest pt = new PerformanceTest(runner, performanceTestName, loops);
 
       for(Iterator i = performanceTests.iterator(); i.hasNext(); )
       {
@@ -393,11 +430,6 @@ public class Configuration
          }
       }
 
-      if (pt.getExecutions().isEmpty())
-      {
-         throw new Exception("Performance test \"" + performanceTestName + "\" has no executions!");
-      }
-
       performanceTests.add(pt);
    }
 
@@ -433,7 +465,7 @@ public class Configuration
          throw new Exception("No provider name found!");
       }
 
-      pt.addExecution(new Execution(providerName));
+      pt.addRequestedExecution(new Execution(providerName));
    }
 
    private void addParallel(PerformanceTest pt, Node pn, JobConfiguration defaultPerTest)
