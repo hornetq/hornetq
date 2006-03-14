@@ -38,7 +38,6 @@ public class FillJob extends JobSupport
 
    protected int numMessages;  // TODO - it's already availabe in JobSupport
    protected int msgSize; // TODO - it's already availabe in JobSupport
-   protected MessageFactory mf;  // TODO - it's already availabe in JobSupport
 
 
    // Constructors --------------------------------------------------
@@ -58,6 +57,8 @@ public class FillJob extends JobSupport
 
       try
       {
+         MessageFactory mf = (MessageFactory)Class.forName(getMessageFactoryClass()).newInstance();
+
          conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

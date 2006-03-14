@@ -13,14 +13,14 @@ import javax.jms.StreamMessage;
 
 /**
  * 
- * A StreamMessageMessageFactory.
+ * A StreamMessageFactory.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class StreamMessageMessageFactory extends AbstractMessageFactory
+public class StreamMessageFactory extends AbstractMessageFactory
 {
    private static final long serialVersionUID = -5188777779031562013L;
 

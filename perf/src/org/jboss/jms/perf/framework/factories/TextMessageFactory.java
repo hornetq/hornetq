@@ -9,18 +9,17 @@ package org.jboss.jms.perf.framework.factories;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 
 /**
  * 
- * A TextMessageMessageFactory.
+ * A TextMessageFactory.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class TextMessageMessageFactory extends AbstractMessageFactory
+public class TextMessageFactory extends AbstractMessageFactory
 {
    private static final long serialVersionUID = -6708553993263367407L;
 
@@ -28,7 +27,6 @@ public class TextMessageMessageFactory extends AbstractMessageFactory
    {
       byte[] bytes = getBytes(size);
       String s = new String(bytes);
-      TextMessage theMessage = sess.createTextMessage(s);
-      return theMessage;
+      return sess.createTextMessage(s);
    }
 }

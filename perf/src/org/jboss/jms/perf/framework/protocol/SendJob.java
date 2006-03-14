@@ -14,7 +14,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.jboss.jms.perf.framework.factories.MessageFactory;
-import org.jboss.jms.perf.framework.factories.MessageMessageFactory;
 import org.jboss.logging.Logger;
 
 /**
@@ -41,9 +40,9 @@ public class SendJob extends ThroughputJobSupport
    // Attributes ----------------------------------------------------
 
    protected boolean anon;
-   protected MessageFactory messageFactory;
-
    double targetMsgsPerSamplePeriod;
+
+   private MessageFactory messageFactory;
    
    // Constructors --------------------------------------------------
 
@@ -56,7 +55,6 @@ public class SendJob extends ThroughputJobSupport
       duration = Long.MAX_VALUE;
       anon = false;
       messageSize = 0;
-      messageFactory = new MessageMessageFactory();
       rate = 0;
       targetMsgsPerSamplePeriod = (((double)rate) * SAMPLE_PERIOD) / 1000;
    }
@@ -76,16 +74,6 @@ public class SendJob extends ThroughputJobSupport
    public void setAnon(boolean anon)
    {
       this.anon = anon;
-   }
-
-   public void setMessageFactory(MessageFactory messageFactory)
-   {
-      this.messageFactory = messageFactory;
-   }
-
-   public MessageFactory getMessageFactory()
-   {
-      return messageFactory;
    }
 
    public String toString()
@@ -118,8 +106,8 @@ public class SendJob extends ThroughputJobSupport
          append(getConnectionFactoryName()).append('\n');
       sb.append("    transacted:                      ").
          append(isTransacted()).append('\n');
-      sb.append("    message factory:                 ").
-         append(getMessageFactory()).append('\n');
+      sb.append("    message factory class:           ").
+         append(getMessageFactoryClass()).append('\n');
       sb.append("    delivery mode:                   ").
          append(JobSupport.deliveryModeToString(getDeliveryMode())).append('\n');
       sb.append("    message size:                    ").
@@ -165,6 +153,9 @@ public class SendJob extends ThroughputJobSupport
       {
          try
          {
+
+            messageFactory = (MessageFactory)Class.forName(getMessageFactoryClass()).newInstance();
+
             Connection conn = getNextConnection();
             
             sess = conn.createSession(transacted, getAcknowledgmentMode()); //Ackmode doesn't matter            

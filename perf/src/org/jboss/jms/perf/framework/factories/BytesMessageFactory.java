@@ -13,14 +13,14 @@ import javax.jms.Session;
 
 /**
  * 
- * A BytesMessageMessageFactory.
+ * A BytesMessageFactory.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class BytesMessageMessageFactory extends AbstractMessageFactory
+public class BytesMessageFactory extends AbstractMessageFactory
 {
    private static final long serialVersionUID = 594068477879961702L;
 

@@ -17,14 +17,14 @@ import javax.jms.Session;
 
 /**
  * 
- * A ForeignMessageMessageFactory.
+ * A ForeignMessageFactory.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class ForeignMessageMessageFactory extends AbstractMessageFactory
+public class ForeignMessageFactory extends AbstractMessageFactory
 {
    private static final long serialVersionUID = -4148818964934832961L;
 

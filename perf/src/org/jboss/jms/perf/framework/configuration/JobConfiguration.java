@@ -31,6 +31,7 @@ public class JobConfiguration
    private static final String RATE = "rate";
    private static final String ACKNOWLEDGMENT_MODE = "acknowledgment-mode";
    private static final String DELIVERY_MODE = "delivery-mode";
+   private static final String MESSAGE_FACTORY_CLASS = "message-factory-class";
 
 
    // Static --------------------------------------------------------
@@ -45,7 +46,8 @@ public class JobConfiguration
           DURATION.equals(name) ||
           RATE.equals(name) ||
           ACKNOWLEDGMENT_MODE.equals(name) ||
-          DELIVERY_MODE.equals(name))
+          DELIVERY_MODE.equals(name) ||
+          MESSAGE_FACTORY_CLASS.equals(name))
       {
          return true;
       }
@@ -155,6 +157,7 @@ public class JobConfiguration
    private Integer rate;
    private Integer acknowledgmentMode;
    private Integer deliveryMode;
+   private String messageFactoryClass;
 
    // Constructors --------------------------------------------------
 
@@ -292,6 +295,19 @@ public class JobConfiguration
       this.deliveryMode = new Integer(deliveryMode);
    }
 
+   /**
+    * null means no default
+    */
+   public String getMessageFactoryClass()
+   {
+      return messageFactoryClass;
+   }
+
+   public void setMessageFactoryClass(String messageFactoryClass)
+   {
+      this.messageFactoryClass = messageFactoryClass;
+   }
+
    public JobConfiguration copy()
    {
       JobConfiguration n = new JobConfiguration();
@@ -304,6 +320,7 @@ public class JobConfiguration
       n.rate = this.rate;
       n.acknowledgmentMode = this.acknowledgmentMode;
       n.deliveryMode = this.deliveryMode;
+      n.messageFactoryClass = this.messageFactoryClass;
 
       return n;
    }
@@ -361,6 +378,10 @@ public class JobConfiguration
          int i = validateDeliveryMode(value);
          setDeliveryMode(i);
       }
+      else if (MESSAGE_FACTORY_CLASS.equals(name))
+      {
+         setMessageFactoryClass(value);
+      }
       else
       {
          throw new Exception("Unknown node " + name);
@@ -417,6 +438,11 @@ public class JobConfiguration
       if (i != null)
       {
          j.setDeliveryMode(i.intValue());
+      }
+      s = getMessageFactoryClass();
+      if (s != null)
+      {
+         j.setMessageFactoryClass(s);
       }
    }
 

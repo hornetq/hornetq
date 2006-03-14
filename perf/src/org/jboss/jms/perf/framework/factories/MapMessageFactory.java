@@ -7,24 +7,28 @@
 package org.jboss.jms.perf.framework.factories;
 
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.Session;
 
 /**
  * 
- * A ObjectMessageMessageFactory.
+ * A MapMessageFactory.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
-public class ObjectMessageMessageFactory extends AbstractMessageFactory
+public class MapMessageFactory extends AbstractMessageFactory
 {
-   private static final long serialVersionUID = -8665223704967440412L;
+   private static final long serialVersionUID = 4180086702224773753L;
 
    public Message getMessage(Session sess, int size) throws JMSException
    {
-      return sess.createObjectMessage(getBytes(size));
+      MapMessage theMessage = sess.createMapMessage();
+      theMessage.setBytes("b", getBytes(size));
+      return theMessage;
    }
 }
+

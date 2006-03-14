@@ -125,6 +125,7 @@ public abstract class JobSupport implements Job, Serializable
    protected boolean transacted;
    protected int acknowledgmentMode;
    protected int deliveryMode;
+   protected String messageFactoryClass;
 
    // Constructors --------------------------------------------------
 
@@ -267,6 +268,16 @@ public abstract class JobSupport implements Job, Serializable
    public void setDeliveryMode(int deliveryMode)
    {
       this.deliveryMode = deliveryMode;
+   }
+
+   public String getMessageFactoryClass()
+   {
+      return messageFactoryClass;
+   }
+
+   public void setMessageFactoryClass(String messageFactoryClass)
+   {
+      this.messageFactoryClass = messageFactoryClass;
    }
 
    // Public --------------------------------------------------------

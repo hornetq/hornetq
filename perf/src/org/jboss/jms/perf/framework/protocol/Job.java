@@ -89,4 +89,8 @@ public interface Job extends Request
 
    void setDeliveryMode(int deliveryMode);
 
+   String getMessageFactoryClass();
+
+   void setMessageFactoryClass(String messageFactoryClass);
+
 }

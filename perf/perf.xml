@@ -12,6 +12,7 @@
    <connection-factory>/ConnectionFactory</connection-factory>
    <acknowledgment-mode>AUTO_ACKNOWLEDGE</acknowledgment-mode>
    <delivery-mode>NON_PERSISTENT</delivery-mode>
+   <message-factory-class>org.jboss.jms.perf.framework.factories.MessageMessageFactory</message-factory-class>
    <message-size>0</message-size>
 
    <!-- safeguard for receive jobs that block waiting messages will never arrive -->
@@ -185,6 +186,101 @@
       </performance-test>
       -->
 
+
+      <performance-test name="Send 30000 Non-Persistent Non-Transactional 1 KB Text Local">
+
+         <destination>/queue/simpleQueue</destination>
+         <delivery-mode>NON_PERSISTENT</delivery-mode>
+         <message-factory-class>org.jboss.jms.perf.framework.factories.TextMessageFactory</message-factory-class>
+         <message-size>1024</message-size>
+         <messages>30000</messages>
+
+         <drain executor="LOCAL"/>
+         <send rate="500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="1000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="1500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="2000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="2500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="3000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="3500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="4000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="4500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="5000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="5500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="6000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="6500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="7000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="8000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="8500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="9000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="9500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="10000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="10500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="11000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="11500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="12000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="12500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="13000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="13500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="14000" executor="LOCAL"/>
+
+
+         <execution provider="JBossMessaging"/>
+         <execution provider="JBossMQ"/>
+      </performance-test>
+
       <!--
       <performance-test name="Send 30000 Non-Persistent Non-Transactional 0 KB Remote">
 
@@ -279,6 +375,7 @@
       </performance-test>
       -->
 
+      <!--
       <performance-test name="Send 30000 Persistent Non-Transactional 0 KB Local">
 
          <destination>/queue/simpleQueue</destination>
@@ -361,6 +458,8 @@
          <execution provider="JBossMessaging"/>
          <execution provider="JBossMQ"/>
       </performance-test>
+
+      -->
 
 
    </performance-tests>
