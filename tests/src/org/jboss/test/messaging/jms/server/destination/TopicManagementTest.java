@@ -288,8 +288,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
    }
 
 
-   // TODO - Why is this commented out?
-
    /**
     * Test removeAllMessages().
     * @throws Exception

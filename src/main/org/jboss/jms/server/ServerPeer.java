@@ -572,9 +572,9 @@ public class ServerPeer extends ServiceMBeanSupport
       
       //install the connection listener that listens for failed connections
       
-      mbeanServer.invoke(connectorName, "setLeasePeriod",
-            new Object[] {new Long(CONNECTION_LEASE_PERIOD)},
-            new String[] {"long"});
+//      mbeanServer.invoke(connectorName, "setLeasePeriod",
+//            new Object[] {new Long(CONNECTION_LEASE_PERIOD)},
+//            new String[] {"long"});
 
       mbeanServer.invoke(connectorName, "addConnectionListener",
             new Object[] {connectionManager},

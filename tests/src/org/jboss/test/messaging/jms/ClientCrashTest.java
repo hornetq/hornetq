@@ -82,6 +82,8 @@ public class ClientCrashTest extends MessagingTestCase
       ServerManagement.create();
           
       remoteServer = ServerManagement.getServer();
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
