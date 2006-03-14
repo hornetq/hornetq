@@ -41,7 +41,7 @@ public interface ChannelMapper extends ServerPlugin
    CoreDestination getCoreDestination(JBossDestination jbDest) throws JMSException;
    
    JBossDestination getJBossDestination(long coreDestinationId);
-   
+      
    void deployCoreDestination(boolean isQueue, 
                               String destName, 
                               MessageStore ms, 
@@ -52,11 +52,6 @@ public interface ChannelMapper extends ServerPlugin
 
    CoreDestination undeployCoreDestination(boolean isQueue, String destName);
    
-   void deployTemporaryCoreDestination(boolean isQueue, String destName,
-                                       MessageStore ms, PersistenceManager pm) throws JMSException;
-
-   CoreDestination undeployTemporaryCoreDestination(boolean isQueue, String destName) throws JMSException;
-
    CoreDurableSubscription createDurableSubscription(String topicName,
                                                      String clientID,
                                                      String subscriptionName,

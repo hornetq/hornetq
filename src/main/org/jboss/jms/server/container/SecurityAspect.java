@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.container;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.jms.Destination;
@@ -33,13 +34,21 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
+ * 
+ * This aspect is PER_INSTANCE
+ * 
+ * For performance reasons we cache access rights in the interceptor for a maximum of
+ * INVALIDATION_INTERVAL milliseconds.
+ * This is because we don't want to do a full authentication and authorization on every send,
+ * for example, since this will drastically reduce performance.
+ * This means any changes to security data won't be reflected until INVALIDATION_INTERVAL
+ * milliseconds later.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision 1.1 $</tt>
@@ -58,9 +67,28 @@ public class SecurityAspect
    
    private boolean trace = log.isTraceEnabled();
    
+   private Set readCache;
+   
+   private Set writeCache;
+   
+   private Set createCache;
+   
+   //TODO Make this configurable
+   private static final long INVALIDATION_INTERVAL = 15000;
+   
+   private long lastCheck;
+      
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
+   public SecurityAspect()
+   {
+      readCache = new HashSet();
+      
+      writeCache = new HashSet();
+      
+      createCache = new HashSet();
+   }
    
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
@@ -114,13 +142,9 @@ public class SecurityAspect
       SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
       ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
       ServerConnectionEndpoint conn = sess.getConnectionEndpoint();
-                  
-      if (dest != null)
-      {
-         // Anonymous producer
-         check(dest, CheckType.WRITE, conn);
-      }
-      
+                        
+      check(dest, CheckType.WRITE, conn);
+            
       return invocation.invokeNext();
    }   
    
@@ -129,12 +153,62 @@ public class SecurityAspect
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+         
+   private boolean checkCached(Destination dest, CheckType checkType)
+   {
+      long now = System.currentTimeMillis();
+      
+      boolean granted = false;
+      
+      if (now - lastCheck > INVALIDATION_INTERVAL)
+      {
+         readCache.clear();
+         
+         writeCache.clear();
+         
+         createCache.clear();         
+      }
+      else
+      {         
+         switch (checkType.type)
+         {
+            case CheckType.TYPE_READ:
+            {
+               granted = readCache.contains(dest);
+               break;
+            }
+            case CheckType.TYPE_WRITE:
+            {
+               granted = writeCache.contains(dest);
+               break;
+            }
+            case CheckType.TYPE_CREATE:
+            {
+               granted = createCache.contains(dest);
+               break;
+            }
+            default:
+            {
+               throw new IllegalArgumentException("Invalid checkType:" + checkType);
+            }
+         }
+      }
+      
+      lastCheck = now;
+      
+      return granted;
+   }
    
    private void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
-
       if (trace) { log.trace("checking access permissions to " + dest); }
+      
+      if (checkCached(dest, checkType))
+      {
+         //Ok
+         return;
+      }
 
       JBossDestination jbd = (JBossDestination)dest;
       boolean isQueue = jbd.isQueue();
@@ -166,6 +240,32 @@ public class SecurityAspect
              
          throw new JMSSecurityException(msg);                        
       }
+      
+      //If we get here we're granted
+      //Add to the cache
+      
+      switch (checkType.type)
+      {
+         case CheckType.TYPE_READ:
+         {
+            readCache.add(dest);
+            break;
+         }
+         case CheckType.TYPE_WRITE:
+         {
+            writeCache.add(dest);
+            break;
+         }
+         case CheckType.TYPE_CREATE:
+         {
+            createCache.add(dest);
+            break;
+         }
+         default:
+         {
+            throw new IllegalArgumentException("Invalid checkType:" + checkType);
+         }
+      }      
    }
    
    // Inner classes -------------------------------------------------
@@ -177,9 +277,12 @@ public class SecurityAspect
       {
          this.type = type;
       }      
-      public static CheckType READ = new CheckType(0);
-      public static CheckType WRITE = new CheckType(1);
-      public static CheckType CREATE = new CheckType(2);      
+      public static final int TYPE_READ = 0;
+      public static final int TYPE_WRITE = 1;
+      public static final int TYPE_CREATE = 2;
+      public static CheckType READ = new CheckType(TYPE_READ);
+      public static CheckType WRITE = new CheckType(TYPE_WRITE);
+      public static CheckType CREATE = new CheckType(TYPE_CREATE);      
       public boolean equals(Object other)
       {
          if (!(other instanceof CheckType)) return false;

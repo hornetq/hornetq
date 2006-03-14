@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.jms.server.remoting.JMSWireFormat;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
@@ -181,7 +180,7 @@ public class JMSRemotingConnection
    {
       Map configuration = new HashMap();
       
-      configuration.put(MetaDataConstants.CLIENT_CONNECTION_ID, id);
+      configuration.put(Client.ENABLE_LEASE, "true");
       
       if (isMultiplex)
       {     

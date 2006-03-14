@@ -224,17 +224,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    {
       return (JBossDestination)idMap.get(new Long(coreDestinationId));
    }
-   
-   /**
-    * @deprecated
-    * @see #deployCoreDestination(boolean, String, MessageStore, PersistenceManager, int, int, int)
-    */
-   public void deployCoreDestination(boolean isQueue, String destName,
-                                     MessageStore ms, PersistenceManager pm) throws JMSException
-   {
-      deployCoreDestination(isQueue, destName, ms, pm, 100, 20, 10);
-   }
-   
+    
    public void deployCoreDestination(boolean isQueue, 
                                      String destName,
                                      MessageStore ms, 
@@ -552,18 +542,6 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          throw new JBossJMSException("Failed to remove durable subscription", e);        
       }
    }
-   
-   public void deployTemporaryCoreDestination(boolean isQueue, String destName,
-                                              MessageStore ms, PersistenceManager pm) throws JMSException
-   {
-      deployCoreDestination(isQueue, destName, ms, pm);
-   }
-
-   public CoreDestination undeployTemporaryCoreDestination(boolean isQueue, String destName)
-   {
-      return undeployCoreDestination(isQueue, destName);
-   }
-
    
    //FIXME - This doesn't belong here
    public String getPreConfiguredClientID(String username) throws JMSException

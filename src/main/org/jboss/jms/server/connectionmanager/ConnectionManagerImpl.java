@@ -66,7 +66,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
    // ConnectionManager ---------------------------------------------
 
    public void registerConnection(String remotingClientSessionID, ServerConnectionEndpoint endpoint)
-   {
+   {    
       connections.put(remotingClientSessionID, endpoint);
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
@@ -90,45 +90,34 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
    // ConnectionListener --------------------------------------------
 
    public void handleConnectionException(Throwable t, Client client)
-   {
+   {  
       String sessionId = client.getSessionId();
-      if (sessionId == null)
-      {
-         log.warn("Session id is null for client " + client);
-      }
-      else
-      {
+      if (sessionId != null)
+      {         
          if (t instanceof ClientDisconnectedException)
          {
             // This is OK
-            if (log.isTraceEnabled()) { log.trace("client " + client + " has disconnected"); }
+            if (log.isTraceEnabled()) { log.trace("client " + client + " has disconnected"); }            
          }
          else
-         {
-            log.info("Broken client connection, clearing up its state " + sessionId, t);
-
-            if (log.isTraceEnabled()) { log.trace("Clearing up server resources for this connection"); }
-
+         {            
             ServerConnectionEndpoint endpoint =
                (ServerConnectionEndpoint)connections.remove(sessionId);
 
-            if (endpoint == null)
-            {
-               log.error("Cannot find ServerConnectionEndpoint for session id " + sessionId);
-            }
-            else
-            {
+            if (endpoint != null)
+            {               
+               log.trace("Clearing up server resources for this connection");
+               
                try
                {
                   endpoint.close();
+                  log.trace("Cleared up state for connection");
                }
                catch (JMSException e)
                {
                   log.error("Failed to close connection", e);
                }
-            }
-
-            log.info("Cleared up state for connection");
+            }            
          }
       }
    }

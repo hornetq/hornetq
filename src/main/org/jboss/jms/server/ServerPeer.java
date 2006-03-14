@@ -75,7 +75,7 @@ public class ServerPeer extends ServiceMBeanSupport
    public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
    
    //TODO - Make this configurable
-   private static final long CONNECTION_LEASE_PERIOD = 5000;
+   private static final long CONNECTION_LEASE_PERIOD = 10000;
       
    // Static --------------------------------------------------------
    

@@ -411,7 +411,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
       }
       connectionEndpoint.addTemporaryDestination(dest);
-      cm.deployTemporaryCoreDestination(dest.isQueue(), dest.getName(), ms, pm);
+      
+      //FIXME - Params should not be hardcoded
+      cm.deployCoreDestination(dest.isQueue(), dest.getName(), ms, pm, 50000, 1000, 1000);
    }
    
    public void deleteTemporaryDestination(JBossDestination dest) throws JMSException
@@ -454,7 +456,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      cm.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
+      cm.undeployCoreDestination(dest.isQueue(), dest.getName());
       connectionEndpoint.removeTemporaryDestination(dest);
    }
    

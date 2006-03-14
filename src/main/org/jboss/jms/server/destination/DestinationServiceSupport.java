@@ -27,9 +27,9 @@ import javax.management.ObjectName;
 public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
-   private static final int FULL_SIZE = 100;
-   private static final int PAGE_SIZE = 20;
-   private static final int DOWN_CACHE_SIZE = 10;
+   private static final int FULL_SIZE = 50000;
+   private static final int PAGE_SIZE = 1000;
+   private static final int DOWN_CACHE_SIZE = 1000;
 
    // Static --------------------------------------------------------
    

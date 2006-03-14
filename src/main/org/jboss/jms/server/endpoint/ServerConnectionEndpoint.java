@@ -332,7 +332,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          while (iter.hasNext())
          {
             JBossDestination dest = (JBossDestination)iter.next();
-            channelMapper.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
+            channelMapper.undeployCoreDestination(dest.isQueue(), dest.getName());
          }
          
          temporaryDestinations.clear();

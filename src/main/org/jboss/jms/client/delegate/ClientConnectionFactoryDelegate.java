@@ -165,6 +165,8 @@ public class ClientConnectionFactoryDelegate
          
          Client client = new Client(locator);
          
+         client.connect();
+         
          try
          {                                    
             byte v = getVersionToUse().getProviderIncrementingVersion();

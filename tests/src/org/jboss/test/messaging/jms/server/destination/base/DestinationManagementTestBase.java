@@ -81,6 +81,9 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       super.tearDown();
    }
 
+   // TODO - why are these commented out?
+
+
    public void testDeployDestinationAdministratively() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
@@ -105,7 +108,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
 //      Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
 //                                                      new Object[0], new String[0]);
-
+      
       Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
 
 
@@ -290,7 +293,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
 //      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
 //                                         new Object[0], new String[0]);
-
+      
       set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
 
 
@@ -344,50 +347,50 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       config = adjustConfiguration(config);
 
       ObjectName destObjectName = deploy(config);
-
+      
       // Test the default values
       // FIXME hardcoded default values
-      assertEquals(new Integer(100), ServerManagement.getAttribute(destObjectName, "FullSize"));
-      assertEquals(new Integer(20), ServerManagement.getAttribute(destObjectName, "PageSize"));
-      assertEquals(new Integer(10), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+      assertEquals(new Integer(50000), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
 
       ChannelMapper cm = ServerManagement.getChannelMapper();
-      JBossDestination jbd = isQueue() ? (JBossDestination)new JBossQueue("PageableAttributes") :
+      JBossDestination jbd = isQueue() ? (JBossDestination)new JBossQueue("PageableAttributes") : 
          (JBossDestination)new JBossTopic("PageableAttributes");
       CoreDestination cd = cm.getCoreDestination(jbd);
-
+      
       // FIXME hardcoded default values
-      assertEquals(100, cd.getFullSize());
-      assertEquals(20, cd.getPageSize());
-      assertEquals(10, cd.getDownCacheSize());
-
+      assertEquals(50000, cd.getFullSize());
+      assertEquals(1000, cd.getPageSize());
+      assertEquals(1000, cd.getDownCacheSize());
+      
       // Try to change the values when destination lives, no effect
       // FIXME hardcoded default values
       ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
-      assertEquals(new Integer(100), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(50000), ServerManagement.getAttribute(destObjectName, "FullSize"));
       ServerManagement.setAttribute(destObjectName, "PageSize", "222");
-      assertEquals(new Integer(20), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "PageSize"));
       ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
-      assertEquals(new Integer(10), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
-
+      assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+      
       // Stop the destination and change the value then test them from MBean
       ServerManagement.invoke(destObjectName, "stop", null, null);
       // FIXME hardcoded default values
-      ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
-      assertEquals(new Integer(1111), ServerManagement.getAttribute(destObjectName, "FullSize"));
-      ServerManagement.setAttribute(destObjectName, "PageSize", "222");
-      assertEquals(new Integer(222), ServerManagement.getAttribute(destObjectName, "PageSize"));
-      ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
-      assertEquals(new Integer(33), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
-
+      ServerManagement.setAttribute(destObjectName, "FullSize", "51111");
+      assertEquals(new Integer(51111), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      ServerManagement.setAttribute(destObjectName, "PageSize", "1001");
+      assertEquals(new Integer(1001), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      ServerManagement.setAttribute(destObjectName, "DownCacheSize", "999");
+      assertEquals(new Integer(999), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+ 
       // Start the service again and test the value from core destination
       ServerManagement.invoke(destObjectName, "start", null, null);
-
+      
       // XXX Must get core destination again! The old one is out-of-date
       cd = cm.getCoreDestination(jbd);
-      assertEquals(1111, cd.getFullSize());
-      assertEquals(222, cd.getPageSize());
-      assertEquals(33, cd.getDownCacheSize());
+      assertEquals(51111, cd.getFullSize());
+      assertEquals(1001, cd.getPageSize());
+      assertEquals(999, cd.getDownCacheSize());
 
       undeployDestination("PageableAttributes");
    }
