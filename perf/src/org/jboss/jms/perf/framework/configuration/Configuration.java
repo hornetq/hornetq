@@ -12,6 +12,8 @@ import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.JobList;
 import org.jboss.jms.perf.framework.data.SimpleJobList;
 import org.jboss.jms.perf.framework.data.Provider;
+import org.jboss.jms.perf.framework.data.GraphInfo;
+import org.jboss.jms.perf.framework.data.AxisInfo;
 import org.jboss.jms.perf.framework.protocol.DrainJob;
 import org.jboss.jms.perf.framework.Runner;
 import org.jboss.jms.perf.framework.remoting.Coordinator;
@@ -19,6 +21,7 @@ import org.jboss.jms.perf.framework.protocol.SendJob;
 import org.jboss.jms.perf.framework.protocol.ReceiveJob;
 import org.jboss.jms.perf.framework.protocol.Job;
 import org.jboss.jms.perf.framework.protocol.PingJob;
+import org.jboss.jms.perf.framework.protocol.JobSupport;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -403,11 +406,15 @@ public class Configuration
             Node n = nl.item(i);
             String name = n.getNodeName();
 
-            if (JobConfiguration.isValidJobConfigurationElementName(name))
+            if ("graph".equals(name))
+            {
+               addGraphDetails(pt, n);
+            }
+            else if (JobConfiguration.isValidJobConfigurationElementName(name))
             {
                defaultsPerTest.add(n);
             }
-            else if (JobConfiguration.isValidJobName(name))
+            else if (JobSupport.isValidJobType(name))
             {
                addJob(pt, n, defaultsPerTest);
             }
@@ -431,6 +438,94 @@ public class Configuration
       }
 
       performanceTests.add(pt);
+   }
+
+   private void addGraphDetails(PerformanceTest pt, Node graph) throws Exception
+   {
+      if (!graph.hasChildNodes())
+      {
+         throw new Exception("The graph node has no children");
+      }
+
+      GraphInfo graphInfo = new GraphInfo();
+      pt.setGraphInfo(graphInfo);
+      
+      NodeList nl = graph.getChildNodes();
+      for(int i = 0; i < nl.getLength(); i++)
+      {
+
+         Node n = nl.item(i);
+         String name = n.getNodeName();
+         if ("x".equals(name))
+         {
+            addAxisInfo(graphInfo, GraphInfo.X, n);
+         }
+         else if ("y".equals(name))
+         {
+            addAxisInfo(graphInfo, GraphInfo.Y, n);
+         }
+         else
+         {
+            if (!name.startsWith("#"))
+            {
+               throw new Exception("Unknow graph axis: " + name);
+            }
+         }
+      }
+   }
+
+   private void addAxisInfo(GraphInfo graphInfo, int axisType, Node axis) throws Exception
+   {
+      if (!axis.hasAttributes())
+      {
+         throw new Exception("Axis " + GraphInfo.axisTypeToString(axisType) + " info incomplete");
+      }
+
+      AxisInfo info = new AxisInfo();
+
+      NamedNodeMap attrs = axis.getAttributes();
+      for(int i = 0; i < attrs.getLength(); i++)
+      {
+         Node n = attrs.item(i);
+         String name = n.getNodeName();
+         String value = n.getNodeValue();
+         if ("job".equals(name))
+         {
+            info.setJobType(JobSupport.getJobType(value));
+         }
+         else if ("metric".equals(name))
+         {
+            // TODO - this is kind of flaky, but it'll work for now
+            info.setMetric(value);
+         }
+         else if ("label".equals(name))
+         {
+            info.setLabel(value);
+         }
+         else if ("result".equals(name))
+         {
+            info.setResult(toBoolean(value));
+         }
+         else
+         {
+            if (!name.startsWith("#"))
+            {
+               throw new Exception("Unknow graph axis: " + name);
+            }
+         }
+      }
+
+      if (info.getJobType() == null)
+      {
+         throw new Exception("Axis info incompletely specified, job type missing");
+      }
+
+      if (info.getMetric() == null)
+      {
+         throw new Exception("Axis info incompletely specified, metric missing");
+      }
+
+      graphInfo.addAxisInfo(axisType, info);
    }
 
    private void addExecution(PerformanceTest pt, Node execution) throws Exception

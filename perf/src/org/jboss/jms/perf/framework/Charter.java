@@ -40,14 +40,13 @@ import java.text.SimpleDateFormat;
 
 import org.jboss.jms.perf.framework.data.Execution;
 import org.jboss.jms.perf.framework.data.PerformanceTest;
+import org.jboss.jms.perf.framework.data.GraphInfo;
+import org.jboss.jms.perf.framework.data.AxisInfo;
 import org.jboss.jms.perf.framework.persistence.PersistenceManager;
 import org.jboss.jms.perf.framework.protocol.Failure;
-import org.jboss.jms.perf.framework.protocol.ReceiveJob;
 import org.jboss.jms.perf.framework.protocol.ThroughputResult;
 import org.jboss.jms.perf.framework.protocol.Job;
-import org.jboss.jms.perf.framework.protocol.SendJob;
 import org.jboss.jms.perf.framework.remoting.Result;
-import org.jboss.jms.perf.framework.remoting.Request;
 import org.jboss.jms.perf.framework.configuration.Configuration;
 import org.jboss.logging.Logger;
 import org.jfree.chart.ChartFactory;
@@ -143,11 +142,20 @@ class Charter
    {
       // one chart (image) per performance test
 
-      List ptests = pm.getPerformanceTestNames();
-      for(Iterator i = ptests.iterator(); i.hasNext(); )
+      // only chart the performance tests from the current configuration file; the database may
+      // contain much more that those, but it MUST contains the ones from the config file, they
+      // just ran
+
+      for(Iterator i = configuration.getPerformanceTests().iterator(); i.hasNext(); )
       {
-         String perfTestName = (String)i.next();
-         PerformanceTest pt = pm.getPerformanceTest(perfTestName);
+         String testName = ((PerformanceTest)i.next()).getName();
+         PerformanceTest pt = pm.getPerformanceTest(testName);
+
+         if (pt == null)
+         {
+            throw new Exception("The performance test '" + testName + "' found in configuration " +
+                                "file but not in the database");
+         }
          chartPerformanceTest(pt);
       }
    }
@@ -156,30 +164,39 @@ class Charter
    {
       String testName = pt.getName();
 
+      GraphInfo graphInfo = null;
+
+      // we only have graph info in memory, not in database
+      for(Iterator i = configuration.getPerformanceTests().iterator(); i.hasNext(); )
+      {
+         PerformanceTest thispt = (PerformanceTest)i.next();
+         if (thispt.getName().equals(testName))
+         {
+            graphInfo = thispt.getGraphInfo();
+            break;
+         }
+      }
+
+      if (graphInfo == null)
+      {
+         log.warn("No <graph> section for " + testName + ", skipping generating chart");
+         return;
+      }
+      
+
       XYSeriesCollection dataset = new XYSeriesCollection();
       ProviderToSeriesIndexMapper providerToSeries = new ProviderToSeriesIndexMapper();
-
-      int mode = 2;
 
       for(Iterator i = pt.getEffectiveExecutions().iterator(); i.hasNext(); )
       {
          Execution e = (Execution)i.next();
-         chartExecution(dataset, e, providerToSeries, mode);
+         chartExecution(dataset, e, providerToSeries, graphInfo);
       }
 
-      String xLabel = "undefined";
-      String yLabel = "undefined";
-
-      if (mode == 1)
-      {
-         xLabel = "send rate (msg/s)";
-         yLabel = "receive rate (msg/s)";
-      }
-      else if (mode == 2)
-      {
-         xLabel = "target send rate (msg/s)";
-         yLabel = "measured send rate (msg/s)";
-      }
+      String xLabel = graphInfo.getAxisInfo(GraphInfo.X).getLabel();
+      xLabel = xLabel == null ? "undefined label" : xLabel;
+      String yLabel = graphInfo.getAxisInfo(GraphInfo.Y).getLabel();
+      yLabel = yLabel == null ? "undefined label" : yLabel;
 
       JFreeChart chart =
          ChartFactory.createXYLineChart(testName, xLabel, yLabel, dataset, PlotOrientation.VERTICAL,
@@ -189,73 +206,88 @@ class Charter
    }
 
    protected void chartExecution(XYSeriesCollection dataset, Execution execution,
-                                 ProviderToSeriesIndexMapper providerToSeries, int mode)
-      throws Exception
+                                 ProviderToSeriesIndexMapper providerToSeries,
+                                 GraphInfo graphInfo) throws Exception
    {
       log.info("Charting " + execution);
 
       String providerName = execution.getProviderName();
+
+      AxisInfo xAxis = graphInfo.getAxisInfo(GraphInfo.X);
+      AxisInfo yAxis = graphInfo.getAxisInfo(GraphInfo.Y);
 
       String seriesDescription =
          generateSeriesDescription(dataset, providerName, execution.getStartDate());
 
       XYSeries series = new XYSeries(seriesDescription);
 
-      for(Iterator i = execution.iterator(); i.hasNext(); )
+      outer:for(Iterator i = execution.iterator(); i.hasNext(); )
       {
          List measurement = (List)i.next();
 
-         // TODO This are just particular cases, make it more general
-
          double x = 0, y = 0;
 
-         if (mode == 1)
+         // TODO this won't work for multiple identical jobs, and also for more than one
+         //      parallel jobs
+         for(Iterator j = measurement.iterator(); j.hasNext(); )
          {
-            if (measurement.size() != 2)
+            Result result = (Result)j.next();
+
+            if (result instanceof Failure)
             {
-               // ignore datapoints that do not have 2 parallel measurements (e.g. drains)
-               continue;
+               // ignore this measurment
+               continue outer;
             }
 
-            Result sendRate = (Result)measurement.get(0);
-            Result receiveRate = (Result)measurement.get(1);
+            Job job = (Job)result.getRequest();
 
-            if (sendRate instanceof Failure || receiveRate instanceof Failure)
+            boolean addToGraph = false;
+
+            if (job.getType() == xAxis.getJobType())
             {
-               // ignore this too
-               continue;
+               if (xAxis.isResult())
+               {
+                  // TODO basically we're ignoring that we can also want the number of messages
+                  x = ((ThroughputResult)result).getThroughput();
+                  log.debug("recording " + x + " on the x axis, as result");
+               }
+               else
+               {
+                  // TODO basically we're ignoring anything else but rates
+                  x = job.getRate();
+                  log.debug("recording " + x + " on the x axis");
+               }
+
+               addToGraph = true;
             }
 
-            if (((Job)sendRate.getRequest()).getType() == ReceiveJob.TYPE)
+            if (job.getType() == yAxis.getJobType())
             {
-               Result tmp = sendRate;
-               sendRate = receiveRate;
-               receiveRate = tmp;
+               if (yAxis.isResult())
+               {
+                  // TODO basically we're ignoring that we can also want the number of messages
+                  y = ((ThroughputResult)result).getThroughput();
+                  log.debug("recording " + y + " on the y axis, as result");
+               }
+               else
+               {
+                  // TODO basically we're ignoring anything else but rates
+                  y = job.getRate();
+                  log.debug("recording " + y + " on the y axis");
+               }
+
+               addToGraph = true;
             }
-            x = ((ThroughputResult)sendRate).getThroughput();
-            y = ((ThroughputResult)receiveRate).getThroughput();
+
+            if (addToGraph)
+            {
+               series.add(x, y);
+            }
          }
-         else if (mode == 2)
-         {
-            Result result = (Result)measurement.get(0);
-            Request request = result.getRequest();
-            if (!(request instanceof SendJob) || (result instanceof Failure))
-            {
-               continue;
-            }
-
-            SendJob j = (SendJob)request;
-            ThroughputResult tr = (ThroughputResult)result;
-            x = j.getRate();
-            y = tr.getThroughput();
-         }
-
-         series.add(x, y);
       }
 
       dataset.addSeries(series);
       providerToSeries.newSeries(providerName);
-
    }
 
 

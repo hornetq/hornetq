@@ -87,10 +87,12 @@ public class ThroughputResult extends ResultSupport
 
       if (!isDrain)
       {
+         Job job = (Job)request;
          double t = getThroughput();
          t = ((double)Math.round(t * 100))/100;
-         sb.append(" in ").append(getTime()).append(" ms at a rate of ").append(t).
-            append(" messages/sec");
+         sb.append(" in ").append(getTime()).append(" ms with a target rate ").
+            append(job.getRate()).append(" messages/sec, real rate ").
+            append(t).append(" messages/sec");
       }
 
       return sb.toString();

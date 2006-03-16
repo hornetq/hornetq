@@ -54,19 +54,6 @@ public class JobConfiguration
       return false;
    }
 
-   public static boolean isValidJobName(String name)
-   {
-      if ("send".equals(name) ||
-          "receive".equals(name) ||
-          "drain".equals(name) ||
-          "fill".equals(name) ||
-          "ping".equals(name))
-      {
-         return true;
-      }
-      return false;
-   }
-
    public static void validateAcknowledgmentMode(int acknowledgmentMode)
    {
       if (acknowledgmentMode != Session.AUTO_ACKNOWLEDGE &&

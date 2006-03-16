@@ -66,6 +66,51 @@ public abstract class JobSupport implements Job, Serializable
       }
    }
 
+   /**
+    * Validate and canonicize the job name.
+    */
+   public static String getJobType(String name) throws Exception
+   {
+      name = name.toUpperCase();
+      if (SendJob.TYPE.equals(name))
+      {
+         return SendJob.TYPE;
+      }
+      else if (ReceiveJob.TYPE.equals(name))
+      {
+         return ReceiveJob.TYPE;
+      }
+      else if (FillJob.TYPE.equals(name))
+      {
+         return FillJob.TYPE;
+      }
+      else if (DrainJob.TYPE.equals(name))
+      {
+         return DrainJob.TYPE;
+      }
+      else if (PingJob.TYPE.equals(name))
+      {
+         return PingJob.TYPE;
+      }
+      else
+      {
+         throw new IllegalArgumentException("Unknown job type " + name);
+      }
+   }
+
+   public static boolean isValidJobType(String name)
+   {
+      if ("send".equals(name) ||
+          "receive".equals(name) ||
+          "drain".equals(name) ||
+          "fill".equals(name) ||
+          "ping".equals(name))
+      {
+         return true;
+      }
+      return false;
+   }
+
    public static String acknowledgmentModeToString(int ackMode)
    {
       if (Session.AUTO_ACKNOWLEDGE == ackMode)

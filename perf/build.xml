@@ -211,7 +211,7 @@
          <jvmarg value="-Xnoagent"/>
          <jvmarg value="-Djava.compiler=NONE"/>
          <jvmarg value="-Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=runner"/>
-         -->
+        -->
          <arg line="-config ${module.root}/perf.xml -action ${action}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="log.suffix" value="${log.suffix}"/>

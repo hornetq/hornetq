@@ -56,6 +56,8 @@ public class PerformanceTest implements Serializable, JobList
    protected String connectionFactory;
    protected List jobs;
 
+   private GraphInfo graphInfo;
+
    // Constructors --------------------------------------------------
 
    public PerformanceTest(Runner runner, String name)
@@ -151,6 +153,16 @@ public class PerformanceTest implements Serializable, JobList
    public long getId()
    {
       return id;
+   }
+
+   public GraphInfo getGraphInfo()
+   {
+      return graphInfo;
+   }
+
+   public void setGraphInfo(GraphInfo graphInfo)
+   {
+      this.graphInfo = graphInfo;
    }
 
    public void run() throws Exception
