@@ -704,13 +704,13 @@
         <!-- CMT -->
         <interceptor transaction="Container">org.jboss.ejb.plugins.TxInterceptorCMT</interceptor>
         <interceptor transaction="Container">org.jboss.ejb.plugins.CallValidationInterceptor</interceptor>
-        <interceptor transaction="Container">org.jboss.webservice.server.ServiceEndpointInterceptor</interceptor>
+        <interceptor transaction="Container">org.jboss.ws.server.ServiceEndpointInterceptor</interceptor>
         <interceptor transaction="Container">org.jboss.ejb.plugins.StatelessSessionInstanceInterceptor</interceptor>
         <!-- BMT -->
         <interceptor transaction="Bean">org.jboss.ejb.plugins.StatelessSessionInstanceInterceptor</interceptor>
         <interceptor transaction="Bean">org.jboss.ejb.plugins.TxInterceptorBMT</interceptor>
         <interceptor transaction="Bean">org.jboss.ejb.plugins.CallValidationInterceptor</interceptor>
-        <interceptor transaction="Bean">org.jboss.webservice.server.ServiceEndpointInterceptor</interceptor>
+        <interceptor transaction="Bean">org.jboss.ws.server.ServiceEndpointInterceptor</interceptor>
         <interceptor>org.jboss.resource.connectionmanager.CachedConnectionInterceptor</interceptor>
       </container-interceptors>
       <instance-pool>org.jboss.ejb.plugins.StatelessSessionInstancePool</instance-pool>
