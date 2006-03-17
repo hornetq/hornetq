@@ -80,7 +80,7 @@ class Charter
    private static final String OUTPUT_FILE = "benchmark-results.html";
    private static final Logger log = Logger.getLogger(Charter.class);
 
-   public static final DateFormat dateFormat = new SimpleDateFormat("MMM d yy HH:mm a");
+   public static final DateFormat dateFormat = new SimpleDateFormat("MMM d yy hh:mm a");
 
    // Static --------------------------------------------------------
 
@@ -145,6 +145,11 @@ class Charter
       // only chart the performance tests from the current configuration file; the database may
       // contain much more that those, but it MUST contains the ones from the config file, they
       // just ran
+
+      if (configuration.getPerformanceTests().isEmpty())
+      {
+         log.info("No performance tests defined in the configuration file");
+      }
 
       for(Iterator i = configuration.getPerformanceTests().iterator(); i.hasNext(); )
       {

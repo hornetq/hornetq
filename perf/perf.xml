@@ -3,7 +3,7 @@
    <!-- benchmark configuration -->
    <db-url>jdbc:hsqldb:./output/db/perfdb</db-url>
    <report-directory>./output/results</report-directory>
-   <color-step>25</color-step>
+   <color-step>15</color-step>
 
    <!-- benchmark-wide test defaults -->
 
@@ -74,9 +74,8 @@
       </performance-test>
       -->
 
-      <!-- This produces incorrect results !!!-->
-
-      <performance-test name="Measured Send Rate vs. Intended Send Rate">
+      <!--
+      <performance-test name="Measured Send Rate vs. Intended Send Rate" loops="1">
 
          <graph>
             <x job="send" metric="rate" label="intended send rate (msg/s)"/>
@@ -86,7 +85,7 @@
          <destination>/queue/simpleQueue</destination>
          <delivery-mode>NON_PERSISTENT</delivery-mode>
          <message-size>0</message-size>
-         <messages>2000</messages>
+         <messages>50000</messages>
 
          <drain executor="LOCAL"/>
          <send rate="500" executor="LOCAL"/>
@@ -97,10 +96,10 @@
          <drain executor="LOCAL"/>
          <send rate="1500" executor="LOCAL"/>
 
-
          <execution provider="JBossMessaging"/>
-         <!-- <execution provider="JBossMQ"/> -->
+         <execution provider="JBossMQ"/>
       </performance-test>
+     -->
 
       <!--
       <performance-test name="ReceiveRateVsSendRate">
@@ -138,7 +137,8 @@
       -->
 
       <!--
-      <performance-test name="Send 30000 Non-Persistent Non-Transactional 0 KB Local">
+
+      <performance-test name="Send 50000 Non-Persistent Non-Transactional 0 KB Local">
 
          <graph>
             <x job="send" result="no" metric="rate" label="target send rate (msg/s)"/>
@@ -148,7 +148,7 @@
          <destination>/queue/simpleQueue</destination>
          <delivery-mode>NON_PERSISTENT</delivery-mode>
          <message-size>0</message-size>
-         <messages>30000</messages>
+         <messages>50000</messages>
 
          <drain executor="LOCAL"/>
          <send rate="500" executor="LOCAL"/>
@@ -231,14 +231,25 @@
          <drain executor="LOCAL"/>
          <send rate="14000" executor="LOCAL"/>
 
+         <drain executor="LOCAL"/>
+         <send rate="14500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="15000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="15500" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="16000" executor="LOCAL"/>
+
          <execution provider="JBossMessaging"/>
          <execution provider="JBossMQ"/>
       </performance-test>
-      -->
 
-      <!--
+          -->
 
-      <performance-test name="Send 30000 Non-Persistent Non-Transactional 1 KB Text Local">
+      <performance-test name="Send 20000 Non-Persistent Non-Transactional 1 KB Text Local">
 
          <graph>
             <x job="send" result="no" metric="rate" label="target send rate (msg/s)"/>
@@ -249,7 +260,7 @@
          <delivery-mode>NON_PERSISTENT</delivery-mode>
          <message-factory-class>org.jboss.jms.perf.framework.factories.TextMessageFactory</message-factory-class>
          <message-size>1024</message-size>
-         <messages>30000</messages>
+         <messages>20000</messages>
 
          <drain executor="LOCAL"/>
          <send rate="500" executor="LOCAL"/>
@@ -337,7 +348,7 @@
          <execution provider="JBossMQ"/>
       </performance-test>
 
-      -->
+
 
       <!--
       <performance-test name="Send 30000 Non-Persistent Non-Transactional 0 KB Remote">

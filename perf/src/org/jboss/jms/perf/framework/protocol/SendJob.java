@@ -125,43 +125,37 @@ public class SendJob extends ThroughputJobSupport
    // Inner classes -------------------------------------------------
 
    protected class Sender extends AbstractServitor
-   {     
+   {
+
+      // Constants --------------------------------------------------
+
+      // Static -----------------------------------------------------
+
+      // Attributes -------------------------------------------------
+
+      private Session sess;
+      private MessageProducer prod;
+
+      // Constructors -----------------------------------------------
+
       Sender(long duration)
       {
          super(duration);
       }
-      
-      MessageProducer prod;
-      
-      Session sess;
-      
-      public void deInit()
-      {
-         log.info("De-initialising");
-         try
-         {
-            sess.close();
-         }      
-         catch (Throwable e)
-         {
-            log.error("Failed to deInit()", e);
-            failed = true;
-         }
-      }
-      
+
+      // Servitor implementation ------------------------------------
+
       public void init()
       {
+         log.debug(this + " initializing");
          try
          {
-
             messageFactory = (MessageFactory)Class.forName(getMessageFactoryClass()).newInstance();
 
             Connection conn = getNextConnection();
-            
-            sess = conn.createSession(transacted, getAcknowledgmentMode()); //Ackmode doesn't matter            
-            
+            sess = conn.createSession(transacted, getAcknowledgmentMode());
             prod = null;
-            
+
             if (anon)
             {
                prod = sess.createProducer(null);
@@ -170,9 +164,8 @@ public class SendJob extends ThroughputJobSupport
             {
                prod = sess.createProducer(destination);
             }
-            
-            prod.setDeliveryMode(deliveryMode);
 
+            prod.setDeliveryMode(deliveryMode);
          }
          catch (Throwable e)
          {
@@ -180,7 +173,24 @@ public class SendJob extends ThroughputJobSupport
             failed = true;
          }
       }
-      
+
+      public void deInit()
+      {
+         log.debug(this + " de-initializing");
+
+         try
+         {
+            sess.close();
+         }
+         catch (Throwable e)
+         {
+            log.error("Failed to deInit()", e);
+            failed = true;
+         }
+      }
+
+      // Runnable implementation ------------------------------------
+
       public void run()
       {
 
@@ -192,12 +202,10 @@ public class SendJob extends ThroughputJobSupport
             log.debug("start sending using " + fullDump());
 
             long start = System.currentTimeMillis();
-
             long timeLeft;
 
             while (true)
             {
-
                timeLeft = duration - System.currentTimeMillis() + start;
 
                if (timeLeft <= 0)
@@ -207,7 +215,7 @@ public class SendJob extends ThroughputJobSupport
                }
 
                Message m = messageFactory.getMessage(sess, messageSize);
-               
+
                if (anon)
                {
                   prod.send(destination, m);
@@ -218,16 +226,17 @@ public class SendJob extends ThroughputJobSupport
                }
 
                currentMessageCount++;
+
                if (log.isTraceEnabled()) { log.trace("sent message " + currentMessageCount); }
-               
+
                if (transacted)
-               {                  
+               {
                   if (currentMessageCount % transactionSize == 0)
                   {
                      sess.commit();
                      if (log.isTraceEnabled()) { log.trace("committed"); }
                   }
-               }  
+               }
 
                if (currentMessageCount == messageCount)
                {
@@ -239,17 +248,23 @@ public class SendJob extends ThroughputJobSupport
                      if (log.isTraceEnabled()) { log.trace("committed"); }
                   }
 
-                  log.debug("terminating sending because message count has been reached");
+                  log.debug("terminating sending because message count (" + messageCount +
+                            ") has been reached");
                   break;
                }
-               
-               doThrottle();
-                             
+
+               if (rate > 0)
+               {
+                  doThrottle(start);
+               }
             }
-                                     
+
             actualTime = System.currentTimeMillis() - start;
-            
-            log.info("sent " + currentMessageCount + " messages, actual duration is " + actualTime + " ms");
+
+            log.info("sent " + currentMessageCount + " messages, actual duration is " +
+                     actualTime + " ms, actual send rate is " +
+                     (((double)Math.round(currentMessageCount * 100000 / actualTime)) / 100) +
+                     " messages/sec");
 
          }
          catch (Throwable e)
@@ -262,63 +277,41 @@ public class SendJob extends ThroughputJobSupport
             log.info("finished sending on " + destination);
          }
       }
-      
-      private long lastTime = 0;
-      private int lastCount = 0;
-                  
-      protected void doThrottle()
+
+      // Public -----------------------------------------------------
+
+      // Package protected ------------------------------------------
+
+      // Protected --------------------------------------------------
+
+      // Private ----------------------------------------------------
+
+      private void doThrottle(long start)
       {
-         if (rate == 0)
+         long plannedTime = Math.round((double)start + (double)currentMessageCount * 1000 / rate);
+         long sleepTime = plannedTime - System.currentTimeMillis();
+
+         if (sleepTime <= 0)
          {
+            // we're falling behind schedule, but there's nothing we can do, planned send rate
+            // is too high, we cannot send messages faster that that
+
+            if (log.isTraceEnabled()) { log.trace("falling behind schedule, mustn't sleep"); }
             return;
          }
 
-         long now = System.currentTimeMillis();
-
-         if (log.isTraceEnabled()) { log.trace("doThrottle(" + now + ")"); }
-
-         if (lastTime != 0)
+         try
          {
-            long elapsedTime = now - lastTime;
-            
-            if (elapsedTime >= SAMPLE_PERIOD)
-            {
-               long msgs = currentMessageCount - lastCount;
-               
-               //log.info("elapsedTime is " + elapsedTime);
-               //log.info("msgs:" + msgs);
-               
-               double targetMsgs = rate * (double)elapsedTime / 1000;
-               
-               //log.info("Target msgs:" + targetMsgs);
-               
-               if (msgs > targetMsgs)
-               {
-                  //Need to throttle
-                  //log.info("throttling");
-                  
-                  long throttleTime = (long)((1000 * (double)msgs / rate) - elapsedTime);
-                                    
-                  //log.info("Throttle time is:" + throttleTime);
-                  try
-                  {
-                     Thread.sleep(throttleTime);
-                  }
-                  catch (InterruptedException e)
-                  {
-                     //Ignore
-                  }
-               }
-               
-               lastTime = now;
-               
-               lastCount = currentMessageCount;
-            }
+            if (log.isTraceEnabled()) { log.trace("throttling control says sleep for " + sleepTime); }
+            Thread.sleep(sleepTime);
          }
-         else
+         catch(InterruptedException e)
          {
-            lastTime = now;
+            // that's OK, next time we'll sleep longer
          }
       }
+
+      // Inner classes ----------------------------------------------
+
    }
 }

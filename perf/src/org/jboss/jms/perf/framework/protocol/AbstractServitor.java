@@ -26,24 +26,32 @@ package org.jboss.jms.perf.framework.protocol;
  * A AbstractServitor.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version $Revision$
  *
  * $Id$
  */
 abstract class AbstractServitor implements Servitor
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected boolean failed;
-
    protected long duration;
-
    protected long actualTime;
-
    protected int currentMessageCount;
+
+   // Constructors --------------------------------------------------
 
    AbstractServitor(long duration)
    {
       this.duration = duration;
    }
+
+   // Servitor implementation ---------------------------------------
 
    public boolean isFailed()
    {
@@ -59,4 +67,15 @@ abstract class AbstractServitor implements Servitor
    {
       return currentMessageCount;
    }
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }
