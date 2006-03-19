@@ -37,6 +37,7 @@ import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
 
 /**
@@ -84,7 +85,8 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       try
       {
          delegate = new ClientConnectionFactoryDelegate(id, serverPeer.getLocatorURI(),
-                                                        serverPeer.getVersion(), serverPeer.getServerPeerID());
+                                                        serverPeer.getVersion(),
+                                                        serverPeer.getServerPeerID());
       }
       catch (Exception e)
       {
@@ -105,7 +107,7 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
          for(Iterator i = jndiNames.iterator(); i.hasNext(); )
          {
             String jndiName = (String)i.next();
-            initialContext.rebind(jndiName, cf);
+            JNDIUtil.rebind(initialContext, jndiName, cf);
          }
       }
 

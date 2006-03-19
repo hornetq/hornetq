@@ -102,29 +102,29 @@ class GroupConnection implements Connection, Runnable {
 
             serverChannel = new JChannel(serverChannelConfigURL);
             serverChannel.setOpt(Channel.GET_STATE_EVENTS, Boolean.TRUE);
-            serverChannel.setChannelListener(new ChannelListener() {
-                    
-                    public void  channelClosed(Channel channel) {
-                        log.debug("channelClosed("+channel+")");
-                    }
-           
-                    public void channelConnected(Channel channel) {
-                        log.debug("channelConnected() to group ["+
-                                 channel.getChannelName()+"]");
-                    }
-                    
-                    public void channelDisconnected(Channel channel) {
-                        log.debug("channelDisconnected("+channel+")");
-                    }
-           
-                    public void channelReconnected(Address addr) {
-                        log.debug("channelReconnected("+addr+")");
-                    }
-           
-                    public void channelShunned() {
-                        log.debug("channelShunned()");
-                    }
-                });
+//            serverChannel.setChannelListener(new ChannelListener() {
+//
+//                    public void  channelClosed(Channel channel) {
+//                        log.debug("channelClosed("+channel+")");
+//                    }
+//
+//                    public void channelConnected(Channel channel) {
+//                        log.debug("channelConnected() to group ["+
+//                                 channel.getChannelName()+"]");
+//                    }
+//
+//                    public void channelDisconnected(Channel channel) {
+//                        log.debug("channelDisconnected("+channel+")");
+//                    }
+//
+//                    public void channelReconnected(Address addr) {
+//                        log.debug("channelReconnected("+addr+")");
+//                    }
+//
+//                    public void channelShunned() {
+//                        log.debug("channelShunned()");
+//                    }
+//                });
             
             log.debug("channel created");
             serverChannel.connect(DEFAULT_SERVER_GROUP_NAME);

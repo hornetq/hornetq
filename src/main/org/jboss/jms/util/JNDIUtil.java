@@ -69,7 +69,6 @@ public class JNDIUtil
       return crtContext;
    }
 
-
    public static void tearDownRecursively(Context c) throws Exception
    {
       for(NamingEnumeration ne = c.listBindings(""); ne.hasMore(); )
@@ -83,6 +82,26 @@ public class JNDIUtil
          }
          c.unbind(name);
       }
+   }
+
+   /**
+    * Context.rebind() requires that all intermediate contexts and the target context (that named by
+    * all but terminal atomic component of the name) must already exist, otherwise
+    * NameNotFoundException is thrown. This method behaves similar to Context.rebind(), but creates
+    * intermediate contexts, if necessary.
+    */
+   public static void rebind(Context c, String jndiName, Object o) throws NamingException
+   {
+      Context context = c;
+      String name = jndiName;
+
+      int idx = jndiName.lastIndexOf('/');
+      if (idx != -1)
+      {
+         context = createContext(c, jndiName.substring(0, idx));
+         name = jndiName.substring(idx + 1);
+      }
+      context.bind(name, o);
    }
 
    // Attributes ----------------------------------------------------

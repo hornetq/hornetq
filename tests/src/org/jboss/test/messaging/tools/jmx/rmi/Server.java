@@ -116,6 +116,9 @@ public interface Server extends Remote
    void deployQueue(String name, String jndiName) throws Exception;
    void undeployDestination(boolean isQueue, String name) throws Exception;
 
+   void deployConnectionFactory(String objectName, String[] jndiBindings) throws Exception;
+   void undeployConnectionFactory(ObjectName objectName) throws Exception;
+
    /**
     * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
     *        NotSerializableExceptions that show up when running tests on JDK 1.4.

@@ -78,7 +78,7 @@ public class LocalTestServer implements Server
 
    // List<ObjectName>
    private List connFactoryObjectNames;
-   
+
    // Constructors --------------------------------------------------
 
    public LocalTestServer()
@@ -101,6 +101,11 @@ public class LocalTestServer implements Server
 
       sc = new ServiceContainer(containerConfig, null);
       sc.start();
+
+      if ("none".equals(containerConfig))
+      {
+         return;
+      }
 
       startServerPeer(null, null, null);
 
@@ -482,6 +487,34 @@ public class LocalTestServer implements Server
       sc.unregisterService(destinationObjectName);
    }
 
+   public void deployConnectionFactory(String objectName,
+                                       String[] jndiBindings) throws Exception
+   {
+      String config =
+         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
+                "name=\"" + objectName + "\"\n" +
+                "xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
+         "<depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
+         "<attribute name=\"JNDIBindings\"><bindings>";
+
+      for(int i = 0; i < jndiBindings.length; i++)
+      {
+         config += "<binding>" + jndiBindings[i] + "</binding>\n";
+      }
+      config += "</bindings></attribute></mbean>";
+
+      MBeanConfigurationElement mc = new MBeanConfigurationElement(XMLUtil.stringToElement(config));
+      ObjectName on = sc.registerAndConfigureService(mc);
+      sc.invoke(on, "create", new Object[0], new String[0]);
+      sc.invoke(on, "start", new Object[0], new String[0]);
+   }
+
+   public void undeployConnectionFactory(ObjectName objectName) throws Exception
+   {
+      sc.invoke(objectName, "stop", new Object[0], new String[0]);
+      sc.invoke(objectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(objectName);
+   }
 
    public void configureSecurityForDestination(String destName, String config) throws Exception
    {

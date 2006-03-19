@@ -389,6 +389,17 @@ public class ServerManagement
       server.undeployDestination(isQueue, name);
    }
 
+   public static void deployConnectionFactory(String objectName, String[] jndiBindings)
+      throws Exception
+   {
+      server.deployConnectionFactory(objectName, jndiBindings);
+   }
+
+   public static void undeployConnectionFactory(ObjectName objectName) throws Exception
+   {
+      server.undeployConnectionFactory(objectName);
+   }
+
    public static Hashtable getJNDIEnvironment()
    {
       if (isLocal())

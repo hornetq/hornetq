@@ -25,11 +25,15 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.jms.ConnectionFactory;
 import javax.jms.XAConnectionFactory;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.TopicConnectionFactory;
+import javax.management.ObjectName;
 
 /**
- * Test a deployed ConnectionFactory service.
+ * Tests a deployed ConnectionFactory service.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -41,7 +45,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected InitialContext initialContext;
@@ -75,6 +79,8 @@ public class ConnectionFactoryTest extends MessagingTestCase
       super.tearDown();
 
       initialContext.close();
+
+      ServerManagement.stop();
    }
 
    public void testDefaultConnectionFactory() throws Exception
@@ -95,10 +101,94 @@ public class ConnectionFactoryTest extends MessagingTestCase
       log.debug("ConnectionFactory: " + xacf);
    }
 
+   public void testDeployment() throws Exception
+   {
+      String objectName = "somedomain:service=SomeConnectionFactory";
+      String[] jndiBindings = new String[] { "/SomeConnectionFactory" };
 
+      ServerManagement.deployConnectionFactory(objectName, jndiBindings);
+
+      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/SomeConnectionFactory");
+
+      assertNotNull(cf);
+      assertTrue(cf instanceof QueueConnectionFactory);
+      assertTrue(cf instanceof TopicConnectionFactory);
+
+      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+
+      try
+      {
+         initialContext.lookup("/SomeConnectionFactory");
+         fail("should throw exception");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+   }
+
+   public void testDeploymentMultipleJNDIBindings() throws Exception
+   {
+      String objectName = "somedomain:service=SomeConnectionFactory";
+      String[] jndiBindings = new String[] { "/name1", "/name2", "/name3" };
+      ServerManagement.deployConnectionFactory(objectName, jndiBindings);
+
+      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/name1");
+      assertNotNull(cf);
+
+      cf = (ConnectionFactory)initialContext.lookup("/name2");
+      assertNotNull(cf);
+
+      cf = (ConnectionFactory)initialContext.lookup("/name2");
+      assertNotNull(cf);
+
+      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+
+      try
+      {
+         initialContext.lookup("/name1");
+         fail("should throw exception");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+
+      try
+      {
+         initialContext.lookup("/name2");
+         fail("should throw exception");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+
+      try
+      {
+         initialContext.lookup("/name3");
+         fail("should throw exception");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+   }
+
+   public void testDeploymentNewJNDIContext() throws Exception
+   {
+      String objectName = "somedomain:service=SomeConnectionFactory";
+      String[] jndiBindings = new String[] { "/a/compound/jndi/name" };
+      ServerManagement.deployConnectionFactory(objectName, jndiBindings);
+
+      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/a/compound/jndi/name");
+      assertNotNull(cf);
+
+      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+   }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------

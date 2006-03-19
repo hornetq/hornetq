@@ -134,6 +134,16 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.deployTopic(name, jndiName);
    }
 
+   public void deployConnectionFactory(String objectName, String[] jndiBindings) throws Exception
+   {
+      server.deployConnectionFactory(objectName, jndiBindings);
+   }
+
+   public void undeployConnectionFactory(ObjectName objectName) throws Exception
+   {
+      server.undeployConnectionFactory(objectName);
+   }
+
    public synchronized void destroy() throws Exception
    {
       server.destroy();

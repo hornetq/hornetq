@@ -249,7 +249,7 @@
 
           -->
 
-      <performance-test name="Send 20000 Non-Persistent Non-Transactional 1 KB Text Local">
+      <performance-test name="Send 20000 Non-Persistent Non-Transactional 1 KB Text Local" loops="3">
 
          <graph>
             <x job="send" result="no" metric="rate" label="target send rate (msg/s)"/>
@@ -260,7 +260,7 @@
          <delivery-mode>NON_PERSISTENT</delivery-mode>
          <message-factory-class>org.jboss.jms.perf.framework.factories.TextMessageFactory</message-factory-class>
          <message-size>1024</message-size>
-         <messages>20000</messages>
+         <messages>30000</messages>
 
          <drain executor="LOCAL"/>
          <send rate="500" executor="LOCAL"/>

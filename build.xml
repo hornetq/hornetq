@@ -375,20 +375,9 @@
       depends="_buildmagic:build-bypass-check"
       unless="build-bypass.on">
 
-      <call target="compile"/>
-
       <mkdir dir="${build.lib}"/>
-
-      <!-- Build the jboss-${module.name}.jar -->
-      <jar jarfile="${build.lib}/jboss-${module.name}.jar"
-         manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}">
-            <!-- Include everything else -->
-            <include name="org/jboss/**"/>
-            <include name="VERSION"/>
-            <exclude name="org/jboss/jms/perf/**"/>
-         </fileset>
-      </jar>
+      <antcall target="jar"/>
+      <antcall target="sar"/>
 
       <!-- Update the build marker to allow bypassing -->
       <touch file="${build-bypass.marker}"/>
@@ -502,6 +491,16 @@
    <property environment="ENV"/>
 
    <!-- Release tasks -->
+
+   <target name="jar" depends="compile">
+      <jar jarfile="${build.lib}/jboss-${module.name}.jar"
+         manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}">
+            <include name="**"/>
+            <exclude name="org/jboss/jms/perf/**"/>
+         </fileset>
+      </jar>
+   </target>
 
    <target name="sar-structure" depends="compile">
 

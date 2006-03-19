@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Collections;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
@@ -401,6 +402,10 @@ public class ServiceContainer
     */
    public Set query(ObjectName pattern)
    {
+      if (pattern == null)
+      {
+         return Collections.EMPTY_SET;
+      }
       return mbeanServer.queryNames(pattern, null);
    }
 
@@ -849,6 +854,14 @@ public class ServiceContainer
             {
                security = false;
             }
+         }
+         else if ("none".equals(tok))
+         {
+            transaction = false;
+            database = false;
+            jca = false;
+            remotingSocket = false;
+            security = false;
          }
          else
          {
