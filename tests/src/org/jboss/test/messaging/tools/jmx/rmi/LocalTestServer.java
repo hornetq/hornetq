@@ -39,13 +39,13 @@ import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.w3c.dom.Element;
 
 /**
@@ -387,14 +387,29 @@ public class LocalTestServer implements Server
       return channelMapperObjectName;
    }
 
-   /**
-    * Only for in-VM use!
-    */
-   public Connector getConnector() throws Exception
+   public Set getConnectorSubsystems() throws Exception
    {
       RemotingJMXWrapper remoting =
          (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
-      return remoting.getConnector();
+
+      return remoting.getConnectorSubsystems();
+   }
+
+   public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
+      throws Exception
+   {
+      RemotingJMXWrapper remoting =
+         (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
+
+      remoting.addInvocationHandler(subsystem, handler);
+   }
+
+   public void removeServerInvocationHandler(String subsystem) throws Exception
+   {
+      RemotingJMXWrapper remoting =
+         (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
+
+      remoting.removeInvocationHandler(subsystem);
    }
 
    /**

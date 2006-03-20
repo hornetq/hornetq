@@ -24,7 +24,6 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.remoting.transport.Connector;
 
 /**
  *
@@ -50,14 +49,6 @@ public class RemoteTestServer extends LocalTestServer
    /**
     * Only for in-VM use!
     */
-   public Connector getConnector() throws Exception
-   {      
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
-   }
-
-   /**
-    * Only for in-VM use!
-    */
    public MessageStore getMessageStore() throws Exception
    {      
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
@@ -78,7 +69,6 @@ public class RemoteTestServer extends LocalTestServer
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
    }
-   
 
    // Public --------------------------------------------------------
     

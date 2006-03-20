@@ -34,7 +34,7 @@ import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.remoting.transport.Connector;
+import org.jboss.remoting.ServerInvocationHandler;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.
@@ -50,17 +50,17 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    private static final long serialVersionUID = -368445344011004778L;
 
    private static final Logger log = Logger.getLogger(RMITestServer.class);
-   
+
    protected RemoteTestServer server;
-   
+
    private RMINamingDelegate namingDelegate;
-   
+
    public static final int RMI_REGISTRY_PORT = 25989;
    public static final String RMI_SERVER_NAME = "messaging-rmi-server";
    public static final String NAMING_SERVER_NAME = "naming-rmi-server";
 
    private static Registry registry;
-   
+
    public static void main(String[] args) throws Exception
    {
       log.debug("initializing RMI runtime");
@@ -106,11 +106,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
          System.exit(0);
       }
    }
-   
+
    public RMITestServer() throws Exception
    {
       namingDelegate = new RMINamingDelegate();
-      
+
       server = new RemoteTestServer();
    }
 
@@ -147,7 +147,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public synchronized void destroy() throws Exception
    {
       server.destroy();
-      
+
       registry.unbind(RMI_SERVER_NAME);
       registry.unbind(NAMING_SERVER_NAME);
    }
@@ -155,7 +155,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void exit() throws Exception
    {
       server.exit();
-      
+
       new Thread(new VMKiller(), "VM Killer").start();
    }
 
@@ -164,9 +164,20 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getAttribute(on, attribute);
    }
 
-   public Connector getConnector() throws Exception
+   public Set getConnectorSubsystems() throws Exception
    {
-      return server.getConnector();
+      return server.getConnectorSubsystems();
+   }
+
+   public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
+      throws Exception
+   {
+      server.addServerInvocationHandler(subsystem, handler);
+   }
+
+   public void removeServerInvocationHandler(String subsystem) throws Exception
+   {
+      server.removeServerInvocationHandler(subsystem);
    }
 
    public String getDefaultSecurityConfig() throws Exception
@@ -193,7 +204,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       return server.getMessageStore();
    }
-   
+
    public PersistenceManager getPersistenceManager() throws Exception
    {
       return null;
@@ -252,8 +263,8 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void stop() throws Exception
    {
       server.stop();
-      
-      namingDelegate.reset();      
+
+      namingDelegate.reset();
    }
 
    public void stopServerPeer() throws Exception
@@ -270,18 +281,18 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       server.undeployDestination(isQueue, name);
    }
-   
+
    public Object executeCommand(Command command) throws Exception
    {
       return server.executeCommand(command);
    }
-   
+
    public ServerPeer getServerPeer() throws Exception
    {
       return server.getServerPeer();
    }
 
-      
+
    private RMINamingDelegate getNamingDelegate()
    {
       return namingDelegate;

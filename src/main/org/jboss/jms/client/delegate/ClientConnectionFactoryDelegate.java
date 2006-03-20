@@ -31,6 +31,7 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
@@ -128,14 +129,15 @@ public class ClientConnectionFactoryDelegate
             
       if ("createConnectionDelegate".equals(methodName))
       {
-         //This must be invoked on the same connection subsequently used by the created JMS connection
+         // this must be invoked on the same connection subsequently used by the created JMS
+         // connection
          JMSRemotingConnection connection = new JMSRemotingConnection(serverLocatorURI);
          
          MethodInvocation mi = (MethodInvocation)invocation;
          
          Client client = connection.getInvokingClient();
          
-         //I will need this on the server-side to create the ConsumerDelegate instance
+         // I will need this on the server-side to create the ConsumerDelegate instance
          mi.getMetaData().addMetaData(MetaDataConstants.JMS,
                                       MetaDataConstants.REMOTING_SESSION_ID,
                                       client.getSessionId(), PayloadKey.AS_IS);
@@ -160,10 +162,10 @@ public class ClientConnectionFactoryDelegate
       }
       else
       {
-         //This is invoked on it's own connection
+         // this is invoked on its own connection
          InvokerLocator locator = new InvokerLocator(serverLocatorURI);
          
-         Client client = new Client(locator);
+         Client client = new Client(locator, ServerPeer.REMOTING_JMS_SUBSYSTEM);
          
          client.connect();
          

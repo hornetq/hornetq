@@ -31,7 +31,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.remoting.transport.Connector;
+import org.jboss.remoting.ServerInvocationHandler;
 
 /**
  * The remote interface exposed by TestServer.
@@ -80,15 +80,29 @@ public interface Server extends Remote
    void stopServerPeer() throws Exception;
    boolean isServerPeerStarted() throws Exception;
 
-   public ObjectName getServerPeerObjectName() throws Exception;
-   public ObjectName getChannelMapperObjectName() throws Exception;
+   ObjectName getServerPeerObjectName() throws Exception;
+   ObjectName getChannelMapperObjectName() throws Exception;
 
    boolean isStarted() throws Exception;
 
    /**
-    * Only for in-VM use!
+    * @return a Set<String> with the subsystems currently registered with the Connector. It is
+    *         supposed to work locally as well as remotely.
     */
-   Connector getConnector() throws Exception;
+   Set getConnectorSubsystems() throws Exception;
+
+   /**
+    * Add a ServerInvocationHandler to the remoting Connector. This method is supposed to work
+    * locally as well as remotely.
+    */
+   void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
+      throws Exception;
+
+   /**
+    * Remove a ServerInvocationHandler from the remoting Connector. This method is supposed to work
+    * locally as well as remotely.
+    */
+   void removeServerInvocationHandler(String subsystem) throws Exception;
 
    /**
     * Only for in-VM use!
@@ -99,14 +113,14 @@ public interface Server extends Remote
     * Only for in-VM use!
     */
    DestinationManager getDestinationManager() throws Exception;
-   
+
    PersistenceManager getPersistenceManager() throws Exception;
 
    /**
     * Only for in-VM use!
     */
    ChannelMapper getChannelMapper() throws Exception;
-   
+
    /**
     * Only for in-VM use
     */
@@ -138,7 +152,7 @@ public interface Server extends Remote
    String getDefaultSecurityConfig() throws Exception;
 
    void exit() throws Exception;
-   
+
    /**
     * Executes a command on the server
     * 

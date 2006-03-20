@@ -36,12 +36,12 @@ import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
+import org.jboss.remoting.ServerInvocationHandler;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
@@ -86,7 +86,7 @@ public class ServerManagement
    {
       return !isLocal();
    }
-   
+
    public static Server getServer()
    {
       return server;
@@ -240,7 +240,7 @@ public class ServerManagement
                       "so this log won't make it to the server!");
             return;
          }
-         
+
          try
          {
             server.log(level, text);
@@ -294,15 +294,36 @@ public class ServerManagement
       return server.getChannelMapperObjectName();
    }
 
-   public static Connector getConnector() throws Exception
+   /**
+    * @return a Set<String> with the subsystems currently registered with the Connector.
+    *         This method is supposed to work locally as well as remotely.
+    */
+   public static Set getConnectorSubsystems() throws Exception
    {
-      if (isRemote())
-      {
-         throw new IllegalStateException("Cannot get a remote connector!");
-      }
-
       insureStarted();
-      return server.getConnector();
+      return server.getConnectorSubsystems();
+   }
+
+   /**
+    * Add a ServerInvocationHandler to the remoting Connector. This method is supposed to work
+    * locally as well as remotely.
+    */
+   public static void addServerInvocationHandler(String subsystem,
+                                                 ServerInvocationHandler handler) throws Exception
+   {
+      insureStarted();
+      server.addServerInvocationHandler(subsystem, handler);
+   }
+
+   /**
+    * Remove a ServerInvocationHandler from the remoting Connector. This method is supposed to work
+    * locally as well as remotely.
+    */
+   public static void removeServerInvocationHandler(String subsystem)
+      throws Exception
+   {
+      insureStarted();
+      server.removeServerInvocationHandler(subsystem);
    }
 
    public static MessageStore getMessageStore() throws Exception
@@ -324,7 +345,7 @@ public class ServerManagement
       insureStarted();
       return server.getPersistenceManager();
    }
-   
+
    public static ChannelMapper getChannelMapper()
       throws Exception
    {
@@ -338,13 +359,13 @@ public class ServerManagement
       insureStarted();
       server.configureSecurityForDestination(destName, config);
    }
-   
+
    public static void setDefaultSecurityConfig(String config) throws Exception
    {
       insureStarted();
       server.setDefaultSecurityConfig(config);
    }
-   
+
    public static String getDefaultSecurityConfig() throws Exception
    {
       insureStarted();
@@ -355,7 +376,7 @@ public class ServerManagement
    {
       deployTopic(name, null);
    }
-   
+
    public static void deployTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
@@ -366,7 +387,7 @@ public class ServerManagement
    {
       deployQueue(name, null);
    }
-   
+
    public static void deployQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
@@ -413,15 +434,15 @@ public class ServerManagement
    }
 
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    private static void insureStarted() throws Exception

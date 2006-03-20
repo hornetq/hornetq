@@ -26,6 +26,11 @@ import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.transport.Connector;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -42,13 +47,19 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
    // Attributes ----------------------------------------------------
 
    private InvokerLocator locator;
+
+   // DO NOT expose the Connector instance externally bacause consistency of subsytemToHandler map
+   //        may be compromised!
    private Connector connector;
+
+   private Map subsystemToHandler;
 
    // Constructors --------------------------------------------------
 
    public RemotingJMXWrapper(InvokerLocator locator)
    {
       this.locator = locator;
+      this.subsystemToHandler = new HashMap();
    }
 
    // RemotingJMXWrapper implementation -----------------------------
@@ -63,7 +74,6 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
       connector = new Connector();
       connector.setInvokerLocator(locator.getLocatorURI());
       connector.start();
-
    }
 
    public void stop() throws Exception
@@ -73,18 +83,14 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
          return;
       }
 
-      connector.stop();      
+      connector.stop();
       connector = null;
+      subsystemToHandler.clear();
    }
 
    public RemotingJMXWrapper getInstance()
    {
       return this;
-   }
-
-   public Connector getConnector() throws Exception
-   {
-      return connector;
    }
 
    public String getInvokerLocator() throws Exception
@@ -96,21 +102,29 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
       return null;
    }
 
-   public ServerInvocationHandler addInvocationHandler(String s, ServerInvocationHandler h)
+   public Set getConnectorSubsystems()
+   {
+      // create a serializable Set instance
+      return new HashSet(subsystemToHandler.keySet());
+   }
+
+   public ServerInvocationHandler addInvocationHandler(String subsystem, ServerInvocationHandler h)
       throws Exception
    {
       if (connector != null)
       {
-         return connector.addInvocationHandler(s, h);
+         subsystemToHandler.put(subsystem, h);
+         return connector.addInvocationHandler(subsystem, h);
       }
       return null;
    }
-   
-   public void removeInvocationHandler(String s) throws Exception
+
+   public void removeInvocationHandler(String subsystem) throws Exception
    {
-      connector.removeInvocationHandler(s);
+      subsystemToHandler.remove(subsystem);
+      connector.removeInvocationHandler(subsystem);
    }
-   
+
    public void addConnectionListener(ConnectionListener listener)
    {
       connector.addConnectionListener(listener);
@@ -120,7 +134,7 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
    {
       connector.removeConnectionListener(listener);
    }
-   
+
    public void setLeasePeriod(long leasePeriod)
    {
       connector.setLeasePeriod(leasePeriod);

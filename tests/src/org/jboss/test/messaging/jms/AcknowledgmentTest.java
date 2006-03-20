@@ -86,6 +86,8 @@ public class AcknowledgmentTest extends MessagingTestCase
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
       topic = (Topic)initialContext.lookup("/topic/Topic");
       drainDestination(cf, queue);
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -635,16 +637,20 @@ public class AcknowledgmentTest extends MessagingTestCase
       prod.send(tm2);
       prod.send(tm3);
       sessSend.close();
+
+      log.debug("all messages sent");
       
       conn.start();
+
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer cons = sessReceive.createConsumer(queue);
+
       MessageListenerAutoAck listener = new MessageListenerAutoAck(sessReceive);
       cons.setMessageListener(listener);
+
       listener.waitForMessages();
       
       conn.close();
-      
       assertFalse(listener.failed);
    }
    
@@ -744,8 +750,8 @@ public class AcknowledgmentTest extends MessagingTestCase
             
             log.trace("Got message:" + tm.getText());
             
-            //Receive first three messages then recover() session
-            //Only last message should be redelivered
+            // Receive first three messages then recover() session
+            // Only last message should be redelivered
             if (count == 1)
             {
                if (!"a".equals(tm.getText()))

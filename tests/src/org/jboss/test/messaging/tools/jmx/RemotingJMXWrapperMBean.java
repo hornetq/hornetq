@@ -23,9 +23,16 @@ package org.jboss.test.messaging.tools.jmx;
 
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.transport.Connector;
+
+import java.util.Set;
 
 /**
+ * Node: This wrapper MUST NOT allow direct access to the Connector instance. This is necessary
+ *       because the wrapper is maintaining the mapping between the Connector's
+ *       ServerInvocationHandler instances and their subsystem names. Remoting should do that (it
+ *       should have a Connector.getSubsystemNames() or similar), but it doesn't, so I have to do
+ *       this by myself.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
@@ -38,18 +45,31 @@ public interface RemotingJMXWrapperMBean
 
    RemotingJMXWrapper getInstance();
 
-   Connector getConnector() throws Exception;
-
    String getInvokerLocator() throws Exception;
 
-   ServerInvocationHandler addInvocationHandler(String s, ServerInvocationHandler h)
+   /**
+    * This method's signature must be identical with Connector's
+    * public ServerInvocationHandler addInvocationHandler(String subsystem,
+    *                                ServerInvocationHandler handler) throws Exception;
+    */
+   ServerInvocationHandler addInvocationHandler(String subsystem, ServerInvocationHandler h)
          throws Exception;
-   
-   void removeInvocationHandler(String s) throws Exception;
-   
+
+   /**
+    * This method's signature must be identical with Connector's
+    * public void removeInvocationHandler(String subsystem) throws Exception;
+    */
+   void removeInvocationHandler(String subsystem) throws Exception;
+
+   /**
+    * @return Set<String> containing the subsystem names various ServerInvocationHandler instances
+    *         have been added under to the Connector instance.
+    */
+   Set getConnectorSubsystems();
+
    void addConnectionListener(ConnectionListener listener);
 
    void removeConnectionListener(ConnectionListener listener);
-   
+
    void setLeasePeriod(long leasePeriod);
 }

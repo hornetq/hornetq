@@ -73,6 +73,10 @@ public class ServerPeer extends ServiceMBeanSupport
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
    public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
+
+   // The "subsystem" label this ServerPeer uses to register its ServerInvocationHandler with the
+   // Remoting connector
+   public static final String REMOTING_JMS_SUBSYSTEM = "JMS";
    
    //TODO - Make this configurable
    private static final long CONNECTION_LEASE_PERIOD = 10000;
@@ -211,7 +215,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
       // remove the JMS subsystem invocation handler
       getServer().invoke(connectorName, "removeInvocationHandler",
-                         new Object[] {"JMS"},
+                         new Object[] { REMOTING_JMS_SUBSYSTEM },
                          new String[] {"java.lang.String"});
 
       // stop the internal components
@@ -556,21 +560,25 @@ public class ServerPeer extends ServiceMBeanSupport
 
       log.debug("LocatorURI: " + getLocatorURI());
       
-      //First remove the invocation handler specified in the config
+      // first remove the invocation handler specified in the config
+
+      // TODO: Why removing this? Isn't ServerPeer.stopService() supposed to remove it?
+      //       If it doesn't, fix ServerPeer.stopService(), don't add unnecessary behavior here.
+
       mbeanServer.invoke(connectorName, "removeInvocationHandler",
-            new Object[] {"JMS"},
-            new String[] {"java.lang.String"});
+                         new Object[] { REMOTING_JMS_SUBSYSTEM },
+                         new String[] { "java.lang.String" });
 
       // add the JMS subsystem invocation handler
       
       handler = new JMSServerInvocationHandler();
 
       mbeanServer.invoke(connectorName, "addInvocationHandler",
-                         new Object[] {"JMS", handler},
-                         new String[] {"java.lang.String",
-                                       "org.jboss.remoting.ServerInvocationHandler"});  
+                         new Object[] { REMOTING_JMS_SUBSYSTEM, handler},
+                         new String[] { "java.lang.String",
+                                        "org.jboss.remoting.ServerInvocationHandler"});
       
-      //install the connection listener that listens for failed connections
+      // install the connection listener that listens for failed connections
       
 //      mbeanServer.invoke(connectorName, "setLeasePeriod",
 //            new Object[] {new Long(CONNECTION_LEASE_PERIOD)},

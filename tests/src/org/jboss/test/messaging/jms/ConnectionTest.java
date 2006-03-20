@@ -33,10 +33,18 @@ import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
+import javax.management.MBeanServer;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
+
+import java.util.Set;
+import java.io.Serializable;
 
 
 /**
@@ -52,17 +60,16 @@ import org.jboss.test.messaging.tools.ServerManagement;
 public class ConnectionTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
-   
-   
+
    private static final Logger log = Logger.getLogger(ConnectionTest.class);
 
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected InitialContext initialContext;
-   
+
    protected ConnectionFactory cf;
    protected Destination topic;
 
@@ -96,7 +103,7 @@ public class ConnectionTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
-   
+
    //
    // Note: All tests related to closing a Connection should go to ConnectionClosedTest
    //
@@ -145,7 +152,7 @@ public class ConnectionTest extends MessagingTestCase
       {
          log.trace("Caught exception ok");
       }
-      
+
       connection.close();
 
 
@@ -204,6 +211,8 @@ public class ConnectionTest extends MessagingTestCase
 
    }
 
+   // TODO why is this test commented out?
+
 //   public void testStartStop() throws Exception
 //   {
 //      
@@ -232,7 +241,9 @@ public class ConnectionTest extends MessagingTestCase
 //      connection.close();
 //   }
 
-   /* Test creation of QueueSession */
+   /**
+    * Test creation of QueueSession
+    */
    public void testQueueConnection1() throws Exception
    {
       QueueConnectionFactory qcf = (QueueConnectionFactory)cf;
@@ -245,7 +256,9 @@ public class ConnectionTest extends MessagingTestCase
 
    }
 
-   /* Test creation of TopicSession */
+   /**
+    * Test creation of TopicSession
+    */
    public void testQueueConnection2() throws Exception
    {
       TopicConnectionFactory tcf = (TopicConnectionFactory)cf;
@@ -258,7 +271,9 @@ public class ConnectionTest extends MessagingTestCase
 
    }
 
-   /* Test ExceptionListener stuff */
+   /**
+    * Test ExceptionListener stuff
+    */
    public void testExceptionListener() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -276,8 +291,9 @@ public class ConnectionTest extends MessagingTestCase
       conn.close();
 
    }
-   
-   
+
+   // TODO - Decide if valid and uncomment or get rid of it!
+
 //   Commented out for now, since how can i make the server fail from a test?   
 //   public void testExceptionListenerFail() throws Exception
 //   {
@@ -324,6 +340,42 @@ public class ConnectionTest extends MessagingTestCase
 //      {}
 //   }
 
+   /**
+    * Test create connection when there is another Remoting invocation handler registered with the
+    * Connector. I uncovered this bug while trying to run TCK/integration tests. In real life
+    * Messaging has to co-exist with other invocation handlers registered with the Unified invoker's
+    * Connector.
+    */
+   public void testCreateConnectionMultipleRemotingInvocationHandlers() throws Exception
+   {
+      // stop the Messaging server and re-start it after I register an extra remoting invocation
+      // handler with the connector
+
+      ServerManagement.stopServerPeer();
+
+      Set subsystems = ServerManagement.getConnectorSubsystems();
+      assertTrue(subsystems.isEmpty());
+
+      ServerManagement.addServerInvocationHandler("DEFAULT_INVOCATION_HANDLER",
+                                                  new SimpleServerInvocationHandler());
+      log.info("DEFAULT_INVOCATION_HANDLER installed");
+
+      try
+      {
+         // restart the server peer so it will add its ServerInvocationHandler AFTER
+         // SimpleServerInvocationHandler - this simulates the situation where the same Connector
+         // has more than one ServerInvocationHandler instance
+         ServerManagement.startServerPeer();
+
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
+      finally
+      {
+         // remove the test invocation handler
+         ServerManagement.removeServerInvocationHandler("DEFAULT_INVOCATION_HANDLER");
+      }
+   }
 
    // Package protected ---------------------------------------------
 
@@ -336,12 +388,43 @@ public class ConnectionTest extends MessagingTestCase
    static class MyExceptionListener implements ExceptionListener
    {
       JMSException exceptionReceived;
-      
+
       public void onException(JMSException exception)
       {
          this.exceptionReceived = exception;
          log.trace("Received exception");
       }
    }
-   
+
+   private static class SimpleServerInvocationHandler
+      implements ServerInvocationHandler, Serializable
+   {
+      private static final long serialVersionUID = 23847329753297523L;
+
+      public void setMBeanServer(MBeanServer server)
+      {
+      }
+
+      public void setInvoker(ServerInvoker invoker)
+      {
+      }
+
+      public Object invoke(InvocationRequest invocation) throws Throwable
+      {
+         log.error("received invocation " + invocation + ", " + invocation.getParameter());
+         fail("This ServerInvocationHandler is not supposed to handle invocations");
+         return null;
+      }
+
+      public void addListener(InvokerCallbackHandler callbackHandler)
+      {
+         fail("This ServerInvocationHandler is not supposed to add listeners");
+      }
+
+      public void removeListener(InvokerCallbackHandler callbackHandler)
+      {
+         fail("This ServerInvocationHandler is not supposed to remove listeners");
+      }
+   }
+
 }

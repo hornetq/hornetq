@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.jms.server.remoting.JMSWireFormat;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.JBossJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
@@ -45,95 +46,98 @@ import org.jboss.util.id.GUID;
  * server.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
  * JMSRemotingConnection.java,v 1.1 2006/01/23 11:05:19 timfox Exp
  */
 public class JMSRemotingConnection
 {
+   // Constants -----------------------------------------------------
+
+   public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
+
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
-    
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected Client client;
-   
    protected Connector callbackServer;
-   
    protected InvokerLocator serverLocator;
-   
    protected String id;
-   
    protected String thisAddress;
-   
    protected int bindPort;
-   
    protected boolean isMultiplex;
-   
    protected CallbackManager callbackManager;
-   
    protected InvokerCallbackHandler dummy;
-         
+
+   // Constructors --------------------------------------------------
+
    public JMSRemotingConnection(String serverLocatorURI) throws Throwable
    {
       callbackManager = new CallbackManager();
-      
+
       id = new GUID().toString();
-      
+
       thisAddress = InetAddress.getLocalHost().getHostAddress();
-      
+
       //bindPort = PortUtil.findFreePort("localhost");
-      
+
       serverLocator = new InvokerLocator(serverLocatorURI);
-      
+
       isMultiplex = serverLocator.getProtocol().equals("multiplex");
-            
+
       final int MAX_RETRIES = 50;
-      
+
       boolean completed = false;
-      
+
       int count = 0;
-      
+
       while (!completed && count < MAX_RETRIES)
       {
          try
          {
             setUpConnection();
-            
-            completed = true;         
+
+            completed = true;
          }
          catch (Exception e)
          {
             log.warn("Failed to start connection", e);
-            
+
             // Intermittently we can fail to open a socket on the address since it's already in use
             // This is despite remoting having checked the port is free. This is either because the
             // remoting implementation is buggy or because of the small window between getting the
             // port number and actually opening the connection during which some one else can use
             // that port. Therefore we catch this and retry.
-            
+
             count++;
-            
+
             if (client != null)
             {
                client.disconnect();
-               
-               log.trace("Disconnected client");               
-            }            
+
+               log.trace("Disconnected client");
+            }
             if (callbackServer != null)
             {
                //Probably not necessary and may fail since it didn't get properly started
                try
                {
                   //callbackServer.removeInvocationHandler("Callback");
-                  
+
                   //log.trace("Removed invocation handler");
-                  
+
                   callbackServer.stop();
-                  
+
                   log.trace("Stopped callback server");
-                  
+
                   callbackServer.destroy();
-                  
+
                   log.trace("Destroyed callback server");
-                  
+
                   callbackServer = null;
                }
                catch (Exception ignore)
@@ -147,113 +151,124 @@ public class JMSRemotingConnection
                final String msg = "Cannot start callbackserver after " + MAX_RETRIES + " retries";
                log.error(msg, e);
                throw new JBossJMSException(msg, e);
-            }            
+            }
          }
-      }            
+      }
    }
-   
+
+   // Public --------------------------------------------------------
+
    public void close() throws Throwable
-   {     
+   {
       callbackServer.stop();
-      
+
       callbackServer.destroy();
-   
+
       client.disconnect();
    }
-      
+
    public Client getInvokingClient()
    {
       return client;
    }
-   
+
    public CallbackManager getCallbackManager()
    {
       return callbackManager;
    }
-   
+
    public String getId()
    {
       return id;
    }
-   
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
    protected Map getConfig()
    {
       Map configuration = new HashMap();
-      
+
       configuration.put(Client.ENABLE_LEASE, "true");
-      
+
       if (isMultiplex)
-      {     
+      {
          configuration.put(MultiplexServerInvoker.CLIENT_MULTIPLEX_ID_KEY, id);
          configuration.put(MultiplexServerInvoker.MULTIPLEX_BIND_HOST_KEY, thisAddress);
          configuration.put(MultiplexServerInvoker.MULTIPLEX_BIND_PORT_KEY, String.valueOf(bindPort));
       }
-      
-      return configuration;      
+
+      return configuration;
    }
-   
+
    protected void setUpConnection() throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("Connecting with server URI:" + serverLocator); }
-      
+
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=jboss&" +
                       "dataType=jms&" +
                       "socketTimeout=0&" +
                       "socket.check_connection=false";
-                  
+
       client = new Client(serverLocator, getConfig());
-      
+
       //We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller every time
       //which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
       //This can make a massive difference on performance
       //We also do this in ServerConnectionEndpoint.setCallbackClient.
       client.setMarshaller(new JMSWireFormat());
       client.setUnMarshaller(new JMSWireFormat());
-            
+      client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
+
       if (log.isTraceEnabled()) { log.trace("Created client"); }
-      
+
       bindPort = PortUtil.findFreePort("localhost");
-      
+
       //Create callback server
-      
+
       String callbackServerURI;
-            
+
       if (isMultiplex)
       {
          callbackServerURI = "multiplex://" + thisAddress +
                               ":" + bindPort + params + "&serverMultiplexId=" +
-                              id;        
+                              id;
       }
       else
       {
          callbackServerURI = serverLocator.getProtocol() + "://" + thisAddress +
                              ":" + bindPort + params;
       }
-      
+
       InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
-        
-      if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:" 
+
+      if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:"
             + callbackServerLocator.getLocatorURI()); }
-           
+
       callbackServer = new Connector();
-      
+
       callbackServer.setInvokerLocator(callbackServerLocator.getLocatorURI());
-      
+
       callbackServer.create();
-      
-      callbackServer.addInvocationHandler("Callback", callbackManager);
-      
+
+      callbackServer.addInvocationHandler(JMS_CALLBACK_SUBSYSTEM, callbackManager);
+
       callbackServer.start();
-      
+
       if (log.isTraceEnabled()) { log.trace("Created callback server"); }
-      
-      client.connect();         
-      
+
+      client.connect();
+
       dummy = new DummyCallbackHandler();
       
-      client.addListener(dummy, callbackServerLocator); 
+      client.addListener(dummy, callbackServerLocator);
    }
-      
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

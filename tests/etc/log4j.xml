@@ -90,18 +90,26 @@
    </category>
 
    <category name="org.jboss.jms">
-
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-
       <!--
       <priority value="INFO"/>
       -->
    </category>
 
+   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
+      <priority value="DEBUG"/>
+   </category>
+
+   <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
+      <priority value="DEBUG"/>
+   </category>
+
+   <category name="org.jboss.jms.server.security">
+      <priority value="DEBUG"/>
+   </category>
+
   <category name="org.jboss.jms.perf">
-
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-
       <!-- <priority value="INFO"/> -->
    </category>
 

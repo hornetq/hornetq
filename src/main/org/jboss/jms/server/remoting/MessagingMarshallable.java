@@ -58,5 +58,10 @@ public class MessagingMarshallable implements Serializable
    {
       return version;
    }
+
+   public String toString()
+   {
+      return "MessagingMarshallable[" + version + ", " + load + "]";
+   }
    
 }

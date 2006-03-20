@@ -33,8 +33,10 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdBlock;
@@ -60,6 +62,7 @@ import org.jboss.serial.io.JBossObjectOutputStream;
  * amount of data sent.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
  * JMSWireFormat.java,v 1.1 2006/02/01 17:38:32 timfox Exp
@@ -195,7 +198,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          if (trace) { log.trace("writing InvocationRequest"); }
          
          InvocationRequest req = (InvocationRequest)obj;
-         
+
          Object param;
          
          if (req.getParameter() instanceof MessagingMarshallable)
@@ -470,7 +473,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             mi.setArguments(args);
             
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read send()"); }
             
@@ -481,7 +485,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             MethodInvocation mi = readHeader(ois);                
             
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read activate()"); }
             
@@ -492,7 +497,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             MethodInvocation mi = readHeader(ois);
             
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             
             if (trace) { log.trace("read deactivate()"); }
@@ -510,7 +516,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             mi.setArguments(args);
                 
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read getMessageNow()"); }
             
@@ -529,7 +536,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             mi.setArguments(args);
                 
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read sendTransaction()"); }
             
@@ -546,7 +554,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             mi.setArguments(args);
                 
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read getIdBlock()"); }
             
@@ -557,35 +566,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             MethodInvocation mi = readHeader(ois);                
  
             InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, mi), null, null, null);
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read acknowledge()"); }
             
             return request;
          }         
-         case CALLBACK:
-         {
-            int consumerID = ois.readInt();
-            
-            byte type = ois.readByte();
-            
-            int deliveryCount = ois.readInt();
-
-            JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
-            
-            m.readExternal(ois);
-            
-            MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
-            
-            DeliveryRunnable dr = new DeliveryRunnable(md, consumerID, null, trace);
-            
-            InvocationRequest request =
-               new InvocationRequest(null, null, new MessagingMarshallable(version, dr), null, null, null);
-            
-            if (trace) { log.trace("read callback()"); }
-            
-            return request;        
-         }
          case MESSAGE_RESPONSE:
          {
             byte type = ois.readByte();
@@ -623,6 +610,30 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             if (trace) { log.trace("read null response"); }
             
             return resp;
+         }
+         case CALLBACK:
+         {
+            int consumerID = ois.readInt();
+
+            byte type = ois.readByte();
+
+            int deliveryCount = ois.readInt();
+
+            JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
+
+            m.readExternal(ois);
+
+            MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
+
+            DeliveryRunnable dr = new DeliveryRunnable(md, consumerID, null, trace);
+
+            InvocationRequest request =
+               new InvocationRequest(null, JMSRemotingConnection.JMS_CALLBACK_SUBSYSTEM,
+                                     new MessagingMarshallable(version, dr), null, null, null);
+
+            if (trace) { log.trace("read callback()"); }
+
+            return request;
          }
          default:
          {

@@ -72,16 +72,12 @@ public class JMSExpirationHeaderTest extends MessageTest
 
    // Tests ---------------------------------------------------------
 
-   
-   
    public void testZeroExpiration() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
       assertEquals(0, queueConsumer.receive().getJMSExpiration());
    }
-
-
 
    public void testNoExpirationOnTimeoutReceive() throws Exception
    {
@@ -293,7 +289,7 @@ public class JMSExpirationHeaderTest extends MessageTest
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
