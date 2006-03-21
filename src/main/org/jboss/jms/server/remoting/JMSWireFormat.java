@@ -183,10 +183,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
    public void write(Object obj, OutputStream out) throws IOException
    {
-      //Sanity check
+      // sanity check
       if (!(out instanceof JBossObjectOutputStream))
       {
-         throw new IllegalStateException("OutputStream must be an JBossObjectOutputStream");
+         log.error("out is a " + out.getClass());
+         throw new IllegalStateException("OutputStream must be a JBossObjectOutputStream");
       }
            
       JBossObjectOutputStream oos = (JBossObjectOutputStream)out;

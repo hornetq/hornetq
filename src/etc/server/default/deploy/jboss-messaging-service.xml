@@ -14,8 +14,6 @@
    </loader-repository>
    -->
 
-   <!-- JBoss 5 has a remoting connector already deployed. For JBoss 4, I need to deploy it. -->
-   <!--
    <mbean code="org.jboss.remoting.transport.Connector"
           xmbean-dd="org/jboss/remoting/transport/Connector.xml"
           name="jboss.messaging:service=Connector,transport=socket"
@@ -40,9 +38,9 @@
       <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
 
+   <!-- TODO: Do I need this> -->
    <mbean code="org.jboss.remoting.network.NetworkRegistry"
           name="jboss.messaging:service=NetworkRegistry"/>
-   -->
 
    <!-- The Server Peer -->
    <mbean code="org.jboss.jms.server.ServerPeer"
@@ -58,7 +56,7 @@
          <arg type="java.lang.String" value="/topic" />
       </constructor>
 
-      <depends optional-attribute-name="Connector">jboss.remoting:service=Connector,transport=socket</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
       <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>

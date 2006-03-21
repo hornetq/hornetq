@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<server>
+
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.destination:service=ConnectionFactory,deployment=CTS"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="JNDIBindings">
+         <bindings>
+		 <binding>/jms/QueueConnectionFactory</binding>
+		 <binding>/jms/TopicConnectionFactory</binding>
+         </bindings>
+      </attribute>
+   </mbean>
+
+</server>

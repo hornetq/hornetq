@@ -1,133 +1,90 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <!--
-
      Ant script that applies modifications required to run JBoss Messaging TCK tests to
      a JBoss/CTS installation. Replace $TS_HOME/bin/cts/jboss-cts.xml with this file.
      For details more details, refer to
      http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingTCKInstallation
-
      $Id$
-
  -->
-
-
 <project name="JBoss Messaging CTS Setup" default="setup-cts">
 
+   <property name="jboss.home" value="to be defined by caller"/>
+   <property name="ts.home" value="to be defined by caller"/>
 
-   <property environment="ENV"/>
-   <property name="j2ee.home" value="to be set by caller"/>
-   <property name="j2ee.home.ri" value="to be set by caller"/>
-   <property name="ts.home" value="to be set by caller"/>
-   <property name="jboss.home" value="${j2ee.home}"/>
-   <property name="messaging.home" value="${ENV.JBOSS_MESSAGING_HOME}"/>
+   <target name="setup-cts" description="Create a JBoss Messaging configuration">
 
+      <echo message="jboss.home   = ${jboss.home}"/>
+      <echo message="ts.home      = ${ts.home}"/>
 
-   <target name="setup-cts"
-      description="Create a JBoss configuration for a JBoss Messaging CTS test run">
-
-
-      <echo message="j2ee.home.ri = ${j2ee.home.ri}"/>
-      <echo message="j2ee.home = ${j2ee.home}"/>
-      <echo message="ts.home = ${ts.home}"/>
-      <echo message="jboss.home = ${jboss.home}"/>
-      <echo message="messaging.home = ${messaging.home}"/>
-
+      <property environment="ENV"/>
 
       <fail message="JBOSS_MESSAGE_HOME must be set!" unless="ENV.JBOSS_MESSAGING_HOME"/>
 
-
-      <echo message="Creating server configuration directory: ${jboss.home}/server/cts-messaging"/>
-      <delete dir="${jboss.home}/server/cts-messaging"/>
       <mkdir dir="${jboss.home}/server/cts-messaging"/>
 
-
-      <echo message="Creating server configuration based on default"/>
       <copy todir="${jboss.home}/server/cts-messaging" overwrite="true">
          <fileset dir="${jboss.home}/server/default">
-          
-          
-          
-          <exclude name="data/**"/> 
+            <exclude name="data/**"/>
             <exclude name="log/**"/>
             <exclude name="tmp/**"/>
             <exclude name="work/**"/>
-            
-            
-            <!-- Exclude uneccessary deployments -->
-            
-            
-            
-            <exclude name="deploy/bsh-deployer.xml"/>
-            <exclude name="deploy/cache-invalidation-service.xml"/>
-            
-            
-            <exclude name="deploy/http-invoker.sar/**"/>
-            
-            
-            <exclude name="deploy/jboss-ha-local-jdbc.rar"/>
-            <exclude name="deploy/jboss-ha-xa-jdbc.rar"/>
-            <exclude name="deploy/jboss-hibernate.deployer"/>
-            
-            
-            
-            <exclude name="deploy/jboss-ws4ee.sar/**"/>
-            
-            
             <exclude name="deploy/jms/**"/>
-            
-            
-            
-            <exclude name="deploy/mail-ra.rar"/>
-            <exclude name="deploy/mail-service.xml"/>
-            
-            
-            <exclude name="deploy/management/**"/>
-            <exclude name="deploy/monitoring-service.xml"/>
-            
-            
-            <exclude name="deploy/schedule-manager-service.xml"/>
-            <exclude name="deploy/scheduler-service.xml"/>
-            
-            <exclude name="lib/autonumber-plugin.jar"/>
-            <exclude name="lib/bcel.jar"/>
-            <exclude name="lib/bindingservice-plugin.jar"/>
-            <exclude name="lib/bsh-1.3.0.jar"/>
-            <exclude name="lib/bsh-deployer.jar"/>
-            <exclude name="lib/jboss-monitoring.jar"/>
-            <exclude name="lib/jbossmq.jar"/>
-            <exclude name="lib/mail-plugin.jar"/>
-            <exclude name="lib/mail.jar"/>
-            <exclude name="lib/scheduler*"/>
-            
-            
-            
+            <exclude name="deploy/jbossws.sar/**"/>
             <exclude name="lib/jboss-messaging.jar"/>
          </fileset>
       </copy>
 
+      <copy todir="${jboss.home}/server/cts-messaging/deploy"
+            file="${jboss.home}/server/default/deploy/jms/jms-ra.rar"/>
 
-      <echo message="Using thirdparty jboss-remoting.jar ..."/>
-      <!--
-      <echo message="Copying locally patched jboss-remoting.jar from ${messaging.home}/src/resources/"/>
+      <!-- TODO pull this from repository -->
       <copy todir="${jboss.home}/server/cts-messaging/lib"
-            file="${messaging.home}/src/resources/jboss-remoting.jar"
-            overwrite="true">
-      </copy>
-      -->
-
-
-
-      <echo message="Copying customized configurations from ${messaging.home}/src/cts/conf"/>
-      <copy todir="${jboss.home}/server/cts-messaging/conf" overwrite="true">
-         <fileset dir="${messaging.home}/src/cts/conf"/>
+            file="${ENV.JBOSS_MESSAGING_HOME}/src/resources/jboss-remoting.jar" overwrite="true">
       </copy>
 
+      <!-- TODO pull this from repository -->
+      <copy todir="${jboss.home}/server/cts-messaging/lib"
+            file="${ENV.JBOSS_MESSAGING_HOME}/src/resources/jboss-serialization.jar" overwrite="true">
+      </copy>
 
-      <echo message="Copying extra services from TS_HOME/jboss/deploy"/>
+      <!-- setup security -->
+      <copy todir="${jboss.home}/server/cts-messaging/conf/props" overwrite="true">
+         <fileset dir="${ENV.JBOSS_MESSAGING_HOME}/src/cts/conf">
+            <include name="messaging-roles.properties"/>
+            <include name="messaging-users.properties"/>
+         </fileset>
+      </copy>
+
+      <!-- add the 'messaging' security domain -->
+      <!-- TODO: I am sure this can be done better -->
+      <replaceregexp file="${jboss.home}/server/cts-messaging/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3capplication-policy name=\x22other\x22.*\x3c/application-policy\x3e)"/>
+         <substitution expression="
+         &lt;application-policy name=&quot;messaging&quot;&gt;
+             &lt;authentication&gt;
+                &lt;login-module code=&quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
+                flag=&quot;required&quot;&gt;
+                &lt;module-option name=&quot;usersProperties&quot;&gt;props/messaging-users.properties&lt;/module-option&gt;
+                &lt;module-option name=&quot;rolesProperties&quot;&gt;props/messaging-roles.properties&lt;/module-option&gt;
+                &lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
+                &lt;/login-module&gt;
+             &lt;/authentication&gt;
+         &lt;/application-policy&gt;
+         \1"/>
+      </replaceregexp>
+
+      <!-- add the extra connection factories -->
+      <copy todir="${jboss.home}/server/cts-messaging/deploy"
+         file="${ENV.JBOSS_MESSAGING_HOME}/src/cts/deploy/tck-connection-factories-service.xml"/>
+
+      <!-- activate the binding manager -->
+      <replaceregexp file="${jboss.home}/server/cts-messaging/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.services.binding.ServiceBindingManager\x22.*org.jboss.services.binding.XMLServicesStoreFactory[ \t\n\r]*\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
+         <substitution expression="--&gt;\1&lt;!--"/>
+      </replaceregexp>
+
+      <!-- Include the cts specific items -->
       <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
          <fileset dir="${ts.home}/jboss/deploy">
-         
             <include name="pointbase-ds.xml"/>
             <include name="ROOT.war/**"/>
          </fileset>
@@ -142,38 +99,6 @@
          </filterset>
       </copy>
 
-
-
-      <echo message="Copying extra services from ${messaging.home}/src/cts/deploy"/>
-      <copy todir="${jboss.home}/server/cts-messaging/deploy" overwrite="true">
-         <fileset dir="${messaging.home}/src/cts/deploy">
-            
-         <include name="properties-service.xml"/>
-                
-            <include name="tckfactories-ds.xml"/>            
-  
-            <include name="jms-ds.xml"/>
-    
-            <include name="jms-ra.rar"/>
-  
-            <include name="hsqldb-ds.xml"/>
-            
-            <exclude name="jbossweb-tomcat55.sar"/>
-   
-         </fileset>
-         
-      </copy>
-      
-      <echo message="Copying tomcat config"/>
-      <copy todir="${jboss.home}/server/cts-messaging/deploy/jbossweb-tomcat55.sar" overwrite="true">
-               <fileset dir="${messaging.home}/src/cts/deploy/jbossweb-tomcat55.sar"/>
-                  
-      </copy>
-      
-      
-
-
-
       <echo message="Copying extra libraries from TS_HOME/lib"/>
       <copy todir="${j2ee.home}/server/cts-messaging/lib" overwrite="true">
          <fileset dir="${ts.home}/lib">
@@ -184,35 +109,19 @@
          </fileset>
       </copy>
 
-
-      <echo message="Copying extra libraries from TS_HOME/jboss/lib"/>
       <copy todir="${j2ee.home}/server/cts-messaging/lib" overwrite="true">
          <fileset dir="${ts.home}/jboss/lib">
             <include name="jboss-porting.jar"/>
          </fileset>
       </copy>
-
-
-      <echo message="Copying the test keystore from TS_HOME/bin/certificates"/>
-      <copy todir="${j2ee.home}/server/cts-messaging/conf/keystores" overwrite="true">
-         <fileset dir="${ts.home}/bin/certificates"/>
-      </copy>
    </target>
 
-
-   <target name="clean-cts"
-      description="Removes the JBoss Messaging CTS configuration from JBOSS_HOME/server/cts-messaging">
-      <echo message="Removing JBoss Messaging CTS configuration from ${jboss.home}/server"/>
+   <target name="clean-cts" description="Removes the JBoss Messaging CTS configuration from JBOSS_HOME/server/cts-messaging">
       <delete dir="${jboss.home}/server/cts-messaging"/>
    </target>
-
 
    <target name="restart.server">
       <echo message="do nothing"/>
    </target>
-
-
-
-
 
 </project>
