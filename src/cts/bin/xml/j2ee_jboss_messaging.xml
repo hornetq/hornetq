@@ -1,6 +1,4 @@
 <?xml version="1.0"?>
-
-
 <!-- The JBoss Messaging 1.0 variation of the j2eetck/bin/xml/j2ee_vi.xml script -->
 <project name="CTS 1.4 for use with a vendor's J2EE implementation" basedir="." default="usage">
 
@@ -37,34 +35,22 @@
 
    <!--  Target to enable jacc for the J2EE app server under test -->
    <target name="enable.jacc" >
-      <!--
        <ant antfile="jboss-cts.xml" dir="${ts.home}/bin/xml" target="enable.jacc"/>
-       -->
-      <echo message="do nothing"/>
    </target>
 
    <!--  Target to disable jacc for the J2EE app server under test -->
    <target name="disable.jacc" >
-      <!--
        <ant antfile="jboss-cts.xml" dir="${ts.home}/bin/xml" target="disable.jacc"/>
-       -->
-       <echo message="do nothing"/>
    </target>
 
    <!--  Target to enable tx interop for the J2EE app server under test -->
    <target name="enable.tx.interop" >
-      <!--
        <ant antfile="jboss-cts.xml" dir="${ts.home}/bin/xml" target="enable.tx.interop"/>
-       -->
-       <echo message="do nothing"/>
    </target>
 
    <!--  Target to disable tx interop for the J2EE app server under test -->
    <target name="disable.tx.interop" >
-      <!--
        <ant antfile="jboss-cts.xml" dir="${ts.home}/bin/xml" target="disable.tx.interop"/>
-       -->
-       <echo message="do nothing"/>
    </target>
 
     <target name="copy.db.jars">
