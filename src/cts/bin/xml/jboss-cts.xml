@@ -76,6 +76,10 @@
       <copy todir="${jboss.home}/server/cts-messaging/deploy"
          file="${ENV.JBOSS_MESSAGING_HOME}/src/cts/deploy/tck-connection-factories-service.xml"/>
 
+      <!-- deploy messaging -->
+      <copy todir="${jboss.home}/server/cts-messaging/deploy"
+         file="${ENV.JBOSS_MESSAGING_HOME}/output/lib/jboss-messaging.sar"/>
+
       <!-- activate the binding manager -->
       <replaceregexp file="${jboss.home}/server/cts-messaging/conf/jboss-service.xml" flags="s">
          <regexp pattern="(\x3cmbean code=\x22org.jboss.services.binding.ServiceBindingManager\x22.*org.jboss.services.binding.XMLServicesStoreFactory[ \t\n\r]*\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
