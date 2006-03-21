@@ -3,13 +3,14 @@
 <server>
 
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
-      name="jboss.messaging.destination:service=ConnectionFactory,deployment=CTS"
-      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+          name="jboss.messaging.destination:service=ConnectionFactory,deployment=CTS"
+          xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <attribute name="JNDIBindings">
          <bindings>
-		 <binding>/jms/QueueConnectionFactory</binding>
-		 <binding>/jms/TopicConnectionFactory</binding>
+            <binding>/jms/QueueConnectionFactory</binding>
+            <binding>/jms/TopicConnectionFactory</binding>
+            <binding>/jms/DURABLE_SUB_CONNECTION_FACTORY</binding>
          </bindings>
       </attribute>
    </mbean>
