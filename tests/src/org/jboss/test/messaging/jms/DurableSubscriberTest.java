@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * $Id$
  */
-public class DurableSubscriptionTest extends MessagingTestCase
+public class DurableSubscriberTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -60,7 +60,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public DurableSubscriptionTest(String name)
+   public DurableSubscriberTest(String name)
    {
       super(name);
    }
@@ -444,5 +444,13 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
       conn.close();
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

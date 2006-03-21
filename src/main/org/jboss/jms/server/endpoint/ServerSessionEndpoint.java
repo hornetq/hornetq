@@ -471,8 +471,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("Destination is null");
       }
 
+      String clientID = connectionEndpoint.getClientID();
+
+      // this method has to throw an InvalidDestinationException "if an invalid subscription name is
+      // specified". Arguably, not having a valid clientID falls into the same category. TCK tests
+      // this behavior anyway.
+
+      if (clientID == null)
+      {
+         throw new InvalidDestinationException("null clientID");
+      }
+
       CoreDurableSubscription subscription =
-         cm.getDurableSubscription(connectionEndpoint.getClientID(), subscriptionName, ms, pm);
+         cm.getDurableSubscription(clientID, subscriptionName, ms, pm);
 
       if (subscription == null)
       {
