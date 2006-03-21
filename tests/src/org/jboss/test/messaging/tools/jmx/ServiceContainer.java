@@ -121,7 +121,7 @@ public class ServiceContainer
          WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME =
          new ObjectName("jboss.jca:name=DefaultDS,service=DataSourceBinding");
          REMOTING_OBJECT_NAME =
-         new ObjectName("jboss.remoting:service=Connector,transport=socket");
+         new ObjectName("jboss.messaging:service=Connector,transport=socket");
       }
       catch(Exception e)
       {
