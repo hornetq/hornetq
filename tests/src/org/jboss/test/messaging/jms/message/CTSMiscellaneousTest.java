@@ -33,6 +33,12 @@ import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.BytesMessage;
 import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSender;
 import javax.naming.InitialContext;
 
 /**
@@ -102,6 +108,44 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       assertFalse("something".equals(m.getJMSMessageID()));
 
       c.close();
+   }
+
+   /**
+    * com.sun.ts.tests.jms.ee.all.queueconn.QueueConnTest line 171
+    */
+   public void test_1() throws Exception
+   {
+      QueueConnectionFactory qcf = (QueueConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
+
+      QueueConnection qc =  qcf.createQueueConnection();
+      QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      QueueReceiver qreceiver = qs.createReceiver(queue, "targetMessage = TRUE");
+
+      qc.start();
+
+      TextMessage m = qs.createTextMessage();
+      m.setText("something");
+      m.setBooleanProperty("targetMessage", false);
+
+      QueueSender qsender = qs.createSender(queue);
+
+      log.info("sending first message");
+
+      qsender.send(m);
+
+      m.setBooleanProperty("targetMessage", true);
+
+      log.info("sending second message");
+
+      qsender.send(m);
+
+      TextMessage rm = (TextMessage)qreceiver.receive(5000);
+
+      assertEquals("something", rm.getText());
+
+      qc.close();
    }
 
    // Package protected ---------------------------------------------
