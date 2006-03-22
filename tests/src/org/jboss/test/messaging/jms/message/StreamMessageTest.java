@@ -64,6 +64,20 @@ public class StreamMessageTest extends MessageTestBase
       super.tearDown();
    }
 
+   public void testNullValue() throws Exception
+   {
+      StreamMessage m = session.createStreamMessage();
+
+      m.writeString(null);
+
+      queueProd.send(m);
+
+      conn.start();
+
+      StreamMessage rm = (StreamMessage)queueCons.receive();
+
+      assertNull(rm.readString());
+   }
 
    // Protected -----------------------------------------------------
 

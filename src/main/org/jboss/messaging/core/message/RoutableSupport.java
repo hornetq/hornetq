@@ -87,7 +87,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
       while (iter.hasNext())
       {
          Object value = iter.next();
-         if (!(value instanceof Serializable))
+         if (value != null && !(value instanceof Serializable))
          {
             throw new IOException("Object in List must be serializable: " + value);
          }
@@ -283,7 +283,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
             }
             
             // write the value
-            internalWriteObject(out, (Serializable)value, false);            
+            internalWriteObject(out, (Serializable)value, false);
          }
       }
    }
