@@ -40,7 +40,7 @@ public class MapMessageTest extends MessageTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -63,6 +63,21 @@ public class MapMessageTest extends MessageTestBase
    {
       message = null;
       super.tearDown();
+   }
+
+   public void testNullValue() throws Exception
+   {
+      MapMessage m = session.createMapMessage();
+
+      m.setString("nullValue", null);
+
+      queueProd.send(m);
+
+      conn.start();
+
+      MapMessage rm = (MapMessage)queueCons.receive();
+
+      assertNull(rm.getString("nullValue"));
    }
 
    // Protected -----------------------------------------------------

@@ -271,17 +271,19 @@ public abstract class RoutableSupport implements Routable, Externalizable
             {
                if (!(me.getKey() instanceof Serializable))
                {
-                  throw new IOException("Key in Map must be Serializable: " + me.getKey());
+                  throw new IOException("Key in map must be Serializable: " + me.getKey());
                }
                internalWriteObject(out, (Serializable)me.getKey(), false);
             }
-            
-            //Write the value
-            if (!(me.getValue() instanceof Serializable))
+
+            Object value = me.getValue();
+            if (value != null && !(value instanceof Serializable))
             {
-               throw new IOException("Value in Map must be Serializable: " + me.getValue());
+               throw new IOException("Value in map must be Serializable: " + value);
             }
-            internalWriteObject(out, (Serializable)me.getValue(), false);            
+            
+            // write the value
+            internalWriteObject(out, (Serializable)value, false);            
          }
       }
    }

@@ -529,10 +529,14 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    private void checkName(String name)
    {
       if (name == null)
+      {
          throw new IllegalArgumentException("Name must not be null.");
+      }
 
       if (name.equals(""))
+      {
          throw new IllegalArgumentException("Name must not be an empty String.");
+      }
    }
 
    // Inner classes -------------------------------------------------
