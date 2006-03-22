@@ -50,7 +50,6 @@ public class MessageTestBase extends JMSTestBase
       super(name);
    }
 
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

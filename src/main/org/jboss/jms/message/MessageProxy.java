@@ -35,14 +35,16 @@ import org.jboss.jms.delegate.SessionDelegate;
 /**
  * 
  * MessageProxy is a thin proxy for JBossMessage.
- * JMS Users actually handle MessageProxy instances rather than JBossMessage instances
- * The purpose of this class and subclasses is to prevent unnecessary copying of a message.
- * After a message is sent, the message can be changed, but this should not affect the sent message.
- * This class accomplishes this by intercepting any methods which change the state of the message
- * and copying either the headers, jms properties or body as appropriate.
- * This enables up to make the minimum amount of copies while still preserving JMS semantics
- * Similarly on receive.
+ *
+ * JMS Users actually handle MessageProxy instances rather than JBossMessage instances. The purpose
+ * of this class and subclasses is to prevent unnecessary copying of a message. After a message is
+ * sent, the message can be changed, but this should not affect the sent message. This class
+ * accomplishes this by intercepting any methods which change the state of the message and copying
+ * either the headers, jms properties or body as appropriate. This enables up to make the minimum
+ * amount of copies while still preserving JMS semantics. Similarly on receive.
+ *
  * See JMS1.1 Spec 3.9, 3.10 for more details.
+ *
  * If nothing is changed, nothing is copied.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -51,158 +53,54 @@ import org.jboss.jms.delegate.SessionDelegate;
  */
 public class MessageProxy implements Message, Serializable
 {
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = 5903095946142192468L;
 
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected JBossMessage message;
-   
+
    protected transient SessionDelegate delegate;
-      
+
    protected transient boolean messageCopied;
-   
+
    protected transient boolean propertiesCopied;
-   
+
    protected transient boolean bodyCopied;
-   
+
    protected transient int state;
-   
+
    protected static final int STATE_NEW = 0;
-   
+
    protected static final int STATE_SENT = 1;
-   
+
    protected static final int STATE_RECEIVED = 2;
-   
+
    protected transient boolean propertiesReadOnly;
-   
+
    protected transient boolean bodyReadOnly;
-   
+
    protected int deliveryCount;
-   
+
    protected transient boolean jmsRedelivered;
-      
-   
-   public void setSessionDelegate(SessionDelegate sd)
+
+   // Constructors --------------------------------------------------
+
+   public MessageProxy()
    {
-      this.delegate = sd;
-   }   
-   
-   public void setSent()
-   {
-      state = STATE_SENT;
    }
-   
-   public void setReceived()
-   {
-      state = STATE_RECEIVED;
-      
-      propertiesReadOnly = true;
-      
-      bodyReadOnly = true;
-      
-      this.jmsRedelivered = deliveryCount > 0;
-     
-   }
-   
-   protected boolean isSent()
-   {
-      return state == STATE_SENT;
-   }
-   
-   protected boolean isReceived()
-   {
-      return state == STATE_RECEIVED;
-   }
-   
-   protected void copyMessage() throws JMSException
-   {
-      if (!messageCopied)
-      {
-         message = message.doShallowCopy();
-         messageCopied = true;      
-      }
-   }
-   
-   protected void headerChange() throws JMSException
-   {
-      if ((isSent() || isReceived()))
-      {
-         //A header value is to be changed - we must make a shallow copy of the message
-         //This basically only copies the headers         
-         copyMessage();
-      }
-   }
-   protected void propertyChange() throws JMSException
-   {
-      if (!propertiesCopied)
-      {
-         if (isSent())
-         {
-            //The message has been sent - we need to copy properties to avoid changing the properties
-            //of the sent message
-            copyMessage();            
-            message.setJMSProperties(new HashMap(message.getJMSProperties()));
-                       
-         }
-         else if (isReceived())
-         {
-            //No need to copy - any attempt to set read only props will throw an exception
-         }
-      }
-   }
-   
-   protected void propertiesClear() throws JMSException
-   {
-      if (isSent() || isReceived())
-      {
-         copyMessage();
-         message.setJMSProperties(new HashMap());
-         propertiesCopied = true;
-      }
-   }
-   
-   protected void bodyClear() throws JMSException
-   {
-      if (isSent() || isReceived())
-      {
-         copyMessage();
-         bodyCopied = true;
-      }
-   }
-   
-   protected void bodyChange() throws JMSException
-   {
-      if (isSent())
-      {
-         //The message has been sent - make a copy of the message to avoid changing the sent messages
-         //payload
-         copyMessage();
-         if (!bodyCopied)
-         {
-            message.copyPayload(message.getPayload());
-            bodyCopied = true;
-         }
-      }
-      else if (isReceived())
-      {
-         //Do nothing - any attempt to change the payload of the message should throw an exception (readonly)
-      }
-   }
-   
+
    public MessageProxy(JBossMessage message, int deliveryCount)
    {
       this.message = message;
       this.state = STATE_NEW;
       this.deliveryCount = deliveryCount;
    }
-   
-   public MessageProxy()
-   {
-      
-   }
-   
-   public JBossMessage getMessage()
-   {
-      return message;
-   }
+
+   // Message implementation ----------------------------------------
 
    public String getJMSMessageID() throws JMSException
    {
@@ -480,14 +378,136 @@ public class MessageProxy implements Message, Serializable
    }
 
 
-   public String toString()
+   // Public --------------------------------------------------------
+
+   public void setSessionDelegate(SessionDelegate sd)
    {
-      return "delegator->" + message;
+      this.delegate = sd;
    }
-   
+
+   public void setSent()
+   {
+      state = STATE_SENT;
+   }
+
+   public void setReceived()
+   {
+      state = STATE_RECEIVED;
+
+      propertiesReadOnly = true;
+
+      bodyReadOnly = true;
+
+      this.jmsRedelivered = deliveryCount > 0;
+   }
+
+   public JBossMessage getMessage()
+   {
+      return message;
+   }
+
    public int getDeliveryCount()
    {
       return deliveryCount;
    }
-  
+
+   public String toString()
+   {
+      return "delegator->" + message;
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void headerChange() throws JMSException
+   {
+      if ((isSent() || isReceived()))
+      {
+         //A header value is to be changed - we must make a shallow copy of the message
+         //This basically only copies the headers
+         copyMessage();
+      }
+   }
+
+   protected void copyMessage() throws JMSException
+   {
+      if (!messageCopied)
+      {
+         message = message.doShallowCopy();
+         messageCopied = true;
+      }
+   }
+
+   protected boolean isSent()
+   {
+      return state == STATE_SENT;
+   }
+
+   protected boolean isReceived()
+   {
+      return state == STATE_RECEIVED;
+   }
+
+   protected void propertyChange() throws JMSException
+   {
+      if (!propertiesCopied)
+      {
+         if (isSent())
+         {
+            //The message has been sent - we need to copy properties to avoid changing the properties
+            //of the sent message
+            copyMessage();
+            message.setJMSProperties(new HashMap(message.getJMSProperties()));
+
+         }
+         else if (isReceived())
+         {
+            //No need to copy - any attempt to set read only props will throw an exception
+         }
+      }
+   }
+
+   protected void propertiesClear() throws JMSException
+   {
+      if (isSent() || isReceived())
+      {
+         copyMessage();
+         message.setJMSProperties(new HashMap());
+         propertiesCopied = true;
+      }
+   }
+
+   protected void bodyClear() throws JMSException
+   {
+      if (isSent() || isReceived())
+      {
+         copyMessage();
+         bodyCopied = true;
+      }
+   }
+
+   protected void bodyChange() throws JMSException
+   {
+      if (isSent())
+      {
+         //The message has been sent - make a copy of the message to avoid changing the sent messages
+         //payload
+         copyMessage();
+         if (!bodyCopied)
+         {
+            message.copyPayload(message.getPayload());
+            bodyCopied = true;
+         }
+      }
+      else if (isReceived())
+      {
+         //Do nothing - any attempt to change the payload of the message should throw an exception (readonly)
+      }
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+   
 }

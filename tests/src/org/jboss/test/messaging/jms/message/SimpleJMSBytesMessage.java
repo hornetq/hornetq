@@ -35,8 +35,6 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
-
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version $Revision$
@@ -63,7 +61,6 @@ public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMess
       ostream = new ByteArrayOutputStream();
       p = new DataOutputStream(ostream);
    }
-
 
    // BytesMessage implementation -----------------------------------
 
