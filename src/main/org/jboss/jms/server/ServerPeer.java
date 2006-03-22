@@ -179,7 +179,10 @@ public class ServerPeer extends ServiceMBeanSupport
 
       channelMapper = (ChannelMapper)mbeanServer.
          getAttribute(channelMapperObjectName, "Instance");
-      
+
+      // TODO: Shouldn't this go into ChannelMapper's dependencies? Since it's a plug in,
+      //       we shouldn't inject their dependencies externally, but they should take care
+      ///      of them themselves.
       channelMapper.setPersistenceManager(persistenceManagerDelegate);
 
       // start the rest of the internal components
@@ -646,7 +649,8 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
-   private String createDestinationDefault(boolean isQueue, String name, String jndiName) throws Exception
+   private String createDestinationDefault(boolean isQueue, String name, String jndiName)
+      throws Exception
    {
       //
       // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
@@ -675,9 +679,9 @@ public class ServerPeer extends ServiceMBeanSupport
       return createDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);   
    }
    
-   private String createDestinationInternal(String destinationMBeanConfig, ObjectName on, String jndiName,
-         boolean params,
-         int fullSize, int pageSize, int downCacheSize) throws Exception
+   private String createDestinationInternal(String destinationMBeanConfig, ObjectName on,
+                                            String jndiName, boolean params, int fullSize,
+                                            int pageSize, int downCacheSize) throws Exception
    {
       MBeanServer mbeanServer = getServer();
 
@@ -713,8 +717,8 @@ public class ServerPeer extends ServiceMBeanSupport
       //
    }
    
-   private String createDestination(boolean isQueue, String name, String jndiName,
-         int fullSize, int pageSize, int downCacheSize) throws Exception
+   private String createDestination(boolean isQueue, String name, String jndiName, int fullSize,
+                                    int pageSize, int downCacheSize) throws Exception
    {
       //
       // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
@@ -739,7 +743,8 @@ public class ServerPeer extends ServiceMBeanSupport
          "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
          "</mbean>";
 
-      return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize, pageSize, downCacheSize);
+      return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
+                                       pageSize, downCacheSize);
    }
 
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
