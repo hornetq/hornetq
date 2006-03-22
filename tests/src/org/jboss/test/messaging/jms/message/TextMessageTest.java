@@ -64,6 +64,18 @@ public class TextMessageTest extends MessageTestBase
       super.tearDown();
    }
 
+   public void testClearProperties() throws Exception
+   {
+      ((TextMessage)message).setText("something");
+      queueProd.send(message);
+
+      TextMessage rm = (TextMessage)queueCons.receive();
+
+      rm.clearProperties();
+
+      assertEquals("something", rm.getText());
+   }
+
    // Protected -----------------------------------------------------
 
    protected void prepareMessage(Message m) throws JMSException

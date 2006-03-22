@@ -121,10 +121,11 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       this.payloadAsByteArray = payloadAsByteArray;
    }
 
-   protected MessageSupport(MessageSupport other)
+   protected MessageSupport(MessageSupport that)
    {
-      super(other);
-      this.payload = other.payload;
+      super(that);
+      this.payload = that.payload;
+      this.payloadAsByteArray = that.payloadAsByteArray;
    }
 
    // Routable implementation ---------------------------------------

@@ -98,7 +98,6 @@ public class MessageTestBase extends JMSTestBase
       assertEquivalent(r, DeliveryMode.PERSISTENT);
    }
 
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
