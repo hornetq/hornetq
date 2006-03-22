@@ -148,7 +148,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
       if (!isReady())
       {
-         if (trace) { log.trace(this + " rejects " + reference.getMessageID()); }
+         if (trace) { log.trace(this + " rejects reference with ID " + reference.getMessageID()); }
          return null;
       }
       
