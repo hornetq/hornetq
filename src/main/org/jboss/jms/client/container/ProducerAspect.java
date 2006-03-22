@@ -21,8 +21,13 @@
   */
 package org.jboss.jms.client.container;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -31,7 +36,12 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 
@@ -165,8 +175,33 @@ public class ProducerAspect
          
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
-                           
-         toSend = new JBossMessage(m, 0);
+
+         // Create a matching JBossMessage Type from JMS Type
+         if(m instanceof BytesMessage)
+         {
+            toSend = new JBossBytesMessage((BytesMessage)m,0);
+         }
+         else if(m instanceof MapMessage)
+         {
+            toSend = new JBossMapMessage((MapMessage)m,0);
+         }
+         else if(m instanceof ObjectMessage)
+         {
+            toSend = new JBossObjectMessage((ObjectMessage)m,0);
+         }
+         else if(m instanceof StreamMessage)
+         {
+            toSend = new JBossStreamMessage((StreamMessage)m,0);
+         }
+         else if(m instanceof TextMessage)
+         {
+            toSend = new JBossTextMessage((TextMessage)m,0);
+         }
+         else
+         {
+            toSend = new JBossMessage(m, 0);
+         }
+         toSend.doAfterSend();
       }
       else
       {

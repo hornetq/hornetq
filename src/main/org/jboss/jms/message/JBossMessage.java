@@ -262,6 +262,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       setJMSRedelivered(foreign.getJMSRedelivered());
       setJMSExpiration(foreign.getJMSExpiration());
       setJMSPriority(foreign.getJMSPriority());
+      setJMSType(foreign.getJMSType());
 
       if (properties == null)
       {
